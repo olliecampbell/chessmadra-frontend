@@ -57,9 +57,7 @@ export const TrainerLayout = ({ chessboard, children }: any) => {
               {chessboard}
             </View>
             <Spacer height={12} width={24} isMobile={isMobile} />
-            <View style={s(c.column, c.maxWidth(400), c.fullWidth)}>
-              {children}
-            </View>
+            <View style={s(c.column, c.width(400))}>{children}</View>
           </View>
         </View>
       </View>
