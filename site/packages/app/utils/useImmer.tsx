@@ -53,14 +53,13 @@ export function useStateUpdaterV2<T>(initial: T): UpdatadableState<T> {
     //   return
     // }
     locked.current = true
-    const newState = cloneDeep(vRef.current)
+    const newState = vRef.current
     if (f[Symbol.toStringTag] === 'AsyncFunction') {
       await f(newState)
     } else {
       f(newState)
     }
     setV(newState)
-    vRef.current = newState
     locked.current = false
     // if (isAsyncFunction(update)) {
     // } else {

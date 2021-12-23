@@ -228,7 +228,7 @@ export const TheClimb = () => {
     animateMoves,
     updater: updateVisualizationState
   } = useVisualizationTraining({
-    mockPassFail: false,
+    mockPassFail: true,
     isClimb: true,
     autoPlay: true,
     onResetClimb: useCallback(() => {

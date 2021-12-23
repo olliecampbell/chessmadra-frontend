@@ -12,8 +12,7 @@ import { Spacer } from 'app/Space'
 import {
   ChessboardView,
   getAnimationDurations,
-  getPlaybackSpeedDescription,
-  PlaybackSpeed
+  getPlaybackSpeedDescription
 } from 'app/components/chessboard/Chessboard'
 import axios from 'axios'
 import { Helmet } from 'react-helmet'
@@ -52,6 +51,13 @@ import { intersperse } from 'app/utils/intersperse'
 import { Draft, WritableDraft } from 'immer/dist/internal'
 import { current } from 'immer'
 import AnimateNumber from 'react-native-animate-number'
+import {
+  PlaybackSpeed,
+  PuzzleDifficulty,
+  VisualizationState,
+  ProgressMessage,
+  ProgressMessageType
+} from 'app/types/VisualizationState'
 
 const fensTheSame = (x, y) => {
   if (x.split(' ')[0] == y.split(' ')[0]) {
@@ -70,15 +76,6 @@ const isCheckmate = (move: Move, position: Chess | Draft<Chess>) => {
   let isCheckMate = position.inCheckmate()
   position.undo()
   return isCheckMate
-}
-
-interface ProgressMessage {
-  message: string
-  type: ProgressMessageType
-}
-enum ProgressMessageType {
-  Error,
-  Success
 }
 
 const SettingsOption = <T,>({
@@ -161,13 +158,6 @@ const fetchNewPuzzle = async ({
   }
 }
 
-enum PuzzleDifficulty {
-  Beginner = 'Beginner',
-  Intermediate = 'Intermediate',
-  Expert = 'Expert',
-  Magnus = 'Magnus'
-}
-
 const allDifficulties = [
   PuzzleDifficulty.Beginner,
   PuzzleDifficulty.Intermediate,
@@ -186,34 +176,6 @@ const getPuzzleDifficultyRating = (pd: PuzzleDifficulty) => {
     case PuzzleDifficulty.Magnus:
       return 2500
   }
-}
-
-interface VisualizationState {
-  progressMessage: ProgressMessage
-  helpOpen: boolean
-  isDone: boolean
-  plyUserSetting: StorageItem<number>
-  ratingGteUserSetting: StorageItem<PuzzleDifficulty>
-  ratingLteUserSetting: StorageItem<PuzzleDifficulty>
-  playbackSpeedUserSetting: StorageItem<PlaybackSpeed>
-  hiddenMoves: Move[]
-  solutionMoves: Move[]
-  puzzle: LichessPuzzle
-  showHelpButton: boolean
-  autoPlay: boolean
-  nextPuzzle: LichessPuzzle
-  isPlaying: boolean
-  focusedMoveIndex: number
-  focusedMove: Move
-  canFocusNextMove: boolean
-  canFocusLastMove: boolean
-  onSuccess: () => void
-  onFail: () => void
-  puzzleDifficultySetting: number
-  numberMovesHiddenSetting: number
-  showNotation: StorageItem<boolean>
-  turn: Color
-  chessState: ChessboardState
 }
 
 const getFetchOptions = (state: WritableDraft<VisualizationState>) => {
@@ -248,6 +210,12 @@ const refreshPuzzle = async (
   }
   if (!p) {
     p = await fetchNewPuzzle(getFetchOptions(state))
+  }
+  if (!p) {
+    window.alert(
+      'Problem fetching puzzles, please report this if you run into it, to me@mbuffett.com'
+    )
+    return
   }
   state.puzzle = p
   resetState(state)
