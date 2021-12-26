@@ -19,7 +19,6 @@ import { algebraic, Chess, Move, SQUARES } from '@lubert/chess.ts'
 import client from 'app/client'
 import { cloneDeep, isEmpty, isNil, takeRight } from 'lodash'
 import { LichessPuzzle } from 'app/models'
-import { ChessboardBiref } from 'app/types/ChessboardBiref'
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
 import useState from 'react-usestateref'
@@ -39,6 +38,7 @@ import { useStateUpdater } from '../utils/useImmer'
 import { StorageItem } from '../utils/storageItem'
 import { WritableDraft } from 'immer/dist/internal'
 import AnimateNumber from 'react-native-animate-number'
+import { DEFAULT_CHESS_STATE, useClimbStore } from '../utils/state'
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -60,83 +60,15 @@ const ClimbScore = ({ score, highScore, text }) => {
   )
 }
 
-const generateClimb = () => {
-  let puzzleDifficulty = 1000
-  let hiddenMoves = 1
-  let cutoff = 2400
-  const climb = [{ puzzleDifficulty, hiddenMoves }]
-  const addRampingPuzzleDifficulty = () => {
-    times(20)((i) => {
-      puzzleDifficulty += 10
-      climb.push({ puzzleDifficulty, hiddenMoves })
-    })
-  }
-  const addRampingHiddenMoves = () => {
-    times(1)((i) => {
-      hiddenMoves += 1
-      if (puzzleDifficulty < cutoff) {
-        puzzleDifficulty -= 100
-      }
-      climb.push({ puzzleDifficulty, hiddenMoves })
-    })
-  }
-  times(30)((i) => {
-    if (puzzleDifficulty < cutoff) {
-      addRampingPuzzleDifficulty()
-    }
-    addRampingHiddenMoves()
-  })
-  return climb
-}
-const CLIMB = generateClimb()
-
 // tweak params
-const TIME_SUCCESSFUL_SOLVE = 30 * 1000
-const TIME_UNSUCCESSFUL_SOLVE = 30 * 1000
-const POINTS_LOST = 20
-
-interface State {
-  isPlaying: boolean
-  delta: number
-  climb: Step[]
-  score: StorageItem<number>
-  highScore: StorageItem<number>
-  step: Step
-  puzzleStartTime: number
-  lastPuzzleSuccess: boolean
-  currentPuzzleFailed: boolean
-}
-
-interface Step {
-  puzzleDifficulty: number
-  hiddenMoves: number
-}
-
-const initState = (state: State) => {
-  updateStep(state)
-}
-
-const updateStep = (state: State) => {
-  state.step = state.climb[state.score.value]
-}
-const DEFAULT_STATE = {
-  isPlaying: false,
-  // TODO: bring back intro screen
-  climb: CLIMB,
-  score: new StorageItem('climb-score', 0),
-  highScore: new StorageItem('climb-high-score', 0),
-  delta: 0,
-  step: null,
-  puzzleStartTime: null,
-  lastPuzzleSuccess: false,
-  currentPuzzleFailed: false
-}
-initState(DEFAULT_STATE)
 
 export const TheClimb = () => {
   const isMobile = useIsMobile()
-  const [state, updater] = useStateUpdater<State>(DEFAULT_STATE)
-  const scoreOpacityAnim = useRef(new Animated.Value(0.0)).current
+  const state = useClimbStore()
+  useEffect(() => {
+    state.initState()
+  }, [])
+  const { scoreOpacityAnim } = state
   const scoreChangeView = (
     <Animated.View
       style={s(
@@ -156,93 +88,12 @@ export const TheClimb = () => {
       {state.delta < 0 ? state.delta : `+${state.delta}`}
     </Animated.View>
   )
-  const animatePointChange = (delta: number) => {
-    let animDuration = 300
-    Animated.sequence([
-      Animated.timing(scoreOpacityAnim, {
-        toValue: 1,
-        duration: animDuration,
-        useNativeDriver: false
-      }),
-
-      Animated.timing(scoreOpacityAnim, {
-        toValue: 0,
-        duration: animDuration,
-        useNativeDriver: false
-      })
-    ]).start()
-  }
-  // useEffect(() => {
-  //   initState(state)
-  // }, [])
-  const onSuccess = () => {
-    updater((s) => {
-      if (s.currentPuzzleFailed) {
-        return
-      }
-      let timeTaken = performance.now() - s.puzzleStartTime
-      let delta = Math.round(
-        Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
-      )
-      s.lastPuzzleSuccess = true
-      s.delta = delta
-      animatePointChange(delta)
-      s.score.value = s.score.value + delta
-      if (s.score.value > s.highScore.value) {
-        s.highScore.value = s.score.value
-      }
-      updateStep(s)
-      updateVisualizationState((vs) => {
-        console.log('Updating puzzle difficuty to ', s.step.puzzleDifficulty)
-        vs.numberMovesHiddenSetting = s.step.hiddenMoves
-        vs.puzzleDifficultySetting = s.step.puzzleDifficulty
-      })
-    })
-  }
-  const onFail = () => {
-    updater((s) => {
-      s.currentPuzzleFailed = true
-      let delta = -10
-      s.delta = delta
-      s.lastPuzzleSuccess = false
-      animatePointChange(delta)
-      s.score.value = Math.max(s.score.value + delta, 0)
-      updateStep(s)
-      updateVisualizationState((vs) => {
-        vs.numberMovesHiddenSetting = s.step.hiddenMoves
-        vs.puzzleDifficultySetting = s.step.puzzleDifficulty
-      })
-    })
-  }
-  const onAutoPlayEnd = () => {
-    updater((s) => {
-      s.puzzleStartTime = performance.now()
-      s.currentPuzzleFailed = false
-    })
-  }
-
-  const {
-    chessboardProps,
-    ui: visualizationUi,
-    refreshPuzzle,
-    animateMoves,
-    updater: updateVisualizationState
-  } = useVisualizationTraining({
-    mockPassFail: true,
+  const { chessboardProps, ui: visualizationUi } = useVisualizationTraining({
     isClimb: true,
     autoPlay: true,
-    onResetClimb: useCallback(() => {
-      updater((s) => {
-        s.score.value = 0
-      })
-    }, []),
+    state,
     score: state.score.value,
-    onSuccess,
-    scoreChangeView,
-    onFail,
-    onAutoPlayEnd,
-    puzzleDifficultySetting: state.step?.puzzleDifficulty,
-    numberMovesHiddenSetting: state.step?.hiddenMoves
+    scoreChangeView
   })
   return (
     <TrainerLayout
@@ -250,21 +101,20 @@ export const TheClimb = () => {
         <>
           <ChessboardView
             {...chessboardProps}
-            styles={!state.isPlaying && c.displayNone}
+            styles={!state.isPlayingClimb && c.displayNone}
           />
           <ChessboardView
             {...{
               currentPosition: new Chess(),
-              biref: {},
-              state: { currentPosition: new Chess() },
-              styles: state.isPlaying && c.displayNone
+              state: DEFAULT_CHESS_STATE,
+              styles: state.isPlayingClimb && c.displayNone
             }}
           />
         </>
       }
     >
       <View style={s()}>
-        {state.isPlaying ? (
+        {state.isPlayingClimb ? (
           <View style={s(c.column, c.alignStretch)}>
             {/* <View style={s(c.row, c.alignCenter, c.selfCenter)}> */}
             {/*   {/* <ClimbScore highScore={highScore} score={score} text={'score'} /> */}
@@ -287,16 +137,7 @@ export const TheClimb = () => {
             <Spacer height={24} />
             <Button
               onPress={() => {
-                updater((s) => {
-                  s.isPlaying = true
-                  setTimeout(() => {
-                    animateMoves(() => {
-                      updater((s) => {
-                        s.puzzleStartTime = performance.now()
-                      })
-                    })
-                  }, 1000)
-                })
+                state.startPlayingClimb()
               }}
               style={s(c.buttons.primary)}
             >

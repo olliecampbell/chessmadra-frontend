@@ -16,9 +16,11 @@ import {
 } from 'app/components/chessboard/Chessboard'
 import { TrainerLayout } from 'app/components/TrainerLayout'
 import { useVisualizationTraining } from '../utils/useVisualizationTraining'
+import { useVisualizationStore } from '../utils/state'
 
 export const VisualizationTraining = () => {
-  const { chessboardProps, ui } = useVisualizationTraining({})
+  const state = useVisualizationStore()
+  const { chessboardProps, ui } = useVisualizationTraining({ state })
   return (
     <TrainerLayout chessboard={<ChessboardView {...chessboardProps} />}>
       {ui}

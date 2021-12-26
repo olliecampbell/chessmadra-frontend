@@ -34,7 +34,7 @@ import {
 } from 'lodash'
 import { MoveList } from 'app/components/MoveList'
 import { LichessPuzzle } from 'app/models'
-import { ChessboardBiref, ChessboardState } from 'app/types/ChessboardBiref'
+import { ChessboardState } from 'app/types/ChessboardBiref'
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
 import { Button } from 'app/components/Button'
@@ -56,27 +56,13 @@ import {
   PuzzleDifficulty,
   VisualizationState,
   ProgressMessage,
-  ProgressMessageType
+  ProgressMessageType,
+  getPuzzleDifficultyRating,
+  ClimbState
 } from 'app/types/VisualizationState'
+import { useClimbStore, useVisualizationStore } from 'app/utils/state'
 
-const fensTheSame = (x, y) => {
-  if (x.split(' ')[0] == y.split(' ')[0]) {
-    return true
-  }
-}
-
-interface PuzzleFetchOptions {
-  ratingGte?: number
-  ratingLte?: number
-  maxPly?: number
-}
-
-const isCheckmate = (move: Move, position: Chess | Draft<Chess>) => {
-  position.move(move)
-  let isCheckMate = position.inCheckmate()
-  position.undo()
-  return isCheckMate
-}
+const debugButtons = false
 
 const SettingsOption = <T,>({
   choices,
@@ -132,32 +118,6 @@ const SettingsTitle = ({ text }) => {
   )
 }
 
-const test = false
-const testProgress = false
-const debugButtons = false
-
-const fetchNewPuzzle = async ({
-  ratingGte,
-  ratingLte,
-  maxPly
-}: PuzzleFetchOptions): Promise<LichessPuzzle> => {
-  if (test) {
-    return cloneDeep(fakePuzzle)
-  }
-  try {
-    let response = await client.post('/api/v2/tactic', {
-      maxPly,
-      ratingGte,
-      ratingLte,
-      playerRatingGte: 1600
-    })
-    // @ts-ignore
-    return response.data.tactic as LichessPuzzle
-  } catch (error) {
-    console.log(error)
-  }
-}
-
 const allDifficulties = [
   PuzzleDifficulty.Beginner,
   PuzzleDifficulty.Intermediate,
@@ -165,326 +125,24 @@ const allDifficulties = [
   PuzzleDifficulty.Magnus
 ]
 
-const getPuzzleDifficultyRating = (pd: PuzzleDifficulty) => {
-  switch (pd) {
-    case PuzzleDifficulty.Beginner:
-      return 0
-    case PuzzleDifficulty.Intermediate:
-      return 1200
-    case PuzzleDifficulty.Expert:
-      return 1800
-    case PuzzleDifficulty.Magnus:
-      return 2500
-  }
-}
-
-const getFetchOptions = (state: WritableDraft<VisualizationState>) => {
-  if (state.numberMovesHiddenSetting && state.puzzleDifficultySetting) {
-    return {
-      ratingGte: state.puzzleDifficultySetting - 25,
-      ratingLte: state.puzzleDifficultySetting + 25,
-      maxPly: state.numberMovesHiddenSetting
-    }
-  }
-  return {
-    ratingGte: getPuzzleDifficultyRating(state.ratingGteUserSetting.value),
-    ratingLte: getPuzzleDifficultyRating(state.ratingLteUserSetting.value),
-    maxPly: state.plyUserSetting.value
-  }
-}
-
-const resetState = (state: WritableDraft<VisualizationState>) => {
-  state.chessState.showFuturePosition = false
-  state.progressMessage = null
-  state.isDone = false
-}
-
-const refreshPuzzle = async (
-  state: WritableDraft<VisualizationState>,
-  updateState,
-  onAutoPlayEnd?: any
-) => {
-  let p = state.nextPuzzle
-  if (state.nextPuzzle) {
-    state.nextPuzzle = null
-  }
-  if (!p) {
-    p = await fetchNewPuzzle(getFetchOptions(state))
-  }
-  if (!p) {
-    window.alert(
-      'Problem fetching puzzles, please report this if you run into it, to me@mbuffett.com'
-    )
-    return
-  }
-  state.puzzle = p
-  resetState(state)
-  setupForPuzzle(state, updateState, onAutoPlayEnd)
-}
-
-const focusOnMove = (
-  state: WritableDraft<VisualizationState>,
-  i,
-  cb,
-  backwards = false
-) => {
-  biref.highlightMove?.(state.hiddenMoves[i], backwards, () => {
-    if (cb) {
-      cb()
-    }
-  })
-  state.focusedMoveIndex = i
-}
-
-const focusLastMove = (state: WritableDraft<VisualizationState>) => {
-  if (state.canFocusLastMove) {
-    biref.highlightMove?.(
-      state.hiddenMoves[state.focusedMoveIndex],
-      true,
-      () => {}
-    )
-    let i = state.focusedMoveIndex - 1
-    if (i == -1) {
-      state.focusedMoveIndex = null
-    } else {
-      state.focusedMoveIndex = i
-    }
-  }
-}
-
-const animateMoves = (
-  state: WritableDraft<VisualizationState>,
-  updateState,
-  cb?: () => void
-) => {
-  if (state.isPlaying) {
-    state.isPlaying = false
-    return
-  }
-  state.isPlaying = true
-  let moves = cloneDeep(state.hiddenMoves)
-  let i = 0
-  let animateNextMove = (state: WritableDraft<VisualizationState>) => {
-    let move = moves.shift()
-    // TODO: something to deal with this state being old
-    if (move && state.isPlaying) {
-      focusOnMove(state, i, () => {
-        // let delay = getAnimationDurations(playbackSpeed)[2]
-        // window.setTimeout(() => {
-        updateState((s) => {
-          animateNextMove(s)
-        })
-        // }, delay)
-      })
-      i++
-    } else {
-      state.isPlaying = false
-      state.focusedMoveIndex = null
-      cb?.()
-    }
-  }
-  animateNextMove(state)
-}
-
-const attemptSolution = (
-  state: WritableDraft<VisualizationState>,
-  move: Move
-) => {
-  if (
-    move.san == state.solutionMoves[0].san ||
-    isCheckmate(move, state.chessState.futurePosition)
-  ) {
-    state.chessState.showFuturePosition = true
-    biref.flashRing()
-    let otherSideMove = state.solutionMoves[1]
-    if (state.chessState.showFuturePosition) {
-      biref.animateMove(move)
-    } else {
-    }
-    if (otherSideMove) {
-      biref.animateMove(state.solutionMoves[1])
-    }
-    // TODO: clone board?
-    state.chessState.futurePosition.move(move)
-    if (otherSideMove) {
-      state.chessState.futurePosition.move(otherSideMove)
-    }
-    state.solutionMoves.shift()
-    state.solutionMoves.shift()
-    if (!isEmpty(state.solutionMoves)) {
-      state.progressMessage = {
-        message: 'Keep going...',
-        type: ProgressMessageType.Success
-      }
-    } else {
-      state.progressMessage = null
-      state.isDone = true
-      if (state.onSuccess) {
-        state.onSuccess()
-      } else {
-      }
-    }
-    return s
-  } else {
-    biref.flashRing(false)
-    state.onFail?.()
-    state.progressMessage = {
-      message: `${move.san} was not the right move, try again.`,
-      type: ProgressMessageType.Error
-    }
-  }
-}
-
-// Scratch area
-// state.focusedMove = !isNil(focusedMoveIndex) && hiddenMoves && hiddenMoves[focusedMoveIndex]
-// let canFocusNextMove =
-//   hiddenMoves && focusedMoveIndex != hiddenMoves.length - 1
-// let canFocusLastMove = !isNil(focusedMoveIndex)
-
-const focusNextMove = (state: WritableDraft<VisualizationState>) => {
-  if (state.canFocusNextMove) {
-    let i = isNil(state.focusedMoveIndex) ? 0 : state.focusedMoveIndex + 1
-    focusOnMove(state, i, null, false)
-  }
-}
-
-const getPly = (
-  state: VisualizationState | WritableDraft<VisualizationState>
-) => {
-  return state.numberMovesHiddenSetting || state.plyUserSetting.value
-}
-
-const setupForPuzzle = (
-  state: WritableDraft<VisualizationState>,
-  updateState,
-  onAutoPlayEnd?: any
-) => {
-  console.log('Setting up!')
-  state.focusedMoveIndex = null
-  let currentPosition = new Chess()
-  let futurePosition = new Chess()
-  console.log(state)
-  for (let move of state.puzzle.allMoves) {
-    currentPosition.move(move)
-    futurePosition.move(move)
-    if (fensTheSame(currentPosition.fen(), state.puzzle.fen)) {
-      futurePosition.move(state.puzzle.moves[0], { sloppy: true })
-      currentPosition.move(state.puzzle.moves[0], { sloppy: true })
-      let hiddenMoves = takeRight(
-        currentPosition.history({ verbose: true }),
-        getPly(state)
-      )
-      let boardForPuzzleMoves = futurePosition.clone()
-      boardForPuzzleMoves.undo()
-      for (let solutionMove of state.puzzle.moves) {
-        boardForPuzzleMoves.move(solutionMove, { sloppy: true })
-      }
-      // @ts-ignore
-      state.solutionMoves = takeRight(
-        boardForPuzzleMoves.history({ verbose: true }),
-        state.puzzle.moves.length - 1
-      )
-      // currentPosition.undo()
-
-      state.hiddenMoves = hiddenMoves
-      for (let i = 0; i < getPly(state); i++) {
-        currentPosition.undo()
-      }
-      // state.currentPosition = currentPosition
-      state.chessState.futurePosition = futurePosition
-      state.chessState.currentPosition = currentPosition
-      state.chessState.showFuturePosition = false
-      state.chessState.flipped = futurePosition.turn() === 'b'
-      biref.setAvailableMoves?.([])
-      break
-    }
-  }
-  state.turn = state.chessState.futurePosition.turn()
-  if (state.autoPlay) {
-    console.log('Auto-playing moves')
-    animateMoves(state, updateState, () => {
-      onAutoPlayEnd?.()
-    })
-  }
-}
-
-const biref = {} as ChessboardBiref
-
 export const useVisualizationTraining = ({
-  mockPassFail,
+  state,
   onFail,
-  autoPlay,
   isClimb,
-  puzzleDifficultySetting,
-  numberMovesHiddenSetting,
-  onAutoPlayEnd,
   score,
   scoreChangeView,
-  onSuccess,
-  onResetClimb
+  onSuccess
 }: {
-  mockPassFail?: boolean
+  state: ClimbState | VisualizationState
   onFail?: () => void
   autoPlay?: boolean
   isClimb?: boolean
-  puzzleDifficultySetting?: number
-  numberMovesHiddenSetting?: number
   onAutoPlayEnd?: () => void
   score?: number
   scoreChangeView?: JSX.Element
   onSuccess?: () => void
-  onResetClimb?: () => void
 }) => {
-  biref.attemptSolution = (move: Move) => {
-    updateState((s) => {
-      attemptSolution(s, move)
-    })
-  }
-  const [state, updateState] = useStateUpdater({
-    progressMessage: (testProgress
-      ? { message: 'Test message', type: ProgressMessageType.Error }
-      : null) as ProgressMessage,
-
-    isDone: false,
-    puzzleDifficultySetting,
-    numberMovesHiddenSetting,
-    showNotation: new StorageItem('show-notation', false),
-    plyUserSetting: new StorageItem('visualization-ply', 2),
-    ratingGteUserSetting: new StorageItem(
-      'puzzle-rating-gte-v2',
-      PuzzleDifficulty.Beginner
-    ),
-    ratingLteUserSetting: new StorageItem(
-      'puzzle-rating-lte-v2',
-      PuzzleDifficulty.Intermediate
-    ),
-    playbackSpeedUserSetting: new StorageItem(
-      'playback-speed',
-      PlaybackSpeed.Normal
-    ),
-    hiddenMoves: null,
-    autoPlay,
-    solutionMoves: [] as Move[],
-    puzzle: test ? fakeBlackPuzzle : null,
-    turn: 'w',
-    showHelpButton: true,
-    nextPuzzle: null,
-    isPlaying: false,
-    focusedMoveIndex: null,
-    focusedMove: null,
-    canFocusNextMove: false,
-    canFocusLastMove: false,
-    onSuccess: onSuccess,
-    onFail: onFail,
-    helpOpen: false,
-    chessState: {
-      flipped: false,
-      currentPosition: new Chess(),
-      futurePosition: new Chess(),
-      showFuturePosition: false,
-      test: 0
-    }
-  } as VisualizationState)
+  // TODO: more type-safety
   const { chessState } = state
 
   const isMobile = useIsMobile()
@@ -499,12 +157,15 @@ export const useVisualizationTraining = ({
     c.fg(c.colors.textInverse),
     c.fontSize(14)
   )
+
+  // useEffect(() => {
+  //   resetState()
+  // }, [])
   useEffect(() => {
-    updateState(async (s) => {
-      await refreshPuzzle(s, updateState, onAutoPlayEnd)
-    })
+    state.refreshPuzzle()
   }, [])
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   // useEffect(() => {
   //   if (autoPlay && puzzle && hiddenMoves) {
@@ -546,9 +207,7 @@ export const useVisualizationTraining = ({
             c.fontSize(18)
           )}
           onPress={() => {
-            updateState((s) => {
-              animateMoves(s, updateState)
-            })
+            state.animateMoves()
           }}
         >
           <i
@@ -602,9 +261,7 @@ export const useVisualizationTraining = ({
           <Button
             style={s(state.isDone ? c.buttons.primary : c.buttons.basic)}
             onPress={() => {
-              updateState(async (s) => {
-                await refreshPuzzle(s, updateState, onAutoPlayEnd)
-              })
+              state.refreshPuzzle()
             }}
           >
             <Text
@@ -629,7 +286,7 @@ export const useVisualizationTraining = ({
           <Spacer height={12} />
         </>
       )}
-      {!state.chessState.showFuturePosition && !state.isDone && player}
+      {!state.showFuturePosition && !state.isDone && player}
       {
         <View
           style={s(
@@ -695,7 +352,7 @@ export const useVisualizationTraining = ({
                         c.fontSize(32)
                       )}
                     >
-                      {getPly(state)}
+                      {state.getPly()}
                     </Text>
                   </View>
                 </View>
@@ -763,9 +420,10 @@ export const useVisualizationTraining = ({
                 focusedMoveIndex={state.focusedMoveIndex}
                 moveList={state.hiddenMoves}
                 onMoveClick={(move, i) => {
-                  updateState((s) => {
-                    focusOnMove(s, i, () => {})
-                  })
+                  // TODO: move click notation highlight thing
+                  // updateState((s) => {
+                  //   focusOnMove(s, i, () => {})
+                  // })
                 }}
               />
             </>
@@ -774,9 +432,7 @@ export const useVisualizationTraining = ({
           <Pressable
             style={s(c.center, c.selfCenter, c.fullWidth, c.py(12))}
             onPress={() => {
-              updateState((s) => {
-                s.showNotation.value = !s.showNotation.value
-              })
+              state.toggleNotation()
             }}
           >
             <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
@@ -814,18 +470,18 @@ export const useVisualizationTraining = ({
       <View
         style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
       >
-        {mockPassFail && !state.isDone && (
+        {state.mockPassFail && !state.isDone && (
           <>
             <Button
               style={s(bottomRowButtonStyles)}
               onPress={() => {
-                onFail()
-                updateState((s) => {
+                state.quick((s) => {
                   s.progressMessage = {
                     message: 'Mocked failure, sorry',
                     type: ProgressMessageType.Error
                   }
                   s.isDone = true
+                  s.onSuccess()
                 })
               }}
             >
@@ -839,13 +495,13 @@ export const useVisualizationTraining = ({
             <Button
               style={s(bottomRowButtonStyles)}
               onPress={() => {
-                onSuccess()
-                updateState((s) => {
+                state.quick((s) => {
                   s.progressMessage = {
                     message: 'Mocked success, congratulations',
                     type: ProgressMessageType.Success
                   }
                   s.isDone = true
+                  s.onSuccess()
                 })
               }}
             >
@@ -881,9 +537,7 @@ export const useVisualizationTraining = ({
         <Button
           style={s(bottomRowButtonStyles)}
           onPress={() => {
-            updateState((s) => {
-              s.helpOpen = true
-            })
+            setHelpOpen(!helpOpen)
           }}
         >
           <Text style={s(c.buttons.basic.textStyles)}>
@@ -937,7 +591,8 @@ export const useVisualizationTraining = ({
           <Button
             style={c.buttons.basic}
             onPress={() => {
-              biref.flashRing()
+              // TODO
+              // biref.flashRing()
             }}
           >
             Flash ring
@@ -946,12 +601,12 @@ export const useVisualizationTraining = ({
           <Button
             style={c.buttons.basic}
             onPress={() => {
-              updateState((s) => {
-                debugger
-                // TODO
-                // currentPosition.move(s.hiddenMoves[0])
-                // s.hiddenMoves.shift()
-              })
+              // updateState((s) => {
+              //   debugger
+              //   // TODO
+              //   // currentPosition.move(s.hiddenMoves[0])
+              //   // s.hiddenMoves.shift()
+              // })
             }}
           >
             Advance one move
@@ -960,9 +615,9 @@ export const useVisualizationTraining = ({
           <Button
             style={c.buttons.basic}
             onPress={() => {
-              updateState((s) => {
-                s.chessState.showFuturePosition = true
-              })
+              // updateState((s) => {
+              //   s.chessState.showFuturePosition = true
+              // })
             }}
           >
             Show future position
@@ -971,11 +626,9 @@ export const useVisualizationTraining = ({
       )}
       <Modal
         onClose={() => {
-          updateState((s) => {
-            s.helpOpen = false
-          })
+          setHelpOpen(false)
         }}
-        visible={state.helpOpen}
+        visible={helpOpen}
       >
         <View style={s(c.row, c.px(12), c.py(12), c.alignCenter)}>
           <Text
@@ -985,10 +638,10 @@ export const useVisualizationTraining = ({
               c.lineHeight(22)
             )}
           >
-            Press play to see the next {getPly(state)} moves played out, but not
-            persisted, on the board. At the end of the moves, there is a winning
-            tactic. If you can't see the tactic, you can reduce the number of
-            moves in settings, or you can view the puzzle on lichess.
+            Press play to see the next {state.getPly()} moves played out, but
+            not persisted, on the board. At the end of the moves, there is a
+            winning tactic. If you can't see the tactic, you can reduce the
+            number of moves in settings, or you can view the puzzle on lichess.
           </Text>
         </View>
       </Modal>
@@ -1006,13 +659,7 @@ export const useVisualizationTraining = ({
               <View style={s(c.row, c.alignCenter)}>
                 <Button
                   onPress={() => {
-                    updateState((s) => {
-                      s.plyUserSetting.value = Math.max(
-                        s.plyUserSetting.value - 1,
-                        1
-                      )
-                      setupForPuzzle(s, updateState)
-                    })
+                    state.updatePly(-1)
                   }}
                   style={s(incrementDecrementStyles)}
                 >
@@ -1036,10 +683,7 @@ export const useVisualizationTraining = ({
                 <Spacer width={12} />
                 <Button
                   onPress={() => {
-                    updateState((s) => {
-                      s.plyUserSetting.value = s.plyUserSetting.value + 1
-                      setupForPuzzle(s, updateState)
-                    })
+                    state.updatePly(1)
                   }}
                   style={s(incrementDecrementStyles)}
                 >
@@ -1064,9 +708,7 @@ export const useVisualizationTraining = ({
             ]}
             activeChoice={state.playbackSpeedUserSetting.value}
             onSelect={(playbackSpeed) => {
-              updateState((s) => {
-                s.playbackSpeedUserSetting.value = playbackSpeed
-              })
+              state.setPlaybackSpeed(playbackSpeed)
             }}
             renderChoice={(c) => {
               return <Text>{getPlaybackSpeedDescription(c)}</Text>
@@ -1085,19 +727,17 @@ export const useVisualizationTraining = ({
                     choices={dropRight(allDifficulties, 1)}
                     activeChoice={state.ratingGteUserSetting.value}
                     onSelect={(rating) => {
-                      updateState((s) => {
+                      state.quick((s) => {
                         s.ratingGteUserSetting.value = rating
                         let idx = indexOf(allDifficulties, rating)
                         if (
                           idx >=
-                          indexOf(
-                            allDifficulties,
-                            state.ratingLteUserSetting.value
-                          )
+                          indexOf(allDifficulties, s.ratingLteUserSetting.value)
                         ) {
-                          state.ratingLteUserSetting.value =
+                          s.ratingLteUserSetting.value =
                             allDifficulties[idx + 1]
                         }
+                        s.refreshPuzzle(s)
                       })
                     }}
                     renderChoice={(c) => {
@@ -1115,16 +755,17 @@ export const useVisualizationTraining = ({
                     choices={drop(allDifficulties, 1)}
                     activeChoice={state.ratingLteUserSetting.value}
                     onSelect={(rating) => {
-                      updateState((s) => {
+                      state.quick((s) => {
                         s.ratingLteUserSetting.value = rating
                         let idx = indexOf(allDifficulties, rating)
                         if (
                           idx <=
-                          indexOf(allDifficulties, state.ratingGteUserSetting)
+                          indexOf(allDifficulties, s.ratingGteUserSetting)
                         ) {
-                          state.ratingGteUserSetting.value =
+                          s.ratingGteUserSetting.value =
                             allDifficulties[idx - 1]
                         }
+                        s.refreshPuzzle(s)
                       })
                     }}
                     renderChoice={(c) => {
@@ -1145,20 +786,23 @@ export const useVisualizationTraining = ({
   const { playbackSpeedUserSetting, solutionMoves } = state
   const chessboardProps = {
     frozen: isEmpty(solutionMoves),
-    biref,
+    onSquarePress: (square) => {
+      state.onSquarePress(square)
+    },
+    // biref,
     playbackSpeed: playbackSpeedUserSetting.value,
     state: chessState
   }
   return {
     ui,
-    animateMoves: useCallback(
-      (cb) => {
-        animateMoves(state, updateState, cb)
-      },
-      [state]
-    ),
-    chessboardProps,
-    refreshPuzzle,
-    updater: updateState
+    // animateMoves: useCallback(
+    //   (cb) => {
+    //     animateMoves(state, cb)
+    //   },
+    //   [state]
+    // ),
+    chessboardProps
+    // refreshPuzzle
+    // updater: updateState
   }
 }
