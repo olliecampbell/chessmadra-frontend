@@ -8,10 +8,11 @@ import {
   ProgressMessage,
   ProgressMessageType,
   getPuzzleDifficultyRating,
-  ClimbState
+  ClimbState,
+  ColorTrainingState
 } from 'app/types/VisualizationState'
 import { fakePuzzle, fakeBlackPuzzle } from 'app/mocks/puzzles'
-import { Chess, Color, Move } from '@lubert/chess.ts'
+import { algebraic, Chess, Color, Move, SQUARES } from '@lubert/chess.ts'
 import { produce, original } from 'immer'
 import type { Draft } from 'immer'
 import create, {
@@ -33,7 +34,15 @@ import {
   subscribeWithSelector
 } from 'zustand/middleware'
 import { fetchNewPuzzle } from './api'
-import { takeRight, cloneDeep, indexOf, isEmpty, first } from 'lodash'
+import {
+  takeRight,
+  cloneDeep,
+  indexOf,
+  isEmpty,
+  first,
+  sample,
+  mapValues
+} from 'lodash'
 import { times } from '../utils'
 import { WritableDraft } from 'immer/dist/internal'
 import { getAnimationDurations } from '../components/chessboard/Chessboard'
@@ -53,6 +62,7 @@ import {
   DEBUG_CLIMB_START_PLAYING,
   DEBUG_PASS_FAIL_BUTTONS
 } from './test_settings'
+import { ChessboardState } from '../types/ChessboardBiref'
 
 const fensTheSame = (x, y) => {
   if (x.split(' ')[0] == y.split(' ')[0]) {
@@ -129,6 +139,9 @@ export const DEFAULT_CHESS_STATE = {
   availableMoves: [],
   ringColor: null,
   ringIndicatorAnim: new Animated.Value(0),
+  squareHighlightAnims: mapValues(SQUARES, (number, square) => {
+    return new Animated.Value(0.0)
+  }),
   flipped: false,
   position: new Chess(),
   moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
@@ -310,23 +323,7 @@ const createVisualizationState = (
     },
     flashRing: (success: boolean, state?: VisualizationState) =>
       setter(set, state, (state) => {
-        const animDuration = 200
-        state.chessState.ringColor = success
-          ? c.colors.successColor
-          : c.colors.failureColor
-        Animated.sequence([
-          Animated.timing(state.chessState.ringIndicatorAnim, {
-            toValue: 1,
-            duration: animDuration,
-            useNativeDriver: false
-          }),
-
-          Animated.timing(state.chessState.ringIndicatorAnim, {
-            toValue: 0,
-            duration: animDuration,
-            useNativeDriver: false
-          })
-        ]).start()
+        flashRing(state.chessState, success)
       }),
     quick: (fn) => {
       setter<VisualizationState>(set, undefined, (state) => {
@@ -577,6 +574,114 @@ export const useVisualizationStore = create<VisualizationState>(
   )
 )
 
+export const useColorTrainingStore = create<ColorTrainingState>(
+  devtools(
+    // @ts-ignore for the set stuff
+    immer((set, get) => ({
+      isPlaying: false,
+      startTime: null,
+      score: 0,
+      lastRoundScore: null,
+      widthAnim: new Animated.Value(0.0),
+      highScore: new StorageItem('high-score-color-trainer', 0),
+      roundDuration: 30 * 1000,
+      remainingTime: null,
+      penalties: 0,
+      currentSquare: null,
+      chessState: { ...DEFAULT_CHESS_STATE, hideColors: true, position: null },
+      calculateRemainingTime: (state?: ColorTrainingState) => {
+        setter(set, state, (state) => {
+          let remainingTime =
+            state.roundDuration -
+            (performance.now() - state.startTime) -
+            state.penalties * 5 * 1000
+          state.remainingTime = remainingTime
+          state.widthAnim.setValue(remainingTime / state.roundDuration)
+          Animated.timing(state.widthAnim, {
+            toValue: 0.0,
+            duration: remainingTime,
+            useNativeDriver: false,
+            easing: Easing.linear
+          }).start(() => {
+            let state = get()
+            state.stopRound()
+          })
+        })
+      },
+      stopRound: (state?: ColorTrainingState) =>
+        setter(set, state, (state) => {
+          state.isPlaying = false
+          state.lastRoundScore = state.score
+          if (state.score > state.highScore.value) {
+            state.highScore.value = state.score
+          }
+          state.score = 0
+          state.penalties = 0
+          state.remainingTime = 0
+          state.clearHighlights(state)
+          state.currentSquare = null
+        }),
+
+      startPlaying: (state?: ColorTrainingState) =>
+        setter(set, state, (state) => {
+          state.widthAnim.setValue(1.0)
+          state.startTime = performance.now()
+          state.remainingTime = state.roundDuration
+          state.isPlaying = true
+          state.score = 0
+          state.highlightNewSquare(state)
+        }),
+      flashRing: (success: boolean, state?: ColorTrainingState) =>
+        setter(set, state, (state) => {
+          flashRing(state.chessState, success)
+        }),
+      guessColor: (color: 'light' | 'dark', state?: ColorTrainingState) => {
+        setter(set, state, (state) => {
+          let correct = new Chess().squareColor(state.currentSquare) == color
+          state.flashRing(correct, state)
+          if (correct) {
+            state.score = state.score + 1
+          } else {
+            state.penalties = state.penalties + 1
+          }
+          state.calculateRemainingTime(state)
+          state.highlightNewSquare(state)
+        })
+      },
+      clearHighlights: (state?: ColorTrainingState) =>
+        setter(set, state, (state) => {
+          let animDuration = 200
+          if (state.currentSquare) {
+            Animated.timing(
+              state.chessState.squareHighlightAnims[state.currentSquare],
+              {
+                toValue: 0,
+                duration: animDuration,
+                useNativeDriver: false
+              }
+            ).start()
+          }
+        }),
+      highlightNewSquare: (state?: ColorTrainingState) =>
+        setter(set, state, (state) => {
+          let randomSquare = algebraic(sample(SQUARES)) as Square
+          let animDuration = 200
+          state.clearHighlights(state)
+          state.currentSquare = randomSquare
+          Animated.timing(
+            state.chessState.squareHighlightAnims[state.currentSquare],
+            {
+              toValue: 0.8,
+              duration: animDuration,
+              useNativeDriver: false
+            }
+          ).start()
+        })
+    })),
+    { name: 'ColorTrainingState' }
+  )
+)
+
 export const useClimbStore = create<ClimbState>(
   // @ts-ignore for the set stuff
   devtools(
@@ -602,6 +707,23 @@ const setter = <T,>(set, state: T, fn: (T) => void) => {
   }
 }
 
+function flashRing(chessState: ChessboardState, success: boolean) {
+  const animDuration = 200
+  chessState.ringColor = success ? c.colors.successColor : c.colors.failureColor
+  Animated.sequence([
+    Animated.timing(chessState.ringIndicatorAnim, {
+      toValue: 1,
+      duration: animDuration,
+      useNativeDriver: false
+    }),
+
+    Animated.timing(chessState.ringIndicatorAnim, {
+      toValue: 0,
+      duration: animDuration,
+      useNativeDriver: false
+    })
+  ]).start()
+}
 // const setter = <T,>(
 //   set: (
 //     state: (

@@ -1,6 +1,5 @@
 import { Chess, Move } from '@lubert/chess.ts'
 import { Square } from '@lubert/chess.ts/dist/types'
-import { UpdatadableState } from '../utils/useImmer'
 import { PlaybackSpeed } from './VisualizationState'
 import { Animated } from 'react-native'
 
@@ -8,6 +7,7 @@ export interface ChessboardState {
   frozen?: boolean
   position?: Chess
   indicatorColor?: string
+  squareHighlightAnims: Record<Square, Animated.Value>
   ringColor?: string
   ringIndicatorAnim?: Animated.Value
   hideColors?: boolean
@@ -16,18 +16,5 @@ export interface ChessboardState {
   flipped?: boolean
   moveIndicatorAnim: Animated.ValueXY
   moveIndicatorOpacityAnim: Animated.Value
+  highlightSquare?: Square
 }
-
-// export interface ChessboardBiref {
-//   setAvailableMoves?: (m: Move[]) => void
-//   flashRing?: (success?: boolean) => void
-//   highlightSquare?: (square: Square) => void
-//   highlightMove?: (
-//     move: Move,
-//     backwards?: boolean,
-//     cb?: () => void,
-//     flipped?: boolean
-//   ) => void
-//   animateMove?: (move: Move) => void
-//   attemptSolution?: (move: Move) => void
-// }

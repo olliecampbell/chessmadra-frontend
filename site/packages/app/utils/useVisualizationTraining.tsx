@@ -16,11 +16,6 @@ import {
 } from 'app/components/chessboard/Chessboard'
 import axios from 'axios'
 import { Helmet } from 'react-helmet'
-import {
-  useStateUpdater,
-  UpdatadableState,
-  useStateUpdaterV2
-} from 'app/utils/useImmer'
 import { Chess, Color, Move } from '@lubert/chess.ts'
 import client from 'app/client'
 import {

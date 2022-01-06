@@ -1,7 +1,12 @@
-import React from "react";
-import { View } from "react-native";
+import React from 'react'
+import { View } from 'react-native'
 
-export const Spacer = ({ width = null, height = null, grow = false, isMobile = null }) => {
+export const Spacer = ({
+  width = null,
+  height = null,
+  grow = false,
+  isMobile = null
+}) => {
   let styles: any = { flexGrow: grow ? 1 : 0 }
   if (isMobile === true) {
     styles.height = height
@@ -15,5 +20,5 @@ export const Spacer = ({ width = null, height = null, grow = false, isMobile = n
   if (width) {
     styles.width = width
   }
-  return <View style={styles}></View>;
+  return <View style={styles}></View>
 }

@@ -21,11 +21,11 @@ const navItems = [
   {
     path: '/',
     title: 'Visualization'
+  },
+  {
+    path: '/color_trainer',
+    title: 'Colors'
   }
-  // {
-  //   path: '/color_trainer',
-  //   title: 'Colors'
-  // }
 ]
 export const NavBar = (props: {}) => {
   const router = useRouter()

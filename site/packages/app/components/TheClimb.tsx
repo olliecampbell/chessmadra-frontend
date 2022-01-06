@@ -13,31 +13,13 @@ import {
 import { c, s } from 'app/styles'
 import { Spacer } from 'app/Space'
 import { ChessboardView } from 'app/components/chessboard/Chessboard'
-import axios from 'axios'
-import { Helmet } from 'react-helmet'
 import { algebraic, Chess, Move, SQUARES } from '@lubert/chess.ts'
-import client from 'app/client'
 import { cloneDeep, isEmpty, isNil, takeRight } from 'lodash'
-import { LichessPuzzle } from 'app/models'
-// import { Feather } from "@expo/vector-icons";
-// import Icon from 'react-native-vector-icons/MaterialIcons'
-import useState from 'react-usestateref'
-import { useStorageState } from 'react-storage-hooks'
 import { TrainerLayout } from 'app/components/TrainerLayout'
 import { Button } from 'app/components/Button'
-import { ChessColor } from 'app/types/Chess'
 import { useIsMobile } from 'app/utils/isMobile'
-import { sample } from 'lodash'
-import { Square } from '@lubert/chess.ts/dist/types'
-import useStateRef from 'react-usestateref'
-import { useEffectWithPrevious } from '../utils/useEffectWithPrevious'
 import { Score } from 'app/components/ColorTraining'
 import { useVisualizationTraining } from 'app/utils/useVisualizationTraining'
-import { times } from '../utils'
-import { useStateUpdater } from '../utils/useImmer'
-import { StorageItem } from '../utils/storageItem'
-import { WritableDraft } from 'immer/dist/internal'
-import AnimateNumber from 'react-native-animate-number'
 import { DEFAULT_CHESS_STATE, useClimbStore } from '../utils/state'
 
 const Tile = ({ color, onPress }) => {
@@ -115,14 +97,7 @@ export const TheClimb = () => {
     >
       <View style={s()}>
         {state.isPlayingClimb ? (
-          <View style={s(c.column, c.alignStretch)}>
-            {/* <View style={s(c.row, c.alignCenter, c.selfCenter)}> */}
-            {/*   {/* <ClimbScore highScore={highScore} score={score} text={'score'} /> */}
-            {/*   {/* <Score score={step.puzzleDifficulty} text={'Step difficulty'} /> */}
-            {/* </View> */}
-            {/* <Spacer height={24} /> */}
-            {visualizationUi}
-          </View>
+          <View style={s(c.column, c.alignStretch)}>{visualizationUi}</View>
         ) : (
           <View style={s(c.column)}>
             <View style={c.selfCenter}>

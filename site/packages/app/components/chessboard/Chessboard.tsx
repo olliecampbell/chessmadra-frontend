@@ -23,33 +23,9 @@ import QueenWhiteIcon from 'app/components/chessboard/pieces/QueenWhiteIcon'
 import RookBlackIcon from 'app/components/chessboard/pieces/RookBlackIcon'
 import RookWhiteIcon from 'app/components/chessboard/pieces/RookWhiteIcon'
 import { Chess, PieceSymbol, SQUARES } from '@lubert/chess.ts'
-import {
-  forEach,
-  isEmpty,
-  isNil,
-  cloneDeep,
-  takeRight,
-  first,
-  map,
-  mapValues,
-  isEqual,
-  indexOf,
-  drop
-} from 'lodash'
-import { useImmer } from 'use-immer'
-import { LichessPuzzle } from 'app/models'
-import client from 'app/client'
-import { Spacer } from 'app/Space'
 import { Move, Square } from '@lubert/chess.ts/dist/types'
 import { ChessboardState } from 'app/types/ChessboardBiref'
-import { useEffectWithPrevious } from 'app/utils/useEffectWithPrevious'
-import { useComponentLayout } from 'app/utils/useComponentLayout'
 import { ChessColor, COLUMNS, ROWS } from 'app/types/Chess'
-import {
-  UpdatadableState,
-  useStateUpdater,
-  useStateUpdaterV2
-} from '../../utils/useImmer'
 import {
   PlaybackSpeed,
   PuzzleDifficulty,
@@ -191,11 +167,6 @@ export const ChessboardView = ({
   const tileStyles = s(c.bg('green'), c.grow)
 
   const { moveIndicatorAnim, moveIndicatorOpacityAnim, indicatorColor } = state
-  const squareHighlightAnims = useMemo(() => {
-    return mapValues(SQUARES, (number, square) => {
-      return new Animated.Value(0.0)
-    })
-  }, [])
 
   const hiddenColorsBorder = `1px solid ${c.grays[70]}`
 
@@ -361,7 +332,7 @@ export const ChessboardView = ({
                       <Animated.View
                         style={s(
                           {
-                            opacity: squareHighlightAnims[square]
+                            opacity: state.squareHighlightAnims[square]
                           },
                           c.bg(c.primaries[60]),
                           c.absolute,

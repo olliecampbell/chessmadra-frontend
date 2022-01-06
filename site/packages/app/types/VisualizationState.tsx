@@ -5,6 +5,27 @@ import { StorageItem } from 'app/utils/storageItem'
 import { LichessPuzzle } from 'app/models'
 import { Square } from '@lubert/chess.ts/dist/types'
 
+export interface ColorTrainingState {
+  isPlaying: boolean
+  startTime: number
+  score: number
+  lastRoundScore: number
+  widthAnim: Animated.Value
+  highScore: StorageItem<number>
+  roundDuration: number
+  remainingTime: number
+  penalties: number
+  currentSquare: Square
+  chessState: ChessboardState
+  calculateRemainingTime: (state?: ColorTrainingState) => void
+  stopRound: (state?: ColorTrainingState) => void
+  startPlaying: (state?: ColorTrainingState) => void
+  flashRing: (success: boolean, state?: ColorTrainingState) => void
+  guessColor: (color: 'light' | 'dark', state?: ColorTrainingState) => void
+  clearHighlights: (state?: ColorTrainingState) => void
+  highlightNewSquare: (state?: ColorTrainingState) => void
+}
+
 export interface VisualizationState {
   progressMessage: ProgressMessage
   mockPassFail: boolean
