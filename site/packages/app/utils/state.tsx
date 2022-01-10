@@ -242,6 +242,7 @@ const createVisualizationState = (
       : null) as ProgressMessage,
 
     isDone: false,
+    playButtonFlashAnim: new Animated.Value(0.0),
     availableMoves: [],
     mockPassFail: DEBUG_PASS_FAIL_BUTTONS,
     showNotation: new StorageItem('show-notation', false),
@@ -300,6 +301,7 @@ const createVisualizationState = (
       setter<VisualizationState>(set, state, (state) => {
         state.showFuturePosition = false
         state.progressMessage = null
+        state.finishedAutoPlaying = false
         state.isDone = false
       })
     },
@@ -335,6 +337,7 @@ const createVisualizationState = (
         if (state.isPlaying) {
           return
         }
+        state.stopLoopingPlayFlash(state)
         state.isPlaying = true
         let moves = cloneDeep(state.hiddenMoves)
         let i = 0
@@ -354,10 +357,11 @@ const createVisualizationState = (
             })
             i++
           } else {
-            if (isClimb) {
+            if (isClimb && !state.finishedAutoPlaying) {
               state.onAutoPlayEnd(state)
             }
             state.isPlaying = false
+            state.finishedAutoPlaying = true
             state.focusedMoveIndex = null
             // cb?.()
           }
@@ -453,6 +457,7 @@ const createVisualizationState = (
           }
         }
         state.turn = state.futurePosition.turn()
+        state.startLoopingPlayFlash(state)
         // TODO
         if (isClimb && state.isPlayingClimb) {
           console.log('Calling animate moves from here')
@@ -460,6 +465,31 @@ const createVisualizationState = (
           console.log(state.hiddenMoves)
           state.animateMoves(state)
         }
+      })
+    },
+    stopLoopingPlayFlash: (state?: VisualizationState) => {
+      setter<VisualizationState>(set, state, (state) => {
+        state.playButtonFlashAnim.setValue(1.0)
+      })
+    },
+    startLoopingPlayFlash: (state?: VisualizationState) => {
+      setter<VisualizationState>(set, state, (state) => {
+        let animDuration = 1000
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(state.playButtonFlashAnim, {
+              toValue: 1.0,
+              duration: animDuration,
+              useNativeDriver: false
+            }),
+
+            Animated.timing(state.playButtonFlashAnim, {
+              toValue: 0,
+              duration: animDuration,
+              useNativeDriver: false
+            })
+          ])
+        ).start()
       })
     },
     onSquarePress: (square: Square) =>

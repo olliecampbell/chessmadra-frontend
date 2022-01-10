@@ -1,15 +1,16 @@
-import { c } from "app/styles";
-import React from "react";
-import { Pressable, View, Text } from "react-native";
+import { c } from 'app/styles'
+import React from 'react'
+import { Pressable, View, Text, Animated } from 'react-native'
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 export const Button = ({ onPress, style, children }) => {
-  let inner = children;
-  if (typeof inner === "string") {
-    inner = <Text style={style.textStyles}>{inner}</Text>;
+  let inner = children
+  if (typeof inner === 'string') {
+    inner = <Text style={style.textStyles}>{inner}</Text>
   }
   return (
-    <Pressable style={style} onPress={onPress}>
+    <AnimatedPressable style={style} onPress={onPress}>
       {inner}
-    </Pressable>
-  );
-};
+    </AnimatedPressable>
+  )
+}

@@ -35,6 +35,7 @@ export interface VisualizationState {
   showFuturePosition: boolean
   currentPosition: Chess
   isDone: boolean
+  playButtonFlashAnim: Animated.Value
   plyUserSetting: StorageItem<number>
   ratingGteUserSetting: StorageItem<PuzzleDifficulty>
   ratingLteUserSetting: StorageItem<PuzzleDifficulty>
@@ -46,6 +47,7 @@ export interface VisualizationState {
   autoPlay: boolean
   nextPuzzle: LichessPuzzle
   isPlaying: boolean
+  finishedAutoPlaying: boolean
   focusedMoveIndex: number
   focusedMove: Move
   canFocusNextMove: boolean
@@ -59,6 +61,8 @@ export interface VisualizationState {
   getPly: () => number
   resetState: (state?: VisualizationState) => void
   refreshPuzzle: (state?: VisualizationState) => void
+  startLoopingPlayFlash: (state?: VisualizationState) => void
+  stopLoopingPlayFlash: (state?: VisualizationState) => void
   flashRing: (success?: boolean, state?: VisualizationState) => void
   quick: (fn: any) => void
   animateMoves: (state?: VisualizationState) => void

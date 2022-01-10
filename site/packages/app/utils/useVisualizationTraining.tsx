@@ -56,6 +56,7 @@ import {
   ClimbState
 } from 'app/types/VisualizationState'
 import { useClimbStore, useVisualizationStore } from 'app/utils/state'
+import { Animated } from 'react-native'
 
 const debugButtons = false
 
@@ -197,9 +198,16 @@ export const useVisualizationTraining = ({
             c.grow,
             // c.mx(20),
             c.buttons.primary,
+            c.bg(
+              state.playButtonFlashAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [c.primaries[40], c.primaries[50]]
+              })
+            ),
             c.height(60),
             c.py(0),
-            c.fontSize(18)
+            c.fontSize(18),
+            c.overflowHidden
           )}
           onPress={() => {
             state.animateMoves()

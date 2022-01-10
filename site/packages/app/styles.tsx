@@ -268,9 +268,12 @@ const buttons = {
   primary: primaryButtonStyles
 }
 
+const noPointerEvents = keyedProp('pointer-events')('none')
+
 export const c = {
   keyedProp,
   displayNone,
+  noPointerEvents,
   caps,
   p,
   pt,
