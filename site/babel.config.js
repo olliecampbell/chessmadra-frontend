@@ -1,14 +1,16 @@
-module.exports = function (api) {
-  api.cache(true)
+// @generated: @expo/next-adapter@2.1.52
+// Learn more: https://docs.expo.dev/guides/using-nextjs/
 
-  return {
-    babelrcRoots: ['.', './packages/*'],
-    presets: [['babel-preset-expo', { jsxRuntime: 'automatic' }]],
-    plugins: [
-      ['@babel/plugin-proposal-class-properties', { loose: true }],
-      ['@babel/plugin-proposal-private-methods', { loose: true }],
-      ['@babel/plugin-proposal-private-property-in-object', { loose: true }],
-      'react-native-reanimated/plugin'
-    ]
-  }
-}
+module.exports = {
+  presets: ["@expo/next-adapter/babel"],
+  plugins: [
+    [
+      "module-resolver",
+      {
+        alias: {
+          app: "./",
+        },
+      },
+    ],
+  ],
+};

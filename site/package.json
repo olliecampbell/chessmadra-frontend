@@ -1,23 +1,41 @@
 {
-  "name": "chessmadra",
-  "private": true,
+  "dependencies": {
+    "expo": "^44.0.0",
+    "next": "9.3.5",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-native": "0.64.3",
+    "react-native-web": "0.17.1",
+    "@lubert/chess.ts": "^0.16.1",
+    "axios": "^0.23.0",
+    "axios-case-converter": "^0.8.1",
+    "immer": "^9.0.6",
+    "lodash": "^4.17.21",
+    "pullstate": "^1.22.1",
+    "react-helmet": "^6.1.0",
+    "react-native-animate-number": "^0.1.2",
+    "react-native-svg": "^12.1.1",
+    "react-native-vector-icons": "^9.0.0",
+    "react-storage-hooks": "^4.0.1",
+    "react-usestateref": "^1.0.8",
+    "use-immer": "^0.6.0",
+    "zustand": "^3.6.8"
+  },
   "devDependencies": {
-    "patch-package": "^6.4.7"
+    "@babel/core": "^7.12.9",
+    "@expo/next-adapter": "~2.1.52",
+    "@types/react": "^17.0.38",
+    "typescript": "^4.5.4"
   },
-  "workspaces": [
-    "packages/app",
-    "packages/expo",
-    "packages/next"
-  ],
   "scripts": {
-    "dev:expo": "yarn workspace @expo-next-monorepo-example/expo dev",
-    "dev:next": "yarn workspace @expo-next-monorepo-example/next dev",
-    "build": "cd packages/next && yarn build",
-    "export": "cd packages/next && yarn export",
-    "deploy": "vercel --prod --no-clipboard",
-    "postinstall": "patch-package"
+    "start": "next dev",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "build": "next build"
   },
-  "resolutions": {
-    "babel-preset-expo": "^8.5.1"
-  }
+  "version": "1.0.0",
+  "private": true,
+  "name": "chessmadra"
 }
