@@ -385,41 +385,12 @@ const createVisualizationState = (
       backwards = false,
       callback: () => void
     ) => {
-      // TODO: use own flipped value, but it gets outdated right now, so passing it in.
-      let { fadeDuration, moveDuration, stayDuration } = getAnimationDurations(
-        state.playbackSpeedUserSetting.value
+      animateMove(
+        state.chessState,
+        move,
+        state.playbackSpeedUserSetting.value,
+        callback
       );
-      state.chessState.indicatorColor =
-        move.color == "b" ? c.hsl(180, 15, 10, 80) : c.hsl(180, 15, 100, 80);
-      // @ts-ignore
-      let [start, end]: Square[] = backwards
-        ? [move.to, move.from]
-        : [move.from, move.to];
-      state.chessState.moveIndicatorAnim.setValue(
-        state.getSquareOffset(start, state)
-      );
-      Animated.sequence([
-        Animated.timing(state.chessState.moveIndicatorOpacityAnim, {
-          toValue: 1.0,
-          duration: fadeDuration,
-          useNativeDriver: false,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.delay(stayDuration),
-        Animated.timing(state.chessState.moveIndicatorAnim, {
-          toValue: state.getSquareOffset(end, state),
-          duration: moveDuration,
-          useNativeDriver: false,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.delay(stayDuration),
-        Animated.timing(state.chessState.moveIndicatorOpacityAnim, {
-          toValue: 0,
-          duration: fadeDuration,
-          useNativeDriver: false,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ]).start(callback);
     },
     setupForPuzzle: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
@@ -802,7 +773,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         [BlunderRecognitionDifficulty.Medium]: 0,
         [BlunderRecognitionDifficulty.Hard]: 0,
       } as Record<BlunderRecognitionDifficulty, number>),
-      roundDuration: 60 * 1 * 1000,
+      roundDuration: 60 * 2 * 1000,
       remainingTime: null,
       penalties: 0,
       difficulty: new StorageItem(
@@ -844,18 +815,24 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
             state.penalties * 5 * 1000;
           state.remainingTime = remainingTime;
           state.widthAnim.setValue(remainingTime / state.roundDuration);
-          Animated.timing(state.widthAnim, {
-            toValue: 0.0,
-            duration: remainingTime,
-            useNativeDriver: false,
-            easing: Easing.linear,
-          }).start(({ finished }) => {
-            if (finished) {
-              set((state) => {
-                state.stopRound();
-              });
-            }
-          });
+          if (remainingTime < 0) {
+            state.stopRound(state);
+          } else {
+            Animated.timing(state.widthAnim, {
+              toValue: 0.0,
+              duration: remainingTime,
+              useNativeDriver: false,
+              easing: Easing.linear,
+            }).start(({ finished }) => {
+              console.log({ finished });
+              if (finished) {
+                set((state) => {
+                  // @ts-ignore
+                  state.stopRound(state);
+                });
+              }
+            });
+          }
         });
       },
       stopRound: (state?: BlunderRecognitionState) =>
@@ -875,7 +852,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         }),
       startPlaying: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
-          state.finishedPuzzles = [];
+          state.seenPuzzles = [];
           state.donePlaying = false;
           state.widthAnim.setValue(1.0);
           state.startTime = performance.now();
@@ -907,9 +884,10 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           } else {
             state.penalties = state.penalties + 1;
           }
+          state.addFinishedPuzzle(correct, state);
+          state.currentPuzzle = null;
           state.calculateRemainingTime(state);
           state.flashRing(correct, state);
-          state.addFinishedPuzzle(correct, state);
           state.setupNextRound(state);
         }),
       addFinishedPuzzle: (
@@ -952,8 +930,11 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
               : state.currentPuzzle.bestMove;
             state.isBlunder = showBlunder;
             let pos = new Chess(state.currentPuzzle.fen);
+            pos.move(state.currentMove);
+            let move = pos.undo();
             state.chessState.position = pos;
             state.chessState.flipped = pos.turn() === "b";
+            animateMove(state.chessState, move, PlaybackSpeed.Normal, () => {});
           }
         );
       },
@@ -986,6 +967,48 @@ const setter = <T,>(set, state: T, fn: (T) => void) => {
     });
   }
 };
+
+function animateMove(
+  chessState: ChessboardState,
+  move: Move,
+  speed: PlaybackSpeed,
+  callback: () => void
+) {
+  let { fadeDuration, moveDuration, stayDuration } =
+    getAnimationDurations(speed);
+  chessState.indicatorColor =
+    move.color == "b" ? c.hsl(180, 15, 10, 80) : c.hsl(180, 15, 100, 80);
+  let backwards = false;
+  // @ts-ignore
+  let [start, end]: Square[] = backwards
+    ? [move.to, move.from]
+    : [move.from, move.to];
+  chessState.moveIndicatorAnim.setValue(
+    getSquareOffset(start, chessState.flipped)
+  );
+  Animated.sequence([
+    Animated.timing(chessState.moveIndicatorOpacityAnim, {
+      toValue: 1.0,
+      duration: fadeDuration,
+      useNativeDriver: false,
+      easing: Easing.inOut(Easing.ease),
+    }),
+    Animated.delay(stayDuration),
+    Animated.timing(chessState.moveIndicatorAnim, {
+      toValue: getSquareOffset(end, chessState.flipped),
+      duration: moveDuration,
+      useNativeDriver: false,
+      easing: Easing.inOut(Easing.ease),
+    }),
+    Animated.delay(stayDuration),
+    Animated.timing(chessState.moveIndicatorOpacityAnim, {
+      toValue: 0,
+      duration: fadeDuration,
+      useNativeDriver: false,
+      easing: Easing.inOut(Easing.ease),
+    }),
+  ]).start(callback);
+}
 
 function flashRing(chessState: ChessboardState, success: boolean) {
   const animDuration = 200;

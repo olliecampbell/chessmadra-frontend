@@ -336,7 +336,7 @@ export const BlunderPuzzleReviewView = ({
               // c.fg(passed ? c.colors.successColor : c.colors.failureLight)
             }
           >
-            was {puzzle.showedBlunder ? "a" : "not a"} blunder
+            was {puzzle.showedBlunder ? "a blunder" : "a good move"}
           </Text>
         </Text>
       </View>
