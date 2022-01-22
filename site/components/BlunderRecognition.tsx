@@ -229,7 +229,7 @@ export const BlunderRecognition = () => {
             <Spacer height={24} />
             <Button
               onPress={() => {
-                state.startPlaying();
+                state.playAgain();
               }}
               style={s(c.buttons.primary)}
             >

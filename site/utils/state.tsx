@@ -240,7 +240,6 @@ const createVisualizationState = (
           updateStep: (state?: VisualizationState) =>
             setter(set, state, (state) => {
               state.step = state.climb[state.score.value];
-              console.log("state step", cloneDeep(state.step));
             }),
         }
       : {}),
@@ -467,9 +466,6 @@ const createVisualizationState = (
         state.startLoopingPlayFlash(state);
         // TODO
         if (isClimb && state.isPlayingClimb) {
-          console.log("Calling animate moves from here");
-          console.log(state.currentPosition.ascii());
-          console.log(state.hiddenMoves);
           state.animateMoves(state);
         }
       });
@@ -746,6 +742,7 @@ interface BlunderRecognitionState {
   calculateRemainingTime: (state?: BlunderRecognitionState) => void;
   stopRound: (state?: BlunderRecognitionState) => void;
   startPlaying: (state?: BlunderRecognitionState) => void;
+  playAgain: (state?: BlunderRecognitionState) => void;
   flashRing: (success: boolean, state?: BlunderRecognitionState) => void;
   guessColor: (
     color: "light" | "dark",
@@ -852,9 +849,12 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
             duration: remainingTime,
             useNativeDriver: false,
             easing: Easing.linear,
-          }).start(() => {
-            let state = get();
-            state.stopRound();
+          }).start(({ finished }) => {
+            if (finished) {
+              set((state) => {
+                state.stopRound();
+              });
+            }
           });
         });
       },
@@ -864,9 +864,11 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           state.donePlaying = true;
           state.lastRoundScore = state.score;
           state.addFinishedPuzzle(null, state);
-          if (state.score > state.highScore.value) {
-            console.log("Score is higher!");
-            state.highScore.value[state.difficulty] = state.score;
+          if (state.score > state.highScore.value[state.difficulty.value]) {
+            state.highScore.value = {
+              ...state.highScore.value,
+              [state.difficulty.value]: state.score,
+            };
           }
           state.penalties = 0;
           state.remainingTime = 0;
@@ -882,13 +884,16 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           state.score = 0;
           state.prefetchPuzzles().then(() => {
             set((state) => {
-              console.log("Setting up next round");
               // @ts-ignore
               state.setupNextRound(state);
               // @ts-ignore
               state.calculateRemainingTime(state);
             });
           });
+        }),
+      playAgain: (state?: BlunderRecognitionState) =>
+        setter(set, state, (state: BlunderRecognitionState) => {
+          state.donePlaying = false;
         }),
       flashRing: (success: boolean, state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
@@ -898,8 +903,6 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         setter(set, state, (state: BlunderRecognitionState) => {
           let correct = isBlunder === state.isBlunder;
           if (correct) {
-            console.log("incrementing state score");
-            console.log(state.score);
             state.score = state.score + 1;
           } else {
             state.penalties = state.penalties + 1;
@@ -913,9 +916,9 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         correct: boolean | null,
         state?: BlunderRecognitionState
       ) =>
-        setter(set, state, (state) => {
+        setter(set, state, (state: BlunderRecognitionState) => {
           if (state.currentPuzzle) {
-            state.seenPuzzles.push({
+            state.seenPuzzles.unshift({
               puzzle: state.currentPuzzle,
               showedBlunder: state.isBlunder,
               correct: correct,
@@ -930,7 +933,6 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           centipawn_loss_min: getBlunderRange(state.difficulty.value)[0],
         });
         set((s) => {
-          console.log("Setting state puzzles");
           s.puzzles = puzzles;
         });
       },
@@ -990,7 +992,6 @@ function flashRing(chessState: ChessboardState, success: boolean) {
   chessState.ringColor = success
     ? c.colors.successColor
     : c.colors.failureColor;
-  console.log("ch ring color", chessState.ringColor);
   Animated.sequence([
     Animated.timing(chessState.ringIndicatorAnim, {
       toValue: 1,
@@ -1016,6 +1017,5 @@ function flashRing(chessState: ChessboardState, success: boolean) {
 //   ) => void,
 //   state: VisualizationState | WritableDraft<VisualizationState>
 // ): ((state?: VisualizationState) => void) => {
-//   console.log('Setter')
 
 // }
