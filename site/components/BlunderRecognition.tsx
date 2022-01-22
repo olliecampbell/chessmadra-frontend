@@ -9,20 +9,16 @@ import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import {
+  BlunderRecognitionDifficulty,
   BlunderRecognitionTab,
   DEFAULT_CHESS_STATE,
   FinishedBlunderPuzzle,
+  getBlunderRange,
   useBlunderRecognitionStore,
 } from "../utils/state";
 import { intersperse } from "../utils/intersperse";
 import { Chess } from "@lubert/chess.ts";
 
-const Tile = ({ color, onPress }) => {
-  return (
-    <Pressable {...{ onPress }} style={s(c.bg(color), c.size(72))}></Pressable>
-  );
-};
-const testPlayingUI = false;
 export const Score = ({ score, text }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
@@ -139,10 +135,80 @@ export const BlunderRecognition = () => {
             </View>
             <Spacer height={24} />
             <Text style={s(c.fg(c.colors.textPrimary))}>
-              Determine whether each move is good, or a blunder. You can review
-              the positions you missed when the round ends. This is a WIP
-              feature, should be working in the next few days.
+              Determine whether each move is a blunder. You can review the
+              positions you missed when the round ends.
             </Text>
+            <Spacer height={8} />
+            <Text style={s(c.fg(c.colors.textPrimary))}>
+              Blunders taken from lichess rapid games between 2000+ ELO players,
+              and verified with Stockfish 14 at a depth of 100k nodes.
+            </Text>
+            <Spacer height={24} />
+            <View
+              style={s(
+                c.bg(c.grays[20]),
+                c.column,
+                c.center,
+                c.py(12),
+                c.px(12),
+                c.rounded
+              )}
+            >
+              <View style={s(c.row, c.fullWidth)}>
+                {intersperse(
+                  [
+                    BlunderRecognitionDifficulty.Easy,
+                    BlunderRecognitionDifficulty.Medium,
+                    BlunderRecognitionDifficulty.Hard,
+                  ].map((x) => {
+                    const isActive = x === state.difficulty.value;
+                    return (
+                      <Button
+                        onPress={() => {
+                          state.quick((s) => {
+                            s.difficulty.value = x;
+                          });
+                        }}
+                        style={s(
+                          c.buttons.basic,
+                          isActive && c.bg(c.grays[80]),
+                          !isActive && c.bg(c.grays[60]),
+                          c.flexible
+                        )}
+                      >
+                        {x}
+                      </Button>
+                    );
+                  }),
+                  (i) => {
+                    return <Spacer key={i} width={8} />;
+                  }
+                )}
+              </View>
+              <Spacer height={12} />
+              <Text
+                style={s(
+                  c.fg(c.colors.textSecondary),
+                  c.fontSize(14),
+                  c.weightRegular,
+                  c.selfStart
+                )}
+              >
+                {state.difficulty.value ===
+                BlunderRecognitionDifficulty.Easy ? (
+                  <>
+                    Blunders will lose more than{" "}
+                    {getBlunderRange(state.difficulty.value)[0]} centipawns.
+                  </>
+                ) : (
+                  <>
+                    Blunders will lose between{" "}
+                    {getBlunderRange(state.difficulty.value)[0]} and{" "}
+                    {getBlunderRange(state.difficulty.value)[1]} centipawns.
+                  </>
+                )}
+              </Text>
+            </View>
             <Spacer height={24} />
             <Button
               onPress={() => {
@@ -158,11 +224,6 @@ export const BlunderRecognition = () => {
           <View style={s(c.column, c.width(600), c.maxWidth("100%"))}>
             <View style={s(c.row, c.selfCenter)}>
               <Score score={state.score} text={"Score"} />
-              <Spacer width={48} />
-              <Score
-                score={state.highScore.value[state.difficulty.value]}
-                text={"High Score"}
-              />
             </View>
             <Spacer height={24} />
             <Button
@@ -173,59 +234,25 @@ export const BlunderRecognition = () => {
             >
               Play Again
             </Button>
-            <Spacer height={24} />
-            <View style={s(c.row)}>
-              {intersperse(
-                [
-                  BlunderRecognitionTab.Failed,
-                  BlunderRecognitionTab.Passed,
-                ].map((tab) => {
-                  let active = state.activeTab == tab;
-                  return (
-                    <Pressable
-                      style={s()}
-                      onPress={() => {
-                        state.quick((state) => {
-                          state.activeTab = tab;
-                        });
-                      }}
-                    >
-                      <Text
-                        style={s(
-                          c.fg(c.colors.textPrimary),
-                          c.fontSize(18),
-                          c.pb(4),
-                          c.weightBold,
-                          active && c.borderBottom(`2px solid white`)
-                        )}
-                      >
-                        {tab}
-                      </Text>
-                    </Pressable>
-                  );
-                }),
-                (i) => {
-                  return <Spacer key={i} width={24} />;
-                }
-              )}
-            </View>
-            <Spacer height={24} />
+            <Spacer height={48} />
             <View style={s()}>
               {intersperse(
-                chunk(state.failedPuzzles, isMobile ? 2 : 3).map((row) => {
+                chunk(state.seenPuzzles, isMobile ? 2 : 3).map((row) => {
                   return (
-                    <View style={s(c.row)}>
+                    <View style={s(c.row, c.justifyStart)}>
                       {intersperse(
                         row.map((x) => {
                           return (
-                            <View style={s(c.width(200), c.flexible)}>
-                              <BlunderPuzzleReviewView
-                                puzzle={x}
-                                passed={
-                                  state.activeTab ===
-                                  BlunderRecognitionTab.Passed
-                                }
-                              />
+                            <View
+                              style={s(
+                                c.width(
+                                  `calc(${(1 / (isMobile ? 2 : 3)) * 100}% - ${
+                                    isMobile ? 12 : 16
+                                  }px)`
+                                )
+                              )}
+                            >
+                              <BlunderPuzzleReviewView puzzle={x} />
                             </View>
                           );
                         }),
@@ -250,10 +277,8 @@ export const BlunderRecognition = () => {
 
 export const BlunderPuzzleReviewView = ({
   puzzle,
-  passed,
 }: {
   puzzle: FinishedBlunderPuzzle;
-  passed: boolean;
 }) => {
   let pos = new Chess(puzzle.puzzle.fen);
   let move = puzzle.showedBlunder
@@ -274,18 +299,38 @@ export const BlunderPuzzleReviewView = ({
           );
         }}
       />
+
       <Spacer height={12} />
-      <Text style={s(c.fg(c.colors.textPrimary))}>
-        <Text style={s(c.weightBold)}>{move} </Text>
+      <View style={s(c.row, c.alignCenter)}>
         <Text
-          style={
-            s()
-            // c.fg(passed ? c.colors.successColor : c.colors.failureLight)
-          }
+          style={s(
+            c.center,
+            c.rounded,
+            c.size(24),
+            c.fontSize(16),
+            puzzle.correct
+              ? s(c.bg(c.successShades[70]), c.fg(c.successShades[40]))
+              : s(c.bg(c.failureShades[70]), c.fg(c.failureShades[40]))
+          )}
         >
-          was {puzzle.showedBlunder ? "a" : "not a"} blunder
+          <i
+            style={s()}
+            className={`fas ${puzzle.correct ? "fa-check" : "fa-times"}`}
+          ></i>
         </Text>
-      </Text>
+        <Spacer width={8} />
+        <Text style={s(c.fg(c.colors.textPrimary))}>
+          <Text style={s(c.weightBold)}>{move} </Text>
+          <Text
+            style={
+              s()
+              // c.fg(passed ? c.colors.successColor : c.colors.failureLight)
+            }
+          >
+            was {puzzle.showedBlunder ? "a" : "not a"} blunder
+          </Text>
+        </Text>
+      </View>
     </View>
   );
 };

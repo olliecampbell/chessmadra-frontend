@@ -761,20 +761,34 @@ interface BlunderRecognitionState {
     state?: BlunderRecognitionState
   ) => void;
   donePlaying: boolean;
-  failedPuzzles: FinishedBlunderPuzzle[];
-  passedPuzzles: FinishedBlunderPuzzle[];
+  seenPuzzles: FinishedBlunderPuzzle[];
   prefetchPuzzles: (state?: BlunderRecognitionState) => void;
   quick: (fn: (_: BlunderRecognitionState) => void) => void;
 }
-enum BlunderRecognitionDifficulty {
+export enum BlunderRecognitionDifficulty {
   Easy = "Easy",
   Medium = "Medium",
   Hard = "Hard",
 }
 
+export const getBlunderRange = (
+  d: BlunderRecognitionDifficulty
+): [number, number] => {
+  if (d === BlunderRecognitionDifficulty.Easy) {
+    return [500, 10000];
+  }
+  if (d === BlunderRecognitionDifficulty.Medium) {
+    return [300, 500];
+  }
+  if (d === BlunderRecognitionDifficulty.Hard) {
+    return [200, 300];
+  }
+};
+
 export interface FinishedBlunderPuzzle {
   puzzle: BlunderPuzzle;
   showedBlunder: boolean;
+  correct: boolean;
   timeTaken: number;
 }
 
@@ -792,7 +806,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         [BlunderRecognitionDifficulty.Medium]: 0,
         [BlunderRecognitionDifficulty.Hard]: 0,
       } as Record<BlunderRecognitionDifficulty, number>),
-      roundDuration: 60 * 3 * 1000,
+      roundDuration: 60 * 1 * 1000,
       remainingTime: null,
       penalties: 0,
       difficulty: new StorageItem(
@@ -803,23 +817,17 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
       nextPuzzle: null,
       chessState: { ...DEFAULT_CHESS_STATE },
       donePlaying: DEBUG_DONE_BLUNDER_VIEW,
-      failedPuzzles: DEBUG_DONE_BLUNDER_VIEW
+      seenPuzzles: DEBUG_DONE_BLUNDER_VIEW
         ? Array(20)
             .fill(0)
             .map(() => {
               return {
                 puzzle: fakeBlackBlunderPuzzle,
                 showedBlunder: Math.random() < 0.5,
+                correct: Math.random() < 0.5,
                 timeTaken: Math.random() * 100,
               };
             })
-        : [],
-      passedPuzzles: DEBUG_DONE_BLUNDER_VIEW
-        ? Array(20).fill({
-            puzzle: fakeBlackBlunderPuzzle,
-            showedBlunder: true,
-            timeTaken: 100,
-          })
         : [],
       activeTab: BlunderRecognitionTab.Failed,
       quick: (fn) => {
@@ -849,7 +857,9 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
       stopRound: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
           state.isPlaying = false;
+          state.donePlaying = true;
           state.lastRoundScore = state.score;
+          state.addFinishedPuzzle(state);
           if (state.score > state.highScore.value) {
             state.highScore.value = state.score;
           }
@@ -859,6 +869,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         }),
       startPlaying: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
+          state.donePlaying = false;
           state.widthAnim.setValue(1.0);
           state.startTime = performance.now();
           state.remainingTime = state.roundDuration;
@@ -874,17 +885,26 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
       guess: (isBlunder: boolean, state?: BlunderRecognitionState) =>
         setter(set, state, (state: BlunderRecognitionState) => {
           let correct = isBlunder === state.isBlunder;
+          if (correct) {
+            state.score = state.score + 1;
+          } else {
+            state.penalties = state.penalties + 1;
+          }
+          state.calculateRemainingTime(state);
           state.flashRing(correct, state);
           state.addFinishedPuzzle(correct, state);
           state.setupNextRound(state);
         }),
-      addFinishedPuzzle: (correct: boolean, state?: BlunderRecognitionState) =>
-        setter(set, state, (s) => {
-          let arr = correct ? state.passedPuzzles : state.failedPuzzles;
-          arr.push({
+      addFinishedPuzzle: (
+        correct: boolean | null,
+        state?: BlunderRecognitionState
+      ) =>
+        setter(set, state, (state) => {
+          state.seenPuzzles.push({
             puzzle: state.currentPuzzle,
             showedBlunder: state.showBlunder,
-            timeTaken: 0, // TODO
+            correct: correct,
+            timeTaken: 0,
           });
         }),
       prefetchPuzzles: async () => {
@@ -903,6 +923,10 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           (state: BlunderRecognitionState) => {
             let showBlunder = Math.random() < 0.5;
             state.currentPuzzle = state.puzzles.shift();
+            if (!state.currentPuzzle) {
+              state.stopRound(state);
+              return;
+            }
             state.currentMove = showBlunder
               ? state.currentPuzzle.blunder
               : state.currentPuzzle.bestMove;
