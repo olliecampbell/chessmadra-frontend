@@ -1,8 +1,0 @@
-.DS_Store
-.vscode
-node_modules/
-yarn-error.log
-*.hprof
-.vercel
-**/*.env
-.expo
