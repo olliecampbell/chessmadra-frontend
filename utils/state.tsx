@@ -742,7 +742,8 @@ export const getBlunderRange = (
   d: BlunderRecognitionDifficulty
 ): [number, number] => {
   if (d === BlunderRecognitionDifficulty.Easy) {
-    return [500, 10000];
+    // TODO: better way to get mate-blunders
+    return [500, 20000];
   }
   if (d === BlunderRecognitionDifficulty.Medium) {
     return [300, 500];

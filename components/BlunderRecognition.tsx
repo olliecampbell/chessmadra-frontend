@@ -127,23 +127,6 @@ export const BlunderRecognition = () => {
         )}
         {!state.isPlaying && !state.donePlaying && (
           <View style={s(c.column)}>
-            <View style={c.selfCenter}>
-              <Score
-                score={state.highScore.value[state.difficulty.value]}
-                text={"High Score"}
-              />
-            </View>
-            <Spacer height={24} />
-            <Text style={s(c.fg(c.colors.textPrimary))}>
-              Determine whether each move is a blunder. You can review the
-              positions you missed when the round ends.
-            </Text>
-            <Spacer height={8} />
-            <Text style={s(c.fg(c.colors.textPrimary))}>
-              Blunders taken from lichess rapid games between 2000+ ELO players,
-              and verified with Stockfish 14 at a depth of 100k nodes.
-            </Text>
-            <Spacer height={24} />
             <View
               style={s(
                 c.bg(c.grays[20]),
@@ -177,7 +160,18 @@ export const BlunderRecognition = () => {
                           c.flexible
                         )}
                       >
-                        {x}
+                        <View style={s(c.column, c.alignCenter)}>
+                          <Text style={s(c.buttons.basic.textStyles)}>{x}</Text>
+                          <Text
+                            style={s(
+                              c.buttons.basic.textStyles,
+                              c.weightRegular,
+                              c.fontSize(12)
+                            )}
+                          >
+                            High score: {state.highScore.value[x]}
+                          </Text>
+                        </View>
                       </Button>
                     );
                   }),
@@ -209,16 +203,27 @@ export const BlunderRecognition = () => {
                   </>
                 )}
               </Text>
+              <Spacer height={8} />
+              <Text style={s(c.fg(c.colors.textSecondary))}>
+                Determine whether each move is a blunder. You can review the
+                positions you missed when the round ends.
+              </Text>
+              <Spacer height={8} />
+              <Text style={s(c.fg(c.colors.textSecondary))}>
+                Blunders taken from lichess rapid games between 2000+ ELO
+                players, and verified with Stockfish 14 at a depth of 100k
+                nodes.
+              </Text>
+              <Spacer height={12} />
+              <Button
+                onPress={() => {
+                  state.startPlaying();
+                }}
+                style={s(c.buttons.primary, c.fullWidth)}
+              >
+                Start
+              </Button>
             </View>
-            <Spacer height={24} />
-            <Button
-              onPress={() => {
-                state.startPlaying();
-              }}
-              style={s(c.buttons.primary)}
-            >
-              Start
-            </Button>
           </View>
         )}
         {state.donePlaying && (
