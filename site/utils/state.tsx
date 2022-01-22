@@ -727,7 +727,6 @@ export enum BlunderRecognitionTab {
 
 interface BlunderRecognitionState {
   isPlaying: boolean;
-  showBlunder: boolean;
   startTime: number;
   difficulty: StorageItem<BlunderRecognitionDifficulty>;
   score: number;
@@ -824,7 +823,12 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
               return {
                 puzzle: fakeBlackBlunderPuzzle,
                 showedBlunder: Math.random() < 0.5,
-                correct: Math.random() < 0.5,
+                correct:
+                  Math.random() < 0.5
+                    ? true
+                    : Math.random() < 0.5
+                    ? false
+                    : null,
                 timeTaken: Math.random() * 100,
               };
             })
@@ -859,24 +863,32 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           state.isPlaying = false;
           state.donePlaying = true;
           state.lastRoundScore = state.score;
-          state.addFinishedPuzzle(state);
+          state.addFinishedPuzzle(null, state);
           if (state.score > state.highScore.value) {
-            state.highScore.value = state.score;
+            console.log("Score is higher!");
+            state.highScore.value[state.difficulty] = state.score;
           }
-          state.score = 0;
           state.penalties = 0;
           state.remainingTime = 0;
         }),
       startPlaying: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
+          state.finishedPuzzles = [];
           state.donePlaying = false;
           state.widthAnim.setValue(1.0);
           state.startTime = performance.now();
           state.remainingTime = state.roundDuration;
           state.isPlaying = true;
           state.score = 0;
-          state.setupNextRound(state);
-          state.calculateRemainingTime(state);
+          state.prefetchPuzzles().then(() => {
+            set((state) => {
+              console.log("Setting up next round");
+              // @ts-ignore
+              state.setupNextRound(state);
+              // @ts-ignore
+              state.calculateRemainingTime(state);
+            });
+          });
         }),
       flashRing: (success: boolean, state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
@@ -886,6 +898,8 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         setter(set, state, (state: BlunderRecognitionState) => {
           let correct = isBlunder === state.isBlunder;
           if (correct) {
+            console.log("incrementing state score");
+            console.log(state.score);
             state.score = state.score + 1;
           } else {
             state.penalties = state.penalties + 1;
@@ -900,19 +914,23 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         state?: BlunderRecognitionState
       ) =>
         setter(set, state, (state) => {
-          state.seenPuzzles.push({
-            puzzle: state.currentPuzzle,
-            showedBlunder: state.showBlunder,
-            correct: correct,
-            timeTaken: 0,
-          });
+          if (state.currentPuzzle) {
+            state.seenPuzzles.push({
+              puzzle: state.currentPuzzle,
+              showedBlunder: state.isBlunder,
+              correct: correct,
+              timeTaken: 0,
+            });
+          }
         }),
       prefetchPuzzles: async () => {
+        let state = get();
         let puzzles = await fetchNewBlunderPuzzle({
-          centipawn_loss_max: 300,
-          centipawn_loss_min: 200,
+          centipawn_loss_max: getBlunderRange(state.difficulty.value)[1],
+          centipawn_loss_min: getBlunderRange(state.difficulty.value)[0],
         });
         set((s) => {
+          console.log("Setting state puzzles");
           s.puzzles = puzzles;
         });
       },
@@ -938,7 +956,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         );
       },
     })),
-    { name: "ColorTrainingState" }
+    { name: "BlunderRecognitionState" }
   )
 );
 

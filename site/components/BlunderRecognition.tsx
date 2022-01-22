@@ -86,7 +86,7 @@ export const BlunderRecognition = () => {
                 onPress={() => {
                   state.guess(false);
                 }}
-                style={s(c.buttons.primary, c.width(140))}
+                style={s(c.buttons.basic, c.width(140))}
               >
                 Good move
               </Button>
@@ -95,7 +95,7 @@ export const BlunderRecognition = () => {
                 onPress={() => {
                   state.guess(true);
                 }}
-                style={s(c.buttons.primary, c.width(140))}
+                style={s(c.buttons.basic, c.width(140))}
               >
                 Blunder
               </Button>
@@ -167,6 +167,7 @@ export const BlunderRecognition = () => {
                         onPress={() => {
                           state.quick((s) => {
                             s.difficulty.value = x;
+                            s.prefetchPuzzles(s);
                           });
                         }}
                         style={s(
@@ -307,15 +308,23 @@ export const BlunderPuzzleReviewView = ({
             c.center,
             c.rounded,
             c.size(24),
-            c.fontSize(16),
+            c.fontSize(14),
             puzzle.correct
               ? s(c.bg(c.successShades[70]), c.fg(c.successShades[40]))
-              : s(c.bg(c.failureShades[70]), c.fg(c.failureShades[40]))
+              : puzzle.correct === false
+              ? s(c.bg(c.failureShades[70]), c.fg(c.failureShades[40]))
+              : s(c.bg(c.grays[70]), c.fg(c.grays[40]))
           )}
         >
           <i
             style={s()}
-            className={`fas ${puzzle.correct ? "fa-check" : "fa-times"}`}
+            className={`fas ${
+              puzzle.correct
+                ? "fa-check"
+                : puzzle.correct === false
+                ? "fa-times"
+                : "fa-hourglass"
+            }`}
           ></i>
         </Text>
         <Spacer width={8} />
