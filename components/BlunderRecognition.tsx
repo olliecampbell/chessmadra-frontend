@@ -59,17 +59,15 @@ export const BlunderRecognition = () => {
   return (
     <TrainerLayout
       chessboard={
-        state.donePlaying ? null : (
-          <ChessboardView
-            {...{
-              state: state.chessState,
-            }}
-          />
-        )
+        <ChessboardView
+          {...{
+            state: state.chessState,
+          }}
+        />
       }
     >
       <View style={s()}>
-        {state.isPlaying && (
+        {state.isPlaying && !state.donePlaying && (
           <View style={s(c.column, c.alignCenter)}>
             <Text style={s(c.fg(c.grays[70]), c.fontSize(16))}>
               <Text style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(16))}>
@@ -99,29 +97,6 @@ export const BlunderRecognition = () => {
               >
                 Blunder
               </Button>
-            </View>
-            <Spacer height={24} />
-            <View
-              style={s(
-                c.bg(c.grays[70]),
-                c.fullWidth,
-                c.height(4),
-                c.br(2),
-                c.overflowHidden
-              )}
-            >
-              <Animated.View
-                style={s(
-                  c.bg(c.primaries[50]),
-                  c.fullHeight,
-                  c.width(
-                    state.widthAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ["0%", "100%"],
-                    })
-                  )
-                )}
-              />
             </View>
           </View>
         )}
@@ -162,15 +137,6 @@ export const BlunderRecognition = () => {
                       >
                         <View style={s(c.column, c.alignCenter)}>
                           <Text style={s(c.buttons.basic.textStyles)}>{x}</Text>
-                          <Text
-                            style={s(
-                              c.buttons.basic.textStyles,
-                              c.weightRegular,
-                              c.fontSize(12)
-                            )}
-                          >
-                            High score: {state.highScore.value[x]}
-                          </Text>
                         </View>
                       </Button>
                     );
@@ -205,8 +171,8 @@ export const BlunderRecognition = () => {
               </Text>
               <Spacer height={8} />
               <Text style={s(c.fg(c.colors.textSecondary))}>
-                Determine whether each move is a blunder. You can review the
-                positions you missed when the round ends.
+                Determine whether each move is a blunder, or the best move. You
+                can review the positions you missed when the round ends.
               </Text>
               <Spacer height={8} />
               <Text style={s(c.fg(c.colors.textSecondary))}>
@@ -227,52 +193,45 @@ export const BlunderRecognition = () => {
           </View>
         )}
         {state.donePlaying && (
-          <View style={s(c.column, c.width(600), c.maxWidth("100%"))}>
-            <View style={s(c.row, c.selfCenter)}>
-              <Score score={state.score} text={"Score"} />
-            </View>
-            <Spacer height={24} />
-            <Button
-              onPress={() => {
-                state.playAgain();
-              }}
-              style={s(c.buttons.primary)}
-            >
-              Play Again
-            </Button>
-            <Spacer height={48} />
-            <View style={s()}>
-              {intersperse(
-                chunk(state.seenPuzzles, isMobile ? 2 : 3).map((row) => {
-                  return (
-                    <View style={s(c.row, c.justifyStart)}>
-                      {intersperse(
-                        row.map((x) => {
-                          return (
-                            <View
-                              style={s(
-                                c.width(
-                                  `calc(${(1 / (isMobile ? 2 : 3)) * 100}% - ${
-                                    isMobile ? 12 : 16
-                                  }px)`
-                                )
-                              )}
-                            >
-                              <BlunderPuzzleReviewView puzzle={x} />
-                            </View>
-                          );
-                        }),
-                        (i) => {
-                          return <Spacer key={i} width={24} />;
-                        }
-                      )}
-                    </View>
-                  );
-                }),
-                (i) => {
-                  return <Spacer key={i} height={24} />;
-                }
+          <View style={s(c.column, c.alignCenter)}>
+            <Text
+              style={s(
+                c.fg(
+                  state.wasCorrect ? c.primaries[60] : c.colors.failureLight
+                ),
+                c.weightSemiBold,
+                c.fontSize(16)
               )}
+            >
+              <i
+                className={`fa ${state.wasCorrect ? "fa-check" : "fa-warning"}`}
+              />
+              <Spacer width={12} />
+              {state.currentMove}{" "}
+              {state.isBlunder ? "is a blunder" : "is the best move"}
+            </Text>
+            <Spacer height={24} />
+            <View style={s(c.row)}>
+              <Button
+                onPress={() => {
+                  window.open(
+                    `https://lichess.org/analysis/${state.currentPuzzle.fen}`,
+                    "_blank"
+                  );
+                }}
+                style={s(c.buttons.basic, c.width(140))}
+              >
+                Analyze
+              </Button>
+              <Spacer width={12} />
+              <Button
+                onPress={() => {
+                  state.setupNextRound();
+                }}
+                style={s(c.buttons.primary, c.width(140))}
+              >
+                Next
+              </Button>
             </View>
           </View>
         )}

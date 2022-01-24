@@ -694,6 +694,7 @@ export enum BlunderRecognitionTab {
 
 interface BlunderRecognitionState {
   isPlaying: boolean;
+  wasCorrect: boolean;
   startTime: number;
   difficulty: StorageItem<BlunderRecognitionDifficulty>;
   score: number;
@@ -702,18 +703,13 @@ interface BlunderRecognitionState {
   currentPuzzle: BlunderPuzzle;
   currentMove: string;
   isBlunder: boolean;
-  lastRoundScore: number;
   widthAnim: Animated.Value;
-  highScore: StorageItem<Record<BlunderRecognitionDifficulty, number>>;
   roundDuration: number;
   remainingTime: number;
   penalties: number;
   currentSquare: Square;
   chessState: ChessboardState;
-  calculateRemainingTime: (state?: BlunderRecognitionState) => void;
-  stopRound: (state?: BlunderRecognitionState) => void;
   startPlaying: (state?: BlunderRecognitionState) => void;
-  playAgain: (state?: BlunderRecognitionState) => void;
   flashRing: (success: boolean, state?: BlunderRecognitionState) => void;
   guessColor: (
     color: "light" | "dark",
@@ -723,12 +719,7 @@ interface BlunderRecognitionState {
   highlightNewSquare: (state?: BlunderRecognitionState) => void;
   setupNextRound: (state?: BlunderRecognitionState) => void;
   guess: (isBlunder: boolean, state?: BlunderRecognitionState) => void;
-  addFinishedPuzzle: (
-    correct: boolean,
-    state?: BlunderRecognitionState
-  ) => void;
   donePlaying: boolean;
-  seenPuzzles: FinishedBlunderPuzzle[];
   prefetchPuzzles: (state?: BlunderRecognitionState) => void;
   quick: (fn: (_: BlunderRecognitionState) => void) => void;
 }
@@ -808,70 +799,12 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           fn(state);
         });
       },
-      calculateRemainingTime: (state?: BlunderRecognitionState) => {
-        setter(set, state, (state) => {
-          let remainingTime =
-            state.roundDuration -
-            (performance.now() - state.startTime) -
-            state.penalties * 5 * 1000;
-          state.remainingTime = remainingTime;
-          state.widthAnim.setValue(remainingTime / state.roundDuration);
-          if (remainingTime < 0) {
-            state.stopRound(state);
-          } else {
-            Animated.timing(state.widthAnim, {
-              toValue: 0.0,
-              duration: remainingTime,
-              useNativeDriver: false,
-              easing: Easing.linear,
-            }).start(({ finished }) => {
-              console.log({ finished });
-              if (finished) {
-                set((state) => {
-                  // @ts-ignore
-                  state.stopRound(state);
-                });
-              }
-            });
-          }
-        });
-      },
-      stopRound: (state?: BlunderRecognitionState) =>
-        setter(set, state, (state) => {
-          state.isPlaying = false;
-          state.donePlaying = true;
-          state.lastRoundScore = state.score;
-          state.addFinishedPuzzle(null, state);
-          if (state.score > state.highScore.value[state.difficulty.value]) {
-            state.highScore.value = {
-              ...state.highScore.value,
-              [state.difficulty.value]: state.score,
-            };
-          }
-          state.penalties = 0;
-          state.remainingTime = 0;
-        }),
       startPlaying: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
           state.seenPuzzles = [];
           state.donePlaying = false;
-          state.widthAnim.setValue(1.0);
-          state.startTime = performance.now();
-          state.remainingTime = state.roundDuration;
           state.isPlaying = true;
-          state.score = 0;
-          state.prefetchPuzzles().then(() => {
-            set((state) => {
-              // @ts-ignore
-              state.setupNextRound(state);
-              // @ts-ignore
-              state.calculateRemainingTime(state);
-            });
-          });
-        }),
-      playAgain: (state?: BlunderRecognitionState) =>
-        setter(set, state, (state: BlunderRecognitionState) => {
-          state.donePlaying = false;
+          state.setupNextRound(state);
         }),
       flashRing: (success: boolean, state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
@@ -879,37 +812,21 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
         }),
       guess: (isBlunder: boolean, state?: BlunderRecognitionState) =>
         setter(set, state, (state: BlunderRecognitionState) => {
+          state.donePlaying = true;
           let correct = isBlunder === state.isBlunder;
           if (correct) {
-            state.score = state.score + 1;
+            state.wasCorrect = true;
           } else {
-            state.penalties = state.penalties + 1;
+            state.wasCorrect = false;
           }
-          state.addFinishedPuzzle(correct, state);
-          state.currentPuzzle = null;
-          state.calculateRemainingTime(state);
           state.flashRing(correct, state);
-          state.setupNextRound(state);
-        }),
-      addFinishedPuzzle: (
-        correct: boolean | null,
-        state?: BlunderRecognitionState
-      ) =>
-        setter(set, state, (state: BlunderRecognitionState) => {
-          if (state.currentPuzzle) {
-            state.seenPuzzles.unshift({
-              puzzle: state.currentPuzzle,
-              showedBlunder: state.isBlunder,
-              correct: correct,
-              timeTaken: 0,
-            });
-          }
         }),
       prefetchPuzzles: async () => {
         let state = get();
         let puzzles = await fetchNewBlunderPuzzle({
           centipawn_loss_max: getBlunderRange(state.difficulty.value)[1],
           centipawn_loss_min: getBlunderRange(state.difficulty.value)[0],
+          limit: 1,
         });
         set((s) => {
           s.puzzles = puzzles;
@@ -923,9 +840,15 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
             let showBlunder = Math.random() < 0.5;
             state.currentPuzzle = state.puzzles.shift();
             if (!state.currentPuzzle) {
-              state.stopRound(state);
+              (async () => {
+                await state.prefetchPuzzles();
+                set((s) => {
+                  s.setupNextRound(s as BlunderRecognitionState);
+                });
+              })();
               return;
             }
+            state.donePlaying = false;
             state.currentMove = showBlunder
               ? state.currentPuzzle.blunder
               : state.currentPuzzle.bestMove;
