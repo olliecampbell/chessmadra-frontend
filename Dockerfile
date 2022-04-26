@@ -2,7 +2,6 @@ FROM node:18 AS base
 WORKDIR /base
 COPY package.json ./
 COPY yarn.lock ./
-RUN apk add --no-cache git
 RUN yarn install
 COPY . .
 ENV NODE_ENV=production
