@@ -29,7 +29,7 @@ import QueenWhiteIcon from "app/components/chessboard/pieces/QueenWhiteIcon";
 import RookBlackIcon from "app/components/chessboard/pieces/RookBlackIcon";
 import RookWhiteIcon from "app/components/chessboard/pieces/RookWhiteIcon";
 import { Chess, PieceSymbol, SQUARES } from "@lubert/chess.ts";
-import { Move, Square } from "@lubert/chess.ts/dist/types";
+import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessboardState } from "app/types/ChessboardBiref";
 import { ChessColor, COLUMNS, ROWS } from "app/types/Chess";
 import {
@@ -117,16 +117,10 @@ const getIconForPiece = (piece: PieceSymbol, color: ChessColor) => {
   }
 };
 
-export const PieceView = ({
-  piece,
-  color,
-}: {
-  piece: PieceSymbol;
-  color: ChessColor;
-}) => {
+export const PieceView = ({ piece }: { piece: Piece }) => {
   return (
     <View style={s(c.fullWidth, c.fullHeight)}>
-      {getIconForPiece(piece, color)}
+      {getIconForPiece(piece.type, piece.color)}
     </View>
   );
 };
@@ -232,7 +226,7 @@ export const ChessboardView = ({
         ></Animated.View>
         {Object.keys(SQUARES).map((sq) => {
           let pos = position;
-          let piece = null;
+          let piece: Piece = null;
           if (pos) {
             piece = pos.get(sq);
           }
@@ -256,7 +250,7 @@ export const ChessboardView = ({
                 )}
                 pointerEvents="none"
               >
-                <PieceView piece={piece["type"]} color={piece["color"]} />
+                <PieceView piece={piece} />
               </Animated.View>
             );
           }

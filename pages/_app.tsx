@@ -2,6 +2,7 @@ import type { AppProps /*, AppContext */ } from "next/app";
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import AuthHandler from "app/components/AuthHandler";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [isMounted, setIsMounted] = useState(false);
@@ -17,7 +18,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Chess Madra</title>
       </Head>
+      <AuthHandler>
+
       {isMounted && <Component {...pageProps} />}
+      </AuthHandler>
     </>
   );
 }

@@ -8,10 +8,22 @@ class CustomDocument extends Document {
     return (
       <html>
         <Head>
+          <style>
+            {`
+
+a:link { text-decoration: none; }
+
+a:visited { text-decoration: none; }
+
+a:hover { text-decoration: none; }
+
+a:active { text-decoration: none; }
+        `}
+          </style>
           <meta charSet="UTF-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <script
-            src="https://kit.fontawesome.com/76ce5ca5af.js"
+            src="https://kit.fontawesome.com/b1f0634f74.js"
             // @ts-ignore
             crossorigin="anonymous"
           ></script>
@@ -57,7 +69,8 @@ class CustomDocument extends Document {
             name="viewport"
           />
         </Head>
-        <body style={{ backgroundColor: c.grays[10] }}>
+        <body style={{ backgroundColor: c.grays[10], lineHeight: 1.5 }}>
+          <div className="" />
           <Main />
           <NextScript />
         </body>

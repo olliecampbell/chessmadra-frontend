@@ -16,11 +16,9 @@ interface PuzzleFetchOptions {
 }
 
 let flipper = 0;
-export const fetchNewPuzzle = async ({
-  ratingGte,
-  ratingLte,
-  maxPly,
-}: PuzzleFetchOptions): Promise<LichessPuzzle> => {
+export const fetchNewPuzzle = async (
+  args: PuzzleFetchOptions
+): Promise<LichessPuzzle> => {
   if (DEBUG_MOCK_FETCH) {
     console.log("Returning mock puzzle");
     let puzzle = flipper % 2 === 0 ? fakeBlackPuzzle : fakePuzzle;
@@ -29,10 +27,7 @@ export const fetchNewPuzzle = async ({
   }
   try {
     let response = await client.post("/api/v2/tactic", {
-      maxPly,
-      ratingGte,
-      ratingLte,
-      playerRatingGte: 1600,
+      ...args,
     });
     // @ts-ignore
     return response.data.tactic as LichessPuzzle;

@@ -10,6 +10,8 @@ import {
   getPuzzleDifficultyRating,
   ClimbState,
   ColorTrainingState,
+  RepertoireBuilderState,
+  PuzzleState,
 } from "app/types/VisualizationState";
 import {
   fakePuzzle,
@@ -67,9 +69,16 @@ import {
   DEBUG_CLIMB_START_PLAYING,
   DEBUG_DONE_BLUNDER_VIEW,
   DEBUG_PASS_FAIL_BUTTONS,
+  failOnTrue,
 } from "./test_settings";
 import { ChessboardState } from "../types/ChessboardBiref";
-import { BlunderPuzzle } from "../models";
+import { BlunderPuzzle, LichessGame, LichessPuzzle } from "../models";
+import { MOCK_RETURNED_GAMES } from "app/mocks/games";
+
+export type StoreSlice<T extends object, E extends object = T> = (
+  set: SetState<E extends T ? E : E & T>,
+  get: GetState<E extends T ? E : E & T>
+) => T;
 
 const fensTheSame = (x, y) => {
   if (x.split(" ")[0] == y.split(" ")[0]) {
@@ -155,101 +164,105 @@ export const DEFAULT_CHESS_STATE = {
   moveIndicatorOpacityAnim: new Animated.Value(0),
 };
 
+const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
+  // TODO: some better way to have climb state and viz state
+  set: SetState<T>,
+  get
+) => {
+  return {
+    puzzlePosition: null,
+    turn: "w" as Color,
+    attemptSolution: (move: Move, state?: T) => {
+      setter(set, state, (state) => {
+        console.log("Attempting solution!");
+        console.log(logProxy(state));
+        if (
+          move.san == state.solutionMoves[0].san ||
+          isCheckmate(move, state.puzzlePosition)
+        ) {
+          let otherSideMove = state.solutionMoves[1];
+          console.log("Position");
+          console.log(state.puzzlePosition.ascii());
+          state.puzzlePosition.move(move);
+          if (otherSideMove) {
+            state.puzzlePosition.move(otherSideMove);
+          }
+          console.log(state.puzzlePosition.ascii());
+          state.solutionMoves.shift();
+          state.solutionMoves.shift();
+          if (!isEmpty(state.solutionMoves)) {
+            state.onPuzzleMoveSuccess(state);
+            state.progressMessage = {
+              message: "Keep going...",
+              type: ProgressMessageType.Success,
+            };
+          } else {
+            state.onPuzzleMoveSuccess(state);
+            state.onPuzzleSuccess(state);
+          }
+        } else {
+          console.log("Nope!");
+          console.log(logProxy(move));
+          console.log({
+            san: move.san,
+            solutionMoves: logProxy(state.solutionMoves),
+          });
+          state.onPuzzleMoveFailure(move, state);
+          state.progressMessage = {
+            message: `${move.san} was not the right move, try again.`,
+            type: ProgressMessageType.Error,
+          };
+        }
+      });
+    },
+    puzzle: test ? fakeBlackPuzzle : null,
+    solutionMoves: [] as Move[],
+    progressMessage: null as ProgressMessage,
+  } as PuzzleState;
+};
+
 const createVisualizationState = (
   // TODO: some better way to have climb state and viz state
-  set: SetState<ClimbState>,
+  set: SetState<VisualizationState>,
   get,
-  isClimb = false
-): ClimbState => {
-  // @ts-ignore this is really bad, really need to figure out how to create a store that extends from another
+  isClimb
+): VisualizationState => {
   return {
-    ...(isClimb
-      ? {
-          isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
-          scoreOpacityAnim: new Animated.Value(0.0),
-          // TODO: bring back intro screen
-          climb: CLIMB,
-          score: new StorageItem("climb-score", 0),
-          highScore: new StorageItem("climb-high-score", 0),
-          delta: 0,
-          step: null,
-          puzzleStartTime: null,
-          startPlayingClimb: (state?: VisualizationState) =>
-            setter(set, state, (s) => {
-              s.isPlayingClimb = true;
-              s.animateMoves(s);
-            }),
-          onFail: (state?: VisualizationState) =>
-            setter(set, state, (s) => {
-              // TODO: fix repetition here
-              s.currentPuzzleFailed = true;
-              let delta = -10;
-              s.delta = delta;
-              s.lastPuzzleSuccess = false;
-              s.animatePointChange(s);
-              s.score.value = Math.max(s.score.value + delta, 0);
-              s.updateStep(s);
-            }),
-          onSuccess: (state?: VisualizationState) =>
-            setter(set, state, (s) => {
-              if (s.currentPuzzleFailed) {
-                return;
-              }
-              let timeTaken = performance.now() - s.puzzleStartTime;
-              let delta = Math.round(
-                Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
-              );
-              s.lastPuzzleSuccess = true;
-              s.delta = delta;
-              s.animatePointChange(delta, s);
-              s.score.value = s.score.value + delta;
-              if (s.score.value > s.highScore.value) {
-                s.highScore.value = s.score.value;
-              }
-              s.updateStep(s);
-            }),
-          lastPuzzleSuccess: false,
-          currentPuzzleFailed: false,
-          animatePointChange: (success: boolean, state?: VisualizationState) =>
-            setter(set, state, (s) => {
-              let animDuration = 300;
-              Animated.sequence([
-                Animated.timing(s.scoreOpacityAnim, {
-                  toValue: 1,
-                  duration: animDuration,
-                  useNativeDriver: false,
-                }),
-
-                Animated.timing(s.scoreOpacityAnim, {
-                  toValue: 0,
-                  duration: animDuration,
-                  useNativeDriver: false,
-                }),
-              ]).start();
-            }),
-          onAutoPlayEnd: (state?: VisualizationState) =>
-            setter(set, state, (s) => {
-              s.puzzleStartTime = performance.now();
-              s.currentPuzzleFailed = false;
-            }),
-          initState: (state?: VisualizationState) =>
-            setter(set, state, (state) => {
-              state.updateStep(state);
-              state.refreshPuzzle();
-            }),
-          updateStep: (state?: VisualizationState) =>
-            setter(set, state, (state) => {
-              state.step = state.climb[state.score.value];
-            }),
+    ...createPuzzleState(set, get),
+    onPuzzleMoveSuccess: (state?: VisualizationState) => {
+      setter<VisualizationState>(set, state, (state) => {
+        console.log("move success");
+        state.showPuzzlePosition = true;
+        state.flashRing(true, state);
+        state.chessState.position = state.puzzlePosition;
+        console.log("Chess state position now");
+        console.log(logProxy(state.chessState));
+      });
+    },
+    onPuzzleMoveFailure: (move: Move, state?: VisualizationState) => {
+      setter<VisualizationState>(set, state, (state) => {
+        state.flashRing(false, state);
+        if (isClimb) {
+          state.onFail(state);
         }
-      : {}),
+      });
+    },
+    onPuzzleSuccess: (state?: VisualizationState) => {
+      setter<VisualizationState>(set, state, (state) => {
+        console.log("overall success");
+        state.progressMessage = null;
+        state.isDone = true;
+        if (state.onSuccess) {
+          state.onSuccess(state);
+        }
+      });
+    },
     progressMessage: (testProgress
       ? { message: "Test message", type: ProgressMessageType.Error }
       : null) as ProgressMessage,
 
     isDone: false,
     playButtonFlashAnim: new Animated.Value(0.0),
-    availableMoves: [],
     mockPassFail: DEBUG_PASS_FAIL_BUTTONS,
     showNotation: new StorageItem("show-notation", false),
     plyUserSetting: new StorageItem("visualization-ply", 2),
@@ -267,9 +280,6 @@ const createVisualizationState = (
     ),
     hiddenMoves: null,
     autoPlay: false,
-    solutionMoves: [] as Move[],
-    puzzle: test ? fakeBlackPuzzle : null,
-    turn: "w",
     showHelpButton: true,
     nextPuzzle: null,
     isPlaying: false,
@@ -280,9 +290,8 @@ const createVisualizationState = (
     // onSuccess: onSuccess,
     // onFail: onFail,
     helpOpen: false,
-    futurePosition: new Chess(),
     currentPosition: new Chess(),
-    showFuturePosition: false,
+    showPuzzlePosition: false,
     chessState: DEFAULT_CHESS_STATE,
     getFetchOptions: () => {
       let state: ClimbState = get();
@@ -305,7 +314,7 @@ const createVisualizationState = (
     },
     resetState: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
-        state.showFuturePosition = false;
+        state.showPuzzlePosition = false;
         state.progressMessage = null;
         state.finishedAutoPlaying = false;
         state.isDone = false;
@@ -333,13 +342,9 @@ const createVisualizationState = (
       setter(set, state, (state) => {
         flashRing(state.chessState, success);
       }),
-    quick: (fn) => {
-      setter<VisualizationState>(set, undefined, (state) => {
-        fn(state);
-      });
-    },
-    animateMoves: (state?: VisualizationState) => {
-      setter<VisualizationState>(set, state, (state) => {
+    ...createQuick(set),
+    animateMoves: (state) => {
+      setter(set, state, (state) => {
         if (state.isPlaying) {
           return;
         }
@@ -363,7 +368,7 @@ const createVisualizationState = (
             });
             i++;
           } else {
-            if (isClimb && !state.finishedAutoPlaying) {
+            if (state.onAutoPlayEnd && !state.finishedAutoPlaying) {
               state.onAutoPlayEnd(state);
             }
             state.isPlaying = false;
@@ -394,29 +399,31 @@ const createVisualizationState = (
     },
     setupForPuzzle: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
+        console.log("setting up for puzzle");
         state.focusedMoveIndex = null;
         let currentPosition = new Chess();
-        let futurePosition = new Chess();
+        let puzzlePosition = new Chess();
         for (let move of state.puzzle.allMoves) {
           currentPosition.move(move);
-          futurePosition.move(move);
+          puzzlePosition.move(move);
           if (fensTheSame(currentPosition.fen(), state.puzzle.fen)) {
-            futurePosition.move(state.puzzle.moves[0], { sloppy: true });
+            puzzlePosition.move(state.puzzle.moves[0], { sloppy: true });
             currentPosition.move(state.puzzle.moves[0], { sloppy: true });
             let hiddenMoves = takeRight(
               currentPosition.history({ verbose: true }),
               state.getPly()
             );
-            let boardForPuzzleMoves = futurePosition.clone();
+            let boardForPuzzleMoves = puzzlePosition.clone();
             boardForPuzzleMoves.undo();
             for (let solutionMove of state.puzzle.moves) {
               boardForPuzzleMoves.move(solutionMove, { sloppy: true });
             }
-            // @ts-ignore
             state.solutionMoves = takeRight(
               boardForPuzzleMoves.history({ verbose: true }),
               state.puzzle.moves.length - 1
             );
+            console.log("Solution moves at first!");
+            console.log(logProxy(state.solutionMoves));
             // currentPosition.undo()
 
             state.hiddenMoves = hiddenMoves;
@@ -424,19 +431,17 @@ const createVisualizationState = (
               currentPosition.undo();
             }
             // state.currentPosition = currentPosition
-            state.futurePosition = futurePosition;
             state.currentPosition = currentPosition;
-            state.showFuturePosition = false;
+            state.puzzlePosition = puzzlePosition;
+            state.showPuzzlePosition = false;
             state.chessState.position = currentPosition;
-            state.chessState.flipped = futurePosition.turn() === "b";
-            state.availableMoves = [];
+            state.chessState.flipped = puzzlePosition.turn() === "b";
             break;
           }
         }
-        state.turn = state.futurePosition.turn();
+        state.turn = state.puzzlePosition.turn();
         state.startLoopingPlayFlash(state);
-        // TODO
-        if (isClimb && state.isPlayingClimb) {
+        if (isClimb) {
           state.animateMoves(state);
         }
       });
@@ -468,7 +473,6 @@ const createVisualizationState = (
     },
     onSquarePress: (square: Square) =>
       set((state) => {
-        let piece = state.futurePosition?.get(square);
         let availableMove = state.chessState.availableMoves.find(
           (m) => m.to == square
         );
@@ -476,13 +480,24 @@ const createVisualizationState = (
           state.chessState.availableMoves = [];
           state.attemptSolution(availableMove, state);
           // TODO:
+          state.attemptSolution(availableMove, state);
+          // TODO:
+          state.attemptSolution(availableMove, state);
+          // TODO:
+          // TODO:
+          state.attemptSolution(availableMove, state);
+          // TODO:
+          state.attemptSolution(availableMove, state);
+          // TODO:
+          // TODO:
+          state.attemptSolution(availableMove, state);
+          // TODO:
+          state.attemptSolution(availableMove, state);
+          // TODO:
           // biref.attemptSolution(availableMove)
           return;
         }
-        if (!state.futurePosition) {
-          return;
-        }
-        let moves = state.futurePosition.moves({
+        let moves = state.puzzlePosition.moves({
           square,
           verbose: true,
         });
@@ -519,61 +534,100 @@ const createVisualizationState = (
         state.setupForPuzzle(state);
       });
     },
-    attemptSolution: (move: Move, state?: VisualizationState) => {
-      setter<VisualizationState>(set, state, (state) => {
-        if (
-          move.san == state.solutionMoves[0].san ||
-          isCheckmate(move, state.futurePosition)
-        ) {
-          state.showFuturePosition = true;
-          state.flashRing(true, state);
-          let otherSideMove = state.solutionMoves[1];
-          // if (state.showFuturePosition) {
-          //   state.animateMove(move)
-          // } else {
-          // }
-          // if (otherSideMove) {
-          //   biref.animateMove(state.solutionMoves[1])
-          // }
-          // TODO: clone board?
-          state.futurePosition.move(move);
-          if (otherSideMove) {
-            state.futurePosition.move(otherSideMove);
-          }
-          state.chessState.position = state.futurePosition;
-          state.solutionMoves.shift();
-          state.solutionMoves.shift();
-          if (!isEmpty(state.solutionMoves)) {
-            state.progressMessage = {
-              message: "Keep going...",
-              type: ProgressMessageType.Success,
-            };
-          } else {
-            state.progressMessage = null;
-            state.isDone = true;
-            if (isClimb) {
-              state.onSuccess(state);
-            }
-          }
-        } else {
-          state.flashRing(false, state);
-          if (isClimb) {
-            state.onFail(state);
-          }
-          state.progressMessage = {
-            message: `${move.san} was not the right move, try again.`,
-            type: ProgressMessageType.Error,
-          };
+  };
+};
+
+const createClimbState = <T extends ClimbState>(
+  // TODO: some better way to have climb state and viz state
+  set: SetState<T>,
+  get
+): T => {
+  // @ts-ignore this is really bad, really need to figure out how to create a store that extends from another
+  return {
+    isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
+    scoreOpacityAnim: new Animated.Value(0.0),
+    // TODO: bring back intro screen
+    climb: CLIMB,
+    score: new StorageItem("climb-score", 0),
+    highScore: new StorageItem("climb-high-score", 0),
+    delta: 0,
+    step: null,
+    puzzleStartTime: null,
+    startPlayingClimb: (state) =>
+      setter<T>(set, state, (s) => {
+        s.isPlayingClimb = true;
+        s.animateMoves(s);
+      }),
+    onFail: (state?: ClimbState) =>
+      setter(set, state, (s) => {
+        // TODO: fix repetition here
+        s.currentPuzzleFailed = true;
+        let delta = -10;
+        s.delta = delta;
+        s.lastPuzzleSuccess = false;
+        s.animatePointChange(s);
+        s.score.value = Math.max(s.score.value + delta, 0);
+        s.updateStep(s);
+      }),
+    onSuccess: (state?: ClimbState) =>
+      setter(set, state, (s) => {
+        if (s.currentPuzzleFailed) {
+          return;
         }
-      });
-    },
+        let timeTaken = performance.now() - s.puzzleStartTime;
+        let delta = Math.round(
+          Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
+        );
+        s.lastPuzzleSuccess = true;
+        s.delta = delta;
+        s.animatePointChange(s);
+        s.score.value = s.score.value + delta;
+        if (s.score.value > s.highScore.value) {
+          s.highScore.value = s.score.value;
+        }
+        s.updateStep(s);
+      }),
+    lastPuzzleSuccess: false,
+    currentPuzzleFailed: false,
+    animatePointChange: (state?: ClimbState) =>
+      setter(set, state, (s) => {
+        let animDuration = 300;
+        Animated.sequence([
+          Animated.timing(s.scoreOpacityAnim, {
+            toValue: 1,
+            duration: animDuration,
+            useNativeDriver: false,
+          }),
+
+          Animated.timing(s.scoreOpacityAnim, {
+            toValue: 0,
+            duration: animDuration,
+            useNativeDriver: false,
+          }),
+        ]).start();
+      }),
+    onAutoPlayEnd: (state?: ClimbState) =>
+      setter(set, state, (s) => {
+        s.puzzleStartTime = performance.now();
+        s.currentPuzzleFailed = false;
+      }),
+    initState: (state?: ClimbState) =>
+      setter(set, state, (state) => {
+        state.updateStep(state);
+        state.refreshPuzzle();
+      }),
+    updateStep: (state?: ClimbState) =>
+      setter(set, state, (state) => {
+        state.step = state.climb[state.score.value];
+      }),
+    ...createVisualizationState(set, get, true),
   };
 };
 
 export const useVisualizationStore = create<VisualizationState>(
   devtools(
     // @ts-ignore for the set stuff
-    immer((set, get) => createVisualizationState(set, get)),
+    immer((set, get) => createVisualizationState(set, get, false)),
     { name: "VisualizationState" }
   )
 );
@@ -581,7 +635,7 @@ export const useVisualizationStore = create<VisualizationState>(
 export const useColorTrainingStore = create<ColorTrainingState>(
   devtools(
     // @ts-ignore for the set stuff
-    immer((set, get) => ({
+    immer((set: SetState<ColorTrainingState>, get) => ({
       isPlaying: false,
       startTime: null,
       score: 0,
@@ -594,7 +648,7 @@ export const useColorTrainingStore = create<ColorTrainingState>(
       currentSquare: null,
       chessState: { ...DEFAULT_CHESS_STATE, hideColors: true, position: null },
       calculateRemainingTime: (state?: ColorTrainingState) => {
-        setter(set, state, (state) => {
+        setter<ColorTrainingState>(set, state, (state) => {
           let remainingTime =
             state.roundDuration -
             (performance.now() - state.startTime) -
@@ -687,9 +741,48 @@ export const useColorTrainingStore = create<ColorTrainingState>(
   )
 );
 
+export const useRepertoireBuilderStore = create<RepertoireBuilderState>(
+  devtools(
+    // @ts-ignore for the set stuff
+    immer((set: SetState<RepertoireBuilderState>, get) => ({
+      chessState: { ...DEFAULT_CHESS_STATE },
+      flashRing: (success: boolean, state?: ColorTrainingState) =>
+        setter(set, state, (state) => {
+          flashRing(state.chessState, success);
+        }),
+    })),
+    { name: "ColorTrainingState" }
+  )
+);
+
 export enum BlunderRecognitionTab {
   Passed = "Passed",
   Failed = "Failed",
+}
+
+export enum BlindfoldTrainingStage {
+  Blindfold,
+  Board,
+}
+
+export interface BlindfoldTrainingState
+  extends PuzzleState,
+    PuzzleTraining<BlindfoldTrainingState> {
+  quick: (fn: (_: BlindfoldTrainingState) => void) => void;
+  chessState: ChessboardState;
+  stage: BlindfoldTrainingStage;
+  ratingGteUserSetting: StorageItem<number>;
+  ratingLteUserSetting: StorageItem<number>;
+  numPiecesGteUserSetting: StorageItem<number>;
+  numPiecesLteUserSetting: StorageItem<number>;
+  flashRing: (success: boolean, state?: BlindfoldTrainingState) => void;
+  refreshPuzzle: (state?: BlindfoldTrainingState) => void;
+  nextPuzzle: LichessPuzzle;
+  resetState: (state?: BlindfoldTrainingState) => void;
+  setupForPuzzle: (state?: BlindfoldTrainingState) => void;
+  getFetchOptions: (state?: BlindfoldTrainingState) => any;
+  progressMessage: ProgressMessage;
+  isDone: boolean;
 }
 
 interface BlunderRecognitionState {
@@ -754,7 +847,7 @@ export interface FinishedBlunderPuzzle {
 export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
   devtools(
     // @ts-ignore for the set stuff
-    immer((set, get) => ({
+    immer((set: SetState<BlunderRecognitionState>, get) => ({
       isPlaying: false,
       startTime: null,
       score: 0,
@@ -801,7 +894,6 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
       },
       startPlaying: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
-          state.seenPuzzles = [];
           state.donePlaying = false;
           state.isPlaying = true;
           state.setupNextRound(state);
@@ -832,38 +924,195 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           s.puzzles = puzzles;
         });
       },
-      setupNextRound: (state?: BlunderRecognitionState) => {
-        setter<BlunderRecognitionState>(
-          set,
-          state,
-          (state: BlunderRecognitionState) => {
-            let showBlunder = Math.random() < 0.5;
-            state.currentPuzzle = state.puzzles.shift();
-            if (!state.currentPuzzle) {
-              (async () => {
-                await state.prefetchPuzzles();
-                set((s) => {
-                  s.setupNextRound(s as BlunderRecognitionState);
-                });
-              })();
-              return;
-            }
-            state.donePlaying = false;
-            state.currentMove = showBlunder
-              ? state.currentPuzzle.blunder
-              : state.currentPuzzle.bestMove;
-            state.isBlunder = showBlunder;
-            let pos = new Chess(state.currentPuzzle.fen);
-            pos.move(state.currentMove);
-            let move = pos.undo();
-            state.chessState.position = pos;
-            state.chessState.flipped = pos.turn() === "b";
-            animateMove(state.chessState, move, PlaybackSpeed.Normal, () => {});
+      setupNextRound: (state) => {
+        setter(set, state, (state: BlunderRecognitionState) => {
+          let showBlunder = Math.random() < 0.5;
+          state.currentPuzzle = state.puzzles.shift();
+          if (!state.currentPuzzle) {
+            (async () => {
+              await state.prefetchPuzzles();
+              set((s) => {
+                s.setupNextRound(s as BlunderRecognitionState);
+              });
+            })();
+            return;
           }
-        );
+          state.donePlaying = false;
+          state.currentMove = showBlunder
+            ? state.currentPuzzle.blunder
+            : state.currentPuzzle.bestMove;
+          state.isBlunder = showBlunder;
+          let pos = new Chess(state.currentPuzzle.fen);
+          pos.move(state.currentMove);
+          let move = pos.undo();
+          state.chessState.position = pos;
+          state.chessState.flipped = pos.turn() === "b";
+          animateMove(state.chessState, move, PlaybackSpeed.Normal, () => {});
+        });
       },
     })),
     { name: "BlunderRecognitionState" }
+  )
+);
+
+export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
+  devtools(
+    // @ts-ignore for the set stuff
+    immer(
+      // TODO: figure out why typescript hates this
+      // @ts-ignore
+      (set: SetState<BlindfoldTrainingState>, get) =>
+        ({
+          // TODO: clone?
+          progressMessage: null,
+          isDone: false,
+          ...createQuick(set),
+          ...createPuzzleState(set, get),
+          onPuzzleMoveSuccess: (state?: BlindfoldTrainingState) => {
+            setter<BlindfoldTrainingState>(set, state, (state) => {
+              console.log("move success");
+              state.flashRing(true, state);
+              state.chessState.position = state.puzzlePosition;
+              console.log("Chess state position now");
+              console.log(logProxy(state.chessState));
+              state.progressMessage = {
+                message: "Keep going...",
+                type: ProgressMessageType.Success,
+              };
+            });
+          },
+          onPuzzleMoveFailure: (move: Move, state?: BlindfoldTrainingState) => {
+            setter<BlindfoldTrainingState>(set, state, (state) => {
+              state.flashRing(false, state);
+              state.progressMessage = {
+                message: `${move.san} was not the right move, try again.`,
+                type: ProgressMessageType.Error,
+              };
+            });
+          },
+          flashRing: (success: boolean, state?: BlindfoldTrainingState) =>
+            setter(set, state, (state) => {
+              flashRing(state.chessState, success);
+            }),
+          onPuzzleSuccess: (state?: BlindfoldTrainingState) => {
+            setter<BlindfoldTrainingState>(set, state, (state) => {
+              console.log("overall success");
+              state.progressMessage = null;
+              state.isDone = true;
+            });
+          },
+          onSquarePress: (square: Square) =>
+            set((state) => {
+              let availableMove = state.chessState.availableMoves.find(
+                (m) => m.to == square
+              );
+              if (availableMove) {
+                state.chessState.availableMoves = [];
+                state.attemptSolution(availableMove, state);
+                // TODO:
+                // biref.attemptSolution(availableMove)
+                return;
+              }
+              if (!state.puzzlePosition) {
+                return;
+              }
+              let moves = state.puzzlePosition.moves({
+                square,
+                verbose: true,
+              });
+              if (
+                !isEmpty(state.chessState.availableMoves) &&
+                first(state.chessState.availableMoves).from == square
+              ) {
+                state.chessState.availableMoves = [];
+              } else if (!state.chessState.frozen) {
+                // @ts-ignore
+                state.chessState.availableMoves = moves;
+              }
+            }),
+          getFetchOptions: () => {
+            let state: BlindfoldTrainingState = get();
+            return {
+              ratingGte: state.ratingGteUserSetting.value,
+              ratingLte: state.ratingLteUserSetting.value,
+              pieceCountLt: state.numPiecesLteUserSetting.value + 1,
+              pieceCountGt: state.numPiecesGteUserSetting.value - 1,
+              // maxPly: state.plyUserSetting.value,
+            };
+          },
+          refreshPuzzle: async () => {
+            let state = get();
+            let p = state.nextPuzzle;
+            if (!p) {
+              p = await fetchNewPuzzle(state.getFetchOptions(state));
+            }
+            if (!p) {
+              window.alert(
+                "Problem fetching puzzles, please report this if you run into it, to me@mbuffett.com"
+              );
+              return;
+            }
+            set((s) => {
+              s.puzzle = p;
+              s.resetState(s);
+              s.setupForPuzzle(s);
+            });
+          },
+          setupForPuzzle: (state?: BlindfoldTrainingState) => {
+            setter<BlindfoldTrainingState>(set, state, (state) => {
+              console.log("SETTING UP");
+              let position = new Chess();
+              for (let move of state.puzzle.allMoves) {
+                position.move(move);
+                if (fensTheSame(position.fen(), state.puzzle.fen)) {
+                  position.move(state.puzzle.moves[0], { sloppy: true });
+                  for (let solutionMove of state.puzzle.moves) {
+                    position.move(solutionMove, { sloppy: true });
+                  }
+                  state.solutionMoves = takeRight(
+                    position.history({ verbose: true }),
+                    state.puzzle.moves.length - 1
+                  );
+                  for (let i = 0; i < state.puzzle.moves.length - 1; i++) {
+                    position.undo();
+                  }
+                  state.chessState.position = position;
+                  state.puzzlePosition = position;
+                  state.chessState.flipped = position.turn() === "b";
+                  break;
+                }
+              }
+              state.turn = state.chessState.position.turn();
+            });
+          },
+          resetState: (state?: BlindfoldTrainingState) => {
+            setter<BlindfoldTrainingState>(set, state, (state) => {
+              state.stage = BlindfoldTrainingStage.Blindfold;
+              state.isDone = false;
+            });
+          },
+          nextPuzzle: null,
+          stage: BlindfoldTrainingStage.Blindfold,
+          chessState: DEFAULT_CHESS_STATE,
+          numPiecesGteUserSetting: new StorageItem(
+            "blindfold-numPieces-gte-v2",
+            3
+          ),
+          numPiecesLteUserSetting: new StorageItem(
+            "blindfold-numPieces-lte-v2",
+            5
+          ),
+          ratingGteUserSetting: new StorageItem(
+            "blindfold-rating-gte-v2",
+            PuzzleDifficulty.Beginner
+          ),
+          ratingLteUserSetting: new StorageItem(
+            "blindfold-rating-lte-v2",
+            PuzzleDifficulty.Intermediate
+          ),
+        } as BlindfoldTrainingState)
+    ),
+    { name: "BlindfoldTrainingState" }
   )
 );
 
@@ -871,12 +1120,22 @@ export const useClimbStore = create<ClimbState>(
   // @ts-ignore for the set stuff
   devtools(
     // @ts-ignore for the set stuff
-    immer((set, get) => createVisualizationState(set, get, true)),
+    immer((set, get) => createClimbState(set, get)),
     { name: "ClimbState" }
   )
 );
 
-const setter = <T,>(set, state: T, fn: (T) => void) => {
+export interface PuzzleTraining<T> {
+  onPuzzleMoveSuccess: (state?: T) => void;
+  onPuzzleMoveFailure: (move: Move, state?: T) => void;
+  onPuzzleSuccess: (state?: T) => void;
+}
+
+const setter = <T extends object>(
+  set: SetState<T>,
+  state: T | undefined,
+  fn: (state: T) => void
+) => {
   if (state) {
     // To force re-render when changing just a class or something
     // @ts-ignore
@@ -953,6 +1212,16 @@ function flashRing(chessState: ChessboardState, success: boolean) {
     }),
   ]).start();
 }
+
+function createQuick<T extends object>(set: SetState<T>): any {
+  return {
+    quick: (fn) => {
+      setter<T>(set, undefined, (state) => {
+        fn(state);
+      });
+    },
+  };
+}
 // const setter = <T,>(
 //   set: (
 //     state: (
@@ -966,3 +1235,90 @@ function flashRing(chessState: ChessboardState, success: boolean) {
 // ): ((state?: VisualizationState) => void) => {
 
 // }
+
+const logProxy = (p: any) => {
+  if (p) {
+    return JSON.parse(JSON.stringify(p));
+  } else {
+    return p;
+  }
+};
+
+export const useGamesSearchState = create<GamesSearchState>(
+  devtools(
+    // @ts-ignore for the set stuff
+    immer(
+      // TODO: figure out why typescript hates this
+      // @ts-ignore
+      (set: SetState<GamesSearchState>, get): GamesSearchState =>
+        ({
+          // TODO: clone?
+          ...createQuick(set),
+          numberMoves: [2, 50],
+          whiteRating: [1800, 2200],
+          blackRating: [1800, 2200],
+          chessState: DEFAULT_CHESS_STATE,
+          whiteBlunders: [0, 3],
+          blackBlunders: [0, 3],
+          gameResult: null,
+          returnedGames: [],
+          loading: failOnTrue(false),
+          onSquarePress: (square: Square) =>
+            set((state) => {
+              let availableMove = state.chessState.availableMoves.find(
+                (m) => m.to == square
+              );
+              console.log("Available");
+              console.log(logProxy(availableMove));
+              if (availableMove) {
+                state.chessState.availableMoves = [];
+                state.chessState.position.move(availableMove);
+                // TODO:
+                // biref.attemptSolution(availableMove)
+                return;
+              }
+              let moves = state.chessState.position.moves({
+                square,
+                verbose: true,
+              });
+              state.chessState.availableMoves = moves;
+            }),
+          getFetchOptions: () => {
+            let state = get() as GamesSearchState;
+            return {
+              // TODO
+              // ratingGte: state.ratingGteUserSetting.value,
+              // ratingLte: state.ratingLteUserSetting.value,
+              // pieceCountLt: state.numPiecesLteUserSetting.value + 1,
+              // pieceCountGt: state.numPiecesGteUserSetting.value - 1,
+              // maxPly: state.plyUserSetting.value,
+            };
+          },
+        } as GamesSearchState)
+    ),
+    { name: "BlindfoldTrainingState" }
+  )
+);
+
+export interface GamesSearchState {
+  quick: (fn: (_: GamesSearchState) => void) => void;
+  onSquarePress: (square: Square) => void;
+  whiteRating: [number, number];
+  blackRating: [number, number];
+  numberMoves: [number, number];
+  whiteBlunders: [number, number];
+  blackBlunders: [number, number];
+  whitePlayer: string;
+  blackPlayer: string;
+  chessState: ChessboardState;
+  gameResult: GameSearchResult;
+  startingMoves: [string];
+  returnedGames: LichessGame[];
+  loading: boolean;
+}
+
+export enum GameSearchResult {
+  White = 1,
+  Draw = 0,
+  Black = -1,
+}

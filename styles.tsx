@@ -66,6 +66,7 @@ const weightHeavy = keyedProp("fontWeight")(700);
 const weightBlack = keyedProp("fontWeight")(800);
 
 const flexGrow = keyedProp("flexGrow");
+const flexShrink = keyedProp("flexShrink");
 const flexStatic = s(keyedProp("flexGrow")(0), keyedProp("flexShrink")(0));
 const unshrinkable = keyedProp("flexShrink")(0);
 const grow = keyedProp("flexGrow")(1);
@@ -73,6 +74,7 @@ const flex = keyedProp("flex");
 const textAlign = keyedProp("textAlign");
 
 const pageHeight = keyedProp("minHeight")("100vh");
+const constrainWidth = keyedProp("maxWidth")("100%");
 const fullHeight = keyedProp("height")("100%");
 const fullWidth = keyedProp("width")("100%");
 
@@ -110,6 +112,7 @@ const row = s(displayFlex, keyedProp("flexDirection")("row"));
 const gap = keyedProp("gap");
 const column = s(displayFlex, keyedProp("flexDirection")("column"));
 const absolute = keyedProp("position")("absolute");
+const fixed = keyedProp("position")("fixed");
 const relative = keyedProp("position")("relative");
 
 const border = keyedProp("border");
@@ -190,8 +193,8 @@ function easeInOutSine(x: number): number {
 }
 const genGrays = () => {
   const grays = {};
-  for (let i = 0; i < 100; i = i + 5) {
-    grays[i] = `hsl(${grayHue}, 10%, ${(i / 95) * 100}%)`;
+  for (let i = 0; i <= 100; i = i + 5) {
+    grays[i] = `hsl(${grayHue}, 10%, ${i}%)`;
   }
   return grays;
 };
@@ -203,10 +206,10 @@ const genShades = (hue: number) => {
     30: `hsl(${hue}, 40%, 18%)`,
     40: `hsl(${hue}, 35%, 25%)`,
     50: `hsl(${hue}, 35%, 40%)`,
-    60: `hsl(${hue}, 35%, 50%)`,
-    70: `hsl(${hue}, 40%, 80%)`,
-    80: `hsl(${hue}, 45%, 90%)`,
-    90: `hsl(${hue}, 45%, 95%)`,
+    60: `hsl(${hue}, 40%, 50%)`,
+    70: `hsl(${hue}, 50%, 60%)`,
+    80: `hsl(${hue}, 50%, 90%)`,
+    90: `hsl(${hue}, 65%, 95%)`,
   };
 };
 const primaries = genShades(181);
@@ -216,6 +219,7 @@ const colors = {
   textPrimary: grays[95],
   textSecondary: grays[85],
   textInverse: grays[5],
+  textInverseSecondary: grays[20],
   successColor: "hsl(164, 98%, 35%)",
   failureColor: "hsl(340, 70%, 52%)",
   failureLight: "hsl(348, 100%, 72%)",
@@ -264,17 +268,28 @@ const disabledButtonStyles = s(
 const primaryButtonStyles = s(basicButtonStyles, bg(primaries[50]), {
   textStyles: s(weightBold, fg(colors.textPrimary), fontSize(16)),
 });
+const squareBottomRowButtonStyles = s(basicButtonStyles, size(48));
 const buttons = {
   basic: basicButtonStyles,
   basicInverse: basicInverseButtonStyles,
   disabled: disabledButtonStyles,
   primary: primaryButtonStyles,
+  squareBasicButtons: squareBottomRowButtonStyles,
 };
 
 const noPointerEvents = keyedProp("pointer-events")("none");
+const transform = keyedProp("transform");
+const containerStyles = (isMobile) =>
+  s(
+    mx(isMobile ? 20 : 48),
+    maxWidth("min(calc(100vw - 24px), 1280px)"),
+    column,
+    alignStart
+  );
 
 export const c = {
   keyedProp,
+  containerStyles,
   displayNone,
   rounded,
   noPointerEvents,
@@ -304,6 +319,7 @@ export const c = {
   weightHeavy,
   weightBlack,
   flexGrow,
+  flexShrink,
   flexStatic,
   unshrinkable,
   grow,
@@ -313,6 +329,7 @@ export const c = {
   pageHeight,
   fullHeight,
   fullWidth,
+  constrainWidth,
   height,
   width,
   minWidth,
@@ -340,6 +357,7 @@ export const c = {
   gap,
   column,
   absolute,
+  fixed,
   relative,
   border,
   borderBottom,
@@ -392,4 +410,5 @@ export const c = {
   white,
   black,
   buttons,
+  transform,
 };

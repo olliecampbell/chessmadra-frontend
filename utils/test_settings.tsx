@@ -1,4 +1,4 @@
-const failOnTrue = (setting: false) => {
+export const failOnTrue = (setting: false) => {
   return setting;
 };
 export const DEBUG_MOCK_FETCH = failOnTrue(false);

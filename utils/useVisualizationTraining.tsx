@@ -1,23 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Text,
-  Platform,
   Pressable,
   useWindowDimensions,
-  View
-} from 'react-native'
+  View,
+  Platform,
+} from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from 'app/styles'
-import { Spacer } from 'app/Space'
+import { c, s } from "app/styles";
+import { Spacer } from "app/Space";
 import {
   ChessboardView,
   getAnimationDurations,
-  getPlaybackSpeedDescription
-} from 'app/components/chessboard/Chessboard'
-import axios from 'axios'
-import { Helmet } from 'react-helmet'
-import { Chess, Color, Move } from '@lubert/chess.ts'
-import client from 'app/client'
+  getPlaybackSpeedDescription,
+} from "app/components/chessboard/Chessboard";
+import axios from "axios";
+import { Helmet } from "react-helmet";
+import { Chess, Color, Move } from "@lubert/chess.ts";
+import client from "app/client";
 import {
   cloneDeep,
   isEmpty,
@@ -25,27 +25,27 @@ import {
   takeRight,
   drop,
   dropRight,
-  indexOf
-} from 'lodash'
-import { MoveList } from 'app/components/MoveList'
-import { LichessPuzzle } from 'app/models'
-import { ChessboardState } from 'app/types/ChessboardBiref'
+  indexOf,
+} from "lodash";
+import { MoveList } from "app/components/MoveList";
+import { LichessPuzzle } from "app/models";
+import { ChessboardState } from "app/types/ChessboardBiref";
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
-import { Button } from 'app/components/Button'
-import useState from 'react-usestateref'
-import { useStorageState } from 'react-storage-hooks'
-import { TrainerLayout } from 'app/components/TrainerLayout'
-import { useIsMobile } from 'app/utils/isMobile'
-import { StorageItem } from 'app/utils/storageItem'
-import { fakePuzzle, fakeBlackPuzzle } from 'app/mocks/puzzles'
-import KingWhiteIcon from 'app/components/chessboard/pieces/KingWhiteIcon'
-import KingBlackIcon from 'app/components/chessboard/pieces/KingBlackIcon'
-import { Modal } from 'app/components/Modal'
-import { intersperse } from 'app/utils/intersperse'
-import { Draft, WritableDraft } from 'immer/dist/internal'
-import { current } from 'immer'
-import AnimateNumber from 'react-native-animate-number'
+import { Button } from "app/components/Button";
+import useState from "react-usestateref";
+import { useStorageState } from "react-storage-hooks";
+import { TrainerLayout } from "app/components/TrainerLayout";
+import { useIsMobile } from "app/utils/isMobile";
+import { StorageItem } from "app/utils/storageItem";
+import { fakePuzzle, fakeBlackPuzzle } from "app/mocks/puzzles";
+import KingWhiteIcon from "app/components/chessboard/pieces/KingWhiteIcon";
+import KingBlackIcon from "app/components/chessboard/pieces/KingBlackIcon";
+import { Modal } from "app/components/Modal";
+import { intersperse } from "app/utils/intersperse";
+import { Draft, WritableDraft } from "immer/dist/internal";
+import { current } from "immer";
+import AnimateNumber from "react-native-animate-number";
 import {
   PlaybackSpeed,
   PuzzleDifficulty,
@@ -53,33 +53,37 @@ import {
   ProgressMessage,
   ProgressMessageType,
   getPuzzleDifficultyRating,
-  ClimbState
-} from 'app/types/VisualizationState'
-import { useClimbStore, useVisualizationStore } from 'app/utils/state'
-import { Animated } from 'react-native'
+  ClimbState,
+} from "app/types/VisualizationState";
+import { useClimbStore, useVisualizationStore } from "app/utils/state";
+import { Animated } from "react-native";
+import { NewPuzzleButton } from "app/NewPuzzleButton";
+import { useHelpModal } from "app/components/useHelpModal";
+import { SettingsTitle } from "app/components/SettingsTitle";
+import { SelectOneOf } from "app/components/SelectOneOf";
 
-const debugButtons = false
+const debugButtons = false;
 
 const SettingsOption = <T,>({
   choices,
   onSelect,
   renderChoice,
-  activeChoice
+  activeChoice,
 }: {
-  choices: T[]
-  activeChoice: T
-  onSelect: (_: T) => void
-  renderChoice: (_: T) => JSX.Element
+  choices: T[];
+  activeChoice: T;
+  onSelect: (_: T) => void;
+  renderChoice: (_: T) => JSX.Element;
 }) => {
   return (
     <View style={s(c.ml(12))}>
       {intersperse(
         choices.map((choice, i) => {
-          const active = choice === activeChoice
+          const active = choice === activeChoice;
           return (
             <Pressable
               onPress={() => {
-                onSelect(choice)
+                onSelect(choice);
               }}
               key={i}
               style={s(c.row)}
@@ -93,33 +97,22 @@ const SettingsOption = <T,>({
                 {renderChoice(choice)}
               </Text>
             </Pressable>
-          )
+          );
         }),
         (i) => {
-          return <Spacer key={`space-${i}`} height={12} />
+          return <Spacer key={`space-${i}`} height={12} />;
         }
       )}
     </View>
-  )
-}
-const SettingsTitle = ({ text }) => {
-  return (
-    <View
-      style={s(c.fullWidth, c.px(12), c.py(12), c.bg(c.grays[20]), c.br(2))}
-    >
-      <Text style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightBold)}>
-        {text}
-      </Text>
-    </View>
-  )
-}
+  );
+};
 
 const allDifficulties = [
   PuzzleDifficulty.Beginner,
   PuzzleDifficulty.Intermediate,
   PuzzleDifficulty.Expert,
-  PuzzleDifficulty.Magnus
-]
+  PuzzleDifficulty.Magnus,
+];
 
 export const useVisualizationTraining = ({
   state,
@@ -127,41 +120,50 @@ export const useVisualizationTraining = ({
   isClimb,
   score,
   scoreChangeView,
-  onSuccess
+  onSuccess,
 }: {
-  state: ClimbState | VisualizationState
-  onFail?: () => void
-  autoPlay?: boolean
-  isClimb?: boolean
-  onAutoPlayEnd?: () => void
-  score?: number
-  scoreChangeView?: JSX.Element
-  onSuccess?: () => void
+  state: ClimbState | VisualizationState;
+  onFail?: () => void;
+  autoPlay?: boolean;
+  isClimb?: boolean;
+  onAutoPlayEnd?: () => void;
+  score?: number;
+  scoreChangeView?: JSX.Element;
+  onSuccess?: () => void;
 }) => {
   // TODO: more type-safety
-  const { chessState } = state
+  const { chessState } = state;
 
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
   useEffect(() => {
     setTimeout(() => {
-      document.title = 'chessmadra'
-    }, 100)
-  })
+      document.title = "chessmadra";
+    }, 100);
+  });
   // Styles
-  const incrementDecrementStyles = s(c.buttons.basic, c.size(40))
+  const incrementDecrementStyles = s(c.buttons.basic, c.size(40));
   const incrementDecrementTextStyles = s(
     c.fg(c.colors.textInverse),
     c.fontSize(14)
-  )
+  );
 
   // useEffect(() => {
   //   resetState()
   // }, [])
   useEffect(() => {
-    state.refreshPuzzle()
-  }, [])
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [helpOpen, setHelpOpen] = useState(false)
+    state.refreshPuzzle();
+  }, []);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
+    copy: (
+      <>
+        Press play to see the next {state.getPly()} moves played out, but not
+        persisted, on the board. At the end of the moves, there is a winning
+        tactic. If you can't see the tactic, you can reduce the number of moves
+        in settings, or you can view the puzzle on lichess.
+      </>
+    ),
+  });
 
   // useEffect(() => {
   //   if (autoPlay && puzzle && hiddenMoves) {
@@ -169,13 +171,12 @@ export const useVisualizationTraining = ({
   //   }
   // }, [puzzle, hiddenMoves])
 
-  const nextPreviousStyles = s(c.size(60), c.center)
-  const bottomRowButtonStyles = s(c.buttons.basic, c.size(48))
+  const nextPreviousStyles = s(c.size(60), c.center);
   const ratingTitleStyles = s(
     c.fg(c.colors.textPrimary),
     c.fontSize(16),
     c.weightSemiBold
-  )
+  );
   const player = (
     <>
       <View style={s(c.row, c.alignStretch, c.fullWidth)}>
@@ -201,7 +202,7 @@ export const useVisualizationTraining = ({
             c.bg(
               state.playButtonFlashAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [c.primaries[40], c.primaries[50]]
+                outputRange: [c.primaries[40], c.primaries[50]],
               })
             ),
             c.height(60),
@@ -210,12 +211,12 @@ export const useVisualizationTraining = ({
             c.overflowHidden
           )}
           onPress={() => {
-            state.animateMoves()
+            state.animateMoves();
           }}
         >
           <i
             style={s(c.fg(c.colors.textPrimary))}
-            className={`fas ${state.isPlaying ? 'fa-pause' : 'fa-play'}`}
+            className={`fas ${state.isPlaying ? "fa-pause" : "fa-play"}`}
           ></i>
         </Button>
         {/* <Button */}
@@ -235,7 +236,7 @@ export const useVisualizationTraining = ({
       </View>
       <Spacer height={12} />
     </>
-  )
+  );
 
   let ui = (
     <>
@@ -261,35 +262,15 @@ export const useVisualizationTraining = ({
       )}
       {state.isDone && (
         <>
-          <Button
-            style={s(state.isDone ? c.buttons.primary : c.buttons.basic)}
+          <NewPuzzleButton
             onPress={() => {
-              state.refreshPuzzle()
+              state.refreshPuzzle();
             }}
-          >
-            <Text
-              style={s(
-                state.isDone
-                  ? c.buttons.primary.textStyles
-                  : c.buttons.basic.textStyles
-              )}
-            >
-              <i
-                style={s(
-                  c.fg(
-                    state.isDone ? c.colors.textPrimary : c.colors.textInverse
-                  )
-                )}
-                className="fas fa-random"
-              ></i>
-              <Spacer width={8} />
-              New puzzle
-            </Text>
-          </Button>
+          />
           <Spacer height={12} />
         </>
       )}
-      {!state.showFuturePosition && !state.isDone && player}
+      {!state.showPuzzlePosition && !state.isDone && player}
       {
         <View
           style={s(
@@ -317,7 +298,7 @@ export const useVisualizationTraining = ({
               </View>
               <View style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))} />
               <View style={s(c.size(40), c.selfCenter, c.my(12))}>
-                {state.turn == 'b' ? <KingBlackIcon /> : <KingWhiteIcon />}
+                {state.turn == "b" ? <KingBlackIcon /> : <KingWhiteIcon />}
               </View>
             </View>
             {isNil(score) && (
@@ -350,7 +331,7 @@ export const useVisualizationTraining = ({
                     <Text
                       style={s(
                         c.fg(c.colors.textPrimary),
-                        c.textAlign('center'),
+                        c.textAlign("center"),
                         c.weightSemiBold,
                         c.fontSize(32)
                       )}
@@ -397,7 +378,7 @@ export const useVisualizationTraining = ({
                       <AnimateNumber
                         value={score}
                         formatter={(f) => {
-                          return Math.floor(f)
+                          return Math.floor(f);
                         }}
                       />
                       <View
@@ -435,7 +416,7 @@ export const useVisualizationTraining = ({
           <Pressable
             style={s(c.center, c.selfCenter, c.fullWidth, c.py(12))}
             onPress={() => {
-              state.toggleNotation()
+              state.toggleNotation();
             }}
           >
             <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
@@ -452,7 +433,7 @@ export const useVisualizationTraining = ({
                 }
               ></i>
               <Spacer width={8} />
-              {state.showNotation.value ? 'Hide notation' : 'Show notation'}
+              {state.showNotation.value ? "Hide notation" : "Show notation"}
               <Spacer width={8} />
               <i
                 style={s(
@@ -476,16 +457,16 @@ export const useVisualizationTraining = ({
         {state.mockPassFail && !state.isDone && (
           <>
             <Button
-              style={s(bottomRowButtonStyles)}
+              style={s(c.buttons.squareBasicButtons)}
               onPress={() => {
                 state.quick((s) => {
                   s.progressMessage = {
-                    message: 'Mocked failure, sorry',
-                    type: ProgressMessageType.Error
-                  }
-                  s.isDone = true
-                  s.onSuccess()
-                })
+                    message: "Mocked failure, sorry",
+                    type: ProgressMessageType.Error,
+                  };
+                  s.isDone = true;
+                  s.onSuccess();
+                });
               }}
             >
               <Text style={s(c.buttons.basic.textStyles)}>
@@ -496,16 +477,16 @@ export const useVisualizationTraining = ({
               </Text>
             </Button>
             <Button
-              style={s(bottomRowButtonStyles)}
+              style={s(c.buttons.squareBasicButtons)}
               onPress={() => {
                 state.quick((s) => {
                   s.progressMessage = {
-                    message: 'Mocked success, congratulations',
-                    type: ProgressMessageType.Success
-                  }
-                  s.isDone = true
-                  s.onSuccess()
-                })
+                    message: "Mocked success, congratulations",
+                    type: ProgressMessageType.Success,
+                  };
+                  s.isDone = true;
+                  s.onSuccess();
+                });
               }}
             >
               <Text style={s(c.buttons.basic.textStyles)}>
@@ -518,16 +499,16 @@ export const useVisualizationTraining = ({
           </>
         )}
         <Button
-          style={s(bottomRowButtonStyles)}
+          style={s(c.buttons.squareBasicButtons)}
           onPress={() => {
-            ;(async () => {
-              if (Platform.OS == 'web') {
+            (async () => {
+              if (Platform.OS == "web") {
                 window.open(
                   `https://lichess.org/training/${state.puzzle.id}`,
-                  '_blank'
-                )
+                  "_blank"
+                );
               }
-            })()
+            })();
           }}
         >
           <Text style={s(c.buttons.basic.textStyles)}>
@@ -538,9 +519,9 @@ export const useVisualizationTraining = ({
           </Text>
         </Button>
         <Button
-          style={s(bottomRowButtonStyles)}
+          style={s(c.buttons.squareBasicButtons)}
           onPress={() => {
-            setHelpOpen(!helpOpen)
+            setHelpOpen(!helpOpen);
           }}
         >
           <Text style={s(c.buttons.basic.textStyles)}>
@@ -569,9 +550,9 @@ export const useVisualizationTraining = ({
         {
           <>
             <Button
-              style={s(bottomRowButtonStyles)}
+              style={s(c.buttons.squareBasicButtons)}
               onPress={() => {
-                setSettingsOpen(true)
+                setSettingsOpen(true);
               }}
             >
               <i
@@ -627,42 +608,22 @@ export const useVisualizationTraining = ({
           </Button>
         </>
       )}
+      {helpModal}
       <Modal
         onClose={() => {
-          setHelpOpen(false)
-        }}
-        visible={helpOpen}
-      >
-        <View style={s(c.row, c.px(12), c.py(12), c.alignCenter)}>
-          <Text
-            style={s(
-              c.weightSemiBold,
-              c.fg(c.colors.textPrimary),
-              c.lineHeight(22)
-            )}
-          >
-            Press play to see the next {state.getPly()} moves played out, but
-            not persisted, on the board. At the end of the moves, there is a
-            winning tactic. If you can't see the tactic, you can reduce the
-            number of moves in settings, or you can view the puzzle on lichess.
-          </Text>
-        </View>
-      </Modal>
-      <Modal
-        onClose={() => {
-          setSettingsOpen(false)
+          setSettingsOpen(false);
         }}
         visible={settingsOpen}
       >
         <View style={s(c.px(12), c.pt(12), c.pb(24))}>
           {!isClimb && (
             <>
-              <SettingsTitle text={'Hidden moves'} />
+              <SettingsTitle text={"Hidden moves"} />
               <Spacer height={24} />
               <View style={s(c.row, c.alignCenter)}>
                 <Button
                   onPress={() => {
-                    state.updatePly(-1)
+                    state.updatePly(-1);
                   }}
                   style={s(incrementDecrementStyles)}
                 >
@@ -686,7 +647,7 @@ export const useVisualizationTraining = ({
                 <Spacer width={12} />
                 <Button
                   onPress={() => {
-                    state.updatePly(1)
+                    state.updatePly(1);
                   }}
                   style={s(incrementDecrementStyles)}
                 >
@@ -700,53 +661,53 @@ export const useVisualizationTraining = ({
             </>
           )}
 
-          <SettingsTitle text={'Playback speed'} />
+          <SettingsTitle text={"Playback speed"} />
           <Spacer height={24} />
-          <SettingsOption
+          <SelectOneOf
             choices={[
               PlaybackSpeed.Slow,
               PlaybackSpeed.Normal,
               PlaybackSpeed.Fast,
-              PlaybackSpeed.Ludicrous
+              PlaybackSpeed.Ludicrous,
             ]}
             activeChoice={state.playbackSpeedUserSetting.value}
             onSelect={(playbackSpeed) => {
-              state.setPlaybackSpeed(playbackSpeed)
+              state.setPlaybackSpeed(playbackSpeed);
             }}
             renderChoice={(c) => {
-              return <Text>{getPlaybackSpeedDescription(c)}</Text>
+              return <Text>{getPlaybackSpeedDescription(c)}</Text>;
             }}
           />
           <Spacer height={24} />
           {!isClimb && (
             <>
-              <SettingsTitle text={'Difficulty'} />
+              <SettingsTitle text={"Difficulty"} />
               <Spacer height={12} />
               <View style={s(c.row, c.ml(0))}>
                 <View style={s(c.column)}>
                   <Text style={s(ratingTitleStyles)}>Min</Text>
                   <Spacer height={12} />
-                  <SettingsOption
+                  <SelectOneOf
                     choices={dropRight(allDifficulties, 1)}
                     activeChoice={state.ratingGteUserSetting.value}
                     onSelect={(rating) => {
                       state.quick((s) => {
-                        s.ratingGteUserSetting.value = rating
-                        let idx = indexOf(allDifficulties, rating)
+                        s.ratingGteUserSetting.value = rating;
+                        let idx = indexOf(allDifficulties, rating);
                         if (
                           idx >=
                           indexOf(allDifficulties, s.ratingLteUserSetting.value)
                         ) {
                           s.ratingLteUserSetting.value =
-                            allDifficulties[idx + 1]
+                            allDifficulties[idx + 1];
                         }
-                        s.refreshPuzzle(s)
-                      })
+                        s.refreshPuzzle(s);
+                      });
                     }}
                     renderChoice={(c) => {
                       return (
                         <Text>{`${c} (${getPuzzleDifficultyRating(c)})`}</Text>
-                      )
+                      );
                     }}
                   />
                 </View>
@@ -754,27 +715,27 @@ export const useVisualizationTraining = ({
                 <View style={s(c.column)}>
                   <Text style={s(ratingTitleStyles)}>Max</Text>
                   <Spacer height={12} />
-                  <SettingsOption
+                  <SelectOneOf
                     choices={drop(allDifficulties, 1)}
                     activeChoice={state.ratingLteUserSetting.value}
                     onSelect={(rating) => {
                       state.quick((s) => {
-                        s.ratingLteUserSetting.value = rating
-                        let idx = indexOf(allDifficulties, rating)
+                        s.ratingLteUserSetting.value = rating;
+                        let idx = indexOf(allDifficulties, rating);
                         if (
                           idx <=
                           indexOf(allDifficulties, s.ratingGteUserSetting)
                         ) {
                           s.ratingGteUserSetting.value =
-                            allDifficulties[idx - 1]
+                            allDifficulties[idx - 1];
                         }
-                        s.refreshPuzzle(s)
-                      })
+                        s.refreshPuzzle(s);
+                      });
                     }}
                     renderChoice={(c) => {
                       return (
                         <Text>{`${c} (${getPuzzleDifficultyRating(c)})`}</Text>
-                      )
+                      );
                     }}
                   />
                 </View>
@@ -784,18 +745,18 @@ export const useVisualizationTraining = ({
         </View>
       </Modal>
     </>
-  )
+  );
 
-  const { playbackSpeedUserSetting, solutionMoves } = state
+  const { playbackSpeedUserSetting, solutionMoves } = state;
   const chessboardProps = {
     frozen: isEmpty(solutionMoves),
     onSquarePress: (square) => {
-      state.onSquarePress(square)
+      state.onSquarePress(square);
     },
     // biref,
     playbackSpeed: playbackSpeedUserSetting.value,
-    state: chessState
-  }
+    state: chessState,
+  };
   return {
     ui,
     // animateMoves: useCallback(
@@ -804,8 +765,8 @@ export const useVisualizationTraining = ({
     //   },
     //   [state]
     // ),
-    chessboardProps
+    chessboardProps,
     // refreshPuzzle
     // updater: updateState
-  }
-}
+  };
+};
