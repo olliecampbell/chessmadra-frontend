@@ -14,7 +14,6 @@
     "prop-types": "^15.8.1",
     "pullstate": "^1.22.1",
     "react": "17.0.1",
-    "react-arborist": "git+ssh://git@github.com/marcusbuffett/react-arborist.git",
     "react-dom": "17.0.1",
     "react-helmet": "^6.1.0",
     "react-hook-form": "^7.28.1",
