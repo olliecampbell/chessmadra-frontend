@@ -2,6 +2,7 @@ FROM node:16.3-alpine3.12 AS base
 WORKDIR /base
 COPY package.json ./
 COPY yarn.lock ./
+RUN apk add --no-cache git
 RUN yarn install
 COPY . .
 ENV NODE_ENV=production
