@@ -175,6 +175,7 @@ const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
     attemptSolution: (move: Move, state?: T) => {
       setter(set, state, (state) => {
         console.log("Attempting solution!");
+        console.log(move);
         console.log(logProxy(state));
         if (
           move.san == state.solutionMoves[0].san ||
@@ -479,22 +480,6 @@ const createVisualizationState = (
         if (availableMove) {
           state.chessState.availableMoves = [];
           state.attemptSolution(availableMove, state);
-          // TODO:
-          state.attemptSolution(availableMove, state);
-          // TODO:
-          state.attemptSolution(availableMove, state);
-          // TODO:
-          // TODO:
-          state.attemptSolution(availableMove, state);
-          // TODO:
-          state.attemptSolution(availableMove, state);
-          // TODO:
-          // TODO:
-          state.attemptSolution(availableMove, state);
-          // TODO:
-          state.attemptSolution(availableMove, state);
-          // TODO:
-          // biref.attemptSolution(availableMove)
           return;
         }
         let moves = state.puzzlePosition.moves({
