@@ -31,7 +31,7 @@ a:active { text-decoration: none; }
             async
             src="https://ackee.mbuffett.com/tracker.js"
             data-ackee-server="https://ackee.mbuffett.com"
-            data-ackee-domain-id="70e91043-cea0-45ab-8b7b-1d3a2297311e"
+            data-ackee-domain-id="122ae037-d7f5-40d7-9c36-5a6cc8f540a2"
             data-ackee-opts='{ "detailed": true }'
           ></script>
           <meta
