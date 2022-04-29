@@ -188,8 +188,8 @@ export const BlindfoldTrainer = () => {
               min={3}
               max={15}
               range={[
-                state.numPiecesLteUserSetting.value,
                 state.numPiecesGteUserSetting.value,
+                state.numPiecesLteUserSetting.value,
               ]}
               step={1}
               onFinish={() => {
@@ -210,8 +210,8 @@ export const BlindfoldTrainer = () => {
               min={0}
               max={2500}
               range={[
-                state.ratingLteUserSetting.value,
                 state.ratingGteUserSetting.value,
+                state.ratingLteUserSetting.value,
               ]}
               formatter={(value) => {
                 return `${value}`;

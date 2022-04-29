@@ -1080,20 +1080,17 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
           stage: BlindfoldTrainingStage.Blindfold,
           chessState: DEFAULT_CHESS_STATE,
           numPiecesGteUserSetting: new StorageItem(
-            "blindfold-numPieces-gte-v2",
+            "blindfold-numPieces-gte-v3",
             3
           ),
           numPiecesLteUserSetting: new StorageItem(
-            "blindfold-numPieces-lte-v2",
+            "blindfold-numPieces-lte-v3",
             5
           ),
-          ratingGteUserSetting: new StorageItem(
-            "blindfold-rating-gte-v2",
-            PuzzleDifficulty.Beginner
-          ),
+          ratingGteUserSetting: new StorageItem("blindfold-rating-gte-v3", 0),
           ratingLteUserSetting: new StorageItem(
-            "blindfold-rating-lte-v2",
-            PuzzleDifficulty.Intermediate
+            "blindfold-rating-lte-v3",
+            1200
           ),
         } as BlindfoldTrainingState)
     ),
