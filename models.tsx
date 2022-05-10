@@ -12,20 +12,6 @@ export interface LichessPuzzle {
   maxPly: number;
 }
 
-export interface RepertoireMove {
-  id: string;
-  fen: string;
-  sanPlus: string;
-  mine: boolean;
-  incidence?: number;
-  fenAfter: string;
-}
-
-export interface Repertoire {
-  expectedDepth: number;
-  moves: RepertoireMove[];
-}
-
 export interface BlunderPuzzle {
   id: string;
   fen: string;

@@ -27,11 +27,6 @@ export interface ColorTrainingState {
   highlightNewSquare: (state?: ColorTrainingState) => void;
 }
 
-export interface RepertoireBuilderState {
-  flashRing: (success: boolean, state?: RepertoireBuilderState) => void;
-  chessState: ChessboardState;
-}
-
 export interface PuzzleState {
   puzzlePosition: any;
   attemptSolution: (

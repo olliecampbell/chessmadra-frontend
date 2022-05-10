@@ -8,7 +8,12 @@ const client = applyCaseMiddleware(
       !process.env.NODE_ENV || process.env.NODE_ENV === "development"
         ? "http://localhost:8040"
         : undefined,
-  })
+  }),
+  {
+    preservedKeys: (input) => {
+      return /^\d/.test(input);
+    },
+  }
 );
 
 client.interceptors.request.use(function (config) {

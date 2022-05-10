@@ -10,7 +10,6 @@ import {
   getPuzzleDifficultyRating,
   ClimbState,
   ColorTrainingState,
-  RepertoireBuilderState,
   PuzzleState,
 } from "app/types/VisualizationState";
 import {
@@ -89,7 +88,7 @@ const fensTheSame = (x, y) => {
 const test = false;
 const testProgress = false;
 
-const immer =
+export const immer =
   <
     T extends State,
     CustomSetState extends SetState<T>,
@@ -296,17 +295,20 @@ const createVisualizationState = (
     chessState: DEFAULT_CHESS_STATE,
     getFetchOptions: () => {
       let state: ClimbState = get();
+      let ply = state.step?.hiddenMoves ?? state.plyUserSetting.value;
       if (state.step) {
         return {
           ratingGte: state.step.puzzleDifficulty - 25,
           ratingLte: state.step.puzzleDifficulty + 25,
-          maxPly: state.step.hiddenMoves,
+          maxPly: ply,
+          solidMovesGte: ply,
         };
       }
       return {
         ratingGte: getPuzzleDifficultyRating(state.ratingGteUserSetting.value),
         ratingLte: getPuzzleDifficultyRating(state.ratingLteUserSetting.value),
-        maxPly: state.plyUserSetting.value,
+        maxPly: ply,
+        solidMovesGte: ply,
       };
     },
     getPly: () => {
@@ -720,20 +722,6 @@ export const useColorTrainingStore = create<ColorTrainingState>(
               useNativeDriver: false,
             }
           ).start();
-        }),
-    })),
-    { name: "ColorTrainingState" }
-  )
-);
-
-export const useRepertoireBuilderStore = create<RepertoireBuilderState>(
-  devtools(
-    // @ts-ignore for the set stuff
-    immer((set: SetState<RepertoireBuilderState>, get) => ({
-      chessState: { ...DEFAULT_CHESS_STATE },
-      flashRing: (success: boolean, state?: ColorTrainingState) =>
-        setter(set, state, (state) => {
-          flashRing(state.chessState, success);
         }),
     })),
     { name: "ColorTrainingState" }
@@ -1195,7 +1183,7 @@ function flashRing(chessState: ChessboardState, success: boolean) {
   ]).start();
 }
 
-function createQuick<T extends object>(set: SetState<T>): any {
+export function createQuick<T extends object>(set: SetState<T>): any {
   return {
     quick: (fn) => {
       setter<T>(set, undefined, (state) => {
@@ -1218,7 +1206,7 @@ function createQuick<T extends object>(set: SetState<T>): any {
 
 // }
 
-const logProxy = (p: any) => {
+export const logProxy = (p: any) => {
   if (p) {
     return JSON.parse(JSON.stringify(p));
   } else {
