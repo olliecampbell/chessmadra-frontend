@@ -130,7 +130,7 @@ const generateClimb = () => {
     times(1)((i) => {
       hiddenMoves += 1;
       if (puzzleDifficulty < cutoff) {
-        puzzleDifficulty -= 100;
+        puzzleDifficulty -= 120;
       }
       climb.push({ puzzleDifficulty, hiddenMoves });
     });
@@ -146,6 +146,7 @@ const generateClimb = () => {
 
 // climb stuff
 const CLIMB = generateClimb();
+console.log("CLIMB", CLIMB);
 const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
 const TIME_UNSUCCESSFUL_SOLVE = 30 * 1000;
 const POINTS_LOST = 20;
@@ -293,8 +294,7 @@ const createVisualizationState = (
     currentPosition: new Chess(),
     showPuzzlePosition: false,
     chessState: DEFAULT_CHESS_STATE,
-    getFetchOptions: () => {
-      let state: ClimbState = get();
+    getFetchOptions: (state: ClimbState) => {
       let ply = state.step?.hiddenMoves ?? state.plyUserSetting.value;
       if (state.step) {
         return {
@@ -323,8 +323,10 @@ const createVisualizationState = (
         state.isDone = false;
       });
     },
-    refreshPuzzle: async () => {
-      let state = get();
+    refreshPuzzle: async (_state: VisualizationState) => {
+      let state = _state ?? get();
+      console.log("REFRESHING");
+      console.log(logProxy(state));
       let p = state.nextPuzzle;
       if (!p) {
         p = await fetchNewPuzzle(state.getFetchOptions(state));
@@ -444,7 +446,8 @@ const createVisualizationState = (
         }
         state.turn = state.puzzlePosition.turn();
         state.startLoopingPlayFlash(state);
-        if (isClimb) {
+        // @ts-ignore
+        if (isClimb && state.isPlayingClimb) {
           state.animateMoves(state);
         }
       });
@@ -601,7 +604,7 @@ const createClimbState = <T extends ClimbState>(
     initState: (state?: ClimbState) =>
       setter(set, state, (state) => {
         state.updateStep(state);
-        state.refreshPuzzle();
+        state.refreshPuzzle(state);
       }),
     updateStep: (state?: ClimbState) =>
       setter(set, state, (state) => {

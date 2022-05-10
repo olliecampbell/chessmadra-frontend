@@ -150,9 +150,9 @@ export const useVisualizationTraining = ({
   // useEffect(() => {
   //   resetState()
   // }, [])
-  useEffect(() => {
-    state.refreshPuzzle();
-  }, []);
+  // useEffect(() => {
+  //   state.refreshPuzzle();
+  // }, []);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (

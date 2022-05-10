@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   Easing,
@@ -7,27 +7,27 @@ import {
   Pressable,
   useWindowDimensions,
   View,
-  Modal
-} from 'react-native'
+  Modal,
+} from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from 'app/styles'
-import { Spacer } from 'app/Space'
-import { ChessboardView } from 'app/components/chessboard/Chessboard'
-import { algebraic, Chess, Move, SQUARES } from '@lubert/chess.ts'
-import { cloneDeep, isEmpty, isNil, takeRight } from 'lodash'
-import { TrainerLayout } from 'app/components/TrainerLayout'
-import { Button } from 'app/components/Button'
-import { useIsMobile } from 'app/utils/isMobile'
-import { Score } from 'app/components/ColorTraining'
-import { useVisualizationTraining } from 'app/utils/useVisualizationTraining'
-import { DEFAULT_CHESS_STATE, useClimbStore } from '../utils/state'
+import { c, s } from "app/styles";
+import { Spacer } from "app/Space";
+import { ChessboardView } from "app/components/chessboard/Chessboard";
+import { algebraic, Chess, Move, SQUARES } from "@lubert/chess.ts";
+import { cloneDeep, isEmpty, isNil, takeRight } from "lodash";
+import { TrainerLayout } from "app/components/TrainerLayout";
+import { Button } from "app/components/Button";
+import { useIsMobile } from "app/utils/isMobile";
+import { Score } from "app/components/ColorTraining";
+import { useVisualizationTraining } from "app/utils/useVisualizationTraining";
+import { DEFAULT_CHESS_STATE, useClimbStore } from "../utils/state";
 
 const Tile = ({ color, onPress }) => {
   return (
     <Pressable {...{ onPress }} style={s(c.bg(color), c.size(72))}></Pressable>
-  )
-}
-const testPlayingUI = false
+  );
+};
+const testPlayingUI = false;
 const ClimbScore = ({ score, highScore, text }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
@@ -39,18 +39,18 @@ const ClimbScore = ({ score, highScore, text }) => {
         {score.value}
       </Text>
     </View>
-  )
-}
+  );
+};
 
 // tweak params
 
 export const TheClimb = () => {
-  const isMobile = useIsMobile()
-  const state = useClimbStore()
+  const isMobile = useIsMobile();
+  const state = useClimbStore();
   useEffect(() => {
-    state.initState()
-  }, [])
-  const { scoreOpacityAnim } = state
+    state.initState();
+  }, []);
+  const { scoreOpacityAnim } = state;
   const scoreChangeView = (
     <Animated.View
       style={s(
@@ -67,16 +67,16 @@ export const TheClimb = () => {
         )
       )}
     >
-      {state.delta < 0 ? state.delta : `+${state.delta}`}
+      <Text>{state.delta < 0 ? state.delta : `+${state.delta}`}</Text>
     </Animated.View>
-  )
+  );
   const { chessboardProps, ui: visualizationUi } = useVisualizationTraining({
     isClimb: true,
     autoPlay: true,
     state,
     score: state.score.value,
-    scoreChangeView
-  })
+    scoreChangeView,
+  });
   return (
     <TrainerLayout
       chessboard={
@@ -89,7 +89,7 @@ export const TheClimb = () => {
             {...{
               currentPosition: new Chess(),
               state: DEFAULT_CHESS_STATE,
-              styles: state.isPlayingClimb && c.displayNone
+              styles: state.isPlayingClimb && c.displayNone,
             }}
           />
         </>
@@ -101,18 +101,18 @@ export const TheClimb = () => {
         ) : (
           <View style={s(c.column)}>
             <View style={c.selfCenter}>
-              <Score score={state.highScore.value} text={'High Score'} />
+              <Score score={state.highScore.value} text={"High Score"} />
             </View>
             <Spacer height={isMobile ? 12 : 24} />
             <Text style={s(c.fg(c.colors.textSecondary))}>
-              The <b>number of hidden moves</b> and <b>puzzle difficulty</b>{' '}
+              The <b>number of hidden moves</b> and <b>puzzle difficulty</b>{" "}
               will increase. Solve puzzles fast to keep your score climbing.
               Take too long, or fail a puzzle, and the difficulty will go down.
             </Text>
             <Spacer height={24} />
             <Button
               onPress={() => {
-                state.startPlayingClimb()
+                state.startPlayingClimb();
               }}
               style={s(c.buttons.primary)}
             >
@@ -122,5 +122,5 @@ export const TheClimb = () => {
         )}
       </View>
     </TrainerLayout>
-  )
-}
+  );
+};
