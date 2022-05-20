@@ -18,6 +18,7 @@ export const Directory = () => {
   const isMobile = useIsMobile();
   return (
     <PageContainer hideNavBar>
+      <Spacer height={44} />
       <View style={s(c.containerStyles(isMobile), c.grow, c.justifyCenter)}>
         <Text
           style={s(
@@ -58,12 +59,13 @@ export const Directory = () => {
                     c.px(12),
                     c.py(16),
                     c.br(4),
-                    c.bg(c.grays[20])
+                    c.bg(c.grays[90])
+                    // c.shadow(0, 5, 25, 1, "rgba(255,255,255,0.5)")
                   )}
                 >
                   <Text
                     style={s(
-                      c.fg(c.colors.textSecondary),
+                      c.fg(c.colors.textInverse),
                       c.fontSize(24),
                       c.weightBold
                     )}
@@ -72,14 +74,17 @@ export const Directory = () => {
                   </Text>
                   <Spacer height={24} />
                   <Text
-                    style={s(
-                      c.fg(c.colors.textSecondary),
-                      c.lineHeight("1.5em")
-                    )}
+                    style={s(c.fg(c.colors.textInverse), c.lineHeight("1.5em"))}
                   >
                     {description}
                   </Text>
-                  <Spacer grow />
+                  <Spacer grow height={12} />
+                  <View
+                    style={s(c.buttons.primary, c.selfEnd, c.minWidth(120))}
+                    onPress={(e) => {}}
+                  >
+                    <Text style={s(c.buttons.primary.textStyles)}>Start</Text>
+                  </View>
                 </View>
               </Link>
             );
