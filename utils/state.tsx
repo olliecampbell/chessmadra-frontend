@@ -266,7 +266,7 @@ const createVisualizationState = (
     isDone: false,
     playButtonFlashAnim: new Animated.Value(0.0),
     mockPassFail: DEBUG_PASS_FAIL_BUTTONS,
-    showNotation: new StorageItem("show-notation", false),
+    showNotation: new StorageItem("show-notation-v2", true),
     plyUserSetting: new StorageItem("visualization-ply", 2),
     ratingGteUserSetting: new StorageItem(
       "puzzle-rating-gte-v2",
