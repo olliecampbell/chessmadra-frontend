@@ -1,5 +1,5 @@
-import { VisualizationTraining } from "app/components/VisualizationTraining";
+import { Directory } from "app/components/Directory";
 
 export default function Page() {
-  return <VisualizationTraining />;
+  return <Directory />;
 }

@@ -118,6 +118,7 @@ const relative = keyedProp("position")("relative");
 const border = keyedProp("border");
 const borderBottom = keyedProp("borderBottom");
 const borderRight = keyedProp("borderRight");
+const borderLeft = keyedProp("borderLeft");
 
 const center = s(alignCenter, justifyCenter, displayFlex);
 
@@ -362,6 +363,7 @@ export const c = {
   border,
   borderBottom,
   borderRight,
+  borderLeft,
   center,
   br,
   brtl,

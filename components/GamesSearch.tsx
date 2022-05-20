@@ -50,6 +50,7 @@ import axios from "axios";
 import { LichessGame } from "app/models";
 import client from "app/client";
 import BeatLoader from "react-spinners/BeatLoader";
+import { PageContainer } from "./PageContainer";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -131,13 +132,34 @@ export const GamesSearch = () => {
       </View>
     );
   } else if (!isEmpty(state.returnedGames)) {
-    console.log("Returned games, yeah");
     inner = (
-      <View style={s(c.column, c.alignCenter, c.fullWidth)}>
+      <View style={s(c.containerStyles(isMobile), c.alignStart)}>
+        <Button
+          style={s(c.buttons.primary)}
+          onPress={() => {
+            state.quick((s) => {
+              s.returnedGames = [];
+            });
+          }}
+        >
+          <Text style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
+            <i
+              style={s(c.fg(c.colors.textPrimary))}
+              className="fas fa-angle-left"
+            ></i>
+            <Spacer width={8} />
+            Modify search
+          </Text>
+        </Button>
+        <Spacer height={24} />
         {chunked(
           state.returnedGames.map((game, i) => {
+            let link = `https://lichess.org/${game.id}`;
+            if (game.result === -1) {
+              link += "/black";
+            }
             return (
-              <a href={`https://lichess.org/${game.id}`} target="_blank">
+              <a href={link} target="_blank">
                 <View
                   style={s(
                     c.px(16),
@@ -264,12 +286,12 @@ export const GamesSearch = () => {
               c.fg(c.colors.textPrimary),
               c.lineHeight("1.5em"),
               c.fontSize(14)
+              // c.maxWidth(600)
             )}
           >
-            This is a tool to search through games from Lichess. It{" "}
-            <b>does not </b>have all Lichess games, it's only a relatively small
-            subset, at about 5 million games. Here's some example queries you
-            can run: <br />
+            This is a tool to search through games from Lichess. It does not
+            have all Lichess games, only about 5 million games. Some example
+            searches: <br />
             <Spacer height={12} />
             <View style={s(c.column)}>
               <ExampleGame
@@ -285,7 +307,7 @@ export const GamesSearch = () => {
                   gameResult: GameSearchResult.White,
                 }}
               />
-              <Spacer height={4} />
+              <Spacer height={8} />
               <ExampleGame
                 {...{
                   name: "Games where Black fell for the early bishop trap in the Caro-Kann",
@@ -299,7 +321,7 @@ export const GamesSearch = () => {
                   gameResult: null,
                 }}
               />
-              <Spacer height={4} />
+              <Spacer height={8} />
               <ExampleGame
                 {...{
                   name: "Low-elo games that played the first 18 moves of theory in the Grünfeld",
@@ -456,13 +478,7 @@ export const GamesSearch = () => {
       </>
     );
   }
-  return (
-    <View style={s(c.column, c.alignCenter, c.pb(80))}>
-      <NavBar />
-      <Spacer height={40} />
-      {inner}
-    </View>
-  );
+  return <PageContainer>{inner}</PageContainer>;
 };
 function formatGameResult(r: GameSearchResult) {
   switch (r) {
@@ -515,10 +531,10 @@ const ExampleGame = ({
             });
           });
         }}
-        style={s(c.row, c.alignCenter)}
+        style={s(c.row, c.alignStart)}
       >
         <i
-          style={s(c.fg(c.colors.textPrimary))}
+          style={s(c.fg(c.colors.textPrimary), c.mt(4))}
           className="fas fa-angle-right"
         ></i>
         <Spacer width={8} />

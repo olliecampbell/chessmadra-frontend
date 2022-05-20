@@ -73,6 +73,7 @@ import {
 import { ChessboardState } from "../types/ChessboardBiref";
 import { BlunderPuzzle, LichessGame, LichessPuzzle } from "../models";
 import { MOCK_RETURNED_GAMES } from "app/mocks/games";
+import { forEach } from "lodash";
 
 export type StoreSlice<T extends object, E extends object = T> = (
   set: SetState<E extends T ? E : E & T>,
@@ -1104,7 +1105,7 @@ export interface PuzzleTraining<T> {
   onPuzzleSuccess: (state?: T) => void;
 }
 
-const setter = <T extends object>(
+export const setter = <T extends object>(
   set: SetState<T>,
   state: T | undefined,
   fn: (state: T) => void

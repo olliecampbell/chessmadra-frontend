@@ -18,7 +18,7 @@ export class StorageItem<T> {
     return null;
   }
 
-  private save() {
+  save() {
     localStorage.setItem(this.key, JSON.stringify(this._value));
   }
 

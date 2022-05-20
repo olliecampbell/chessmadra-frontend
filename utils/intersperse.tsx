@@ -22,7 +22,9 @@ export const chunked = <T,>(
   chunkContainer?: (n: T) => T
 ): T[] => {
   let segments = chunk(arr, chunking);
+  // @ts-ignore
   segments = intersperse(segments, (i) => chunkSeperator(i));
+  // @ts-ignore
   segments = flatMap(segments, (segment) => {
     if (Array.isArray(segment)) {
       // @ts-ignore
@@ -30,5 +32,6 @@ export const chunked = <T,>(
     }
     return segment;
   });
+  // @ts-ignore
   return segments;
 };

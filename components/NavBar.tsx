@@ -20,22 +20,51 @@ import { Button } from "./Button";
 import { useOutsideClick } from "./useOutsideClick";
 import { failOnTrue } from "../utils/test_settings";
 
-const navItems = [
+export const navItems = [
+  {
+    path: "/visualization",
+    title: "Visualization",
+    description: (
+      <>
+        Visualize a series of moves, then find the tactic at the end. Carefully
+        curated to only feature strong play from "your" side. Calculation,
+        visualization, intuition, this trains a bit of everything. Adjustable
+        puzzle difficulty and visualization depth. 150,000+ puzzles.
+      </>
+    ),
+  },
   {
     path: "/the_climb",
     title: "The Climb",
+    description: (
+      <>
+        Exactly like the visualization trainer, but with each solved puzzle the
+        visualization and puzzle difficulty will increase. Solve puzzles quickly
+        to get more points!
+      </>
+    ),
   },
   {
     path: "/blunder_recognition",
     title: "Blunder Spotting",
-  },
-  {
-    path: "/",
-    title: "Visualization",
+    description: (
+      <>
+        Get better at spotting your opponent's threats and avoiding mistakes, by
+        determining whether a move is a blunder or not. Adjustable difficulty,
+        10,000+ positions.
+      </>
+    ),
   },
   {
     path: "/color_trainer",
     title: "Colors",
+    description: (
+      <>
+        Quick, what color is a4? This little tool might help you get better at
+        color awareness. Identify the color of each square as quickly as you
+        can.
+      </>
+    ),
   },
   // {
   //   path: "/openings",
@@ -43,11 +72,25 @@ const navItems = [
   // },
   {
     path: "/games-search",
-    title: "Search Games",
+    title: "Game Search",
+    description: (
+      <>
+        Searching for high-level games in your chosen opening can be very
+        educational. Search through over 5 million lichess games, by player
+        rating, opening, number of blunders, game result, and game length.
+      </>
+    ),
   },
   {
     path: "/blindfold",
     title: "Blindfold Tactics",
+    description: (
+      <>
+        Get better at visualizing the board in your head. These puzzles will
+        only tell you where the pieces are, but without putting it on a board.
+        Find the right continuation, then solve it on the board.
+      </>
+    ),
   },
 ];
 export const NavBar = (props: {}) => {

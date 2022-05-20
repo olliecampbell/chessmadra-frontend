@@ -50,7 +50,7 @@ export const fetchNewBlunderPuzzle = async ({
     let puzzle =
       flipper % 2 === 0 ? fakeBlackBlunderPuzzle : fakeWhiteBlunderPuzzle;
     flipper += 1;
-    return cloneDeep(puzzle);
+    return cloneDeep([puzzle]);
   }
   try {
     let response = await client.post("/api/v1/blunder_puzzle", {

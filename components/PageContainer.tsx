@@ -13,7 +13,7 @@ import { NavBar } from "app/components/NavBar";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 
-export const PageContainer = ({ children, centered }: any) => {
+export const PageContainer = ({ children, centered, hideNavBar }: any) => {
   const isMobile = useIsMobile();
   const icons = [
     {
@@ -27,9 +27,12 @@ export const PageContainer = ({ children, centered }: any) => {
     },
   ];
   return (
-    <View style={s(c.column, c.minHeight("100vh"))}>
-      <NavBar />
-      <View style={s(c.grow, centered && c.center)}>{children}</View>
+    <View style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
+      {!hideNavBar && <NavBar />}
+      <View style={s(c.grow, c.fullWidth, c.column, c.alignCenter)}>
+        {children}
+      </View>
+      <Spacer height={44} />
       <View
         style={s(
           c.fullWidth,

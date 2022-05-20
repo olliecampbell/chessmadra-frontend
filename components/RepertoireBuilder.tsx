@@ -11,36 +11,82 @@ import { useIsMobile } from "app/utils/isMobile";
 import { keyBy, groupBy } from "lodash";
 import { intersperse } from "app/utils/intersperse";
 import {
+  RepertoireState,
+  useRepertoireState,
+} from "app/utils/repertoire_state";
+import {
   RepertoireGrade,
   RepertoireMove,
   RepertoireSide,
-  useRepertoireState,
-} from "app/utils/repertoire_state";
+} from "app/utils/repertoire";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
   const state = useRepertoireState();
   useEffect(() => {
-    state.fetchRepertoireGrade();
+    state.initState();
   }, []);
   let grade = state.repertoireGrades[state.activeSide];
+  let pendingLine = state.getPendingLine();
+  console.log("Pending line", pendingLine);
+  useEffect(() => {
+    document.onkeydown = function (e) {
+      switch (e.key) {
+        case "ArrowLeft":
+          state.quick(() => {
+            state.chessState.position.undo();
+          });
+          break;
+      }
+    };
+    return () => {
+      document.onkeydown = null;
+    };
+  }, []);
   return (
     <TrainerLayout
       chessboard={
         <ChessboardView
           {...{
             state: state.chessState,
+            onSquarePress: state.onSquarePress,
           }}
         />
       }
     >
+      {pendingLine && (
+        <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
+          <Pressable
+            onPress={() => {
+              state.addPendingLine();
+            }}
+          >
+            <Text style={s(c.fg(c.colors.textPrimary))}>
+              The current line isn't a part of your repertoire yet, would you
+              like to add it?
+            </Text>
+          </Pressable>
+        </View>
+      )}
       <View style={s(!isMobile && s(c.width(300)))}>
-        <View style={s(c.bg(c.grays[50]), c.px(12), c.py(4))}>
-          <OpeningTree repertoire={state.repertoire.white} grade={grade} />
+        <View
+          style={s(
+            c.bg(c.grays[30]),
+            c.px(12),
+            c.py(4),
+            c.maxHeight(300),
+            c.scrollY
+          )}
+        >
+          <OpeningTree
+            repertoire={state.repertoire.value.white}
+            grade={grade}
+          />
         </View>
         <Spacer height={12} />
         {state.repertoireGrades[state.activeSide] && (
           <RepertoireGradeView
+            state={state}
             grade={state.repertoireGrades[state.activeSide]}
           />
         )}
@@ -49,16 +95,38 @@ export const RepertoireBuilder = () => {
   );
 };
 
-const RepertoireGradeView = ({ grade }: { grade: RepertoireGrade }) => {
+const RepertoireGradeView = ({
+  grade,
+  state,
+}: {
+  grade: RepertoireGrade;
+  state: RepertoireState;
+}) => {
   return (
     <View style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12))}>
       <Text style={s(c.fg(c.colors.textPrimary))}>
-        Your expected depth is {grade.expectedDepth}
+        With this opening repertoire, you can expect to play{" "}
+        {grade.expectedDepth.toFixed(1)} moves before going out of book
       </Text>
       <Spacer height={12} />
       <Text style={s(c.fg(c.colors.textPrimary))}>
         Your biggest miss is <b>{grade.biggestMiss.move.id}</b>, expected in{" "}
-        {formatIncidence(grade.biggestMiss.incidence)} of your games.
+        {formatIncidence(grade.biggestMiss.incidence)} of your games.{" "}
+        <Pressable
+          onPress={() => {
+            state.playPgn(grade.biggestMiss.move.id);
+          }}
+        >
+          <Text
+            style={s(
+              c.borderBottom(`1px solid ${c.grays[50]}`),
+              c.pb(2),
+              c.fg(c.colors.textPrimary)
+            )}
+          >
+            Click here to add a response for this line.
+          </Text>
+        </Pressable>
       </Text>
     </View>
   );
@@ -89,15 +157,15 @@ const OpeningNode = ({
 }) => {
   let incidence = grade?.moveIncidence[move.id];
   return (
-    <View>
+    <View style={s(c.pl(2))}>
       <View
         style={s(
           c.row,
           c.br(2),
           c.px(4),
-          c.bg(c.grays[20]),
-          c.my(4),
-          c.py(4),
+          // c.bg(c.grays[20]),
+          c.my(0),
+          c.py(2),
           c.justifyBetween
         )}
       >
@@ -120,7 +188,9 @@ const OpeningNode = ({
           ></i>
         </Text>
       </View>
-      <View style={s(c.pl(12))}>
+      <View
+        style={s(c.pl(6), c.ml(6), c.borderLeft(`1px solid ${c.grays[40]}`))}
+      >
         <View style={s()}>
           {intersperse(
             (move.responses || []).map((move) => {

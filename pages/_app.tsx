@@ -18,10 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Chess Madra</title>
       </Head>
-      <AuthHandler>
-
-      {isMounted && <Component {...pageProps} />}
-      </AuthHandler>
+      <AuthHandler>{isMounted && <Component {...pageProps} />}</AuthHandler>
     </>
   );
 }

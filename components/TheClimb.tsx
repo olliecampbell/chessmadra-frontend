@@ -90,6 +90,7 @@ export const TheClimb = () => {
               currentPosition: new Chess(),
               state: DEFAULT_CHESS_STATE,
               styles: state.isPlayingClimb && c.displayNone,
+              onSquarePress: () => {},
             }}
           />
         </>
