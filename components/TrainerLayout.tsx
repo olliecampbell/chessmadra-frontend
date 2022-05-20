@@ -24,6 +24,7 @@ export const TrainerLayout = ({ chessboard, children }: any) => {
           justifyContent: "flex-start",
           alignItems: "center",
           backgroundColor: "none",
+          maxWidth: "100%",
         }}
       >
         <View
