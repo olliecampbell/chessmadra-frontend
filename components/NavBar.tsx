@@ -83,7 +83,7 @@ export const navItems = [
       <>
         Searching for high-level games in your chosen opening can be very
         educational. Search through over 5 million lichess games, by player
-        rating, opening, number of blunders, game result, and game length.
+        rating, opening, game result, and game length.
       </>
     ),
   },
