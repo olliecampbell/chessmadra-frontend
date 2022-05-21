@@ -1229,8 +1229,8 @@ export const useGamesSearchState = create<GamesSearchState>(
           // TODO: clone?
           ...createQuick(set),
           numberMoves: [2, 50],
-          whiteRating: [1800, 2200],
-          blackRating: [1800, 2200],
+          whiteRating: [2500, 2800],
+          blackRating: [2500, 2800],
           chessState: DEFAULT_CHESS_STATE,
           whiteBlunders: [0, 3],
           blackBlunders: [0, 3],

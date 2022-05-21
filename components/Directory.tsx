@@ -4,7 +4,7 @@ import { Animated, Text, Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { cloneDeep, isEmpty, isNil, takeRight } from "lodash";
+import { cloneDeep, isEmpty, isNil, takeRight, times } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -13,11 +13,19 @@ import { navItems } from "./NavBar";
 import { chunked } from "app/utils/intersperse";
 import { PageContainer } from "./PageContainer";
 import Link from "next/link";
+import { failOnTrue } from "app/utils/test_settings";
 
 export const Directory = () => {
   const isMobile = useIsMobile();
   return (
     <PageContainer hideNavBar>
+      {failOnTrue(false) && (
+        <View style={s(c.row)}>
+          <ColorSwatch colors={c.primaries} />
+          <ColorSwatch colors={c.yellows} />
+          <ColorSwatch colors={c.grays} />
+        </View>
+      )}
       <Spacer height={44} />
       <View style={s(c.containerStyles(isMobile), c.grow, c.justifyCenter)}>
         <Text
@@ -48,47 +56,79 @@ export const Directory = () => {
         </Text>
         <Spacer height={44} />
         {chunked(
-          navItems.map(({ path, title, description }, i) => {
-            return (
-              <Link href={path}>
-                <View
-                  style={s(
-                    c.clickable,
-                    c.column,
-                    c.flexible,
-                    c.px(12),
-                    c.py(16),
-                    c.br(4),
-                    c.bg(c.grays[90])
-                    // c.shadow(0, 5, 25, 1, "rgba(255,255,255,0.5)")
-                  )}
-                >
-                  <Text
+          navItems
+            .filter((n) => !n.beta)
+            .map(({ path, title, description, beta }, i) => {
+              return (
+                <Link href={path}>
+                  <View
                     style={s(
-                      c.fg(c.colors.textInverse),
-                      c.fontSize(24),
-                      c.weightBold
+                      c.clickable,
+                      c.relative,
+                      c.column,
+                      c.flexible,
+                      c.px(12),
+                      c.py(16),
+                      c.br(4),
+                      c.overflowHidden,
+                      c.bg(c.grays[90])
+                      // c.shadow(0, 5, 25, 1, "rgba(255,255,255,0.5)")
                     )}
                   >
-                    {title}
-                  </Text>
-                  <Spacer height={24} />
-                  <Text
-                    style={s(c.fg(c.colors.textInverse), c.lineHeight("1.5em"))}
-                  >
-                    {description}
-                  </Text>
-                  <Spacer grow height={12} />
-                  <View
-                    style={s(c.buttons.primary, c.selfEnd, c.minWidth(120))}
-                    onPress={(e) => {}}
-                  >
-                    <Text style={s(c.buttons.primary.textStyles)}>Start</Text>
+                    {beta && (
+                      <View
+                        style={s(
+                          c.absolute,
+                          c.top(0),
+                          c.right(0),
+                          c.brbl(4),
+                          // c.round,
+                          c.bg(c.grays[25]),
+                          c.px(32),
+                          c.py(12)
+                        )}
+                      >
+                        <Text
+                          style={s(
+                            c.weightHeavy,
+                            c.fg(c.colors.textPrimary),
+                            c.caps,
+                            c.fontSize(12)
+                          )}
+                        >
+                          Beta
+                        </Text>
+                      </View>
+                    )}
+                    <Text
+                      style={s(
+                        c.fg(c.colors.textInverse),
+                        c.fontSize(24),
+                        c.weightBold
+                      )}
+                    >
+                      {title}
+                    </Text>
+                    <Spacer height={24} />
+                    <Text
+                      style={s(
+                        c.fg(c.colors.textInverse),
+                        c.lineHeight("1.5em")
+                      )}
+                    >
+                      {description}
+                    </Text>
+                    <Spacer grow height={12} />
+                    <View
+                      style={s(c.buttons.primary, c.selfEnd, c.minWidth(120))}
+                      onPress={(e) => {}}
+                    >
+                      <Text style={s(c.buttons.primary.textStyles)}>Start</Text>
+                    </View>
                   </View>
-                </View>
-              </Link>
-            );
-          }),
+                </Link>
+              );
+            }),
           (i) => {
             return <Spacer width={24} key={i} />;
           },
@@ -102,5 +142,18 @@ export const Directory = () => {
         )}
       </View>
     </PageContainer>
+  );
+};
+
+export const ColorSwatch = ({ colors }) => {
+  return (
+    <View style={s(c.column, c.width(100))}>
+      {times(20).map((i) => {
+        let color = colors[i * 5];
+        return (
+          <View style={s(c.bg(color), c.selfStretch, c.height(20))}></View>
+        );
+      })}
+    </View>
   );
 };

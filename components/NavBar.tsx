@@ -71,6 +71,12 @@ export const navItems = [
   //   title: "Opening Builder",
   // },
   {
+    path: "/game-memorization",
+    title: "Game Memorization",
+    beta: true,
+    description: <>TODO</>,
+  },
+  {
     path: "/games-search",
     title: "Game Search",
     description: (
@@ -115,33 +121,48 @@ export const NavBar = (props: {}) => {
           c.relative
         )}
       >
+        <Link href="/">
+          <Text style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
+            <i
+              style={s(c.fg(c.colors.textSecondary))}
+              className="fas fa-house"
+            ></i>
+          </Text>
+        </Link>
+        <Spacer width={12} />
         {intersperse(
-          navItems.map((navItem) => {
-            const isActive = router.asPath == navItem.path;
-            return (
-              <Pressable
-                key={navItem.title}
-                style={s(c.clickable)}
-                onPress={() => {
-                  router.push(navItem.path);
-                }}
-              >
-                <Text
-                  style={s(
-                    c.fg(c.colors.textPrimary),
-                    c.weightBold,
-                    c.fontSize(isMobile ? 14 : 16),
-                    c.pb(isMobile ? 2 : 4),
-                    isActive && s(c.borderBottom(`2px solid ${c.grays[60]}`))
-                  )}
+          navItems
+            .filter((n) => !n.beta)
+            .map((navItem) => {
+              const isActive = router.asPath == navItem.path;
+              return (
+                <Pressable
+                  key={navItem.title}
+                  style={s(c.clickable)}
+                  onPress={() => {
+                    router.push(navItem.path);
+                  }}
                 >
-                  {navItem.title}
-                </Text>
-              </Pressable>
-            );
-          }),
+                  <Text
+                    style={s(
+                      c.fg(c.colors.textPrimary),
+                      c.weightBold,
+                      c.fontSize(isMobile ? 14 : 16),
+                      c.pb(isMobile ? 2 : 4),
+                      isActive && s(c.borderBottom(`2px solid ${c.grays[60]}`))
+                    )}
+                  >
+                    {navItem.title}
+                  </Text>
+                </Pressable>
+              );
+            }),
           (i) => {
-            return <Spacer key={i} width={isMobile ? 24 : 24} />;
+            return (
+              <View
+                style={s(c.width(1), c.height(34), c.bg(c.grays[30]), c.mx(12))}
+              ></View>
+            );
           }
         )}
         {false && (

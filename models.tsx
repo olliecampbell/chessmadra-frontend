@@ -40,6 +40,8 @@ export interface LichessGame {
   time: number;
   whiteBlunders: number;
   blackBlunders: number;
+  whiteName: string;
+  blackName: string;
   whiteMistakes: number;
   blackMistakes: number;
 }

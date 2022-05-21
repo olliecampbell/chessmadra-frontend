@@ -202,7 +202,7 @@ export const useVisualizationTraining = ({
             c.bg(
               state.playButtonFlashAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [c.primaries[40], c.primaries[50]],
+                outputRange: [c.primaries[35], c.primaries[40]],
               })
             ),
             c.height(60),
@@ -563,12 +563,6 @@ export const useVisualizationTraining = ({
           </>
         }
       </View>
-      {state.showHelpButton && (
-        <>
-          <Spacer height={12} width={12} isMobile={isMobile} />
-        </>
-      )}
-      <Spacer height={12} />
       {debugButtons && (
         <>
           <Spacer height={12} />

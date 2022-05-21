@@ -200,20 +200,39 @@ const genGrays = () => {
   return grays;
 };
 const grays = genGrays();
+
+function easeInOutCubic(x: number): number {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
 const genShades = (hue: number) => {
-  return {
-    10: `hsl(${hue}, 45%, 8%)`,
-    20: `hsl(${hue}, 45%, 13%)`,
-    30: `hsl(${hue}, 40%, 18%)`,
-    40: `hsl(${hue}, 35%, 25%)`,
-    50: `hsl(${hue}, 35%, 40%)`,
-    60: `hsl(${hue}, 40%, 50%)`,
-    70: `hsl(${hue}, 50%, 60%)`,
-    80: `hsl(${hue}, 50%, 90%)`,
-    90: `hsl(${hue}, 65%, 95%)`,
-  };
+  const shades = {};
+  let minSaturation = 20;
+  let maxSaturation = 80;
+  let minLightness = 4;
+  let maxLightness = 80;
+  for (let i = 0; i <= 100; i = i + 5) {
+    let lightness_y = easeInOutSine(i / 100);
+    let saturation =
+      minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;
+    let lightness = minLightness + (maxLightness - minLightness) * lightness_y;
+    shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
+  console.log(shades);
+  return shades;
+  // return {
+  //   10: `hsl(${hue}, 45%, 8%)`,
+  //   20: `hsl(${hue}, 45%, 13%)`,
+  //   30: `hsl(${hue}, 40%, 18%)`,
+  //   40: `hsl(${hue}, 35%, 25%)`,
+  //   50: `hsl(${hue}, 35%, 40%)`,
+  //   60: `hsl(${hue}, 40%, 50%)`,
+  //   70: `hsl(${hue}, 50%, 60%)`,
+  //   80: `hsl(${hue}, 50%, 90%)`,
+  //   90: `hsl(${hue}, 65%, 95%)`,
+  // };
 };
 const primaries = genShades(181);
+const yellows = genShades(45);
 const failureShades = genShades(340);
 const successShades = genShades(164);
 const colors = {
@@ -266,7 +285,7 @@ const disabledButtonStyles = s(
     textStyles: s(weightBold, fontSize(16), fg("white")),
   }
 );
-const primaryButtonStyles = s(basicButtonStyles, bg(primaries[50]), {
+const primaryButtonStyles = s(basicButtonStyles, bg(primaries[40]), {
   textStyles: s(weightBold, fg(colors.textPrimary), fontSize(16)),
 });
 const squareBottomRowButtonStyles = s(basicButtonStyles, size(48));
@@ -315,6 +334,7 @@ export const c = {
   weightSemiBold,
   weightBold,
   primaries,
+  yellows,
   failureShades,
   successShades,
   weightHeavy,

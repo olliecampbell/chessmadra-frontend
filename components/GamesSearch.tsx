@@ -62,6 +62,9 @@ const PIECE_TYPES = ["k", "q", "r", "b", "n", "p"];
 const COLORS = ["w", "b"];
 const MAX_BLUNDERS = 10;
 
+const MIN_ELO = 2200;
+const MAX_ELO = 2800;
+
 export const GamesSearch = () => {
   const isMobile = useIsMobile();
   const state = useGamesSearchState();
@@ -119,10 +122,10 @@ export const GamesSearch = () => {
       />
     </>,
     createSlider("Number of Moves", "numberMoves", 0, 80, 1),
-    createSlider("White Rating", "whiteRating", 0, 2800, 50),
-    createSlider("Black Rating", "blackRating", 0, 2800, 50),
-    createSlider("White Blunders", "whiteBlunders", 0, 10, 1),
-    createSlider("Black Blunders", "blackBlunders", 0, MAX_BLUNDERS, 1),
+    createSlider("White Rating", "whiteRating", MIN_ELO, MAX_ELO, 50),
+    createSlider("Black Rating", "blackRating", MIN_ELO, MAX_ELO, 50),
+    // createSlider("White Blunders", "whiteBlunders", 0, 10, 1),
+    // createSlider("Black Blunders", "blackBlunders", 0, MAX_BLUNDERS, 1),
   ];
   let inner = null;
   if (state.loading) {
@@ -192,7 +195,7 @@ export const GamesSearch = () => {
                     </Text>
                   </View>
                   <Spacer height={0} />
-                  <View style={s(c.row)}>
+                  <View style={s(c.column)}>
                     {intersperse(
                       ["white", "black"].map((color, i) => {
                         console.log(game);
@@ -202,6 +205,7 @@ export const GamesSearch = () => {
                               <View
                                 style={s(c.round, c.size(12), c.bg(color))}
                               ></View>
+
                               <Spacer width={4} />
                               <Text
                                 style={s(
@@ -209,27 +213,35 @@ export const GamesSearch = () => {
                                   c.weightBold
                                 )}
                               >
-                                {game[`${color}Elo`]}
+                                {game[`${color}Name`]}
+                              </Text>
+                              <Spacer width={4} />
+                              <Text style={s(c.fg(c.grays[40]), c.weightBold)}>
+                                ({game[`${color}Elo`]})
                               </Text>
                             </View>
-                            <Spacer height={4} />
-                            <Text
-                              style={s(c.fg(c.colors.textInverseSecondary))}
-                            >
-                              <b>{game[`${color}Blunders`]}</b> blunders
-                            </Text>
-                            <Spacer height={4} />
-                            <Text
-                              style={s(c.fg(c.colors.textInverseSecondary))}
-                            >
-                              <b>{game[`${color}CentipawnLoss`]}</b> avg
-                              centipawn loss
-                            </Text>
+                            {false && (
+                              <>
+                                <Spacer height={4} />
+                                <Text
+                                  style={s(c.fg(c.colors.textInverseSecondary))}
+                                >
+                                  <b>{game[`${color}Blunders`]}</b> blunders
+                                </Text>
+                                <Spacer height={4} />
+                                <Text
+                                  style={s(c.fg(c.colors.textInverseSecondary))}
+                                >
+                                  <b>{game[`${color}CentipawnLoss`]}</b> avg
+                                  centipawn loss
+                                </Text>
+                              </>
+                            )}
                           </View>
                         );
                       }),
                       (i) => {
-                        return <Spacer width={24} key={i} />;
+                        return <Spacer height={12} key={i} />;
                       }
                     )}
                   </View>
@@ -289,21 +301,28 @@ export const GamesSearch = () => {
               // c.maxWidth(600)
             )}
           >
-            This is a tool to search through games from Lichess. It does not
-            have all Lichess games, only about 5 million games. Some example
-            searches: <br />
+            This is a tool to search through games from the{" "}
+            <a
+              style={s(c.borderBottom(`1px solid ${c.grays[50]}`), c.pb(2))}
+              href="https://database.nikonoel.fr/"
+            >
+              Lichess Elite Database
+            </a>
+            . Includes all the games played by players 2300+, since June 2020.
+            Some example searches:
+            <br />
             <Spacer height={12} />
             <View style={s(c.column)}>
               <ExampleGame
                 {...{
-                  name: "Games between highly-ranked players, where White won against the Falkbeer Countergambit, with no blunders",
+                  name: "Games where White won against the Falkbeer Countergambit",
                   moves: ["e4", "e5", "f4", "d5"],
                   state: state,
-                  whiteRating: [2200, 2500],
-                  blackRating: [2200, 2500],
+                  // whiteRating: [2200, 2800],
+                  // blackRating: [2200, 2800],
                   numberMoves: [0, 30],
-                  whiteBlunders: [0, 0],
-                  blackBlunders: [0, MAX_BLUNDERS],
+                  // whiteBlunders: [0, 0],
+                  // blackBlunders: [0, MAX_BLUNDERS],
                   gameResult: GameSearchResult.White,
                 }}
               />
@@ -313,47 +332,15 @@ export const GamesSearch = () => {
                   name: "Games where Black fell for the early bishop trap in the Caro-Kann",
                   moves: ["e4", "c6", "d4", "d5", "e5", "Bf5", "h4", "e6"],
                   state: state,
-                  whiteRating: [0, 2500],
-                  blackRating: [0, 2500],
+                  // whiteRating: [0, 2500],
+                  // blackRating: [0, 2500],
                   numberMoves: [6, 50],
-                  whiteBlunders: [0, 0],
-                  blackBlunders: [0, MAX_BLUNDERS],
+                  // whiteBlunders: [0, 0],
+                  // blackBlunders: [0, MAX_BLUNDERS],
                   gameResult: null,
                 }}
               />
               <Spacer height={8} />
-              <ExampleGame
-                {...{
-                  name: "Low-elo games that played the first 18 moves of theory in the Grünfeld",
-                  moves: [
-                    "d4",
-                    "c4",
-                    "Nf6",
-                    "c4",
-                    "g6",
-                    "Nc3",
-                    "d5",
-                    "cxd5",
-                    "Nxd5",
-                    "e4",
-                    "Nxc3",
-                    "bxc3",
-                    "Bg7",
-                    "Bc4",
-                    "c5",
-                    "Ne2",
-                    "Nc6",
-                    "Be3",
-                  ],
-                  state: state,
-                  whiteRating: [0, 1600],
-                  blackRating: [0, 1600],
-                  numberMoves: [0, 80],
-                  whiteBlunders: [0, MAX_BLUNDERS],
-                  blackBlunders: [0, MAX_BLUNDERS],
-                  gameResult: null,
-                }}
-              />
             </View>
           </Text>
         </View>
@@ -376,8 +363,8 @@ export const GamesSearch = () => {
           <>
             <Text style={s(sectionTitleStyles)}>Opening</Text>
             <Text style={s(c.fg(c.colors.textSecondary))}>
-              Play out moves on the board. Resulting games will be filtered to
-              those that started with those moves.
+              Play out moves on the board to search for games that feature that
+              opening.
             </Text>
             <Spacer height={12} />
             <View
@@ -450,9 +437,9 @@ export const GamesSearch = () => {
                 });
                 let response = await client.post("/api/v1/games", {
                   whiteRating: state.whiteRating,
-                  whiteBlunders: state.whiteBlunders,
+                  // whiteBlunders: state.whiteBlunders,
                   blackRating: state.blackRating,
-                  blackBlunders: state.blackBlunders,
+                  // blackBlunders: state.blackBlunders,
                   numberMoves: state.numberMoves,
                   result: state.gameResult,
                   opening: state.chessState.position.history(),
@@ -496,21 +483,21 @@ function formatGameResult(r: GameSearchResult) {
 const ExampleGame = ({
   name,
   moves,
-  whiteRating,
-  blackRating,
+  // whiteRating,
+  // blackRating,
   numberMoves,
-  whiteBlunders,
-  blackBlunders,
+  // whiteBlunders,
+  // blackBlunders,
   gameResult,
   state,
 }: {
   name: string;
   moves: string[];
-  whiteRating: [number, number];
-  blackRating: [number, number];
+  // whiteRating: [number, number];
+  // blackRating: [number, number];
   numberMoves: [number, number];
-  whiteBlunders: [number, number];
-  blackBlunders: [number, number];
+  // whiteBlunders: [number, number];
+  // blackBlunders: [number, number];
   gameResult: GameSearchResult;
   state: GamesSearchState;
 }) => {
@@ -519,11 +506,11 @@ const ExampleGame = ({
       <Button
         onPress={() => {
           state.quick((s) => {
-            s.whiteRating = whiteRating;
-            s.blackRating = blackRating;
+            // s.whiteRating = whiteRating;
+            // s.blackRating = blackRating;
             s.numberMoves = numberMoves;
-            s.whiteBlunders = whiteBlunders;
-            s.blackBlunders = blackBlunders;
+            // s.whiteBlunders = whiteBlunders;
+            // s.blackBlunders = blackBlunders;
             s.gameResult = gameResult;
             s.chessState.position = new Chess();
             moves.map((move) => {

@@ -1,46 +1,46 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Platform,
   Pressable,
   useWindowDimensions,
   View,
-  Text
-} from 'react-native'
-import { s, c } from 'app/styles'
-import { times } from 'app/utils'
-import { forEach, isEmpty, cloneDeep, takeRight, first } from 'lodash'
-import client from 'app/client'
-import { Spacer } from 'app/Space'
-import { Move } from '@lubert/chess.ts'
+  Text,
+} from "react-native";
+import { s, c } from "app/styles";
+import { times } from "app/utils";
+import { forEach, isEmpty, cloneDeep, takeRight, first } from "lodash";
+import client from "app/client";
+import { Spacer } from "app/Space";
+import { Move } from "@lubert/chess.ts";
 
 export const MoveList = ({
   moveList,
   focusedMoveIndex,
-  onMoveClick
+  onMoveClick,
 }: {
-  moveList: Move[]
-  focusedMoveIndex?: number
-  onMoveClick: (move: Move, _: number) => void
+  moveList: Move[];
+  focusedMoveIndex?: number;
+  onMoveClick: (move: Move, _: number) => void;
 }) => {
-  let pairs = []
-  let currentPair = []
+  let pairs = [];
+  let currentPair = [];
   forEach(moveList, (move, i) => {
-    if (move.color == 'b' && isEmpty(currentPair)) {
-      pairs.push([{}, { move, i }])
-      return
+    if (move.color == "b" && isEmpty(currentPair)) {
+      pairs.push([{}, { move, i }]);
+      return;
     }
-    currentPair.push({ move, i })
-    if (move.color == 'b') {
-      pairs.push(currentPair)
-      currentPair = []
+    currentPair.push({ move, i });
+    if (move.color == "b") {
+      pairs.push(currentPair);
+      currentPair = [];
     }
-  })
+  });
   if (!isEmpty(currentPair)) {
     if (currentPair.length === 1) {
-      currentPair.push({})
+      currentPair.push({});
     }
-    pairs.push(currentPair)
+    pairs.push(currentPair);
   }
   const moveStyles = s(
     c.width(80),
@@ -53,17 +53,17 @@ export const MoveList = ({
     c.fontSize(18),
     c.weightSemiBold,
     c.fg(c.colors.textPrimary)
-  )
+  );
   return (
     <View style={s(c.column, c.bg(c.grays[20]), c.br(2))}>
       <View style={s(c.height(1), c.bg(c.grays[30]))} />
       {pairs.map((pair, i) => {
         const [{ move: whiteMove, i: whiteI }, { move: blackMove, i: blackI }] =
-          pair
-        const activeMoveStyles = s(c.weightBlack, c.fontSize(20))
+          pair;
+        const activeMoveStyles = s(c.weightBlack, c.fontSize(20));
         return (
           <View key={i} style={s(c.column, c.overflowHidden)}>
-            <View style={s(c.row, c.alignStretch, c.height(48))}>
+            <View style={s(c.row, c.alignStretch, c.py(8))}>
               <View
                 style={s(
                   c.width(48),
@@ -84,7 +84,7 @@ export const MoveList = ({
               <Spacer width={24} />
               <Pressable
                 onPress={() => {
-                  onMoveClick(whiteMove, whiteI)
+                  onMoveClick(whiteMove, whiteI);
                 }}
               >
                 <Text
@@ -93,12 +93,12 @@ export const MoveList = ({
                     focusedMoveIndex === whiteI && activeMoveStyles
                   )}
                 >
-                  {whiteMove?.san ?? '...'}
+                  {whiteMove?.san ?? "..."}
                 </Text>
               </Pressable>
               <Pressable
                 onPress={() => {
-                  onMoveClick(blackMove, blackI)
+                  onMoveClick(blackMove, blackI);
                 }}
               >
                 <Text
@@ -107,7 +107,7 @@ export const MoveList = ({
                     focusedMoveIndex === blackI && activeMoveStyles
                   )}
                 >
-                  {blackMove?.san ?? '...'}
+                  {blackMove?.san ?? "..."}
                 </Text>
               </Pressable>
             </View>
@@ -115,8 +115,8 @@ export const MoveList = ({
               <View style={s(c.height(1), c.bg(c.grays[30]))} />
             )}
           </View>
-        )
+        );
       })}
     </View>
-  )
-}
+  );
+};
