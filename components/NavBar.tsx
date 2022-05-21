@@ -266,32 +266,34 @@ export const NavBar = (props: {}) => {
         ref={mobileDrawerRef}
       >
         {intersperse(
-          navItems.map((navItem) => {
-            const isActive = router.asPath == navItem.path;
-            return (
-              <Pressable
-                key={navItem.title}
-                style={s(c.clickable)}
-                onPress={() => {
-                  console.log("THIS?");
-                  router.push(navItem.path);
-                }}
-              >
-                <Text
-                  style={s(
-                    c.fg(c.colors.textInverse),
-                    c.weightBold,
-                    c.fontSize(18),
-                    c.pb(isMobile ? 2 : 4),
-                    isActive && s(c.borderBottom(`2px solid ${c.grays[60]}`)),
-                    c.selfStart
-                  )}
+          navItems
+            .filter((n) => !n.beta)
+            .map((navItem) => {
+              const isActive = router.asPath == navItem.path;
+              return (
+                <Pressable
+                  key={navItem.title}
+                  style={s(c.clickable)}
+                  onPress={() => {
+                    console.log("THIS?");
+                    router.push(navItem.path);
+                  }}
                 >
-                  {navItem.title}
-                </Text>
-              </Pressable>
-            );
-          }),
+                  <Text
+                    style={s(
+                      c.fg(c.colors.textInverse),
+                      c.weightBold,
+                      c.fontSize(18),
+                      c.pb(isMobile ? 2 : 4),
+                      isActive && s(c.borderBottom(`2px solid ${c.grays[60]}`)),
+                      c.selfStart
+                    )}
+                  >
+                    {navItem.title}
+                  </Text>
+                </Pressable>
+              );
+            }),
           (i) => {
             return <Spacer key={i} height={24} />;
           }
