@@ -25,6 +25,7 @@ export interface User {
   email: string;
   // subscription: ApplicationSubscription;
   apiKey: string;
+  betaAccess: boolean;
 }
 
 export interface LichessGame {

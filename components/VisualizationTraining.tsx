@@ -17,6 +17,7 @@ import {
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { useVisualizationTraining } from "../utils/useVisualizationTraining";
 import { useVisualizationStore } from "../utils/state";
+import { PageContainer } from "./PageContainer";
 
 export const VisualizationTraining = () => {
   const state = useVisualizationStore();
