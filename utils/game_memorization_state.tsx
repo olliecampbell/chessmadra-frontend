@@ -55,6 +55,7 @@ export interface GameMemorizationState {
   games: LichessGame[];
   missedCurrentMove: boolean;
   numReviewed: StorageItem<number>;
+  moveNumber: number;
 }
 
 export const useGameMemorizationState = create<GameMemorizationState>(
@@ -107,6 +108,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
           makeNextMove: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               s.chessState.availableMoves = [];
+              s.moveNumber += 1;
               let move = s.nextMoves.shift();
               s.chessState.position.move(move);
               s.missedCurrentMove = false;
@@ -132,6 +134,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
             setter(set, _state, (s) => {
               s.activeGame = game;
               s.missedCurrentMove = false;
+              s.moveNumber = 0;
               s.progressMessage = null;
               s.chessState.position = new Chess();
               s.movesMissed = 0;

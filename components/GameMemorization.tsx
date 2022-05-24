@@ -39,6 +39,18 @@ export const GameMemorization = () => {
           />
         }
       >
+        <Text style={s(c.fg(c.colors.textPrimary))}>
+          <b>{state.activeGame.whiteName}</b>
+          <Spacer width={4} />
+          vs.
+          <Spacer width={4} />
+          <b>{state.activeGame.blackName}</b>
+        </Text>
+        <Spacer height={12} />
+        <Text style={s(c.fg(c.colors.textPrimary))}>
+          Moves left: {state.nextMoves.length}
+        </Text>
+        <Spacer height={24} />
         {state.progressMessage && (
           <>
             <ProgressMessageView progressMessage={state.progressMessage} />
@@ -74,9 +86,26 @@ export const GameMemorization = () => {
             <Spacer height={12} />
           </>
         )}
-        <Text style={s(c.fg(c.colors.textPrimary))}>
-          Moves left: {state.nextMoves.length}
-        </Text>
+        <View style={s(c.row, c.justifyEnd)}>
+          <Button
+            style={s(c.buttons.squareBasicButtons)}
+            onPress={() => {
+              (async () => {
+                window.open(
+                  `https://lichess.org/${state.activeGame.id}#${state.moveNumber}`,
+                  "_blank"
+                );
+              })();
+            }}
+          >
+            <Text style={s(c.buttons.basic.textStyles)}>
+              <i
+                style={s(c.fg(c.colors.textInverse))}
+                className="fas fa-search"
+              ></i>
+            </Text>
+          </Button>
+        </View>
       </TrainerLayout>
     );
   } else if (state.games) {
@@ -85,6 +114,15 @@ export const GameMemorization = () => {
         <Text style={s(c.fg(c.colors.textPrimary))}>
           You've reviewed {state.numReviewed.value} games in total.
         </Text>
+        <Spacer height={24} />
+        <Button
+          style={s(c.buttons.primary)}
+          onPress={() => {
+            state.newRandomGame();
+          }}
+        >
+          Random
+        </Button>
         <Spacer height={24} />
         {chunked(
           state.games.map((game, i) => {
