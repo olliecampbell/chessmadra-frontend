@@ -21,6 +21,7 @@ import { useIsMobile } from "app/utils/isMobile";
 import { Score } from "app/components/ColorTraining";
 import { useVisualizationTraining } from "app/utils/useVisualizationTraining";
 import { DEFAULT_CHESS_STATE, useClimbStore } from "../utils/state";
+import { PageContainer } from "./PageContainer";
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -78,50 +79,53 @@ export const TheClimb = () => {
     scoreChangeView,
   });
   return (
-    <TrainerLayout
-      chessboard={
-        <>
-          <ChessboardView
-            {...chessboardProps}
-            styles={!state.isPlayingClimb && c.displayNone}
-          />
-          <ChessboardView
-            {...{
-              currentPosition: new Chess(),
-              state: DEFAULT_CHESS_STATE,
-              styles: state.isPlayingClimb && c.displayNone,
-              onSquarePress: () => {},
-            }}
-          />
-        </>
-      }
-    >
-      <View style={s()}>
-        {state.isPlayingClimb ? (
-          <View style={s(c.column, c.alignStretch)}>{visualizationUi}</View>
-        ) : (
-          <View style={s(c.column)}>
-            <View style={c.selfCenter}>
-              <Score score={state.highScore.value} text={"High Score"} />
-            </View>
-            <Spacer height={isMobile ? 12 : 24} />
-            <Text style={s(c.fg(c.colors.textSecondary))}>
-              The <b>number of hidden moves</b> and <b>puzzle difficulty</b>{" "}
-              will increase. Solve puzzles fast to keep your score climbing.
-              Take too long, or fail a puzzle, and the difficulty will go down.
-            </Text>
-            <Spacer height={24} />
-            <Button
-              onPress={() => {
-                state.startPlayingClimb();
+    <PageContainer>
+      <TrainerLayout
+        chessboard={
+          <>
+            <ChessboardView
+              {...chessboardProps}
+              styles={!state.isPlayingClimb && c.displayNone}
+            />
+            <ChessboardView
+              {...{
+                currentPosition: new Chess(),
+                state: DEFAULT_CHESS_STATE,
+                styles: state.isPlayingClimb && c.displayNone,
+                onSquarePress: () => {},
               }}
-              style={s(c.buttons.primary)}
-            >
-              Start
-            </Button>
-          </View>
-        )}
-      </View>
-    </TrainerLayout>
+            />
+          </>
+        }
+      >
+        <View style={s()}>
+          {state.isPlayingClimb ? (
+            <View style={s(c.column, c.alignStretch)}>{visualizationUi}</View>
+          ) : (
+            <View style={s(c.column)}>
+              <View style={c.selfCenter}>
+                <Score score={state.highScore.value} text={"High Score"} />
+              </View>
+              <Spacer height={isMobile ? 12 : 24} />
+              <Text style={s(c.fg(c.colors.textSecondary))}>
+                The <b>number of hidden moves</b> and <b>puzzle difficulty</b>{" "}
+                will increase. Solve puzzles fast to keep your score climbing.
+                Take too long, or fail a puzzle, and the difficulty will go
+                down.
+              </Text>
+              <Spacer height={24} />
+              <Button
+                onPress={() => {
+                  state.startPlayingClimb();
+                }}
+                style={s(c.buttons.primary)}
+              >
+                Start
+              </Button>
+            </View>
+          )}
+        </View>
+      </TrainerLayout>
+    </PageContainer>
   );
 };

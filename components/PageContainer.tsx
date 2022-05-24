@@ -29,7 +29,15 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
   return (
     <View style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
       {!hideNavBar && <NavBar />}
-      <View style={s(c.grow, c.fullWidth, c.column, c.alignCenter)}>
+      <View
+        style={s(
+          c.grow,
+          c.fullWidth,
+          c.column,
+          c.alignCenter,
+          centered && c.justifyCenter
+        )}
+      >
         {children}
       </View>
       <Spacer height={44} />

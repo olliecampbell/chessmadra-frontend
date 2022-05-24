@@ -75,6 +75,9 @@ import { BlunderPuzzle, LichessGame, LichessPuzzle } from "../models";
 import { MOCK_RETURNED_GAMES } from "app/mocks/games";
 import { forEach } from "lodash";
 
+export const MIN_ELO = 2200;
+export const MAX_ELO = 2800;
+
 export type StoreSlice<T extends object, E extends object = T> = (
   set: SetState<E extends T ? E : E & T>,
   get: GetState<E extends T ? E : E & T>
@@ -1167,7 +1170,7 @@ function animateMove(
   ]).start(callback);
 }
 
-function flashRing(chessState: ChessboardState, success: boolean) {
+export function flashRing(chessState: ChessboardState, success: boolean) {
   const animDuration = 200;
   chessState.ringColor = success
     ? c.colors.successColor
@@ -1229,8 +1232,8 @@ export const useGamesSearchState = create<GamesSearchState>(
           // TODO: clone?
           ...createQuick(set),
           numberMoves: [2, 50],
-          whiteRating: [2500, 2800],
-          blackRating: [2500, 2800],
+          whiteRating: [MIN_ELO, MAX_ELO],
+          blackRating: [MIN_ELO, MAX_ELO],
           chessState: DEFAULT_CHESS_STATE,
           whiteBlunders: [0, 3],
           blackBlunders: [0, 3],

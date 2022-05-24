@@ -157,10 +157,12 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
 export const ChessboardView = ({
   state,
   onSquarePress,
+  disableDrag,
   styles,
 }: {
   state?: ChessboardState;
   onSquarePress?: any;
+  disableDrag?: boolean;
   styles?: any;
 }) => {
   const { position, availableMoves } = state;

@@ -14,9 +14,11 @@ import { chunked } from "app/utils/intersperse";
 import { PageContainer } from "./PageContainer";
 import Link from "next/link";
 import { failOnTrue } from "app/utils/test_settings";
+import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 
 export const Directory = () => {
   const isMobile = useIsMobile();
+  const hasBetaAccess = useHasBetaAccess();
   return (
     <PageContainer hideNavBar>
       {failOnTrue(false) && (
@@ -57,7 +59,7 @@ export const Directory = () => {
         <Spacer height={44} />
         {chunked(
           navItems
-            .filter((n) => !n.beta)
+            .filter((n) => !n.beta || hasBetaAccess)
             .map(({ path, title, description, beta }, i) => {
               return (
                 <Link href={path}>

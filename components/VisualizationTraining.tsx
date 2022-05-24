@@ -25,8 +25,10 @@ export const VisualizationTraining = () => {
     state.refreshPuzzle();
   }, []);
   return (
-    <TrainerLayout chessboard={<ChessboardView {...chessboardProps} />}>
-      {ui}
-    </TrainerLayout>
+    <PageContainer>
+      <TrainerLayout chessboard={<ChessboardView {...chessboardProps} />}>
+        {ui}
+      </TrainerLayout>
+    </PageContainer>
   );
 };

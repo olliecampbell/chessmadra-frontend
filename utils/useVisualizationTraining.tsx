@@ -61,6 +61,7 @@ import { NewPuzzleButton } from "app/NewPuzzleButton";
 import { useHelpModal } from "app/components/useHelpModal";
 import { SettingsTitle } from "app/components/SettingsTitle";
 import { SelectOneOf } from "app/components/SelectOneOf";
+import { ProgressMessageView } from "app/components/ProgressMessage";
 
 const debugButtons = false;
 
@@ -242,21 +243,7 @@ export const useVisualizationTraining = ({
     <>
       {state.progressMessage && (
         <>
-          <View style={s(c.br(4), c.fullWidth)}>
-            <Text
-              style={s(
-                c.fg(
-                  state.progressMessage.type === ProgressMessageType.Error
-                    ? c.colors.failureLight
-                    : c.primaries[60]
-                ),
-                c.weightBold,
-                c.fontSize(isMobile ? 14 : 16)
-              )}
-            >
-              {state.progressMessage.message}
-            </Text>
-          </View>
+          <ProgressMessageView progressMessage={state.progressMessage} />
           <Spacer height={12} />
         </>
       )}

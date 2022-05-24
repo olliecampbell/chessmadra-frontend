@@ -19,6 +19,7 @@ import {
   RepertoireMove,
   RepertoireSide,
 } from "app/utils/repertoire";
+import { PageContainer } from "./PageContainer";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -44,54 +45,56 @@ export const RepertoireBuilder = () => {
     };
   }, []);
   return (
-    <TrainerLayout
-      chessboard={
-        <ChessboardView
-          {...{
-            state: state.chessState,
-            onSquarePress: state.onSquarePress,
-          }}
-        />
-      }
-    >
-      {pendingLine && (
-        <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
-          <Pressable
-            onPress={() => {
-              state.addPendingLine();
+    <PageContainer>
+      <TrainerLayout
+        chessboard={
+          <ChessboardView
+            {...{
+              state: state.chessState,
+              onSquarePress: state.onSquarePress,
             }}
-          >
-            <Text style={s(c.fg(c.colors.textPrimary))}>
-              The current line isn't a part of your repertoire yet, would you
-              like to add it?
-            </Text>
-          </Pressable>
-        </View>
-      )}
-      <View style={s(!isMobile && s(c.width(300)))}>
-        <View
-          style={s(
-            c.bg(c.grays[30]),
-            c.px(12),
-            c.py(4),
-            c.maxHeight(300),
-            c.scrollY
-          )}
-        >
-          <OpeningTree
-            repertoire={state.repertoire.value.white}
-            grade={grade}
           />
-        </View>
-        <Spacer height={12} />
-        {state.repertoireGrades[state.activeSide] && (
-          <RepertoireGradeView
-            state={state}
-            grade={state.repertoireGrades[state.activeSide]}
-          />
+        }
+      >
+        {pendingLine && (
+          <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
+            <Pressable
+              onPress={() => {
+                state.addPendingLine();
+              }}
+            >
+              <Text style={s(c.fg(c.colors.textPrimary))}>
+                The current line isn't a part of your repertoire yet, would you
+                like to add it?
+              </Text>
+            </Pressable>
+          </View>
         )}
-      </View>
-    </TrainerLayout>
+        <View style={s(!isMobile && s(c.width(300)))}>
+          <View
+            style={s(
+              c.bg(c.grays[30]),
+              c.px(12),
+              c.py(4),
+              c.maxHeight(300),
+              c.scrollY
+            )}
+          >
+            <OpeningTree
+              repertoire={state.repertoire.value.white}
+              grade={grade}
+            />
+          </View>
+          <Spacer height={12} />
+          {state.repertoireGrades[state.activeSide] && (
+            <RepertoireGradeView
+              state={state}
+              grade={state.repertoireGrades[state.activeSide]}
+            />
+          )}
+        </View>
+      </TrainerLayout>
+    </PageContainer>
   );
 };
 

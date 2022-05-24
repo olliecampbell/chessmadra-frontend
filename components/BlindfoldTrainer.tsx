@@ -42,6 +42,7 @@ import {
   PuzzleDifficulty,
   stepValueToPuzzleDifficulty,
 } from "app/types/VisualizationState";
+import { PageContainer } from "./PageContainer";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -74,165 +75,173 @@ export const BlindfoldTrainer = () => {
   }, []);
   console.log(state.puzzlePosition);
   return (
-    <TrainerLayout
-      chessboard={
-        state.puzzlePosition &&
-        (state.stage === BlindfoldTrainingStage.Blindfold ? (
-          <BlindfoldPieceOverview state={state} />
-        ) : (
-          <ChessboardView
-            {...{
-              state: state.chessState,
-              onSquarePress: (square) => {
-                state.onSquarePress(square);
-              },
-            }}
-          />
-        ))
-      }
-    >
-      {!state.isDone && (
-        <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
-          <Text style={s(c.fg(c.grays[90]), c.weightBold)}>
-            {state.chessState.position.turn() === "b" ? "Black" : "White"}
-          </Text>{" "}
-          to play.
-        </Text>
-      )}
-      {state.stage === BlindfoldTrainingStage.Blindfold && (
-        <>
-          <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
-            <Spacer block height={12} />
-            Envision the board with the pieces as shown. When you know the
-            continuation, press the button below to show the board and play out
-            the tactic.
-          </Text>
-          <Spacer height={24} />
-          <Button
-            onPress={() => {
-              state.quick((s) => {
-                s.stage = BlindfoldTrainingStage.Board;
-              });
-            }}
-            style={s(c.buttons.primary)}
-          >
-            Show Board
-          </Button>
-        </>
-      )}
-      {state.isDone && (
-        <>
-          <NewPuzzleButton
-            onPress={() => {
-              state.refreshPuzzle();
-            }}
-          />
-        </>
-      )}
-      <Spacer height={12} />
-      <View
-        style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
+    <PageContainer>
+      <TrainerLayout
+        chessboard={
+          state.puzzlePosition &&
+          (state.stage === BlindfoldTrainingStage.Blindfold ? (
+            <BlindfoldPieceOverview state={state} />
+          ) : (
+            <ChessboardView
+              {...{
+                state: state.chessState,
+                onSquarePress: (square) => {
+                  state.onSquarePress(square);
+                },
+              }}
+            />
+          ))
+        }
       >
-        <Button
-          style={s(c.buttons.squareBasicButtons)}
-          onPress={() => {
-            (async () => {
-              if (Platform.OS == "web") {
-                window.open(
-                  `https://lichess.org/training/${state.puzzle.id}`,
-                  "_blank"
-                );
-              }
-            })();
-          }}
-        >
-          <Text style={s(c.buttons.basic.textStyles)}>
-            <i
-              style={s(c.fg(c.colors.textInverse))}
-              className="fas fa-search"
-            ></i>
+        {!state.isDone && (
+          <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
+            <Text style={s(c.fg(c.grays[90]), c.weightBold)}>
+              {state.chessState.position.turn() === "b" ? "Black" : "White"}
+            </Text>{" "}
+            to play.
           </Text>
-        </Button>
-        {helpModal}
-        <Button
-          style={s(c.buttons.squareBasicButtons)}
-          onPress={() => {
-            setHelpOpen(true);
-          }}
-        >
-          <Text style={s(c.buttons.basic.textStyles)}>
-            <i
-              style={s(c.fg(c.colors.textInverse))}
-              className="fas fa-circle-question"
-            ></i>
-          </Text>
-        </Button>
-        <Button
-          style={s(c.buttons.squareBasicButtons)}
-          onPress={() => {
-            setSettingsOpen(true);
-          }}
-        >
-          <i style={s(c.fg(c.colors.textInverse))} className="fas fa-gear"></i>
-        </Button>
-        <Modal
-          onClose={() => {
-            setSettingsOpen(false);
-          }}
-          visible={settingsOpen}
-        >
-          <View style={s(c.px(12), c.py(12))}>
-            <SettingsTitle text={"Number of Pieces"} />
-            <Spacer height={12} />
-            <SelectRange
-              min={3}
-              max={15}
-              range={[
-                state.numPiecesGteUserSetting.value,
-                state.numPiecesLteUserSetting.value,
-              ]}
-              step={1}
-              onFinish={() => {
+        )}
+        {state.stage === BlindfoldTrainingStage.Blindfold && (
+          <>
+            <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
+              <Spacer block height={12} />
+              Envision the board with the pieces as shown. When you know the
+              continuation, press the button below to show the board and play
+              out the tactic.
+            </Text>
+            <Spacer height={24} />
+            <Button
+              onPress={() => {
                 state.quick((s) => {
-                  s.refreshPuzzle(s);
+                  s.stage = BlindfoldTrainingStage.Board;
                 });
               }}
-              onChange={([lower, upper]) => {
-                state.quick((s) => {
-                  s.numPiecesLteUserSetting.value = Math.max(upper, lower + 1);
-                  s.numPiecesGteUserSetting.value = lower;
-                });
+              style={s(c.buttons.primary)}
+            >
+              Show Board
+            </Button>
+          </>
+        )}
+        {state.isDone && (
+          <>
+            <NewPuzzleButton
+              onPress={() => {
+                state.refreshPuzzle();
               }}
             />
-            <SettingsTitle text={"Difficulty range"} />
-            <Spacer height={12} />
-            <SelectRange
-              min={0}
-              max={2500}
-              range={[
-                state.ratingGteUserSetting.value,
-                state.ratingLteUserSetting.value,
-              ]}
-              formatter={(value) => {
-                return `${value}`;
-              }}
-              step={50}
-              onFinish={() => {
-                state.quick((s) => {
-                  s.refreshPuzzle(s);
-                });
-              }}
-              onChange={([lower, upper]) => {
-                state.quick((s) => {
-                  s.ratingLteUserSetting.value = Math.max(upper, lower + 300);
-                  s.ratingGteUserSetting.value = lower;
-                });
-              }}
-            />
-          </View>
-        </Modal>
-      </View>
-    </TrainerLayout>
+          </>
+        )}
+        <Spacer height={12} />
+        <View
+          style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
+        >
+          <Button
+            style={s(c.buttons.squareBasicButtons)}
+            onPress={() => {
+              (async () => {
+                if (Platform.OS == "web") {
+                  window.open(
+                    `https://lichess.org/training/${state.puzzle.id}`,
+                    "_blank"
+                  );
+                }
+              })();
+            }}
+          >
+            <Text style={s(c.buttons.basic.textStyles)}>
+              <i
+                style={s(c.fg(c.colors.textInverse))}
+                className="fas fa-search"
+              ></i>
+            </Text>
+          </Button>
+          {helpModal}
+          <Button
+            style={s(c.buttons.squareBasicButtons)}
+            onPress={() => {
+              setHelpOpen(true);
+            }}
+          >
+            <Text style={s(c.buttons.basic.textStyles)}>
+              <i
+                style={s(c.fg(c.colors.textInverse))}
+                className="fas fa-circle-question"
+              ></i>
+            </Text>
+          </Button>
+          <Button
+            style={s(c.buttons.squareBasicButtons)}
+            onPress={() => {
+              setSettingsOpen(true);
+            }}
+          >
+            <i
+              style={s(c.fg(c.colors.textInverse))}
+              className="fas fa-gear"
+            ></i>
+          </Button>
+          <Modal
+            onClose={() => {
+              setSettingsOpen(false);
+            }}
+            visible={settingsOpen}
+          >
+            <View style={s(c.px(12), c.py(12))}>
+              <SettingsTitle text={"Number of Pieces"} />
+              <Spacer height={12} />
+              <SelectRange
+                min={3}
+                max={15}
+                range={[
+                  state.numPiecesGteUserSetting.value,
+                  state.numPiecesLteUserSetting.value,
+                ]}
+                step={1}
+                onFinish={() => {
+                  state.quick((s) => {
+                    s.refreshPuzzle(s);
+                  });
+                }}
+                onChange={([lower, upper]) => {
+                  state.quick((s) => {
+                    s.numPiecesLteUserSetting.value = Math.max(
+                      upper,
+                      lower + 1
+                    );
+                    s.numPiecesGteUserSetting.value = lower;
+                  });
+                }}
+              />
+              <SettingsTitle text={"Difficulty range"} />
+              <Spacer height={12} />
+              <SelectRange
+                min={0}
+                max={2500}
+                range={[
+                  state.ratingGteUserSetting.value,
+                  state.ratingLteUserSetting.value,
+                ]}
+                formatter={(value) => {
+                  return `${value}`;
+                }}
+                step={50}
+                onFinish={() => {
+                  state.quick((s) => {
+                    s.refreshPuzzle(s);
+                  });
+                }}
+                onChange={([lower, upper]) => {
+                  state.quick((s) => {
+                    s.ratingLteUserSetting.value = Math.max(upper, lower + 300);
+                    s.ratingGteUserSetting.value = lower;
+                  });
+                }}
+              />
+            </View>
+          </Modal>
+        </View>
+      </TrainerLayout>
+    </PageContainer>
   );
 };
 

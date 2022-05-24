@@ -30,6 +30,8 @@ import {
   useBlindfoldTrainingStore,
   useBlunderRecognitionStore,
   useGamesSearchState,
+  MIN_ELO,
+  MAX_ELO,
 } from "../utils/state";
 import { chunked, intersperse } from "../utils/intersperse";
 import { Chess, Piece, SQUARES } from "@lubert/chess.ts";
@@ -51,6 +53,9 @@ import { LichessGame } from "app/models";
 import client from "app/client";
 import BeatLoader from "react-spinners/BeatLoader";
 import { PageContainer } from "./PageContainer";
+import { LichessGameCell } from "./LichessGameCell";
+import { formatGameResult } from "app/utils/formatGameResult";
+import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -62,12 +67,10 @@ const PIECE_TYPES = ["k", "q", "r", "b", "n", "p"];
 const COLORS = ["w", "b"];
 const MAX_BLUNDERS = 10;
 
-const MIN_ELO = 2200;
-const MAX_ELO = 2800;
-
 export const GamesSearch = () => {
   const isMobile = useIsMobile();
   const state = useGamesSearchState();
+  const hasBetaAccess = useHasBetaAccess();
   console.log("state whiteRating", state.whiteRating);
   // const pieces = state.chessState.position
   //   .board()
@@ -162,104 +165,25 @@ export const GamesSearch = () => {
               link += "/black";
             }
             return (
-              <a href={link} target="_blank">
-                <View
-                  style={s(
-                    c.px(16),
-                    c.py(16),
-                    c.bg(c.grays[80]),
-                    c.br(4),
-                    c.width(400),
-                    c.clickable,
-                    c.relative
-                  )}
-                >
-                  <View
-                    style={s(
-                      c.absolute,
-                      c.top(0),
-                      c.right(0),
-                      c.pr(12),
-                      c.pt(12)
-                    )}
-                  >
-                    <Text style={s()}>
-                      <i
-                        style={s(
-                          c.fg(c.colors.textInverse),
-                          c.fontSize(18),
-                          c.fg(c.grays[40])
-                        )}
-                        className="fas fa-arrow-up-right-from-square"
-                      ></i>
-                    </Text>
-                  </View>
-                  <Spacer height={0} />
-                  <View style={s(c.column)}>
-                    {intersperse(
-                      ["white", "black"].map((color, i) => {
-                        console.log(game);
-                        return (
-                          <View style={s(c.column)}>
-                            <View style={s(c.row, c.alignCenter)}>
-                              <View
-                                style={s(c.round, c.size(12), c.bg(color))}
-                              ></View>
-
-                              <Spacer width={4} />
-                              <Text
-                                style={s(
-                                  c.fg(c.colors.textInverseSecondary),
-                                  c.weightBold
-                                )}
-                              >
-                                {game[`${color}Name`]}
-                              </Text>
-                              <Spacer width={4} />
-                              <Text style={s(c.fg(c.grays[40]), c.weightBold)}>
-                                ({game[`${color}Elo`]})
-                              </Text>
-                            </View>
-                            {false && (
-                              <>
-                                <Spacer height={4} />
-                                <Text
-                                  style={s(c.fg(c.colors.textInverseSecondary))}
-                                >
-                                  <b>{game[`${color}Blunders`]}</b> blunders
-                                </Text>
-                                <Spacer height={4} />
-                                <Text
-                                  style={s(c.fg(c.colors.textInverseSecondary))}
-                                >
-                                  <b>{game[`${color}CentipawnLoss`]}</b> avg
-                                  centipawn loss
-                                </Text>
-                              </>
-                            )}
-                          </View>
-                        );
-                      }),
-                      (i) => {
-                        return <Spacer height={12} key={i} />;
-                      }
-                    )}
-                  </View>
-                  <Spacer height={24} />
-                  <View style={s(c.row, c.justifyBetween, c.alignEnd)}>
-                    <Text style={s(c.weightBold, c.fontSize(18))}>
-                      {formatGameResult(game.result)}
-                    </Text>
-                    <Text style={s(c.row, c.selfEnd, c.alignEnd)}>
-                      <Text style={s(c.weightBold, c.fontSize(18))}>
-                        {Math.floor(game.numberMoves / 2)}
-                      </Text>
-                      <Spacer width={4} />
-                      <Text style={s(c.fontSize(14), c.mb(0))}>moves</Text>
-                    </Text>
-                  </View>
-                </View>
-              </a>
+              <View style={s(c.column)}>
+                <a href={link} target="_blank">
+                  <LichessGameCell game={game} />
+                </a>
+                {hasBetaAccess && (
+                  <>
+                    <Button
+                      style={s(c.buttons.primary)}
+                      onPress={() => {
+                        client.post("/api/v1/my_games/add", {
+                          gameIds: [game.id],
+                        });
+                      }}
+                    >
+                      Add to memorized games
+                    </Button>
+                  </>
+                )}
+              </View>
             );
           }),
           (i) => {
@@ -467,18 +391,6 @@ export const GamesSearch = () => {
   }
   return <PageContainer>{inner}</PageContainer>;
 };
-function formatGameResult(r: GameSearchResult) {
-  switch (r) {
-    case GameSearchResult.White:
-      return "White wins";
-    case GameSearchResult.Black:
-      return "Black wins";
-    case GameSearchResult.Draw:
-      return "Draw";
-    default:
-      break;
-  }
-}
 
 const ExampleGame = ({
   name,
