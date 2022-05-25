@@ -9,13 +9,17 @@ import { chunked, intersperse } from "../utils/intersperse";
 import { LichessGame } from "app/models";
 import { GameSearchResult } from "app/utils/state";
 import { formatGameResult } from "app/utils/formatGameResult";
+import { lineToPgn } from "app/utils/repertoire";
+import { take } from "lodash";
 
 export const LichessGameCell = ({
   game,
   hideLink,
+  showFirstMoves,
 }: {
   game: LichessGame;
   hideLink?: boolean;
+  showFirstMoves?: boolean;
 }) => {
   return (
     <View
@@ -85,6 +89,15 @@ export const LichessGameCell = ({
         )}
       </View>
       <Spacer height={24} />
+      {showFirstMoves && (
+        <View style={s()}>
+          <Text style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}>
+            {lineToPgn(take(game.moves, 8))}
+          </Text>
+          <Spacer height={4} />
+        </View>
+      )}
+
       <View style={s(c.row, c.justifyBetween, c.alignEnd)}>
         <Text style={s(c.weightBold, c.fontSize(18))}>
           {formatGameResult(game.result)}

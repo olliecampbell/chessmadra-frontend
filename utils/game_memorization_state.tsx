@@ -81,8 +81,6 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               let availableMove = state.chessState.availableMoves.find(
                 (m) => m.to == square
               );
-              console.log("Available");
-              console.log(logProxy(availableMove));
               if (availableMove) {
                 if (availableMove.san == state.nextMoves[0]) {
                   state.makeNextMove(state);
@@ -93,6 +91,11 @@ export const useGameMemorizationState = create<GameMemorizationState>(
                     state.movesMissed += 1;
                   }
                 }
+                return;
+              }
+              let from = state.chessState.availableMoves[0]?.from;
+              if (from === square) {
+                state.chessState.availableMoves = [];
                 return;
               }
               let moves = state.chessState.position.moves({
@@ -111,6 +114,8 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.moveNumber += 1;
               let move = s.nextMoves.shift();
               s.chessState.position.move(move);
+              move = s.nextMoves.shift();
+              s.chessState.position.move(move);
               s.missedCurrentMove = false;
               if (isEmpty(s.nextMoves)) {
                 s.numReviewed.value += 1;
@@ -128,6 +133,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
           giveUpOnMove: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               console.log("s", s);
+              s.movesMissed += 1;
               s.makeNextMove(s);
             }),
           setActiveGame: (game: LichessGame, _state?: GameMemorizationState) =>

@@ -327,7 +327,8 @@ export const ChessboardView = ({
                             !isRightEdge && c.borderRight(hiddenColorsBorder)
                           )
                       )}
-                      onPress={() => {
+                      onPress={() => {}}
+                      onPressIn={() => {
                         onSquarePress(square);
                       }}
                     >

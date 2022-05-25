@@ -15,7 +15,10 @@ import { chunked } from "app/utils/intersperse";
 import Link from "next/link";
 import { failOnTrue } from "app/utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
-import { useGameMemorizationState } from "app/utils/game_memorization_state";
+import {
+  GameMemorizationState,
+  useGameMemorizationState,
+} from "app/utils/game_memorization_state";
 import { LichessGameCell } from "./LichessGameCell";
 import { ProgressMessageView } from "app/components/ProgressMessage";
 import client from "app/client";
@@ -105,6 +108,22 @@ export const GameMemorization = () => {
               ></i>
             </Text>
           </Button>
+          <Spacer width={12} />
+          <Button
+            style={s(c.buttons.squareBasicButtons)}
+            onPress={() => {
+              (async () => {
+                removeGame(state.activeGame.id, state);
+              })();
+            }}
+          >
+            <Text style={s(c.buttons.basic.textStyles)}>
+              <i
+                style={s(c.fg(c.colors.textInverse))}
+                className="fas fa-trash-can"
+              ></i>
+            </Text>
+          </Button>
         </View>
       </TrainerLayout>
     );
@@ -138,14 +157,7 @@ export const GameMemorization = () => {
                     c.bg("none")
                   )}
                   onPress={() => {
-                    client.post("/api/v1/my_games/remove", {
-                      gameIds: [game.id],
-                    });
-                    state.quick((s) => {
-                      s.games = s.games.filter((g) => {
-                        return g.id !== game.id;
-                      });
-                    });
+                    removeGame(game.id, state);
                   }}
                 >
                   <Text style={s(c.buttons.basic.textStyles)}>
@@ -160,7 +172,7 @@ export const GameMemorization = () => {
                     state.setActiveGame(game);
                   }}
                 >
-                  <LichessGameCell game={game} hideLink />
+                  <LichessGameCell showFirstMoves game={game} hideLink />
                 </Pressable>
               </View>
             );
@@ -181,3 +193,14 @@ export const GameMemorization = () => {
   }
   return <PageContainer>{inner}</PageContainer>;
 };
+function removeGame(id: String, state: GameMemorizationState) {
+  client.post("/api/v1/my_games/remove", {
+    gameIds: [id],
+  });
+  state.quick((s) => {
+    s.activeGame = null;
+    s.games = s.games.filter((g) => {
+      return g.id !== id;
+    });
+  });
+}

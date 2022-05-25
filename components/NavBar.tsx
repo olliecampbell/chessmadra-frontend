@@ -19,6 +19,7 @@ import KnightBlackIcon from "./chessboard/pieces/KnightBlackIcon";
 import { Button } from "./Button";
 import { useOutsideClick } from "./useOutsideClick";
 import { failOnTrue } from "../utils/test_settings";
+import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 
 export const navItems = [
   {
@@ -105,6 +106,7 @@ export const NavBar = (props: {}) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const authStatus = AppStore.useState((s) => s.auth.authStatus);
   const padding = 16;
+  const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
   useOutsideClick(mobileDrawerRef, () => {
     setMobileNavOpen(false);
@@ -132,7 +134,7 @@ export const NavBar = (props: {}) => {
         <Spacer width={12} />
         {intersperse(
           navItems
-            .filter((n) => !n.beta)
+            .filter((n) => !n.beta || hasBetaAccess)
             .map((navItem) => {
               const isActive = router.asPath == navItem.path;
               return (
@@ -267,7 +269,7 @@ export const NavBar = (props: {}) => {
       >
         {intersperse(
           navItems
-            .filter((n) => !n.beta)
+            .filter((n) => !n.beta || hasBetaAccess)
             .map((navItem) => {
               const isActive = router.asPath == navItem.path;
               return (
