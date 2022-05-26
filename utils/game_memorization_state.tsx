@@ -18,7 +18,16 @@ import {
   setter,
   flashRing,
 } from "./state";
-import { cloneDeep, dropWhile, isEmpty, last, sample, take } from "lodash";
+import {
+  cloneDeep,
+  drop,
+  dropWhile,
+  first,
+  isEmpty,
+  last,
+  sample,
+  take,
+} from "lodash";
 import {
   BySide,
   lineToPgn,
@@ -112,9 +121,8 @@ export const useGameMemorizationState = create<GameMemorizationState>(
             setter(set, _state, (s) => {
               s.chessState.availableMoves = [];
               s.moveNumber += 1;
-              let move = s.nextMoves.shift();
-              s.chessState.position.move(move);
-              move = s.nextMoves.shift();
+              s._makeNextMove(s);
+              s._makeNextMove(s);
               s.chessState.position.move(move);
               s.missedCurrentMove = false;
               if (isEmpty(s.nextMoves)) {
@@ -136,6 +144,13 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.movesMissed += 1;
               s.makeNextMove(s);
             }),
+          _makeNextMove: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              let move = first(s.nextMoves);
+              s.nextMoves = drop(s.activeGame.moves, 1);
+              s.chessState.position.move(move);
+            }),
+
           setActiveGame: (game: LichessGame, _state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               s.activeGame = game;
@@ -144,10 +159,11 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.progressMessage = null;
               s.chessState.position = new Chess();
               s.movesMissed = 0;
+              s.nextMoves = s.activeGame.moves;
               if (s.activeGame.result === -1) {
                 s.chessState.flipped = true;
+                s._makeNextMove(s);
               }
-              s.nextMoves = s.activeGame.moves;
             }),
           fetchGames: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
