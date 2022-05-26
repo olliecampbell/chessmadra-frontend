@@ -57,6 +57,7 @@ export interface GameMemorizationState {
   fetchGames: (_state?: GameMemorizationState) => void;
   retryGame: (_state?: GameMemorizationState) => void;
   makeNextMove: (_state?: GameMemorizationState) => void;
+  _makeNextMove: (_state?: GameMemorizationState) => void;
   newRandomGame: (_state?: GameMemorizationState) => void;
   giveUpOnMove: (_state?: GameMemorizationState) => void;
   nextMoves: MoveIdentifier[];
@@ -123,7 +124,6 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.moveNumber += 1;
               s._makeNextMove(s);
               s._makeNextMove(s);
-              s.chessState.position.move(move);
               s.missedCurrentMove = false;
               if (isEmpty(s.nextMoves)) {
                 s.numReviewed.value += 1;
@@ -144,7 +144,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.movesMissed += 1;
               s.makeNextMove(s);
             }),
-          _makeNextMove: (_state?: RepertoireState) =>
+          _makeNextMove: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               let move = first(s.nextMoves);
               s.nextMoves = drop(s.activeGame.moves, 1);
