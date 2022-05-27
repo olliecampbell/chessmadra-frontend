@@ -44,6 +44,7 @@ export interface VisualizationState
   extends PuzzleState,
     PuzzleTraining<VisualizationState> {
   progressMessage: ProgressMessage;
+  animatePieceMove: (move: Move, state?: VisualizationState) => void;
   mockPassFail: boolean;
   helpOpen: boolean;
   showPuzzlePosition: boolean;

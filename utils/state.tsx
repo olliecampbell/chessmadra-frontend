@@ -192,6 +192,7 @@ const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
           state.puzzlePosition.move(move);
           if (otherSideMove) {
             state.puzzlePosition.move(otherSideMove);
+            state.animatePieceMove(otherSideMove, state);
           }
           console.log(state.puzzlePosition.ascii());
           state.solutionMoves.shift();
@@ -235,6 +236,17 @@ const createVisualizationState = (
 ): VisualizationState => {
   return {
     ...createPuzzleState(set, get),
+    animatePieceMove: (move: Move, state?: VisualizationState) => {
+      setter<VisualizationState>(set, state, (state) => {
+        animatePieceMove(
+          state.chessState,
+          move,
+          PlaybackSpeed.Normal,
+          () => {}
+        );
+      });
+    },
+
     onPuzzleMoveSuccess: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
         console.log("move success");
@@ -1107,6 +1119,7 @@ export interface PuzzleTraining<T> {
   onPuzzleMoveSuccess: (state?: T) => void;
   onPuzzleMoveFailure: (move: Move, state?: T) => void;
   onPuzzleSuccess: (state?: T) => void;
+  animatePieceMove: (move: Move, state?: T) => void;
 }
 
 export const setter = <T extends object>(
