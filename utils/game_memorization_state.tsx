@@ -17,6 +17,7 @@ import {
   immer,
   setter,
   flashRing,
+  animatePieceMove,
 } from "./state";
 import {
   cloneDeep,
@@ -43,6 +44,7 @@ import {
 import { StorageItem } from "./storageItem";
 import { Chess } from "@lubert/chess.ts";
 import {
+  PlaybackSpeed,
   ProgressMessage,
   ProgressMessageType,
 } from "app/types/VisualizationState";
@@ -57,7 +59,7 @@ export interface GameMemorizationState {
   fetchGames: (_state?: GameMemorizationState) => void;
   retryGame: (_state?: GameMemorizationState) => void;
   makeNextMove: (_state?: GameMemorizationState) => void;
-  _makeNextMove: (_state?: GameMemorizationState) => void;
+  _makeNextMove: (animate?: boolean, _state?: GameMemorizationState) => void;
   newRandomGame: (_state?: GameMemorizationState) => void;
   giveUpOnMove: (_state?: GameMemorizationState) => void;
   nextMoves: MoveIdentifier[];
@@ -121,9 +123,8 @@ export const useGameMemorizationState = create<GameMemorizationState>(
           makeNextMove: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               s.chessState.availableMoves = [];
-              s.moveNumber += 1;
-              s._makeNextMove(s);
-              s._makeNextMove(s);
+              s._makeNextMove(false, s);
+              s._makeNextMove(true, s);
               s.missedCurrentMove = false;
               if (isEmpty(s.nextMoves)) {
                 s.numReviewed.value += 1;
@@ -144,10 +145,28 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.movesMissed += 1;
               s.makeNextMove(s);
             }),
-          _makeNextMove: (_state?: GameMemorizationState) =>
+          _makeNextMove: (animate: boolean, _state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               let move = first(s.nextMoves);
-              s.nextMoves = drop(s.activeGame.moves, 1);
+              if (!move) {
+                return;
+              }
+              s.moveNumber += 1;
+              console.log("Move is ", move);
+              console.log("next moves", s.nextMoves);
+              s.nextMoves = drop(s.nextMoves, 1);
+              if (animate) {
+                let moveObj = s.chessState.position.validateMoves([move])[0];
+                // s.chessState.animatedMove = moveObj;
+                animatePieceMove(
+                  s.chessState,
+                  moveObj,
+                  PlaybackSpeed.Slow,
+                  () => {
+                    console.log("Done animating!");
+                  }
+                );
+              }
               s.chessState.position.move(move);
             }),
 
@@ -162,7 +181,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.nextMoves = s.activeGame.moves;
               if (s.activeGame.result === -1) {
                 s.chessState.flipped = true;
-                s._makeNextMove(s);
+                s._makeNextMove(false, s);
               }
             }),
           fetchGames: (_state?: GameMemorizationState) =>

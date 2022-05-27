@@ -165,6 +165,7 @@ export const DEFAULT_CHESS_STATE = {
   flipped: false,
   position: new Chess(),
   moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
+  pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
   moveIndicatorOpacityAnim: new Animated.Value(0),
 };
 
@@ -1164,6 +1165,28 @@ function animateMove(
     Animated.timing(chessState.moveIndicatorOpacityAnim, {
       toValue: 0,
       duration: fadeDuration,
+      useNativeDriver: false,
+      easing: Easing.inOut(Easing.ease),
+    }),
+  ]).start(callback);
+}
+
+export function animatePieceMove(
+  chessState: ChessboardState,
+  move: Move,
+  speed: PlaybackSpeed,
+  callback: () => void
+) {
+  chessState.animatedMove = move;
+  let { fadeDuration, moveDuration, stayDuration } =
+    getAnimationDurations(speed);
+  // @ts-ignore
+  let [start, end]: Square[] = [move.from, move.to];
+  chessState.pieceMoveAnim.setValue(getSquareOffset(start, chessState.flipped));
+  Animated.sequence([
+    Animated.timing(chessState.pieceMoveAnim, {
+      toValue: getSquareOffset(end, chessState.flipped),
+      duration: moveDuration,
       useNativeDriver: false,
       easing: Easing.inOut(Easing.ease),
     }),

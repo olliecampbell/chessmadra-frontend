@@ -232,43 +232,67 @@ export const ChessboardView = ({
           if (pos) {
             piece = pos.get(sq);
           }
-          let layout = {};
-
+          console.log(pos.ascii());
           let posStyles = s(
             c.top(`${getSquareOffset(sq, state.flipped).y * 100}%`),
             c.left(`${getSquareOffset(sq, state.flipped).x * 100}%`)
           );
+          let animated = false;
+          if (state.animatedMove?.to && sq == state.animatedMove?.to) {
+            animated = true;
+            console.log("True for ", sq, piece);
+            posStyles = animatedXYToPercentage(state.pieceMoveAnim);
+          }
+          if (sq == "e5") {
+            console.log("This is a square, yes", piece, posStyles);
+          }
+          if (
+            posStyles["top"] === "37.5%" &&
+            posStyles["left"] === "12.5%" &&
+            piece
+          ) {
+            console.log("WHAT", piece);
+          }
+          let containerViewStyles = s(
+            c.fullWidth,
+            c.absolute,
+            posStyles,
+            c.zIndex(1),
+            c.size("12.5%")
+          );
           let pieceView = null;
           if (piece) {
-            pieceView = (
-              <Animated.View
-                style={s(
-                  c.fullWidth,
-                  c.absolute,
-                  posStyles,
-                  c.zIndex(1),
-                  c.size("12.5%"),
-                  layout
-                )}
-                pointerEvents="none"
-              >
-                <PieceView piece={piece} />
-              </Animated.View>
-            );
+            let pieceViewInner = <PieceView piece={piece} />;
+            if (animated) {
+              pieceView = (
+                <Animated.View
+                  style={s(containerViewStyles)}
+                  pointerEvents="none"
+                >
+                  {pieceViewInner}
+                </Animated.View>
+              );
+            } else {
+              pieceView = (
+                <View style={s(containerViewStyles)} pointerEvents="none">
+                  {pieceViewInner}
+                </View>
+              );
+            }
           }
           let moveIndicatorView = null;
           let availableMove = availableMoves.find((m) => m.to == sq);
           if (availableMove) {
             moveIndicatorView = (
               <Animated.View
+                key={sq}
                 style={s(
                   c.fullWidth,
                   c.absolute,
                   posStyles,
                   c.zIndex(2),
                   c.center,
-                  c.size("12.5%"),
-                  layout
+                  c.size("12.5%")
                 )}
                 pointerEvents="none"
               >
