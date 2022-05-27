@@ -568,13 +568,15 @@ const createClimbState = <T extends ClimbState>(
     onFail: (state?: ClimbState) =>
       setter(set, state, (s) => {
         // TODO: fix repetition here
+        if (!s.currentPuzzleFailed) {
+          let delta = -10;
+          s.delta = delta;
+          s.lastPuzzleSuccess = false;
+          s.animatePointChange(s);
+          s.score.value = Math.max(s.score.value + delta, 0);
+          s.updateStep(s);
+        }
         s.currentPuzzleFailed = true;
-        let delta = -10;
-        s.delta = delta;
-        s.lastPuzzleSuccess = false;
-        s.animatePointChange(s);
-        s.score.value = Math.max(s.score.value + delta, 0);
-        s.updateStep(s);
       }),
     onSuccess: (state?: ClimbState) =>
       setter(set, state, (s) => {
