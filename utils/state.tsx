@@ -482,13 +482,13 @@ const createVisualizationState = (
             Animated.timing(state.playButtonFlashAnim, {
               toValue: 1.0,
               duration: animDuration,
-              useNativeDriver: false,
+              useNativeDriver: true,
             }),
 
             Animated.timing(state.playButtonFlashAnim, {
               toValue: 0,
               duration: animDuration,
-              useNativeDriver: false,
+              useNativeDriver: true,
             }),
           ])
         ).start();
@@ -603,13 +603,13 @@ const createClimbState = <T extends ClimbState>(
           Animated.timing(s.scoreOpacityAnim, {
             toValue: 1,
             duration: animDuration,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
 
           Animated.timing(s.scoreOpacityAnim, {
             toValue: 0,
             duration: animDuration,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
         ]).start();
       }),
@@ -665,7 +665,7 @@ export const useColorTrainingStore = create<ColorTrainingState>(
           Animated.timing(state.widthAnim, {
             toValue: 0.0,
             duration: remainingTime,
-            useNativeDriver: false,
+            useNativeDriver: true,
             easing: Easing.linear,
           }).start(() => {
             let state = get();
@@ -723,7 +723,7 @@ export const useColorTrainingStore = create<ColorTrainingState>(
               {
                 toValue: 0,
                 duration: animDuration,
-                useNativeDriver: false,
+                useNativeDriver: true,
               }
             ).start();
           }
@@ -739,7 +739,7 @@ export const useColorTrainingStore = create<ColorTrainingState>(
             {
               toValue: 0.8,
               duration: animDuration,
-              useNativeDriver: false,
+              useNativeDriver: true,
             }
           ).start();
         }),
@@ -1164,21 +1164,21 @@ function animateMove(
     Animated.timing(chessState.moveIndicatorOpacityAnim, {
       toValue: 1.0,
       duration: fadeDuration,
-      useNativeDriver: false,
+      useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
     }),
     Animated.delay(stayDuration),
     Animated.timing(chessState.moveIndicatorAnim, {
       toValue: getSquareOffset(end, chessState.flipped),
       duration: moveDuration,
-      useNativeDriver: false,
+      useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
     }),
     Animated.delay(stayDuration),
     Animated.timing(chessState.moveIndicatorOpacityAnim, {
       toValue: 0,
       duration: fadeDuration,
-      useNativeDriver: false,
+      useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
     }),
   ]).start(callback);
@@ -1200,7 +1200,7 @@ export function animatePieceMove(
     Animated.timing(chessState.pieceMoveAnim, {
       toValue: getSquareOffset(end, chessState.flipped),
       duration: moveDuration,
-      useNativeDriver: false,
+      useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
     }),
   ]).start(callback);
@@ -1215,13 +1215,13 @@ export function flashRing(chessState: ChessboardState, success: boolean) {
     Animated.timing(chessState.ringIndicatorAnim, {
       toValue: 1,
       duration: animDuration,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }),
 
     Animated.timing(chessState.ringIndicatorAnim, {
       toValue: 0,
       duration: animDuration,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }),
   ]).start();
 }
