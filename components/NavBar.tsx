@@ -167,14 +167,15 @@ export const NavBar = (props: {}) => {
             );
           }
         )}
-        {false && (
+        {true && (
           <View
-            style={s(
-              c.absolute,
-              c.top("50%"),
-              c.transform("translate(0%, -50%)"),
-              c.right(padding)
-            )}
+            style={
+              s(c.pl(24))
+              // c.absolute,
+              // c.top("50%"),
+              // c.transform("translate(0%, -50%)"),
+              // c.right(padding)
+            }
           >
             {authStatus === AuthStatus.Unauthenticated && (
               <Link href="/login">
@@ -194,7 +195,7 @@ export const NavBar = (props: {}) => {
                 </Text>
               </Link>
             )}
-            {authStatus === AuthStatus.Authenticated && (
+            {/*authStatus === AuthStatus.Authenticated && (
               <Link href="/login">
                 <View style={s(c.row, c.alignCenter)}>
                   <Text
@@ -211,7 +212,7 @@ export const NavBar = (props: {}) => {
                   </Text>
                 </View>
               </Link>
-            )}
+            )*/}
           </View>
         )}
       </View>
