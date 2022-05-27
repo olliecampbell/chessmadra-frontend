@@ -217,6 +217,8 @@ const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
           state.onPuzzleMoveFailure(move, state);
           state.progressMessage = {
             message: `${move.san} was not the right move, try again.`,
+            // onPromptPress: () => {},
+            // prompt: "Give up?",
             type: ProgressMessageType.Error,
           };
         }

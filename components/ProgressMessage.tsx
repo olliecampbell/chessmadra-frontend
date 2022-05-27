@@ -36,6 +36,29 @@ export const ProgressMessageView = ({
       >
         {progressMessage.message}
       </Text>
+      {progressMessage.prompt && (
+        <Pressable
+          onPress={() => {
+            progressMessage.onPromptPress();
+          }}
+        >
+          <Text
+            style={s(
+              c.selfStart,
+              c.fg(
+                progressMessage.type === ProgressMessageType.Error
+                  ? c.colors.failureLight
+                  : c.primaries[60]
+              ),
+              c.weightBold,
+              c.borderBottom(`1px solid ${c.failureShades[60]}`),
+              c.fontSize(isMobile ? 14 : 16)
+            )}
+          >
+            {progressMessage.prompt}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 };

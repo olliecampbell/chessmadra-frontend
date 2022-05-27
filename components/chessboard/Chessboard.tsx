@@ -232,7 +232,7 @@ export const ChessboardView = ({
           if (pos) {
             piece = pos.get(sq);
           }
-          console.log(pos.ascii());
+
           let posStyles = s(
             c.top(`${getSquareOffset(sq, state.flipped).y * 100}%`),
             c.left(`${getSquareOffset(sq, state.flipped).x * 100}%`)

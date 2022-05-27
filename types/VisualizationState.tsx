@@ -122,6 +122,8 @@ interface Step {
 
 export interface ProgressMessage {
   message: string;
+  prompt?: string;
+  onPromptPress?: () => void;
   type: ProgressMessageType;
 }
 export enum ProgressMessageType {
