@@ -94,10 +94,11 @@ export const GameMemorization = () => {
             style={s(c.buttons.squareBasicButtons)}
             onPress={() => {
               (async () => {
-                window.open(
-                  `https://lichess.org/${state.activeGame.id}#${state.moveNumber}`,
-                  "_blank"
-                );
+                let link = `https://lichess.org/${state.activeGame.id}/${
+                  state.activeGame.result == -1 ? "black" : ""
+                }#${state.moveNumber}`;
+                console.log({ link });
+                window.open(link, "_blank");
               })();
             }}
           >
