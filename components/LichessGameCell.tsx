@@ -55,7 +55,7 @@ export const LichessGameCell = ({
       <View style={s(c.column, c.px(16))}>
         {intersperse(
           ["white", "black"].map((color, i) => {
-            console.log(game);
+            // console.log(game);
             return (
               <View style={s(c.column)}>
                 <View style={s(c.row, c.alignCenter)}>

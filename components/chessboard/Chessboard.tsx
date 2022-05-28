@@ -240,18 +240,8 @@ export const ChessboardView = ({
           let animated = false;
           if (state.animatedMove?.to && sq == state.animatedMove?.to) {
             animated = true;
-            console.log("True for ", sq, piece);
+            // console.log("True for ", sq, piece);
             posStyles = animatedXYToPercentage(state.pieceMoveAnim);
-          }
-          if (sq == "e5") {
-            console.log("This is a square, yes", piece, posStyles);
-          }
-          if (
-            posStyles["top"] === "37.5%" &&
-            posStyles["left"] === "12.5%" &&
-            piece
-          ) {
-            console.log("WHAT", piece);
           }
           let containerViewStyles = s(
             c.fullWidth,

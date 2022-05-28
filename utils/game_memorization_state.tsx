@@ -64,7 +64,7 @@ export interface GameMemorizationState {
   ) => void;
   _makeNextMove: (
     animate: boolean,
-    onAnimationEnd: () => void,
+    onAnimationEnd: (state: GameMemorizationState) => void,
     _state?: GameMemorizationState
   ) => void;
   newRandomGame: (_state?: GameMemorizationState) => void;
@@ -144,23 +144,21 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.chessState.availableMoves = [];
               s._makeNextMove(
                 animateOwnMove,
-                () => {
-                  set((s) => {
-                    s._makeNextMove(true, () => {}, s);
-                    s.missedCurrentMove = false;
-                    if (isEmpty(s.nextMoves)) {
-                      s.numReviewed.value += 1;
-                      s.progressMessage = {
-                        message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
-                        type: ProgressMessageType.Success,
-                      };
-                      client.post("/api/v1/my_games/mark_reviewed", {
-                        gameId: s.activeGame.id,
-                        movesMissed: s.movesMissed,
-                      });
-                      s.fetchGames(s);
-                    }
-                  });
+                (s) => {
+                  s._makeNextMove(true, () => {}, s);
+                  s.missedCurrentMove = false;
+                  if (isEmpty(s.nextMoves)) {
+                    s.numReviewed.value += 1;
+                    s.progressMessage = {
+                      message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
+                      type: ProgressMessageType.Success,
+                    };
+                    client.post("/api/v1/my_games/mark_reviewed", {
+                      gameId: s.activeGame.id,
+                      movesMissed: s.movesMissed,
+                    });
+                    s.fetchGames(s);
+                  }
                 },
                 s
               );
@@ -178,7 +176,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
             }),
           _makeNextMove: (
             animate: boolean,
-            onAnimationEnd: () => void,
+            onAnimationEnd: (state: GameMemorizationState) => void,
             _state?: GameMemorizationState
           ) =>
             setter(set, _state, (s) => {
@@ -188,23 +186,24 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               }
               s.moveNumber += 1;
               console.log("Move is ", move);
-              console.log("next moves", s.nextMoves);
+              console.log("next moves", logProxy(s.nextMoves));
               s.nextMoves = drop(s.nextMoves, 1);
+              let moveObj = s.chessState.position.move(move);
               if (animate) {
-                let moveObj = s.chessState.position.validateMoves([move])[0];
                 // s.chessState.animatedMove = moveObj;
                 animatePieceMove(
                   s.chessState,
                   moveObj,
                   PlaybackSpeed.Slow,
                   () => {
-                    onAnimationEnd();
+                    set((s) => {
+                      onAnimationEnd(s);
+                    });
                   }
                 );
               } else {
-                onAnimationEnd();
+                onAnimationEnd(s);
               }
-              s.chessState.position.move(move);
             }),
 
           setActiveGame: (game: LichessGame, _state?: GameMemorizationState) =>
