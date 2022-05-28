@@ -122,15 +122,7 @@ export const LichessGameCell = ({
             c.px(12),
             c.py(8)
           )}
-        >
-          <Text
-            style={s(
-              c.fg(c.colors.textInverse),
-              c.weightSemiBold,
-              c.fontSize(16)
-            )}
-          ></Text>
-        </View>
+        ></View>
       ) : (
         <Spacer height={12} />
       )}

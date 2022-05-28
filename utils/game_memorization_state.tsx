@@ -72,8 +72,8 @@ export interface GameMemorizationState {
   nextMoves: MoveIdentifier[];
   movesMissed: number;
   games: LichessGame[];
-  memorized: Record<string, boolean>;
-  needsReview: Record<string, boolean>;
+  memorized: Set<string>;
+  needsReview: Set<string>;
   missedCurrentMove: boolean;
   numReviewed: StorageItem<number>;
   moveNumber: number;
@@ -81,8 +81,8 @@ export interface GameMemorizationState {
 
 interface MyGamesResponse {
   games: LichessGame[];
-  memorized: Record<string, boolean>;
-  needsReview: Record<string, boolean>;
+  memorized: string[];
+  needsReview: string[];
 }
 
 export const useGameMemorizationState = create<GameMemorizationState>(
@@ -171,7 +171,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
           giveUpOnMove: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               console.log("s", s);
-              // s.movesMissed += 1;
+              s.movesMissed += 1;
               s.makeNextMove(true, s);
             }),
           _makeNextMove: (
@@ -229,8 +229,14 @@ export const useGameMemorizationState = create<GameMemorizationState>(
                   await client.get("/api/v1/my_games");
                 set((s) => {
                   s.games = resp.games;
-                  s.memorized = resp.memorized;
-                  s.needsReview = resp.needsReview;
+                  console.log(resp.memorized);
+                  let memorizedSet = new Set(resp.memorized);
+                  console.log(memorizedSet);
+                  console.log(memorizedSet.size);
+                  console.log(memorizedSet.keys());
+                  s.memorized = memorizedSet;
+                  s.needsReview = new Set(resp.needsReview);
+                  console.log(logProxy(s.memorized));
                 });
               })();
             }),

@@ -164,6 +164,18 @@ export const GameMemorization = () => {
         <Spacer height={24} />
         {chunked(
           state.games.map((game, i) => {
+            if (game.id === "oQDMYYry") {
+              //   // console.log(JSON.parse(JSON.stringify(state.memorized)));
+              //   console.log(Object.keys(state.memorized));
+              //   console.log(
+              //     Object.keys(state.memorized).filter((k) =>
+              //       k.includes("oQDM")
+              //     )[0]
+              //   );
+              //   let utf8Encode = new TextEncoder();
+              //   console.log(utf8Encode.encode("oQDMYYry"));
+              //   console.log(utf8Encode.encode("oQdmyYry"));
+            }
             return (
               <View style={s(c.relative)}>
                 <Button
@@ -195,8 +207,8 @@ export const GameMemorization = () => {
                     showFirstMoves
                     game={game}
                     hideLink
-                    memorized={state.memorized[game.id]}
-                    needsReview={state.needsReview[game.id]}
+                    memorized={state.memorized.has(game.id)}
+                    needsReview={state.needsReview.has(game.id)}
                   />
                 </Pressable>
               </View>
