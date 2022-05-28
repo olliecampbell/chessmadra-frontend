@@ -58,16 +58,34 @@ export interface GameMemorizationState {
   setActiveGame: (game: LichessGame, _state?: GameMemorizationState) => void;
   fetchGames: (_state?: GameMemorizationState) => void;
   retryGame: (_state?: GameMemorizationState) => void;
-  makeNextMove: (_state?: GameMemorizationState) => void;
-  _makeNextMove: (animate?: boolean, _state?: GameMemorizationState) => void;
+  makeNextMove: (
+    animateOwnMove: boolean,
+    _state?: GameMemorizationState
+  ) => void;
+  _makeNextMove: (
+    animate: boolean,
+    onAnimationEnd: () => void,
+    _state?: GameMemorizationState
+  ) => void;
   newRandomGame: (_state?: GameMemorizationState) => void;
-  giveUpOnMove: (_state?: GameMemorizationState) => void;
+  giveUpOnMove: (
+    animateOwnMove: boolean,
+    _state?: GameMemorizationState
+  ) => void;
   nextMoves: MoveIdentifier[];
   movesMissed: number;
   games: LichessGame[];
+  memorized: Record<string, boolean>;
+  needsReview: Record<string, boolean>;
   missedCurrentMove: boolean;
   numReviewed: StorageItem<number>;
   moveNumber: number;
+}
+
+interface MyGamesResponse {
+  games: LichessGame[];
+  memorized: Record<string, boolean>;
+  needsReview: Record<string, boolean>;
 }
 
 export const useGameMemorizationState = create<GameMemorizationState>(
@@ -95,13 +113,14 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               );
               if (availableMove) {
                 if (availableMove.san == state.nextMoves[0]) {
-                  state.makeNextMove(state);
+                  state.makeNextMove(false, state);
                   flashRing(state.chessState, true);
                 } else {
                   flashRing(state.chessState, false);
                   if (!state.missedCurrentMove) {
                     state.movesMissed += 1;
                   }
+                  state.missedCurrentMove = true;
                 }
                 return;
               }
@@ -120,32 +139,54 @@ export const useGameMemorizationState = create<GameMemorizationState>(
             setter(set, _state, (s) => {
               s.setActiveGame(s.activeGame, s);
             }),
-          makeNextMove: (_state?: GameMemorizationState) =>
+          makeNextMove: (
+            animateOwnMove: boolean,
+            _state?: GameMemorizationState
+          ) =>
             setter(set, _state, (s) => {
               s.chessState.availableMoves = [];
-              s._makeNextMove(false, s);
-              s._makeNextMove(true, s);
-              s.missedCurrentMove = false;
-              if (isEmpty(s.nextMoves)) {
-                s.numReviewed.value += 1;
-                s.progressMessage = {
-                  message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
-                  type: ProgressMessageType.Success,
-                };
-              }
+              s._makeNextMove(
+                animateOwnMove,
+                () => {
+                  set((s) => {
+                    s._makeNextMove(true, () => {}, s);
+                    s.missedCurrentMove = false;
+                    if (isEmpty(s.nextMoves)) {
+                      s.numReviewed.value += 1;
+                      s.progressMessage = {
+                        message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
+                        type: ProgressMessageType.Success,
+                      };
+                      client.post("/api/v1/my_games/mark_reviewed", {
+                        gameId: s.activeGame.id,
+                        movesMissed: s.movesMissed,
+                      });
+                      s.fetchGames(s);
+                    }
+                  });
+                },
+                s
+              );
             }),
           newRandomGame: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               let game = sample(s.games);
               s.setActiveGame(game, s);
             }),
-          giveUpOnMove: (_state?: GameMemorizationState) =>
+          giveUpOnMove: (
+            animateOwnMove: boolean,
+            _state?: GameMemorizationState
+          ) =>
             setter(set, _state, (s) => {
               console.log("s", s);
-              s.movesMissed += 1;
-              s.makeNextMove(s);
+              // s.movesMissed += 1;
+              s.makeNextMove(true, s);
             }),
-          _makeNextMove: (animate: boolean, _state?: GameMemorizationState) =>
+          _makeNextMove: (
+            animate: boolean,
+            onAnimationEnd: () => void,
+            _state?: GameMemorizationState
+          ) =>
             setter(set, _state, (s) => {
               let move = first(s.nextMoves);
               if (!move) {
@@ -163,9 +204,11 @@ export const useGameMemorizationState = create<GameMemorizationState>(
                   moveObj,
                   PlaybackSpeed.Slow,
                   () => {
-                    console.log("Done animating!");
+                    onAnimationEnd();
                   }
                 );
+              } else {
+                onAnimationEnd();
               }
               s.chessState.position.move(move);
             }),
@@ -178,20 +221,23 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.progressMessage = null;
               s.chessState.position = new Chess();
               s.movesMissed = 0;
-              s.nextMoves = s.activeGame.moves;
-              if (s.activeGame.result === -1) {
-                s.chessState.flipped = true;
-                s._makeNextMove(false, s);
+              if (s.activeGame) {
+                s.nextMoves = s.activeGame.moves;
+                if (s.activeGame.result === -1) {
+                  s.chessState.flipped = true;
+                  s._makeNextMove(false, () => {}, s);
+                }
               }
             }),
           fetchGames: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               (async () => {
-                let { data: games }: { data: LichessGame[] } = await client.get(
-                  "/api/v1/my_games"
-                );
+                let { data: resp }: { data: MyGamesResponse } =
+                  await client.get("/api/v1/my_games");
                 set((s) => {
-                  s.games = games;
+                  s.games = resp.games;
+                  s.memorized = resp.memorized;
+                  s.needsReview = resp.needsReview;
                 });
               })();
             }),

@@ -124,6 +124,24 @@ export const GameMemorization = () => {
               ></i>
             </Text>
           </Button>
+          <Spacer width={12} />
+          <Button
+            style={s(c.buttons.squareBasicButtons)}
+            onPress={() => {
+              (async () => {
+                state.quick((s) => {
+                  s.setActiveGame(null, s);
+                });
+              })();
+            }}
+          >
+            <Text style={s(c.buttons.basic.textStyles)}>
+              <i
+                style={s(c.fg(c.colors.textInverse))}
+                className="fas fa-grid"
+              ></i>
+            </Text>
+          </Button>
         </View>
       </TrainerLayout>
     );
@@ -172,7 +190,13 @@ export const GameMemorization = () => {
                     state.setActiveGame(game);
                   }}
                 >
-                  <LichessGameCell showFirstMoves game={game} hideLink />
+                  <LichessGameCell
+                    showFirstMoves
+                    game={game}
+                    hideLink
+                    memorized={state.memorized[game.id]}
+                    needsReview={state.needsReview[game.id]}
+                  />
                 </Pressable>
               </View>
             );

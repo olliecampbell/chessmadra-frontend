@@ -15,19 +15,23 @@ import { take } from "lodash";
 export const LichessGameCell = ({
   game,
   hideLink,
+  memorized,
+  needsReview,
   showFirstMoves,
 }: {
   game: LichessGame;
   hideLink?: boolean;
+  memorized?: boolean;
+  needsReview?: boolean;
   showFirstMoves?: boolean;
 }) => {
   return (
     <View
       style={s(
-        c.px(16),
-        c.py(16),
+        c.pt(16),
         c.bg(c.grays[80]),
         c.br(4),
+        c.overflowHidden,
         c.width(400),
         c.clickable,
         c.relative
@@ -48,7 +52,7 @@ export const LichessGameCell = ({
         </View>
       )}
       <Spacer height={0} />
-      <View style={s(c.column)}>
+      <View style={s(c.column, c.px(16))}>
         {intersperse(
           ["white", "black"].map((color, i) => {
             console.log(game);
@@ -90,7 +94,7 @@ export const LichessGameCell = ({
       </View>
       <Spacer height={24} />
       {showFirstMoves && (
-        <View style={s()}>
+        <View style={s(c.px(16))}>
           <Text style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}>
             {lineToPgn(take(game.moves, 8))}
           </Text>
@@ -98,7 +102,7 @@ export const LichessGameCell = ({
         </View>
       )}
 
-      <View style={s(c.row, c.justifyBetween, c.alignEnd)}>
+      <View style={s(c.row, c.justifyBetween, c.alignEnd, c.px(16))}>
         <Text style={s(c.weightBold, c.fontSize(18))}>
           {formatGameResult(game.result)}
         </Text>
@@ -110,6 +114,26 @@ export const LichessGameCell = ({
           <Text style={s(c.fontSize(14), c.mb(0))}>moves</Text>
         </Text>
       </View>
+      {memorized || needsReview ? (
+        <View
+          style={s(
+            c.bg(memorized && !needsReview ? c.primaries[50] : c.yellows[60]),
+            c.mt(12),
+            c.px(12),
+            c.py(8)
+          )}
+        >
+          <Text
+            style={s(
+              c.fg(c.colors.textInverse),
+              c.weightSemiBold,
+              c.fontSize(16)
+            )}
+          ></Text>
+        </View>
+      ) : (
+        <Spacer height={12} />
+      )}
     </View>
   );
 };

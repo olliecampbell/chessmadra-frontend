@@ -29,8 +29,8 @@ export interface User {
 }
 
 export interface LichessGame {
-  id: String;
-  gameLink: String;
+  id: string;
+  gameLink: string;
   result: number; // GameResult
   moves: string[];
   blackCentipawnLoss: number;
