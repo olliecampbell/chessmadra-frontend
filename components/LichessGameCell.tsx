@@ -11,18 +11,17 @@ import { GameSearchResult } from "app/utils/state";
 import { formatGameResult } from "app/utils/formatGameResult";
 import { lineToPgn } from "app/utils/repertoire";
 import { take } from "lodash";
+import { MemorizedGameStatus } from "app/utils/game_memorization_state";
 
 export const LichessGameCell = ({
   game,
   hideLink,
-  memorized,
-  needsReview,
+  gameStatus,
   showFirstMoves,
 }: {
   game: LichessGame;
   hideLink?: boolean;
-  memorized?: boolean;
-  needsReview?: boolean;
+  gameStatus?: MemorizedGameStatus;
   showFirstMoves?: boolean;
 }) => {
   return (
@@ -114,10 +113,10 @@ export const LichessGameCell = ({
           <Text style={s(c.fontSize(14), c.mb(0))}>moves</Text>
         </Text>
       </View>
-      {memorized || needsReview ? (
+      {gameStatus?.everReviewed ? (
         <View
           style={s(
-            c.bg(memorized && !needsReview ? c.primaries[50] : c.yellows[60]),
+            c.bg(!gameStatus.needsReview ? c.primaries[50] : c.yellows[60]),
             c.mt(12),
             c.px(12),
             c.py(8)

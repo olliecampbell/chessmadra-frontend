@@ -1,6 +1,7 @@
 import axios from "axios";
 import applyCaseMiddleware from "axios-case-converter";
 import { AppStore } from "./store";
+import { camelCase } from "camel-case";
 
 const client = applyCaseMiddleware(
   axios.create({
@@ -12,6 +13,15 @@ const client = applyCaseMiddleware(
   {
     preservedKeys: (input) => {
       return /^\d/.test(input);
+    },
+    caseFunctions: {
+      camel: (s) => {
+        console.log("CHANGING KEY ", s);
+        if (s.startsWith("GAME_ID_")) {
+          return s.replace("GAME_ID_", "");
+        }
+        return camelCase(s);
+      },
     },
   }
 );

@@ -207,8 +207,7 @@ export const GameMemorization = () => {
                     showFirstMoves
                     game={game}
                     hideLink
-                    memorized={state.memorized.has(game.id)}
-                    needsReview={state.needsReview.has(game.id)}
+                    gameStatus={state.gameStatuses[game.id]}
                   />
                 </Pressable>
               </View>
