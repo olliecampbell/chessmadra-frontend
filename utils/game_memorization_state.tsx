@@ -68,10 +68,7 @@ export interface GameMemorizationState {
     _state?: GameMemorizationState
   ) => void;
   newRandomGame: (_state?: GameMemorizationState) => void;
-  giveUpOnMove: (
-    animateOwnMove: boolean,
-    _state?: GameMemorizationState
-  ) => void;
+  giveUpOnMove: (_state?: GameMemorizationState) => void;
   nextMoves: MoveIdentifier[];
   movesMissed: number;
   games: LichessGame[];
@@ -173,10 +170,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               let game = sample(s.games);
               s.setActiveGame(game, s);
             }),
-          giveUpOnMove: (
-            animateOwnMove: boolean,
-            _state?: GameMemorizationState
-          ) =>
+          giveUpOnMove: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               console.log("s", s);
               // s.movesMissed += 1;
