@@ -224,6 +224,8 @@ export const useGameMemorizationState = create<GameMemorizationState>(
                 if (s.activeGame.result === -1) {
                   s.chessState.flipped = true;
                   s._makeNextMove(false, () => {}, s);
+                } else {
+                  s.chessState.flipped = false;
                 }
               }
             }),
