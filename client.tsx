@@ -16,7 +16,6 @@ const client = applyCaseMiddleware(
     },
     caseFunctions: {
       camel: (s) => {
-        console.log("CHANGING KEY ", s);
         if (s.startsWith("GAME_ID_")) {
           return s.replace("GAME_ID_", "");
         }

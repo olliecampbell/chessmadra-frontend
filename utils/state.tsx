@@ -1207,7 +1207,10 @@ export function animatePieceMove(
       useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
     }),
-  ]).start(callback);
+  ]).start(() => {
+    callback();
+    chessState.animatedMove = null;
+  });
 }
 
 export function flashRing(chessState: ChessboardState, success: boolean) {
