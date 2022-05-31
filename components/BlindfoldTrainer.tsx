@@ -22,7 +22,6 @@ import {
   BlindfoldTrainingState,
   BlunderRecognitionDifficulty,
   BlunderRecognitionTab,
-  DEFAULT_CHESS_STATE,
   FinishedBlunderPuzzle,
   getBlunderRange,
   useBlindfoldTrainingStore,
@@ -84,10 +83,7 @@ export const BlindfoldTrainer = () => {
           ) : (
             <ChessboardView
               {...{
-                state: state.chessState,
-                onSquarePress: (square) => {
-                  state.onSquarePress(square);
-                },
+                state: state,
               }}
             />
           ))
@@ -96,7 +92,7 @@ export const BlindfoldTrainer = () => {
         {!state.isDone && (
           <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
             <Text style={s(c.fg(c.grays[90]), c.weightBold)}>
-              {state.chessState.position.turn() === "b" ? "Black" : "White"}
+              {state.position.turn() === "b" ? "Black" : "White"}
             </Text>{" "}
             to play.
           </Text>
@@ -256,7 +252,7 @@ const BlindfoldPieceOverview = ({
     index,
     array
   ) {
-    let piece = state.chessState.position.get(square);
+    let piece = state.position.get(square);
     if (piece != undefined) {
       let existing = result[pieceToKey(piece)] || [];
       existing.push(square);

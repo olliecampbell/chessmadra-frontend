@@ -20,7 +20,7 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { Score } from "app/components/ColorTraining";
 import { useVisualizationTraining } from "app/utils/useVisualizationTraining";
-import { DEFAULT_CHESS_STATE, useClimbStore } from "../utils/state";
+import { useClimbStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
 
 const Tile = ({ color, onPress }) => {
@@ -83,18 +83,7 @@ export const TheClimb = () => {
       <TrainerLayout
         chessboard={
           <>
-            <ChessboardView
-              {...chessboardProps}
-              styles={!state.isPlayingClimb && c.displayNone}
-            />
-            <ChessboardView
-              {...{
-                currentPosition: new Chess(),
-                state: DEFAULT_CHESS_STATE,
-                styles: state.isPlayingClimb && c.displayNone,
-                onSquarePress: () => {},
-              }}
-            />
+            <ChessboardView {...chessboardProps} />
           </>
         }
       >

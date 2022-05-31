@@ -1,7 +1,6 @@
 import { Square } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
 import { LichessGame } from "app/models";
-import { ChessboardState } from "app/types/ChessboardBiref";
 import create, {
   GetState,
   SetState,
@@ -10,15 +9,7 @@ import create, {
   StoreApi,
 } from "zustand";
 import { devtools } from "zustand/middleware";
-import {
-  createQuick,
-  DEFAULT_CHESS_STATE,
-  logProxy,
-  immer,
-  setter,
-  flashRing,
-  animatePieceMove,
-} from "./state";
+import { createQuick, logProxy, immer, setter } from "./state";
 import {
   cloneDeep,
   drop,
@@ -48,8 +39,15 @@ import {
   ProgressMessage,
   ProgressMessageType,
 } from "app/types/VisualizationState";
+import {
+  ChessboardState,
+  ChessboardStateParent,
+  createChessState,
+} from "./chessboard_state";
 
-export interface GameMemorizationState {
+export interface GameMemorizationState
+  extends ChessboardState,
+    ChessboardStateParent<GameMemorizationState> {
   quick: (fn: (_: GameMemorizationState) => void) => void;
   chessState: ChessboardState;
   progressMessage: ProgressMessage;
@@ -103,40 +101,43 @@ export const useGameMemorizationState = create<GameMemorizationState>(
         ({
           // TODO: clone?
           ...createQuick(set),
-          chessState: DEFAULT_CHESS_STATE,
+          ...createChessState(set, get, () => {}),
           numReviewed: new StorageItem("memorized-games-review", 0),
-          onSquarePress: (square: Square) =>
-            set((state) => {
-              if (state.nextMoves.length === 0) {
-                return;
-              }
-              let availableMove = state.chessState.availableMoves.find(
-                (m) => m.to == square
-              );
-              if (availableMove) {
-                if (availableMove.san == state.nextMoves[0]) {
-                  state.makeNextMove(false, state);
-                  flashRing(state.chessState, true);
-                } else {
-                  flashRing(state.chessState, false);
-                  if (!state.missedCurrentMove) {
-                    state.movesMissed += 1;
-                  }
-                  state.missedCurrentMove = true;
+          attemptMove: (move, _state: GameMemorizationState) =>
+            setter(set, _state, (state: GameMemorizationState) => {
+              if (move.san == state.nextMoves[0]) {
+                state.makeNextMove(false, state);
+                state.flashRing(true, state);
+              } else {
+                state.flashRing(false, state);
+                if (!state.missedCurrentMove) {
+                  state.movesMissed += 1;
                 }
-                return;
+                state.missedCurrentMove = true;
               }
-              let from = state.chessState.availableMoves[0]?.from;
-              if (from === square) {
-                state.chessState.availableMoves = [];
-                return;
-              }
-              let moves = state.chessState.position.moves({
-                square,
-                verbose: true,
-              });
-              state.chessState.availableMoves = moves;
+              return;
             }),
+          // onSquarePress: (square: Square) =>
+          //   set((state) => {
+          //     if (state.nextMoves.length === 0) {
+          //       return;
+          //     }
+          //     let availableMove = state.chessState.availableMoves.find(
+          //       (m) => m.to == square
+          //     );
+          //     if (availableMove) {
+          //     }
+          //     let from = state.chessState.availableMoves[0]?.from;
+          //     if (from === square) {
+          //       state.chessState.availableMoves = [];
+          //       return;
+          //     }
+          //     let moves = state.chessState.position.moves({
+          //       square,
+          //       verbose: true,
+          //     });
+          //     state.chessState.availableMoves = moves;
+          //   }),
           retryGame: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
               s.setActiveGame(s.activeGame, s);
@@ -146,7 +147,7 @@ export const useGameMemorizationState = create<GameMemorizationState>(
             _state?: GameMemorizationState
           ) =>
             setter(set, _state, (s) => {
-              s.chessState.availableMoves = [];
+              s.availableMoves = [];
               s._makeNextMove(
                 animateOwnMove,
                 (s) => {
@@ -191,22 +192,21 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               }
               s.moveNumber += 1;
               console.log("Move is ", move);
-              console.log("next moves", logProxy(s.nextMoves));
               s.nextMoves = drop(s.nextMoves, 1);
-              let moveObj = s.chessState.position.move(move);
+              console.log("next moves", logProxy(s.nextMoves));
+              let moveObj = s.position.validateMoves([move])?.[0];
+              console.log("Move obj", moveObj);
               if (animate) {
-                // s.chessState.animatedMove = moveObj;
-                animatePieceMove(
-                  s.chessState,
+                s.animatePieceMove(
                   moveObj,
-                  PlaybackSpeed.Slow,
-                  () => {
-                    set((s) => {
-                      onAnimationEnd(s);
-                    });
-                  }
+                  PlaybackSpeed.Normal,
+                  (s: GameMemorizationState) => {
+                    onAnimationEnd(s);
+                  },
+                  s
                 );
               } else {
+                s.position.move(moveObj);
                 onAnimationEnd(s);
               }
             }),
@@ -217,15 +217,15 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               s.missedCurrentMove = false;
               s.moveNumber = 0;
               s.progressMessage = null;
-              s.chessState.position = new Chess();
+              s.position = new Chess();
               s.movesMissed = 0;
               if (s.activeGame) {
                 s.nextMoves = s.activeGame.moves;
                 if (s.activeGame.result === -1) {
-                  s.chessState.flipped = true;
+                  s.flipped = true;
                   s._makeNextMove(false, () => {}, s);
                 } else {
-                  s.chessState.flipped = false;
+                  s.flipped = false;
                 }
               }
             }),

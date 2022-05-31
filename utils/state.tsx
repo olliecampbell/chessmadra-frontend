@@ -1,5 +1,4 @@
-import { getSquareOffset, isCheckmate } from "../utils/chess";
-import { Store } from "pullstate";
+import { isCheckmate } from "../utils/chess";
 import { StorageItem } from "app/utils/storageItem";
 import {
   PlaybackSpeed,
@@ -12,14 +11,9 @@ import {
   ColorTrainingState,
   PuzzleState,
 } from "app/types/VisualizationState";
-import {
-  fakePuzzle,
-  fakeBlackPuzzle,
-  fakeBlackBlunderPuzzle,
-  fakeWhiteBlunderPuzzle,
-} from "app/mocks/puzzles";
+import { fakeBlackPuzzle, fakeBlackBlunderPuzzle } from "app/mocks/puzzles";
 import { algebraic, Chess, Color, Move, SQUARES } from "@lubert/chess.ts";
-import { produce, original } from "immer";
+import { produce } from "immer";
 import type { Draft } from "immer";
 import create, {
   GetState,
@@ -28,41 +22,11 @@ import create, {
   StateCreator,
   StoreApi,
 } from "zustand";
-import {
-  PersistOptions,
-  StoreApiWithDevtools,
-  StoreApiWithPersist,
-  StoreApiWithSubscribeWithSelector,
-  combine,
-  devtools,
-  persist,
-  redux,
-  subscribeWithSelector,
-} from "zustand/middleware";
+import { devtools } from "zustand/middleware";
 import { fetchNewBlunderPuzzle, fetchNewPuzzle } from "./api";
-import {
-  takeRight,
-  cloneDeep,
-  indexOf,
-  isEmpty,
-  first,
-  sample,
-  mapValues,
-} from "lodash";
+import { takeRight, cloneDeep, isEmpty, sample } from "lodash";
 import { times } from "../utils";
-import { WritableDraft } from "immer/dist/internal";
-import { getAnimationDurations } from "../components/chessboard/Chessboard";
-import {
-  Animated,
-  Dimensions,
-  Easing,
-  Platform,
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { COLUMNS, ROWS } from "../types/Chess";
-import { c } from "../styles";
+import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
 import {
   DEBUG_CLIMB_START_PLAYING,
@@ -70,10 +34,12 @@ import {
   DEBUG_PASS_FAIL_BUTTONS,
   failOnTrue,
 } from "./test_settings";
-import { ChessboardState } from "../types/ChessboardBiref";
 import { BlunderPuzzle, LichessGame, LichessPuzzle } from "../models";
-import { MOCK_RETURNED_GAMES } from "app/mocks/games";
-import { forEach } from "lodash";
+import {
+  ChessboardState,
+  ChessboardStateParent,
+  createChessState,
+} from "./chessboard_state";
 
 export const MIN_ELO = 2200;
 export const MAX_ELO = 2800;
@@ -152,24 +118,10 @@ const generateClimb = () => {
 const CLIMB = generateClimb();
 console.log("CLIMB", CLIMB);
 const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
-const TIME_UNSUCCESSFUL_SOLVE = 30 * 1000;
-const POINTS_LOST = 20;
 
-export const DEFAULT_CHESS_STATE = {
-  availableMoves: [],
-  ringColor: null,
-  ringIndicatorAnim: new Animated.Value(0),
-  squareHighlightAnims: mapValues(SQUARES, (number, square) => {
-    return new Animated.Value(0.0);
-  }),
-  flipped: false,
-  position: new Chess(),
-  moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
-  pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
-  moveIndicatorOpacityAnim: new Animated.Value(0),
-};
-
-const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
+const createPuzzleState = <
+  T extends PuzzleState & PuzzleTraining<any> & ChessboardState
+>(
   // TODO: some better way to have climb state and viz state
   set: SetState<T>,
   get
@@ -177,7 +129,7 @@ const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
   return {
     puzzlePosition: null,
     turn: "w" as Color,
-    attemptSolution: (move: Move, state?: T) => {
+    attemptMove: (move: Move, state?: T) => {
       setter(set, state, (state) => {
         console.log("Attempting solution!");
         console.log(move);
@@ -192,7 +144,13 @@ const createPuzzleState = <T extends PuzzleState & PuzzleTraining<any>>(
           state.puzzlePosition.move(move);
           if (otherSideMove) {
             state.puzzlePosition.move(otherSideMove);
-            state.animatePieceMove(otherSideMove, state);
+            // TODO: chess refactor
+            state.animatePieceMove(
+              otherSideMove,
+              PlaybackSpeed.Normal,
+              () => {},
+              state
+            );
           }
           console.log(state.puzzlePosition.ascii());
           state.solutionMoves.shift();
@@ -238,25 +196,13 @@ const createVisualizationState = (
 ): VisualizationState => {
   return {
     ...createPuzzleState(set, get),
-    animatePieceMove: (move: Move, state?: VisualizationState) => {
-      setter<VisualizationState>(set, state, (state) => {
-        animatePieceMove(
-          state.chessState,
-          move,
-          PlaybackSpeed.Normal,
-          () => {}
-        );
-      });
-    },
-
+    ...createChessState(set, get, () => {}),
     onPuzzleMoveSuccess: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
-        console.log("move success");
+        // TODO: animate piece move
         state.showPuzzlePosition = true;
         state.flashRing(true, state);
-        state.chessState.position = state.puzzlePosition;
-        console.log("Chess state position now");
-        console.log(logProxy(state.chessState));
+        state.position = state.puzzlePosition;
       });
     },
     onPuzzleMoveFailure: (move: Move, state?: VisualizationState) => {
@@ -312,7 +258,6 @@ const createVisualizationState = (
     helpOpen: false,
     currentPosition: new Chess(),
     showPuzzlePosition: false,
-    chessState: DEFAULT_CHESS_STATE,
     getFetchOptions: (state: ClimbState) => {
       let ply = state.step?.hiddenMoves ?? state.plyUserSetting.value;
       if (state.step) {
@@ -362,68 +307,19 @@ const createVisualizationState = (
         s.setupForPuzzle(s);
       });
     },
-    flashRing: (success: boolean, state?: VisualizationState) =>
-      setter(set, state, (state) => {
-        flashRing(state.chessState, success);
-      }),
     ...createQuick(set),
-    animateMoves: (state) => {
-      setter(set, state, (state) => {
-        if (state.isPlaying) {
-          return;
-        }
-        state.stopLoopingPlayFlash(state);
-        state.isPlaying = true;
-        let moves = cloneDeep(state.hiddenMoves);
-        let i = 0;
-        let delay = getAnimationDurations(
-          state.playbackSpeedUserSetting.value
-        )[2];
-        let animateNextMove = (state: VisualizationState) => {
-          let move = moves.shift();
-          // TODO: something to deal with this state being old
-          if (move && state.isPlaying) {
-            state.animateMove(state, move, false, () => {
-              window.setTimeout(() => {
-                set((state) => {
-                  animateNextMove(state);
-                });
-              }, delay);
-            });
-            i++;
-          } else {
-            if (state.onAutoPlayEnd && !state.finishedAutoPlaying) {
-              state.onAutoPlayEnd(state);
-            }
-            state.isPlaying = false;
-            state.finishedAutoPlaying = true;
-            state.focusedMoveIndex = null;
-            // cb?.()
-          }
-        };
-        animateNextMove(state);
+    visualizeHiddenMoves: (callback, state) => {
+      setter(set, state, (state: VisualizationState) => {
+        state.visualizeMoves(
+          cloneDeep(state.hiddenMoves),
+          state.playbackSpeedUserSetting.value,
+          callback,
+          state
+        );
       });
-    },
-    getSquareOffset: (square: Square, state?: VisualizationState) =>
-      setter(set, state, (state) => {
-        return getSquareOffset(square, state.chessState.flipped);
-      }),
-    animateMove: (
-      state: VisualizationState,
-      move: Move,
-      backwards = false,
-      callback: () => void
-    ) => {
-      animateMove(
-        state.chessState,
-        move,
-        state.playbackSpeedUserSetting.value,
-        callback
-      );
     },
     setupForPuzzle: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
-        console.log("setting up for puzzle");
         state.focusedMoveIndex = null;
         let currentPosition = new Chess();
         let puzzlePosition = new Chess();
@@ -456,10 +352,13 @@ const createVisualizationState = (
             }
             // state.currentPosition = currentPosition
             state.currentPosition = currentPosition;
+            state.futurePosition = puzzlePosition;
+            console.log("Futere position");
+            console.log(state.futurePosition.ascii());
             state.puzzlePosition = puzzlePosition;
             state.showPuzzlePosition = false;
-            state.chessState.position = currentPosition;
-            state.chessState.flipped = puzzlePosition.turn() === "b";
+            state.position = currentPosition;
+            state.flipped = puzzlePosition.turn() === "b";
             break;
           }
         }
@@ -467,7 +366,15 @@ const createVisualizationState = (
         state.startLoopingPlayFlash(state);
         // @ts-ignore
         if (isClimb && state.isPlayingClimb) {
-          state.animateMoves(state);
+          console.log("Should call auto play end thing");
+          state.visualizeHiddenMoves(() => {
+            if (state.onAutoPlayEnd && !state.finishedAutoPlaying) {
+              state.onAutoPlayEnd(state);
+            }
+            state.isVisualizingMoves = false;
+            state.finishedAutoPlaying = true;
+            state.focusedMoveIndex = null;
+          }, state);
         }
       });
     },
@@ -496,30 +403,6 @@ const createVisualizationState = (
         ).start();
       });
     },
-    onSquarePress: (square: Square) =>
-      set((state) => {
-        let availableMove = state.chessState.availableMoves.find(
-          (m) => m.to == square
-        );
-        if (availableMove) {
-          state.chessState.availableMoves = [];
-          state.attemptSolution(availableMove, state);
-          return;
-        }
-        let moves = state.puzzlePosition.moves({
-          square,
-          verbose: true,
-        });
-        if (
-          !isEmpty(state.chessState.availableMoves) &&
-          first(state.chessState.availableMoves).from == square
-        ) {
-          state.chessState.availableMoves = [];
-        } else if (!state.chessState.frozen) {
-          // @ts-ignore
-          state.chessState.availableMoves = moves;
-        }
-      }),
     toggleNotation: (state?: VisualizationState) => {
       setter<VisualizationState>(set, state, (state) => {
         state.showNotation.value = !state.showNotation.value;
@@ -565,7 +448,15 @@ const createClimbState = <T extends ClimbState>(
     startPlayingClimb: (state) =>
       setter<T>(set, state, (s) => {
         s.isPlayingClimb = true;
-        s.animateMoves(s);
+        s.visualizeHiddenMoves((s: ClimbState) => {
+          // TODO: remove repetition
+          if (s.onAutoPlayEnd && !s.finishedAutoPlaying) {
+            s.onAutoPlayEnd(s);
+          }
+          s.isVisualizingMoves = false;
+          s.finishedAutoPlaying = true;
+          s.focusedMoveIndex = null;
+        }, s);
       }),
     onFail: (state?: ClimbState) =>
       setter(set, state, (s) => {
@@ -619,6 +510,7 @@ const createClimbState = <T extends ClimbState>(
       }),
     onAutoPlayEnd: (state?: ClimbState) =>
       setter(set, state, (s) => {
+        console.log("Calling on auto play end!");
         s.puzzleStartTime = performance.now();
         s.currentPuzzleFailed = false;
       }),
@@ -657,7 +549,10 @@ export const useColorTrainingStore = create<ColorTrainingState>(
       remainingTime: null,
       penalties: 0,
       currentSquare: null,
-      chessState: { ...DEFAULT_CHESS_STATE, hideColors: true, position: null },
+      ...createChessState(set, get, (state: ChessboardState) => {
+        state.position = null;
+        state.hideColors = true;
+      }),
       calculateRemainingTime: (state?: ColorTrainingState) => {
         setter<ColorTrainingState>(set, state, (state) => {
           let remainingTime =
@@ -701,10 +596,6 @@ export const useColorTrainingStore = create<ColorTrainingState>(
           state.highlightNewSquare(state);
           state.calculateRemainingTime(state);
         }),
-      flashRing: (success: boolean, state?: ColorTrainingState) =>
-        setter(set, state, (state) => {
-          flashRing(state.chessState, success);
-        }),
       guessColor: (color: "light" | "dark", state?: ColorTrainingState) => {
         setter(set, state, (state) => {
           let correct = new Chess().squareColor(state.currentSquare) == color;
@@ -722,14 +613,11 @@ export const useColorTrainingStore = create<ColorTrainingState>(
         setter(set, state, (state) => {
           let animDuration = 200;
           if (state.currentSquare) {
-            Animated.timing(
-              state.chessState.squareHighlightAnims[state.currentSquare],
-              {
-                toValue: 0,
-                duration: animDuration,
-                useNativeDriver: true,
-              }
-            ).start();
+            Animated.timing(state.squareHighlightAnims[state.currentSquare], {
+              toValue: 0,
+              duration: animDuration,
+              useNativeDriver: true,
+            }).start();
           }
         }),
       highlightNewSquare: (state?: ColorTrainingState) =>
@@ -738,14 +626,11 @@ export const useColorTrainingStore = create<ColorTrainingState>(
           let animDuration = 200;
           state.clearHighlights(state);
           state.currentSquare = randomSquare;
-          Animated.timing(
-            state.chessState.squareHighlightAnims[state.currentSquare],
-            {
-              toValue: 0.8,
-              duration: animDuration,
-              useNativeDriver: true,
-            }
-          ).start();
+          Animated.timing(state.squareHighlightAnims[state.currentSquare], {
+            toValue: 0.8,
+            duration: animDuration,
+            useNativeDriver: true,
+          }).start();
         }),
     })),
     { name: "ColorTrainingState" }
@@ -763,10 +648,11 @@ export enum BlindfoldTrainingStage {
 }
 
 export interface BlindfoldTrainingState
-  extends PuzzleState,
+  extends ChessboardState,
+    ChessboardStateParent<BlindfoldTrainingState>,
+    PuzzleState,
     PuzzleTraining<BlindfoldTrainingState> {
   quick: (fn: (_: BlindfoldTrainingState) => void) => void;
-  chessState: ChessboardState;
   stage: BlindfoldTrainingStage;
   ratingGteUserSetting: StorageItem<number>;
   ratingLteUserSetting: StorageItem<number>;
@@ -782,7 +668,9 @@ export interface BlindfoldTrainingState
   isDone: boolean;
 }
 
-interface BlunderRecognitionState {
+export interface BlunderRecognitionState
+  extends ChessboardState,
+    ChessboardStateParent<BlunderRecognitionState> {
   isPlaying: boolean;
   wasCorrect: boolean;
   startTime: number;
@@ -798,7 +686,6 @@ interface BlunderRecognitionState {
   remainingTime: number;
   penalties: number;
   currentSquare: Square;
-  chessState: ChessboardState;
   startPlaying: (state?: BlunderRecognitionState) => void;
   flashRing: (success: boolean, state?: BlunderRecognitionState) => void;
   guessColor: (
@@ -864,7 +751,6 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
       ),
       puzzle: null,
       nextPuzzle: null,
-      chessState: { ...DEFAULT_CHESS_STATE },
       donePlaying: DEBUG_DONE_BLUNDER_VIEW,
       seenPuzzles: DEBUG_DONE_BLUNDER_VIEW
         ? Array(20)
@@ -884,20 +770,13 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
             })
         : [],
       activeTab: BlunderRecognitionTab.Failed,
-      quick: (fn) => {
-        setter<BlunderRecognitionState>(set, undefined, (state) => {
-          fn(state);
-        });
-      },
+      ...createQuick(set),
+      ...createChessState(set, get, () => {}),
       startPlaying: (state?: BlunderRecognitionState) =>
         setter(set, state, (state) => {
           state.donePlaying = false;
           state.isPlaying = true;
           state.setupNextRound(state);
-        }),
-      flashRing: (success: boolean, state?: BlunderRecognitionState) =>
-        setter(set, state, (state) => {
-          flashRing(state.chessState, success);
         }),
       guess: (isBlunder: boolean, state?: BlunderRecognitionState) =>
         setter(set, state, (state: BlunderRecognitionState) => {
@@ -942,9 +821,9 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           let pos = new Chess(state.currentPuzzle.fen);
           pos.move(state.currentMove);
           let move = pos.undo();
-          state.chessState.position = pos;
-          state.chessState.flipped = pos.turn() === "b";
-          animateMove(state.chessState, move, PlaybackSpeed.Normal, () => {});
+          state.position = pos;
+          state.flipped = pos.turn() === "b";
+          state.animatePieceMove(move, PlaybackSpeed.Normal, () => {}, state);
         });
       },
     })),
@@ -967,11 +846,8 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
           ...createPuzzleState(set, get),
           onPuzzleMoveSuccess: (state?: BlindfoldTrainingState) => {
             setter<BlindfoldTrainingState>(set, state, (state) => {
-              console.log("move success");
               state.flashRing(true, state);
-              state.chessState.position = state.puzzlePosition;
-              console.log("Chess state position now");
-              console.log(logProxy(state.chessState));
+              state.position = state.puzzlePosition;
               state.progressMessage = {
                 message: "Keep going...",
                 type: ProgressMessageType.Success,
@@ -987,10 +863,6 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
               };
             });
           },
-          flashRing: (success: boolean, state?: BlindfoldTrainingState) =>
-            setter(set, state, (state) => {
-              flashRing(state.chessState, success);
-            }),
           onPuzzleSuccess: (state?: BlindfoldTrainingState) => {
             setter<BlindfoldTrainingState>(set, state, (state) => {
               console.log("overall success");
@@ -998,35 +870,6 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
               state.isDone = true;
             });
           },
-          onSquarePress: (square: Square) =>
-            set((state) => {
-              let availableMove = state.chessState.availableMoves.find(
-                (m) => m.to == square
-              );
-              if (availableMove) {
-                state.chessState.availableMoves = [];
-                state.attemptSolution(availableMove, state);
-                // TODO:
-                // biref.attemptSolution(availableMove)
-                return;
-              }
-              if (!state.puzzlePosition) {
-                return;
-              }
-              let moves = state.puzzlePosition.moves({
-                square,
-                verbose: true,
-              });
-              if (
-                !isEmpty(state.chessState.availableMoves) &&
-                first(state.chessState.availableMoves).from == square
-              ) {
-                state.chessState.availableMoves = [];
-              } else if (!state.chessState.frozen) {
-                // @ts-ignore
-                state.chessState.availableMoves = moves;
-              }
-            }),
           getFetchOptions: () => {
             let state: BlindfoldTrainingState = get();
             return {
@@ -1073,13 +916,13 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
                   for (let i = 0; i < state.puzzle.moves.length - 1; i++) {
                     position.undo();
                   }
-                  state.chessState.position = position;
+                  state.position = position;
                   state.puzzlePosition = position;
-                  state.chessState.flipped = position.turn() === "b";
+                  state.flipped = position.turn() === "b";
                   break;
                 }
               }
-              state.turn = state.chessState.position.turn();
+              state.turn = state.position.turn();
             });
           },
           resetState: (state?: BlindfoldTrainingState) => {
@@ -1090,7 +933,6 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
           },
           nextPuzzle: null,
           stage: BlindfoldTrainingStage.Blindfold,
-          chessState: DEFAULT_CHESS_STATE,
           numPiecesGteUserSetting: new StorageItem(
             "blindfold-numPieces-gte-v3",
             3
@@ -1123,7 +965,12 @@ export interface PuzzleTraining<T> {
   onPuzzleMoveSuccess: (state?: T) => void;
   onPuzzleMoveFailure: (move: Move, state?: T) => void;
   onPuzzleSuccess: (state?: T) => void;
-  animatePieceMove: (move: Move, state?: T) => void;
+  animatePieceMove: (
+    move: Move,
+    speed: PlaybackSpeed,
+    callback: (state: ChessboardState) => void,
+    _state: ChessboardState
+  ) => void;
 }
 
 export const setter = <T extends object>(
@@ -1145,93 +992,6 @@ export const setter = <T extends object>(
     });
   }
 };
-
-function animateMove(
-  chessState: ChessboardState,
-  move: Move,
-  speed: PlaybackSpeed,
-  callback: () => void
-) {
-  let { fadeDuration, moveDuration, stayDuration } =
-    getAnimationDurations(speed);
-  chessState.indicatorColor =
-    move.color == "b" ? c.hsl(180, 15, 10, 80) : c.hsl(180, 15, 100, 80);
-  let backwards = false;
-  // @ts-ignore
-  let [start, end]: Square[] = backwards
-    ? [move.to, move.from]
-    : [move.from, move.to];
-  chessState.moveIndicatorAnim.setValue(
-    getSquareOffset(start, chessState.flipped)
-  );
-  Animated.sequence([
-    Animated.timing(chessState.moveIndicatorOpacityAnim, {
-      toValue: 1.0,
-      duration: fadeDuration,
-      useNativeDriver: true,
-      easing: Easing.inOut(Easing.ease),
-    }),
-    Animated.delay(stayDuration),
-    Animated.timing(chessState.moveIndicatorAnim, {
-      toValue: getSquareOffset(end, chessState.flipped),
-      duration: moveDuration,
-      useNativeDriver: true,
-      easing: Easing.inOut(Easing.ease),
-    }),
-    Animated.delay(stayDuration),
-    Animated.timing(chessState.moveIndicatorOpacityAnim, {
-      toValue: 0,
-      duration: fadeDuration,
-      useNativeDriver: true,
-      easing: Easing.inOut(Easing.ease),
-    }),
-  ]).start(callback);
-}
-
-export function animatePieceMove(
-  chessState: ChessboardState,
-  move: Move,
-  speed: PlaybackSpeed,
-  callback: () => void
-) {
-  chessState.animatedMove = move;
-  let { fadeDuration, moveDuration, stayDuration } =
-    getAnimationDurations(speed);
-  // @ts-ignore
-  let [start, end]: Square[] = [move.from, move.to];
-  chessState.pieceMoveAnim.setValue(getSquareOffset(start, chessState.flipped));
-  Animated.sequence([
-    Animated.timing(chessState.pieceMoveAnim, {
-      toValue: getSquareOffset(end, chessState.flipped),
-      duration: moveDuration,
-      useNativeDriver: true,
-      easing: Easing.inOut(Easing.ease),
-    }),
-  ]).start(() => {
-    callback();
-    chessState.animatedMove = null;
-  });
-}
-
-export function flashRing(chessState: ChessboardState, success: boolean) {
-  const animDuration = 200;
-  chessState.ringColor = success
-    ? c.colors.successColor
-    : c.colors.failureColor;
-  Animated.sequence([
-    Animated.timing(chessState.ringIndicatorAnim, {
-      toValue: 1,
-      duration: animDuration,
-      useNativeDriver: true,
-    }),
-
-    Animated.timing(chessState.ringIndicatorAnim, {
-      toValue: 0,
-      duration: animDuration,
-      useNativeDriver: true,
-    }),
-  ]).start();
-}
 
 export function createQuick<T extends object>(set: SetState<T>): any {
   return {
@@ -1274,35 +1034,15 @@ export const useGamesSearchState = create<GamesSearchState>(
         ({
           // TODO: clone?
           ...createQuick(set),
+          ...createChessState(set, get, () => {}),
           numberMoves: [2, 50],
           whiteRating: [MIN_ELO, MAX_ELO],
           blackRating: [MIN_ELO, MAX_ELO],
-          chessState: DEFAULT_CHESS_STATE,
           whiteBlunders: [0, 3],
           blackBlunders: [0, 3],
           gameResult: null,
           returnedGames: [],
           loading: failOnTrue(false),
-          onSquarePress: (square: Square) =>
-            set((state) => {
-              let availableMove = state.chessState.availableMoves.find(
-                (m) => m.to == square
-              );
-              console.log("Available");
-              console.log(logProxy(availableMove));
-              if (availableMove) {
-                state.chessState.availableMoves = [];
-                state.chessState.position.move(availableMove);
-                // TODO:
-                // biref.attemptSolution(availableMove)
-                return;
-              }
-              let moves = state.chessState.position.moves({
-                square,
-                verbose: true,
-              });
-              state.chessState.availableMoves = moves;
-            }),
           getFetchOptions: () => {
             let state = get() as GamesSearchState;
             return {
@@ -1320,9 +1060,10 @@ export const useGamesSearchState = create<GamesSearchState>(
   )
 );
 
-export interface GamesSearchState {
+export interface GamesSearchState
+  extends ChessboardState,
+    ChessboardStateParent<GamesSearchState> {
   quick: (fn: (_: GamesSearchState) => void) => void;
-  onSquarePress: (square: Square) => void;
   whiteRating: [number, number];
   blackRating: [number, number];
   numberMoves: [number, number];
@@ -1330,7 +1071,6 @@ export interface GamesSearchState {
   blackBlunders: [number, number];
   whitePlayer: string;
   blackPlayer: string;
-  chessState: ChessboardState;
   gameResult: GameSearchResult;
   startingMoves: [string];
   returnedGames: LichessGame[];

@@ -23,7 +23,6 @@ import {
   BlunderRecognitionDifficulty,
   GamesSearchState,
   BlunderRecognitionTab,
-  DEFAULT_CHESS_STATE,
   FinishedBlunderPuzzle,
   GameSearchResult,
   getBlunderRange,
@@ -300,18 +299,15 @@ export const GamesSearch = () => {
                 c.fullWidth
               )}
             >
-              <ChessboardView
-                onSquarePress={state.onSquarePress}
-                state={state.chessState}
-              />
-              {state.chessState.position.history().length > 0 && (
+              <ChessboardView state={state} />
+              {state.position.history().length > 0 && (
                 <>
                   <Spacer height={12} />
                   <Button
                     style={s(c.buttons.basic)}
                     onPress={() => {
                       state.quick((s) => {
-                        s.chessState.position.undo();
+                        s.position.undo();
                       });
                     }}
                   >
@@ -366,7 +362,7 @@ export const GamesSearch = () => {
                   // blackBlunders: state.blackBlunders,
                   numberMoves: state.numberMoves,
                   result: state.gameResult,
-                  opening: state.chessState.position.history(),
+                  opening: state.position.history(),
                 });
                 // @ts-ignore
                 state.quick((s) => {
@@ -424,9 +420,9 @@ const ExampleGame = ({
             // s.whiteBlunders = whiteBlunders;
             // s.blackBlunders = blackBlunders;
             s.gameResult = gameResult;
-            s.chessState.position = new Chess();
+            s.position = new Chess();
             moves.map((move) => {
-              s.chessState.position.move(move);
+              s.position.move(move);
             });
           });
         }}

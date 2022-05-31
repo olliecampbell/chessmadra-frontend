@@ -29,7 +29,6 @@ import {
 } from "lodash";
 import { MoveList } from "app/components/MoveList";
 import { LichessPuzzle } from "app/models";
-import { ChessboardState } from "app/types/ChessboardBiref";
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
 import { Button } from "app/components/Button";
@@ -132,9 +131,6 @@ export const useVisualizationTraining = ({
   scoreChangeView?: JSX.Element;
   onSuccess?: () => void;
 }) => {
-  // TODO: more type-safety
-  const { chessState } = state;
-
   const isMobile = useIsMobile();
   useEffect(() => {
     setTimeout(() => {
@@ -212,7 +208,7 @@ export const useVisualizationTraining = ({
             c.overflowHidden
           )}
           onPress={() => {
-            state.animateMoves();
+            state.visualizeHiddenMoves();
           }}
         >
           <i
@@ -736,7 +732,7 @@ export const useVisualizationTraining = ({
     },
     // biref,
     playbackSpeed: playbackSpeedUserSetting.value,
-    state: chessState,
+    state,
   };
   return {
     ui,

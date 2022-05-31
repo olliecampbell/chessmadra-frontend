@@ -30,7 +30,6 @@ import RookBlackIcon from "app/components/chessboard/pieces/RookBlackIcon";
 import RookWhiteIcon from "app/components/chessboard/pieces/RookWhiteIcon";
 import { Chess, PieceSymbol, SQUARES } from "@lubert/chess.ts";
 import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
-import { ChessboardState } from "app/types/ChessboardBiref";
 import { ChessColor, COLUMNS, ROWS } from "app/types/Chess";
 import {
   PlaybackSpeed,
@@ -38,6 +37,7 @@ import {
   VisualizationState,
 } from "app/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
+import { ChessboardState } from "app/utils/chessboard_state";
 
 const animatedXYToPercentage = (x) => {
   return s(
@@ -156,12 +156,10 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
 
 export const ChessboardView = ({
   state,
-  onSquarePress,
   disableDrag,
   styles,
 }: {
   state?: ChessboardState;
-  onSquarePress?: any;
   disableDrag?: boolean;
   styles?: any;
 }) => {
@@ -343,7 +341,7 @@ export const ChessboardView = ({
                       )}
                       onPress={() => {}}
                       onPressIn={() => {
-                        onSquarePress(square);
+                        state.onSquarePress(square);
                       }}
                     >
                       <Animated.View

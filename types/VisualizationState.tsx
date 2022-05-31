@@ -1,12 +1,17 @@
-import { ChessboardState } from "app/types/ChessboardBiref";
 import { Animated } from "react-native";
 import { Chess, Color, Move } from "@lubert/chess.ts";
 import { StorageItem } from "app/utils/storageItem";
 import { LichessPuzzle } from "app/models";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { PuzzleTraining } from "app/utils/state";
+import {
+  ChessboardState,
+  ChessboardStateParent,
+} from "app/utils/chessboard_state";
 
-export interface ColorTrainingState {
+export interface ColorTrainingState
+  extends ChessboardState,
+    ChessboardStateParent<ColorTrainingState> {
   isPlaying: boolean;
   startTime: number;
   score: number;
@@ -17,7 +22,6 @@ export interface ColorTrainingState {
   remainingTime: number;
   penalties: number;
   currentSquare: Square;
-  chessState: ChessboardState;
   calculateRemainingTime: (state?: ColorTrainingState) => void;
   stopRound: (state?: ColorTrainingState) => void;
   startPlaying: (state?: ColorTrainingState) => void;
@@ -29,22 +33,18 @@ export interface ColorTrainingState {
 
 export interface PuzzleState {
   puzzlePosition: any;
-  attemptSolution: (
-    move: Move,
-    state?: PuzzleState & PuzzleTraining<any>
-  ) => void;
   turn: Color;
   solutionMoves: Move[];
   puzzle: LichessPuzzle;
-  onSquarePress: (square: Square) => void;
   progressMessage?: ProgressMessage;
 }
 
 export interface VisualizationState
-  extends PuzzleState,
+  extends ChessboardState,
+    ChessboardStateParent<VisualizationState>,
+    PuzzleState,
     PuzzleTraining<VisualizationState> {
   progressMessage: ProgressMessage;
-  animatePieceMove: (move: Move, state?: VisualizationState) => void;
   mockPassFail: boolean;
   helpOpen: boolean;
   showPuzzlePosition: boolean;
@@ -60,7 +60,6 @@ export interface VisualizationState
   autoPlay: boolean;
   nextPuzzle: LichessPuzzle;
   isPlaying: boolean;
-  finishedAutoPlaying?: boolean;
   focusedMoveIndex: number;
   focusedMove: Move;
   canFocusNextMove: boolean;
@@ -77,17 +76,14 @@ export interface VisualizationState
   stopLoopingPlayFlash: (state?: VisualizationState) => void;
   flashRing: (success?: boolean, state?: VisualizationState) => void;
   quick: (fn: any) => void;
-  animateMoves: (state?: VisualizationState) => void;
-  getSquareOffset: (square: Square, state?: VisualizationState) => any;
-  animateMove: (
-    state: VisualizationState,
-    move: Move,
-    backwards,
-    callback: () => void
-  ) => void;
   setupForPuzzle: (state?: VisualizationState) => void;
+  finishedAutoPlaying: boolean;
   onAutoPlayEnd?: (state?: VisualizationState) => void;
   toggleNotation: (state?: VisualizationState) => void;
+  visualizeHiddenMoves: (
+    callback?: (state?: VisualizationState) => void,
+    state?: VisualizationState
+  ) => void;
   setPlaybackSpeed: (
     playbackSpeed: PlaybackSpeed,
     state?: VisualizationState
@@ -109,7 +105,7 @@ export interface ClimbState extends VisualizationState {
   onFail: () => void;
   onSuccess: () => void;
   animatePointChange: (state?: VisualizationState) => void;
-  onAutoPlayEnd: () => void;
+  onAutoPlayEnd: (state?: VisualizationState) => void;
   initState: () => void;
   updateStep: (state?: VisualizationState) => void;
   scoreOpacityAnim: Animated.Value;

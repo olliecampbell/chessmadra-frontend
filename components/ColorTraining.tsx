@@ -57,7 +57,7 @@ export const ColorTraining = () => {
         chessboard={
           <ChessboardView
             {...{
-              state: state.chessState,
+              state: state,
             }}
           />
         }

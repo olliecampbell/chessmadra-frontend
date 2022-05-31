@@ -35,7 +35,7 @@ export const RepertoireBuilder = () => {
       switch (e.key) {
         case "ArrowLeft":
           state.quick(() => {
-            state.chessState.position.undo();
+            state.position.undo();
           });
           break;
       }
@@ -50,8 +50,7 @@ export const RepertoireBuilder = () => {
         chessboard={
           <ChessboardView
             {...{
-              state: state.chessState,
-              onSquarePress: state.onSquarePress,
+              state: state,
             }}
           />
         }

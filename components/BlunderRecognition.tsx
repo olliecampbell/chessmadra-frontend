@@ -11,7 +11,6 @@ import { useIsMobile } from "app/utils/isMobile";
 import {
   BlunderRecognitionDifficulty,
   BlunderRecognitionTab,
-  DEFAULT_CHESS_STATE,
   FinishedBlunderPuzzle,
   getBlunderRange,
   useBlunderRecognitionStore,
@@ -63,7 +62,7 @@ export const BlunderRecognition = () => {
         chessboard={
           <ChessboardView
             {...{
-              state: state.chessState,
+              state,
             }}
           />
         }
@@ -75,7 +74,7 @@ export const BlunderRecognition = () => {
                 <Text
                   style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(16))}
                 >
-                  {state.chessState.position.turn() === "b" ? "Black" : "White"}
+                  {state.position.turn() === "b" ? "Black" : "White"}
                 </Text>{" "}
                 is thinking of playing{" "}
                 <Text
@@ -248,73 +247,5 @@ export const BlunderRecognition = () => {
         </View>
       </TrainerLayout>
     </PageContainer>
-  );
-};
-
-export const BlunderPuzzleReviewView = ({
-  puzzle,
-}: {
-  puzzle: FinishedBlunderPuzzle;
-}) => {
-  let pos = new Chess(puzzle.puzzle.fen);
-  let move = puzzle.showedBlunder
-    ? puzzle.puzzle.blunder
-    : puzzle.puzzle.bestMove;
-  return (
-    <View style={s(c.column)}>
-      <ChessboardView
-        state={{
-          ...DEFAULT_CHESS_STATE,
-          position: pos,
-          flipped: pos.turn() === "b",
-        }}
-        onSquarePress={() => {
-          window.open(
-            `https://lichess.org/analysis/${puzzle.puzzle.fen}`,
-            "_blank"
-          );
-        }}
-      />
-
-      <Spacer height={12} />
-      <View style={s(c.row, c.alignCenter)}>
-        <Text
-          style={s(
-            c.center,
-            c.rounded,
-            c.size(24),
-            c.fontSize(14),
-            puzzle.correct
-              ? s(c.bg(c.successShades[70]), c.fg(c.successShades[40]))
-              : puzzle.correct === false
-              ? s(c.bg(c.failureShades[70]), c.fg(c.failureShades[40]))
-              : s(c.bg(c.grays[70]), c.fg(c.grays[40]))
-          )}
-        >
-          <i
-            style={s()}
-            className={`fas ${
-              puzzle.correct
-                ? "fa-check"
-                : puzzle.correct === false
-                ? "fa-times"
-                : "fa-hourglass"
-            }`}
-          ></i>
-        </Text>
-        <Spacer width={8} />
-        <Text style={s(c.fg(c.colors.textPrimary))}>
-          <Text style={s(c.weightBold)}>{move} </Text>
-          <Text
-            style={
-              s()
-              // c.fg(passed ? c.colors.successColor : c.colors.failureLight)
-            }
-          >
-            was {puzzle.showedBlunder ? "a blunder" : "a good move"}
-          </Text>
-        </Text>
-      </View>
-    </View>
   );
 };

@@ -36,8 +36,7 @@ export const GameMemorization = () => {
         chessboard={
           <ChessboardView
             {...{
-              state: state.chessState,
-              onSquarePress: state.onSquarePress,
+              state,
             }}
           />
         }

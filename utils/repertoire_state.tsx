@@ -1,7 +1,6 @@
 import { Square } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
 import { LichessGame } from "app/models";
-import { ChessboardState } from "app/types/ChessboardBiref";
 import create, {
   GetState,
   SetState,
@@ -10,13 +9,7 @@ import create, {
   StoreApi,
 } from "zustand";
 import { devtools } from "zustand/middleware";
-import {
-  createQuick,
-  DEFAULT_CHESS_STATE,
-  logProxy,
-  immer,
-  setter,
-} from "./state";
+import { createQuick, logProxy, immer, setter } from "./state";
 import { cloneDeep, dropWhile, isEmpty, last, take } from "lodash";
 import {
   BySide,
@@ -30,8 +23,15 @@ import {
   sideOfLastmove,
 } from "./repertoire";
 import { StorageItem } from "./storageItem";
+import {
+  ChessboardState,
+  ChessboardStateParent,
+  createChessState,
+} from "./chessboard_state";
 
-export interface RepertoireState {
+export interface RepertoireState
+  extends ChessboardState,
+    ChessboardStateParent<RepertoireState> {
   getPendingLine: (_state?: RepertoireState) => PendingLine;
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: StorageItem<Repertoire>;
@@ -42,7 +42,6 @@ export interface RepertoireState {
   playPgn: (pgn: string, _state?: RepertoireState) => void;
   addPendingLine: (_state?: RepertoireState) => void;
   onSquarePress: (square: Square) => void;
-  chessState: ChessboardState;
 }
 
 export const DEFAULT_REPERTOIRE = {
@@ -105,14 +104,14 @@ export const useRepertoireState = create<RepertoireState>(
           activeSide: "white",
           initState: () => {
             let state = get();
-            state.chessState.position.move("e4");
-            state.chessState.position.move("c5");
-            state.chessState.position.move("d4");
+            state.position.move("e4");
+            state.position.move("c5");
+            state.position.move("d4");
             state.fetchRepertoireGrade(state);
           },
           playPgn: (pgn: string, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              s.chessState.position.loadPgn(pgn);
+              s.position.loadPgn(pgn);
             }),
           fetchRepertoireGrade: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -130,7 +129,7 @@ export const useRepertoireState = create<RepertoireState>(
                   });
                 });
             }),
-          chessState: DEFAULT_CHESS_STATE,
+          ...createChessState(get, set, () => {}),
           addPendingLine: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               console.log("Before getting pending line");
@@ -158,7 +157,7 @@ export const useRepertoireState = create<RepertoireState>(
             }),
           getPendingLine: (_state?: RepertoireState) => {
             let state = _state ?? get();
-            let history = state.chessState.position.history();
+            let history = state.position.history();
             let activeRepertoire: RepertoireSide =
               state.repertoire.value[state.activeSide];
             let currentLine: string[] = [];
@@ -181,22 +180,6 @@ export const useRepertoireState = create<RepertoireState>(
             }
             return null;
           },
-          onSquarePress: (square: Square) =>
-            set((state) => {
-              let availableMove = state.chessState.availableMoves.find(
-                (m) => m.to == square
-              );
-              if (availableMove) {
-                state.chessState.position.move(availableMove);
-                state.chessState.availableMoves = [];
-                return;
-              }
-              let moves = state.chessState.position.moves({
-                square,
-                verbose: true,
-              });
-              state.chessState.availableMoves = moves;
-            }),
         } as RepertoireState)
     ),
     { name: "RepertoireTrainingState" }

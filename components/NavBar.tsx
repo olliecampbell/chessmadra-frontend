@@ -67,10 +67,11 @@ export const navItems = [
       </>
     ),
   },
-  // {
-  //   path: "/openings",
-  //   title: "Opening Builder",
-  // },
+  {
+    path: "/openings",
+    title: "Opening Builder",
+    beta: true,
+  },
   {
     path: "/game-memorization",
     title: "Game Memorization",
