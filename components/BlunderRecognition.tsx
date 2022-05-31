@@ -39,23 +39,6 @@ export const BlunderRecognition = () => {
   useEffect(() => {
     state.prefetchPuzzles();
   }, []);
-  useEffect(() => {
-    if (state.isPlaying) {
-      document.onkeydown = function (e) {
-        switch (e.key) {
-          case "ArrowLeft":
-            state.guessColor("light");
-            break;
-          case "ArrowRight":
-            state.guessColor("dark");
-            break;
-        }
-      };
-    }
-    return () => {
-      document.onkeydown = null;
-    };
-  }, [state.isPlaying]);
   return (
     <PageContainer>
       <TrainerLayout
