@@ -234,6 +234,7 @@ export const createChessState = <
             i++;
           } else {
             console.log("Checking if callback thing");
+            state.isVisualizingMoves = false;
             callback?.(state);
             // cb?.()
           }
