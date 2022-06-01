@@ -10,6 +10,18 @@ import { BrowserTracing } from "@sentry/tracing";
 Sentry.init({
   dsn: "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185",
   integrations: [new BrowserTracing()],
+  beforeBreadcrumb: (breadcrumb, hint) => {
+    if (breadcrumb.category === "xhr") {
+      let xhr = hint.xhr as XMLHttpRequest;
+      const data = {
+        requestBody: hint.xhr.__sentry_xhr__.body,
+        response: hint.xhr.response,
+        responseUrl: hint.xhr.responseURL,
+      };
+      return { ...breadcrumb, data };
+    }
+    return breadcrumb;
+  },
   environment:
     !process.env.NODE_ENV || process.env.NODE_ENV === "development"
       ? "development"
