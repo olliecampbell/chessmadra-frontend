@@ -77,8 +77,7 @@ export const BlindfoldTrainer = () => {
     <PageContainer>
       <TrainerLayout
         chessboard={
-          state.puzzlePosition &&
-          (state.stage === BlindfoldTrainingStage.Blindfold ? (
+          state.stage === BlindfoldTrainingStage.Blindfold ? (
             <BlindfoldPieceOverview state={state} />
           ) : (
             <ChessboardView
@@ -86,7 +85,7 @@ export const BlindfoldTrainer = () => {
                 state: state,
               }}
             />
-          ))
+          )
         }
       >
         {!state.isDone && (
@@ -273,106 +272,108 @@ const BlindfoldPieceOverview = ({
         c.relative
       )}
     >
-      <View style={s(c.absolute, c.fullWidth, c.fullHeight, c.top(0))}>
-        {intersperse(
-          COLORS.map((color) => {
-            const pieces = PIECE_TYPES.map((t) => ({
-              color,
-              type: t,
-            })) as Piece[];
-            const squaresByPiece = pieces
-              .map((p) => {
-                let squares = pieceMap[pieceToKey(p)];
-                if (!squares) {
-                  return null;
-                }
-                return { piece: p, squares };
-              })
-              .filter((x) => x);
-            return (
-              <View style={s(c.row, c.grow, c.constrainWidth, c.center)}>
-                <View style={s(c.row, c.constrainWidth)}>
-                  {intersperse(
-                    squaresByPiece.map(({ piece, squares }) => {
-                      console.log({ piece, squares });
-                      return (
-                        <View style={s(c.column, c.alignCenter)}>
-                          <View style={s(c.size(isMobile ? 38 : 48))}>
-                            <PieceView piece={piece} />
+      {state.puzzlePosition && (
+        <View style={s(c.absolute, c.fullWidth, c.fullHeight, c.top(0))}>
+          {intersperse(
+            COLORS.map((color) => {
+              const pieces = PIECE_TYPES.map((t) => ({
+                color,
+                type: t,
+              })) as Piece[];
+              const squaresByPiece = pieces
+                .map((p) => {
+                  let squares = pieceMap[pieceToKey(p)];
+                  if (!squares) {
+                    return null;
+                  }
+                  return { piece: p, squares };
+                })
+                .filter((x) => x);
+              return (
+                <View style={s(c.row, c.grow, c.constrainWidth, c.center)}>
+                  <View style={s(c.row, c.constrainWidth)}>
+                    {intersperse(
+                      squaresByPiece.map(({ piece, squares }) => {
+                        console.log({ piece, squares });
+                        return (
+                          <View style={s(c.column, c.alignCenter)}>
+                            <View style={s(c.size(isMobile ? 38 : 48))}>
+                              <PieceView piece={piece} />
+                            </View>
+                            <Spacer height={12} />
+                            <View style={s(isMobile ? c.column : c.row)}>
+                              {intersperse(
+                                (squares.sort() || []).map((square) => {
+                                  return (
+                                    <View style={s()}>
+                                      <Text
+                                        style={s(
+                                          c.weightBold,
+                                          c.fontSize(isMobile ? 16 : 24),
+                                          // c.caps,
+                                          c.fg(c.colors.textSecondary)
+                                        )}
+                                      >
+                                        {square}
+                                      </Text>
+                                    </View>
+                                  );
+                                }),
+                                (i) => {
+                                  return (
+                                    <Spacer
+                                      key={i}
+                                      width={12}
+                                      height={4}
+                                      isMobile={isMobile}
+                                    />
+                                  );
+                                }
+                              )}
+                            </View>
                           </View>
-                          <Spacer height={12} />
-                          <View style={s(isMobile ? c.column : c.row)}>
-                            {intersperse(
-                              (squares.sort() || []).map((square) => {
-                                return (
-                                  <View style={s()}>
-                                    <Text
-                                      style={s(
-                                        c.weightBold,
-                                        c.fontSize(isMobile ? 16 : 24),
-                                        // c.caps,
-                                        c.fg(c.colors.textSecondary)
-                                      )}
-                                    >
-                                      {square}
-                                    </Text>
-                                  </View>
-                                );
-                              }),
-                              (i) => {
-                                return (
-                                  <Spacer
-                                    key={i}
-                                    width={12}
-                                    height={4}
-                                    isMobile={isMobile}
-                                  />
-                                );
-                              }
-                            )}
-                          </View>
-                        </View>
-                      );
-                    }),
-                    (i) => {
-                      return (
-                        <View
-                          style={s(
-                            c.flexible,
-                            c.flexShrink(1),
-                            c.center,
-                            c.height(72),
-                            c.selfCenter
-                          )}
-                        >
+                        );
+                      }),
+                      (i) => {
+                        return (
                           <View
                             style={s(
-                              c.px(isMobile ? 12 : 24),
-                              // c.width(DIVIDER_SIZE),
-                              !isMobile && c.bg(DIVIDER_COLOR)
+                              c.flexible,
+                              c.flexShrink(1),
+                              c.center,
+                              c.height(72),
+                              c.selfCenter
                             )}
-                          />
-                        </View>
-                      );
-                    }
-                  )}
+                          >
+                            <View
+                              style={s(
+                                c.px(isMobile ? 12 : 24),
+                                // c.width(DIVIDER_SIZE),
+                                !isMobile && c.bg(DIVIDER_COLOR)
+                              )}
+                            />
+                          </View>
+                        );
+                      }
+                    )}
+                  </View>
                 </View>
-              </View>
-            );
-          }),
-          (i) => {
-            return (
-              <View
-                style={s(
-                  c.height(DIVIDER_SIZE),
-                  c.fullWidth,
-                  c.bg(DIVIDER_COLOR)
-                )}
-              ></View>
-            );
-          }
-        )}
-      </View>
+              );
+            }),
+            (i) => {
+              return (
+                <View
+                  style={s(
+                    c.height(DIVIDER_SIZE),
+                    c.fullWidth,
+                    c.bg(DIVIDER_COLOR)
+                  )}
+                ></View>
+              );
+            }
+          )}
+        </View>
+      )}
     </View>
   );
 };

@@ -844,6 +844,7 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
           isDone: false,
           ...createQuick(set),
           ...createPuzzleState(set, get),
+          ...createChessState(set, get, () => {}),
           onPuzzleMoveSuccess: (state?: BlindfoldTrainingState) => {
             setter<BlindfoldTrainingState>(set, state, (state) => {
               state.flashRing(true, state);
