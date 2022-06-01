@@ -3,6 +3,7 @@
     "@emotion/native": "^11.0.0",
     "@emotion/react": "^11.8.2",
     "@lubert/chess.ts": "^0.16.1",
+    "@sentry/nextjs": "^7.0.0",
     "@sentry/react": "^7.0.0",
     "@sentry/tracing": "^7.0.0",
     "@types/lodash": "^4.14.182",
