@@ -823,7 +823,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           let move = pos.undo();
           state.position = pos;
           state.flipped = pos.turn() === "b";
-          state.animatePieceMove(move, PlaybackSpeed.Normal, () => {}, state);
+          state.visualizeMove(move, PlaybackSpeed.Normal, () => {}, state);
         });
       },
     })),
