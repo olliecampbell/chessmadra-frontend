@@ -367,7 +367,7 @@ const createVisualizationState = (
         // @ts-ignore
         if (isClimb && state.isPlayingClimb) {
           console.log("Should call auto play end thing");
-          state.visualizeHiddenMoves(() => {
+          state.visualizeHiddenMoves((state) => {
             if (state.onAutoPlayEnd && !state.finishedAutoPlaying) {
               state.onAutoPlayEnd(state);
             }
