@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
-    "@expo/next-adapter": "^4",
+    "@expo/next-adapter": "^2",
     "@types/react": "^17.0.38",
     "typescript": "^4.5.4"
   },
