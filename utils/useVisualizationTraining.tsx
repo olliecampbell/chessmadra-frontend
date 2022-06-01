@@ -33,7 +33,6 @@ import { LichessPuzzle } from "app/models";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
 import { Button } from "app/components/Button";
 import useState from "react-usestateref";
-import { useStorageState } from "react-storage-hooks";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { useIsMobile } from "app/utils/isMobile";
 import { StorageItem } from "app/utils/storageItem";
