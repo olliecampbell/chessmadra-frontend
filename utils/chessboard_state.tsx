@@ -94,7 +94,6 @@ export const createChessState = <
           return;
         }
         let position = state.futurePosition ?? state.position;
-        console.log(position.ascii());
         let moves = position?.moves({
           square,
           verbose: true,

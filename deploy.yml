@@ -46,6 +46,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
+    linkerd.io/inject: enabled
 spec:
   ingressClassName: kong
   tls:

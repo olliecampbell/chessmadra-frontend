@@ -116,7 +116,7 @@ const generateClimb = () => {
 
 // climb stuff
 const CLIMB = generateClimb();
-console.log("CLIMB", CLIMB);
+// console.log("CLIMB", CLIMB);
 const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
 
 const createPuzzleState = <
@@ -140,7 +140,6 @@ const createPuzzleState = <
         ) {
           let otherSideMove = state.solutionMoves[1];
           console.log("Position");
-          console.log(state.puzzlePosition.ascii());
           state.puzzlePosition.move(move);
           if (otherSideMove) {
             state.puzzlePosition.move(otherSideMove);
@@ -152,7 +151,6 @@ const createPuzzleState = <
               state
             );
           }
-          console.log(state.puzzlePosition.ascii());
           state.solutionMoves.shift();
           state.solutionMoves.shift();
           if (!isEmpty(state.solutionMoves)) {
@@ -353,8 +351,6 @@ const createVisualizationState = (
             // state.currentPosition = currentPosition
             state.currentPosition = currentPosition;
             state.futurePosition = puzzlePosition;
-            console.log("Futere position");
-            console.log(state.futurePosition.ascii());
             state.puzzlePosition = puzzlePosition;
             state.showPuzzlePosition = false;
             state.position = currentPosition;
