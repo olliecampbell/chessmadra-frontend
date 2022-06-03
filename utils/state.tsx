@@ -143,7 +143,6 @@ const createPuzzleState = <
           state.puzzlePosition.move(move);
           if (otherSideMove) {
             state.puzzlePosition.move(otherSideMove);
-            // TODO: chess refactor
             state.animatePieceMove(
               otherSideMove,
               PlaybackSpeed.Normal,
