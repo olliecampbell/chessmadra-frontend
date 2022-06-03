@@ -12,7 +12,7 @@ const AuthHandler = ({ children }) => {
   console.log("authStatus:", authStatus);
   useEffect(() => {
     if (token) {
-      Cookies.set(JWT_COOKIE_KEY, token);
+      Cookies.set(JWT_COOKIE_KEY, token, { expires: 5000 });
     }
   }, [token]);
   useEffect(() => {
