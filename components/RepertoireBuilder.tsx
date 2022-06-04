@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Animated, Text, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -20,6 +26,8 @@ import {
   RepertoireSide,
 } from "app/utils/repertoire";
 import { PageContainer } from "./PageContainer";
+import { Modal } from "./Modal";
+import { RepertoireWizard } from "./RepertoireWizard";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -30,71 +38,87 @@ export const RepertoireBuilder = () => {
   let grade = state.repertoireGrades[state.activeSide];
   let pendingLine = state.getPendingLine();
   console.log("Pending line", pendingLine);
-  useEffect(() => {
-    document.onkeydown = function (e) {
-      switch (e.key) {
-        case "ArrowLeft":
-          state.quick(() => {
-            state.position.undo();
-          });
-          break;
-      }
-    };
-    return () => {
-      document.onkeydown = null;
-    };
-  }, []);
-  return (
-    <PageContainer>
-      <TrainerLayout
-        chessboard={
-          <ChessboardView
-            {...{
-              state: state,
-            }}
-          />
-        }
-      >
-        {pendingLine && (
-          <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
-            <Pressable
-              onPress={() => {
-                state.addPendingLine();
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  let inner = null;
+  if (state.repertoire === null) {
+    inner = <RepertoireWizard />;
+  } else {
+    inner = (
+      <>
+        {/*<Modal
+          onClose={() => {
+            setUploadModalOpen(false);
+          }}
+          visible={uploadModalOpen}
+        >
+        </Modal>*/}
+        <TrainerLayout
+          chessboard={
+            <ChessboardView
+              {...{
+                state: state,
               }}
-            >
-              <Text style={s(c.fg(c.colors.textPrimary))}>
-                The current line isn't a part of your repertoire yet, would you
-                like to add it?
-              </Text>
-            </Pressable>
-          </View>
-        )}
-        <View style={s(!isMobile && s(c.width(300)))}>
-          <View
-            style={s(
-              c.bg(c.grays[30]),
-              c.px(12),
-              c.py(4),
-              c.maxHeight(300),
-              c.scrollY
-            )}
-          >
-            <OpeningTree
-              repertoire={state.repertoire.value.white}
-              grade={grade}
             />
-          </View>
-          <Spacer height={12} />
-          {state.repertoireGrades[state.activeSide] && (
-            <RepertoireGradeView
-              state={state}
-              grade={state.repertoireGrades[state.activeSide]}
-            />
+          }
+        >
+          {pendingLine && (
+            <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
+              <Pressable
+                onPress={() => {
+                  state.addPendingLine();
+                }}
+              >
+                <Text style={s(c.fg(c.colors.textPrimary))}>
+                  The current line isn't a part of your repertoire yet, would
+                  you like to add it?
+                </Text>
+              </Pressable>
+            </View>
           )}
-        </View>
-      </TrainerLayout>
-    </PageContainer>
-  );
+          <View style={s(!isMobile && s(c.width(300)))}>
+            <View
+              style={s(
+                c.bg(c.grays[30]),
+                c.px(12),
+                c.py(4),
+                c.maxHeight(300),
+                c.scrollY
+              )}
+            >
+              <OpeningTree
+                repertoire={state.repertoire.value.white}
+                grade={grade}
+              />
+            </View>
+            <Spacer height={12} />
+            {state.repertoireGrades[state.activeSide] && (
+              <RepertoireGradeView
+                state={state}
+                grade={state.repertoireGrades[state.activeSide]}
+              />
+            )}
+            <Spacer height={12} />
+            <View style={s(c.row, c.justifyEnd, c.fullWidth)}>
+              <Button
+                style={s(c.buttons.squareBasicButtons)}
+                onPress={() => {
+                  setUploadModalOpen(true);
+                }}
+              >
+                <Text style={s(c.buttons.basic.textStyles)}>
+                  <i
+                    style={s(c.fg(c.colors.textInverse))}
+                    className="fas fa-arrow-up-from-line"
+                  ></i>
+                </Text>
+              </Button>
+            </View>
+          </View>
+        </TrainerLayout>
+      </>
+    );
+  }
+  return <PageContainer>{inner}</PageContainer>;
 };
 
 const RepertoireGradeView = ({

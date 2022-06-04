@@ -77,6 +77,7 @@ export const GamesSearch = () => {
   //   .filter((sq) => sq !== null);
   const sectionTitleStyles = s(
     c.fontSize(18),
+    c.weightSemiBold,
     c.fg(c.colors.textPrimary),
     c.selfStretch,
     c.pb(4),
@@ -87,18 +88,20 @@ export const GamesSearch = () => {
     return (
       <>
         <Text style={s(sectionTitleStyles)}>{title}</Text>
-        <SelectRange
-          min={min}
-          max={max}
-          step={step}
-          range={state[key]}
-          onChange={function ([lower, upper]): void {
-            state.quick((s) => {
-              s[key] = [lower, upper];
-            });
-          }}
-          onFinish={function (): void {}}
-        />
+        <div style={s(c.selfStretch, c.px(12))}>
+          <SelectRange
+            min={min}
+            max={max}
+            step={step}
+            range={state[key]}
+            onChange={function ([lower, upper]): void {
+              state.quick((s) => {
+                s[key] = [lower, upper];
+              });
+            }}
+            onFinish={function (): void {}}
+          />
+        </div>
       </>
     );
   };
@@ -112,6 +115,8 @@ export const GamesSearch = () => {
           GameSearchResult.Draw,
           GameSearchResult.Black,
         ]}
+        // cellStyles={s(c.bg(c.grays[15]))}
+        horizontal={true}
         activeChoice={state.gameResult}
         onSelect={function (c): void {
           state.quick((s) => {
@@ -119,7 +124,9 @@ export const GamesSearch = () => {
           });
         }}
         renderChoice={(r: GameSearchResult) => {
-          return <Text style={s()}>{r ? formatGameResult(r) : "Any"}</Text>;
+          return (
+            <Text style={s()}>{r !== null ? formatGameResult(r) : "Any"}</Text>
+          );
         }}
       />
     </>,
@@ -203,7 +210,7 @@ export const GamesSearch = () => {
       <>
         <View
           style={s(
-            c.bg(c.grays[20]),
+            c.bg(c.grays[15]),
             c.br(4),
             // c.fullWidth,
             // c.selfStretch,
@@ -270,7 +277,7 @@ export const GamesSearch = () => {
         <Spacer height={24} />
         <View
           style={s(
-            c.bg(c.grays[20]),
+            c.bg(c.grays[15]),
             c.br(4),
             // c.fullWidth,
             // c.selfStretch,
@@ -333,7 +340,11 @@ export const GamesSearch = () => {
           <Spacer height={24} />
           {chunked(
             formSections.map((section, i) => {
-              return <View style={s(c.column, c.flexible)}>{section}</View>;
+              return (
+                <View style={s(c.column, c.flexible, c.alignStart)}>
+                  {section}
+                </View>
+              );
             }),
             (i) => {
               return <Spacer width={24} key={i} />;

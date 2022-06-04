@@ -8,38 +8,62 @@ export const SelectOneOf = <T,>({
   onSelect,
   renderChoice,
   activeChoice,
+  containerStyles,
+  cellStyles,
+  horizontal,
 }: {
   choices: T[];
   activeChoice: T;
   onSelect: (_: T) => void;
-  renderChoice: (_: T) => JSX.Element;
+  horizontal?: boolean;
+  renderChoice: (x: T) => JSX.Element | string;
+  containerStyles?: any;
+  cellStyles?: any;
 }) => {
   return (
-    <View style={s(c.ml(12))}>
+    <View
+      style={s(
+        c.br(2),
+        c.overflowHidden,
+        horizontal ? c.row : c.column,
+        containerStyles
+      )}
+    >
       {intersperse(
         choices.map((choice, i) => {
           const active = choice === activeChoice;
+          const isLast = i == choices.length - 1;
           return (
             <Pressable
               onPress={() => {
                 onSelect(choice);
               }}
               key={i}
-              style={s(c.row)}
+              style={s(
+                c.row,
+                c.bg(active ? c.grays[80] : c.grays[25]),
+                c.py(12),
+                c.px(18),
+                !isLast &&
+                  (horizontal ? c.borderRight : c.borderBottom)(
+                    `1px solid ${c.grays[15]}`
+                  ),
+                cellStyles
+              )}
             >
-              <i
-                style={s(c.fg(c.colors.textPrimary))}
-                className={active ? `fas fa-circle` : `fa-regular fa-circle`}
-              ></i>
-              <Spacer width={12} />
-              <Text style={s(c.fg(c.colors.textSecondary), c.weightSemiBold)}>
+              <Text
+                style={s(
+                  c.fg(active ? c.colors.textInverse : c.colors.textSecondary),
+                  c.weightBold
+                )}
+              >
                 {renderChoice(choice)}
               </Text>
             </Pressable>
           );
         }),
         (i) => {
-          return <Spacer key={`space-${i}`} height={12} />;
+          return <Spacer key={`space-${i}`} height={0} />;
         }
       )}
     </View>

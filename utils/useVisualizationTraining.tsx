@@ -60,6 +60,7 @@ import { useHelpModal } from "app/components/useHelpModal";
 import { SettingsTitle } from "app/components/SettingsTitle";
 import { SelectOneOf } from "app/components/SelectOneOf";
 import { ProgressMessageView } from "app/components/ProgressMessage";
+import { SelectRange } from "app/components/SelectRange";
 
 const debugButtons = false;
 
@@ -659,62 +660,33 @@ export const useVisualizationTraining = ({
             <>
               <SettingsTitle text={"Difficulty"} />
               <Spacer height={12} />
-              <View style={s(c.row, c.ml(0))}>
-                <View style={s(c.column)}>
-                  <Text style={s(ratingTitleStyles)}>Min</Text>
-                  <Spacer height={12} />
-                  <SelectOneOf
-                    choices={dropRight(allDifficulties, 1)}
-                    activeChoice={state.ratingGteUserSetting.value}
-                    onSelect={(rating) => {
-                      state.quick((s) => {
-                        s.ratingGteUserSetting.value = rating;
-                        let idx = indexOf(allDifficulties, rating);
-                        if (
-                          idx >=
-                          indexOf(allDifficulties, s.ratingLteUserSetting.value)
-                        ) {
-                          s.ratingLteUserSetting.value =
-                            allDifficulties[idx + 1];
-                        }
-                        s.refreshPuzzle(s);
-                      });
-                    }}
-                    renderChoice={(c) => {
-                      return (
-                        <Text>{`${c} (${getPuzzleDifficultyRating(c)})`}</Text>
+              <View style={s(c.column, c.ml(0), c.fullWidth, c.alignStretch)}>
+                <SelectRange
+                  min={0}
+                  max={2500}
+                  range={[
+                    state.ratingGteUserSetting.value,
+                    state.ratingLteUserSetting.value,
+                  ]}
+                  formatter={(value) => {
+                    return `${value}`;
+                  }}
+                  step={50}
+                  onFinish={() => {
+                    state.quick((s) => {
+                      s.refreshPuzzle(s);
+                    });
+                  }}
+                  onChange={([lower, upper]) => {
+                    state.quick((s) => {
+                      s.ratingLteUserSetting.value = Math.max(
+                        upper,
+                        lower + 300
                       );
-                    }}
-                  />
-                </View>
-                <Spacer width={24} />
-                <View style={s(c.column)}>
-                  <Text style={s(ratingTitleStyles)}>Max</Text>
-                  <Spacer height={12} />
-                  <SelectOneOf
-                    choices={drop(allDifficulties, 1)}
-                    activeChoice={state.ratingLteUserSetting.value}
-                    onSelect={(rating) => {
-                      state.quick((s) => {
-                        s.ratingLteUserSetting.value = rating;
-                        let idx = indexOf(allDifficulties, rating);
-                        if (
-                          idx <=
-                          indexOf(allDifficulties, s.ratingGteUserSetting)
-                        ) {
-                          s.ratingGteUserSetting.value =
-                            allDifficulties[idx - 1];
-                        }
-                        s.refreshPuzzle(s);
-                      });
-                    }}
-                    renderChoice={(c) => {
-                      return (
-                        <Text>{`${c} (${getPuzzleDifficultyRating(c)})`}</Text>
-                      );
-                    }}
-                  />
-                </View>
+                      s.ratingGteUserSetting.value = lower;
+                    });
+                  }}
+                />
               </View>
             </>
           )}

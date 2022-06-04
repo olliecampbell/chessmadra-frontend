@@ -159,11 +159,16 @@ export const useGameMemorizationState = create<GameMemorizationState>(
                       message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
                       type: ProgressMessageType.Success,
                     };
-                    client.post("/api/v1/my_games/mark_reviewed", {
-                      gameId: s.activeGame.id,
-                      movesMissed: s.movesMissed,
-                    });
-                    s.fetchGames(s);
+                    client
+                      .post("/api/v1/my_games/mark_reviewed", {
+                        gameId: s.activeGame.id,
+                        movesMissed: s.movesMissed,
+                      })
+                      .then(() => {
+                        set((s) => {
+                          s.fetchGames(s);
+                        });
+                      });
                   }
                 },
                 s

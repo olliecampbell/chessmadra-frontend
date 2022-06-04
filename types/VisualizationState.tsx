@@ -52,8 +52,8 @@ export interface VisualizationState
   isDone: boolean;
   playButtonFlashAnim: Animated.Value;
   plyUserSetting: StorageItem<number>;
-  ratingGteUserSetting: StorageItem<PuzzleDifficulty>;
-  ratingLteUserSetting: StorageItem<PuzzleDifficulty>;
+  ratingGteUserSetting: StorageItem<number>;
+  ratingLteUserSetting: StorageItem<number>;
   playbackSpeedUserSetting: StorageItem<PlaybackSpeed>;
   hiddenMoves: Move[];
   showHelpButton: boolean;

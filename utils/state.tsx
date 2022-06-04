@@ -229,14 +229,8 @@ const createVisualizationState = (
     mockPassFail: DEBUG_PASS_FAIL_BUTTONS,
     showNotation: new StorageItem("show-notation-v2", true),
     plyUserSetting: new StorageItem("visualization-ply", 2),
-    ratingGteUserSetting: new StorageItem(
-      "puzzle-rating-gte-v2",
-      PuzzleDifficulty.Beginner
-    ),
-    ratingLteUserSetting: new StorageItem(
-      "puzzle-rating-lte-v2",
-      PuzzleDifficulty.Intermediate
-    ),
+    ratingGteUserSetting: new StorageItem("puzzle-rating-gte-v3", 0),
+    ratingLteUserSetting: new StorageItem("puzzle-rating-lte-v3", 1200),
     playbackSpeedUserSetting: new StorageItem(
       "playback-speed",
       PlaybackSpeed.Normal
@@ -266,8 +260,8 @@ const createVisualizationState = (
         };
       }
       return {
-        ratingGte: getPuzzleDifficultyRating(state.ratingGteUserSetting.value),
-        ratingLte: getPuzzleDifficultyRating(state.ratingLteUserSetting.value),
+        ratingGte: state.ratingGteUserSetting.value,
+        ratingLte: state.ratingLteUserSetting.value,
         maxPly: ply,
         solidMovesGte: ply,
       };

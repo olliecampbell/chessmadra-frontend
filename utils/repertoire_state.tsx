@@ -99,15 +99,17 @@ export const useRepertoireState = create<RepertoireState>(
         ({
           // TODO: clone?
           ...createQuick(set),
-          repertoire: new StorageItem("repertoire_v1", DEFAULT_REPERTOIRE),
+          repertoire: null,
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
           initState: () => {
             let state = get();
-            state.position.move("e4");
-            state.position.move("c5");
-            state.position.move("d4");
-            state.fetchRepertoireGrade(state);
+            // state.position.move("e4");
+            // state.position.move("c5");
+            // state.position.move("d4");
+            if (state.repertoire) {
+              state.fetchRepertoireGrade(state);
+            }
           },
           playPgn: (pgn: string, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -157,6 +159,9 @@ export const useRepertoireState = create<RepertoireState>(
             }),
           getPendingLine: (_state?: RepertoireState) => {
             let state = _state ?? get();
+            if (state.repertoire === null) {
+              return null;
+            }
             let history = state.position.history();
             let activeRepertoire: RepertoireSide =
               state.repertoire.value[state.activeSide];
