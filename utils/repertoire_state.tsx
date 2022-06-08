@@ -38,6 +38,13 @@ export interface RepertoireState
   repertoireGrades: BySide<RepertoireGrade>;
   activeSide: Side;
   fetchRepertoireGrade: (_state?: RepertoireState) => void;
+  initializeRepertoire: (_: {
+    lichessUsername: string;
+    chessComUsername: string;
+    whitePgn: string;
+    blackPgn: string;
+    state?: RepertoireState;
+  }) => void;
   initState: (_state?: RepertoireState) => void;
   playPgn: (pgn: string, _state?: RepertoireState) => void;
   addPendingLine: (_state?: RepertoireState) => void;
@@ -99,7 +106,8 @@ export const useRepertoireState = create<RepertoireState>(
         ({
           // TODO: clone?
           ...createQuick(set),
-          repertoire: null,
+          // repertoire: null,
+          repertoire: new StorageItem("repertoire_v2", null),
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
           initState: () => {
@@ -107,13 +115,53 @@ export const useRepertoireState = create<RepertoireState>(
             // state.position.move("e4");
             // state.position.move("c5");
             // state.position.move("d4");
-            if (state.repertoire) {
+            if (state.repertoire.value) {
               state.fetchRepertoireGrade(state);
             }
           },
           playPgn: (pgn: string, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.position.loadPgn(pgn);
+            }),
+          initializeRepertoire: ({
+            state,
+            lichessUsername,
+            chessComUsername,
+            blackPgn,
+            whitePgn,
+          }) =>
+            setter(set, state, async (s) => {
+              let lichessGames = [];
+              let chessComGames = [];
+              if (lichessUsername) {
+                let max = 200;
+                let { data }: { data: string } = await client.get(
+                  `https://lichess.org/api/games/user/${encodeURIComponent(
+                    lichessUsername
+                  )}?max=${max}`,
+                  {
+                    headers: { Accept: "application/x-ndjson" },
+                  }
+                );
+                lichessGames = data
+                  .split("\n")
+                  .filter((s) => s.length > 2)
+                  .map((s) => JSON.parse(s));
+              }
+              let { data } = await client.post(
+                "/api/v1/initialize_repertoire",
+                {
+                  lichessGames,
+                  lichessUsername,
+                  chessComGames,
+                  whitePgn,
+                  blackPgn,
+                }
+              );
+              set((s) => {
+                s.repertoire.value = data;
+                s.fetchRepertoireGrade(s);
+              });
             }),
           fetchRepertoireGrade: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -159,7 +207,7 @@ export const useRepertoireState = create<RepertoireState>(
             }),
           getPendingLine: (_state?: RepertoireState) => {
             let state = _state ?? get();
-            if (state.repertoire === null) {
+            if (state.repertoire.value === null) {
               return null;
             }
             let history = state.position.history();

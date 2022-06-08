@@ -32,6 +32,7 @@ import { RepertoireWizard } from "./RepertoireWizard";
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
   const state = useRepertoireState();
+  console.log("Re-rendering?");
   useEffect(() => {
     state.initState();
   }, []);
@@ -40,8 +41,8 @@ export const RepertoireBuilder = () => {
   console.log("Pending line", pendingLine);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
-  if (state.repertoire === null) {
-    inner = <RepertoireWizard />;
+  if (state.repertoire.value === null) {
+    inner = <RepertoireWizard state={state} />;
   } else {
     inner = (
       <>
@@ -86,6 +87,7 @@ export const RepertoireBuilder = () => {
               )}
             >
               <OpeningTree
+                state={state}
                 repertoire={state.repertoire.value.white}
                 grade={grade}
               />
@@ -160,15 +162,17 @@ const RepertoireGradeView = ({
 
 const OpeningTree = ({
   repertoire,
+  state,
   grade,
 }: {
   repertoire: RepertoireSide;
   grade: RepertoireGrade;
+  state: RepertoireState;
 }) => {
   return (
     <View style={s()}>
       {repertoire.tree.map((move) => {
-        return <OpeningNode grade={grade} move={move} />;
+        return <OpeningNode state={state} grade={grade} move={move} />;
       })}
     </View>
   );
@@ -177,50 +181,58 @@ const OpeningTree = ({
 const OpeningNode = ({
   move,
   grade,
+  state,
 }: {
   move: RepertoireMove;
   grade: RepertoireGrade;
+  state: RepertoireState;
 }) => {
   let incidence = grade?.moveIncidence[move.id];
   return (
     <View style={s(c.pl(2))}>
-      <View
-        style={s(
-          c.row,
-          c.br(2),
-          c.px(4),
-          // c.bg(c.grays[20]),
-          c.my(0),
-          c.py(2),
-          c.justifyBetween
-        )}
+      <Pressable
+        onPress={() => {
+          state.playPgn(move.id);
+        }}
       >
-        <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
-          {move.sanPlus}
-        </Text>
-        {incidence && !move.mine && (
-          <>
-            <Spacer width={0} grow />
-            <Text style={s(c.fg(c.colors.textSecondary))}>
-              {formatIncidence(incidence)}
-            </Text>
-          </>
-        )}
-        <Spacer width={12} />
-        <Text style={s(c.clickable)}>
-          <i
-            style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
-            className={`fa-light fa-trash-can`}
-          ></i>
-        </Text>
-      </View>
+        <View
+          style={s(
+            c.row,
+            c.br(2),
+            c.px(4),
+            // c.bg(c.grays[20]),
+            c.my(0),
+            c.py(2),
+            c.justifyBetween
+          )}
+        >
+          <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+            {move.sanPlus}
+          </Text>
+          {incidence && !move.mine && (
+            <>
+              <Spacer width={0} grow />
+              <Text style={s(c.fg(c.colors.textSecondary))}>
+                {formatIncidence(incidence)}
+              </Text>
+            </>
+          )}
+          <Spacer width={12} />
+          <Text style={s(c.clickable)}>
+            <i
+              style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
+              className={`fa-light fa-trash-can`}
+            ></i>
+          </Text>
+        </View>
+      </Pressable>
       <View
         style={s(c.pl(6), c.ml(6), c.borderLeft(`1px solid ${c.grays[40]}`))}
       >
         <View style={s()}>
           {intersperse(
             (move.responses || []).map((move) => {
-              return <OpeningNode move={move} grade={grade} />;
+              return <OpeningNode state={state} move={move} grade={grade} />;
             }),
             (i) => {
               return <Spacer key={i} height={0} />;

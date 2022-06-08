@@ -28,6 +28,9 @@ import {
 import { PageContainer } from "./PageContainer";
 import { Modal } from "./Modal";
 import { SelectOneOf } from "./SelectOneOf";
+import { CMTextInput } from "./TextInput";
+import { failOnTrue } from "app/utils/test_settings";
+import client from "app/client";
 
 const MOBILE_CUTOFF = 800;
 
@@ -91,27 +94,8 @@ function formatRatingRange(ratingRange: RatingRange) {
   }
 }
 
-export const RepertoireWizard = () => {
+export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
-  const state = useRepertoireState();
-  useEffect(() => {
-    state.initState();
-  }, []);
-  let grade = state.repertoireGrades[state.activeSide];
-  useEffect(() => {
-    document.onkeydown = function (e) {
-      switch (e.key) {
-        case "ArrowLeft":
-          state.quick(() => {
-            state.position.undo();
-          });
-          break;
-      }
-    };
-    return () => {
-      document.onkeydown = null;
-    };
-  }, []);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [rating, setRating] = useState(RatingRange.Rating1500To1800);
   const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
@@ -156,10 +140,18 @@ export const RepertoireWizard = () => {
       }}
     />
   );
-  const [username, setUsername] = useState(null);
+  const [username, setUsername] = useState("");
   let initialStep = {
+    onNext: () => {
+      state.initializeRepertoire({
+        lichessUsername: username,
+        chessComUsername: null,
+        blackPgn: null,
+        whitePgn: null,
+      });
+    },
     questionCopy:
-      "This tool uses data from millions of online games to determine the gaps in your openings, based on how your opponents tend to play. We can either get your ratings from your online games, or PGN files, or you can skip this step for now.",
+      "This tool uses data from millions of online games to determine the gaps in your openings, based on how your opponents tend to play. We can either get your ratings from your online games, PGN files, or you can skip this step for now.",
     isValid: (() => {
       if (openingSource == OpeningSource.Lichess && !isEmpty(username)) {
         return true;
@@ -195,6 +187,17 @@ export const RepertoireWizard = () => {
             return formatOpeningSource(source);
           }}
         />
+        {(openingSource == OpeningSource.Lichess ||
+          openingSource == OpeningSource.ChessCom) && (
+          <>
+            <Spacer height={12} />
+            <CMTextInput
+              placeholder="username"
+              value={username}
+              setValue={setUsername}
+            />
+          </>
+        )}
       </>
     ),
   };
@@ -243,7 +246,7 @@ export const RepertoireWizard = () => {
   );
 };
 
-const WizardStep = ({ questionCopy, children, isValid }) => {
+const WizardStep = ({ questionCopy, children, isValid, onNext }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
   return (
     <View style={s(c.column, c.containerStyles(isMobile), c.maxWidth(500))}>
@@ -265,7 +268,9 @@ const WizardStep = ({ questionCopy, children, isValid }) => {
           isValid ? c.buttons.primary : c.buttons.primaryDisabled,
           c.selfEnd
         )}
-        onPress={() => {}}
+        onPress={() => {
+          onNext();
+        }}
       >
         Continue
       </Button>

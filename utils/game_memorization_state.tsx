@@ -14,6 +14,7 @@ import {
   cloneDeep,
   drop,
   dropWhile,
+  filter,
   first,
   isEmpty,
   last,
@@ -176,7 +177,20 @@ export const useGameMemorizationState = create<GameMemorizationState>(
             }),
           newRandomGame: (_state?: GameMemorizationState) =>
             setter(set, _state, (s) => {
-              let game = sample(s.games);
+              console.log("Getting a new random game");
+              let game =
+                getRandomWithStatus(
+                  s.games,
+                  s.gameStatuses,
+                  (s: MemorizedGameStatus) => s.needsReview
+                ) ??
+                getRandomWithStatus(
+                  s.games,
+                  s.gameStatuses,
+                  (s: MemorizedGameStatus) => !s.needsReview && !s.everReviewed
+                );
+              // let gamesNeededToReview = s.games.filter();
+              // let game = sample(s.games);
               s.setActiveGame(game, s);
             }),
           giveUpOnMove: (_state?: GameMemorizationState) =>
@@ -250,3 +264,17 @@ export const useGameMemorizationState = create<GameMemorizationState>(
     { name: "GameMemorizationTrainingState" }
   )
 );
+
+function getRandomWithStatus(
+  games: LichessGame[],
+  gameStatuses: Record<string, MemorizedGameStatus>,
+  f: (s: MemorizedGameStatus) => boolean
+): LichessGame {
+  console.log("Getting a random game w/ this check");
+  let filteredGames = filter(games, (game) => {
+    let status = gameStatuses[game.id];
+    return f(status);
+  });
+  let randomGame = sample(filteredGames) as LichessGame;
+  return randomGame;
+}

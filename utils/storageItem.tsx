@@ -1,6 +1,9 @@
+import { immerable } from "immer";
+
 export class StorageItem<T> {
   key: string;
   private _value: T;
+  [immerable] = true;
 
   constructor(key: string, defaultValue: T) {
     this.key = key;
