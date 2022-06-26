@@ -163,6 +163,7 @@ export const ChessboardView = ({
   disableDrag?: boolean;
   styles?: any;
 }) => {
+  console.log("Rendering with ring color", state.ringColor);
   const { position, availableMoves } = state;
   const tileStyles = s(c.bg("green"), c.grow);
 
@@ -341,6 +342,8 @@ export const ChessboardView = ({
                       )}
                       onPress={() => {}}
                       onPressIn={() => {
+                        console.log("Square press in");
+                        console.log("aonetuhaoentuh", state);
                         state.onSquarePress(square);
                       }}
                     >

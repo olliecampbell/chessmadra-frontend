@@ -155,6 +155,8 @@ const right = keyedPixelProp("right");
 const bottom = keyedPixelProp("bottom");
 const top = keyedPixelProp("top");
 
+const absoluteFull = s(absolute, top(0), left(0), fullWidth, fullHeight);
+
 // Compount style objects
 const dashboardTitle = s(fontSize(40), weightBold, fg("#2e2e3c"));
 const zIndex = keyedProp("zIndex");
@@ -382,6 +384,7 @@ export const c = {
   gap,
   column,
   absolute,
+  absoluteFull,
   fixed,
   relative,
   border,

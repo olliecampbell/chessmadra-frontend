@@ -16,6 +16,9 @@ const client = applyCaseMiddleware(
     },
     caseFunctions: {
       camel: (s) => {
+        if (/^\d/.test(s)) {
+          return s;
+        }
         if (s.startsWith("GAME_ID_")) {
           return s.replace("GAME_ID_", "");
         }

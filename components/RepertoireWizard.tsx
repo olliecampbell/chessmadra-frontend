@@ -31,6 +31,7 @@ import { SelectOneOf } from "./SelectOneOf";
 import { CMTextInput } from "./TextInput";
 import { failOnTrue } from "app/utils/test_settings";
 import client from "app/client";
+import { DragAndDropInput } from "./DragAndDropInput";
 
 const MOBILE_CUTOFF = 800;
 
@@ -99,7 +100,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [rating, setRating] = useState(RatingRange.Rating1500To1800);
   const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
-  const [openingSource, setOpeningSource] = useState(OpeningSource.Lichess);
+  const [openingSource, setOpeningSource] = useState(OpeningSource.Pgn);
   const [ratingTimeControl, setRatingTimeControl] = useState(true);
   const openingSourceSelector = (
     <SelectOneOf
@@ -141,13 +142,15 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
     />
   );
   const [username, setUsername] = useState("");
+  const [whitePgn, setWhitePgn] = useState(null);
+  const [blackPgn, setBlackPgn] = useState(null);
   let initialStep = {
     onNext: () => {
       state.initializeRepertoire({
         lichessUsername: username,
         chessComUsername: null,
-        blackPgn: null,
-        whitePgn: null,
+        blackPgn,
+        whitePgn,
       });
     },
     questionCopy:
@@ -196,6 +199,35 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
               value={username}
               setValue={setUsername}
             />
+          </>
+        )}
+        {openingSource == OpeningSource.Pgn && (
+          <>
+            <Spacer height={12} />
+            <View style={s(c.width(300), c.height(200))}>
+              <Text style={s(c.fg(c.colors.textPrimary))}>White</Text>
+              <DragAndDropInput
+                humanName="PGN file"
+                accept="*.pgn"
+                onUpload={async (e) => {
+                  let file = e.target.files[0];
+                  let body = await file.text();
+                  setWhitePgn(body);
+                  return true;
+                }}
+              />
+              <Text style={s(c.fg(c.colors.textPrimary))}>Black</Text>
+              <DragAndDropInput
+                humanName="PGN file"
+                accept="*.pgn"
+                onUpload={async (e) => {
+                  let file = e.target.files[0];
+                  let body = await file.text();
+                  setBlackPgn(body);
+                  return true;
+                }}
+              />
+            </View>
           </>
         )}
       </>

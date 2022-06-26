@@ -10,7 +10,6 @@
     "axios": "^0.27",
     "axios-case-converter": "^0.9",
     "expo": "^44.0.0",
-    "immer": "^9.0.6",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "next": "9.3.5",
@@ -33,7 +32,8 @@
     "react-storage-hooks": "^4.0.1",
     "react-usestateref": "^1.0.8",
     "use-immer": "^0.6.0",
-    "zustand": "^3.6.8"
+    "zustand": "4.0.0-rc.1",
+    "immer": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

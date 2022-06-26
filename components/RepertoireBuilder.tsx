@@ -23,6 +23,7 @@ import {
 import {
   RepertoireGrade,
   RepertoireMove,
+  getAllRepertoireMoves,
   RepertoireSide,
 } from "app/utils/repertoire";
 import { PageContainer } from "./PageContainer";
@@ -38,10 +39,10 @@ export const RepertoireBuilder = () => {
   }, []);
   let grade = state.repertoireGrades[state.activeSide];
   let pendingLine = state.getPendingLine();
-  console.log("Pending line", pendingLine);
+  // console.log("Pending line", pendingLine);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
-  if (state.repertoire.value === null) {
+  if (getAllRepertoireMoves(state.repertoire).length === 0) {
     inner = <RepertoireWizard state={state} />;
   } else {
     inner = (
@@ -66,7 +67,7 @@ export const RepertoireBuilder = () => {
             <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
               <Pressable
                 onPress={() => {
-                  state.addPendingLine();
+                  // state.addPendingLine();
                 }}
               >
                 <Text style={s(c.fg(c.colors.textPrimary))}>
@@ -77,21 +78,56 @@ export const RepertoireBuilder = () => {
             </View>
           )}
           <View style={s(!isMobile && s(c.width(300)))}>
-            <View
-              style={s(
-                c.bg(c.grays[30]),
-                c.px(12),
-                c.py(4),
-                c.maxHeight(300),
-                c.scrollY
-              )}
-            >
-              <OpeningTree
-                state={state}
-                repertoire={state.repertoire.value.white}
-                grade={grade}
-              />
-            </View>
+            {/*
+              <View
+                style={s(
+                  c.bg(c.grays[30]),
+                  c.px(12),
+                  c.py(4),
+                  c.maxHeight(300),
+                  c.scrollY
+                )}
+              >
+                <OpeningTree
+                  state={state}
+                  repertoire={state.repertoire.white}
+                  grade={grade}
+                />
+              </View>
+            */}
+            <Text style={s(c.fg(c.colors.textPrimary))}>
+              {state.queue?.length} to review
+            </Text>
+            {state.currentMove && (
+              <>
+                <Spacer height={12} />
+                <Button
+                  style={s(c.buttons.basic)}
+                  onPress={() => {
+                    if (state.hasGivenUp) {
+                      state.setupNextMove();
+                    } else {
+                      state.giveUp();
+                    }
+                  }}
+                >
+                  {state.hasGivenUp ? "Next" : "Show me"}
+                </Button>
+              </>
+            )}
+            {!state.currentMove && (
+              <>
+                <Spacer height={12} />
+                <Button
+                  style={s(c.buttons.basic)}
+                  onPress={() => {
+                    state.startReview();
+                  }}
+                >
+                  Start Review
+                </Button>
+              </>
+            )}
             <Spacer height={12} />
             {state.repertoireGrades[state.activeSide] && (
               <RepertoireGradeView
@@ -99,6 +135,7 @@ export const RepertoireBuilder = () => {
                 grade={state.repertoireGrades[state.activeSide]}
               />
             )}
+            {/*
             <Spacer height={12} />
             <View style={s(c.row, c.justifyEnd, c.fullWidth)}>
               <Button
@@ -115,6 +152,7 @@ export const RepertoireBuilder = () => {
                 </Text>
               </Button>
             </View>
+            */}
           </View>
         </TrainerLayout>
       </>
@@ -160,89 +198,89 @@ const RepertoireGradeView = ({
   );
 };
 
-const OpeningTree = ({
-  repertoire,
-  state,
-  grade,
-}: {
-  repertoire: RepertoireSide;
-  grade: RepertoireGrade;
-  state: RepertoireState;
-}) => {
-  return (
-    <View style={s()}>
-      {repertoire.tree.map((move) => {
-        return <OpeningNode state={state} grade={grade} move={move} />;
-      })}
-    </View>
-  );
-};
+// const OpeningTree = ({
+//   repertoire,
+//   state,
+//   grade,
+// }: {
+//   repertoire: RepertoireSide;
+//   grade: RepertoireGrade;
+//   state: RepertoireState;
+// }) => {
+//   return (
+//     <View style={s()}>
+//       {repertoire.tree.map((move) => {
+//         return <OpeningNode state={state} grade={grade} move={move} />;
+//       })}
+//     </View>
+//   );
+// };
 
-const OpeningNode = ({
-  move,
-  grade,
-  state,
-}: {
-  move: RepertoireMove;
-  grade: RepertoireGrade;
-  state: RepertoireState;
-}) => {
-  let incidence = grade?.moveIncidence[move.id];
-  return (
-    <View style={s(c.pl(2))}>
-      <Pressable
-        onPress={() => {
-          state.playPgn(move.id);
-        }}
-      >
-        <View
-          style={s(
-            c.row,
-            c.br(2),
-            c.px(4),
-            // c.bg(c.grays[20]),
-            c.my(0),
-            c.py(2),
-            c.justifyBetween
-          )}
-        >
-          <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
-            {move.sanPlus}
-          </Text>
-          {incidence && !move.mine && (
-            <>
-              <Spacer width={0} grow />
-              <Text style={s(c.fg(c.colors.textSecondary))}>
-                {formatIncidence(incidence)}
-              </Text>
-            </>
-          )}
-          <Spacer width={12} />
-          <Text style={s(c.clickable)}>
-            <i
-              style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
-              className={`fa-light fa-trash-can`}
-            ></i>
-          </Text>
-        </View>
-      </Pressable>
-      <View
-        style={s(c.pl(6), c.ml(6), c.borderLeft(`1px solid ${c.grays[40]}`))}
-      >
-        <View style={s()}>
-          {intersperse(
-            (move.responses || []).map((move) => {
-              return <OpeningNode state={state} move={move} grade={grade} />;
-            }),
-            (i) => {
-              return <Spacer key={i} height={0} />;
-            }
-          )}
-        </View>
-      </View>
-    </View>
-  );
-};
+// const OpeningNode = ({
+//   move,
+//   grade,
+//   state,
+// }: {
+//   move: RepertoireMove;
+//   grade: RepertoireGrade;
+//   state: RepertoireState;
+// }) => {
+//   let incidence = grade?.moveIncidence[move.id];
+//   return (
+//     <View style={s(c.pl(2))}>
+//       <Pressable
+//         onPress={() => {
+//           state.playPgn(move.id);
+//         }}
+//       >
+//         <View
+//           style={s(
+//             c.row,
+//             c.br(2),
+//             c.px(4),
+//             // c.bg(c.grays[20]),
+//             c.my(0),
+//             c.py(2),
+//             c.justifyBetween
+//           )}
+//         >
+//           <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+//             {move.sanPlus}
+//           </Text>
+//           {incidence && !move.mine && (
+//             <>
+//               <Spacer width={0} grow />
+//               <Text style={s(c.fg(c.colors.textSecondary))}>
+//                 {formatIncidence(incidence)}
+//               </Text>
+//             </>
+//           )}
+//           <Spacer width={12} />
+//           <Text style={s(c.clickable)}>
+//             <i
+//               style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
+//               className={`fa-light fa-trash-can`}
+//             ></i>
+//           </Text>
+//         </View>
+//       </Pressable>
+//       <View
+//         style={s(c.pl(6), c.ml(6), c.borderLeft(`1px solid ${c.grays[40]}`))}
+//       >
+//         <View style={s()}>
+//           {intersperse(
+//             (move.responses || []).map((move) => {
+//               return <OpeningNode state={state} move={move} grade={grade} />;
+//             }),
+//             (i) => {
+//               return <Spacer key={i} height={0} />;
+//             }
+//           )}
+//         </View>
+//       </View>
+//     </View>
+//   );
+// };
 
 let START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

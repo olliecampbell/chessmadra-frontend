@@ -45,7 +45,7 @@ export interface ChessboardState {
   animatePieceMove: (
     move: Move,
     speed: PlaybackSpeed,
-    callback: (state: ChessboardState) => void,
+    callback: (state: ChessBoardStateAndParent<any>) => void,
     _state: ChessboardState
   ) => void;
   flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
@@ -58,10 +58,11 @@ export interface ChessboardStateParent<T> {
 export const createChessState = <
   T extends ChessboardState & ChessboardStateParent<any>
 >(
-  set: SetState<T>,
+  set,
   get,
   initialize: any
 ): ChessboardState => {
+  console.log("Called create chess state with set", set);
   let state = {
     allowMoves: true,
     availableMoves: [],
@@ -78,6 +79,7 @@ export const createChessState = <
     moveIndicatorOpacityAnim: new Animated.Value(0),
     onSquarePress: (square: Square, _state: ChessboardState) => {
       setter(set, _state, (state: T) => {
+        console.log("Pressed square!");
         let availableMove = state.availableMoves.find((m) => m.to == square);
         if (availableMove) {
           state.availableMoves = [];
@@ -140,6 +142,7 @@ export const createChessState = <
     },
     flashRing: (success: boolean, _state: ChessboardState) => {
       setter(set, _state, (state: ChessboardState) => {
+        console.log(`animating with success ${success}`);
         const animDuration = 200;
         state.ringColor = success
           ? c.colors.successColor

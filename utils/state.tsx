@@ -40,6 +40,7 @@ import {
   ChessboardStateParent,
   createChessState,
 } from "./chessboard_state";
+import { immer } from "zustand/middleware/immer";
 
 export const MIN_ELO = 2200;
 export const MAX_ELO = 2800;
@@ -58,32 +59,32 @@ const fensTheSame = (x, y) => {
 const test = false;
 const testProgress = false;
 
-export const immer =
-  <
-    T extends State,
-    CustomSetState extends SetState<T>,
-    CustomGetState extends GetState<T>,
-    CustomStoreApi extends StoreApi<T>
-  >(
-    config: StateCreator<
-      T,
-      (partial: ((draft: Draft<T>) => void) | T, replace?: boolean) => void,
-      CustomGetState,
-      CustomStoreApi
-    >
-  ): StateCreator<T, CustomSetState, CustomGetState, CustomStoreApi> =>
-  (set, get, api) =>
-    config(
-      (partial, replace) => {
-        const nextState =
-          typeof partial === "function"
-            ? produce(partial as (state: Draft<T>) => T)
-            : (partial as T);
-        return set(nextState, replace);
-      },
-      get,
-      api
-    );
+// export const immer =
+//   <
+//     T extends State,
+//     CustomSetState extends SetState<T>,
+//     CustomGetState extends GetState<T>,
+//     CustomStoreApi extends StoreApi<T>
+//   >(
+//     config: StateCreator<
+//       T,
+//       (partial: ((draft: Draft<T>) => void) | T, replace?: boolean) => void,
+//       CustomGetState,
+//       CustomStoreApi
+//     >
+//   ): StateCreator<T, CustomSetState, CustomGetState, CustomStoreApi> =>
+//   (set, get, api) =>
+//     config(
+//       (partial, replace) => {
+//         const nextState =
+//           typeof partial === "function"
+//             ? produce(partial as (state: Draft<T>) => T)
+//             : (partial as T);
+//         return set(nextState, replace);
+//       },
+//       get,
+//       api
+//     );
 
 const generateClimb = () => {
   let puzzleDifficulty = 1000;
@@ -292,7 +293,8 @@ const createVisualizationState = (
         );
         return;
       }
-      set((s) => {
+      // @ts-ignore
+      set((s: VisualizationState) => {
         s.puzzle = p;
         s.resetState(s);
         s.setupForPuzzle(s);
@@ -516,7 +518,7 @@ const createClimbState = <T extends ClimbState>(
   };
 };
 
-export const useVisualizationStore = create<VisualizationState>(
+export const useVisualizationStore = create<VisualizationState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((set, get) => createVisualizationState(set, get, false)),
@@ -524,7 +526,7 @@ export const useVisualizationStore = create<VisualizationState>(
   )
 );
 
-export const useColorTrainingStore = create<ColorTrainingState>(
+export const useColorTrainingStore = create<ColorTrainingState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((set: SetState<ColorTrainingState>, get) => ({
@@ -717,7 +719,7 @@ export interface FinishedBlunderPuzzle {
   timeTaken: number;
 }
 
-export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
+export const useBlunderRecognitionStore = create<BlunderRecognitionState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((set: SetState<BlunderRecognitionState>, get) => ({
@@ -785,7 +787,8 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           centipawn_loss_min: getBlunderRange(state.difficulty.value)[0],
           limit: 1,
         });
-        set((s) => {
+        // @ts-ignore
+        set((s: BlunderRecognitionState) => {
           s.puzzles = puzzles;
         });
       },
@@ -796,7 +799,8 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
           if (!state.currentPuzzle) {
             (async () => {
               await state.prefetchPuzzles();
-              set((s) => {
+              // @ts-ignore
+              set((s: BlunderRecognitionState) => {
                 s.setupNextRound(s as BlunderRecognitionState);
               });
             })();
@@ -820,7 +824,7 @@ export const useBlunderRecognitionStore = create<BlunderRecognitionState>(
   )
 );
 
-export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
+export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer(
@@ -882,7 +886,8 @@ export const useBlindfoldTrainingStore = create<BlindfoldTrainingState>(
               );
               return;
             }
-            set((s) => {
+            // @ts-ignore
+            set((s: VisualizationState) => {
               s.puzzle = p;
               s.resetState(s);
               s.setupForPuzzle(s);
@@ -955,35 +960,33 @@ export interface PuzzleTraining<T> {
   onPuzzleMoveSuccess: (state?: T) => void;
   onPuzzleMoveFailure: (move: Move, state?: T) => void;
   onPuzzleSuccess: (state?: T) => void;
-  animatePieceMove: (
-    move: Move,
-    speed: PlaybackSpeed,
-    callback: (state: ChessboardState) => void,
-    _state: ChessboardState
-  ) => void;
 }
 
 export const setter = <T extends object>(
-  set: SetState<T>,
+  set: any,
   state: T | undefined,
   fn: (state: T) => void
 ) => {
+  console.log("Called setter");
   if (state) {
     // To force re-render when changing just a class or something
     // @ts-ignore
     state.bogus = Math.random();
     return fn(state);
   } else {
-    set((state) => {
+    console.log("No state");
+    let res = set((state: T) => {
       // To force re-render when changing just a class or something
       // @ts-ignore
       state.bogus = Math.random();
+      console.log("Calling function w/ state");
       fn(state);
     });
+    console.log({ res });
   }
 };
 
-export function createQuick<T extends object>(set: SetState<T>): any {
+export function createQuick<T extends object>(set): any {
   return {
     quick: (fn) => {
       setter<T>(set, undefined, (state) => {
@@ -1014,13 +1017,10 @@ export const logProxy = (p: any) => {
   }
 };
 
-export const useGamesSearchState = create<GamesSearchState>(
+export const useGamesSearchState = create<GamesSearchState>()(
   devtools(
-    // @ts-ignore for the set stuff
     immer(
-      // TODO: figure out why typescript hates this
-      // @ts-ignore
-      (set: SetState<GamesSearchState>, get): GamesSearchState =>
+      (set, get): GamesSearchState =>
         ({
           // TODO: clone?
           ...createQuick(set),

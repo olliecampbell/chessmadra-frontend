@@ -33,8 +33,16 @@ export interface BySide<T> {
 export type Side = "black" | "white";
 
 export interface RepertoireSide {
-  tree: RepertoireMove[];
+  moves: RepertoireMove[];
   side: Side;
+}
+
+export function getAllRepertoireMoves(r: Repertoire): RepertoireMove[] {
+  console.log({ r });
+  if (!r) {
+    return [];
+  }
+  return [...r.black.moves, ...r.white.moves];
 }
 
 export interface RepertoireMove {
@@ -42,7 +50,8 @@ export interface RepertoireMove {
   sanPlus: string;
   mine: boolean;
   side: Side;
-  responses: RepertoireMove[];
+  needsReview: boolean;
+  first_review: boolean;
 }
 
 export type MoveIdentifier = string;

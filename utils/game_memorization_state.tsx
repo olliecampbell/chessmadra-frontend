@@ -9,7 +9,8 @@ import create, {
   StoreApi,
 } from "zustand";
 import { devtools } from "zustand/middleware";
-import { createQuick, logProxy, immer, setter } from "./state";
+import { createQuick, logProxy, setter } from "./state";
+import { immer } from "zustand/middleware/immer";
 import {
   cloneDeep,
   drop,
@@ -89,7 +90,7 @@ export interface MemorizedGameStatus {
   everPerfect: boolean;
 }
 
-export const useGameMemorizationState = create<GameMemorizationState>(
+export const useGameMemorizationState = create<GameMemorizationState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer(
@@ -166,7 +167,8 @@ export const useGameMemorizationState = create<GameMemorizationState>(
                         movesMissed: s.movesMissed,
                       })
                       .then(() => {
-                        set((s) => {
+                        // @ts-ignore
+                        set((s: GameMemorizationState) => {
                           s.fetchGames(s);
                         });
                       });
@@ -253,7 +255,8 @@ export const useGameMemorizationState = create<GameMemorizationState>(
               (async () => {
                 let { data: resp }: { data: MyGamesResponse } =
                   await client.get("/api/v1/my_games");
-                set((s) => {
+                // @ts-ignore
+                set((s: GameMemorizationState) => {
                   s.games = resp.games;
                   s.gameStatuses = resp.gameStatuses;
                 });
