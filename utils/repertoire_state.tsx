@@ -235,9 +235,7 @@ export const useRepertoireState = create<RepertoireState>()(
               }
               s.currentMove = s.queue.shift();
               s.failedCurrentMove = false;
-              if (s.currentMove.side === "black") {
-                s.flipped = true;
-              }
+              s.flipped = s.currentMove.side === "black";
               s.position = new Chess();
               s.allowMoves = true;
               // s.frozen = false;
