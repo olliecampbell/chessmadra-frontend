@@ -23,6 +23,10 @@ export function lineToPgn(line: string[]): string {
   return pgn.trim();
 }
 
+export function pgnToLine(line: string): string[] {
+  return line.replaceAll(/\d+\./g, "").split(" ");
+}
+
 export type Repertoire = BySide<RepertoireSide>;
 
 export interface BySide<T> {
@@ -31,6 +35,7 @@ export interface BySide<T> {
 }
 
 export type Side = "black" | "white";
+export const SIDES = ["black", "white"];
 
 export interface RepertoireSide {
   moves: RepertoireMove[];

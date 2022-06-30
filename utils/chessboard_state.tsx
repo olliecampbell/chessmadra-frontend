@@ -49,6 +49,7 @@ export interface ChessboardState {
     _state: ChessboardState
   ) => void;
   flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
+  moveLog?: string;
 }
 
 export interface ChessboardStateParent<T> {
@@ -100,13 +101,14 @@ export const createChessState = <
           square,
           verbose: true,
         });
+        console.log({ moves });
         if (
           !isEmpty(state.availableMoves) &&
           first(state.availableMoves).from == square
         ) {
           state.availableMoves = [];
         } else if (!state.frozen) {
-          // @ts-ignore
+          console.log("Not frozen");
           state.availableMoves = moves;
         }
       });

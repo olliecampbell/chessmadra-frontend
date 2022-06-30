@@ -10,7 +10,15 @@ import { Animated, Text, Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { cloneDeep, isEmpty, isNil, takeRight } from "lodash";
+import {
+  cloneDeep,
+  map,
+  isEmpty,
+  isNil,
+  takeRight,
+  dropRight,
+  capitalize,
+} from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -25,15 +33,26 @@ import {
   RepertoireMove,
   getAllRepertoireMoves,
   RepertoireSide,
+  lineToPgn,
+  pgnToLine,
+  SIDES,
+  Side,
 } from "app/utils/repertoire";
 import { PageContainer } from "./PageContainer";
 import { Modal } from "./Modal";
 import { RepertoireWizard } from "./RepertoireWizard";
+import { GridLoader } from "react-spinners";
+const DEPTH_CUTOFF = 5;
+import { AppStore } from "app/store";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
   const state = useRepertoireState();
   console.log("Re-rendering?");
+  let { user, authStatus, token } = AppStore.useState((s) => s.auth);
+  useEffect(() => {
+    state.setUser(user);
+  }, [user]);
   useEffect(() => {
     state.initState();
   }, []);
@@ -42,27 +61,17 @@ export const RepertoireBuilder = () => {
   // console.log("Pending line", pendingLine);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
-  if (getAllRepertoireMoves(state.repertoire).length === 0) {
+  let centered = false;
+  if (state.repertoire === undefined) {
+    inner = <GridLoader color={c.primaries[40]} size={20} />;
+    centered = true;
+  } else if (getAllRepertoireMoves(state.repertoire).length === 0) {
     inner = <RepertoireWizard state={state} />;
   } else {
-    inner = (
-      <>
-        {/*<Modal
-          onClose={() => {
-            setUploadModalOpen(false);
-          }}
-          visible={uploadModalOpen}
-        >
-        </Modal>*/}
-        <TrainerLayout
-          chessboard={
-            <ChessboardView
-              {...{
-                state: state,
-              }}
-            />
-          }
-        >
+    let innerInner = null;
+    if (state.isEditing) {
+      innerInner = (
+        <>
           {pendingLine && (
             <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
               <Pressable
@@ -77,64 +86,153 @@ export const RepertoireBuilder = () => {
               </Pressable>
             </View>
           )}
-          <View style={s(!isMobile && s(c.width(300)))}>
+          <View
+            style={s(
+              c.bg(c.grays[20]),
+              c.br(4),
+              c.px(12),
+              c.py(8),
+              c.maxHeight(300),
+              c.scrollY
+            )}
+          >
             {/*
-              <View
-                style={s(
-                  c.bg(c.grays[30]),
-                  c.px(12),
-                  c.py(4),
-                  c.maxHeight(300),
-                  c.scrollY
-                )}
-              >
-                <OpeningTree
-                  state={state}
-                  repertoire={state.repertoire.white}
-                  grade={grade}
-                />
-              </View>
-            */}
-            <Text style={s(c.fg(c.colors.textPrimary))}>
-              {state.queue?.length} to review
-            </Text>
-            {state.currentMove && (
-              <>
-                <Spacer height={12} />
-                <Button
-                  style={s(c.buttons.basic)}
-                  onPress={() => {
-                    if (state.hasGivenUp) {
-                      state.setupNextMove();
-                    } else {
-                      state.giveUp();
-                    }
-                  }}
-                >
-                  {state.hasGivenUp ? "Next" : "Show me"}
-                </Button>
-              </>
+              {state.currentLine && (
+                <Text style={s(c.weightSemiBold, c.fg(c.colors.textSecondary))}>
+                  {lineToPgn(state.currentLine)}
+                </Text>
+              )}
+              */}
+            <OpeningTree
+              state={state}
+              repertoire={state.repertoire.white}
+              grade={grade}
+            />
+          </View>
+          <Spacer height={12} />
+          <Button
+            style={s(c.buttons.basic)}
+            onPress={() => {
+              state.analyzeLineOnLichess(state.activeSide);
+            }}
+          >
+            Analyze on Lichess
+          </Button>
+          <Spacer height={12} />
+          <Button
+            style={s(c.buttons.basic)}
+            onPress={() => {
+              state.searchOnChessable();
+            }}
+          >
+            Search Chessable
+          </Button>
+        </>
+      );
+    } else if (state.isReviewing) {
+      innerInner = (
+        <>
+          <Button
+            style={s(c.buttons.basic)}
+            onPress={() => {
+              if (state.hasGivenUp) {
+                state.setupNextMove();
+              } else {
+                state.giveUp();
+              }
+            }}
+          >
+            {state.hasGivenUp ? "Next" : "Show me"}
+          </Button>
+          <Spacer height={12} />
+          <Button
+            style={s(c.buttons.basic)}
+            onPress={() => {
+              state.stopReview();
+            }}
+          >
+            Stop Review
+          </Button>
+        </>
+      );
+    } else {
+      innerInner = (
+        <>
+          {!isEmpty(state.queue) ? (
+            <View
+              style={s(
+                c.bg(c.grays[20]),
+                c.br(4),
+                c.overflowHidden,
+                c.px(12),
+                c.py(12),
+                c.column,
+                c.center
+              )}
+            >
+              <Text style={s(c.fg(c.colors.textSecondary))}>
+                No moves to review! Come back later to review more.
+                <br />
+                <br />
+                Now might be a good time to add moves to your repertoire. See
+                below for your biggest misses.
+              </Text>
+            </View>
+          ) : (
+            <Button
+              style={s(c.buttons.primary, c.selfStretch, c.py(16), c.px(12))}
+              onPress={() => {
+                state.startReview();
+              }}
+            >
+              {`Review ${state.queue?.length} moves`}
+            </Button>
+          )}
+
+          <Spacer height={12} />
+          <View
+            style={s(
+              c.bg(c.grays[20]),
+              c.br(4),
+              c.px(12),
+              c.py(12),
+              c.column,
+              c.alignStart
             )}
-            {!state.currentMove && (
-              <>
-                <Spacer height={12} />
-                <Button
-                  style={s(c.buttons.basic)}
-                  onPress={() => {
-                    state.startReview();
-                  }}
-                >
-                  Start Review
-                </Button>
-              </>
+          >
+            {intersperse(
+              SIDES.map((side, i) => {
+                return <RepertoireSideSummary side={side} state={state} />;
+              }),
+              (i) => {
+                return <Spacer height={48} key={i} />;
+              }
             )}
-            <Spacer height={12} />
-            {state.repertoireGrades[state.activeSide] && (
-              <RepertoireGradeView
-                state={state}
-                grade={state.repertoireGrades[state.activeSide]}
-              />
-            )}
+          </View>
+        </>
+      );
+    }
+    inner = (
+      <>
+        {/*<Modal
+          onClose={() => {
+            setUploadModalOpen(false);
+          }}
+          visible={uploadModalOpen}
+        >
+        </Modal>*/}
+        <TrainerLayout
+          containerStyles={s(isMobile ? c.alignCenter : c.alignStart)}
+          chessboard={
+            <ChessboardView
+              {...{
+                state: state,
+              }}
+            />
+          }
+        >
+          <View style={s(!isMobile && s(c.width(300)))}>
+            {innerInner}
             {/*
             <Spacer height={12} />
             <View style={s(c.row, c.justifyEnd, c.fullWidth)}>
@@ -158,7 +256,7 @@ export const RepertoireBuilder = () => {
       </>
     );
   }
-  return <PageContainer>{inner}</PageContainer>;
+  return <PageContainer centered={centered}>{inner}</PageContainer>;
 };
 
 const RepertoireGradeView = ({
@@ -198,89 +296,130 @@ const RepertoireGradeView = ({
   );
 };
 
-// const OpeningTree = ({
-//   repertoire,
-//   state,
-//   grade,
-// }: {
-//   repertoire: RepertoireSide;
-//   grade: RepertoireGrade;
-//   state: RepertoireState;
-// }) => {
-//   return (
-//     <View style={s()}>
-//       {repertoire.tree.map((move) => {
-//         return <OpeningNode state={state} grade={grade} move={move} />;
-//       })}
-//     </View>
-//   );
-// };
+const OpeningTree = ({
+  repertoire,
+  state,
+  grade,
+}: {
+  repertoire: RepertoireSide;
+  grade: RepertoireGrade;
+  state: RepertoireState;
+}) => {
+  return (
+    <View style={s()}>
+      {map(
+        state.responseLookup[state.activeSide][lineToPgn(state.currentLine)],
+        (id) => {
+          return state.moveLookup[state.activeSide][id];
+        }
+      ).map((move) => {
+        return (
+          <OpeningNode
+            state={state}
+            grade={grade}
+            move={move}
+            repertoire={repertoire}
+          />
+        );
+      })}
+    </View>
+  );
+};
 
-// const OpeningNode = ({
-//   move,
-//   grade,
-//   state,
-// }: {
-//   move: RepertoireMove;
-//   grade: RepertoireGrade;
-//   state: RepertoireState;
-// }) => {
-//   let incidence = grade?.moveIncidence[move.id];
-//   return (
-//     <View style={s(c.pl(2))}>
-//       <Pressable
-//         onPress={() => {
-//           state.playPgn(move.id);
-//         }}
-//       >
-//         <View
-//           style={s(
-//             c.row,
-//             c.br(2),
-//             c.px(4),
-//             // c.bg(c.grays[20]),
-//             c.my(0),
-//             c.py(2),
-//             c.justifyBetween
-//           )}
-//         >
-//           <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
-//             {move.sanPlus}
-//           </Text>
-//           {incidence && !move.mine && (
-//             <>
-//               <Spacer width={0} grow />
-//               <Text style={s(c.fg(c.colors.textSecondary))}>
-//                 {formatIncidence(incidence)}
-//               </Text>
-//             </>
-//           )}
-//           <Spacer width={12} />
-//           <Text style={s(c.clickable)}>
-//             <i
-//               style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
-//               className={`fa-light fa-trash-can`}
-//             ></i>
-//           </Text>
-//         </View>
-//       </Pressable>
-//       <View
-//         style={s(c.pl(6), c.ml(6), c.borderLeft(`1px solid ${c.grays[40]}`))}
-//       >
-//         <View style={s()}>
-//           {intersperse(
-//             (move.responses || []).map((move) => {
-//               return <OpeningNode state={state} move={move} grade={grade} />;
-//             }),
-//             (i) => {
-//               return <Spacer key={i} height={0} />;
-//             }
-//           )}
-//         </View>
-//       </View>
-//     </View>
-//   );
-// };
+const OpeningNode = ({
+  move,
+  grade,
+  state,
+  repertoire,
+}: {
+  move: RepertoireMove;
+  grade: RepertoireGrade;
+  state: RepertoireState;
+  repertoire: RepertoireSide;
+}) => {
+  let incidence = grade?.moveIncidence[move.id];
+  let responses = map(
+    state.responseLookup[state.activeSide][move.id],
+    (id) => state.moveLookup[state.activeSide][id]
+  );
+  let trueDepth = move.id.split(" ").length;
+  let assumedDepth = state.currentLine.length;
+  let depthDifference = trueDepth - assumedDepth;
+  console.log("LOOKUP", state.responseLookup);
+  console.log({ responses, depthDifference });
+  // let responses = [];
+  return (
+    <View style={s(c.pl(2))}>
+      <Pressable
+        onPress={() => {
+          state.playPgn(move.id);
+        }}
+      >
+        <View
+          style={s(
+            c.row,
+            c.br(2),
+            c.px(4),
+            // c.bg(c.grays[20]),
+            c.my(0),
+            c.py(2),
+            c.justifyBetween
+          )}
+        >
+          <Text
+            style={s(
+              c.fg(move.mine ? c.grays[85] : c.grays[70]),
+              move.mine ? c.weightBold : c.weightRegular
+            )}
+          >
+            {move.sanPlus}
+          </Text>
+          {incidence && !move.mine && (
+            <>
+              <Spacer width={0} grow />
+              <Text style={s(c.fg(c.colors.textSecondary))}>
+                {formatIncidence(incidence)}
+              </Text>
+            </>
+          )}
+
+          {/*
+          <Spacer width={12} />
+          <Text style={s(c.clickable)}>
+            <i
+              style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
+              className={`fas fa-trash`}
+            ></i>
+          </Text>
+          */}
+        </View>
+      </Pressable>
+      {depthDifference < DEPTH_CUTOFF && (
+        <View
+          style={s(c.pl(10), c.ml(6), c.borderLeft(`1px solid ${c.grays[25]}`))}
+        >
+          <View style={s()}>
+            {intersperse(
+              (responses || []).map((move) => {
+                return (
+                  <OpeningNode
+                    repertoire={repertoire}
+                    state={state}
+                    move={move}
+                    grade={grade}
+                  />
+                );
+              }),
+              (i) => {
+                return <Spacer key={i} height={0} />;
+              }
+            )}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
 
 let START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -290,4 +429,61 @@ const formatIncidence = (incidence: number) => {
 
 const removeTrailingZeros = (n: string) => {
   return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
+};
+
+const RepertoireSideSummary = ({
+  side,
+  state,
+}: {
+  side: Side;
+  state: RepertoireState;
+}) => {
+  return (
+    <View style={s(c.fullWidth)}>
+      <View
+        style={s(
+          c.fullWidth,
+          c.pb(8),
+          c.borderBottom(`1px solid ${c.grays[30]}`),
+          c.row,
+          c.justifyBetween,
+          c.alignCenter
+        )}
+      >
+        <Text
+          style={s(
+            c.weightSemiBold,
+            c.fg(c.colors.textPrimary),
+            c.fontSize(16)
+          )}
+        >
+          {capitalize(side)}
+        </Text>
+        <Button
+          style={s(c.buttons.basic, c.py(4), c.px(8), c.fontSize(14), {
+            textStyles: s(c.weightSemiBold),
+          })}
+          onPress={() => {
+            state.startEditing(side);
+          }}
+        >
+          Edit
+        </Button>
+      </View>
+      <Spacer height={12} />
+      <View style={s(c.column, c.alignStart)}>
+        <SummaryRow k="moves" v={state.myResponsesLookup[side].length} />
+      </View>
+    </View>
+  );
+};
+
+const SummaryRow = ({ k, v }) => {
+  return (
+    <View style={s(c.row, c.alignEnd)}>
+      <Text style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>{v}</Text>
+      <Spacer width={4} />
+      <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>{k}</Text>
+    </View>
+  );
 };

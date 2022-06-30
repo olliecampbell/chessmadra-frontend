@@ -14,7 +14,11 @@ import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 import { PageContainer } from "./PageContainer";
 
-export const TrainerLayout = ({ chessboard, children }: any) => {
+export const TrainerLayout = ({
+  chessboard,
+  children,
+  containerStyles,
+}: any) => {
   const isMobile = useIsMobile();
   return (
     <View
@@ -41,11 +45,14 @@ export const TrainerLayout = ({ chessboard, children }: any) => {
             <View
               style={s(
                 isMobile && s(c.alignCenter),
-                isMobile ? c.column : s(c.row, c.alignCenter)
+                isMobile ? c.column : s(c.row, c.alignCenter),
+                containerStyles
               )}
             >
-              <View style={s(c.width(500), c.maxWidth("100%"))}>
-                {chessboard}
+              <View style={s(c.column)}>
+                <View style={s(c.width(500), c.maxWidth("100%"))}>
+                  {chessboard}
+                </View>
               </View>
               <Spacer height={12} width={24} isMobile={isMobile} />
               <View

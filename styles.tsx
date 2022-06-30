@@ -162,6 +162,7 @@ const dashboardTitle = s(fontSize(40), weightBold, fg("#2e2e3c"));
 const zIndex = keyedProp("zIndex");
 const overflowHidden = keyedProp("overflow")("hidden");
 const scrollY = keyedProp("overflow-y")("scroll");
+const scrollX = keyedProp("overflow-x")("scroll");
 const aircamBlue = "#1160d6";
 const lineHeight = keyedProp("lineHeight");
 const fontFamily = keyedProp("fontFamily");
@@ -417,6 +418,7 @@ export const c = {
   zIndex,
   overflowHidden,
   scrollY,
+  scrollX,
   aircamBlue,
   hsl,
   fontFamily,
