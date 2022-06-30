@@ -35,7 +35,7 @@ export interface BySide<T> {
 }
 
 export type Side = "black" | "white";
-export const SIDES = ["black", "white"];
+export const SIDES: Side[] = ["black", "white"];
 
 export interface RepertoireSide {
   moves: RepertoireMove[];
