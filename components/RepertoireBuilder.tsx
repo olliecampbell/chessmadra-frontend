@@ -158,7 +158,7 @@ export const RepertoireBuilder = () => {
     } else {
       innerInner = (
         <>
-          {!isEmpty(state.queue) ? (
+          {isEmpty(state.queue) ? (
             <View
               style={s(
                 c.bg(c.grays[20]),
