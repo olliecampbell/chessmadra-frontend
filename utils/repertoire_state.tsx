@@ -77,10 +77,13 @@ export interface RepertoireState
   startReview: (_state?: RepertoireState) => void;
   stopReview: (_state?: RepertoireState) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
+  stopEditing: (_state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
   updatePendingLineFromPosition: (_state?: RepertoireState) => void;
   analyzeLineOnLichess: (side: Side, _state?: RepertoireState) => void;
   searchOnChessable: (_state?: RepertoireState) => void;
+  backOne: (_state?: RepertoireState) => void;
+  backToStartPosition: (_state?: RepertoireState) => void;
   onRepertoireUpdate: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
@@ -340,18 +343,20 @@ export const useRepertoireState = create<RepertoireState>()(
               console.log({ parsed });
               console.log(s.position.ascii());
             }),
+          stopEditing: (side: Side, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.activeSide = "white";
+              s.isEditing = false;
+              s.position = new Chess();
+              s.frozen = true;
+              s.flipped = false;
+            }),
           startEditing: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.activeSide = side;
               s.isEditing = true;
               s.frozen = false;
               s.flipped = side === "black";
-            }),
-          stopEditing: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.moveLog = null;
-              s.isEditing = false;
-              s.position = new Chess();
             }),
           startReview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -394,6 +399,16 @@ export const useRepertoireState = create<RepertoireState>()(
                     s.onRepertoireUpdate(s);
                   });
                 });
+            }),
+          backOne: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.position.undo();
+              s.updatePendingLineFromPosition(s);
+            }),
+          backToStartPosition: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.position = new Chess();
+              s.updatePendingLineFromPosition(s);
             }),
           editRepertoireSide: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {

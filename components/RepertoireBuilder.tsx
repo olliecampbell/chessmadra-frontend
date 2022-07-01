@@ -70,6 +70,7 @@ export const RepertoireBuilder = () => {
   } else {
     let innerInner = null;
     if (state.isEditing) {
+      let backButtonActive = state.position.history().length > 0;
       innerInner = (
         <>
           {pendingLine && (
@@ -92,7 +93,8 @@ export const RepertoireBuilder = () => {
               c.br(4),
               c.px(12),
               c.py(8),
-              c.maxHeight(300),
+              // c.maxHeight(300),
+              c.height(200),
               c.scrollY
             )}
           >
@@ -108,6 +110,48 @@ export const RepertoireBuilder = () => {
               repertoire={state.repertoire.white}
               grade={grade}
             />
+          </View>
+          <Spacer height={12} />
+          <View style={s(c.row)}>
+            <Button
+              style={s(
+                c.buttons.basicInverse,
+                c.height(36),
+                c.width(48),
+                c.bg(c.grays[20])
+              )}
+              onPress={() => {
+                state.backToStartPosition();
+              }}
+            >
+              <i
+                className="fas fa-angles-left"
+                style={s(
+                  c.fg(backButtonActive ? c.grays[80] : c.grays[50]),
+                  c.fontSize(18)
+                )}
+              />
+            </Button>
+            <Spacer width={12} />
+            <Button
+              style={s(
+                c.buttons.basicInverse,
+                c.height(36),
+                c.width(48),
+                c.bg(c.grays[20])
+              )}
+              onPress={() => {
+                state.backOne();
+              }}
+            >
+              <i
+                className="fas fa-angle-left"
+                style={s(
+                  c.fg(backButtonActive ? c.grays[80] : c.grays[50]),
+                  c.fontSize(18)
+                )}
+              />
+            </Button>
           </View>
           <Spacer height={12} />
           <Button
@@ -126,6 +170,15 @@ export const RepertoireBuilder = () => {
             }}
           >
             Search Chessable
+          </Button>
+          <Spacer height={12} />
+          <Button
+            style={s(c.buttons.basic)}
+            onPress={() => {
+              state.stopEditing();
+            }}
+          >
+            Stop Editing
           </Button>
         </>
       );
@@ -205,7 +258,7 @@ export const RepertoireBuilder = () => {
                 return <RepertoireSideSummary side={side} state={state} />;
               }),
               (i) => {
-                return <Spacer height={48} key={i} />;
+                return <Spacer height={32} key={i} />;
               }
             )}
           </View>
@@ -438,6 +491,8 @@ const RepertoireSideSummary = ({
   side: Side;
   state: RepertoireState;
 }) => {
+  let expectedDepth = state.repertoireGrades[side]?.expectedDepth;
+  let biggestMiss = state.repertoireGrades[side]?.biggestMiss;
   return (
     <View style={s(c.fullWidth)}>
       <View
@@ -472,7 +527,20 @@ const RepertoireSideSummary = ({
       </View>
       <Spacer height={12} />
       <View style={s(c.column, c.alignStart)}>
-        <SummaryRow k="moves" v={state.myResponsesLookup[side].length} />
+        {intersperse(
+          [
+            <SummaryRow k="moves" v={state.myResponsesLookup[side].length} />,
+            ...(expectedDepth
+              ? [<SummaryRow k="expected depth" v={expectedDepth.toFixed(2)} />]
+              : []),
+            ...(biggestMiss
+              ? [<SummaryRow k="biggest miss" v={biggestMiss.move.id} />]
+              : []),
+          ],
+          (i) => {
+            return <Spacer height={12} key={i} />;
+          }
+        )}
       </View>
     </View>
   );
@@ -480,9 +548,9 @@ const RepertoireSideSummary = ({
 
 const SummaryRow = ({ k, v }) => {
   return (
-    <View style={s(c.row, c.alignEnd)}>
+    <View style={s(c.column, c.alignStart)}>
       <Text style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>{v}</Text>
-      <Spacer width={4} />
+      <Spacer height={4} />
       <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>{k}</Text>
     </View>
   );

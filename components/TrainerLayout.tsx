@@ -49,10 +49,8 @@ export const TrainerLayout = ({
                 containerStyles
               )}
             >
-              <View style={s(c.column)}>
-                <View style={s(c.width(500), c.maxWidth("100%"))}>
-                  {chessboard}
-                </View>
+              <View style={s(c.width(500), c.maxWidth("100%"))}>
+                {chessboard}
               </View>
               <Spacer height={12} width={24} isMobile={isMobile} />
               <View
