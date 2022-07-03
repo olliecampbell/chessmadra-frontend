@@ -21,6 +21,8 @@ import {
   keyBy,
   last,
   take,
+  map,
+  filter,
 } from "lodash";
 import {
   BySide,
@@ -70,14 +72,13 @@ export interface RepertoireState
   user?: User;
   initState: (_state?: RepertoireState) => void;
   playPgn: (pgn: string, _state?: RepertoireState) => void;
-  // addPendingLine: (_state?: RepertoireState) => void;
+  addPendingLine: (_state?: RepertoireState) => void;
   hasGivenUp?: boolean;
   giveUp: (_state?: RepertoireState) => void;
   setupNextMove: (_state?: RepertoireState) => void;
   startReview: (_state?: RepertoireState) => void;
-  stopReview: (_state?: RepertoireState) => void;
+  backToOverview: (_state?: RepertoireState) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
-  stopEditing: (_state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
   updatePendingLineFromPosition: (_state?: RepertoireState) => void;
   analyzeLineOnLichess: (side: Side, _state?: RepertoireState) => void;
@@ -99,6 +100,8 @@ export interface RepertoireState
   myResponsesLookup?: BySide<RepertoireMove[]>;
   moveLookup?: BySide<Record<string, RepertoireMove>>;
   currentLine?: string[];
+  uploadingMoves?: boolean;
+  pendingMoves?: RepertoireMove[];
 }
 
 // export const DEFAULT_REPERTOIRE = {
@@ -247,6 +250,34 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               let line = s.position.history();
               s.currentLine = line;
+              let accumLine = [];
+              s.pendingMoves = map(
+                filter(
+                  map(line, (m) => {
+                    accumLine.push(m);
+                    return [m, lineToPgn(accumLine)];
+                  }),
+                  ([m, pgn]) => {
+                    console.log(
+                      `Checking whether ${pgn} is in the responses lookup`,
+                      logProxy(s.moveLookup)
+                    );
+                    return !s.moveLookup[s.activeSide][pgn];
+                  }
+                ),
+                ([m, pgn]) => {
+                  return {
+                    id: pgn,
+                    sanPlus: m,
+                    side: null,
+                    mine: true,
+                    pending: true,
+                    needsReview: false,
+                    firstReview: false,
+                  } as RepertoireMove;
+                }
+              );
+              console.log("Pending moves is ", s.pendingMoves);
               s.moveLog = lineToPgn(line);
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
@@ -343,13 +374,19 @@ export const useRepertoireState = create<RepertoireState>()(
               console.log({ parsed });
               console.log(s.position.ascii());
             }),
-          stopEditing: (side: Side, _state?: RepertoireState) =>
+
+          backToOverview: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              s.moveLog = null;
+              s.isReviewing = false;
+              s.queue.unshift(s.currentMove);
+              s.currentMove = null;
               s.activeSide = "white";
               s.isEditing = false;
               s.position = new Chess();
               s.frozen = true;
               s.flipped = false;
+              s.updatePendingLineFromPosition(s);
             }),
           startEditing: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -363,16 +400,6 @@ export const useRepertoireState = create<RepertoireState>()(
               s.isReviewing = true;
               s.setupNextMove(s);
             }),
-          stopReview: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.moveLog = null;
-              s.isReviewing = false;
-              s.queue.unshift(s.currentMove);
-              s.currentMove = null;
-              s.position = new Chess();
-              s.frozen = false;
-            }),
-
           onRepertoireUpdate: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.updateRepertoireStructures(s);
@@ -441,32 +468,28 @@ export const useRepertoireState = create<RepertoireState>()(
           ...createChessState(set, get, (c) => {
             c.frozen = true;
           }),
-          // addPendingLine: (_state?: RepertoireState) =>
-          //   setter(set, _state, (s) => {
-          //     console.log("Before getting pending line");
-          //     const { knownLine, pendingLine } = s.getPendingLine(s);
-          //     console.log("Before adding pending line");
-          //     let line = [...knownLine];
-          //     let activeRepertoire: RepertoireSide =
-          //       s.repertoire.value[s.activeSide];
-          //     let node = getNodeFromRepertoire(activeRepertoire, knownLine);
-          //     while (pendingLine.length > 0) {
-          //       let move = pendingLine.shift();
-          //       line.push(move);
-          //       node.responses.push({
-          //         id: lineToPgn(line),
-          //         sanPlus: move,
-          //         mine: sideOfLastmove(line) === s.activeSide,
-          //         side: sideOfLastmove(line),
-          //         responses: [],
-          //       });
-          //       node = last(node.responses);
-          //     }
-          //     console.log("After adding pending line");
-          //     alert("Gotta save the new repertoire");
-          //     // s.repertoire.save();
-          //     // s.fetchRepertoireGrade(s);
-          //   }),
+          addPendingLine: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.uploadingMoves = true;
+              client
+                .post("/api/v1/openings/add_moves", {
+                  moves: _.map(s.pendingMoves, (m) => m.id),
+                  side: s.activeSide,
+                })
+                .then(({ data }: { data: Repertoire }) => {
+                  set((s) => {
+                    map(s.pendingMoves, () => {
+                      s.position.undo();
+                    });
+                    s.updatePendingLineFromPosition(s);
+
+                    s.pendingMoves = [];
+                    s.uploadingMoves = false;
+                    s.repertoire = data;
+                    s.onRepertoireUpdate(s);
+                  });
+                });
+            }),
           getPendingLine: (_state?: RepertoireState) => {
             let state = _state ?? get();
             return null;

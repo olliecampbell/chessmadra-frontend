@@ -56,7 +56,8 @@ export interface RepertoireMove {
   mine: boolean;
   side: Side;
   needsReview: boolean;
-  first_review: boolean;
+  firstReview: boolean;
+  pending?: boolean;
 }
 
 export type MoveIdentifier = string;

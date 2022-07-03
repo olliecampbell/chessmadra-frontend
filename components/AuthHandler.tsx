@@ -1,21 +1,32 @@
 import React, { useEffect } from "react";
 import Cookies from "js-cookie";
 import { AppStore, AuthStatus } from "app/store";
-import { fetchUser, JWT_COOKIE_KEY } from "app/utils/auth";
+import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "app/utils/auth";
 import client from "app/client";
 import { User } from "app/models";
+import { uuid4 } from "@sentry/utils";
 
 const AuthHandler = ({ children }) => {
-  let { user, authStatus, token } = AppStore.useState((s) => s.auth);
+  let { user, authStatus, token, tempUserUuid } = AppStore.useState(
+    (s) => s.auth
+  );
   // let subscribeAfterSignup = AppStore.useState((s) => s.subscribeAfterSignup);
   console.log("token:", token);
   console.log("authStatus:", authStatus);
   useEffect(() => {
+    console.log("4");
     if (token) {
       Cookies.set(JWT_COOKIE_KEY, token, { expires: 5000 });
     }
   }, [token]);
   useEffect(() => {
+    console.log("3");
+    if (tempUserUuid) {
+      Cookies.set(TEMP_USER_UUID, tempUserUuid, { expires: 5000 });
+    }
+  }, [tempUserUuid]);
+  useEffect(() => {
+    console.log("2");
     AppStore.update((s) => {
       let cookieToken = Cookies.get(JWT_COOKIE_KEY);
       if (cookieToken) {
@@ -24,8 +35,20 @@ const AuthHandler = ({ children }) => {
         s.auth.authStatus = AuthStatus.Unauthenticated;
       }
     });
-  });
+  }, []);
   useEffect(() => {
+    console.log("1");
+    AppStore.update((s) => {
+      let tempUserUuid = Cookies.get(TEMP_USER_UUID);
+      if (tempUserUuid) {
+        s.auth.tempUserUuid = tempUserUuid;
+      } else {
+        s.auth.tempUserUuid = uuid4();
+      }
+    });
+  }, []);
+  useEffect(() => {
+    console.log("5");
     (async () => {
       if (authStatus === AuthStatus.Initial && token) {
         console.log("FETCHING");

@@ -36,22 +36,25 @@ import { DragAndDropInput } from "./DragAndDropInput";
 const MOBILE_CUTOFF = 800;
 
 enum OpeningSource {
-  Lichess,
-  ChessCom,
+  LichessGames,
+  LichessStudy,
+  // ChessCom,
   Pgn,
   None,
 }
 
 function formatOpeningSource(openingSource: OpeningSource) {
   switch (openingSource) {
-    case OpeningSource.Lichess:
-      return "Lichess";
-    case OpeningSource.ChessCom:
-      return "Chess.com";
+    case OpeningSource.LichessGames:
+      return "Lichess Games";
+    case OpeningSource.LichessStudy:
+      return "Lichess Study";
+    // case OpeningSource.ChessCom:
+    //   return "Chess.com";
     case OpeningSource.Pgn:
-      return "PGN Upload";
+      return "PGN";
     case OpeningSource.None:
-      return "Manual";
+      return "Skip";
   }
 }
 
@@ -102,45 +105,6 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
   const [openingSource, setOpeningSource] = useState(OpeningSource.Pgn);
   const [ratingTimeControl, setRatingTimeControl] = useState(true);
-  const openingSourceSelector = (
-    <SelectOneOf
-      choices={[
-        OpeningSource.Lichess,
-        OpeningSource.ChessCom,
-        OpeningSource.Pgn,
-        OpeningSource.None,
-      ]}
-      horizontal={true}
-      containerStyles={s(c.fullWidth)}
-      activeChoice={openingSource}
-      onSelect={function (x: OpeningSource): void {
-        setOpeningSource(x);
-      }}
-      renderChoice={function (x: OpeningSource): JSX.Element | string {
-        return formatOpeningSource(x);
-      }}
-    />
-  );
-  const ratingRangeSelector = (
-    <SelectOneOf
-      choices={[
-        RatingRange.RatingLessThan1200,
-        RatingRange.Rating1200To1500,
-        RatingRange.Rating1500To1800,
-        RatingRange.Rating1800To2100,
-        RatingRange.RatingGreaterThan2100,
-      ]}
-      horizontal={true}
-      containerStyles={s(c.fullWidth)}
-      activeChoice={rating}
-      onSelect={function (rating: RatingRange): void {
-        setRating(rating);
-      }}
-      renderChoice={function (rating: RatingRange): JSX.Element | string {
-        return formatRatingRange(rating);
-      }}
-    />
-  );
   const [username, setUsername] = useState("");
   const [whitePgn, setWhitePgn] = useState(null);
   const [blackPgn, setBlackPgn] = useState(null);
@@ -154,14 +118,14 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
       });
     },
     questionCopy:
-      "This tool uses data from millions of online games to determine the gaps in your openings, based on how your opponents tend to play. We can either get your ratings from your online games, PGN files, or you can skip this step for now.",
+      "This tool uses data from millions of online games to determine the gaps in your openings, based on how your opponents tend to play. Choose a way to import your openings below, or skip this step for now.",
     isValid: (() => {
-      if (openingSource == OpeningSource.Lichess && !isEmpty(username)) {
+      if (openingSource == OpeningSource.LichessGames && !isEmpty(username)) {
         return true;
       }
-      if (openingSource == OpeningSource.ChessCom && !isEmpty(username)) {
-        return true;
-      }
+      // if (openingSource == OpeningSource.ChessCom && !isEmpty(username)) {
+      //   return true;
+      // }
       if (openingSource == OpeningSource.Pgn) {
         return true;
       }
@@ -173,9 +137,10 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
       <>
         <SelectOneOf
           choices={[
-            OpeningSource.Lichess,
-            OpeningSource.ChessCom,
+            // OpeningSource.ChessCom,
             OpeningSource.Pgn,
+            OpeningSource.LichessGames,
+            OpeningSource.LichessStudy,
             OpeningSource.None,
             // RatingSource.Fide,
           ]}
@@ -190,8 +155,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
             return formatOpeningSource(source);
           }}
         />
-        {(openingSource == OpeningSource.Lichess ||
-          openingSource == OpeningSource.ChessCom) && (
+        {openingSource == OpeningSource.LichessGames && (
           <>
             <Spacer height={12} />
             <CMTextInput
@@ -230,42 +194,6 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
             </View>
           </>
         )}
-      </>
-    ),
-  };
-  let ratingRangeStep = {
-    questionCopy:
-      "This tool uses data from millions of online games to determine the gaps in your openings, based on how your opponents tend to play. The first thing we need to know is your rating; which of these is most accurate?",
-    isValid: rating !== null,
-    children: (
-      <>
-        <SelectOneOf
-          choices={[
-            RatingSource.Lichess,
-            RatingSource.ChessCom,
-            // RatingSource.Fide,
-          ]}
-          horizontal={true}
-          cellStyles={s(c.grow)}
-          containerStyles={s(c.fullWidth)}
-          activeChoice={ratingSource}
-          onSelect={function (source: RatingSource): void {
-            setRatingSource(source);
-          }}
-          renderChoice={(source: RatingSource): string | JSX.Element => {
-            return formatRatingSource(source);
-          }}
-        />
-      </>
-    ),
-  };
-  let uploadPgnStep = {
-    questionCopy:
-      "Do you have an opening repertoire already? We can either get your opening repertoire from your recent Lichess games, or you can upload your white and black repertoires as individual PGNs here.",
-    isValid: true,
-    children: (
-      <>
-        <UploadPgnsView />
       </>
     ),
   };

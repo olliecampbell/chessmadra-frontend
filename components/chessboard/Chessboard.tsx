@@ -371,7 +371,7 @@ export const ChessboardView = ({
           </View>
         </View>
       </View>
-      {state.moveLog && (
+      {false && state.moveLog && (
         <>
           <Spacer height={12} />
           <View style={s(c.scrollX, c.fullWidth)}>

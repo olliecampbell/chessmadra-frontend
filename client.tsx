@@ -29,8 +29,12 @@ const client = applyCaseMiddleware(
 );
 
 client.interceptors.request.use(function (config) {
-  const token = AppStore.getRawState().auth.token;
-  config.headers.Authorization = token;
+  const { token, tempUserUuid } = AppStore.getRawState().auth;
+  if (token) {
+    config.headers.Authorization = token;
+  } else {
+    config.headers["temp-user-uuid"] = tempUserUuid;
+  }
   return config;
 });
 

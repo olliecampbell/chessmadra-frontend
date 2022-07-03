@@ -14,6 +14,7 @@ type AppStore = {
     token?: string;
     user?: User;
     authStatus: AuthStatus;
+    tempUserUuid?: string;
   };
 };
 

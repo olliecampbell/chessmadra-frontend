@@ -18,6 +18,7 @@ import {
   takeRight,
   dropRight,
   capitalize,
+  drop,
 } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
@@ -62,10 +63,12 @@ export const RepertoireBuilder = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
   let centered = false;
+  let hasNoMovesAtAll = isEmpty(getAllRepertoireMoves(state.repertoire));
+  let hasNoMovesThisSide = isEmpty(state.repertoire?.[state.activeSide]?.moves);
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
-  } else if (getAllRepertoireMoves(state.repertoire).length === 0) {
+  } else if (state.repertoire === null) {
     inner = <RepertoireWizard state={state} />;
   } else {
     let innerInner = null;
@@ -73,6 +76,22 @@ export const RepertoireBuilder = () => {
       let backButtonActive = state.position.history().length > 0;
       innerInner = (
         <>
+          <View
+            style={s(c.row, c.alignCenter, c.clickable)}
+            onClick={() => {
+              state.backToOverview();
+            }}
+          >
+            <i
+              className="fa-light fa-angle-left"
+              style={s(c.fg(c.grays[70]), c.fontSize(16))}
+            />
+            <Spacer width={8} />
+            <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
+              Back to overview
+            </Text>
+          </View>
+          <Spacer height={12} />
           {pendingLine && (
             <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
               <Pressable
@@ -91,25 +110,121 @@ export const RepertoireBuilder = () => {
             style={s(
               c.bg(c.grays[20]),
               c.br(4),
-              c.px(12),
-              c.py(8),
+              c.overflowHidden,
               // c.maxHeight(300),
-              c.height(200),
-              c.scrollY
+              c.height(220),
+              c.column
             )}
           >
-            {/*
+            {hasNoMovesThisSide && isEmpty(state.pendingMoves) ? (
+              <View
+                style={s(c.column, c.selfCenter, c.center, c.grow, c.px(12))}
+              >
+                <Text>
+                  <i
+                    className="fa-regular fa-empty-set"
+                    style={s(c.fg(c.grays[70]), c.fontSize(24))}
+                  />
+                </Text>
+                <Spacer height={12} />
+                <Text style={s(c.fg(c.colors.textPrimary))}>
+                  You don't have any moves in your repertoire yet! Play a line
+                  on the board to add it.
+                </Text>
+                <Spacer height={12} />
+                <Text style={s(c.fg(c.colors.textPrimary), c.selfStart)}>
+                  {state.activeSide === "black"
+                    ? "Maybe start with a response to e4?"
+                    : "e4 and d4 are the most popular first moves for white, maybe one of those?"}
+                </Text>
+              </View>
+            ) : (
+              <>
+                {state.moveLog && (
+                  <View style={s(c.bg(c.grays[15]), c.py(12), c.px(12))}>
+                    <Text
+                      style={s(
+                        c.fg(c.colors.textPrimary),
+                        c.weightSemiBold,
+                        c.minHeight("1em")
+                      )}
+                    >
+                      {state.moveLog}
+                    </Text>
+                  </View>
+                )}
+                <View style={s(c.flexShrink(1))}>
+                  <View
+                    style={s(
+                      c.px(12),
+                      c.py(8),
+                      c.fullHeight,
+                      c.fullWidth,
+
+                      c.scrollY
+                    )}
+                  >
+                    <OpeningTree
+                      state={state}
+                      repertoire={state.repertoire.white}
+                      grade={grade}
+                    />
+                  </View>
+                </View>
+                <Spacer grow />
+                {!isEmpty(state.pendingMoves) && (
+                  <View
+                    style={s(
+                      c.bg(c.grays[15]),
+                      c.py(12),
+                      c.px(12),
+                      c.row,
+                      c.justifyBetween,
+                      c.alignCenter
+                    )}
+                  >
+                    <Text
+                      style={s(
+                        c.fg(c.colors.textPrimary),
+                        c.weightSemiBold,
+                        c.weightBold
+                      )}
+                    >
+                      {state.pendingMoves.length > 1
+                        ? `Add these ${state.pendingMoves.length} moves?`
+                        : "Add this move?"}
+                    </Text>
+                    <Spacer width={12} />
+
+                    <Button
+                      style={s(c.buttons.primary, c.height(24))}
+                      onPress={() => {
+                        state.addPendingLine();
+                      }}
+                    >
+                      <Text style={s(c.buttons.primary.textStyles)}>
+                        <i
+                          className="fas fa-check"
+                          style={s(c.fg(c.colors.textPrimary))}
+                        />
+                        {/*
+                  <Spacer width={8} />
+                  Add
+                  */}
+                      </Text>
+                    </Button>
+                  </View>
+                )}
+
+                {/*
               {state.currentLine && (
                 <Text style={s(c.weightSemiBold, c.fg(c.colors.textSecondary))}>
                   {lineToPgn(state.currentLine)}
                 </Text>
               )}
               */}
-            <OpeningTree
-              state={state}
-              repertoire={state.repertoire.white}
-              grade={grade}
-            />
+              </>
+            )}
           </View>
           <Spacer height={12} />
           <View style={s(c.row)}>
@@ -171,15 +286,6 @@ export const RepertoireBuilder = () => {
           >
             Search Chessable
           </Button>
-          <Spacer height={12} />
-          <Button
-            style={s(c.buttons.basic)}
-            onPress={() => {
-              state.stopEditing();
-            }}
-          >
-            Stop Editing
-          </Button>
         </>
       );
     } else if (state.isReviewing) {
@@ -201,7 +307,7 @@ export const RepertoireBuilder = () => {
           <Button
             style={s(c.buttons.basic)}
             onPress={() => {
-              state.stopReview();
+              state.backToOverview();
             }}
           >
             Stop Review
@@ -211,38 +317,54 @@ export const RepertoireBuilder = () => {
     } else {
       innerInner = (
         <>
-          {isEmpty(state.queue) ? (
-            <View
-              style={s(
-                c.bg(c.grays[20]),
-                c.br(4),
-                c.overflowHidden,
-                c.px(12),
-                c.py(12),
-                c.column,
-                c.center
+          {!hasNoMovesAtAll && (
+            <>
+              {isEmpty(state.queue) ? (
+                <View
+                  style={s(
+                    c.bg(c.grays[20]),
+                    c.br(4),
+                    c.overflowHidden,
+                    c.px(12),
+                    c.py(12),
+                    c.column,
+                    c.center
+                  )}
+                >
+                  {hasNoMovesAtAll ? (
+                    <Text style={s(c.fg(c.colors.textSecondary))}>
+                      You have no moves in your repertoire. Start your
+                      repertoire by hitting edit below.
+                    </Text>
+                  ) : (
+                    <Text style={s(c.fg(c.colors.textSecondary))}>
+                      No moves to review! Come back later to review more.
+                      <br />
+                      <br />
+                      Now might be a good time to add moves to your repertoire.
+                      See below for your biggest misses.
+                    </Text>
+                  )}
+                </View>
+              ) : (
+                <Button
+                  style={s(
+                    c.buttons.primary,
+                    c.selfStretch,
+                    c.py(16),
+                    c.px(12)
+                  )}
+                  onPress={() => {
+                    state.startReview();
+                  }}
+                >
+                  {`Review ${state.queue?.length} moves`}
+                </Button>
               )}
-            >
-              <Text style={s(c.fg(c.colors.textSecondary))}>
-                No moves to review! Come back later to review more.
-                <br />
-                <br />
-                Now might be a good time to add moves to your repertoire. See
-                below for your biggest misses.
-              </Text>
-            </View>
-          ) : (
-            <Button
-              style={s(c.buttons.primary, c.selfStretch, c.py(16), c.px(12))}
-              onPress={() => {
-                state.startReview();
-              }}
-            >
-              {`Review ${state.queue?.length} moves`}
-            </Button>
+              <Spacer height={12} />
+            </>
           )}
 
-          <Spacer height={12} />
           <View
             style={s(
               c.bg(c.grays[20]),
@@ -258,7 +380,7 @@ export const RepertoireBuilder = () => {
                 return <RepertoireSideSummary side={side} state={state} />;
               }),
               (i) => {
-                return <Spacer height={32} key={i} />;
+                return <Spacer height={12} key={i} />;
               }
             )}
           </View>
@@ -360,6 +482,15 @@ const OpeningTree = ({
 }) => {
   return (
     <View style={s()}>
+      {!isEmpty(state.pendingMoves) && (
+        <OpeningNode
+          state={state}
+          grade={grade}
+          responseQueue={drop(state.pendingMoves, 1)}
+          move={state.pendingMoves[0]}
+          repertoire={repertoire}
+        />
+      )}
       {map(
         state.responseLookup[state.activeSide][lineToPgn(state.currentLine)],
         (id) => {
@@ -384,8 +515,10 @@ const OpeningNode = ({
   grade,
   state,
   repertoire,
+  responseQueue,
 }: {
   move: RepertoireMove;
+  responseQueue?: RepertoireMove[];
   grade: RepertoireGrade;
   state: RepertoireState;
   repertoire: RepertoireSide;
@@ -395,6 +528,11 @@ const OpeningNode = ({
     state.responseLookup[state.activeSide][move.id],
     (id) => state.moveLookup[state.activeSide][id]
   );
+  console.log(responseQueue);
+  if (!isEmpty(responseQueue)) {
+    responses = [responseQueue[0]];
+  }
+  console.log(responses);
   let trueDepth = move.id.split(" ").length;
   let assumedDepth = state.currentLine.length;
   let depthDifference = trueDepth - assumedDepth;
@@ -426,6 +564,9 @@ const OpeningNode = ({
             )}
           >
             {move.sanPlus}
+            {move.pending && (
+              <Text style={s(c.opacity(60), c.weightSemiBold)}> [pending]</Text>
+            )}
           </Text>
           {incidence && !move.mine && (
             <>
@@ -459,6 +600,7 @@ const OpeningNode = ({
                     repertoire={repertoire}
                     state={state}
                     move={move}
+                    responseQueue={responseQueue && drop(responseQueue, 1)}
                     grade={grade}
                   />
                 );
@@ -493,6 +635,7 @@ const RepertoireSideSummary = ({
 }) => {
   let expectedDepth = state.repertoireGrades[side]?.expectedDepth;
   let biggestMiss = state.repertoireGrades[side]?.biggestMiss;
+  let hasNoMovesThisSide = isEmpty(state.repertoire[side]?.moves);
   return (
     <View style={s(c.fullWidth)}>
       <View
@@ -526,22 +669,48 @@ const RepertoireSideSummary = ({
         </Button>
       </View>
       <Spacer height={12} />
-      <View style={s(c.column, c.alignStart)}>
-        {intersperse(
-          [
-            <SummaryRow k="moves" v={state.myResponsesLookup[side].length} />,
-            ...(expectedDepth
-              ? [<SummaryRow k="expected depth" v={expectedDepth.toFixed(2)} />]
-              : []),
-            ...(biggestMiss
-              ? [<SummaryRow k="biggest miss" v={biggestMiss.move.id} />]
-              : []),
-          ],
-          (i) => {
-            return <Spacer height={12} key={i} />;
-          }
-        )}
-      </View>
+      {hasNoMovesThisSide ? (
+        <View style={s(c.column, c.selfCenter, c.center, c.grow)}>
+          <Text>
+            <i
+              className="fa-regular fa-empty-set"
+              style={s(c.fg(c.grays[50]), c.fontSize(18))}
+            />
+          </Text>
+          <Spacer height={8} />
+          <Text style={s(c.fg(c.grays[75]))}>No moves for {side}</Text>
+        </View>
+      ) : (
+        <View style={s(c.column, c.alignStart)}>
+          {intersperse(
+            [
+              <SummaryRow k="Moves" v={state.myResponsesLookup[side].length} />,
+              ...(expectedDepth
+                ? [
+                    <SummaryRow
+                      k="Expected depth"
+                      v={expectedDepth.toFixed(2)}
+                    />,
+                  ]
+                : []),
+              ...(biggestMiss
+                ? [
+                    <SummaryRow
+                      k={`Biggest miss, expected in ${(
+                        biggestMiss.incidence * 100
+                      ).toFixed(1)}% of games`}
+                      v={biggestMiss.move.id}
+                    />,
+                  ]
+                : []),
+            ],
+            (i) => {
+              return <Spacer height={12} key={i} />;
+            }
+          )}
+        </View>
+      )}
+      <Spacer height={24} />
     </View>
   );
 };
