@@ -29,6 +29,10 @@ const client = applyCaseMiddleware(
 );
 
 client.interceptors.request.use(function (config) {
+  // console.log({ url: config.url });
+  if (config.url?.includes("lichess")) {
+    return config;
+  }
   const { token, tempUserUuid } = AppStore.getRawState().auth;
   if (token) {
     config.headers.Authorization = token;

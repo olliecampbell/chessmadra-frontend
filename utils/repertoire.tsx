@@ -35,7 +35,7 @@ export interface BySide<T> {
 }
 
 export type Side = "black" | "white";
-export const SIDES: Side[] = ["black", "white"];
+export const SIDES: Side[] = ["white", "black"];
 
 export interface RepertoireSide {
   moves: RepertoireMove[];
@@ -43,7 +43,6 @@ export interface RepertoireSide {
 }
 
 export function getAllRepertoireMoves(r: Repertoire): RepertoireMove[] {
-  console.log({ r });
   if (!r) {
     return [];
   }

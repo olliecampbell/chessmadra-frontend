@@ -1,6 +1,6 @@
 import { Square } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
-import { LichessGame, User } from "app/models";
+import { LichessGame, RepertoireTemplate, User } from "app/models";
 import create, {
   GetState,
   SetState,
@@ -21,6 +21,7 @@ import {
   keyBy,
   last,
   take,
+  some,
   map,
   filter,
 } from "lodash";
@@ -62,6 +63,7 @@ export interface RepertoireState
   fetchRepertoireGrade: (_state?: RepertoireState) => void;
   setUser: (user: User, _state?: RepertoireState) => void;
   fetchRepertoire: (_state?: RepertoireState) => void;
+  fetchRepertoireTemplates: (_state?: RepertoireState) => void;
   initializeRepertoire: (_: {
     lichessUsername: string;
     chessComUsername: string;
@@ -102,6 +104,10 @@ export interface RepertoireState
   currentLine?: string[];
   uploadingMoves?: boolean;
   pendingMoves?: RepertoireMove[];
+  hasCompletedRepertoireInitialization?: boolean;
+  showPendingMoves?: boolean;
+  repertoireTemplates?: RepertoireTemplate[];
+  selectedTemplates: Record<string, string>;
 }
 
 // export const DEFAULT_REPERTOIRE = {
@@ -233,12 +239,17 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.repertoire = data;
                 s.updateRepertoireStructures(s);
                 s.fetchRepertoireGrade(s);
+                s.hasCompletedRepertoireInitialization = true;
               });
             }),
           analyzeLineOnLichess: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               var bodyFormData = new FormData();
               bodyFormData.append("pgn", lineToPgn(s.currentLine));
+              if (isEmpty(s.currentLine)) {
+                // TODO: figure out a way to open up analysis from black side
+                window.open(`https://lichess.org/analysis`, "_blank").focus();
+              }
               client
                 .post(`https://lichess.org/api/import`, bodyFormData)
                 .then(({ data }) => {
@@ -255,29 +266,27 @@ export const useRepertoireState = create<RepertoireState>()(
                 filter(
                   map(line, (m) => {
                     accumLine.push(m);
-                    return [m, lineToPgn(accumLine)];
+                    return [m, lineToPgn(accumLine), sideOfLastmove(accumLine)];
                   }),
-                  ([m, pgn]) => {
-                    console.log(
-                      `Checking whether ${pgn} is in the responses lookup`,
-                      logProxy(s.moveLookup)
-                    );
+                  ([m, pgn, side]) => {
                     return !s.moveLookup[s.activeSide][pgn];
                   }
                 ),
-                ([m, pgn]) => {
+                ([m, pgn, side]) => {
                   return {
                     id: pgn,
                     sanPlus: m,
-                    side: null,
-                    mine: true,
+                    side: side,
+                    mine: side === s.activeSide,
                     pending: true,
                     needsReview: false,
                     firstReview: false,
                   } as RepertoireMove;
                 }
               );
-              console.log("Pending moves is ", s.pendingMoves);
+              s.showPendingMoves = some(s.pendingMoves, (m) => {
+                return m.mine;
+              });
               s.moveLog = lineToPgn(line);
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
@@ -363,6 +372,10 @@ export const useRepertoireState = create<RepertoireState>()(
                 }
               }
               s.currentMove = s.queue.shift();
+              if (!s.currentMove) {
+                s.backToOverview(s);
+                return;
+              }
               s.moveLog = lineToPgn(dropRight(pgnToLine(s.currentMove.id), 1));
               s.failedCurrentMove = false;
               s.flipped = s.currentMove.side === "black";
@@ -375,11 +388,13 @@ export const useRepertoireState = create<RepertoireState>()(
               console.log(s.position.ascii());
             }),
 
-          backToOverview: (side: Side, _state?: RepertoireState) =>
+          backToOverview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.moveLog = null;
               s.isReviewing = false;
-              s.queue.unshift(s.currentMove);
+              if (s.currentMove) {
+                s.queue.unshift(s.currentMove);
+              }
               s.currentMove = null;
               s.activeSide = "white";
               s.isEditing = false;
@@ -387,6 +402,7 @@ export const useRepertoireState = create<RepertoireState>()(
               s.frozen = true;
               s.flipped = false;
               s.updatePendingLineFromPosition(s);
+              s.showMoveLog = false;
             }),
           startEditing: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -397,6 +413,7 @@ export const useRepertoireState = create<RepertoireState>()(
             }),
           startReview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              s.showMoveLog = true;
               s.isReviewing = true;
               s.setupNextMove(s);
             }),
@@ -407,16 +424,27 @@ export const useRepertoireState = create<RepertoireState>()(
                 ...s.repertoire.white.moves,
                 ...s.repertoire.black.moves,
               ].filter((m) => m.mine && m.needsReview);
-              s.queue = _.sortBy(s.queue, (m) => m.id);
+              let firstSide: Side = Math.random() >= 0.5 ? "white" : "black";
+              s.queue = _.sortBy(s.queue, (m) => {
+                return `${m.side === firstSide ? "a" : "b"} - ${m.id}`;
+              });
               s.fetchRepertoireGrade(s);
+            }),
+          fetchRepertoireTemplates: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              client
+                .get("/api/v1/openings/template_repertoires")
+                .then(({ data }: { data: RepertoireTemplate[] }) => {
+                  set((s) => {
+                    s.repertoireTemplates = data;
+                  });
+                });
             }),
           fetchRepertoire: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              console.log("s repertoire", logProxy(s));
               client
                 .get("/api/v1/openings")
                 .then(({ data }: { data: Repertoire }) => {
-                  console.log("data", data);
                   set((s) => {
                     [...data.black.moves, ...data.white.moves].map((m) => {
                       // m.lastLine = removeLastMove(m.id);
@@ -444,7 +472,6 @@ export const useRepertoireState = create<RepertoireState>()(
             }),
           fetchRepertoireGrade: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              console.log("s repertoire", logProxy(s));
               SIDES.map((side) => {
                 client
                   .post(
@@ -458,7 +485,6 @@ export const useRepertoireState = create<RepertoireState>()(
                     }
                   )
                   .then(({ data }) => {
-                    console.log("data", data);
                     set((s) => {
                       s.repertoireGrades[side] = data as RepertoireGrade;
                     });
@@ -478,9 +504,10 @@ export const useRepertoireState = create<RepertoireState>()(
                 })
                 .then(({ data }: { data: Repertoire }) => {
                   set((s) => {
-                    map(s.pendingMoves, () => {
-                      s.position.undo();
-                    });
+                    s.position = new Chess();
+                    // map(s.pendingMoves, () => {
+                    //   s.position.undo();
+                    // });
                     s.updatePendingLineFromPosition(s);
 
                     s.pendingMoves = [];
@@ -519,6 +546,7 @@ export const useRepertoireState = create<RepertoireState>()(
             // }
             // return null;
           },
+          selectedTemplates: {},
         } as RepertoireState)
     ),
     { name: "RepertoireTrainingState" }

@@ -165,7 +165,11 @@ export const ChessboardView = ({
   disableDrag?: boolean;
   styles?: any;
 }) => {
-  console.log("Rendering with ring color", state.ringColor);
+  console.log(
+    "Rendering with move log color",
+    state.moveLog,
+    state.showMoveLog
+  );
   const { position, availableMoves } = state;
   const tileStyles = s(c.bg("green"), c.grow);
 
@@ -371,7 +375,7 @@ export const ChessboardView = ({
           </View>
         </View>
       </View>
-      {false && state.moveLog && (
+      {state.showMoveLog && state.moveLog && (
         <>
           <Spacer height={12} />
           <View style={s(c.scrollX, c.fullWidth)}>

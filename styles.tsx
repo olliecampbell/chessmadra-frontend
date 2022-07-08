@@ -292,7 +292,7 @@ const primaryButtonStyles = s(basicButtonStyles, bg(primaries[40]), {
   textStyles: s(weightBold, fg(colors.textPrimary), fontSize(16)),
 });
 const primaryDisabledButtonStyles = s(basicButtonStyles, bg(grays[40]), {
-  textStyles: s(weightBold, fg(colors.textPrimary), fontSize(16)),
+  textStyles: s(weightBold, fg(grays[75]), fontSize(16)),
 });
 const squareBottomRowButtonStyles = s(basicButtonStyles, size(48));
 const buttons = {
@@ -308,7 +308,7 @@ const noPointerEvents = keyedProp("pointer-events")("none");
 const transform = keyedProp("transform");
 const containerStyles = (isMobile, customMaxWidth?: number) =>
   s(
-    mx(isMobile ? 20 : 48),
+    mx(isMobile ? 12 : 48),
     maxWidth(`min(calc(100vw - 24px), ${customMaxWidth ?? 1280}px)`),
     column,
     alignStart

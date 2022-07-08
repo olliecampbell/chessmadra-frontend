@@ -23,11 +23,13 @@ export const DragAndDropInput = ({
   return (
     <View
       style={s(
-        c.fullWidth,
-        c.fullHeight,
         c.border(`1px solid ${c.grays[50]}`),
         c.center,
-        c.p(12)
+        c.row,
+        c.alignCenter,
+        c.clickable,
+        c.py(8),
+        c.px(8)
       )}
     >
       <input
@@ -48,12 +50,12 @@ export const DragAndDropInput = ({
         </>
       ) : (
         <>
-          <Text style={s(c.fontSize(24), c.fg(c.colors.textPrimary))}>
-            <i className="fas fa-arrow-up-from-dotted-line"></i>
+          <Text style={s(c.fontSize(14), c.fg(c.grays[70]))}>
+            <i className="fa-light fa-plus"></i>
           </Text>
-          <Spacer height={12} />
+          <Spacer width={isMobile ? 4 : 12} />
           <Text style={s(c.fg(c.colors.textSecondary), c.fontSize(14))}>
-            {copy}
+            {humanName}
           </Text>
         </>
       )}

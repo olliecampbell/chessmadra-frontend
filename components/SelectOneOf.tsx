@@ -10,9 +10,11 @@ export const SelectOneOf = <T,>({
   activeChoice,
   containerStyles,
   cellStyles,
+  tabStyle,
   horizontal,
 }: {
   choices: T[];
+  tabStyle?: boolean;
   activeChoice: T;
   onSelect: (_: T) => void;
   horizontal?: boolean;
@@ -40,11 +42,13 @@ export const SelectOneOf = <T,>({
               }}
               key={i}
               style={s(
+                active && c.borderBottom(`2px solid ${c.grays[90]}`),
                 c.row,
-                c.bg(active ? c.grays[80] : c.grays[25]),
-                c.py(12),
-                c.px(18),
+                !tabStyle && c.bg(active ? c.grays[80] : c.grays[25]),
+                c.py(8),
+                c.px(12),
                 !isLast &&
+                  !tabStyle &&
                   (horizontal ? c.borderRight : c.borderBottom)(
                     `1px solid ${c.grays[15]}`
                   ),
@@ -53,7 +57,11 @@ export const SelectOneOf = <T,>({
             >
               <Text
                 style={s(
-                  c.fg(active ? c.colors.textInverse : c.colors.textSecondary),
+                  tabStyle
+                    ? c.fg(active ? c.colors.textPrimary : c.grays[80])
+                    : c.fg(
+                        active ? c.colors.textInverse : c.colors.textSecondary
+                      ),
                   c.weightBold
                 )}
               >

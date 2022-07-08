@@ -50,6 +50,7 @@ export interface ChessboardState {
   ) => void;
   flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
   moveLog?: string;
+  showMoveLog?: boolean;
 }
 
 export interface ChessboardStateParent<T> {

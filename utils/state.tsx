@@ -967,22 +967,18 @@ export const setter = <T extends object>(
   state: T | undefined,
   fn: (state: T) => void
 ) => {
-  console.log("Called setter");
   if (state) {
     // To force re-render when changing just a class or something
     // @ts-ignore
     state.bogus = Math.random();
     return fn(state);
   } else {
-    console.log("No state");
     let res = set((state: T) => {
       // To force re-render when changing just a class or something
       // @ts-ignore
       state.bogus = Math.random();
-      console.log("Calling function w/ state");
       fn(state);
     });
-    console.log({ res });
   }
 };
 

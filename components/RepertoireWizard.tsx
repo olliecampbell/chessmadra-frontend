@@ -32,28 +32,25 @@ import { CMTextInput } from "./TextInput";
 import { failOnTrue } from "app/utils/test_settings";
 import client from "app/client";
 import { DragAndDropInput } from "./DragAndDropInput";
+import { RepertoireTemplateWizard } from "./RepertoireTemplateWizard";
 
 const MOBILE_CUTOFF = 800;
 
 enum OpeningSource {
-  LichessGames,
-  LichessStudy,
+  Import,
+  Templates,
   // ChessCom,
-  Pgn,
-  None,
+  // Pgn,
+  Manual,
 }
 
 function formatOpeningSource(openingSource: OpeningSource) {
   switch (openingSource) {
-    case OpeningSource.LichessGames:
-      return "Lichess Games";
-    case OpeningSource.LichessStudy:
-      return "Lichess Study";
-    // case OpeningSource.ChessCom:
-    //   return "Chess.com";
-    case OpeningSource.Pgn:
-      return "PGN";
-    case OpeningSource.None:
+    case OpeningSource.Import:
+      return "Import";
+    case OpeningSource.Templates:
+      return "Templates";
+    case OpeningSource.Manual:
       return "Skip";
   }
 }
@@ -100,78 +97,95 @@ function formatRatingRange(ratingRange: RatingRange) {
 
 export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [rating, setRating] = useState(RatingRange.Rating1500To1800);
-  const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
-  const [openingSource, setOpeningSource] = useState(OpeningSource.Pgn);
-  const [ratingTimeControl, setRatingTimeControl] = useState(true);
+  useEffect(() => {
+    state.fetchRepertoireTemplates();
+  }, []);
+  // const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  // const [rating, setRating] = useState(RatingRange.Rating1500To1800);
+  // const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
+  const [openingSource, setOpeningSource] = useState(null);
+  const [activeOpeningSource, setActiveOpeningSource] = useState(
+    OpeningSource.Templates
+  );
+  // const [ratingTimeControl, setRatingTimeControl] = useState(true);
   const [username, setUsername] = useState("");
+  const [lichessStudy, setLichessStudy] = useState("");
   const [whitePgn, setWhitePgn] = useState(null);
   const [blackPgn, setBlackPgn] = useState(null);
-  let initialStep = {
-    onNext: () => {
-      state.initializeRepertoire({
-        lichessUsername: username,
-        chessComUsername: null,
-        blackPgn,
-        whitePgn,
-      });
-    },
-    questionCopy:
-      "This tool uses data from millions of online games to determine the gaps in your openings, based on how your opponents tend to play. Choose a way to import your openings below, or skip this step for now.",
-    isValid: (() => {
-      if (openingSource == OpeningSource.LichessGames && !isEmpty(username)) {
-        return true;
-      }
-      // if (openingSource == OpeningSource.ChessCom && !isEmpty(username)) {
-      //   return true;
-      // }
-      if (openingSource == OpeningSource.Pgn) {
-        return true;
-      }
-      if (openingSource == OpeningSource.None) {
-        return true;
-      }
-    })(),
-    children: (
-      <>
-        <SelectOneOf
-          choices={[
-            // OpeningSource.ChessCom,
-            OpeningSource.Pgn,
-            OpeningSource.LichessGames,
-            OpeningSource.LichessStudy,
-            OpeningSource.None,
-            // RatingSource.Fide,
-          ]}
-          horizontal={true}
-          cellStyles={s(c.grow, c.center)}
-          containerStyles={s(c.fullWidth)}
-          activeChoice={openingSource}
-          onSelect={function (source: OpeningSource): void {
-            setOpeningSource(source);
-          }}
-          renderChoice={(source: OpeningSource): string | JSX.Element => {
-            return formatOpeningSource(source);
-          }}
-        />
-        {openingSource == OpeningSource.LichessGames && (
-          <>
-            <Spacer height={12} />
-            <CMTextInput
-              placeholder="username"
-              value={username}
-              setValue={setUsername}
-            />
-          </>
+
+  const importFromLichessUsername = () => {};
+
+  const ImportSection = ({ title, submit, children, isValid, description }) => {
+    return (
+      <View
+        style={s(
+          c.column,
+          c.fullWidth,
+          c.bg(c.grays[15]),
+          c.px(12),
+          c.py(12),
+          c.br(2)
         )}
-        {openingSource == OpeningSource.Pgn && (
-          <>
-            <Spacer height={12} />
-            <View style={s(c.width(300), c.height(200))}>
-              <Text style={s(c.fg(c.colors.textPrimary))}>White</Text>
+      >
+        <Text
+          style={s(
+            c.fg(c.colors.textPrimary),
+            c.weightSemiBold,
+            c.selfStretch,
+            c.fontSize(16)
+          )}
+        >
+          {title}
+        </Text>
+        <Spacer height={12} />
+        <Text style={s(c.fg(c.grays[75]), c.weightRegular, c.fontSize(12))}>
+          {description}
+        </Text>
+        <Spacer height={12} />
+        {children}
+        <Spacer height={isMobile ? 18 : 4} />
+        <Button
+          style={s(
+            isValid ? c.buttons.primary : c.buttons.primaryDisabled,
+            c.py(8),
+            c.selfEnd
+          )}
+        >
+          Import
+        </Button>
+      </View>
+    );
+  };
+  const blah = (
+    <>
+      <View
+        style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
+        onClick={() => {
+          setActiveOpeningSource(null);
+        }}
+      >
+        <i
+          className="fa-light fa-angle-left"
+          style={s(c.fg(c.grays[70]), c.fontSize(16))}
+        />
+        <Spacer width={6} />
+        <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>Back</Text>
+      </View>
+      <Spacer height={12} />
+      {activeOpeningSource === OpeningSource.Templates && (
+        <RepertoireTemplateWizard state={state} />
+      )}
+      {activeOpeningSource == OpeningSource.Import && (
+        <>
+          <ImportSection
+            title="PGN"
+            description="If you have an opening repertoire with other software, you can export each side as a pgn and upload both here."
+            isValid={username}
+            submit={importFromLichessUsername()}
+          >
+            <View style={s(c.row)}>
               <DragAndDropInput
-                humanName="PGN file"
+                humanName="White Openings"
                 accept="*.pgn"
                 onUpload={async (e) => {
                   let file = e.target.files[0];
@@ -180,9 +194,9 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                   return true;
                 }}
               />
-              <Text style={s(c.fg(c.colors.textPrimary))}>Black</Text>
+              <Spacer width={12} />
               <DragAndDropInput
-                humanName="PGN file"
+                humanName="Black Openings"
                 accept="*.pgn"
                 onUpload={async (e) => {
                   let file = e.target.files[0];
@@ -192,49 +206,203 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                 }}
               />
             </View>
-          </>
-        )}
-      </>
-    ),
-  };
+          </ImportSection>
+          <Spacer height={12} />
+          <ImportSection
+            title="Lichess Study"
+            description="Paste the URL or id of a Lichess study. Must be public or unlisted."
+            isValid={username}
+            submit={importFromLichessUsername()}
+          >
+            <Spacer height={12} />
+            <View style={s(c.row)}>
+              <CMTextInput
+                placeholder="URL or id"
+                value={lichessStudy}
+                setValue={setLichessStudy}
+              />
+            </View>
+          </ImportSection>
+          <Spacer height={12} />
+          <ImportSection
+            title="Lichess Games"
+            description="Parses your last 200 Lichess games, to see what openings you use. This is the least accurate method, so only do this if you don't have a study or pgn available. "
+            isValid={username}
+            submit={importFromLichessUsername()}
+          >
+            <View style={s(c.row)}>
+              <CMTextInput
+                placeholder="username"
+                value={username}
+                setValue={setUsername}
+              />
+            </View>
+          </ImportSection>
+        </>
+      )}
+    </>
+  );
+
   return (
     <>
       <Spacer height={0} grow />
-      <WizardStep {...initialStep} />
+      <View
+        style={s(
+          c.column,
+          c.containerStyles(isMobile),
+          c.maxWidth(500),
+          activeOpeningSource === OpeningSource.Templates && c.maxWidth(700),
+          c.fullWidth
+        )}
+      >
+        {isNil(activeOpeningSource) ? (
+          <>
+            <Text
+              style={s(
+                c.fg(c.colors.textPrimary),
+                c.weightSemiBold,
+                c.fontSize(14),
+                c.lineHeight("1.7em")
+              )}
+            >
+              Welcome to the opening builder. This tool will help you build and
+              remember your opening repertoire.
+            </Text>
+            <Spacer height={12} />
+            <Text
+              style={s(
+                c.fg(c.colors.textPrimary),
+                c.weightSemiBold,
+                c.fontSize(14),
+                c.lineHeight("1.7em")
+              )}
+            >
+              How do you want to create your opening?
+            </Text>
+            <Spacer height={24} />
+            <View style={s(c.column)}>
+              {intersperse(
+                [
+                  {
+                    title: "Templates",
+                    source: OpeningSource.Templates,
+                    description: (
+                      <>
+                        Choose among some popular openings for both sides. An
+                        easy way to get started if you don't have any openings
+                        yet.
+                      </>
+                    ),
+                    buttonCopy: "Choose",
+                  },
+                  {
+                    title: "From scratch",
+                    buttonCopy: "Start",
+                    source: OpeningSource.Manual,
+                    description: (
+                      <>
+                        Create your opening from scratch. The quickest way to
+                        get started, and you can always come back.
+                      </>
+                    ),
+                  },
+                  {
+                    title: "Import",
+                    source: OpeningSource.Import,
+                    description: (
+                      <>
+                        Import your existing opening repertoire. You can use a
+                        pgn, a lichess study, or just provide your Lichess
+                        username and we'll figure it out from your recent games.
+                      </>
+                    ),
+                    buttonCopy: "Import",
+                  },
+                ].map((x, i) => {
+                  const selected = openingSource === x.source;
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        setOpeningSource(x.source);
+                      }}
+                    >
+                      <View
+                        style={s(
+                          c.row,
+                          selected ? c.bg(c.grays[15]) : c.bg(c.grays[15]),
+                          c.br(2),
+                          c.overflowHidden,
+                          c.px(12),
+                          c.py(14)
+                        )}
+                      >
+                        <i
+                          className={
+                            selected ? "fas fa-circle" : "fa-regular fa-circle"
+                          }
+                          style={s(
+                            c.fontSize(18),
+                            c.fg(selected ? c.grays[80] : c.grays[50])
+                          )}
+                        />
+                        <Spacer width={12} />
+                        <View style={s(c.column, c.flexible, c.mt(-1))}>
+                          <View style={s()}>
+                            <Text
+                              style={s(
+                                c.fg(c.colors.textPrimary),
+                                c.fontSize(16),
+                                c.weightSemiBold
+                              )}
+                            >
+                              {x.title}
+                            </Text>
+                            <Spacer height={12} />
+                            <Text style={s(c.fg(c.grays[70]), c.fontSize(13))}>
+                              {x.description}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                }),
+                (i) => {
+                  return <Spacer height={12} key={i} />;
+                }
+              )}
+              <Spacer height={12} />
+              <Button
+                onPress={() => {
+                  setActiveOpeningSource(openingSource);
+                  if (openingSource === OpeningSource.Manual) {
+                    state.initializeRepertoire({
+                      lichessUsername: null,
+                      chessComUsername: null,
+                      blackPgn,
+                      whitePgn,
+                    });
+                  }
+                }}
+                style={s(
+                  c.maxWidth(100),
+                  c.fullWidth,
+                  c.selfEnd,
+                  !isNil(openingSource)
+                    ? c.buttons.primary
+                    : c.buttons.primaryDisabled
+                )}
+              >
+                Continue
+              </Button>
+            </View>
+          </>
+        ) : (
+          <View style={s(c.column, c.fullWidth)}>{blah}</View>
+        )}
+      </View>
       <Spacer height={0} grow />
     </>
-  );
-};
-
-const WizardStep = ({ questionCopy, children, isValid, onNext }) => {
-  const isMobile = useIsMobile(MOBILE_CUTOFF);
-  return (
-    <View style={s(c.column, c.containerStyles(isMobile), c.maxWidth(500))}>
-      <Text
-        style={s(
-          c.fg(c.colors.textPrimary),
-          c.weightSemiBold,
-          c.fontSize(14),
-          c.lineHeight("1.7em")
-        )}
-      >
-        {questionCopy}
-      </Text>
-      <Spacer height={24} />
-      {children}
-      <Spacer height={24} />
-      <Button
-        style={s(
-          isValid ? c.buttons.primary : c.buttons.primaryDisabled,
-          c.selfEnd
-        )}
-        onPress={() => {
-          onNext();
-        }}
-      >
-        Continue
-      </Button>
-    </View>
   );
 };
 
