@@ -23,10 +23,12 @@ import {
   take,
   some,
   map,
+  forEach,
   filter,
 } from "lodash";
 import {
   BySide,
+  getAllRepertoireMoves,
   lineToPgn,
   PendingLine,
   pgnToLine,
@@ -48,11 +50,13 @@ import { Chess } from "@lubert/chess.ts";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import _ from "lodash";
 import { WritableDraft } from "immer/dist/internal";
-
+// let COURSE = "99306";
+let COURSE = null;
+// let ASSUME = "1.c4";
+let ASSUME = null;
 export interface RepertoireState
   extends ChessboardState,
     ChessboardStateParent<RepertoireState> {
-  getPendingLine: (_state?: RepertoireState) => PendingLine;
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
   queue: RepertoireMove[];
@@ -82,11 +86,16 @@ export interface RepertoireState
   backToOverview: (_state?: RepertoireState) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
-  updatePendingLineFromPosition: (_state?: RepertoireState) => void;
+  updatePendingLineFromPosition: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => void;
   analyzeLineOnLichess: (side: Side, _state?: RepertoireState) => void;
   searchOnChessable: (_state?: RepertoireState) => void;
   backOne: (_state?: RepertoireState) => void;
   backToStartPosition: (_state?: RepertoireState) => void;
+  deleteRepertoire: (side: Side, _state?: RepertoireState) => void;
+  exportPgn: (side: Side, _state?: RepertoireState) => void;
+  initializeRepertoireFromTemplates: (_state?: RepertoireState) => void;
   onRepertoireUpdate: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
@@ -108,6 +117,7 @@ export interface RepertoireState
   showPendingMoves?: boolean;
   repertoireTemplates?: RepertoireTemplate[];
   selectedTemplates: Record<string, string>;
+  positionBeforeBiggestMissEdit?: Chess;
 }
 
 // export const DEFAULT_REPERTOIRE = {
@@ -200,6 +210,20 @@ export const useRepertoireState = create<RepertoireState>()(
               s.position.loadPgn(pgn);
               s.updatePendingLineFromPosition(s);
             }),
+          initializeRepertoireFromTemplates: (_state?: RepertoireState) =>
+            setter(set, _state, async (s: RepertoireState) => {
+              let { data } = await client.post(
+                "/api/v1/openings/add_templates",
+                {
+                  templates: Object.values(s.selectedTemplates),
+                }
+              );
+              set((s: RepertoireState) => {
+                s.repertoire = data;
+                s.onRepertoireUpdate(s);
+                s.hasCompletedRepertoireInitialization = true;
+              });
+            }),
           initializeRepertoire: ({
             state,
             lichessUsername,
@@ -237,10 +261,34 @@ export const useRepertoireState = create<RepertoireState>()(
               );
               set((s: RepertoireState) => {
                 s.repertoire = data;
-                s.updateRepertoireStructures(s);
-                s.fetchRepertoireGrade(s);
+                s.onRepertoireUpdate(s);
                 s.hasCompletedRepertoireInitialization = true;
               });
+            }),
+          searchOnChessable: (side: Side, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              let fen = s.position.fen();
+              // TODO: temp
+
+              if (COURSE) {
+                window
+                  .open(
+                    `https://www.chessable.com/course/${COURSE}/fen/${fen
+                      .replaceAll("/", ";")
+                      .replaceAll(" ", "%20")}/`,
+                    "_blank"
+                  )
+                  .focus();
+                return;
+              }
+              window
+                .open(
+                  `https://www.chessable.com/courses/fen/${fen
+                    .replaceAll("/", "U")
+                    .replaceAll(" ", "%20")}/`,
+                  "_blank"
+                )
+                .focus();
             }),
           analyzeLineOnLichess: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -384,8 +432,87 @@ export const useRepertoireState = create<RepertoireState>()(
               console.log(logProxy(s.currentMove));
               let parsed = s.position.loadPgn(s.currentMove.id);
               s.position.undo();
+              let lastOpponentMove = s.position.undo();
+
+              if (lastOpponentMove) {
+                s.animatePieceMove(
+                  lastOpponentMove,
+                  PlaybackSpeed.Normal,
+                  (s: RepertoireState) => {},
+                  s
+                );
+              }
               console.log({ parsed });
               console.log(s.position.ascii());
+            }),
+
+          deleteRepertoire: (side: Side, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              client
+                .post("/api/v1/openings/delete", {
+                  sides: [side],
+                })
+                .then(({ data }: { data: Repertoire }) => {
+                  set((s) => {
+                    s.repertoire = data;
+                    s.onRepertoireUpdate(s);
+                  });
+                });
+            }),
+          exportPgns: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {}),
+          exportPgn: (side: Side, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              let pgn = "";
+              const recurse = (line) => {
+                console.log({ rlookup: logProxy(s.responseLookup) });
+                let [mainMove, ...others] = (
+                  s.responseLookup[side][line] ?? []
+                ).map((id) => s.moveLookup[side][id]);
+                if (!mainMove) {
+                  return;
+                }
+                pgn = pgn + getLastMoveWithNumber(mainMove.id) + " ";
+                forEach(others, (variationMove) => {
+                  pgn += "(";
+                  pgn += getLastMoveWithNumber(variationMove.id) + " ";
+                  recurse(variationMove.id);
+                  pgn = pgn.trim();
+                  pgn += ") ";
+                });
+                if (
+                  !isEmpty(others) &&
+                  sideOfLastmove(mainMove.id) === "white"
+                ) {
+                  pgn += `${getMoveNumber(mainMove.id)}... `;
+                }
+                recurse(mainMove.id);
+                console.log({ pgn });
+              };
+              recurse("");
+              pgn = pgn.trim();
+
+              let downloadLink = document.createElement("a");
+
+              let csvFile = new Blob([pgn], { type: "text" });
+              console.log(csvFile);
+
+              let url = window.URL.createObjectURL(csvFile);
+              // file name
+              downloadLink.download = `${side}.pgn`;
+
+              // create link to file
+              downloadLink.href = url;
+
+              // hide download link
+              downloadLink.style.display = "none";
+
+              // add link to DOM
+              document.body.appendChild(downloadLink);
+
+              // click download link
+              downloadLink.click();
+              console.log({ pgn });
             }),
 
           backToOverview: (_state?: RepertoireState) =>
@@ -451,12 +578,16 @@ export const useRepertoireState = create<RepertoireState>()(
                       // m.depth = m.id.split(" ").length;
                     });
                     s.repertoire = data;
+                    if (getAllRepertoireMoves(s.repertoire).length > 0) {
+                      s.hasCompletedRepertoireInitialization = true;
+                    }
                     s.onRepertoireUpdate(s);
                   });
                 });
             }),
           backOne: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              s.positionBeforeBiggestMissEdit = null;
               s.position.undo();
               s.updatePendingLineFromPosition(s);
             }),
@@ -473,6 +604,10 @@ export const useRepertoireState = create<RepertoireState>()(
           fetchRepertoireGrade: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               SIDES.map((side) => {
+                let assume = ASSUME;
+                if (side === s.activeSide && !assume) {
+                  assume = s.moveLog;
+                }
                 client
                   .post(
                     "/api/v1/grade_opening",
@@ -482,6 +617,7 @@ export const useRepertoireState = create<RepertoireState>()(
                         .filter((m) => m.mine)
                         .map((m) => m.id),
                       side: side,
+                      assume: assume,
                     }
                   )
                   .then(({ data }) => {
@@ -504,6 +640,8 @@ export const useRepertoireState = create<RepertoireState>()(
                 })
                 .then(({ data }: { data: Repertoire }) => {
                   set((s) => {
+                    // s.position = s.positionBeforeBiggestMissEdit || new Chess();
+                    console.log(s.positionBeforeBiggestMissEdit?.ascii());
                     s.position = new Chess();
                     // map(s.pendingMoves, () => {
                     //   s.position.undo();
@@ -517,35 +655,6 @@ export const useRepertoireState = create<RepertoireState>()(
                   });
                 });
             }),
-          getPendingLine: (_state?: RepertoireState) => {
-            let state = _state ?? get();
-            return null;
-            // if (state.repertoire.value === null) {
-            //   return null;
-            // }
-            // let history = state.position.history();
-            // let activeRepertoire: RepertoireSide =
-            //   state.repertoire.value[state.activeSide];
-            // let currentLine: string[] = [];
-            // let missedMoves = dropWhile(history, (move) => {
-            //   currentLine.push(move);
-            //   return (
-            //     getNodeFromRepertoire(activeRepertoire, currentLine) != null
-            //   );
-            // });
-            // console.log("Missed moves", missedMoves);
-            // if (!isEmpty(missedMoves)) {
-            //   let knownMoves = take(
-            //     history,
-            //     history.length - missedMoves.length
-            //   );
-            //   return {
-            //     pendingLine: missedMoves,
-            //     knownLine: knownMoves,
-            //   };
-            // }
-            // return null;
-          },
           selectedTemplates: {},
         } as RepertoireState)
     ),
@@ -578,9 +687,21 @@ export const useRepertoireState = create<RepertoireState>()(
 function removeLastMove(id: string) {
   return dropRight(id.split(" "), 1).join(" ");
 }
+
+function getLastMoveWithNumber(id: string) {
+  let [n, m] = last(id.split(" ")).split(".");
+  if (!m) {
+    return n;
+  }
+  return `${n}. ${m}`;
+}
+
 function mapSides<T, Y>(bySide: BySide<T>, fn: (x: T) => Y): BySide<Y> {
   return {
     white: fn(bySide["white"]),
     black: fn(bySide["black"]),
   };
+}
+function getMoveNumber(id: string) {
+  return Math.floor(id.split(" ").length / 2 + 1);
 }

@@ -51,42 +51,55 @@ export const RepertoireTemplateWizard = ({
 }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
   return (
-    <View style={s(isMobile ? c.column : c.row, c.fullWidth)}>
-      {intersperse(
-        SIDES.map((side, i) => {
-          let inner = null;
-          if (side === "white") {
-            inner = <WhiteTemplates state={state} />;
-          } else {
-            inner = <BlackTemplates state={state} />;
-          }
-          return (
-            <View
-              style={s(
-                c.bg(c.grays[20]),
-                c.px(12),
-                c.py(12),
-                !isMobile && s(c.flexible, c.grow)
-              )}
-            >
-              <Text
+    <View style={s(c.column)}>
+      <View style={s(isMobile ? c.column : c.row, c.fullWidth)}>
+        {intersperse(
+          SIDES.map((side, i) => {
+            let inner = null;
+            if (side === "white") {
+              inner = <WhiteTemplates state={state} />;
+            } else {
+              inner = <BlackTemplates state={state} />;
+            }
+            return (
+              <View
                 style={s(
-                  c.fg(c.colors.textPrimary),
-                  c.fontSize(18),
-                  c.weightSemiBold
+                  c.bg(c.grays[20]),
+                  c.px(12),
+                  c.py(12),
+                  !isMobile && s(c.flexible, c.grow)
                 )}
               >
-                {capitalize(side)}
-              </Text>
-              <Spacer height={12} />
-              {inner}
-            </View>
-          );
-        }),
-        (i) => {
-          return <Spacer height={12} width={12} isMobile={isMobile} key={i} />;
-        }
-      )}
+                <Text
+                  style={s(
+                    c.fg(c.colors.textPrimary),
+                    c.fontSize(18),
+                    c.weightSemiBold
+                  )}
+                >
+                  {capitalize(side)}
+                </Text>
+                <Spacer height={12} />
+                {inner}
+              </View>
+            );
+          }),
+          (i) => {
+            return (
+              <Spacer height={12} width={12} isMobile={isMobile} key={i} />
+            );
+          }
+        )}
+      </View>
+      <Spacer height={12} />
+      <Button
+        style={s(c.buttons.primary, c.selfEnd)}
+        onPress={() => {
+          state.initializeRepertoireFromTemplates();
+        }}
+      >
+        Continue
+      </Button>
     </View>
   );
 };
@@ -95,14 +108,11 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
   const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
   return (
     <View style={s()}>
-      <Text style={s(c.fg(c.colors.textSecondary))}>
-        Do you want to start with e4 or d4?
-      </Text>
-      <Spacer height={4} />
       <SelectOneOf
         tabStyle
         choices={["d4", "e4"] as ("e4" | "d4")[]}
         activeChoice={firstMove}
+        textStyles={s(c.fontSize(18))}
         horizontal
         onSelect={(move) => {
           setFirstMove(move);
@@ -111,19 +121,28 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
           return <Text>{move}</Text>;
         }}
       />
-      <Spacer height={12} />
+      <Spacer height={24} />
       {firstMove === "e4" ? (
         <>
           <SelectTemplate line="1.e4 e5" state={state} />
-          <Spacer height={12} />
+          <Spacer height={24} />
           <SelectTemplate line="1.e4 c5" state={state} />
+          <Spacer height={24} />
           <Text style={s(c.fg(c.colors.textPrimary))}>
             Which of the following openings would you like to include some
             mainline responses for?
           </Text>
           <Spacer height={8} />
-          <SelectTemplate line="1.e4 d5" state={state} />
-          <SelectTemplate line="1.e4 e6" state={state} />
+          {intersperse(
+            ["1.e4 d5", "1.e4 e6", "1.e4 c6", "1.e4 d6", "1.e4 g6"].map(
+              (x, i) => {
+                return <SelectTemplate line={x} state={state} />;
+              }
+            ),
+            (i) => {
+              return <Spacer height={4} key={i} />;
+            }
+          )}
         </>
       ) : (
         <View style={s(c.row)}>
@@ -137,7 +156,28 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
   );
 };
 export const BlackTemplates = ({ state }: { state: RepertoireState }) => {
-  return <View style={s()}></View>;
+  const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
+  return (
+    <View style={s()}>
+      <SelectTemplate line="1.e4" state={state} />
+      <Spacer height={24} />
+      <SelectTemplate line="1.d4" state={state} />
+      <Spacer height={24} />
+      <Text style={s(c.fg(c.colors.textPrimary))}>
+        Which of the following openings would you like to include some mainline
+        responses for?
+      </Text>
+      <Spacer height={8} />
+      {intersperse(
+        ["1.c4", "1.Nf3"].map((x, i) => {
+          return <SelectTemplate line={x} state={state} />;
+        }),
+        (i) => {
+          return <Spacer height={4} key={i} />;
+        }
+      )}
+    </View>
+  );
 };
 
 export const SelectTemplate = ({
@@ -154,9 +194,9 @@ export const SelectTemplate = ({
       {!singular && (
         <>
           <Text style={s(c.fg(c.colors.textPrimary))}>
-            How do you want to respond to {line}?
+            How do you want to respond to <b>{line}</b>?
           </Text>
-          <Spacer height={4} />
+          <Spacer height={8} />
         </>
       )}
       {singular ? (
@@ -184,15 +224,15 @@ export const TemplateCell = ({
   template: RepertoireTemplate;
   singular?: boolean;
 }) => {
-  const selected = state.selectedTemplates[template.line] === template.title;
+  const selected = state.selectedTemplates[template.line] === template.id;
   return (
     <Pressable
       onPress={() => {
         state.quick((s) => {
           if (selected) {
-            s.selectedTemplates[template.line] = null;
+            delete s.selectedTemplates[template.line];
           } else {
-            s.selectedTemplates[template.line] = template.title;
+            s.selectedTemplates[template.line] = template.id;
           }
         });
       }}

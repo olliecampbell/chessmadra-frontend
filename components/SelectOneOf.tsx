@@ -10,6 +10,7 @@ export const SelectOneOf = <T,>({
   activeChoice,
   containerStyles,
   cellStyles,
+  textStyles,
   tabStyle,
   horizontal,
 }: {
@@ -21,6 +22,7 @@ export const SelectOneOf = <T,>({
   renderChoice: (x: T) => JSX.Element | string;
   containerStyles?: any;
   cellStyles?: any;
+  textStyles?: any;
 }) => {
   return (
     <View
@@ -45,7 +47,8 @@ export const SelectOneOf = <T,>({
                 active && c.borderBottom(`2px solid ${c.grays[90]}`),
                 c.row,
                 !tabStyle && c.bg(active ? c.grays[80] : c.grays[25]),
-                c.py(8),
+                !tabStyle && c.py(8),
+                tabStyle && c.pb(4),
                 c.px(12),
                 !isLast &&
                   !tabStyle &&
@@ -62,7 +65,8 @@ export const SelectOneOf = <T,>({
                     : c.fg(
                         active ? c.colors.textInverse : c.colors.textSecondary
                       ),
-                  c.weightBold
+                  c.weightBold,
+                  textStyles
                 )}
               >
                 {renderChoice(choice)}

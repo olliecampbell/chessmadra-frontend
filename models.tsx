@@ -46,3 +46,11 @@ export interface LichessGame {
   whiteMistakes: number;
   blackMistakes: number;
 }
+
+export interface RepertoireTemplate {
+  title: string;
+  id: string;
+  line: string;
+  num_moves: number;
+  tags: string[];
+}

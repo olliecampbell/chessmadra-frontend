@@ -240,7 +240,7 @@ const failureShades = genShades(340);
 const successShades = genShades(164);
 const colors = {
   textPrimary: grays[95],
-  textSecondary: grays[85],
+  textSecondary: grays[80],
   textInverse: grays[5],
   textInverseSecondary: grays[20],
   successColor: "hsl(164, 98%, 35%)",
@@ -269,7 +269,7 @@ const basicInverseButtonStyles = s(
   br(2),
   py(16),
   px(16),
-  bg(colors.textInverse),
+  bg(grays[20]),
   clickable,
   center,
   {
@@ -309,7 +309,9 @@ const transform = keyedProp("transform");
 const containerStyles = (isMobile, customMaxWidth?: number) =>
   s(
     mx(isMobile ? 12 : 48),
-    maxWidth(`min(calc(100vw - 24px), ${customMaxWidth ?? 1280}px)`),
+    maxWidth(
+      `min(calc(100vw - ${isMobile ? 12 : 24}px), ${customMaxWidth ?? 1280}px)`
+    ),
     column,
     alignStart
   );

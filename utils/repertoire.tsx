@@ -1,7 +1,11 @@
 import { LichessGame } from "app/models";
-import { forEach } from "lodash";
+import { forEach, isArray } from "lodash";
 
-export function sideOfLastmove(line: string[]): Side {
+export function sideOfLastmove(_line: string[] | string): Side {
+  let line = _line;
+  if (!isArray(_line)) {
+    line = _line.split(" ");
+  }
   if (line.length % 2 === 1) {
     return "white";
   } else {

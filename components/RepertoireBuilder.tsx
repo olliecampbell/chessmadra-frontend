@@ -43,9 +43,10 @@ import { PageContainer } from "./PageContainer";
 import { Modal } from "./Modal";
 import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
-const DEPTH_CUTOFF = 5;
+const DEPTH_CUTOFF = 7;
 import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
+import { useModal } from "./useModal";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -58,8 +59,104 @@ export const RepertoireBuilder = () => {
   useEffect(() => {
     state.initState();
   }, []);
+  const {
+    open: editEtcModalOpen,
+    setOpen: setEditEtcModalOpen,
+    modal: editEtcModal,
+  } = useModal({
+    content: (
+      <>
+        <View
+          style={s(
+            c.column,
+            c.px(isMobile ? 12 : 24),
+            c.py(isMobile ? 12 : 24)
+          )}
+        >
+          <View style={s(c.row, c.alignStart)}>
+            <i
+              style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
+              className="fas fa-arrow-down-to-line"
+            ></i>
+            <Spacer width={16} />
+            <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
+              <Text
+                style={s(
+                  c.fg(c.colors.textPrimary),
+                  c.fontSize(18),
+                  c.flexShrink(0)
+                )}
+              >
+                Export
+              </Text>
+              <Spacer height={4} />
+              <Text style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
+                Export your {state.activeSide} repertoire to a PGN file. You can
+                import this file into a Lichess study, ChessBase, Chessable
+                course, etc.
+              </Text>
+              <Spacer height={12} />
+              <Button
+                style={s(c.buttons.primary, c.height(36), c.selfEnd)}
+                onPress={() => {
+                  state.exportPgn(state.activeSide);
+                }}
+              >
+                <Text style={s(c.buttons.primary.textStyles)}>Export</Text>
+              </Button>
+            </View>
+          </View>
+        </View>
+        <View
+          style={s(
+            c.column,
+            c.px(isMobile ? 12 : 24),
+            c.py(isMobile ? 12 : 24)
+          )}
+        >
+          <View style={s(c.row, c.alignStart)}>
+            <i
+              style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
+              className="fa-regular fa-trash"
+            ></i>
+            <Spacer width={16} />
+            <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
+              <Text
+                style={s(
+                  c.fg(c.colors.textPrimary),
+                  c.fontSize(18),
+                  c.flexShrink(0)
+                )}
+              >
+                Delete
+              </Text>
+              <Spacer height={4} />
+              <Text style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
+                Delete your entire {state.activeSide} repertoire. This cannot be
+                undone.
+              </Text>
+              <Spacer height={12} />
+              <Button
+                style={s(
+                  c.buttons.primary,
+                  c.bg(c.failureShades[50]),
+                  c.height(36),
+                  c.selfEnd
+                )}
+                onPress={() => {
+                  state.deleteRepertoire(state.activeSide);
+                }}
+              >
+                <Text style={s(c.buttons.primary.textStyles)}>Delete</Text>
+              </Button>
+            </View>
+          </View>
+        </View>
+      </>
+    ),
+    isOpen: false,
+  });
   let grade = state.repertoireGrades[state.activeSide];
-  let pendingLine = state.getPendingLine();
   // console.log("Pending line", pendingLine);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
@@ -78,47 +175,35 @@ export const RepertoireBuilder = () => {
     let innerInner = null;
     let biggestMiss = state.repertoireGrades?.[state.activeSide]?.biggestMiss;
     let biggestMissRow = createBiggestMissRow(state, state.activeSide);
+    let backToOverviewRow = (
+      <View
+        style={s(c.row, c.alignCenter, c.clickable, c.mb(12))}
+        onClick={() => {
+          state.backToOverview();
+        }}
+      >
+        <i
+          className="fa-light fa-angle-left"
+          style={s(c.fg(c.grays[70]), c.fontSize(16))}
+        />
+        <Spacer width={8} />
+        <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
+          Back to overview
+        </Text>
+      </View>
+    );
     if (state.isEditing) {
       let backButtonActive = state.position.history().length > 0;
       innerInner = (
         <>
-          <View
-            style={s(c.row, c.alignCenter, c.clickable)}
-            onClick={() => {
-              state.backToOverview();
-            }}
-          >
-            <i
-              className="fa-light fa-angle-left"
-              style={s(c.fg(c.grays[70]), c.fontSize(16))}
-            />
-            <Spacer width={8} />
-            <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
-              Back to overview
-            </Text>
-          </View>
-          <Spacer height={12} />
-          {pendingLine && (
-            <View style={s(c.bg(c.grays[30]), c.px(12), c.py(12))}>
-              <Pressable
-                onPress={() => {
-                  // state.addPendingLine();
-                }}
-              >
-                <Text style={s(c.fg(c.colors.textPrimary))}>
-                  The current line isn't a part of your repertoire yet, would
-                  you like to add it?
-                </Text>
-              </Pressable>
-            </View>
-          )}
+          {backToOverviewRow}
           <View
             style={s(
               c.bg(c.grays[20]),
               c.br(4),
               c.overflowHidden,
               // c.maxHeight(300),
-              c.height(220),
+              c.height(260),
               c.column
             )}
           >
@@ -343,13 +428,50 @@ export const RepertoireBuilder = () => {
               </Text>
             </Button>
           </View>
+          <Spacer height={12} />
+          <Button
+            style={s(
+              c.buttons.basicInverse,
+              c.height(36),
+              c.selfEnd,
+              c.bg(c.grays[20])
+            )}
+            onPress={() => {
+              setEditEtcModalOpen(true);
+            }}
+          >
+            <Text
+              style={s(
+                c.buttons.basicInverse.textStyles,
+                c.fg(c.colors.textPrimary)
+              )}
+            >
+              <i
+                style={s(c.fontSize(14), c.fg(c.grays[60]))}
+                className="fas fa-ellipsis"
+              ></i>
+            </Text>
+          </Button>
         </>
       );
     } else if (state.isReviewing) {
       innerInner = (
         <>
+          {backToOverviewRow}
+          <Text
+            style={s(
+              c.fg(c.colors.textPrimary),
+              c.weightSemiBold,
+              c.fontSize(14)
+            )}
+          >
+            Play the correct response on the board
+          </Text>
+          <Spacer height={12} />
           <Button
-            style={s(c.buttons.basic)}
+            style={s(
+              state.hasGivenUp ? c.buttons.primary : c.buttons.basicInverse
+            )}
             onPress={() => {
               if (state.hasGivenUp) {
                 state.setupNextMove();
@@ -358,16 +480,7 @@ export const RepertoireBuilder = () => {
               }
             }}
           >
-            {state.hasGivenUp ? "Next" : "Show me"}
-          </Button>
-          <Spacer height={12} />
-          <Button
-            style={s(c.buttons.basic)}
-            onPress={() => {
-              state.backToOverview();
-            }}
-          >
-            Stop Review
+            {state.hasGivenUp ? "Next" : "I don't know"}
           </Button>
         </>
       );
@@ -477,6 +590,7 @@ export const RepertoireBuilder = () => {
             */}
           </View>
         </TrainerLayout>
+        {editEtcModal}
       </>
     );
   }
@@ -577,16 +691,12 @@ const OpeningNode = ({
     state.responseLookup[state.activeSide][move.id],
     (id) => state.moveLookup[state.activeSide][id]
   );
-  console.log(responseQueue);
   if (!isEmpty(responseQueue)) {
     responses = [responseQueue[0]];
   }
-  console.log(responses);
   let trueDepth = move.id.split(" ").length;
   let assumedDepth = state.currentLine.length;
   let depthDifference = trueDepth - assumedDepth;
-  console.log("LOOKUP", state.responseLookup);
-  console.log({ responses, depthDifference });
   // let responses = [];
   return (
     <View style={s(c.pl(2))}>
@@ -801,8 +911,11 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
   return (
     <Pressable
       onPress={() => {
-        state.startEditing(side);
-        state.playPgn(biggestMiss.move.id);
+        state.quick((s) => {
+          s.positionBeforeBiggestMissEdit = s.position;
+          state.startEditing(side as Side, s);
+          state.playPgn(biggestMiss.move.id, s);
+        });
       }}
     >
       <View
@@ -815,17 +928,31 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
           c.alignCenter
         )}
       >
-        <Text
-          style={s(
-            c.fg(c.colors.textSecondary),
-            c.fontSize(12),
-            c.weightSemiBold,
-            c.weightBold,
-            c.selfStart
-          )}
-        >
-          Biggest miss
-        </Text>
+        <View style={s(c.row, c.selfStart)}>
+          <Text
+            style={s(
+              c.fg(c.colors.textSecondary),
+              c.fontSize(12),
+              c.weightSemiBold,
+              c.weightBold,
+              c.selfStart
+            )}
+          >
+            Biggest miss -
+          </Text>
+          <Spacer width={4} />
+          <Text
+            style={s(
+              c.fg(c.colors.textSecondary),
+              c.fontSize(12),
+              c.weightSemiBold,
+              c.weightBold,
+              c.selfStart
+            )}
+          >
+            {formatIncidence(biggestMiss.incidence)} of games
+          </Text>
+        </View>
         <Spacer height={2} />
         <Text
           style={s(

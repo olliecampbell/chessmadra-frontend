@@ -150,6 +150,9 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
             c.py(8),
             c.selfEnd
           )}
+          onPress={() => {
+            console.log("TODO");
+          }}
         >
           Import
         </Button>
@@ -249,10 +252,10 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
       <View
         style={s(
           c.column,
-          c.containerStyles(isMobile),
-          c.maxWidth(500),
-          activeOpeningSource === OpeningSource.Templates && c.maxWidth(700),
-          c.fullWidth
+          c.containerStyles(
+            isMobile,
+            activeOpeningSource === OpeningSource.Templates ? 700 : 500
+          )
         )}
       >
         {isNil(activeOpeningSource) ? (
