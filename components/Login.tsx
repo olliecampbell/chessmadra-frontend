@@ -123,6 +123,9 @@ export default function Login({ signup }: { signup?: boolean }) {
                     <View style={s()}>
                       <TextInput
                         onKeyDown={onEnter(signIn)}
+                        onSubmitEditing={() => {
+                          signIn();
+                        }}
                         placeholder="E-mail"
                         id="email"
                         name="email"
