@@ -2,6 +2,7 @@ import axios from "axios";
 import applyCaseMiddleware from "axios-case-converter";
 import { AppStore } from "./store";
 import { camelCase } from "camel-case";
+import { clearCookies } from "./utils/auth";
 
 const client = applyCaseMiddleware(
   axios.create({
@@ -41,5 +42,23 @@ client.interceptors.request.use(function (config) {
   }
   return config;
 });
+
+client.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (error) {
+    console.log({ error });
+    if (error?.response?.status === 401) {
+      AppStore.update((s) => {
+        s.auth.token = undefined;
+        clearCookies();
+        window.location.href = `${window.location.origin}/login`;
+        // window.location = "/login";
+      });
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default client;
