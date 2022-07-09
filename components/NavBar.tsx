@@ -70,6 +70,7 @@ export const navItems = [
   {
     path: "/openings",
     title: "Opening Builder",
+    beta: true,
   },
   {
     path: "/game-memorization",
