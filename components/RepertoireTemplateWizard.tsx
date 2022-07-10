@@ -108,19 +108,21 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
   const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
   return (
     <View style={s()}>
-      <SelectOneOf
-        tabStyle
-        choices={["d4", "e4"] as ("e4" | "d4")[]}
-        activeChoice={firstMove}
-        textStyles={s(c.fontSize(18))}
-        horizontal
-        onSelect={(move) => {
-          setFirstMove(move);
-        }}
-        renderChoice={(move) => {
-          return <Text>{move}</Text>;
-        }}
-      />
+      <View style={s(c.row, c.fullWidth, c.justifyCenter)}>
+        <SelectOneOf
+          tabStyle
+          choices={["d4", "e4"] as ("e4" | "d4")[]}
+          activeChoice={firstMove}
+          textStyles={s(c.fontSize(18))}
+          horizontal
+          onSelect={(move) => {
+            setFirstMove(move);
+          }}
+          renderChoice={(move) => {
+            return <Text>{move}</Text>;
+          }}
+        />
+      </View>
       <Spacer height={24} />
       {firstMove === "e4" ? (
         <>
@@ -159,6 +161,7 @@ export const BlackTemplates = ({ state }: { state: RepertoireState }) => {
   const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
   return (
     <View style={s()}>
+      <Spacer height={50} />
       <SelectTemplate line="1.e4" state={state} />
       <Spacer height={24} />
       <SelectTemplate line="1.d4" state={state} />
@@ -279,12 +282,12 @@ export const TemplateCell = ({
                       return (
                         <Text
                           style={s(
-                            c.fg(c.colors.textSecondary),
+                            c.fg(c.grays[70]),
                             c.fontSize(12),
-                            c.bg(c.grays[30]),
+                            c.bg(c.grays[20]),
                             c.px(8),
                             c.py(2),
-                            c.br(999)
+                            c.br(2)
                           )}
                         >
                           {x}

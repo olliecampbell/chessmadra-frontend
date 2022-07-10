@@ -69,10 +69,9 @@ export interface RepertoireState
   fetchRepertoire: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
   initializeRepertoire: (_: {
-    lichessUsername: string;
-    chessComUsername: string;
-    whitePgn: string;
-    blackPgn: string;
+    lichessUsername?: string;
+    whitePgn?: string;
+    blackPgn?: string;
     state?: RepertoireState;
   }) => void;
   user?: User;
@@ -118,6 +117,7 @@ export interface RepertoireState
   repertoireTemplates?: RepertoireTemplate[];
   selectedTemplates: Record<string, string>;
   positionBeforeBiggestMissEdit?: Chess;
+  numMovesWouldBeDeleted?: number;
 }
 
 // export const DEFAULT_REPERTOIRE = {
@@ -227,7 +227,6 @@ export const useRepertoireState = create<RepertoireState>()(
           initializeRepertoire: ({
             state,
             lichessUsername,
-            chessComUsername,
             blackPgn,
             whitePgn,
           }) =>
@@ -335,6 +334,35 @@ export const useRepertoireState = create<RepertoireState>()(
               s.showPendingMoves = some(s.pendingMoves, (m) => {
                 return m.mine;
               });
+              s.numMovesWouldBeDeleted = 0;
+              s.conflictingId = null;
+              s.numMovesWouldBeDeleted = (() => {
+                let subs = map(
+                  filter(s.pendingMoves, (m) => {
+                    return m.mine;
+                  }),
+                  (m) => {
+                    return [m.id, removeLastMove(m.id)];
+                  }
+                );
+                let total = 0;
+                for (let p of subs) {
+                  let [id, sub] = p;
+                  console.log({ id, sub });
+                  let existingMove =
+                    s.moveLookup[s.activeSide][
+                      s.responseLookup[s.activeSide][sub]?.[0]
+                    ];
+                  if (existingMove && existingMove.id != id) {
+                    total = filter(s.repertoire[s.activeSide].moves, (m) => {
+                      return m.id.includes(sub);
+                    }).length;
+                    s.conflictingId = existingMove.id;
+                    break;
+                  }
+                }
+                return total;
+              })();
               s.moveLog = lineToPgn(line);
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>

@@ -103,148 +103,17 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   // const [uploadModalOpen, setUploadModalOpen] = useState(false);
   // const [rating, setRating] = useState(RatingRange.Rating1500To1800);
   // const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
-  const [openingSource, setOpeningSource] = useState(null);
-  const [activeOpeningSource, setActiveOpeningSource] = useState(
-    OpeningSource.Templates
-  );
+  const [openingSource, setOpeningSource] = useState(OpeningSource.Templates);
+  const [activeOpeningSource, setActiveOpeningSource] = useState(null);
   // const [ratingTimeControl, setRatingTimeControl] = useState(true);
   const [username, setUsername] = useState("");
   const [lichessStudy, setLichessStudy] = useState("");
-  const [whitePgn, setWhitePgn] = useState(null);
-  const [blackPgn, setBlackPgn] = useState(null);
+  const [whitePgn, setWhitePgn] = useState(null as string);
+  const [blackPgn, setBlackPgn] = useState(null as string);
 
-  const importFromLichessUsername = () => {};
-
-  const ImportSection = ({ title, submit, children, isValid, description }) => {
-    return (
-      <View
-        style={s(
-          c.column,
-          c.fullWidth,
-          c.bg(c.grays[15]),
-          c.px(12),
-          c.py(12),
-          c.br(2)
-        )}
-      >
-        <Text
-          style={s(
-            c.fg(c.colors.textPrimary),
-            c.weightSemiBold,
-            c.selfStretch,
-            c.fontSize(16)
-          )}
-        >
-          {title}
-        </Text>
-        <Spacer height={12} />
-        <Text style={s(c.fg(c.grays[75]), c.weightRegular, c.fontSize(12))}>
-          {description}
-        </Text>
-        <Spacer height={12} />
-        {children}
-        <Spacer height={isMobile ? 18 : 4} />
-        <Button
-          style={s(
-            isValid ? c.buttons.primary : c.buttons.primaryDisabled,
-            c.py(8),
-            c.selfEnd
-          )}
-          onPress={() => {
-            console.log("TODO");
-          }}
-        >
-          Import
-        </Button>
-      </View>
-    );
+  const importFromLichessUsername = () => {
+    state.initializeRepertoire({ lichessUsername: username });
   };
-  const blah = (
-    <>
-      <View
-        style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
-        onClick={() => {
-          setActiveOpeningSource(null);
-        }}
-      >
-        <i
-          className="fa-light fa-angle-left"
-          style={s(c.fg(c.grays[70]), c.fontSize(16))}
-        />
-        <Spacer width={6} />
-        <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>Back</Text>
-      </View>
-      <Spacer height={12} />
-      {activeOpeningSource === OpeningSource.Templates && (
-        <RepertoireTemplateWizard state={state} />
-      )}
-      {activeOpeningSource == OpeningSource.Import && (
-        <>
-          <ImportSection
-            title="PGN"
-            description="If you have an opening repertoire with other software, you can export each side as a pgn and upload both here."
-            isValid={username}
-            submit={importFromLichessUsername()}
-          >
-            <View style={s(c.row)}>
-              <DragAndDropInput
-                humanName="White Openings"
-                accept="*.pgn"
-                onUpload={async (e) => {
-                  let file = e.target.files[0];
-                  let body = await file.text();
-                  setWhitePgn(body);
-                  return true;
-                }}
-              />
-              <Spacer width={12} />
-              <DragAndDropInput
-                humanName="Black Openings"
-                accept="*.pgn"
-                onUpload={async (e) => {
-                  let file = e.target.files[0];
-                  let body = await file.text();
-                  setBlackPgn(body);
-                  return true;
-                }}
-              />
-            </View>
-          </ImportSection>
-          <Spacer height={12} />
-          <ImportSection
-            title="Lichess Study"
-            description="Paste the URL or id of a Lichess study. Must be public or unlisted."
-            isValid={username}
-            submit={importFromLichessUsername()}
-          >
-            <Spacer height={12} />
-            <View style={s(c.row)}>
-              <CMTextInput
-                placeholder="URL or id"
-                value={lichessStudy}
-                setValue={setLichessStudy}
-              />
-            </View>
-          </ImportSection>
-          <Spacer height={12} />
-          <ImportSection
-            title="Lichess Games"
-            description="Parses your last 200 Lichess games, to see what openings you use. This is the least accurate method, so only do this if you don't have a study or pgn available. "
-            isValid={username}
-            submit={importFromLichessUsername()}
-          >
-            <View style={s(c.row)}>
-              <CMTextInput
-                placeholder="username"
-                value={username}
-                setValue={setUsername}
-              />
-            </View>
-          </ImportSection>
-        </>
-      )}
-    </>
-  );
 
   return (
     <>
@@ -379,12 +248,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                 onPress={() => {
                   setActiveOpeningSource(openingSource);
                   if (openingSource === OpeningSource.Manual) {
-                    state.initializeRepertoire({
-                      lichessUsername: null,
-                      chessComUsername: null,
-                      blackPgn,
-                      whitePgn,
-                    });
+                    state.initializeRepertoire({});
                   }
                 }}
                 style={s(
@@ -401,7 +265,108 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
             </View>
           </>
         ) : (
-          <View style={s(c.column, c.fullWidth)}>{blah}</View>
+          <View style={s(c.column, c.fullWidth)}>
+            <View
+              style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
+              onClick={() => {
+                setActiveOpeningSource(null);
+              }}
+            >
+              <i
+                className="fa-light fa-angle-left"
+                style={s(c.fg(c.grays[70]), c.fontSize(16))}
+              />
+              <Spacer width={6} />
+              <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>Back</Text>
+            </View>
+            <Spacer height={12} />
+            {activeOpeningSource === OpeningSource.Templates && (
+              <RepertoireTemplateWizard state={state} />
+            )}
+            {activeOpeningSource == OpeningSource.Import && (
+              <>
+                <ImportSection
+                  isMobile={isMobile}
+                  title="PGN"
+                  description="If you have an opening repertoire with other software, you can export each side as a pgn and upload both here."
+                  isValid={blackPgn || whitePgn}
+                  submit={() => {
+                    state.initializeRepertoire({
+                      blackPgn,
+                      whitePgn,
+                    });
+                  }}
+                >
+                  <View style={s(c.row)}>
+                    <DragAndDropInput
+                      humanName="White Openings"
+                      accept="*.pgn"
+                      onUpload={async (e) => {
+                        let file = e.target.files[0];
+                        let body = await file.text();
+                        setWhitePgn(body);
+                        return true;
+                      }}
+                    />
+                    <Spacer width={12} />
+                    <DragAndDropInput
+                      humanName="Black Openings"
+                      accept="*.pgn"
+                      onUpload={async (e) => {
+                        let file = e.target.files[0];
+                        let body = await file.text();
+                        setBlackPgn(body);
+                        return true;
+                      }}
+                    />
+                  </View>
+                </ImportSection>
+                <Spacer height={12} />
+                {/*
+          <ImportSection
+            title="Lichess Study"
+            description="Paste the URL or id of a Lichess study. Must be public or unlisted."
+            isValid={lichessStudy}
+            submit={() => {
+              (async () => {
+                let studyId = lichessStudy;
+
+                let { data }: { data: string } = await client.get(
+                  `https://lichess.org/api/study/${studyId}.pgn`
+                );
+                console.log({ data });
+              })();
+            }}
+          >
+            <Spacer height={12} />
+            <View style={s(c.row)}>
+              <CMTextInput
+                placeholder="URL or id"
+                value={lichessStudy}
+                setValue={setLichessStudy}
+              />
+            </View>
+          </ImportSection>
+          <Spacer height={12} />
+          */}
+                <ImportSection
+                  isMobile={isMobile}
+                  title="Lichess Games"
+                  description="Parses your last 200 Lichess games, to see what openings you use. This is less accurate than a PGN file, so only use this if you can't get a PGN of your openings."
+                  isValid={username}
+                  submit={importFromLichessUsername}
+                >
+                  <View style={s(c.row)} key={"username"}>
+                    <CMTextInput
+                      placeholder="username"
+                      value={username}
+                      setValue={setUsername}
+                    />
+                  </View>
+                </ImportSection>
+              </>
+            )}
+          </View>
         )}
       </View>
       <Spacer height={0} grow />
@@ -458,6 +423,59 @@ const PgnUploadDropper = ({ color }) => {
           Drag a pgn in here, or click to browse
         </Text>
       </View>
+    </View>
+  );
+};
+
+const ImportSection = ({
+  title,
+  submit,
+  children,
+  isValid,
+  description,
+  isMobile,
+}) => {
+  return (
+    <View
+      key={title}
+      style={s(
+        c.column,
+        c.fullWidth,
+        c.bg(c.grays[15]),
+        c.px(12),
+        c.py(12),
+        c.br(2)
+      )}
+    >
+      <Text
+        style={s(
+          c.fg(c.colors.textPrimary),
+          c.weightSemiBold,
+          c.selfStretch,
+          c.fontSize(16)
+        )}
+      >
+        {title}
+      </Text>
+      <Spacer height={12} />
+      <Text style={s(c.fg(c.grays[75]), c.weightRegular, c.fontSize(12))}>
+        {description}
+      </Text>
+      <Spacer height={12} />
+      {children}
+      <Spacer height={isMobile ? 18 : 4} />
+      <Button
+        style={s(
+          isValid ? c.buttons.primary : c.buttons.primaryDisabled,
+          c.py(8),
+          c.selfEnd
+        )}
+        onPress={() => {
+          submit();
+        }}
+      >
+        Import
+      </Button>
     </View>
   );
 };

@@ -292,31 +292,64 @@ export const RepertoireBuilder = () => {
                   isEmpty(state.pendingMoves) &&
                   biggestMissRow}
                 {state.showPendingMoves && (
-                  <View
-                    style={s(
-                      c.py(12),
-                      c.px(12),
-                      c.row,
-                      c.justifyEnd,
-                      c.alignCenter
-                    )}
-                  >
-                    <Button
-                      style={s(c.buttons.primary, c.height(36))}
-                      onPress={() => {
-                        state.addPendingLine();
-                      }}
+                  <>
+                    {!isNil(state.numMovesWouldBeDeleted) &&
+                      state.numMovesWouldBeDeleted > 0 && (
+                        <View
+                          style={s(
+                            c.mx(6),
+                            c.py(4),
+                            c.br(2),
+                            c.px(6),
+                            c.bg(c.yellows[90]),
+                            c.row,
+                            c.justifyEnd,
+                            c.alignCenter
+                          )}
+                        >
+                          <i
+                            className="fa-regular fa-triangle-exclamation"
+                            style={s(c.fontSize(20), c.fg(c.yellows[50]))}
+                          ></i>
+                          <Spacer width={8} />
+                          <Text
+                            style={s(
+                              c.fg(c.colors.textInverse),
+                              c.fontSize(12)
+                            )}
+                          >
+                            Adding this line will remove{" "}
+                            <b>{state.numMovesWouldBeDeleted}</b> moves that
+                            start with <b>{state.conflictingId}</b>
+                          </Text>
+                        </View>
+                      )}
+                    <View
+                      style={s(
+                        c.py(12),
+                        c.px(12),
+                        c.row,
+                        c.justifyEnd,
+                        c.alignCenter
+                      )}
                     >
-                      <Text style={s(c.buttons.primary.textStyles)}>
-                        <i
-                          className="fa-regular fa-plus"
-                          style={s(c.fg(c.grays[90]))}
-                        />
-                        <Spacer width={6} />
-                        <Text style={s(c.weightBold)}>Add line</Text>
-                      </Text>
-                    </Button>
-                  </View>
+                      <Button
+                        style={s(c.buttons.primary, c.height(36))}
+                        onPress={() => {
+                          state.addPendingLine();
+                        }}
+                      >
+                        <Text style={s(c.buttons.primary.textStyles)}>
+                          <i
+                            className="fa-regular fa-plus"
+                            style={s(c.fg(c.grays[90]))}
+                          />
+                          <Spacer width={6} />
+                          <Text style={s(c.weightBold)}>Add line</Text>
+                        </Text>
+                      </Button>
+                    </View>
+                  </>
                 )}
 
                 {/*
