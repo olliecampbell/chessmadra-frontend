@@ -118,6 +118,7 @@ export interface RepertoireState
   selectedTemplates: Record<string, string>;
   positionBeforeBiggestMissEdit?: Chess;
   numMovesWouldBeDeleted?: number;
+  conflictingId?: string;
 }
 
 // export const DEFAULT_REPERTOIRE = {

@@ -137,8 +137,8 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                 c.lineHeight("1.7em")
               )}
             >
-              Welcome to the opening builder. This tool will help you build and
-              remember your opening repertoire.
+              This tool will help you build and remember your opening
+              repertoire.
             </Text>
             <Spacer height={12} />
             <Text
