@@ -69,8 +69,8 @@ export const Directory = () => {
                       c.relative,
                       c.column,
                       c.flexible,
-                      c.px(12),
-                      c.py(16),
+                      c.px(isMobile ? 10 : 12),
+                      c.py(isMobile ? 8 : 16),
                       c.br(4),
                       c.overflowHidden,
                       c.bg(c.grays[90])
@@ -111,13 +111,8 @@ export const Directory = () => {
                     >
                       {title}
                     </Text>
-                    <Spacer height={24} />
-                    <Text
-                      style={s(
-                        c.fg(c.colors.textInverse),
-                        c.lineHeight("1.5em")
-                      )}
-                    >
+                    <Spacer height={isMobile ? 12 : 24} />
+                    <Text style={s(c.fg(c.grays[15]), c.lineHeight("1.5em"))}>
                       {description}
                     </Text>
                     <Spacer grow height={12} />

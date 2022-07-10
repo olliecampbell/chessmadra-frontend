@@ -23,14 +23,13 @@ import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 
 export const navItems = [
   {
-    path: "/visualization",
-    title: "Visualization",
+    path: "/openings",
+    title: "Opening Builder",
     description: (
       <>
-        Visualize a series of moves, then find the tactic at the end. Carefully
-        curated to only feature strong play from "your" side. Calculation,
-        visualization, intuition, this trains a bit of everything. Adjustable
-        puzzle difficulty and visualization depth. 150,000+ puzzles.
+        Create your own opening repertoire. Use spaced repetition to memorize
+        it. Uses statistics from millions of games to find the biggest gaps in
+        your repertoire.
       </>
     ),
   },
@@ -42,6 +41,17 @@ export const navItems = [
         Exactly like the visualization trainer, but with each solved puzzle the
         visualization and puzzle difficulty will increase. Solve puzzles quickly
         to get more points!
+      </>
+    ),
+  },
+  {
+    path: "/visualization",
+    title: "Visualization",
+    description: (
+      <>
+        Visualize a series of moves, then find the tactic at the end. Curated to
+        only feature strong play from "your" side. Calculation, visualization,
+        intuition; get a bit of everything. 150,000+ puzzles.
       </>
     ),
   },
@@ -66,10 +76,6 @@ export const navItems = [
         can.
       </>
     ),
-  },
-  {
-    path: "/openings",
-    title: "Opening Builder",
   },
   {
     path: "/game-memorization",
