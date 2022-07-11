@@ -304,11 +304,12 @@ export const useRepertoireState = create<RepertoireState>()(
                 // TODO: figure out a way to open up analysis from black side
                 window.open(`https://lichess.org/analysis`, "_blank").focus();
               }
+              var windowReference = window.open("about:blank", "_blank");
               client
                 .post(`https://lichess.org/api/import`, bodyFormData)
                 .then(({ data }) => {
                   let url = data["url"];
-                  window.open(`${url}/${side}#999`, "_blank").focus();
+                  windowReference.location = `${url}/${side}#999`;
                 });
             }),
           updatePendingLineFromPosition: (_state?: RepertoireState) =>
