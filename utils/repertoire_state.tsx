@@ -302,7 +302,8 @@ export const useRepertoireState = create<RepertoireState>()(
               bodyFormData.append("pgn", lineToPgn(s.currentLine));
               if (isEmpty(s.currentLine)) {
                 // TODO: figure out a way to open up analysis from black side
-                window.open(`https://lichess.org/analysis`, "_blank").focus();
+                window.open(`https://lichess.org/analysis`, "_blank");
+                return;
               }
               var windowReference = window.open("about:blank", "_blank");
               client
@@ -434,7 +435,7 @@ export const useRepertoireState = create<RepertoireState>()(
                             s.setupNextMove(s);
                           }
                         });
-                      }, 200);
+                      }, 100);
                     },
                     s
                   );
