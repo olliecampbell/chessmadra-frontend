@@ -245,6 +245,27 @@ export const NavBar = (props: {}) => {
         >
           <i style={s(c.fg(c.colors.textInverse))} className="fas fa-bars"></i>
         </Button>
+        {authStatus === AuthStatus.Unauthenticated && (
+          <>
+            <Spacer width={0} grow />
+            <Link href="/login">
+              <Text
+                style={s(
+                  c.buttons.basic,
+                  c.bg(c.grays[20]),
+                  c.px(12),
+                  c.height(50),
+                  c.br(4),
+                  c.fg(c.primaries[70]),
+                  c.weightBold,
+                  c.fontSize(isMobile ? 14 : 16)
+                )}
+              >
+                Log in / Register
+              </Text>
+            </Link>
+          </>
+        )}
       </View>
       <View
         style={s(

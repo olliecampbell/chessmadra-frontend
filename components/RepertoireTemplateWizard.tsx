@@ -262,8 +262,8 @@ export const TemplateCell = ({
           style={s(c.fontSize(14), c.fg(selected ? c.grays[80] : c.grays[50]))}
         />
         <Spacer width={12} />
-        <View style={s(c.column, c.flexible, c.mt(-1))}>
-          <View style={s()}>
+        <View style={s(c.column, c.mt(-1), c.grow)}>
+          <View style={s(c.row, c.fullWidth)}>
             <Text
               style={s(
                 c.fg(c.colors.textPrimary),
@@ -273,35 +273,50 @@ export const TemplateCell = ({
             >
               {template.title}
             </Text>
-            {!isEmpty(template.tags) && (
+            {template.followUp && (
               <>
-                <Spacer height={4} />
-                <View style={s(c.row)}>
-                  {intersperse(
-                    template.tags.map((x, i) => {
-                      return (
-                        <Text
-                          style={s(
-                            c.fg(c.grays[70]),
-                            c.fontSize(12),
-                            c.bg(c.grays[20]),
-                            c.px(8),
-                            c.py(2),
-                            c.br(2)
-                          )}
-                        >
-                          {x}
-                        </Text>
-                      );
-                    }),
-                    (i) => {
-                      return <Spacer width={4} key={i} />;
-                    }
-                  )}
-                </View>
+                <Spacer grow />
+                {singular && (
+                  <>
+                    <Text style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                      {template.line}{" "}
+                    </Text>
+                  </>
+                )}
+                <Text style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                  {template.followUp}
+                </Text>
               </>
             )}
           </View>
+          {!isEmpty(template.tags) && (
+            <>
+              <Spacer height={4} />
+              <View style={s(c.row)}>
+                {intersperse(
+                  template.tags.map((x, i) => {
+                    return (
+                      <Text
+                        style={s(
+                          c.fg(c.grays[70]),
+                          c.fontSize(12),
+                          c.bg(c.grays[20]),
+                          c.px(8),
+                          c.py(2),
+                          c.br(2)
+                        )}
+                      >
+                        {x}
+                      </Text>
+                    );
+                  }),
+                  (i) => {
+                    return <Spacer width={4} key={i} />;
+                  }
+                )}
+              </View>
+            </>
+          )}
         </View>
       </View>
     </Pressable>

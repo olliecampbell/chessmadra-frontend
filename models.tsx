@@ -50,6 +50,7 @@ export interface LichessGame {
 export interface RepertoireTemplate {
   title: string;
   id: string;
+  followUp: string;
   line: string;
   num_moves: number;
   tags: string[];
