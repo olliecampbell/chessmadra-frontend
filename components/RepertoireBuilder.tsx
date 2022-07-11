@@ -548,7 +548,19 @@ export const RepertoireBuilder = () => {
                       style={s(c.fg(c.colors.textSecondary), c.fontSize(13))}
                     >
                       You've reviewed all your moves! Now might be a good time
-                      to add moves.
+                      to add moves. Or you can{" "}
+                      <span
+                        style={s(
+                          c.weightSemiBold,
+                          c.fg(c.colors.textPrimary),
+                          c.clickable
+                        )}
+                        onClick={() => {
+                          state.startReview();
+                        }}
+                      >
+                        review your moves anyway.
+                      </span>
                     </Text>
                   </View>
                 </View>

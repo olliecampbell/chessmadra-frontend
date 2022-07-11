@@ -97,6 +97,9 @@ export interface RepertoireState
   deleteRepertoire: (side: Side, _state?: RepertoireState) => void;
   exportPgn: (side: Side, _state?: RepertoireState) => void;
   initializeRepertoireFromTemplates: (_state?: RepertoireState) => void;
+  updateQueue: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => void;
   onRepertoireUpdate: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
@@ -121,6 +124,7 @@ export interface RepertoireState
   positionBeforeBiggestMissEdit?: Chess;
   numMovesWouldBeDeleted?: number;
   conflictingId?: string;
+  isCramming?: boolean;
 }
 
 // export const DEFAULT_REPERTOIRE = {
@@ -351,7 +355,6 @@ export const useRepertoireState = create<RepertoireState>()(
                 let total = 0;
                 for (let p of subs) {
                   let [id, sub] = p;
-                  console.log({ id, sub });
                   let existingMove =
                     s.moveLookup[s.activeSide][
                       s.responseLookup[s.activeSide][sub]?.[0]
@@ -367,6 +370,13 @@ export const useRepertoireState = create<RepertoireState>()(
                 return total;
               })();
               s.moveLog = lineToPgn(line);
+            }),
+          updateQueue: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.queue = [
+                ...s.repertoire.white.moves,
+                ...s.repertoire.black.moves,
+              ].filter((m) => m.mine && m.needsReview);
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -565,6 +575,10 @@ export const useRepertoireState = create<RepertoireState>()(
               if (s.currentMove) {
                 s.queue.unshift(s.currentMove);
               }
+              if (s.isCramming) {
+                s.queue = [];
+              }
+              s.isCramming = false;
               s.currentMove = null;
               s.activeSide = "white";
               s.isEditing = false;
@@ -583,6 +597,13 @@ export const useRepertoireState = create<RepertoireState>()(
             }),
           startReview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              if (isEmpty(s.queue)) {
+                s.queue = [
+                  ...s.repertoire.white.moves,
+                  ...s.repertoire.black.moves,
+                ].filter((m) => m.mine && pgnToLine(m.id).length > 1);
+                s.isCramming = true;
+              }
               s.showMoveLog = true;
               s.isReviewing = true;
               s.setupNextMove(s);
@@ -590,11 +611,8 @@ export const useRepertoireState = create<RepertoireState>()(
           onRepertoireUpdate: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.updateRepertoireStructures(s);
-              s.queue = [
-                ...s.repertoire.white.moves,
-                ...s.repertoire.black.moves,
-              ].filter((m) => m.mine && m.needsReview);
               let firstSide: Side = Math.random() >= 0.5 ? "white" : "black";
+              s.updateQueue(s);
               s.queue = _.sortBy(s.queue, (m) => {
                 return `${m.side === firstSide ? "a" : "b"} - ${m.id}`;
               });
@@ -684,7 +702,6 @@ export const useRepertoireState = create<RepertoireState>()(
                 .then(({ data }: { data: Repertoire }) => {
                   set((s) => {
                     // s.position = s.positionBeforeBiggestMissEdit || new Chess();
-                    console.log(s.positionBeforeBiggestMissEdit?.ascii());
                     s.position = new Chess();
                     // map(s.pendingMoves, () => {
                     //   s.position.undo();
