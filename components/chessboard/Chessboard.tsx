@@ -40,6 +40,7 @@ import {
 import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "app/utils/chessboard_state";
 import { Spacer } from "app/Space";
+import { useIsMobile } from "app/utils/isMobile";
 
 const animatedXYToPercentage = (x) => {
   return s(
@@ -176,6 +177,7 @@ export const ChessboardView = ({
   const { moveIndicatorAnim, moveIndicatorOpacityAnim, indicatorColor } = state;
 
   const hiddenColorsBorder = `1px solid ${c.grays[70]}`;
+  const isMobile = useIsMobile();
 
   const { width: windowWidth } = useWindowDimensions();
   return (
@@ -374,10 +376,11 @@ export const ChessboardView = ({
                             style={s(
                               c.fg(inverseColor),
                               c.weightBold,
-                              c.fontSize(10),
                               c.absolute,
-                              c.left(4),
-                              c.bottom(2)
+                              c.fontSize(isMobile ? 8 : 10),
+                              c.left(isMobile ? 2 : 4),
+                              c.bottom(isMobile ? 0 : 2),
+                              c.opacity(80)
                             )}
                           >
                             {tileLetter}
@@ -388,10 +391,11 @@ export const ChessboardView = ({
                             style={s(
                               c.fg(inverseColor),
                               c.weightBold,
-                              c.fontSize(10),
                               c.absolute,
-                              c.top(2),
-                              c.right(2)
+                              c.fontSize(isMobile ? 8 : 10),
+                              c.right(isMobile ? 2 : 3),
+                              c.opacity(80),
+                              c.top(isMobile ? 0 : 1)
                             )}
                           >
                             {tileNumber}
