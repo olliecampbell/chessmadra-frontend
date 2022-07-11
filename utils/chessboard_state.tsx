@@ -8,6 +8,7 @@ import { SetState } from "zustand";
 import { setter } from "./state";
 import { c } from "app/styles";
 import { getSquareOffset } from "./chess";
+import { WritableDraft } from "immer/dist/internal";
 
 type ChessBoardStateAndParent<T> = ChessboardState & ChessboardStateParent<T>;
 export interface ChessboardState {
@@ -46,7 +47,7 @@ export interface ChessboardState {
     move: Move,
     speed: PlaybackSpeed,
     callback: (state: ChessBoardStateAndParent<any>) => void,
-    _state: ChessboardState
+    _state: ChessboardState | WritableDraft<ChessboardState>
   ) => void;
   flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
   moveLog?: string;

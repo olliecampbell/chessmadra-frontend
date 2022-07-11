@@ -761,14 +761,14 @@ const OpeningNode = ({
               <Text style={s(c.opacity(60), c.weightSemiBold)}> [pending]</Text>
             )}
           </Text>
-          {incidence && !move.mine && (
+          {/*incidence && !move.mine && (
             <>
               <Spacer width={0} grow />
               <Text style={s(c.fg(c.colors.textSecondary))}>
                 {formatIncidence(incidence)}
               </Text>
             </>
-          )}
+          )*/}
 
           {/*
           <Spacer width={12} />

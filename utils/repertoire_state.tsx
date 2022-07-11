@@ -80,7 +80,9 @@ export interface RepertoireState
   addPendingLine: (_state?: RepertoireState) => void;
   hasGivenUp?: boolean;
   giveUp: (_state?: RepertoireState) => void;
-  setupNextMove: (_state?: RepertoireState) => void;
+  setupNextMove: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => void;
   startReview: (_state?: RepertoireState) => void;
   backToOverview: (_state?: RepertoireState) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
@@ -415,7 +417,13 @@ export const useRepertoireState = create<RepertoireState>()(
                     PlaybackSpeed.Fast,
                     (s: RepertoireState) => {
                       s.flashRing(true, s);
-                      s.setupNextMove(s);
+                      window.setTimeout(() => {
+                        set((s) => {
+                          if (s.isReviewing) {
+                            s.setupNextMove(s);
+                          }
+                        });
+                      }, 200);
                     },
                     s
                   );
@@ -464,12 +472,18 @@ export const useRepertoireState = create<RepertoireState>()(
               let lastOpponentMove = s.position.undo();
 
               if (lastOpponentMove) {
-                s.animatePieceMove(
-                  lastOpponentMove,
-                  PlaybackSpeed.Normal,
-                  (s: RepertoireState) => {},
-                  s
-                );
+                window.setTimeout(() => {
+                  set((s) => {
+                    if (s.isReviewing) {
+                      s.animatePieceMove(
+                        lastOpponentMove,
+                        PlaybackSpeed.Normal,
+                        (s: RepertoireState) => {},
+                        s
+                      );
+                    }
+                  });
+                }, 300);
               }
               console.log({ parsed });
               console.log(s.position.ascii());
