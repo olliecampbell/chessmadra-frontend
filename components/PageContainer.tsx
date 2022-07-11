@@ -17,14 +17,14 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
   const isMobile = useIsMobile();
   const icons = [
     {
+      icon: "fa fa-hand-holding-dollar",
+      link: "https://patreon.com/marcusbuffett",
+    },
+    {
       icon: "fa fa-twitter",
       link: "https://twitter.com/intent/tweet?url=https%3A%2F%2Fchessmadra.com&text=Check%20out%20this%20chess%20visualization%20site%20by%20%40marcusbuffett",
     },
     { icon: "fa fa-envelope", link: "mailto:me@mbuffett.com" },
-    {
-      icon: "fa fa-github",
-      link: "https://github.com/marcusbuffett/chess-trainer-site",
-    },
   ];
   return (
     <View style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
@@ -46,7 +46,7 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
           c.fullWidth,
           c.row,
           c.minHeight(48),
-          c.py(16),
+          c.py(32),
           // c.bg(c.grays[40]),
           c.center
         )}
@@ -56,7 +56,7 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
             return (
               <a href={icon.link}>
                 <i
-                  style={s(c.fg(c.colors.textPrimary), c.fontSize(16))}
+                  style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
                   className={`fas ${icon.icon}`}
                 ></i>
               </a>
