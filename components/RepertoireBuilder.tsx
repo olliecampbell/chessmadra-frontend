@@ -43,7 +43,7 @@ import { PageContainer } from "./PageContainer";
 import { Modal } from "./Modal";
 import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
-const DEPTH_CUTOFF = 7;
+const DEPTH_CUTOFF = 4;
 import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
@@ -742,6 +742,7 @@ const OpeningNode = ({
   let trueDepth = move.id.split(" ").length;
   let assumedDepth = state.currentLine.length;
   let depthDifference = trueDepth - assumedDepth;
+  let moveNumber = Math.floor(trueDepth / 2) + 1;
   // let responses = [];
   return (
     <View style={s(c.pl(2))}>
@@ -763,10 +764,15 @@ const OpeningNode = ({
         >
           <Text
             style={s(
-              c.fg(move.mine || move.pending ? c.grays[85] : c.grays[70]),
-              move.mine ? c.weightBold : c.weightRegular
+              c.fg(
+                move.mine || true || move.pending ? c.grays[85] : c.grays[70]
+              ),
+              c.weightSemiBold
+
+              // move.mine ? c.weightBold : c.weightRegular
             )}
           >
+            {trueDepth % 2 === 1 ? `${moveNumber}.` : null}
             {move.sanPlus}
             {responses && depthDifference >= DEPTH_CUTOFF && "…"}
             {move.pending && (
