@@ -21,61 +21,42 @@ import { useOutsideClick } from "./useOutsideClick";
 import { failOnTrue } from "../utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 
+export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
+export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
+export const VISUALIZE_DESCRIPTION = `Visualize a series of moves, then find the tactic at the end. Strong play from both sides. Calculation, visualization, intuition; get a bit of everything. 150,000+ puzzles.`;
+export const BLUNDER_DESCRIPTION =
+  "Get better at identifying blunders, to avoid them in your own games. Adjustable difficulty. 100,000+ puzzles.";
+export const COLOR_TRAINER_DESCRIPTION =
+  "Quick, what color is a4? This little tool might help you get better at color awareness. Identify the color of each square as quickly as you can.";
+export const GAME_SEARCH_DESCRIPTION =
+  "Search for high-level games in your chosen openings. Over 5 million lichess games, searchable by player rating, opening, game result, and game length.";
+export const BLINDFOLD_DESCRIPTION =
+  "Get better at visualizing the board in your head. These puzzles will only tell you where the pieces are, without putting it on a board. Find the right continuation, then solve it on the board.";
 export const navItems = [
   {
     path: "/openings",
     title: "Opening Builder",
-    description: (
-      <>
-        Create your own opening repertoire. Use spaced repetition to memorize
-        it. Uses statistics from millions of games to find the biggest gaps in
-        your repertoire.
-      </>
-    ),
+    description: OPENINGS_DESCRIPTION,
   },
   {
     path: "/the_climb",
     title: "The Climb",
-    description: (
-      <>
-        Exactly like the visualization trainer, but with each solved puzzle the
-        visualization and puzzle difficulty will increase. Solve puzzles quickly
-        to get more points!
-      </>
-    ),
+    description: CLIMB_DESCRIPTION,
   },
   {
     path: "/visualization",
     title: "Visualization",
-    description: (
-      <>
-        Visualize a series of moves, then find the tactic at the end. Curated to
-        only feature strong play from "your" side. Calculation, visualization,
-        intuition; get a bit of everything. 150,000+ puzzles.
-      </>
-    ),
+    description: VISUALIZE_DESCRIPTION,
   },
   {
     path: "/blunder_recognition",
     title: "Blunder Spotting",
-    description: (
-      <>
-        Get better at spotting your opponent's threats and avoiding mistakes, by
-        determining whether a move is a blunder or not. Adjustable difficulty,
-        10,000+ positions.
-      </>
-    ),
+    description: BLUNDER_DESCRIPTION,
   },
   {
     path: "/color_trainer",
     title: "Colors",
-    description: (
-      <>
-        Quick, what color is a4? This little tool might help you get better at
-        color awareness. Identify the color of each square as quickly as you
-        can.
-      </>
-    ),
+    description: COLOR_TRAINER_DESCRIPTION,
   },
   {
     path: "/game-memorization",
@@ -86,24 +67,12 @@ export const navItems = [
   {
     path: "/games-search",
     title: "Game Search",
-    description: (
-      <>
-        Searching for high-level games in your chosen opening can be very
-        educational. Search through over 5 million lichess games, by player
-        rating, opening, game result, and game length.
-      </>
-    ),
+    description: GAME_SEARCH_DESCRIPTION,
   },
   {
     path: "/blindfold",
     title: "Blindfold Tactics",
-    description: (
-      <>
-        Get better at visualizing the board in your head. These puzzles will
-        only tell you where the pieces are, but without putting it on a board.
-        Find the right continuation, then solve it on the board.
-      </>
-    ),
+    description: BLINDFOLD_DESCRIPTION,
   },
 ];
 export const NavBar = (props: {}) => {

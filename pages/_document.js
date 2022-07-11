@@ -2,6 +2,7 @@ import { getInitialProps } from "@expo/next-adapter/document";
 import Document, { Head, Main, NextScript } from "next/document";
 import React from "react";
 import { c } from "app/styles";
+import { HeadSiteMeta } from "app/components/PageContainer";
 
 class CustomDocument extends Document {
   render() {
@@ -40,14 +41,12 @@ a:active { text-decoration: none; }
             data-ackee-domain-id="122ae037-d7f5-40d7-9c36-5a6cc8f540a2"
             data-ackee-opts='{ "detailed": true }'
           ></script>
-          <meta
-            name="description"
-            content="Improve your chess visualization. 100,000+ puzzles. See moves play out on the board."
-          />
-          <meta property="og:title" content="Chess Madra" />
-          <meta
-            property="og:description"
-            content="Improve your chess visualization. 100,000+ puzzles. See moves play out on the board."
+          <HeadSiteMeta
+            siteMeta={{
+              title: "Chess Madra",
+              description:
+                "Build your opening repertoire. Improve your visualization. Train your tactics. Search for games. And more.",
+            }}
           />
           <link
             rel="apple-touch-icon"

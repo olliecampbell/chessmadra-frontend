@@ -12,6 +12,7 @@ import { Spacer } from "app/Space";
 import { NavBar } from "app/components/NavBar";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
+import Head from "next/head";
 
 export const PageContainer = ({ children, centered, hideNavBar }: any) => {
   const isMobile = useIsMobile();
@@ -68,5 +69,59 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
         )}
       </View>
     </View>
+  );
+};
+
+export interface SiteMetadata {
+  title: string;
+  description: string;
+}
+
+export const HeadSiteMeta = ({ siteMeta }: { siteMeta: SiteMetadata }) => {
+  return (
+    <Head>
+      <title>{siteMeta.title}</title>
+      {/*
+      // @ts-ignore */}
+      <meta itemProp="name" content={siteMeta.title} key="meta_name" />
+      {/*
+      // @ts-ignore */}
+      <meta
+        itemProp="description"
+        content={siteMeta.description}
+        key="meta_description"
+      />
+      <meta
+        name="twitter:site"
+        content="chessmadra.com"
+        key="meta_twitter:site"
+      />
+      <meta
+        name="twitter:title"
+        content={siteMeta.title}
+        key="meta_twitter:title"
+      />
+      <meta
+        name="twitter:description"
+        content={siteMeta.description}
+        key="meta_twitter:description"
+      />
+      <meta property="og:title" content={siteMeta.title} key="meta_og:title" />
+      <meta
+        property="og:description"
+        content={siteMeta.description}
+        key="meta_og:description"
+      />
+      <meta
+        property="og:site_name"
+        content="chessmadra.com"
+        key="meta_og:site_name"
+      />
+      <meta
+        name="description"
+        content={siteMeta.description}
+        key="meta_description"
+      />
+    </Head>
   );
 };
