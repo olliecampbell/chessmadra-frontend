@@ -320,17 +320,22 @@ export const ChessboardView = ({
                   style={s(c.fullWidth, c.bg("red"), c.row, c.grow, c.flexible)}
                 >
                   {times(8)((j) => {
-                    let color =
-                      (i + j) % 2 == 0 ? c.colors.lightTile : c.colors.darkTile;
+                    let [color, inverseColor] =
+                      (i + j) % 2 == 0
+                        ? [c.colors.lightTile, c.colors.darkTile]
+                        : [c.colors.darkTile, c.colors.lightTile];
                     if (state.hideColors) {
                       color = c.grays[30];
                     }
-                    let square = `${COLUMNS[j]}${ROWS[7 - i]}` as Square;
-                    if (state.flipped) {
-                      square = `${COLUMNS[7 - j]}${ROWS[i]}` as Square;
-                    }
+                    let tileLetter = state.flipped
+                      ? COLUMNS[7 - j]
+                      : COLUMNS[j];
+                    let tileNumber = state.flipped ? ROWS[i] : ROWS[7 - i];
+                    let square = `${tileLetter}${tileNumber}` as Square;
+                    // console.log({ square });
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
+                    const isLeftEdge = j == 0;
                     return (
                       <Pressable
                         key={j}
@@ -350,8 +355,6 @@ export const ChessboardView = ({
                         )}
                         onPress={() => {}}
                         onPressIn={() => {
-                          console.log("Square press in");
-                          console.log("aonetuhaoentuh", state);
                           state.onSquarePress(square);
                         }}
                       >
@@ -366,6 +369,34 @@ export const ChessboardView = ({
                             c.zIndex(4)
                           )}
                         ></Animated.View>
+                        {isBottomEdge && (
+                          <Text
+                            style={s(
+                              c.fg(inverseColor),
+                              c.weightBold,
+                              c.fontSize(10),
+                              c.absolute,
+                              c.left(4),
+                              c.bottom(2)
+                            )}
+                          >
+                            {tileLetter}
+                          </Text>
+                        )}
+                        {isRightEdge && (
+                          <Text
+                            style={s(
+                              c.fg(inverseColor),
+                              c.weightBold,
+                              c.fontSize(10),
+                              c.absolute,
+                              c.top(2),
+                              c.right(2)
+                            )}
+                          >
+                            {tileNumber}
+                          </Text>
+                        )}
                       </Pressable>
                     );
                   })}
