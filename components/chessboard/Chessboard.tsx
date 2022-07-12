@@ -394,12 +394,16 @@ export const ChessboardView = ({
               } else {
                 pieceView = (
                   <Animated.View
-                    style={s(containerViewStyles, {
-                      transform: [
-                        { translateX: pans[sq].x },
-                        { translateY: pans[sq].y },
-                      ],
-                    })}
+                    style={s(
+                      containerViewStyles,
+                      c.keyedProp("touch-action")("none"),
+                      {
+                        transform: [
+                          { translateX: pans[sq].x },
+                          { translateY: pans[sq].y },
+                        ],
+                      }
+                    )}
                     {...panResponders[sq].panHandlers}
                   >
                     {pieceViewInner}
