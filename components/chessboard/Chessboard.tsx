@@ -240,13 +240,23 @@ export const ChessboardView = ({
             useNativeDriver: true,
           })(evt, gesture);
           if (chessboardLayout.current) {
-            state.quick((s) => {
-              if (s.availableMoves.find((m) => m.to == square)) {
-                s.draggedOverSquare = square;
-              } else {
-                s.draggedOverSquare = null;
-              }
-            });
+            let isOverMovableSquare = stateRef.current.availableMoves.find(
+              (m) => m.to == square
+            );
+            let newSquare = square;
+            let currentSquare = stateRef.current.draggedOverSquare;
+            if (
+              (currentSquare !== newSquare && isOverMovableSquare) ||
+              (!isOverMovableSquare && stateRef.current.draggedOverSquare)
+            ) {
+              state.quick((s) => {
+                if (isOverMovableSquare) {
+                  s.draggedOverSquare = square;
+                } else {
+                  s.draggedOverSquare = null;
+                }
+              });
+            }
           }
         },
         onPanResponderTerminationRequest: (evt, gestureState) => true,
