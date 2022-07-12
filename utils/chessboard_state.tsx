@@ -111,10 +111,8 @@ export const createChessState = <
               state.animatePieceMove(
                 availableMove,
                 PlaybackSpeed.Normal,
-                () => {
-                  set((s) => {
-                    cb(s);
-                  });
+                (s) => {
+                  cb(s);
                 },
                 state
               );
