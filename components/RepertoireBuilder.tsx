@@ -51,7 +51,6 @@ import { useModal } from "./useModal";
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
   const state = useRepertoireState();
-  console.log("Re-rendering?");
   let { user, authStatus, token } = AppStore.useState((s) => s.auth);
   useEffect(() => {
     state.setUser(user);
@@ -319,7 +318,7 @@ export const RepertoireBuilder = () => {
                             )}
                           >
                             Adding this line will remove{" "}
-                            <b>{state.numMovesWouldBeDeleted}</b> moves that
+                            <b>{state.numMovesWouldBeDeleted}</b> responses that
                             start with <b>{state.conflictingId}</b>
                           </Text>
                         </View>

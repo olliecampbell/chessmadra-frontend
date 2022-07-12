@@ -50,6 +50,7 @@ import { Chess } from "@lubert/chess.ts";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import _ from "lodash";
 import { WritableDraft } from "immer/dist/internal";
+import { failOnTrue } from "./test_settings";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -363,7 +364,7 @@ export const useRepertoireState = create<RepertoireState>()(
                     ];
                   if (existingMove && existingMove.id != id) {
                     total = filter(s.repertoire[s.activeSide].moves, (m) => {
-                      return m.id.includes(sub);
+                      return m.mine && m.id.includes(sub);
                     }).length;
                     s.conflictingId = existingMove.id;
                     break;
@@ -410,35 +411,29 @@ export const useRepertoireState = create<RepertoireState>()(
               );
             }),
 
-          attemptMove: (move, _state?: RepertoireState) =>
+          attemptMove: (
+            move,
+            cb: (shouldMove: boolean, then: (s) => void) => void,
+            _state?: RepertoireState
+          ) =>
             setter(set, _state, (s) => {
               if (s.isEditing) {
-                s.animatePieceMove(
-                  move,
-                  PlaybackSpeed.Fast,
-                  (s: RepertoireState) => {
-                    s.updatePendingLineFromPosition(s);
-                  },
-                  s
-                );
+                cb(true, (s: RepertoireState) => {
+                  s.updatePendingLineFromPosition(s);
+                });
               } else if (s.isReviewing) {
                 if (move.san == s.currentMove.sanPlus) {
                   console.log("Animating move");
-                  s.animatePieceMove(
-                    move,
-                    PlaybackSpeed.Fast,
-                    (s: RepertoireState) => {
-                      s.flashRing(true, s);
-                      window.setTimeout(() => {
-                        set((s) => {
-                          if (s.isReviewing) {
-                            s.setupNextMove(s);
-                          }
-                        });
-                      }, 100);
-                    },
-                    s
-                  );
+                  cb(true, (s: RepertoireState) => {
+                    s.flashRing(true, s);
+                    window.setTimeout(() => {
+                      set((s) => {
+                        if (s.isReviewing) {
+                          s.setupNextMove(s);
+                        }
+                      });
+                    }, 100);
+                  });
                 } else {
                   s.flashRing(false, s);
                   s.failedCurrentMove = true;

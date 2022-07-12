@@ -130,7 +130,7 @@ const createPuzzleState = <
   return {
     puzzlePosition: null,
     turn: "w" as Color,
-    attemptMove: (move: Move, state?: T) => {
+    attemptMove: (move: Move, cb: (shouldMove: boolean) => void, state?: T) => {
       setter(set, state, (state) => {
         console.log("Attempting solution!");
         console.log(move);
@@ -962,6 +962,10 @@ export interface PuzzleTraining<T> {
   onPuzzleSuccess: (state?: T) => void;
 }
 
+export interface QuickUpdate<T> {
+  quick: (fn: (s: T) => void) => void;
+}
+
 export const setter = <T extends object>(
   set: any,
   state: T | undefined,
@@ -979,6 +983,7 @@ export const setter = <T extends object>(
       state.bogus = Math.random();
       fn(state);
     });
+    return res;
   }
 };
 

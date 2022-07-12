@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  PanResponder,
   Platform,
   Pressable,
   useWindowDimensions,
@@ -121,11 +122,7 @@ const getIconForPiece = (piece: PieceSymbol, color: ChessColor) => {
 };
 
 export const PieceView = ({ piece }: { piece: Piece }) => {
-  return (
-    <View style={s(c.fullWidth, c.fullHeight)}>
-      {getIconForPiece(piece.type, piece.color)}
-    </View>
-  );
+  return getIconForPiece(piece.type, piece.color);
 };
 
 export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
@@ -166,17 +163,133 @@ export const ChessboardView = ({
   disableDrag?: boolean;
   styles?: any;
 }) => {
-  console.log(
-    "Rendering with move log color",
-    state.moveLog,
-    state.showMoveLog
-  );
   const { position, availableMoves } = state;
   const tileStyles = s(c.bg("green"), c.grow);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const chessboardLayout = useRef(null);
+  const getSquareFromLayoutAndGesture = (chessboardLayout, gesture): Square => {
+    let columnPercent =
+      (gesture.moveX - chessboardLayout.left) / chessboardLayout.width;
+    let rowPercent =
+      (gesture.moveY - chessboardLayout.top) / chessboardLayout.height;
+    let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
+    let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
+    if (stateRef.current.flipped) {
+      column = 7 - column;
+      row = 7 - row;
+    }
+    // @ts-ignore
+    return `${COLUMNS[column]}${ROWS[7 - row]}`;
+  };
 
   const { moveIndicatorAnim, moveIndicatorOpacityAnim, indicatorColor } = state;
 
   const hiddenColorsBorder = `1px solid ${c.grays[70]}`;
+  const pans = useMemo(() => {
+    // @ts-ignore
+    let pans: Record<Square, Animated.ValueXY> = {};
+    Object.keys(SQUARES).map((sq) => {
+      pans[sq] = new Animated.ValueXY();
+    });
+    return pans;
+  }, []);
+  const tapTimeout = useRef(null);
+  const isTap = useRef(false);
+  const didImmediatelyTap = useRef(false);
+  const panResponders = useMemo(() => {
+    // @ts-ignore
+    let panResponders: Record<Square, PanResponder> = {};
+    Object.keys(SQUARES).map((sq: Square) => {
+      panResponders[sq] = PanResponder.create({
+        // Ask to be the responder:
+        onStartShouldSetPanResponder: (evt, gestureState) => true,
+        onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+        onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+        onMoveShouldSetPanResponder: (evt, gestureState) => {
+          return true;
+        },
+
+        onPanResponderGrant: (evt, gestureState) => {
+          const state = stateRef.current;
+          didImmediatelyTap.current = false;
+          if (sq !== state.activeFromSquare) {
+            console.log("Granting, not active square");
+            didImmediatelyTap.current = true;
+            state.onSquarePress(sq, false);
+          }
+          isTap.current = true;
+          tapTimeout.current = window.setTimeout(() => {
+            isTap.current = false;
+            // console.log({ evt: JSON.parse(JSON.stringify(evt)) });
+          }, 100);
+          pans[sq].setOffset({
+            x: pans[sq].x._value,
+            y: pans[sq].y._value,
+          });
+        },
+        // The gesture has started. Show visual feedback so the user knows
+        // what is happening!
+        // gestureState.d{x,y} will be set to zero now
+        onPanResponderMove: (evt, gesture) => {
+          let square = getSquareFromLayoutAndGesture(
+            chessboardLayout.current,
+            gesture
+          );
+          Animated.event([null, { dx: pans[sq].x, dy: pans[sq].y }], {
+            useNativeDriver: true,
+          })(evt, gesture);
+          if (chessboardLayout.current) {
+            state.quick((s) => {
+              if (s.availableMoves.find((m) => m.to == square)) {
+                s.draggedOverSquare = square;
+              } else {
+                s.draggedOverSquare = null;
+              }
+            });
+          }
+        },
+        onPanResponderTerminationRequest: (evt, gestureState) => true,
+        onPanResponderRelease: (evt, gestureState) => {
+          window.clearTimeout(tapTimeout.current);
+          pans[sq].setValue({ x: 0, y: 0 });
+          if (isTap.current && !stateRef.current.draggedOverSquare) {
+            if (!didImmediatelyTap.current) {
+              state.onSquarePress(sq);
+            }
+            // if (stateRef.current.activeFromSquare) {
+            //   console.log("Release, tap square press");
+            // }
+          } else {
+            console.log("Release non-tap square press");
+            state.quick((s) => {
+              s.draggedOverSquare = null;
+              s.activeFromSquare = null;
+            });
+            let square = getSquareFromLayoutAndGesture(
+              chessboardLayout.current,
+              gestureState
+            );
+            state.onSquarePress(square, true);
+
+            // The user has released all touches while this view is the
+            // responder. This typically means a gesture has succeeded
+          }
+        },
+        onPanResponderTerminate: (evt, gestureState) => {
+          // Another component has become the responder, so this gesture
+          // should be cancelled
+        },
+        onShouldBlockNativeResponder: (evt, gestureState) => {
+          // Returns whether this component should block native components from becoming the JS
+          // responder. Returns true by default. Is currently only supported on android.
+          return true;
+        },
+      });
+    });
+    return panResponders;
+  }, []);
+
   const isMobile = useIsMobile();
 
   const { width: windowWidth } = useWindowDimensions();
@@ -200,6 +313,10 @@ export const ChessboardView = ({
             },
             state.hideColors && c.border(hiddenColorsBorder)
           )}
+          onLayout={({ nativeEvent: { layout } }) => {
+            console.log({ layout });
+            chessboardLayout.current = layout;
+          }}
         >
           <Animated.View
             pointerEvents="none"
@@ -248,19 +365,23 @@ export const ChessboardView = ({
             let animated = false;
             if (state.animatedMove?.to && sq == state.animatedMove?.to) {
               animated = true;
-              // console.log("True for ", sq, piece);
               posStyles = animatedXYToPercentage(state.pieceMoveAnim);
             }
+            let priority = state.activeFromSquare === sq;
             let containerViewStyles = s(
               c.fullWidth,
               c.absolute,
               posStyles,
-              c.zIndex(1),
+              c.zIndex(priority ? 11 : 1),
               c.size("12.5%")
             );
             let pieceView = null;
             if (piece) {
-              let pieceViewInner = <PieceView piece={piece} />;
+              let pieceViewInner = (
+                <View style={s(c.fullWidth, c.fullHeight)}>
+                  <PieceView piece={piece} />
+                </View>
+              );
               if (animated) {
                 pieceView = (
                   <Animated.View
@@ -272,15 +393,30 @@ export const ChessboardView = ({
                 );
               } else {
                 pieceView = (
-                  <View style={s(containerViewStyles)} pointerEvents="none">
+                  <Animated.View
+                    style={s(containerViewStyles, {
+                      transform: [
+                        { translateX: pans[sq].x },
+                        { translateY: pans[sq].y },
+                      ],
+                    })}
+                    {...panResponders[sq].panHandlers}
+                  >
                     {pieceViewInner}
-                  </View>
+                  </Animated.View>
                 );
               }
             }
             let moveIndicatorView = null;
             let availableMove = availableMoves.find((m) => m.to == sq);
-            if (availableMove) {
+            if (
+              availableMove ||
+              state.activeFromSquare === sq ||
+              state.draggedOverSquare == sq
+            ) {
+              let isFromSquare = state.activeFromSquare === sq;
+              let isDraggedOverSquare = state.draggedOverSquare == sq;
+              let isJustIndicator = !isDraggedOverSquare && !isFromSquare;
               moveIndicatorView = (
                 <Animated.View
                   key={sq}
@@ -296,10 +432,12 @@ export const ChessboardView = ({
                 >
                   <View
                     style={s(
-                      c.size("30%"),
-                      c.opacity(40),
-                      c.round,
-                      c.bg("black"),
+                      isJustIndicator ? c.size("30%") : c.size("100%"),
+                      isJustIndicator ? c.opacity(50) : c.opacity(40),
+                      isJustIndicator
+                        ? c.bg(c.primaries[0])
+                        : c.bg(c.primaries[40]),
+                      isJustIndicator && c.round,
                       c.absolute,
                       c.zIndex(4)
                     )}
@@ -307,6 +445,7 @@ export const ChessboardView = ({
                 </Animated.View>
               );
             }
+
             return (
               <>
                 {pieceView}
@@ -317,10 +456,7 @@ export const ChessboardView = ({
           <View style={s(c.column, c.fullWidth, c.fullHeight)}>
             {times(8)((i) => {
               return (
-                <View
-                  key={i}
-                  style={s(c.fullWidth, c.bg("red"), c.row, c.grow, c.flexible)}
-                >
+                <View key={i} style={s(c.fullWidth, c.row, c.grow, c.flexible)}>
                   {times(8)((j) => {
                     let [color, inverseColor] =
                       (i + j) % 2 == 0
@@ -334,16 +470,15 @@ export const ChessboardView = ({
                       : COLUMNS[j];
                     let tileNumber = state.flipped ? ROWS[i] : ROWS[7 - i];
                     let square = `${tileLetter}${tileNumber}` as Square;
-                    // console.log({ square });
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
                     const isLeftEdge = j == 0;
                     return (
-                      <Pressable
-                        key={j}
+                      <View
                         style={s(
                           tileStyles,
                           c.bg(color),
+
                           c.center,
                           c.clickable,
                           c.flexible,
@@ -355,53 +490,63 @@ export const ChessboardView = ({
                               !isRightEdge && c.borderRight(hiddenColorsBorder)
                             )
                         )}
-                        onPress={() => {}}
-                        onPressIn={() => {
-                          state.onSquarePress(square);
-                        }}
                       >
-                        <Animated.View
-                          style={s(
-                            {
-                              opacity: state.squareHighlightAnims[square],
-                            },
-                            c.bg(c.primaries[60]),
-                            c.absolute,
-                            c.size("100%"),
-                            c.zIndex(4)
+                        <Pressable
+                          key={j}
+                          style={s(c.fullWidth, c.fullHeight)}
+                          onPress={() => {}}
+                          onPressIn={() => {
+                            console.log("Pressable!");
+                            state.onSquarePress(square);
+                          }}
+                        >
+                          <Animated.View
+                            style={s(
+                              {
+                                opacity: state.squareHighlightAnims[square],
+                              },
+                              c.bg(c.primaries[60]),
+                              c.absolute,
+                              c.size("100%"),
+                              c.zIndex(4)
+                            )}
+                          ></Animated.View>
+                          {isBottomEdge && (
+                            <Text
+                              style={s(
+                                c.fg(
+                                  state.hideColors ? c.grays[80] : inverseColor
+                                ),
+                                c.weightBold,
+                                c.absolute,
+                                c.fontSize(isMobile ? 8 : 10),
+                                c.left(isMobile ? 2 : 4),
+                                c.bottom(isMobile ? 0 : 2),
+                                c.opacity(80)
+                              )}
+                            >
+                              {tileLetter}
+                            </Text>
                           )}
-                        ></Animated.View>
-                        {isBottomEdge && (
-                          <Text
-                            style={s(
-                              c.fg(inverseColor),
-                              c.weightBold,
-                              c.absolute,
-                              c.fontSize(isMobile ? 8 : 10),
-                              c.left(isMobile ? 2 : 4),
-                              c.bottom(isMobile ? 0 : 2),
-                              c.opacity(80)
-                            )}
-                          >
-                            {tileLetter}
-                          </Text>
-                        )}
-                        {isRightEdge && (
-                          <Text
-                            style={s(
-                              c.fg(inverseColor),
-                              c.weightBold,
-                              c.absolute,
-                              c.fontSize(isMobile ? 8 : 10),
-                              c.right(isMobile ? 2 : 3),
-                              c.opacity(80),
-                              c.top(isMobile ? 0 : 1)
-                            )}
-                          >
-                            {tileNumber}
-                          </Text>
-                        )}
-                      </Pressable>
+                          {isRightEdge && (
+                            <Text
+                              style={s(
+                                c.fg(
+                                  state.hideColors ? c.grays[80] : inverseColor
+                                ),
+                                c.weightBold,
+                                c.absolute,
+                                c.fontSize(isMobile ? 8 : 10),
+                                c.right(isMobile ? 2 : 3),
+                                c.opacity(80),
+                                c.top(isMobile ? 0 : 1)
+                              )}
+                            >
+                              {tileNumber}
+                            </Text>
+                          )}
+                        </Pressable>
+                      </View>
                     );
                   })}
                 </View>

@@ -105,7 +105,11 @@ export const useGameMemorizationState = create<GameMemorizationState>()(
           ...createQuick(set),
           ...createChessState(set, get, () => {}),
           numReviewed: new StorageItem("memorized-games-review", 0),
-          attemptMove: (move, _state: GameMemorizationState) =>
+          attemptMove: (
+            move,
+            cb: (shouldMove: boolean) => void,
+            _state: GameMemorizationState
+          ) =>
             setter(set, _state, (state: GameMemorizationState) => {
               if (move.san == state.nextMoves[0]) {
                 state.makeNextMove(false, state);
