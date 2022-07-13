@@ -306,8 +306,14 @@ export const ChessboardView = ({
   return (
     <>
       <View
-        style={s(c.pb("100%"), c.height(0), c.width("100%"), styles)}
-        // @ts-ignore
+        style={s(c.pb("100%"), c.height(0), c.width("100%"), styles, {
+          "-webkit-touch-callout": "none",
+          "-webkit-user-select": "none",
+          "-khtml-user-select": "none",
+          "-moz-user-select": "none",
+          "-ms-user-select": "none",
+          "user-select": "none",
+        })}
       >
         <View
           style={s(
