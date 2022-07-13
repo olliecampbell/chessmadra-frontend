@@ -25,6 +25,7 @@ import {
   map,
   forEach,
   filter,
+  shuffle,
 } from "lodash";
 import {
   BySide,
@@ -386,10 +387,22 @@ export const useRepertoireState = create<RepertoireState>()(
                   m.mine &&
                   (m.needsReview || (cram && pgnToLine(m.id).length > 1))
               );
-              console.log("Filtered repertoire!");
-              console.log(logProxy(s.queue));
+              let alphabet = "abcdefghijklmnopqrstuvwxyz";
+              let alphabetLookup = {};
+              map(alphabet, (l, i) => {
+                alphabetLookup[l] = i;
+              });
+              let permuted = shuffle(alphabet);
               s.queue = _.sortBy(s.queue, (m) => {
-                return `${m.side === firstSide ? "a" : "b"} - ${m.id}`;
+                let newId = map(m.id, (l) => {
+                  let idx = alphabetLookup[l];
+                  if (idx) {
+                    return permuted[idx];
+                  } else {
+                    return l;
+                  }
+                }).join("");
+                return `${m.side === firstSide ? "a" : "b"} - ${newId}`;
               });
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
