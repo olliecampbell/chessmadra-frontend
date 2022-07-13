@@ -99,6 +99,7 @@ export interface RepertoireState
   exportPgn: (side: Side, _state?: RepertoireState) => void;
   initializeRepertoireFromTemplates: (_state?: RepertoireState) => void;
   updateQueue: (
+    cram: boolean,
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   onRepertoireUpdate: (
@@ -374,12 +375,22 @@ export const useRepertoireState = create<RepertoireState>()(
               })();
               s.moveLog = lineToPgn(line);
             }),
-          updateQueue: (_state?: RepertoireState) =>
+          updateQueue: (cram: boolean, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              let firstSide: Side = Math.random() >= 0.5 ? "white" : "black";
               s.queue = [
                 ...s.repertoire.white.moves,
                 ...s.repertoire.black.moves,
-              ].filter((m) => m.mine && m.needsReview);
+              ].filter(
+                (m) =>
+                  m.mine &&
+                  (m.needsReview || (cram && pgnToLine(m.id).length > 1))
+              );
+              console.log("Filtered repertoire!");
+              console.log(logProxy(s.queue));
+              s.queue = _.sortBy(s.queue, (m) => {
+                return `${m.side === firstSide ? "a" : "b"} - ${m.id}`;
+              });
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -595,10 +606,7 @@ export const useRepertoireState = create<RepertoireState>()(
           startReview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               if (isEmpty(s.queue)) {
-                s.queue = [
-                  ...s.repertoire.white.moves,
-                  ...s.repertoire.black.moves,
-                ].filter((m) => m.mine && pgnToLine(m.id).length > 1);
+                s.updateQueue(true, s);
                 s.isCramming = true;
               }
               s.showMoveLog = true;
@@ -608,11 +616,7 @@ export const useRepertoireState = create<RepertoireState>()(
           onRepertoireUpdate: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.updateRepertoireStructures(s);
-              let firstSide: Side = Math.random() >= 0.5 ? "white" : "black";
-              s.updateQueue(s);
-              s.queue = _.sortBy(s.queue, (m) => {
-                return `${m.side === firstSide ? "a" : "b"} - ${m.id}`;
-              });
+              s.updateQueue(false, s);
               s.fetchRepertoireGrade(s);
             }),
           fetchRepertoireTemplates: (_state?: RepertoireState) =>
