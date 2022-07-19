@@ -196,6 +196,7 @@ export const ChessboardView = ({
   }, []);
   const tapTimeout = useRef(null);
   const isTap = useRef(false);
+  const chessboardContainerRef = useRef(null);
   const didImmediatelyTap = useRef(false);
   const panResponders = useMemo(() => {
     // @ts-ignore
@@ -211,17 +212,19 @@ export const ChessboardView = ({
         },
 
         onPanResponderGrant: (evt, gestureState) => {
+          if (chessboardContainerRef.current) {
+            chessboardLayout.current =
+              chessboardContainerRef.current.getBoundingClientRect();
+          }
           const state = stateRef.current;
           didImmediatelyTap.current = false;
           if (sq !== state.activeFromSquare) {
-            console.log("Granting, not active square");
             didImmediatelyTap.current = true;
             state.onSquarePress(sq, false);
           }
           isTap.current = true;
           tapTimeout.current = window.setTimeout(() => {
             isTap.current = false;
-            // console.log({ evt: JSON.parse(JSON.stringify(evt)) });
           }, 100);
           pans[sq].setOffset({
             x: pans[sq].x._value,
@@ -268,10 +271,8 @@ export const ChessboardView = ({
               state.onSquarePress(sq);
             }
             // if (stateRef.current.activeFromSquare) {
-            //   console.log("Release, tap square press");
             // }
           } else {
-            console.log("Release non-tap square press");
             state.quick((s) => {
               s.draggedOverSquare = null;
               s.activeFromSquare = null;
@@ -307,12 +308,12 @@ export const ChessboardView = ({
     <>
       <View
         style={s(c.pb("100%"), c.height(0), c.width("100%"), styles, {
-          "-webkit-touch-callout": "none",
-          "-webkit-user-select": "none",
-          "-khtml-user-select": "none",
-          "-moz-user-select": "none",
-          "-ms-user-select": "none",
-          "user-select": "none",
+          WebkitTouchCallout: "none",
+          WebkitUserSelect: "none",
+          KhtmlUserSelect: "none",
+          MozUserSelect: "none",
+          MsUserSelect: "none",
+          UserSelect: "none",
         })}
       >
         <View
@@ -329,8 +330,8 @@ export const ChessboardView = ({
             },
             state.hideColors && c.border(hiddenColorsBorder)
           )}
+          ref={chessboardContainerRef}
           onLayout={({ nativeEvent: { layout } }) => {
-            console.log({ layout });
             chessboardLayout.current = layout;
           }}
         >
@@ -412,7 +413,7 @@ export const ChessboardView = ({
                   <Animated.View
                     style={s(
                       containerViewStyles,
-                      c.keyedProp("touch-action")("none"),
+                      c.keyedProp("touchAction")("none"),
                       {
                         transform: [
                           { translateX: pans[sq].x },
@@ -516,7 +517,6 @@ export const ChessboardView = ({
                           style={s(c.fullWidth, c.fullHeight)}
                           onPress={() => {}}
                           onPressIn={() => {
-                            console.log("Pressable!");
                             state.onSquarePress(square);
                           }}
                         >
