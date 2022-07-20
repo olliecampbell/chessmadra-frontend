@@ -669,6 +669,7 @@ const OpeningTree = ({
         (state.pendingResponses[state.divergencePosition] ?? []).map((move) => {
           return (
             <OpeningNode
+              seenEpds={new Set()}
               state={state}
               grade={grade}
               move={move}
