@@ -193,27 +193,27 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                     ),
                     buttonCopy: "Import",
                   },
-                  {
-                    title: "ChessMood Pack",
-                    buttonCopy: "Start",
-                    source: OpeningSource.Chessmood,
-                    logo: (
-                      <img
-                        style={s(c.width(100), c.opacity(80))}
-                        src="/chessmood_logo.png"
-                      />
-                    ),
-                    description: (
-                      <>
-                        A full repertoire from the GMs over at{" "}
-                        <a href="https://chessmood.com">ChessMood</a>.{" "}
-                        <span style={s(c.fg(c.grays[75]), c.weightBold)}>
-                          Check out their videos
-                        </span>{" "}
-                        for the ideas behind the moves in this repertoire.
-                      </>
-                    ),
-                  },
+                  // {
+                  //   title: "ChessMood Pack",
+                  //   buttonCopy: "Start",
+                  //   source: OpeningSource.Chessmood,
+                  //   logo: (
+                  //     <img
+                  //       style={s(c.width(100), c.opacity(80))}
+                  //       src="/chessmood_logo.png"
+                  //     />
+                  //   ),
+                  //   description: (
+                  //     <>
+                  //       A full repertoire from the GMs over at{" "}
+                  //       <a href="https://chessmood.com">ChessMood</a>.{" "}
+                  //       <span style={s(c.fg(c.grays[75]), c.weightBold)}>
+                  //         Check out their videos
+                  //       </span>{" "}
+                  //       for the ideas behind the moves in this repertoire.
+                  //     </>
+                  //   ),
+                  // },
                 ].map((x, i) => {
                   const selected = openingSource === x.source;
                   return (
