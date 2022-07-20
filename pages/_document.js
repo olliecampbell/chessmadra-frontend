@@ -45,7 +45,7 @@ a:active { text-decoration: none; }
             siteMeta={{
               title: "Chess Madra",
               description:
-                "Build your opening repertoire. Improve your visualization. Train your tactics. Search for games. And more.",
+                "Build your opening repertoire, improve your visualization, train your tactics, and more.",
             }}
           />
           <link
