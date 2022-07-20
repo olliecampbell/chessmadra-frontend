@@ -53,13 +53,12 @@ export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
   const state = useRepertoireState();
   let { user, authStatus, token } = AppStore.useState((s) => s.auth);
-  // useEffect(() => {
-  //   state.setUser(user);
-  // }, [user]);
-  // useEffect(() => {
-  //   state.initState();
-  //   // state.startEditing("white");
-  // }, []);
+  useEffect(() => {
+    state.setUser(user);
+  }, [user]);
+  useEffect(() => {
+    state.initState();
+  }, []);
   const {
     open: editEtcModalOpen,
     setOpen: setEditEtcModalOpen,
@@ -166,24 +165,6 @@ export const RepertoireBuilder = () => {
   console.log("ALL!", getAllRepertoireMoves(state.repertoire));
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
-    inner = (
-      <View
-        style={s(
-          c.bg(c.grays[20]),
-          c.br(4),
-          c.center,
-          c.px(12),
-          c.py(12),
-          c.maxWidth(280)
-        )}
-      >
-        <Text style={s(c.fontSize(14), c.fg(c.colors.textPrimary))}>
-          Sorry, opening builder is under maintenance right now. It should be up
-          in the next 12 hours. Migrating everything to use positions, to
-          support transpositions.
-        </Text>
-      </View>
-    );
     centered = true;
   } else if (
     isEmpty(getAllRepertoireMoves(state.repertoire)) &&
