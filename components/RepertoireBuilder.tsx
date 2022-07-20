@@ -38,6 +38,7 @@ import {
   pgnToLine,
   SIDES,
   Side,
+  RepertoireMiss,
 } from "app/utils/repertoire";
 import { PageContainer } from "./PageContainer";
 import { Modal } from "./Modal";
@@ -52,12 +53,13 @@ export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
   const state = useRepertoireState();
   let { user, authStatus, token } = AppStore.useState((s) => s.auth);
-  useEffect(() => {
-    state.setUser(user);
-  }, [user]);
-  useEffect(() => {
-    state.initState();
-  }, []);
+  // useEffect(() => {
+  //   state.setUser(user);
+  // }, [user]);
+  // useEffect(() => {
+  //   state.initState();
+  //   // state.startEditing("white");
+  // }, []);
   const {
     open: editEtcModalOpen,
     setOpen: setEditEtcModalOpen,
@@ -156,14 +158,23 @@ export const RepertoireBuilder = () => {
     isOpen: false,
   });
   let grade = state.repertoireGrades[state.activeSide];
-  // console.log("Pending line", pendingLine);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
   let centered = false;
   let hasNoMovesAtAll = isEmpty(getAllRepertoireMoves(state.repertoire));
-  let hasNoMovesThisSide = isEmpty(state.repertoire?.[state.activeSide]?.moves);
+  let hasNoMovesThisSide = isEmpty(state.myResponsesLookup?.[state.activeSide]);
+  console.log("ALL!", getAllRepertoireMoves(state.repertoire));
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
+    inner = (
+      <View style={s(c.bg(c.grays[20]), c.br(4), c.center)}>
+        <Text style={s(c.fontSize(14), c.fg(c.colors.textPrimary))}>
+          Sorry, opening builder is under maintenance right now. It should be up
+          in the next 12 hours. Migrating everything to use positions, to
+          support transpositions.
+        </Text>
+      </View>
+    );
     centered = true;
   } else if (
     isEmpty(getAllRepertoireMoves(state.repertoire)) &&
@@ -174,6 +185,8 @@ export const RepertoireBuilder = () => {
     let innerInner = null;
     let biggestMiss = state.repertoireGrades?.[state.activeSide]?.biggestMiss;
     let biggestMissRow = createBiggestMissRow(state, state.activeSide);
+    // let biggestMissRow = null;
+
     let backToOverviewRow = (
       <View
         style={s(c.row, c.alignCenter, c.clickable, c.mb(12))}
@@ -206,7 +219,7 @@ export const RepertoireBuilder = () => {
               c.column
             )}
           >
-            {hasNoMovesThisSide && isEmpty(state.pendingMoves) ? (
+            {hasNoMovesThisSide && !state.showPendingMoves ? (
               <View
                 style={s(c.column, c.selfCenter, c.center, c.grow, c.px(12))}
               >
@@ -261,8 +274,8 @@ export const RepertoireBuilder = () => {
                     />
                     {!state.showPendingMoves &&
                       isEmpty(
-                        state.responseLookup[state.activeSide][
-                          lineToPgn(state.currentLine)
+                        state.repertoire[state.activeSide].positionResponses[
+                          state.currentEpd(state)
                         ]
                       ) && (
                         <View
@@ -288,7 +301,7 @@ export const RepertoireBuilder = () => {
                   </View>
                 </View>
                 {!isNil(biggestMiss) &&
-                  isEmpty(state.pendingMoves) &&
+                  !state.divergencePosition &&
                   biggestMissRow}
                 {state.showPendingMoves && (
                   <>
@@ -302,7 +315,7 @@ export const RepertoireBuilder = () => {
                             c.px(6),
                             c.bg(c.yellows[90]),
                             c.row,
-                            c.justifyEnd,
+                            c.justifyStart,
                             c.alignCenter
                           )}
                         >
@@ -317,9 +330,9 @@ export const RepertoireBuilder = () => {
                               c.fontSize(12)
                             )}
                           >
-                            Adding this line will remove{" "}
-                            <b>{state.numMovesWouldBeDeleted}</b> responses that
-                            start with <b>{state.conflictingId}</b>
+                            Adding this line will replace{" "}
+                            <b>{state.numMovesWouldBeDeleted}</b> responses in
+                            your repertoire
                           </Text>
                         </View>
                       )}
@@ -641,43 +654,6 @@ export const RepertoireBuilder = () => {
   return <PageContainer centered={centered}>{inner}</PageContainer>;
 };
 
-const RepertoireGradeView = ({
-  grade,
-  state,
-}: {
-  grade: RepertoireGrade;
-  state: RepertoireState;
-}) => {
-  return (
-    <View style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12))}>
-      <Text style={s(c.fg(c.colors.textPrimary))}>
-        With this opening repertoire, you can expect to play{" "}
-        {grade.expectedDepth.toFixed(1)} moves before going out of book
-      </Text>
-      <Spacer height={12} />
-      <Text style={s(c.fg(c.colors.textPrimary))}>
-        Your biggest miss is <b>{grade.biggestMiss.move.id}</b>, expected in{" "}
-        {formatIncidence(grade.biggestMiss.incidence)} of your games.{" "}
-        <Pressable
-          onPress={() => {
-            state.playPgn(grade.biggestMiss.move.id);
-          }}
-        >
-          <Text
-            style={s(
-              c.borderBottom(`1px solid ${c.grays[50]}`),
-              c.pb(2),
-              c.fg(c.colors.textPrimary)
-            )}
-          >
-            Click here to add a response for this line.
-          </Text>
-        </Pressable>
-      </Text>
-    </View>
-  );
-};
-
 const OpeningTree = ({
   repertoire,
   state,
@@ -689,30 +665,34 @@ const OpeningTree = ({
 }) => {
   return (
     <View style={s()}>
-      {state.showPendingMoves && (
-        <OpeningNode
-          state={state}
-          grade={grade}
-          responseQueue={drop(state.pendingMoves, 1)}
-          move={state.pendingMoves[0]}
-          repertoire={repertoire}
-        />
-      )}
-      {map(
-        state.responseLookup[state.activeSide][lineToPgn(state.currentLine)],
-        (id) => {
-          return state.moveLookup[state.activeSide][id];
-        }
-      ).map((move) => {
-        return (
-          <OpeningNode
-            state={state}
-            grade={grade}
-            move={move}
-            repertoire={repertoire}
-          />
-        );
-      })}
+      {state.showPendingMoves &&
+        (state.pendingResponses[state.divergencePosition] ?? []).map((move) => {
+          return (
+            <OpeningNode
+              state={state}
+              grade={grade}
+              move={move}
+              repertoire={repertoire}
+            />
+          );
+        })}
+      {!state.showPendingMoves &&
+        (
+          state.repertoire[state.activeSide].positionResponses[
+            state.currentEpd(state)
+          ] ?? []
+        ).map((move) => {
+          return (
+            <OpeningNode
+              seenEpds={new Set()}
+              line={state.currentLine}
+              state={state}
+              grade={grade}
+              move={move}
+              repertoire={repertoire}
+            />
+          );
+        })}
     </View>
   );
 };
@@ -720,34 +700,45 @@ const OpeningTree = ({
 const OpeningNode = ({
   move,
   grade,
+  seenEpds: _seenEpds,
   state,
   repertoire,
   responseQueue,
+  line,
 }: {
   move: RepertoireMove;
+  line?: string[];
   responseQueue?: RepertoireMove[];
+  seenEpds: Set<String>;
   grade: RepertoireGrade;
   state: RepertoireState;
   repertoire: RepertoireSide;
 }) => {
-  let incidence = grade?.moveIncidence[move.id];
-  let responses = map(
-    state.responseLookup[state.activeSide][move.id],
-    (id) => state.moveLookup[state.activeSide][id]
-  );
-  if (!isEmpty(responseQueue)) {
-    responses = [responseQueue[0]];
+  // let incidence = grade?.moveIncidence[move.id];
+  let responses =
+    state.repertoire[state.activeSide].positionResponses[move.epdAfter];
+  if (isEmpty(responses)) {
+    responses = state.pendingResponses[move.epdAfter];
   }
-  let trueDepth = move.id.split(" ").length;
+  let trueDepth = line?.length ?? 0;
+  // let trueDepth = 0;
   let assumedDepth = state.currentLine.length;
   let depthDifference = trueDepth - assumedDepth;
   let moveNumber = Math.floor(trueDepth / 2) + 1;
+  let cumulativeLine = null;
+  let seenEpds = new Set(_seenEpds);
+  seenEpds.add(move.epd);
+  if (line) {
+    cumulativeLine = [...line, move.sanPlus];
+  } else {
+  }
   // let responses = [];
   return (
     <View style={s(c.pl(2))}>
       <Pressable
         onPress={() => {
-          state.playPgn(move.id);
+          let pgn = lineToPgn(cumulativeLine);
+          state.playPgn(pgn);
         }}
       >
         <View
@@ -804,17 +795,21 @@ const OpeningNode = ({
         >
           <View style={s()}>
             {intersperse(
-              (responses || []).map((move) => {
-                return (
-                  <OpeningNode
-                    repertoire={repertoire}
-                    state={state}
-                    move={move}
-                    responseQueue={responseQueue && drop(responseQueue, 1)}
-                    grade={grade}
-                  />
-                );
-              }),
+              (responses || [])
+                .filter((m) => !seenEpds.has(m.epdAfter))
+                .map((move) => {
+                  return (
+                    <OpeningNode
+                      seenEpds={seenEpds}
+                      line={cumulativeLine}
+                      repertoire={repertoire}
+                      state={state}
+                      move={move}
+                      responseQueue={responseQueue && drop(responseQueue, 1)}
+                      grade={grade}
+                    />
+                  );
+                }),
               (i) => {
                 return <Spacer key={i} height={0} />;
               }
@@ -845,8 +840,9 @@ const RepertoireSideSummary = ({
 }) => {
   let expectedDepth = state.repertoireGrades[side]?.expectedDepth;
   let biggestMiss = state.repertoireGrades[side]?.biggestMiss;
-  let numMoves = state.myResponsesLookup[side]?.length;
-  let hasNoMovesThisSide = isEmpty(state.repertoire[side]?.moves);
+
+  let numMoves = state.myResponsesLookup?.[side]?.length;
+  let hasNoMovesThisSide = isEmpty(state.repertoire[side]?.positionResponses);
   let biggestMissRow = createBiggestMissRow(state, side);
   return (
     <View style={s(c.column, c.bg(c.grays[20]), c.overflowHidden, c.fullWidth)}>
@@ -908,10 +904,15 @@ const RepertoireSideSummary = ({
           >
             {intersperse(
               [
-                <SummaryRow k={plural(numMoves, "Move")} v={numMoves} />,
+                <SummaryRow
+                  key={"move"}
+                  k={plural(numMoves, "Move")}
+                  v={numMoves}
+                />,
                 ...(expectedDepth
                   ? [
                       <SummaryRow
+                        key={"depth"}
                         k="Expected depth"
                         v={expectedDepth.toFixed(2)}
                       />,
@@ -954,7 +955,7 @@ const SummaryRow = ({ k, v }) => {
 };
 
 function createBiggestMissRow(state: RepertoireState, side: string) {
-  let biggestMiss = state.repertoireGrades[side]?.biggestMiss;
+  let biggestMiss = state.repertoireGrades[side]?.biggestMiss as RepertoireMiss;
   if (!biggestMiss) {
     return null;
   }
@@ -962,9 +963,8 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
     <Pressable
       onPress={() => {
         state.quick((s) => {
-          s.positionBeforeBiggestMissEdit = s.position;
           state.startEditing(side as Side, s);
-          state.playPgn(biggestMiss.move.id, s);
+          state.playPgn(biggestMiss.lines[0], s);
         });
       }}
     >
@@ -1014,12 +1014,12 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
             c.selfStart,
             c.pb(2),
             c.overflowHidden,
-            c.keyedProp("text-overflow")("ellipsis"),
+            c.keyedProp("textOverflow")("ellipsis"),
             c.whitespace("nowrap"),
             c.borderBottom(`1px solid ${c.grays[40]}`)
           )}
         >
-          {biggestMiss?.move.id}
+          {biggestMiss?.lines[0]}
         </Text>
       </View>
     </Pressable>

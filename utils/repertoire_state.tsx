@@ -26,11 +26,23 @@ import {
   forEach,
   filter,
   shuffle,
+  flatten,
+  first,
+  find,
+  values,
+  keys,
+  findIndex,
+  isNil,
+  nth,
+  zip,
+  drop,
+  forIn,
 } from "lodash";
 import {
   BySide,
   getAllRepertoireMoves,
   lineToPgn,
+  otherSide,
   PendingLine,
   pgnToLine,
   Repertoire,
@@ -52,21 +64,28 @@ import { PlaybackSpeed } from "app/types/VisualizationState";
 import _ from "lodash";
 import { WritableDraft } from "immer/dist/internal";
 import { failOnTrue } from "./test_settings";
+import { genEpd } from "./chess";
+import { ChessColor } from "app/types/Chess";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
 let ASSUME = null;
+
+export interface QuizMove {
+  move: RepertoireMove;
+  line: string;
+}
+
 export interface RepertoireState
   extends ChessboardState,
     ChessboardStateParent<RepertoireState> {
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
-  queue: RepertoireMove[];
-  currentMove?: RepertoireMove;
+  queue: QuizMove[];
+  currentMove?: QuizMove;
   repertoireGrades: BySide<RepertoireGrade>;
   activeSide: Side;
   failedCurrentMove?: boolean;
-  fetchRepertoireGrade: (_state?: RepertoireState) => void;
   setUser: (user: User, _state?: RepertoireState) => void;
   fetchRepertoire: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
@@ -79,6 +98,7 @@ export interface RepertoireState
   user?: User;
   initState: (_state?: RepertoireState) => void;
   playPgn: (pgn: string, _state?: RepertoireState) => void;
+  getResponses: (epd: string, side: Side, _state?: RepertoireState) => void;
   addPendingLine: (_state?: RepertoireState) => void;
   hasGivenUp?: boolean;
   giveUp: (_state?: RepertoireState) => void;
@@ -89,13 +109,19 @@ export interface RepertoireState
   backToOverview: (_state?: RepertoireState) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
-  updatePendingLineFromPosition: (
+  onMove: (_state?: RepertoireState | WritableDraft<RepertoireState>) => void;
+  currentEpd: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => string;
+  onEditingPositionUpdate: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   analyzeLineOnLichess: (side: Side, _state?: RepertoireState) => void;
   searchOnChessable: (_state?: RepertoireState) => void;
   backOne: (_state?: RepertoireState) => void;
-  backToStartPosition: (_state?: RepertoireState) => void;
+  backToStartPosition: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => void;
   deleteRepertoire: (side: Side, _state?: RepertoireState) => void;
   exportPgn: (side: Side, _state?: RepertoireState) => void;
   initializeRepertoireFromTemplates: (_state?: RepertoireState) => void;
@@ -114,20 +140,29 @@ export interface RepertoireState
   isEditing?: boolean;
   isReviewing?: boolean;
   editingSide?: Side;
-  responseLookup?: BySide<Record<string, string[]>>;
   myResponsesLookup?: BySide<RepertoireMove[]>;
   moveLookup?: BySide<Record<string, RepertoireMove>>;
   currentLine?: string[];
+  // Previous positions, starting with the EPD after the first move
+  positions?: string[];
   uploadingMoves?: boolean;
   pendingMoves?: RepertoireMove[];
   hasCompletedRepertoireInitialization?: boolean;
   showPendingMoves?: boolean;
   repertoireTemplates?: RepertoireTemplate[];
   selectedTemplates: Record<string, string>;
-  positionBeforeBiggestMissEdit?: Chess;
   numMovesWouldBeDeleted?: number;
   conflictingId?: string;
+  // The first position where the user does not have a response for
+  divergencePosition?: string;
+  divergenceIndex?: number;
   isCramming?: boolean;
+  pendingResponses?: Record<string, RepertoireMove[]>;
+}
+
+interface FetchRepertoireResponse {
+  repertoire: Repertoire;
+  grades: BySide<RepertoireGrade>;
 }
 
 // export const DEFAULT_REPERTOIRE = {
@@ -171,6 +206,7 @@ export interface RepertoireState
 //     tree: [],
 //   },
 // } as Repertoire;
+const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
 export const useRepertoireState = create<RepertoireState>()(
   devtools(
@@ -184,16 +220,16 @@ export const useRepertoireState = create<RepertoireState>()(
           // repertoire: new StorageItem("repertoire_v4", null),
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
+          pendingResponses: {},
+          positions: [START_EPD],
           currentLine: [],
+          // hasCompletedRepertoireInitialization: failOnTrue(true),
           initState: () => {
             let state = get();
             state.fetchRepertoire();
             // state.position.move("e4");
             // state.position.move("c5");
             // state.position.move("d4");
-            // if (state.repertoire.value) {
-            //   state.fetchRepertoireGrade(state);
-            // }
           },
           setUser: (user: User, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -202,7 +238,7 @@ export const useRepertoireState = create<RepertoireState>()(
           giveUp: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               let moveObj = s.position.validateMoves([
-                s.currentMove.sanPlus,
+                s.currentMove.move.sanPlus,
               ])?.[0];
               s.frozen = true;
               s.failedCurrentMove = true;
@@ -217,21 +253,24 @@ export const useRepertoireState = create<RepertoireState>()(
             }),
           playPgn: (pgn: string, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              s.position.loadPgn(pgn);
-              s.updatePendingLineFromPosition(s);
+              s.backToStartPosition(s);
+              pgnToLine(pgn).map((san) => {
+                s.position.move(san);
+                if (s.isEditing) {
+                  s.onMove(s);
+                }
+              });
             }),
           initializeRepertoireFromTemplates: (_state?: RepertoireState) =>
             setter(set, _state, async (s: RepertoireState) => {
-              let { data } = await client.post(
-                "/api/v1/openings/add_templates",
-                {
+              let { data }: { data: FetchRepertoireResponse } =
+                await client.post("/api/v1/openings/add_templates", {
                   templates: Object.values(s.selectedTemplates),
-                }
-              );
-              set((s: RepertoireState) => {
-                s.repertoire = data;
+                });
+              set((s) => {
+                s.repertoire = data.repertoire;
+                s.repertoireGrades = data.grades;
                 s.onRepertoireUpdate(s);
-                s.hasCompletedRepertoireInitialization = true;
               });
             }),
           initializeRepertoire: ({
@@ -258,18 +297,17 @@ export const useRepertoireState = create<RepertoireState>()(
                   .filter((s) => s.length > 2)
                   .map((s) => JSON.parse(s));
               }
-              let { data } = await client.post(
-                "/api/v1/initialize_repertoire",
-                {
+              let { data }: { data: FetchRepertoireResponse } =
+                await client.post("/api/v1/initialize_repertoire", {
                   lichessGames,
                   lichessUsername,
                   chessComGames,
                   whitePgn,
                   blackPgn,
-                }
-              );
+                });
               set((s: RepertoireState) => {
-                s.repertoire = data;
+                s.repertoire = data.repertoire;
+                s.repertoireGrades = data.grades;
                 s.onRepertoireUpdate(s);
                 s.hasCompletedRepertoireInitialization = true;
               });
@@ -277,8 +315,6 @@ export const useRepertoireState = create<RepertoireState>()(
           searchOnChessable: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               let fen = s.position.fen();
-              // TODO: temp
-
               if (COURSE) {
                 window
                   .open(
@@ -316,123 +352,234 @@ export const useRepertoireState = create<RepertoireState>()(
                   windowReference.location = `${url}/${side}#999`;
                 });
             }),
-          updatePendingLineFromPosition: (_state?: RepertoireState) =>
+          onEditingPositionUpdate: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               let line = s.position.history();
               s.currentLine = line;
-              let accumLine = [];
-              s.pendingMoves = map(
-                filter(
-                  map(line, (m) => {
-                    accumLine.push(m);
-                    return [m, lineToPgn(accumLine), sideOfLastmove(accumLine)];
-                  }),
-                  ([m, pgn, side]) => {
-                    return !s.moveLookup[s.activeSide][pgn];
-                  }
-                ),
-                ([m, pgn, side]) => {
-                  return {
-                    id: pgn,
-                    sanPlus: m,
-                    side: side,
-                    mine: side === s.activeSide,
-                    pending: true,
-                    needsReview: false,
-                    firstReview: false,
-                  } as RepertoireMove;
+              s.moveLog = lineToPgn(line);
+              console.log({ positions: s.positions });
+              s.divergenceIndex = findIndex(s.positions, (e: string, i) => {
+                let responses = s.repertoire[s.activeSide].positionResponses[e];
+                let move = s.currentLine[i];
+                console.log({ move });
+                if (!move) {
+                  return false;
                 }
-              );
-              s.showPendingMoves = some(s.pendingMoves, (m) => {
-                return m.mine;
+                if (!some(responses, (r) => r.sanPlus == move)) {
+                  console.log("No responses like this, this one!");
+                  return true;
+                }
+                console.log("No my response from this position");
+                return false;
               });
-              s.numMovesWouldBeDeleted = 0;
-              s.conflictingId = null;
-              s.numMovesWouldBeDeleted = (() => {
-                let subs = map(
-                  filter(s.pendingMoves, (m) => {
-                    return m.mine;
-                  }),
-                  (m) => {
-                    return [m.id, removeLastMove(m.id)];
+              s.divergenceIndex =
+                s.divergenceIndex === -1 ? null : s.divergenceIndex;
+              // if (s.divergenceIndex === s.positions.length - 1) {
+              //   s.divergenceIndex = null;
+              // }
+              s.divergencePosition = !isNil(s.divergenceIndex)
+                ? s.positions[s.divergenceIndex]
+                : null;
+              console.log({ diIndex: s.divergenceIndex });
+              console.log({ diPosition: s.divergencePosition });
+              s.pendingResponses = {};
+              if (!isNil(s.divergenceIndex)) {
+                map(
+                  zip(
+                    drop(s.positions, s.divergenceIndex),
+                    drop(line, s.divergenceIndex)
+                  ),
+                  ([position, san], i) => {
+                    if (!san) {
+                      return;
+                    }
+                    s.pendingResponses[position] = [
+                      {
+                        epd: position,
+                        epdAfter: s.positions[i + s.divergenceIndex + 1],
+                        sanPlus: san,
+                        side: s.activeSide,
+                        pending: true,
+                        mine:
+                          (i + s.divergenceIndex) % 2 ===
+                          (s.activeSide === "white" ? 0 : 1),
+                        srs: {
+                          needsReview: false,
+                          firstReview: false,
+                        },
+                      },
+                    ] as RepertoireMove[];
                   }
                 );
-                let total = 0;
-                for (let p of subs) {
-                  let [id, sub] = p;
-                  let existingMove =
-                    s.moveLookup[s.activeSide][
-                      s.responseLookup[s.activeSide][sub]?.[0]
-                    ];
-                  if (existingMove && existingMove.id != id) {
-                    total = filter(s.repertoire[s.activeSide].moves, (m) => {
-                      return m.mine && m.id.includes(sub);
-                    }).length;
-                    s.conflictingId = existingMove.id;
-                    break;
-                  }
+              }
+              // s.divergencePosition = find(s.positions, (e: string) => {
+              //   return isEmpty(s.repertoire[s.activeSide].positionResponses[e]);
+              // });
+
+              // let previousPosition = nth(s.positions, -1);
+              // if (s.divergencePosition && previousPosition) {
+              //     "Adding to pending responses for ",
+              //     previousPosition
+              //   );
+              //   s.pendingResponses[previousPosition] = [
+              //     {
+              //       epdAfter: s.currentEpd,
+              //       sanPlus: last(s.currentLine),
+              //       side: s.activeSide,
+              //       pending: true,
+              //       srs: {
+              //         needsReview: false,
+              //         firstReview: false,
+              //       },
+              //     },
+              //   ] as RepertoireMove[];
+              // }
+              s.showPendingMoves = some(
+                flatten(values(s.pendingResponses)),
+                (m) => m.mine
+              );
+              console.log("____");
+              console.log(s.pendingResponses);
+              console.log(s.showPendingMoves);
+              console.log(s.divergencePosition);
+              s.numMovesWouldBeDeleted = (() => {
+                if (isEmpty(s.pendingResponses[s.divergencePosition])) {
+                  return 0;
                 }
+                if (!first(s.pendingResponses[s.divergencePosition]).mine) {
+                  return 0;
+                }
+                let total = 0;
+                let seen_epds = new Set();
+                let recurse = (epd) => {
+                  let responses =
+                    s.repertoire[s.activeSide].positionResponses[epd];
+                  map(responses, (r) => {
+                    total += 1;
+                    if (!seen_epds.has(r.epdAfter)) {
+                      seen_epds.add(r.epdAfter);
+                      recurse(r.epdAfter);
+                    }
+                  });
+                };
+                recurse(s.divergencePosition);
                 return total;
               })();
-              s.moveLog = lineToPgn(line);
+              console.log("Num deleted?");
+              console.log(s.numMovesWouldBeDeleted);
+            }),
+          onMove: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              // let m = s.position.undo();
+              // s.position.move(m);
+              s.positions.push(genEpd(s.position));
+              s.onEditingPositionUpdate(s);
+              // let accumLine = [];
+              // // s.pendingMoves = map(
+              // //   filter(
+              // //     map(line, (m: RepertoireMove) => {
+              // //       accumLine.push(m);
+              // //       return [
+              // //         m,
+              // //         m.epdAfter,
+              // //         lineToPgn(accumLine),
+              // //         sideOfLastmove(accumLine),
+              // //       ] as [RepertoireMove, string, string, string];
+              // //     }),
+              // //     ([m, epdAfter, pgn, side]) => {
+              // //       return !s.repertoire[s.activeSide].positionResponses[
+              // //         epdAfter
+              // //       ];
+              // //     }
+              // //   ),
+              // //   ([m, pgn, side]) => {
+              // //     return {
+              // //       id: pgn,
+              // //       epdAfter: null,
+              // //       sanPlus: m.sanPlus,
+              // //       side: side,
+              // //       mine: side === s.activeSide,
+              // //       pending: true,
+              // //       srs: {
+              // //         needsReview: false,
+              // //         firstReview: false,
+              // //       },
+              // //     } as RepertoireMove;
+              // //   }
+              // // );
+              // s.showPendingMoves = some(s.pendingMoves, (m) => {
+              //   return m.mine;
+              // });
+              // s.numMovesWouldBeDeleted = 0;
+              // s.conflictingId = null;
             }),
           updateQueue: (cram: boolean, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              let firstSide: Side = Math.random() >= 0.5 ? "white" : "black";
-              s.queue = [
-                ...s.repertoire.white.moves,
-                ...s.repertoire.black.moves,
-              ].filter(
-                (m) =>
-                  m.mine &&
-                  (m.needsReview || (cram && pgnToLine(m.id).length > 1))
-              );
-              let alphabet = "abcdefghijklmnopqrstuvwxyz";
-              let alphabetLookup = {};
-              map(alphabet, (l, i) => {
-                alphabetLookup[l] = i;
-              });
-              let permuted = shuffle(alphabet);
-              s.queue = _.sortBy(s.queue, (m) => {
-                let newId = map(m.id, (l) => {
-                  let idx = alphabetLookup[l];
-                  if (idx) {
-                    return permuted[idx];
-                  } else {
-                    return l;
+              let queue: QuizMove[] = [];
+              let seen_epds = new Set();
+              const recurse = (epd, line, side: Side) => {
+                map(shuffle(s.repertoire[side].positionResponses[epd]), (m) => {
+                  if (
+                    m.mine &&
+                    (cram || m.srs.needsReview) &&
+                    m.epd !== START_EPD
+                  ) {
+                    queue.push({ move: m, line: lineToPgn(line) });
                   }
-                }).join("");
-                return `${m.side === firstSide ? "a" : "b"} - ${newId}`;
-              });
+
+                  if (!seen_epds.has(m.epdAfter)) {
+                    seen_epds.add(m.epdAfter);
+                    console.log({ after: m.epdAfter });
+                    recurse(m.epdAfter, [...line, m.sanPlus], side);
+                  }
+                });
+              };
+              for (const side of shuffle(SIDES)) {
+                recurse(START_EPD, [], side);
+                seen_epds = new Set();
+              }
+              s.queue = queue;
+              // s.queue = getAllRepertoireMoves(s.repertoire).filter(
+              //   (m) =>
+              //     m.mine &&
+              //     (m.srs.needsReview || (cram && pgnToLine(m.id).length > 1))
+              // );
+              // let alphabet = "abcdefghijklmnopqrstuvwxyz";
+              // let alphabetLookup = {};
+              // map(alphabet, (l, i) => {
+              //   alphabetLookup[l] = i;
+              // });
+              // let permuted = shuffle(alphabet);
+              // s.queue = _.sortBy(s.queue, (m) => {
+              //   let newId = map(m.id, (l) => {
+              //     let idx = alphabetLookup[l];
+              //     if (idx) {
+              //       return permuted[idx];
+              //     } else {
+              //       return l;
+              //     }
+              //   }).join("");
+              //   return `${m.side === firstSide ? "a" : "b"} - ${newId}`;
+              // });
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              console.log("Setting response lookup");
               s.myResponsesLookup = mapSides(
                 s.repertoire,
                 (repertoireSide: RepertoireSide) => {
-                  return repertoireSide.moves.filter((m) => m.mine);
+                  return flatten(
+                    Object.values(repertoireSide.positionResponses)
+                  ).filter((m: RepertoireMove) => m.mine);
                 }
               );
-              s.responseLookup = mapSides(
-                s.repertoire,
-                (repertoireSide: RepertoireSide) => {
-                  return groupBy(
-                    repertoireSide.moves.map((m) => m.id),
-                    (id) => {
-                      return removeLastMove(id);
-                    }
-                  );
-                }
-              );
-              s.moveLookup = mapSides(
-                s.repertoire,
-                (repertoireSide: RepertoireSide) => {
-                  return keyBy(repertoireSide.moves, (m) => {
-                    return m.id;
-                  });
-                }
-              );
+              // s.moveLookup = mapSides(
+              //   s.repertoire,
+              //   (repertoireSide: RepertoireSide) => {
+              //     return keyBy(repertoireSide.moves, (m) => {
+              //       return m.id;
+              //     });
+              //   }
+              // );
             }),
 
           attemptMove: (
@@ -443,11 +590,11 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               if (s.isEditing) {
                 cb(true, (s: RepertoireState) => {
-                  s.updatePendingLineFromPosition(s);
+                  s.onMove(s);
                 });
               } else if (s.isReviewing) {
-                if (move.san == s.currentMove.sanPlus) {
-                  console.log("Animating move");
+                console.log(move.san, s.currentMove.move.sanPlus);
+                if (move.san == s.currentMove.move.sanPlus) {
                   cb(true, (s: RepertoireState) => {
                     s.flashRing(true, s);
                     window.setTimeout(() => {
@@ -472,7 +619,7 @@ export const useRepertoireState = create<RepertoireState>()(
           ) =>
             setter(set, _state, (s) => {
               client
-                .post("/api/v1/openings/move_reviewed", { correct, id: m })
+                .post("/api/v1/openings/move_reviewed", { correct, epd: m })
                 .then(({ data }) => {});
             }),
           setupNextMove: (_state?: RepertoireState) =>
@@ -482,9 +629,9 @@ export const useRepertoireState = create<RepertoireState>()(
               if (s.currentMove) {
                 if (s.failedCurrentMove) {
                   s.queue.push(s.currentMove);
-                  s.markMoveReviewed(s.currentMove.id, false, s);
+                  s.markMoveReviewed(s.currentMove.move.epd, false, s);
                 } else {
-                  s.markMoveReviewed(s.currentMove.id, true, s);
+                  s.markMoveReviewed(s.currentMove.move.epd, true, s);
                 }
               }
               s.currentMove = s.queue.shift();
@@ -492,16 +639,19 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.backToOverview(s);
                 return;
               }
-              s.moveLog = lineToPgn(dropRight(pgnToLine(s.currentMove.id), 1));
+              s.moveLog = lineToPgn(
+                dropRight(pgnToLine(s.currentMove.line), 1)
+              );
               s.failedCurrentMove = false;
-              s.flipped = s.currentMove.side === "black";
+              s.flipped = s.currentMove.move.side === "black";
               s.position = new Chess();
               // s.frozen = false;
-              console.log(logProxy(s.currentMove));
-              let parsed = s.position.loadPgn(s.currentMove.id);
-              s.position.undo();
+              s.position.loadPgn(s.currentMove.line);
+              console.log(s.position.ascii());
+              // s.position.undo();
               let lastOpponentMove = s.position.undo();
 
+              console.log({ lastOpponentMove });
               if (lastOpponentMove) {
                 window.setTimeout(() => {
                   set((s) => {
@@ -516,8 +666,6 @@ export const useRepertoireState = create<RepertoireState>()(
                   });
                 }, 300);
               }
-              console.log({ parsed });
-              console.log(s.position.ascii());
             }),
 
           deleteRepertoire: (side: Side, _state?: RepertoireState) =>
@@ -526,9 +674,10 @@ export const useRepertoireState = create<RepertoireState>()(
                 .post("/api/v1/openings/delete", {
                   sides: [side],
                 })
-                .then(({ data }: { data: Repertoire }) => {
+                .then(({ data }: { data: FetchRepertoireResponse }) => {
                   set((s) => {
-                    s.repertoire = data;
+                    s.repertoire = data.repertoire;
+                    s.repertoireGrades = data.grades;
                     s.onRepertoireUpdate(s);
                   });
                 });
@@ -538,38 +687,48 @@ export const useRepertoireState = create<RepertoireState>()(
           exportPgn: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               let pgn = "";
-              const recurse = (line) => {
-                console.log({ rlookup: logProxy(s.responseLookup) });
-                let [mainMove, ...others] = (
-                  s.responseLookup[side][line] ?? []
-                ).map((id) => s.moveLookup[side][id]);
+
+              let seen_epds = new Set();
+              let recurse = (epd, line) => {
+                let [mainMove, ...others] =
+                  s.repertoire[side].positionResponses[epd] ?? [];
                 if (!mainMove) {
                   return;
                 }
-                pgn = pgn + getLastMoveWithNumber(mainMove.id) + " ";
+                let mainLine = [...line, mainMove.sanPlus];
+                pgn = pgn + getLastMoveWithNumber(lineToPgn(mainLine)) + " ";
                 forEach(others, (variationMove) => {
+                  if (seen_epds.has(variationMove.epdAfter)) {
+                    return;
+                  }
+                  let variationLine = [...line, variationMove.sanPlus];
+                  seen_epds.add(variationMove.epdAfter);
                   pgn += "(";
-                  pgn += getLastMoveWithNumber(variationMove.id) + " ";
-                  recurse(variationMove.id);
+                  pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
+
+                  recurse(variationMove.epdAfter, variationLine);
                   pgn = pgn.trim();
                   pgn += ") ";
                 });
                 if (
                   !isEmpty(others) &&
-                  sideOfLastmove(mainMove.id) === "white"
+                  sideOfLastmove(lineToPgn(mainLine)) === "white"
                 ) {
-                  pgn += `${getMoveNumber(mainMove.id)}... `;
+                  pgn += `${getMoveNumber(lineToPgn(mainLine))}... `;
                 }
-                recurse(mainMove.id);
-                console.log({ pgn });
+
+                if (seen_epds.has(mainMove.epdAfter)) {
+                  return;
+                }
+                seen_epds.add(mainMove.epdAfter);
+                recurse(mainMove.epdAfter, mainLine);
               };
-              recurse("");
+              recurse(START_EPD, []);
               pgn = pgn.trim();
 
               let downloadLink = document.createElement("a");
 
               let csvFile = new Blob([pgn], { type: "text" });
-              console.log(csvFile);
 
               let url = window.URL.createObjectURL(csvFile);
               // file name
@@ -586,11 +745,11 @@ export const useRepertoireState = create<RepertoireState>()(
 
               // click download link
               downloadLink.click();
-              console.log({ pgn });
             }),
 
           backToOverview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              s.backToStartPosition(s);
               s.moveLog = null;
               s.isReviewing = false;
               if (s.currentMove) {
@@ -606,7 +765,10 @@ export const useRepertoireState = create<RepertoireState>()(
               s.position = new Chess();
               s.frozen = true;
               s.flipped = false;
-              s.updatePendingLineFromPosition(s);
+              s.divergencePosition = null;
+              s.divergenceIndex = null;
+              s.showPendingMoves = false;
+              s.pendingResponses = {};
               s.showMoveLog = false;
             }),
           startEditing: (side: Side, _state?: RepertoireState) =>
@@ -630,7 +792,6 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               s.updateRepertoireStructures(s);
               s.updateQueue(false, s);
-              s.fetchRepertoireGrade(s);
             }),
           fetchRepertoireTemplates: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -646,13 +807,10 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               client
                 .get("/api/v1/openings")
-                .then(({ data }: { data: Repertoire }) => {
+                .then(({ data }: { data: FetchRepertoireResponse }) => {
                   set((s) => {
-                    [...data.black.moves, ...data.white.moves].map((m) => {
-                      // m.lastLine = removeLastMove(m.id);
-                      // m.depth = m.id.split(" ").length;
-                    });
-                    s.repertoire = data;
+                    s.repertoire = data.repertoire;
+                    s.repertoireGrades = data.grades;
                     if (getAllRepertoireMoves(s.repertoire).length > 0) {
                       s.hasCompletedRepertoireInitialization = true;
                     }
@@ -660,47 +818,29 @@ export const useRepertoireState = create<RepertoireState>()(
                   });
                 });
             }),
+          currentEpd: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              return last(s.positions);
+            }),
           backOne: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              s.positionBeforeBiggestMissEdit = null;
-              s.position.undo();
-              s.updatePendingLineFromPosition(s);
+              let m = s.position.undo();
+              if (m) {
+                s.positions.pop();
+              }
+              s.onEditingPositionUpdate(s);
+              // s.onEditingPositionUpdate(s);
             }),
           backToStartPosition: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.position = new Chess();
-              s.updatePendingLineFromPosition(s);
+              s.positions = [START_EPD];
+              s.onEditingPositionUpdate(s);
             }),
           editRepertoireSide: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.editingSide = side;
               s.isEditing = true;
-            }),
-          fetchRepertoireGrade: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              SIDES.map((side) => {
-                let assume = ASSUME;
-                if (side === s.activeSide && !assume) {
-                  assume = s.moveLog;
-                }
-                client
-                  .post(
-                    "/api/v1/grade_opening",
-
-                    {
-                      moves: s.repertoire[side].moves
-                        .filter((m) => m.mine)
-                        .map((m) => m.id),
-                      side: side,
-                      assume: assume,
-                    }
-                  )
-                  .then(({ data }) => {
-                    set((s) => {
-                      s.repertoireGrades[side] = data as RepertoireGrade;
-                    });
-                  });
-              });
             }),
           ...createChessState(set, get, (c) => {
             c.frozen = true;
@@ -710,21 +850,15 @@ export const useRepertoireState = create<RepertoireState>()(
               s.uploadingMoves = true;
               client
                 .post("/api/v1/openings/add_moves", {
-                  moves: _.map(s.pendingMoves, (m) => m.id),
+                  moves: _.flatten(cloneDeep(_.values(s.pendingResponses))),
                   side: s.activeSide,
                 })
-                .then(({ data }: { data: Repertoire }) => {
+                .then(({ data }: { data: FetchRepertoireResponse }) => {
                   set((s) => {
-                    // s.position = s.positionBeforeBiggestMissEdit || new Chess();
-                    s.position = new Chess();
-                    // map(s.pendingMoves, () => {
-                    //   s.position.undo();
-                    // });
-                    s.updatePendingLineFromPosition(s);
-
-                    s.pendingMoves = [];
+                    s.backToStartPosition(s);
                     s.uploadingMoves = false;
-                    s.repertoire = data;
+                    s.repertoire = data.repertoire;
+                    s.repertoireGrades = data.grades;
                     s.onRepertoireUpdate(s);
                   });
                 });
@@ -740,8 +874,6 @@ export const useRepertoireState = create<RepertoireState>()(
 //   let line = [..._line];
 //   let responses = repertoire.tree;
 //   let node: RepertoireMove = null;
-//   // console.log("Line is ", line);
-//   // console.log("Repertoire", repertoire);
 //   while (line.length > 0) {
 //     let move = line.shift();
 //
@@ -753,7 +885,6 @@ export const useRepertoireState = create<RepertoireState>()(
 //     }
 //     responses = node.responses;
 //   }
-//   // console.log("Node is ", node);
 //
 //   return node;
 // }
@@ -779,3 +910,7 @@ function mapSides<T, Y>(bySide: BySide<T>, fn: (x: T) => Y): BySide<Y> {
 function getMoveNumber(id: string) {
   return Math.floor(id.split(" ").length / 2 + 1);
 }
+
+// function getAnySideResponse(r: Repertoire, epd: string): RepertoireMove[] {
+//   return r["black"].positionResponses[epd] ?? r["black"].positionResponses[epd];
+// }

@@ -248,7 +248,9 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                 onPress={() => {
                   setActiveOpeningSource(openingSource);
                   if (openingSource === OpeningSource.Manual) {
-                    state.initializeRepertoire({});
+                    state.quick((s) => {
+                      s.hasCompletedRepertoireInitialization = true;
+                    });
                   }
                 }}
                 style={s(

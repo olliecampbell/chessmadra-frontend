@@ -1,5 +1,5 @@
 import { LichessGame } from "app/models";
-import { forEach, isArray } from "lodash";
+import { flatten, forEach, isArray } from "lodash";
 
 export function sideOfLastmove(_line: string[] | string): Side {
   let line = _line;
@@ -40,9 +40,16 @@ export interface BySide<T> {
 
 export type Side = "black" | "white";
 export const SIDES: Side[] = ["white", "black"];
+export function otherSide(side: Side) {
+  if (side === "white") {
+    return "black";
+  } else {
+    return "white";
+  }
+}
 
 export interface RepertoireSide {
-  moves: RepertoireMove[];
+  positionResponses: Record<string, RepertoireMove[]>;
   side: Side;
 }
 
@@ -50,14 +57,24 @@ export function getAllRepertoireMoves(r: Repertoire): RepertoireMove[] {
   if (!r) {
     return [];
   }
-  return [...r.black.moves, ...r.white.moves];
+  return [
+    ...flatten(Object.values(r.black.positionResponses)),
+    ...flatten(Object.values(r.white.positionResponses)),
+  ];
 }
 
 export interface RepertoireMove {
   id: string;
+  epd: string;
   sanPlus: string;
   mine: boolean;
+  epdAfter: string;
+  pending?: boolean;
   side: Side;
+  srs: SpacedRepetitionStatus;
+}
+
+export interface SpacedRepetitionStatus {
   needsReview: boolean;
   firstReview: boolean;
   pending?: boolean;
@@ -67,15 +84,15 @@ export type MoveIdentifier = string;
 export type SanPlus = string;
 
 export interface RepertoireGrade {
-  moveIncidence: Record<MoveIdentifier, number>;
+  // moveIncidence: Record<MoveIdentifier, number>;
   expectedDepth: number;
-  exampleGames: LichessGame[];
+  // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
 }
 
 export interface RepertoireMiss {
-  move: RepertoireMove;
   incidence: number;
+  lines: string[];
 }
 
 export interface PendingLine {

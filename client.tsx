@@ -23,6 +23,9 @@ const client = applyCaseMiddleware(
         if (s.startsWith("GAME_ID_")) {
           return s.replace("GAME_ID_", "");
         }
+        if (s.startsWith("EPD_")) {
+          return s.replace("EPD_", "");
+        }
         return camelCase(s);
       },
     },

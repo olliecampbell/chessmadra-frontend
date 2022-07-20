@@ -76,7 +76,6 @@ export const createChessState = <
   get,
   initialize: any
 ): ChessboardState => {
-  console.log("Called create chess state with set", set);
   let state = {
     allowMoves: true,
     availableMoves: [],
@@ -97,7 +96,6 @@ export const createChessState = <
       _state: ChessboardState
     ) => {
       setter(set, _state, (state: T) => {
-        console.log("Pressed square!");
         let availableMove = state.availableMoves.find((m) => m.to == square);
         if (availableMove) {
           state.availableMoves = [];
@@ -135,7 +133,6 @@ export const createChessState = <
           return;
         }
         let availableMoves = state.availableMovesFrom(square, state);
-        console.log("THE AVAILABLE MOVES FROM", square, availableMoves);
         if (isEmpty(availableMoves)) {
           state.availableMoves = [];
           state.activeFromSquare = null;
@@ -154,7 +151,6 @@ export const createChessState = <
           square,
           verbose: true,
         });
-        console.log({ moves });
         if (
           !isEmpty(state.availableMoves) &&
           first(state.availableMoves).from == square
@@ -196,7 +192,6 @@ export const createChessState = <
     },
     flashRing: (success: boolean, _state: ChessboardState) => {
       setter(set, _state, (state: ChessboardState) => {
-        console.log(`animating with success ${success}`);
         const animDuration = 200;
         state.ringColor = success
           ? c.colors.successColor
@@ -289,7 +284,6 @@ export const createChessState = <
             );
             i++;
           } else {
-            console.log("Checking if callback thing");
             state.isVisualizingMoves = false;
             callback?.(state);
             // cb?.()

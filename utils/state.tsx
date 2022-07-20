@@ -24,7 +24,7 @@ import create, {
 } from "zustand";
 import { devtools } from "zustand/middleware";
 import { fetchNewBlunderPuzzle, fetchNewPuzzle } from "./api";
-import { takeRight, cloneDeep, isEmpty, sample } from "lodash";
+import { takeRight, cloneDeep, isEmpty, sample, indexOf } from "lodash";
 import { times } from "../utils";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
