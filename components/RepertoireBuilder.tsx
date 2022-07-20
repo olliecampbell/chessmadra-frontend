@@ -48,6 +48,7 @@ const DEPTH_CUTOFF = 4;
 import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
+import { failOnTrue } from "app/utils/test_settings";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -162,7 +163,6 @@ export const RepertoireBuilder = () => {
   let centered = false;
   let hasNoMovesAtAll = isEmpty(getAllRepertoireMoves(state.repertoire));
   let hasNoMovesThisSide = isEmpty(state.myResponsesLookup?.[state.activeSide]);
-  console.log("ALL!", getAllRepertoireMoves(state.repertoire));
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
@@ -337,6 +337,8 @@ export const RepertoireBuilder = () => {
                     >
                       <Button
                         style={s(c.buttons.primary, c.height(36))}
+                        isLoading={state.isAddingPendingLine}
+                        loaderProps={{ color: c.grays[75] }}
                         onPress={() => {
                           state.addPendingLine();
                         }}

@@ -100,6 +100,7 @@ export interface RepertoireState
   playPgn: (pgn: string, _state?: RepertoireState) => void;
   getResponses: (epd: string, side: Side, _state?: RepertoireState) => void;
   addPendingLine: (_state?: RepertoireState) => void;
+  isAddingPendingLine: boolean;
   hasGivenUp?: boolean;
   giveUp: (_state?: RepertoireState) => void;
   setupNextMove: (
@@ -145,7 +146,6 @@ export interface RepertoireState
   currentLine?: string[];
   // Previous positions, starting with the EPD after the first move
   positions?: string[];
-  uploadingMoves?: boolean;
   pendingMoves?: RepertoireMove[];
   hasCompletedRepertoireInitialization?: boolean;
   showPendingMoves?: boolean;
@@ -165,47 +165,6 @@ interface FetchRepertoireResponse {
   grades: BySide<RepertoireGrade>;
 }
 
-// export const DEFAULT_REPERTOIRE = {
-//   white: {
-//     side: "white",
-//     tree: [
-//       {
-//         id: "1.e4",
-//         sanPlus: "e4",
-//         mine: true,
-//         side: "white",
-//         responses: [
-//           {
-//             id: "1.e4 e5",
-//             sanPlus: "e5",
-//             mine: false,
-//             side: "black",
-//             responses: [
-//               {
-//                 id: "1.e4 e5 2.f4",
-//                 sanPlus: "f4",
-//                 mine: true,
-//                 side: "white",
-//                 responses: [],
-//               },
-//             ],
-//           },
-//           {
-//             id: "1.e4 d5",
-//             sanPlus: "d5",
-//             mine: false,
-//             side: "black",
-//             responses: [],
-//           },
-//         ],
-//       },
-//     ],
-//   },
-//   black: {
-//     side: "black",
-//     tree: [],
-//   },
-// } as Repertoire;
 const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
 export const useRepertoireState = create<RepertoireState>()(
@@ -217,7 +176,6 @@ export const useRepertoireState = create<RepertoireState>()(
           // TODO: clone?
           ...createQuick(set),
           repertoire: undefined,
-          // repertoire: new StorageItem("repertoire_v4", null),
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
           pendingResponses: {},
@@ -227,9 +185,6 @@ export const useRepertoireState = create<RepertoireState>()(
           initState: () => {
             let state = get();
             state.fetchRepertoire();
-            // state.position.move("e4");
-            // state.position.move("c5");
-            // state.position.move("d4");
           },
           setUser: (user: User, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -412,28 +367,6 @@ export const useRepertoireState = create<RepertoireState>()(
                   }
                 );
               }
-              // s.divergencePosition = find(s.positions, (e: string) => {
-              //   return isEmpty(s.repertoire[s.activeSide].positionResponses[e]);
-              // });
-
-              // let previousPosition = nth(s.positions, -1);
-              // if (s.divergencePosition && previousPosition) {
-              //     "Adding to pending responses for ",
-              //     previousPosition
-              //   );
-              //   s.pendingResponses[previousPosition] = [
-              //     {
-              //       epdAfter: s.currentEpd,
-              //       sanPlus: last(s.currentLine),
-              //       side: s.activeSide,
-              //       pending: true,
-              //       srs: {
-              //         needsReview: false,
-              //         firstReview: false,
-              //       },
-              //     },
-              //   ] as RepertoireMove[];
-              // }
               s.showPendingMoves = some(
                 flatten(values(s.pendingResponses)),
                 (m) => m.mine
@@ -470,48 +403,8 @@ export const useRepertoireState = create<RepertoireState>()(
             }),
           onMove: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              // let m = s.position.undo();
-              // s.position.move(m);
               s.positions.push(genEpd(s.position));
               s.onEditingPositionUpdate(s);
-              // let accumLine = [];
-              // // s.pendingMoves = map(
-              // //   filter(
-              // //     map(line, (m: RepertoireMove) => {
-              // //       accumLine.push(m);
-              // //       return [
-              // //         m,
-              // //         m.epdAfter,
-              // //         lineToPgn(accumLine),
-              // //         sideOfLastmove(accumLine),
-              // //       ] as [RepertoireMove, string, string, string];
-              // //     }),
-              // //     ([m, epdAfter, pgn, side]) => {
-              // //       return !s.repertoire[s.activeSide].positionResponses[
-              // //         epdAfter
-              // //       ];
-              // //     }
-              // //   ),
-              // //   ([m, pgn, side]) => {
-              // //     return {
-              // //       id: pgn,
-              // //       epdAfter: null,
-              // //       sanPlus: m.sanPlus,
-              // //       side: side,
-              // //       mine: side === s.activeSide,
-              // //       pending: true,
-              // //       srs: {
-              // //         needsReview: false,
-              // //         firstReview: false,
-              // //       },
-              // //     } as RepertoireMove;
-              // //   }
-              // // );
-              // s.showPendingMoves = some(s.pendingMoves, (m) => {
-              //   return m.mine;
-              // });
-              // s.numMovesWouldBeDeleted = 0;
-              // s.conflictingId = null;
             }),
           updateQueue: (cram: boolean, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -539,28 +432,6 @@ export const useRepertoireState = create<RepertoireState>()(
                 seen_epds = new Set();
               }
               s.queue = queue;
-              // s.queue = getAllRepertoireMoves(s.repertoire).filter(
-              //   (m) =>
-              //     m.mine &&
-              //     (m.srs.needsReview || (cram && pgnToLine(m.id).length > 1))
-              // );
-              // let alphabet = "abcdefghijklmnopqrstuvwxyz";
-              // let alphabetLookup = {};
-              // map(alphabet, (l, i) => {
-              //   alphabetLookup[l] = i;
-              // });
-              // let permuted = shuffle(alphabet);
-              // s.queue = _.sortBy(s.queue, (m) => {
-              //   let newId = map(m.id, (l) => {
-              //     let idx = alphabetLookup[l];
-              //     if (idx) {
-              //       return permuted[idx];
-              //     } else {
-              //       return l;
-              //     }
-              //   }).join("");
-              //   return `${m.side === firstSide ? "a" : "b"} - ${newId}`;
-              // });
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -572,14 +443,6 @@ export const useRepertoireState = create<RepertoireState>()(
                   ).filter((m: RepertoireMove) => m.mine);
                 }
               );
-              // s.moveLookup = mapSides(
-              //   s.repertoire,
-              //   (repertoireSide: RepertoireSide) => {
-              //     return keyBy(repertoireSide.moves, (m) => {
-              //       return m.id;
-              //     });
-              //   }
-              // );
             }),
 
           attemptMove: (
@@ -639,9 +502,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.backToOverview(s);
                 return;
               }
-              s.moveLog = lineToPgn(
-                dropRight(pgnToLine(s.currentMove.line), 1)
-              );
+              s.moveLog = s.currentMove.line;
               s.failedCurrentMove = false;
               s.flipped = s.currentMove.move.side === "black";
               s.position = new Chess();
@@ -847,7 +708,7 @@ export const useRepertoireState = create<RepertoireState>()(
           }),
           addPendingLine: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              s.uploadingMoves = true;
+              s.isAddingPendingLine = true;
               client
                 .post("/api/v1/openings/add_moves", {
                   moves: _.flatten(cloneDeep(_.values(s.pendingResponses))),
@@ -856,10 +717,14 @@ export const useRepertoireState = create<RepertoireState>()(
                 .then(({ data }: { data: FetchRepertoireResponse }) => {
                   set((s) => {
                     s.backToStartPosition(s);
-                    s.uploadingMoves = false;
                     s.repertoire = data.repertoire;
                     s.repertoireGrades = data.grades;
                     s.onRepertoireUpdate(s);
+                  });
+                })
+                .finally(() => {
+                  set((s) => {
+                    s.isAddingPendingLine = false;
                   });
                 });
             }),

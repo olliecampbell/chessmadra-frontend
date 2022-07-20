@@ -470,6 +470,7 @@ const ImportSection = ({
   description,
   isMobile,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <View
       key={title}
@@ -500,12 +501,15 @@ const ImportSection = ({
       {children}
       <Spacer height={isMobile ? 18 : 4} />
       <Button
+        isLoading={isLoading}
+        loaderProps={{ color: c.grays[75] }}
         style={s(
           isValid ? c.buttons.primary : c.buttons.primaryDisabled,
           c.py(8),
           c.selfEnd
         )}
         onPress={() => {
+          setIsLoading(true);
           submit();
         }}
       >
