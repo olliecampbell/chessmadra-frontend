@@ -167,7 +167,16 @@ export const RepertoireBuilder = () => {
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     inner = (
-      <View style={s(c.bg(c.grays[20]), c.br(4), c.center)}>
+      <View
+        style={s(
+          c.bg(c.grays[20]),
+          c.br(4),
+          c.center,
+          c.px(12),
+          c.py(12),
+          c.maxWidth(280)
+        )}
+      >
         <Text style={s(c.fontSize(14), c.fg(c.colors.textPrimary))}>
           Sorry, opening builder is under maintenance right now. It should be up
           in the next 12 hours. Migrating everything to use positions, to
