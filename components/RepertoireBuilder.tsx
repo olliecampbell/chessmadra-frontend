@@ -753,7 +753,7 @@ const OpeningNode = ({
               // move.mine ? c.weightBold : c.weightRegular
             )}
           >
-            {trueDepth % 2 === 1 ? `${moveNumber}.` : null}
+            {trueDepth % 2 === 0 ? `${moveNumber}.` : null}
             {move.sanPlus}
             {responses && depthDifference >= DEPTH_CUTOFF && "…"}
             {move.pending && (

@@ -42,6 +42,7 @@ enum OpeningSource {
   // ChessCom,
   // Pgn,
   Manual,
+  Chessmood,
 }
 
 function formatOpeningSource(openingSource: OpeningSource) {
@@ -52,6 +53,8 @@ function formatOpeningSource(openingSource: OpeningSource) {
       return "Templates";
     case OpeningSource.Manual:
       return "Skip";
+    case OpeningSource.Chessmood:
+      return "Chess Mood Repertoire";
   }
 }
 
@@ -183,12 +186,33 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                     source: OpeningSource.Import,
                     description: (
                       <>
-                        Import your existing opening repertoire. You can use a
-                        pgn, a lichess study, or just provide your Lichess
-                        username and we'll figure it out from your recent games.
+                        Import your existing opening repertoire from a pgn, or
+                        just provide your Lichess username and we'll figure it
+                        out from your recent games.
                       </>
                     ),
                     buttonCopy: "Import",
+                  },
+                  {
+                    title: "ChessMood Pack",
+                    buttonCopy: "Start",
+                    source: OpeningSource.Chessmood,
+                    logo: (
+                      <img
+                        style={s(c.width(100), c.opacity(80))}
+                        src="/chessmood_logo.png"
+                      />
+                    ),
+                    description: (
+                      <>
+                        A full repertoire from the GMs over at{" "}
+                        <a href="https://chessmood.com">ChessMood</a>.{" "}
+                        <span style={s(c.fg(c.grays[75]), c.weightBold)}>
+                          Check out their videos
+                        </span>{" "}
+                        for the ideas behind the moves in this repertoire.
+                      </>
+                    ),
                   },
                 ].map((x, i) => {
                   const selected = openingSource === x.source;
@@ -220,17 +244,26 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                         <Spacer width={12} />
                         <View style={s(c.column, c.flexible, c.mt(-1))}>
                           <View style={s()}>
+                            <View style={s(c.row, c.justifyBetween)}>
+                              <Text
+                                style={s(
+                                  c.fg(c.colors.textPrimary),
+                                  c.fontSize(16),
+                                  c.weightSemiBold
+                                )}
+                              >
+                                {x.title}
+                              </Text>
+                              {x.logo && x.logo}
+                            </View>
+                            <Spacer height={12} />
                             <Text
                               style={s(
-                                c.fg(c.colors.textPrimary),
-                                c.fontSize(16),
-                                c.weightSemiBold
+                                c.fg(c.grays[70]),
+                                c.fontSize(13),
+                                c.lineHeight("1.5em")
                               )}
                             >
-                              {x.title}
-                            </Text>
-                            <Spacer height={12} />
-                            <Text style={s(c.fg(c.grays[70]), c.fontSize(13))}>
                               {x.description}
                             </Text>
                           </View>
