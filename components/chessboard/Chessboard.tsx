@@ -172,7 +172,8 @@ export const ChessboardView = ({
     let columnPercent =
       (gesture.moveX - chessboardLayout.left) / chessboardLayout.width;
     let rowPercent =
-      (gesture.moveY - chessboardLayout.top) / chessboardLayout.height;
+      (gesture.moveY - chessboardLayout.top - window.scrollY) /
+      chessboardLayout.height;
     let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
     let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
     if (stateRef.current.flipped) {
