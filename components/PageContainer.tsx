@@ -87,7 +87,7 @@ export const HeadSiteMeta = ({ siteMeta }: { siteMeta: SiteMetadata }) => {
       {/*
       // @ts-ignore */}
       <meta
-        itemProp="description"
+        name="description"
         content={siteMeta.description}
         key="meta_description"
       />
