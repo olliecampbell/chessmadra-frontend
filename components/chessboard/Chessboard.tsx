@@ -263,7 +263,10 @@ export const ChessboardView = ({
             }
           }
         },
-        onPanResponderTerminationRequest: (evt, gestureState) => true,
+        onPanResponderTerminationRequest: (evt, gestureState) => {
+          pans[sq].setValue({ x: 0, y: 0 });
+          return true;
+        },
         onPanResponderRelease: (evt, gestureState) => {
           window.clearTimeout(tapTimeout.current);
           pans[sq].setValue({ x: 0, y: 0 });
@@ -289,6 +292,7 @@ export const ChessboardView = ({
           }
         },
         onPanResponderTerminate: (evt, gestureState) => {
+          pans[sq].setValue({ x: 0, y: 0 });
           // Another component has become the responder, so this gesture
           // should be cancelled
         },
@@ -384,6 +388,7 @@ export const ChessboardView = ({
             if (state.animatedMove?.to && sq == state.animatedMove?.to) {
               animated = true;
               posStyles = animatedXYToPercentage(state.pieceMoveAnim);
+            } else {
             }
             let priority = state.activeFromSquare === sq;
             let containerViewStyles = s(
