@@ -254,7 +254,6 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                               >
                                 {x.title}
                               </Text>
-                              {x.logo && x.logo}
                             </View>
                             <Spacer height={12} />
                             <Text
