@@ -60,7 +60,7 @@ export const Directory = () => {
         {chunked(
           navItems
             .filter((n) => !n.beta || hasBetaAccess)
-            .map(({ path, title, description, beta }, i) => {
+            .map(({ path, title, description, beta, isNew }, i) => {
               return (
                 <Link href={path}>
                   <View
@@ -73,11 +73,42 @@ export const Directory = () => {
                       c.py(isMobile ? 8 : 16),
                       c.br(4),
                       c.overflowHidden,
-                      c.bg(c.grays[90])
+                      c.bg(c.grays[80])
                       // c.shadow(0, 5, 25, 1, "rgba(255,255,255,0.5)")
                     )}
                   >
-                    {beta && (
+                    {isNew && (
+                      <View
+                        style={s(
+                          c.absolute,
+                          c.top(0),
+                          c.right(0),
+                          c.brbl(4),
+                          // c.round,
+                          c.bg(c.grays[75]),
+                          c.px(32),
+                          c.py(12),
+                          c.row
+                        )}
+                      >
+                        <i
+                          style={s(c.fg(c.grays[30]))}
+                          className="fa-solid fa-party-horn"
+                        ></i>
+                        <Spacer width={12} />
+                        <Text
+                          style={s(
+                            c.weightHeavy,
+                            c.fg(c.grays[10]),
+                            c.caps,
+                            c.fontSize(14)
+                          )}
+                        >
+                          New
+                        </Text>
+                      </View>
+                    )}
+                    {beta && !isNew && (
                       <View
                         style={s(
                           c.absolute,

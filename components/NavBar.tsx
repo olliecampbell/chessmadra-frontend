@@ -36,6 +36,7 @@ export const navItems = [
   {
     path: "/openings",
     title: "Opening Builder",
+    isNew: true,
     description: OPENINGS_DESCRIPTION,
   },
   {
