@@ -185,6 +185,7 @@ export const createChessState = <
         ]).start(() => {
           set((s) => {
             s.animatedMove = null;
+            s.pieceMoveAnim = null;
             callback(s);
           });
         });
