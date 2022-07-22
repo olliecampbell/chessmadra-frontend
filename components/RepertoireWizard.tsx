@@ -337,9 +337,11 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                       accept="*.pgn"
                       onUpload={async (e) => {
                         let file = e.target.files[0];
-                        let body = await file.text();
-                        setWhitePgn(body);
-                        return true;
+                        if (file) {
+                          let body = await file.text();
+                          setWhitePgn(body);
+                          return true;
+                        }
                       }}
                     />
                     <Spacer width={12} />
@@ -348,9 +350,11 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                       accept="*.pgn"
                       onUpload={async (e) => {
                         let file = e.target.files[0];
-                        let body = await file.text();
-                        setBlackPgn(body);
-                        return true;
+                        if (file) {
+                          let body = await file.text();
+                          setBlackPgn(body);
+                          return true;
+                        }
                       }}
                     />
                   </View>

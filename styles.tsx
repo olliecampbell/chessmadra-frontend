@@ -265,6 +265,18 @@ const basicButtonStyles = s(
     textStyles: s(weightBold, fontSize(16), fg(colors.textInverse)),
   }
 );
+const outlineLightButtonStyles = s(
+  br(2),
+  py(16),
+  px(16),
+  bg("none"),
+  border(`1px solid ${grays[60]}`),
+  clickable,
+  center,
+  {
+    textStyles: s(weightBold, fontSize(16), fg(grays[80])),
+  }
+);
 const basicInverseButtonStyles = s(
   br(2),
   py(16),
@@ -302,6 +314,7 @@ const buttons = {
   primary: primaryButtonStyles,
   primaryDisabled: primaryDisabledButtonStyles,
   squareBasicButtons: squareBottomRowButtonStyles,
+  outlineLight: outlineLightButtonStyles,
 };
 
 const noPointerEvents = keyedProp("pointer-events")("none");

@@ -19,6 +19,8 @@ import {
   dropRight,
   capitalize,
   drop,
+  last,
+  keys,
 } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
@@ -60,6 +62,71 @@ export const RepertoireBuilder = () => {
   useEffect(() => {
     state.initState();
   }, []);
+
+  let countToDelete =
+    state.getMovesDependentOnPosition(state.getCurrentEpd()) + 1;
+  const {
+    open: confirmMoveDeleteModalOpen,
+    setOpen: setConfirmMoveDeleteModalOpen,
+    modal: confirmMoveDeleteModal,
+  } = useModal({
+    content: (
+      <>
+        <View
+          style={s(
+            c.column,
+            c.alignStart,
+            c.bg(c.grays[15]),
+            c.px(16),
+            c.py(16),
+            c.br(8)
+          )}
+        >
+          <Text
+            style={s(
+              c.fg(c.colors.textPrimary),
+              c.flexShrink(1),
+              c.fontSize(14),
+              c.lineHeight("1.7em")
+            )}
+          >
+            Are you sure you want to delete {pluralize(countToDelete, "move")}{" "}
+            starting with {state.moveLog} ?
+          </Text>
+          <Spacer height={18} />
+          <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
+            <Button
+              style={s(c.buttons.outlineLight, c.height(36), c.selfEnd)}
+              onPress={() => {
+                setConfirmMoveDeleteModalOpen(false);
+              }}
+            >
+              <Text style={s(c.buttons.outlineLight.textStyles)}>Cancel</Text>
+            </Button>
+            <Spacer width={12} grow />
+            <Button
+              style={s(
+                c.buttons.primary,
+                c.height(36),
+                c.selfEnd,
+                c.bg(c.failureShades[50])
+              )}
+              isLoading={state.isDeletingMove}
+              loaderProps={{ color: c.grays[75] }}
+              onPress={() => {
+                state.deleteCurrentMove(() => {
+                  setConfirmMoveDeleteModalOpen(false);
+                }, state);
+              }}
+            >
+              <Text style={s(c.buttons.primary.textStyles)}>Delete</Text>
+            </Button>
+          </View>
+        </View>
+      </>
+    ),
+    isOpen: false,
+  });
   const {
     open: editEtcModalOpen,
     setOpen: setEditEtcModalOpen,
@@ -234,7 +301,15 @@ export const RepertoireBuilder = () => {
             ) : (
               <>
                 {state.moveLog && (
-                  <View style={s(c.bg(c.grays[15]), c.py(12), c.px(12))}>
+                  <View
+                    style={s(
+                      c.bg(c.grays[15]),
+                      c.py(12),
+                      c.px(12),
+                      c.row,
+                      c.alignCenter
+                    )}
+                  >
                     <Text
                       style={s(
                         c.fg(c.colors.textPrimary),
@@ -244,6 +319,24 @@ export const RepertoireBuilder = () => {
                     >
                       {state.moveLog}
                     </Text>
+                    <Spacer grow width={12} />
+                    <Button
+                      style={s(
+                        c.buttons.basic,
+                        c.bg("none"),
+                        c.border(`1px solid ${c.failureShades[55]}`),
+                        c.px(6),
+                        c.py(6)
+                      )}
+                      onPress={() => {
+                        setConfirmMoveDeleteModalOpen(true);
+                      }}
+                    >
+                      <i
+                        className="fa-regular fa-trash"
+                        style={s(c.fg(c.failureShades[55]), c.fontSize(14))}
+                      />
+                    </Button>
                   </View>
                 )}
                 <View style={s(c.flexShrink(1), c.grow)}>
@@ -265,7 +358,7 @@ export const RepertoireBuilder = () => {
                     {!state.showPendingMoves &&
                       isEmpty(
                         state.repertoire[state.activeSide].positionResponses[
-                          state.currentEpd(state)
+                          state.getCurrentEpd(state)
                         ]
                       ) && (
                         <View
@@ -640,6 +733,7 @@ export const RepertoireBuilder = () => {
           </View>
         </TrainerLayout>
         {editEtcModal}
+        {confirmMoveDeleteModal}
       </>
     );
   }
@@ -662,6 +756,10 @@ const OpeningTree = ({
           return (
             <OpeningNode
               seenEpds={new Set()}
+              line={dropRight(
+                state.currentLine,
+                keys(state.pendingResponses).length
+              )}
               state={state}
               grade={grade}
               move={move}
@@ -672,7 +770,7 @@ const OpeningTree = ({
       {!state.showPendingMoves &&
         (
           state.repertoire[state.activeSide].positionResponses[
-            state.currentEpd(state)
+            state.getCurrentEpd(state)
           ] ?? []
         ).map((move) => {
           return (

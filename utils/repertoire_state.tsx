@@ -98,7 +98,6 @@ export interface RepertoireState
   user?: User;
   initState: (_state?: RepertoireState) => void;
   playPgn: (pgn: string, _state?: RepertoireState) => void;
-  getResponses: (epd: string, side: Side, _state?: RepertoireState) => void;
   addPendingLine: (_state?: RepertoireState) => void;
   isAddingPendingLine: boolean;
   hasGivenUp?: boolean;
@@ -111,7 +110,10 @@ export interface RepertoireState
   startEditing: (side: Side, _state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
   onMove: (_state?: RepertoireState | WritableDraft<RepertoireState>) => void;
-  currentEpd: (
+  getLastMoveInRepertoire: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => RepertoireMove;
+  getCurrentEpd: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => string;
   onEditingPositionUpdate: (
@@ -124,6 +126,7 @@ export interface RepertoireState
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   deleteRepertoire: (side: Side, _state?: RepertoireState) => void;
+  deleteCurrentMove: (cb: () => void, _state?: RepertoireState) => void;
   exportPgn: (side: Side, _state?: RepertoireState) => void;
   initializeRepertoireFromTemplates: (_state?: RepertoireState) => void;
   updateQueue: (
@@ -158,6 +161,11 @@ export interface RepertoireState
   divergenceIndex?: number;
   isCramming?: boolean;
   pendingResponses?: Record<string, RepertoireMove[]>;
+  getMovesDependentOnPosition: (
+    epd: string,
+    _state?: RepertoireState
+  ) => number;
+  isDeletingMove?: boolean;
 }
 
 interface FetchRepertoireResponse {
@@ -184,7 +192,7 @@ export const useRepertoireState = create<RepertoireState>()(
           // hasCompletedRepertoireInitialization: failOnTrue(true),
           initState: () => {
             let state = get();
-            state.fetchRepertoire();
+            state.fetchRepertoire(state);
           },
           setUser: (user: User, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -307,24 +315,44 @@ export const useRepertoireState = create<RepertoireState>()(
                   windowReference.location = `${url}/${side}#999`;
                 });
             }),
+          getMovesDependentOnPosition: (
+            epd: string,
+            _state?: RepertoireState
+          ) => {
+            let s = _state ?? get();
+            console.log({ s });
+            if (!s.repertoire) {
+              return 0;
+            }
+            let total = 0;
+            let seen_epds = new Set();
+            let recurse = (epd) => {
+              let responses = s.repertoire[s.activeSide].positionResponses[epd];
+              map(responses, (r) => {
+                total += 1;
+                if (!seen_epds.has(r.epdAfter)) {
+                  seen_epds.add(r.epdAfter);
+                  recurse(r.epdAfter);
+                }
+              });
+            };
+            recurse(epd);
+            return total;
+          },
           onEditingPositionUpdate: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               let line = s.position.history();
               s.currentLine = line;
               s.moveLog = lineToPgn(line);
-              console.log({ positions: s.positions });
               s.divergenceIndex = findIndex(s.positions, (e: string, i) => {
                 let responses = s.repertoire[s.activeSide].positionResponses[e];
                 let move = s.currentLine[i];
-                console.log({ move });
                 if (!move) {
                   return false;
                 }
                 if (!some(responses, (r) => r.sanPlus == move)) {
-                  console.log("No responses like this, this one!");
                   return true;
                 }
-                console.log("No my response from this position");
                 return false;
               });
               s.divergenceIndex =
@@ -335,8 +363,6 @@ export const useRepertoireState = create<RepertoireState>()(
               s.divergencePosition = !isNil(s.divergenceIndex)
                 ? s.positions[s.divergenceIndex]
                 : null;
-              console.log({ diIndex: s.divergenceIndex });
-              console.log({ diPosition: s.divergencePosition });
               s.pendingResponses = {};
               if (!isNil(s.divergenceIndex)) {
                 map(
@@ -375,29 +401,9 @@ export const useRepertoireState = create<RepertoireState>()(
               console.log(s.pendingResponses);
               console.log(s.showPendingMoves);
               console.log(s.divergencePosition);
-              s.numMovesWouldBeDeleted = (() => {
-                if (isEmpty(s.pendingResponses[s.divergencePosition])) {
-                  return 0;
-                }
-                if (!first(s.pendingResponses[s.divergencePosition]).mine) {
-                  return 0;
-                }
-                let total = 0;
-                let seen_epds = new Set();
-                let recurse = (epd) => {
-                  let responses =
-                    s.repertoire[s.activeSide].positionResponses[epd];
-                  map(responses, (r) => {
-                    total += 1;
-                    if (!seen_epds.has(r.epdAfter)) {
-                      seen_epds.add(r.epdAfter);
-                      recurse(r.epdAfter);
-                    }
-                  });
-                };
-                recurse(s.divergencePosition);
-                return total;
-              })();
+              s.numMovesWouldBeDeleted =
+                s.getMovesDependentOnPosition(s.divergencePosition, s) -
+                keys(s.pendingResponses).length;
               console.log("Num deleted?");
               console.log(s.numMovesWouldBeDeleted);
             }),
@@ -422,7 +428,6 @@ export const useRepertoireState = create<RepertoireState>()(
 
                   if (!seen_epds.has(m.epdAfter)) {
                     seen_epds.add(m.epdAfter);
-                    console.log({ after: m.epdAfter });
                     recurse(m.epdAfter, [...line, m.sanPlus], side);
                   }
                 });
@@ -529,6 +534,29 @@ export const useRepertoireState = create<RepertoireState>()(
               }
             }),
 
+          deleteCurrentMove: (cb: () => void, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              let response = s.getLastMoveInRepertoire();
+              s.isDeletingMove = true;
+              client
+                .post("/api/v1/openings/delete_move", {
+                  response: response,
+                })
+                .then(({ data }: { data: FetchRepertoireResponse }) => {
+                  set((s) => {
+                    s.repertoire = data.repertoire;
+                    s.repertoireGrades = data.grades;
+                    s.onRepertoireUpdate(s);
+                    s.backToStartPosition(s);
+                    cb();
+                  });
+                })
+                .finally(() => {
+                  set((s) => {
+                    s.isDeletingMove = false;
+                  });
+                });
+            }),
           deleteRepertoire: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               client
@@ -679,10 +707,21 @@ export const useRepertoireState = create<RepertoireState>()(
                   });
                 });
             }),
-          currentEpd: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              return last(s.positions);
-            }),
+          getLastMoveInRepertoire: (_state?: RepertoireState) => {
+            let s = _state ?? get();
+            let previousEpd = nth(s.positions, -2);
+            let currentEpd = last(s.positions);
+            return find(
+              s.repertoire[s.activeSide].positionResponses[previousEpd],
+              (response: RepertoireMove) => {
+                return response.epdAfter === currentEpd;
+              }
+            );
+          },
+          getCurrentEpd: (_state?: RepertoireState) => {
+            let s = _state ?? get();
+            return last(s.positions);
+          },
           backOne: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               let m = s.position.undo();
