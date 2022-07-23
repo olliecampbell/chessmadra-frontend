@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -303,6 +304,13 @@ export const ChessboardView = ({
   }, []);
 
   const isMobile = useIsMobile();
+  const moveLogRef = useRef(null);
+  useLayoutEffect(() => {
+    if (moveLogRef.current) {
+      console.log("SCROLLING");
+      moveLogRef.current.scrollLeft = moveLogRef.current.scrollWidth;
+    }
+  }, [state.moveLog]);
 
   const { width: windowWidth } = useWindowDimensions();
   return (
@@ -323,12 +331,13 @@ export const ChessboardView = ({
               width: "100%",
               height: "100%",
               position: "absolute",
-              borderRadius: 2,
               overflow: "hidden",
-              shadowColor: "black",
-              shadowOpacity: 0.4,
-              shadowRadius: 10,
+              // shadowColor: "black",
+              // shadowOpacity: 0.4,
+              // shadowRadius: 10,
             },
+            c.brt(2),
+            !state.showMoveLog && c.brb(2),
             state.hideColors && c.border(hiddenColorsBorder)
           )}
           ref={chessboardContainerRef}
@@ -579,9 +588,28 @@ export const ChessboardView = ({
       </View>
       {state.showMoveLog && state.moveLog && (
         <>
-          <Spacer height={12} />
-          <View style={s(c.scrollX, c.fullWidth)}>
-            <Text style={s(c.fg(c.colors.textSecondary), c.weightSemiBold)}>
+          <View
+            ref={moveLogRef}
+            style={s(
+              c.fullWidth,
+              c.bg(c.grays[15]),
+              c.pt(14),
+              c.pb(8),
+              c.mt(-6),
+              c.px(4),
+              c.br(2),
+              c.zIndex(-1),
+              c.scrollX
+            )}
+          >
+            <Text
+              style={s(
+                c.fg(c.colors.textSecondary),
+                c.weightBold,
+                c.keyedProp("textOverflow")("ellipsis"),
+                c.whitespace("nowrap")
+              )}
+            >
               {state.moveLog}
             </Text>
           </View>

@@ -128,6 +128,12 @@ const brtl = keyedPixelProp("borderTopLeftRadius");
 const brtr = keyedPixelProp("borderTopRightRadius");
 const brbl = keyedPixelProp("borderBottomLeftRadius");
 const brbr = keyedPixelProp("borderBottomRightRadius");
+const brt = (x) => {
+  return s(brtl(x), brtr(x));
+};
+const brb = (x) => {
+  return s(brbr(x), brbl(x));
+};
 const brl = (x) => {
   return s(brtl(x), brbl(x));
 };
@@ -414,6 +420,8 @@ export const c = {
   brbl,
   brbr,
   brl,
+  brb,
+  brt,
   brr,
   maxWidth,
   maxHeight,

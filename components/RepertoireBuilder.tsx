@@ -598,20 +598,61 @@ export const RepertoireBuilder = () => {
             Play the correct response on the board
           </Text>
           <Spacer height={12} />
-          <Button
-            style={s(
-              state.hasGivenUp ? c.buttons.primary : c.buttons.basicInverse
-            )}
-            onPress={() => {
-              if (state.hasGivenUp) {
-                state.setupNextMove();
-              } else {
-                state.giveUp();
-              }
-            }}
-          >
-            {state.hasGivenUp ? "Next" : "I don't know"}
-          </Button>
+          <View style={s(c.row)}>
+            <Button
+              style={s(
+                c.buttons.squareBasicButtons,
+                c.buttons.basicInverse,
+                c.height("unset"),
+                c.selfStretch
+              )}
+              onPress={() => {
+                state.quick((s) => {
+                  let qm = s.currentMove;
+                  s.backToOverview(s);
+                  s.startEditing(qm.move.side, s);
+                  s.playPgn(qm.line, s);
+                });
+              }}
+            >
+              <Text style={s(c.buttons.basicInverse.textStyles)}>
+                <i className="fa fa-search" />
+              </Text>
+            </Button>
+            <Spacer width={8} />
+            <Button
+              style={s(
+                state.hasGivenUp ? c.buttons.primary : c.buttons.basicInverse,
+                c.grow
+              )}
+              onPress={() => {
+                if (state.hasGivenUp) {
+                  state.setupNextMove();
+                } else {
+                  state.giveUp();
+                }
+              }}
+            >
+              <Text
+                style={s(
+                  state.hasGivenUp
+                    ? c.buttons.primary.textStyles
+                    : c.buttons.basicInverse.textStyles
+                )}
+              >
+                {!state.hasGivenUp && false && (
+                  <>
+                    <i
+                      className="fas fa-face-confused"
+                      style={s(c.fg(c.grays[50]), c.fontSize(18))}
+                    />
+                    <Spacer width={8} />
+                  </>
+                )}
+                {state.hasGivenUp ? "Next" : "I don't know"}
+              </Text>
+            </Button>
+          </View>
         </>
       );
     } else {
