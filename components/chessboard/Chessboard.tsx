@@ -414,6 +414,7 @@ export const ChessboardView = ({
                 pieceView = (
                   <Animated.View
                     style={s(containerViewStyles)}
+                    key={`piece-${sq}`}
                     pointerEvents="none"
                   >
                     {pieceViewInner}
@@ -452,7 +453,7 @@ export const ChessboardView = ({
               let isJustIndicator = !isDraggedOverSquare && !isFromSquare;
               moveIndicatorView = (
                 <Animated.View
-                  key={sq}
+                  key={`indicator-${sq}`}
                   style={s(
                     c.fullWidth,
                     c.absolute,
@@ -480,10 +481,10 @@ export const ChessboardView = ({
             }
 
             return (
-              <>
+              <React.Fragment key={sq}>
                 {pieceView}
                 {moveIndicatorView}
-              </>
+              </React.Fragment>
             );
           })}
           <View style={s(c.column, c.fullWidth, c.fullHeight)}>
@@ -508,6 +509,7 @@ export const ChessboardView = ({
                     const isLeftEdge = j == 0;
                     return (
                       <View
+                        key={j}
                         style={s(
                           tileStyles,
                           c.bg(color),

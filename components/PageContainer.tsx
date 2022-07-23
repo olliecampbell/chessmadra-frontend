@@ -29,45 +29,47 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
   ];
   return (
     <View style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
-      {!hideNavBar && <NavBar />}
-      <View
-        style={s(
-          c.grow,
-          c.fullWidth,
-          c.column,
-          c.alignCenter,
-          centered && c.justifyCenter
-        )}
-      >
-        {children}
-      </View>
-      <Spacer height={44} />
-      <View
-        style={s(
-          c.fullWidth,
-          c.row,
-          c.minHeight(48),
-          c.py(32),
-          // c.bg(c.grays[40]),
-          c.center
-        )}
-      >
-        {intersperse(
-          icons.map((icon) => {
-            return (
-              <a href={icon.link}>
-                <i
-                  style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
-                  className={`fas ${icon.icon}`}
-                ></i>
-              </a>
-            );
-          }),
-          (i) => {
-            return <Spacer key={i} width={24} />;
-          }
-        )}
-      </View>
+      <React.StrictMode>
+        {!hideNavBar && <NavBar />}
+        <View
+          style={s(
+            c.grow,
+            c.fullWidth,
+            c.column,
+            c.alignCenter,
+            centered && c.justifyCenter
+          )}
+        >
+          {children}
+        </View>
+        <Spacer height={44} />
+        <View
+          style={s(
+            c.fullWidth,
+            c.row,
+            c.minHeight(48),
+            c.py(32),
+            // c.bg(c.grays[40]),
+            c.center
+          )}
+        >
+          {intersperse(
+            icons.map((icon) => {
+              return (
+                <a href={icon.link} key={icon.link}>
+                  <i
+                    style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
+                    className={`fas ${icon.icon}`}
+                  ></i>
+                </a>
+              );
+            }),
+            (i) => {
+              return <Spacer key={i} width={24} />;
+            }
+          )}
+        </View>
+      </React.StrictMode>
     </View>
   );
 };

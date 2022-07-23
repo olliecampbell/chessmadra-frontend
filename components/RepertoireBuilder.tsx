@@ -723,7 +723,9 @@ export const RepertoireBuilder = () => {
 
           {intersperse(
             SIDES.map((side, i) => {
-              return <RepertoireSideSummary side={side} state={state} />;
+              return (
+                <RepertoireSideSummary key={side} side={side} state={state} />
+              );
             }),
             (i) => {
               return <Spacer height={12} key={i} />;
@@ -796,6 +798,7 @@ const OpeningTree = ({
         (state.pendingResponses[state.divergencePosition] ?? []).map((move) => {
           return (
             <OpeningNode
+              key={`pending-${move.epdAfter}`}
               seenEpds={new Set()}
               line={dropRight(
                 state.currentLine,
@@ -816,6 +819,7 @@ const OpeningTree = ({
         ).map((move) => {
           return (
             <OpeningNode
+              key={move.epdAfter}
               seenEpds={new Set()}
               line={state.currentLine}
               state={state}
@@ -932,6 +936,7 @@ const OpeningNode = ({
                 .map((move) => {
                   return (
                     <OpeningNode
+                      key={move.epdAfter}
                       seenEpds={seenEpds}
                       line={cumulativeLine}
                       repertoire={repertoire}
