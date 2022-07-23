@@ -227,10 +227,6 @@ export const ChessboardView = ({
           tapTimeout.current = window.setTimeout(() => {
             isTap.current = false;
           }, 100);
-          pans[sq].setOffset({
-            x: pans[sq].x._value,
-            y: pans[sq].y._value,
-          });
         },
         // The gesture has started. Show visual feedback so the user knows
         // what is happening!

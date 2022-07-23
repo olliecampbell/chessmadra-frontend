@@ -20,6 +20,7 @@ import {
   isEmpty,
   last,
   sample,
+  shuffle,
   take,
 } from "lodash";
 import {
@@ -157,7 +158,7 @@ export const useGameMemorizationState = create<GameMemorizationState>()(
               s._makeNextMove(
                 animateOwnMove,
                 (s) => {
-                  s._makeNextMove(true, () => {}, s);
+                  s._makeNextMove(false, () => {}, s);
                   s.missedCurrentMove = false;
                   if (isEmpty(s.nextMoves)) {
                     s.numReviewed.value += 1;
@@ -261,7 +262,7 @@ export const useGameMemorizationState = create<GameMemorizationState>()(
                   await client.get("/api/v1/my_games");
                 // @ts-ignore
                 set((s: GameMemorizationState) => {
-                  s.games = resp.games;
+                  s.games = shuffle(resp.games);
                   s.gameStatuses = resp.gameStatuses;
                 });
               })();
