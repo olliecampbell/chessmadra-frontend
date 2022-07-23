@@ -320,23 +320,27 @@ export const useRepertoireState = create<RepertoireState>()(
             _state?: RepertoireState
           ) => {
             let s = _state ?? get();
-            console.log({ s });
             if (!s.repertoire) {
               return 0;
             }
             let total = 0;
             let seen_epds = new Set();
-            let recurse = (epd) => {
+            let recurse = (epd, isStart?: boolean) => {
               let responses = s.repertoire[s.activeSide].positionResponses[epd];
+              if (isStart && first(responses)?.mine == false) {
+                return;
+              }
               map(responses, (r) => {
-                total += 1;
+                if (r.mine) {
+                  total += 1;
+                }
                 if (!seen_epds.has(r.epdAfter)) {
                   seen_epds.add(r.epdAfter);
                   recurse(r.epdAfter);
                 }
               });
             };
-            recurse(epd);
+            recurse(epd, true);
             return total;
           },
           onEditingPositionUpdate: (_state?: RepertoireState) =>
@@ -397,15 +401,10 @@ export const useRepertoireState = create<RepertoireState>()(
                 flatten(values(s.pendingResponses)),
                 (m) => m.mine
               );
-              console.log("____");
-              console.log(s.pendingResponses);
-              console.log(s.showPendingMoves);
-              console.log(s.divergencePosition);
-              s.numMovesWouldBeDeleted =
-                s.getMovesDependentOnPosition(s.divergencePosition, s) -
-                keys(s.pendingResponses).length;
-              console.log("Num deleted?");
-              console.log(s.numMovesWouldBeDeleted);
+              s.numMovesWouldBeDeleted = s.getMovesDependentOnPosition(
+                s.divergencePosition,
+                s
+              );
             }),
           onMove: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -461,7 +460,6 @@ export const useRepertoireState = create<RepertoireState>()(
                   s.onMove(s);
                 });
               } else if (s.isReviewing) {
-                console.log(move.san, s.currentMove.move.sanPlus);
                 if (move.san == s.currentMove.move.sanPlus) {
                   cb(true, (s: RepertoireState) => {
                     s.flashRing(true, s);
@@ -513,11 +511,9 @@ export const useRepertoireState = create<RepertoireState>()(
               s.position = new Chess();
               // s.frozen = false;
               s.position.loadPgn(s.currentMove.line);
-              console.log(s.position.ascii());
               // s.position.undo();
               let lastOpponentMove = s.position.undo();
 
-              console.log({ lastOpponentMove });
               if (lastOpponentMove) {
                 window.setTimeout(() => {
                   set((s) => {

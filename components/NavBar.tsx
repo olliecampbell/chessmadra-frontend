@@ -138,6 +138,7 @@ export const NavBar = (props: {}) => {
           (i) => {
             return (
               <View
+                key={i}
                 style={s(c.width(1), c.height(34), c.bg(c.grays[30]), c.mx(12))}
               ></View>
             );
