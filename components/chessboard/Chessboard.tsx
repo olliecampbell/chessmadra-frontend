@@ -422,6 +422,7 @@ export const ChessboardView = ({
               } else {
                 pieceView = (
                   <Animated.View
+                    key={sq}
                     style={s(
                       containerViewStyles,
                       c.keyedProp("touchAction")("none"),

@@ -158,7 +158,7 @@ export const useGameMemorizationState = create<GameMemorizationState>()(
               s._makeNextMove(
                 animateOwnMove,
                 (s) => {
-                  s._makeNextMove(false, () => {}, s);
+                  s._makeNextMove(true, () => {}, s);
                   s.missedCurrentMove = false;
                   if (isEmpty(s.nextMoves)) {
                     s.numReviewed.value += 1;
