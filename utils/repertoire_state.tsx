@@ -466,7 +466,11 @@ export const useRepertoireState = create<RepertoireState>()(
                     window.setTimeout(() => {
                       set((s) => {
                         if (s.isReviewing) {
-                          s.setupNextMove(s);
+                          if (s.failedCurrentMove) {
+                            s.hasGivenUp = true;
+                          } else {
+                            s.setupNextMove(s);
+                          }
                         }
                       });
                     }, 100);
