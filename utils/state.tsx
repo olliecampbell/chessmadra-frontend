@@ -92,8 +92,8 @@ const generateClimb = () => {
   let cutoff = 2400;
   const climb = [{ puzzleDifficulty, hiddenMoves }];
   const addRampingPuzzleDifficulty = () => {
-    times(20)((i) => {
-      puzzleDifficulty += 10;
+    times(80)((i) => {
+      puzzleDifficulty += 8;
       climb.push({ puzzleDifficulty, hiddenMoves });
     });
   };
@@ -101,7 +101,7 @@ const generateClimb = () => {
     times(1)((i) => {
       hiddenMoves += 1;
       if (puzzleDifficulty < cutoff) {
-        puzzleDifficulty -= 120;
+        puzzleDifficulty -= 600;
       }
       climb.push({ puzzleDifficulty, hiddenMoves });
     });
@@ -430,7 +430,6 @@ const createClimbState = <T extends ClimbState>(
     isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
     scoreOpacityAnim: new Animated.Value(0.0),
     // TODO: bring back intro screen
-    climb: CLIMB,
     score: new StorageItem("climb-score", 0),
     highScore: new StorageItem("climb-high-score", 0),
     delta: 0,
@@ -512,7 +511,7 @@ const createClimbState = <T extends ClimbState>(
       }),
     updateStep: (state?: ClimbState) =>
       setter(set, state, (state) => {
-        state.step = state.climb[state.score.value];
+        state.step = CLIMB[state.score.value];
       }),
     ...createVisualizationState(set, get, true),
   };

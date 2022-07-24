@@ -63,9 +63,8 @@ export const RepertoireBuilder = () => {
     state.initState();
   }, []);
 
-  let countToDelete = state.getMovesDependentOnPosition(
-    state.divergencePosition
-  );
+  let countToDelete =
+    state.getMovesDependentOnPosition(state.divergencePosition) + 1;
   const {
     open: confirmMoveDeleteModalOpen,
     setOpen: setConfirmMoveDeleteModalOpen,
