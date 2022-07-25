@@ -281,7 +281,7 @@ export const RepertoireBuilder = () => {
               <i
                 className="fas fa-angles-left"
                 style={s(
-                  c.fg(backButtonActive ? c.grays[20] : c.grays[70]),
+                  c.fg(backButtonActive ? c.grays[20] : c.grays[20]),
                   c.fontSize(18)
                 )}
               />
@@ -301,7 +301,7 @@ export const RepertoireBuilder = () => {
               <i
                 className="fas fa-angle-left"
                 style={s(
-                  c.fg(backButtonActive ? c.grays[20] : c.grays[70]),
+                  c.fg(backButtonActive ? c.grays[20] : c.grays[20]),
                   c.fontSize(18)
                 )}
               />
