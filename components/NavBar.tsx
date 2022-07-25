@@ -84,8 +84,11 @@ export const NavBar = (props: {}) => {
   const padding = 16;
   const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
-  useOutsideClick(mobileDrawerRef, () => {
+  useOutsideClick(mobileDrawerRef, (e) => {
     setMobileNavOpen(false);
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
   });
   if (!isMobile) {
     return (
@@ -246,7 +249,7 @@ export const NavBar = (props: {}) => {
           c.fullHeight,
           c.fullWidth,
           c.bg("black"),
-          c.opacity(mobileNavOpen ? 40 : 0.0),
+          c.opacity(mobileNavOpen ? 60 : 0.0),
           c.transition("opacity"),
           c.noPointerEvents,
           c.zIndex(8)
@@ -258,47 +261,57 @@ export const NavBar = (props: {}) => {
           c.left(mobileNavOpen ? 0 : -mobileDrawerWidth),
           c.transition("left"),
           c.width(mobileDrawerWidth),
-          c.bg(c.grays[80]),
-          c.fullHeight,
-          c.px(12),
-          c.py(12),
+          c.pl(8),
+          c.py(8),
           c.zIndex(10)
         )}
         ref={mobileDrawerRef}
       >
-        {intersperse(
-          navItems
-            .filter((n) => !n.beta || hasBetaAccess)
-            .map((navItem) => {
-              const isActive = router.asPath == navItem.path;
-              return (
-                <Pressable
-                  key={navItem.title}
-                  style={s(c.clickable)}
-                  onPress={() => {
-                    console.log("THIS?");
-                    router.push(navItem.path);
-                  }}
-                >
-                  <Text
-                    style={s(
-                      c.fg(c.colors.textInverse),
-                      c.weightBold,
-                      c.fontSize(18),
-                      c.pb(isMobile ? 2 : 4),
-                      isActive && s(c.borderBottom(`2px solid ${c.grays[60]}`)),
-                      c.selfStart
-                    )}
+        <View
+          style={s(
+            c.fullHeight,
+            c.fullWidth,
+            c.bg(c.grays[20]),
+            c.br(2),
+            c.px(12),
+            c.py(16)
+          )}
+        >
+          {intersperse(
+            navItems
+              .filter((n) => !n.beta || hasBetaAccess)
+              .map((navItem) => {
+                const isActive = router.asPath == navItem.path;
+                return (
+                  <Pressable
+                    key={navItem.title}
+                    style={s(c.clickable)}
+                    onPress={() => {
+                      console.log("THIS?");
+                      router.push(navItem.path);
+                    }}
                   >
-                    {navItem.title}
-                  </Text>
-                </Pressable>
-              );
-            }),
-          (i) => {
-            return <Spacer key={i} height={24} />;
-          }
-        )}
+                    <Text
+                      style={s(
+                        c.fg(isActive ? c.grays[90] : c.grays[80]),
+                        c.weightSemiBold,
+                        c.fontSize(18),
+                        c.pb(isMobile ? 2 : 4),
+                        isActive &&
+                          s(c.borderBottom(`1px solid ${c.grays[80]}`)),
+                        c.selfStart
+                      )}
+                    >
+                      {navItem.title}
+                    </Text>
+                  </Pressable>
+                );
+              }),
+            (i) => {
+              return <Spacer key={i} height={32} />;
+            }
+          )}
+        </View>
       </View>
     </>
   );

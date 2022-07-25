@@ -453,7 +453,7 @@ export const c = {
   },
   transition: (key) => {
     return {
-      transition: `250ms ${key} ease-in-out`,
+      transition: `200ms ${key} ease-in-out`,
     };
   },
   gradient: (c1, c2, c3) => {

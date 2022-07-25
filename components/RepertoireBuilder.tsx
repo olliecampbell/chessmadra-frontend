@@ -266,13 +266,55 @@ export const RepertoireBuilder = () => {
       innerInner = (
         <>
           {backToOverviewRow}
+          <View style={s(c.row)}>
+            <Button
+              style={s(
+                c.buttons.basicInverse,
+                c.height(42),
+                c.width(64),
+                c.bg(c.grays[80])
+              )}
+              onPress={() => {
+                state.backToStartPosition();
+              }}
+            >
+              <i
+                className="fas fa-angles-left"
+                style={s(
+                  c.fg(backButtonActive ? c.grays[20] : c.grays[70]),
+                  c.fontSize(18)
+                )}
+              />
+            </Button>
+            <Spacer width={12} />
+            <Button
+              style={s(
+                c.buttons.basicInverse,
+                c.height(42),
+                c.grow,
+                c.bg(c.grays[80])
+              )}
+              onPress={() => {
+                state.backOne();
+              }}
+            >
+              <i
+                className="fas fa-angle-left"
+                style={s(
+                  c.fg(backButtonActive ? c.grays[20] : c.grays[70]),
+                  c.fontSize(18)
+                )}
+              />
+            </Button>
+          </View>
+          <Spacer height={12} />
           <View
             style={s(
               c.bg(c.grays[20]),
               c.br(4),
               c.overflowHidden,
               // c.maxHeight(300),
-              c.height(260),
+              c.height(isMobile ? 220 : 260),
               c.column
             )}
           >
@@ -460,53 +502,11 @@ export const RepertoireBuilder = () => {
             )}
           </View>
           <Spacer height={12} />
-          <View style={s(c.row)}>
-            <Button
-              style={s(
-                c.buttons.basicInverse,
-                c.height(36),
-                c.width(64),
-                c.bg(c.grays[20])
-              )}
-              onPress={() => {
-                state.backToStartPosition();
-              }}
-            >
-              <i
-                className="fas fa-angles-left"
-                style={s(
-                  c.fg(backButtonActive ? c.grays[80] : c.grays[50]),
-                  c.fontSize(18)
-                )}
-              />
-            </Button>
-            <Spacer width={12} />
-            <Button
-              style={s(
-                c.buttons.basicInverse,
-                c.height(36),
-                c.grow,
-                c.bg(c.grays[20])
-              )}
-              onPress={() => {
-                state.backOne();
-              }}
-            >
-              <i
-                className="fas fa-angle-left"
-                style={s(
-                  c.fg(backButtonActive ? c.grays[80] : c.grays[50]),
-                  c.fontSize(18)
-                )}
-              />
-            </Button>
-          </View>
-          <Spacer height={12} />
           <View style={s(c.row, c.fullWidth)}>
             <Button
               style={s(
                 c.buttons.basicInverse,
-                c.height(36),
+                c.height(42),
                 c.flexible,
                 c.grow,
                 c.bg(c.grays[20])
@@ -533,7 +533,7 @@ export const RepertoireBuilder = () => {
             <Button
               style={s(
                 c.buttons.basicInverse,
-                c.height(36),
+                c.height(42),
                 c.flexible,
                 c.grow,
                 c.grow,
