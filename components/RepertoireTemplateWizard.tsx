@@ -95,7 +95,7 @@ export const RepertoireTemplateWizard = ({
       <Button
         style={s(c.buttons.primary, c.selfEnd)}
         onPress={() => {
-          state.initializeRepertoireFromTemplates();
+          state.addTemplates(state);
         }}
       >
         Continue

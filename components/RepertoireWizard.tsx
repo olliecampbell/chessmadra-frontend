@@ -118,9 +118,63 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
     state.initializeRepertoire({ lichessUsername: username });
   };
 
+  const introText = (
+    <>
+      <Text
+        style={s(
+          c.fg(c.colors.textPrimary),
+          c.weightSemiBold,
+          c.fontSize(14),
+          c.lineHeight("1.7em")
+        )}
+      >
+        This tool will help you build and remember your opening repertoire.
+      </Text>
+      <Spacer height={12} />
+      <Text
+        style={s(
+          c.fg(c.colors.textPrimary),
+          c.weightSemiBold,
+          c.fontSize(14),
+          c.lineHeight("1.7em")
+        )}
+      >
+        How do you want to create your opening?
+      </Text>
+    </>
+  );
+
+  let pgnWarningSection = (
+    <WarningSection
+      title="Risk of deleting moves"
+      isMobile={isMobile}
+      copy={
+        <>
+          New lines will overwrite any existing lines. Ex. if you have 1.e4 in
+          your repertoire, but 1.d4 is in the white PGN, your 1.e4 repertoire
+          will be lost.
+        </>
+      }
+    />
+  );
+
+  let templatesWarningSection = (
+    <WarningSection
+      title="Risk of deleting moves"
+      isMobile={isMobile}
+      copy={
+        <>
+          New lines will overwrite any existing lines. Ex. if your current
+          repertoire has 1.e4 d5, but you add the Najdorf template, all moves
+          after 1.e4 d5 will be lost.
+        </>
+      }
+    />
+  );
+
   return (
     <>
-      <Spacer height={0} grow />
+      <Spacer height={32} grow />
       <View
         style={s(
           c.column,
@@ -130,151 +184,38 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
           )
         )}
       >
-        {isNil(activeOpeningSource) ? (
+        {isNil(activeOpeningSource) &&
+          !state.hasCompletedRepertoireInitialization && (
+            <>
+              {introText}
+              <Spacer height={24} />
+            </>
+          )}
+        {isNil(activeOpeningSource) &&
+          state.hasCompletedRepertoireInitialization && (
+            <>
+              <View
+                style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
+                onClick={() => {
+                  state.backToOverview();
+                }}
+              >
+                <i
+                  className="fa-light fa-angle-left"
+                  style={s(c.fg(c.grays[70]), c.fontSize(16))}
+                />
+                <Spacer width={6} />
+                <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
+                  Back to repertoire
+                </Text>
+              </View>
+              <Spacer height={24} />
+            </>
+          )}
+        {isNil(activeOpeningSource) && (
           <>
-            <Text
-              style={s(
-                c.fg(c.colors.textPrimary),
-                c.weightSemiBold,
-                c.fontSize(14),
-                c.lineHeight("1.7em")
-              )}
-            >
-              This tool will help you build and remember your opening
-              repertoire.
-            </Text>
-            <Spacer height={12} />
-            <Text
-              style={s(
-                c.fg(c.colors.textPrimary),
-                c.weightSemiBold,
-                c.fontSize(14),
-                c.lineHeight("1.7em")
-              )}
-            >
-              How do you want to create your opening?
-            </Text>
-            <Spacer height={24} />
             <View style={s(c.column)}>
-              {intersperse(
-                [
-                  {
-                    title: "Templates",
-                    source: OpeningSource.Templates,
-                    description: (
-                      <>
-                        Choose among some popular openings for both sides. An
-                        easy way to get started if you don't have any openings
-                        yet.
-                      </>
-                    ),
-                    buttonCopy: "Choose",
-                  },
-                  {
-                    title: "From scratch",
-                    buttonCopy: "Start",
-                    source: OpeningSource.Manual,
-                    description: (
-                      <>
-                        Create your opening from scratch. The quickest way to
-                        get started, and you can always come back.
-                      </>
-                    ),
-                  },
-                  {
-                    title: "Import",
-                    source: OpeningSource.Import,
-                    description: (
-                      <>
-                        Import your existing opening repertoire from a pgn, or
-                        just provide your Lichess username and we'll figure it
-                        out from your recent games.
-                      </>
-                    ),
-                    buttonCopy: "Import",
-                  },
-                  // {
-                  //   title: "ChessMood Pack",
-                  //   buttonCopy: "Start",
-                  //   source: OpeningSource.Chessmood,
-                  //   logo: (
-                  //     <img
-                  //       style={s(c.width(100), c.opacity(80))}
-                  //       src="/chessmood_logo.png"
-                  //     />
-                  //   ),
-                  //   description: (
-                  //     <>
-                  //       A full repertoire from the GMs over at{" "}
-                  //       <a href="https://chessmood.com">ChessMood</a>.{" "}
-                  //       <span style={s(c.fg(c.grays[75]), c.weightBold)}>
-                  //         Check out their videos
-                  //       </span>{" "}
-                  //       for the ideas behind the moves in this repertoire.
-                  //     </>
-                  //   ),
-                  // },
-                ].map((x, i) => {
-                  const selected = openingSource === x.source;
-                  return (
-                    <Pressable
-                      onPress={() => {
-                        setOpeningSource(x.source);
-                      }}
-                    >
-                      <View
-                        style={s(
-                          c.row,
-                          selected ? c.bg(c.grays[15]) : c.bg(c.grays[15]),
-                          c.br(2),
-                          c.overflowHidden,
-                          c.px(12),
-                          c.py(14)
-                        )}
-                      >
-                        <i
-                          className={
-                            selected ? "fas fa-circle" : "fa-regular fa-circle"
-                          }
-                          style={s(
-                            c.fontSize(18),
-                            c.fg(selected ? c.grays[80] : c.grays[50])
-                          )}
-                        />
-                        <Spacer width={12} />
-                        <View style={s(c.column, c.flexible, c.mt(-1))}>
-                          <View style={s()}>
-                            <View style={s(c.row, c.justifyBetween)}>
-                              <Text
-                                style={s(
-                                  c.fg(c.colors.textPrimary),
-                                  c.fontSize(16),
-                                  c.weightSemiBold
-                                )}
-                              >
-                                {x.title}
-                              </Text>
-                            </View>
-                            <Spacer height={12} />
-                            <Text
-                              style={s(
-                                c.fg(c.grays[70]),
-                                c.fontSize(13),
-                                c.lineHeight("1.5em")
-                              )}
-                            >
-                              {x.description}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    </Pressable>
-                  );
-                }),
-                (i) => {
-                  return <Spacer height={12} key={i} />;
-                }
-              )}
+              <ImportOptions {...{ state, openingSource, setOpeningSource }} />
               <Spacer height={12} />
               <Button
                 onPress={() => {
@@ -282,6 +223,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                   if (openingSource === OpeningSource.Manual) {
                     state.quick((s) => {
                       s.hasCompletedRepertoireInitialization = true;
+                      s.backToOverview(s);
                     });
                   }
                 }}
@@ -298,7 +240,8 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
               </Button>
             </View>
           </>
-        ) : (
+        )}
+        {!isNil(activeOpeningSource) && (
           <View style={s(c.column, c.fullWidth)}>
             <View
               style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
@@ -315,10 +258,14 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
             </View>
             <Spacer height={12} />
             {activeOpeningSource === OpeningSource.Templates && (
-              <RepertoireTemplateWizard state={state} />
+              <>
+                {!state.getIsRepertoireEmpty() && templatesWarningSection}
+                <RepertoireTemplateWizard state={state} />
+              </>
             )}
             {activeOpeningSource == OpeningSource.Import && (
               <>
+                {!state.getIsRepertoireEmpty() && pgnWarningSection}
                 <ImportSection
                   isMobile={isMobile}
                   title="PGN"
@@ -360,33 +307,6 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                   </View>
                 </ImportSection>
                 <Spacer height={12} />
-                {/*
-          <ImportSection
-            title="Lichess Study"
-            description="Paste the URL or id of a Lichess study. Must be public or unlisted."
-            isValid={lichessStudy}
-            submit={() => {
-              (async () => {
-                let studyId = lichessStudy;
-
-                let { data }: { data: string } = await client.get(
-                  `https://lichess.org/api/study/${studyId}.pgn`
-                );
-                console.log({ data });
-              })();
-            }}
-          >
-            <Spacer height={12} />
-            <View style={s(c.row)}>
-              <CMTextInput
-                placeholder="URL or id"
-                value={lichessStudy}
-                setValue={setLichessStudy}
-              />
-            </View>
-          </ImportSection>
-          <Spacer height={12} />
-          */}
                 <ImportSection
                   isMobile={isMobile}
                   title="Lichess Games"
@@ -518,6 +438,188 @@ const ImportSection = ({
       >
         Import
       </Button>
+    </View>
+  );
+};
+
+const ImportOptions = ({
+  state,
+  openingSource,
+  setOpeningSource,
+}: {
+  state: RepertoireState;
+  openingSource: any;
+  setOpeningSource;
+}) => {
+  return (
+    <>
+      {intersperse(
+        [
+          {
+            title: "Templates",
+            source: OpeningSource.Templates,
+            description: state.hasCompletedRepertoireInitialization ? (
+              <>Choose among some popular openings for both sides.</>
+            ) : (
+              <>
+                Choose among some popular openings for both sides. An easy way
+                to get started if you don't have any openings yet.
+              </>
+            ),
+            buttonCopy: "Choose",
+          },
+          ...(!state.hasCompletedRepertoireInitialization
+            ? [
+                {
+                  title: "From scratch",
+                  buttonCopy: "Start",
+                  source: OpeningSource.Manual,
+                  description: (
+                    <>
+                      Create your opening from scratch. The quickest way to get
+                      started, and you can always come back.
+                    </>
+                  ),
+                },
+              ]
+            : []),
+          {
+            title: "Import",
+            source: OpeningSource.Import,
+            description: state.hasCompletedRepertoireInitialization ? (
+              <>
+                Import your existing opening repertoire from a pgn, or just
+                provide your Lichess username and we'll figure it out from your
+                recent games.
+              </>
+            ) : (
+              <>
+                Import your existing opening repertoire from a pgn, or just
+                provide your Lichess username and we'll figure it out from your
+                recent games.
+              </>
+            ),
+            buttonCopy: "Import",
+          },
+          // {
+          //   title: "ChessMood Pack",
+          //   buttonCopy: "Start",
+          //   source: OpeningSource.Chessmood,
+          //   logo: (
+          //     <img
+          //       style={s(c.width(100), c.opacity(80))}
+          //       src="/chessmood_logo.png"
+          //     />
+          //   ),
+          //   description: (
+          //     <>
+          //       A full repertoire from the GMs over at{" "}
+          //       <a href="https://chessmood.com">ChessMood</a>.{" "}
+          //       <span style={s(c.fg(c.grays[75]), c.weightBold)}>
+          //         Check out their videos
+          //       </span>{" "}
+          //       for the ideas behind the moves in this repertoire.
+          //     </>
+          //   ),
+          // },
+        ].map((x, i) => {
+          const selected = openingSource === x.source;
+          return (
+            <Pressable
+              onPress={() => {
+                setOpeningSource(x.source);
+              }}
+            >
+              <View
+                style={s(
+                  c.row,
+                  selected ? c.bg(c.grays[15]) : c.bg(c.grays[15]),
+                  c.br(2),
+                  c.overflowHidden,
+                  c.px(12),
+                  c.py(14)
+                )}
+              >
+                <i
+                  className={
+                    selected ? "fas fa-circle" : "fa-regular fa-circle"
+                  }
+                  style={s(
+                    c.fontSize(18),
+                    c.fg(selected ? c.grays[80] : c.grays[50])
+                  )}
+                />
+                <Spacer width={12} />
+                <View style={s(c.column, c.flexible, c.mt(-1))}>
+                  <View style={s()}>
+                    <View style={s(c.row, c.justifyBetween)}>
+                      <Text
+                        style={s(
+                          c.fg(c.colors.textPrimary),
+                          c.fontSize(16),
+                          c.weightSemiBold
+                        )}
+                      >
+                        {x.title}
+                      </Text>
+                    </View>
+                    <Spacer height={12} />
+                    <Text
+                      style={s(
+                        c.fg(c.grays[70]),
+                        c.fontSize(13),
+                        c.lineHeight("1.5em")
+                      )}
+                    >
+                      {x.description}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Pressable>
+          );
+        }),
+        (i) => {
+          return <Spacer height={12} key={i} />;
+        }
+      )}
+    </>
+  );
+};
+
+const WarningSection = ({ copy, title, isMobile }) => {
+  return (
+    <View
+      style={s(
+        c.row,
+        c.alignStart,
+        c.fullWidth,
+        c.bg(c.grays[80]),
+        c.px(12),
+        c.py(12),
+        c.br(2),
+        c.mb(14)
+      )}
+    >
+      <i
+        className="fa fa-triangle-exclamation"
+        style={s(c.fontSize(14), c.mt(2), c.fg(c.yellows[50]))}
+      />
+      <Spacer width={8} />
+      <View style={s(c.column, c.flexible)}>
+        <Text style={s(c.fg(c.yellows[40]), c.fontSize(14), c.weightBold)}>
+          {title}
+        </Text>
+        <Spacer height={4} />
+        <Text
+          style={s(
+            c.fg(c.colors.textInverseSecondary),
+            c.fontSize(isMobile ? 12 : 14)
+          )}
+        >
+          {copy}
+        </Text>
+      </View>
     </View>
   );
 };

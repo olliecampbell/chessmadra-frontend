@@ -233,10 +233,7 @@ export const RepertoireBuilder = () => {
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
-  } else if (
-    isEmpty(getAllRepertoireMoves(state.repertoire)) &&
-    !state.hasCompletedRepertoireInitialization
-  ) {
+  } else if (state.showImportView) {
     inner = <RepertoireWizard state={state} />;
   } else {
     let innerInner = null;
@@ -731,6 +728,19 @@ export const RepertoireBuilder = () => {
               return <Spacer height={12} key={i} />;
             }
           )}
+          <Spacer height={12} />
+          <Button
+            style={s(c.buttons.basic, c.selfEnd, c.px(14), c.py(12))}
+            onPress={() => {
+              state.quick((s) => {
+                s.startImporting(s);
+              });
+            }}
+          >
+            <Text style={s(c.fontSize(20))}>
+              <i className="fas fa-plus" />
+            </Text>
+          </Button>
         </>
       );
     }

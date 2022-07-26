@@ -241,7 +241,7 @@ const genShades = (hue: number) => {
   // };
 };
 const primaries = genShades(181);
-const yellows = genShades(45);
+const yellows = genShades(28);
 const failureShades = genShades(340);
 const successShades = genShades(164);
 const colors = {

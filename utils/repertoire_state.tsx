@@ -106,10 +106,17 @@ export interface RepertoireState
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   startReview: (_state?: RepertoireState) => void;
-  backToOverview: (_state?: RepertoireState) => void;
+  backToOverview: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
+  showImportView?: boolean;
+  startImporting: (_state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
   onMove: (_state?: RepertoireState | WritableDraft<RepertoireState>) => void;
+  getIsRepertoireEmpty: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => RepertoireMove;
   getLastMoveInRepertoire: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => RepertoireMove;
@@ -128,7 +135,7 @@ export interface RepertoireState
   deleteRepertoire: (side: Side, _state?: RepertoireState) => void;
   deleteCurrentMove: (cb: () => void, _state?: RepertoireState) => void;
   exportPgn: (side: Side, _state?: RepertoireState) => void;
-  initializeRepertoireFromTemplates: (_state?: RepertoireState) => void;
+  addTemplates: (_state?: RepertoireState) => void;
   updateQueue: (
     cram: boolean,
     _state?: RepertoireState | WritableDraft<RepertoireState>
@@ -224,7 +231,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 }
               });
             }),
-          initializeRepertoireFromTemplates: (_state?: RepertoireState) =>
+          addTemplates: (_state?: RepertoireState) =>
             setter(set, _state, async (s: RepertoireState) => {
               let { data }: { data: FetchRepertoireResponse } =
                 await client.post("/api/v1/openings/add_templates", {
@@ -234,6 +241,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.repertoire = data.repertoire;
                 s.repertoireGrades = data.grades;
                 s.onRepertoireUpdate(s);
+                s.backToOverview(s);
               });
             }),
           initializeRepertoire: ({
@@ -273,6 +281,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.repertoireGrades = data.grades;
                 s.onRepertoireUpdate(s);
                 s.hasCompletedRepertoireInitialization = true;
+                s.backToOverview(s);
               });
             }),
           searchOnChessable: (side: Side, _state?: RepertoireState) =>
@@ -638,6 +647,7 @@ export const useRepertoireState = create<RepertoireState>()(
 
           backToOverview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              s.showImportView = false;
               s.backToStartPosition(s);
               s.moveLog = null;
               s.isReviewing = false;
@@ -659,6 +669,10 @@ export const useRepertoireState = create<RepertoireState>()(
               s.showPendingMoves = false;
               s.pendingResponses = {};
               s.showMoveLog = false;
+            }),
+          startImporting: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.showImportView = true;
             }),
           startEditing: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -702,11 +716,19 @@ export const useRepertoireState = create<RepertoireState>()(
                     s.repertoireGrades = data.grades;
                     if (getAllRepertoireMoves(s.repertoire).length > 0) {
                       s.hasCompletedRepertoireInitialization = true;
+                    } else {
+                      if (!s.hasCompletedRepertoireInitialization) {
+                        s.showImportView = true;
+                      }
                     }
                     s.onRepertoireUpdate(s);
                   });
                 });
             }),
+          getIsRepertoireEmpty: (_state?: RepertoireState) => {
+            let s = _state ?? get();
+            return isEmpty(getAllRepertoireMoves(s.repertoire));
+          },
           getLastMoveInRepertoire: (_state?: RepertoireState) => {
             let s = _state ?? get();
             let previousEpd = nth(s.positions, -2);

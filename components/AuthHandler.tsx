@@ -14,19 +14,16 @@ const AuthHandler = ({ children }) => {
   console.log("token:", token);
   console.log("authStatus:", authStatus);
   useEffect(() => {
-    console.log("4");
     if (token) {
       Cookies.set(JWT_COOKIE_KEY, token, { expires: 5000 });
     }
   }, [token]);
   useEffect(() => {
-    console.log("3");
     if (tempUserUuid) {
       Cookies.set(TEMP_USER_UUID, tempUserUuid, { expires: 5000 });
     }
   }, [tempUserUuid]);
   useEffect(() => {
-    console.log("2");
     AppStore.update((s) => {
       let cookieToken = Cookies.get(JWT_COOKIE_KEY);
       if (cookieToken) {
@@ -37,7 +34,6 @@ const AuthHandler = ({ children }) => {
     });
   }, []);
   useEffect(() => {
-    console.log("1");
     AppStore.update((s) => {
       let tempUserUuid = Cookies.get(TEMP_USER_UUID);
       if (tempUserUuid) {
@@ -48,7 +44,6 @@ const AuthHandler = ({ children }) => {
     });
   }, []);
   useEffect(() => {
-    console.log("5");
     (async () => {
       if (authStatus === AuthStatus.Initial && token) {
         console.log("FETCHING");
