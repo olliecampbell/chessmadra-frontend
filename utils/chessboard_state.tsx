@@ -168,6 +168,9 @@ export const createChessState = <
       _state: ChessboardState
     ) => {
       setter(set, _state, (state: ChessboardState) => {
+        state.availableMoves = [];
+        state.activeFromSquare = null;
+        state.draggedOverSquare = null;
         state.animatedMove = move;
         state.position.move(move);
         let { fadeDuration, moveDuration, stayDuration } =
