@@ -33,29 +33,18 @@ import { failOnTrue } from "app/utils/test_settings";
 import client from "app/client";
 import { DragAndDropInput } from "./DragAndDropInput";
 import { RepertoireTemplateWizard } from "./RepertoireTemplateWizard";
+import { PlayerTemplateWizard } from "./PlayerTemplateWizard";
 
 const MOBILE_CUTOFF = 800;
 
 enum OpeningSource {
   Import,
   Templates,
+  PlayerTemplates,
   // ChessCom,
   // Pgn,
   Manual,
   Chessmood,
-}
-
-function formatOpeningSource(openingSource: OpeningSource) {
-  switch (openingSource) {
-    case OpeningSource.Import:
-      return "Import";
-    case OpeningSource.Templates:
-      return "Templates";
-    case OpeningSource.Manual:
-      return "Skip";
-    case OpeningSource.Chessmood:
-      return "Chess Mood Repertoire";
-  }
 }
 
 enum RatingSource {
@@ -64,16 +53,16 @@ enum RatingSource {
   Fide,
 }
 
-function formatRatingSource(ratingSource: RatingSource) {
-  switch (ratingSource) {
-    case RatingSource.Lichess:
-      return "Lichess";
-    case RatingSource.ChessCom:
-      return "Chess.com";
-    case RatingSource.Fide:
-      return "FIDE";
-  }
-}
+// function formatRatingSource(ratingSource: RatingSource) {
+//   switch (ratingSource) {
+//     case RatingSource.Lichess:
+//       return "Lichess";
+//     case RatingSource.ChessCom:
+//       return "Chess.com";
+//     case RatingSource.Fide:
+//       return "FIDE";
+//   }
+// }
 
 enum RatingRange {
   RatingLessThan1200 = "<1200",
@@ -102,12 +91,18 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
   useEffect(() => {
     state.fetchRepertoireTemplates();
+    state.fetchPlayerTemplates();
   }, []);
   // const [uploadModalOpen, setUploadModalOpen] = useState(false);
   // const [rating, setRating] = useState(RatingRange.Rating1500To1800);
   // const [ratingSource, setRatingSource] = useState(RatingSource.Lichess);
-  const [openingSource, setOpeningSource] = useState(OpeningSource.Templates);
-  const [activeOpeningSource, setActiveOpeningSource] = useState(null);
+  const [openingSource, setOpeningSource] = useState(
+    OpeningSource.PlayerTemplates
+  );
+  const [activeOpeningSource, setActiveOpeningSource] = useState(
+    null
+    // failOnTrue(OpeningSource.PlayerTemplates)
+  );
   // const [ratingTimeControl, setRatingTimeControl] = useState(true);
   const [username, setUsername] = useState("");
   const [lichessStudy, setLichessStudy] = useState("");
@@ -142,6 +137,16 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
         How do you want to create your opening?
       </Text>
     </>
+  );
+
+  let playerTemplatesWarningSection = (
+    <WarningSection
+      title="Risk of deleting moves"
+      isMobile={isMobile}
+      copy={
+        <>New lines in these templates will overwrite your existing lines.</>
+      }
+    />
   );
 
   let pgnWarningSection = (
@@ -180,7 +185,10 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
           c.column,
           c.containerStyles(
             isMobile,
-            activeOpeningSource === OpeningSource.Templates ? 700 : 500
+            activeOpeningSource === OpeningSource.Templates ||
+              activeOpeningSource === OpeningSource.PlayerTemplates
+              ? 700
+              : 500
           )
         )}
       >
@@ -243,24 +251,32 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
         )}
         {!isNil(activeOpeningSource) && (
           <View style={s(c.column, c.fullWidth)}>
-            <View
-              style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
-              onClick={() => {
-                setActiveOpeningSource(null);
-              }}
-            >
-              <i
-                className="fa-light fa-angle-left"
-                style={s(c.fg(c.grays[70]), c.fontSize(16))}
-              />
-              <Spacer width={6} />
-              <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>Back</Text>
-            </View>
+            {!state.inProgressUsingPlayerTemplate && (
+              <View
+                style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
+                onClick={() => {
+                  setActiveOpeningSource(null);
+                }}
+              >
+                <i
+                  className="fa-light fa-angle-left"
+                  style={s(c.fg(c.grays[70]), c.fontSize(16))}
+                />
+                <Spacer width={6} />
+                <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>Back</Text>
+              </View>
+            )}
             <Spacer height={12} />
             {activeOpeningSource === OpeningSource.Templates && (
               <>
                 {!state.getIsRepertoireEmpty() && templatesWarningSection}
                 <RepertoireTemplateWizard state={state} />
+              </>
+            )}
+            {activeOpeningSource === OpeningSource.PlayerTemplates && (
+              <>
+                {!state.getIsRepertoireEmpty() && playerTemplatesWarningSection}
+                <PlayerTemplateWizard state={state} />
               </>
             )}
             {activeOpeningSource == OpeningSource.Import && (
@@ -455,6 +471,17 @@ const ImportOptions = ({
     <>
       {intersperse(
         [
+          {
+            title: "Player Repertoires",
+            source: OpeningSource.PlayerTemplates,
+            description: (
+              <>
+                Copy the repertoires of some famous chess streamers, like Daniel
+                Naroditsky, Hikaru Nakamura, Levy Rozman, and Eric Rosen.
+              </>
+            ),
+            buttonCopy: "Choose",
+          },
           {
             title: "Templates",
             source: OpeningSource.Templates,

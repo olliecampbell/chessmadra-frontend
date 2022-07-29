@@ -1,3 +1,5 @@
+import { RepertoireGrade } from "./utils/repertoire";
+
 export interface LichessPuzzle {
   id: string;
   moves: string[];
@@ -54,4 +56,18 @@ export interface RepertoireTemplate {
   line: string;
   num_moves: number;
   tags: string[];
+}
+
+export interface PlayerTemplate {
+  id: string;
+  meta: PlayerTemplateMeta;
+  grade: RepertoireGrade;
+}
+
+export interface PlayerTemplateMeta {
+  link: string;
+  title: string;
+  openings: string[];
+  image: string;
+  description: string;
 }

@@ -1,6 +1,11 @@
 import { Square } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
-import { LichessGame, RepertoireTemplate, User } from "app/models";
+import {
+  LichessGame,
+  PlayerTemplate,
+  RepertoireTemplate,
+  User,
+} from "app/models";
 import create, {
   GetState,
   SetState,
@@ -89,6 +94,7 @@ export interface RepertoireState
   setUser: (user: User, _state?: RepertoireState) => void;
   fetchRepertoire: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
+  fetchPlayerTemplates: (_state?: RepertoireState) => void;
   initializeRepertoire: (_: {
     lichessUsername?: string;
     whitePgn?: string;
@@ -102,6 +108,7 @@ export interface RepertoireState
   isAddingPendingLine: boolean;
   hasGivenUp?: boolean;
   giveUp: (_state?: RepertoireState) => void;
+  usePlayerTemplate: (id: string, _state?: RepertoireState) => void;
   setupNextMove: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
@@ -160,6 +167,7 @@ export interface RepertoireState
   hasCompletedRepertoireInitialization?: boolean;
   showPendingMoves?: boolean;
   repertoireTemplates?: RepertoireTemplate[];
+  playerTemplates?: PlayerTemplate[];
   selectedTemplates: Record<string, string>;
   numMovesWouldBeDeleted?: number;
   conflictingId?: string;
@@ -173,6 +181,7 @@ export interface RepertoireState
     _state?: RepertoireState
   ) => number;
   isDeletingMove?: boolean;
+  inProgressUsingPlayerTemplate?: boolean;
 }
 
 interface FetchRepertoireResponse {
@@ -193,6 +202,7 @@ export const useRepertoireState = create<RepertoireState>()(
           repertoire: undefined,
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
+          inProgressUsingPlayerTemplate: false,
           pendingResponses: {},
           positions: [START_EPD],
           currentLine: [],
@@ -229,6 +239,21 @@ export const useRepertoireState = create<RepertoireState>()(
                 if (s.isEditing) {
                   s.onMove(s);
                 }
+              });
+            }),
+          usePlayerTemplate: (id: string, _state?: RepertoireState) =>
+            setter(set, _state, async (s: RepertoireState) => {
+              s.inProgressUsingPlayerTemplate = true;
+              let { data }: { data: FetchRepertoireResponse } =
+                await client.post("/api/v1/openings/use_player_template", {
+                  id,
+                });
+              set((s) => {
+                s.inProgressUsingPlayerTemplate = false;
+                s.repertoire = data.repertoire;
+                s.repertoireGrades = data.grades;
+                s.onRepertoireUpdate(s);
+                s.backToOverview(s);
               });
             }),
           addTemplates: (_state?: RepertoireState) =>
@@ -703,6 +728,16 @@ export const useRepertoireState = create<RepertoireState>()(
                 .then(({ data }: { data: RepertoireTemplate[] }) => {
                   set((s) => {
                     s.repertoireTemplates = data;
+                  });
+                });
+            }),
+          fetchPlayerTemplates: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              client
+                .get("/api/v1/openings/player_templates")
+                .then(({ data }: { data: PlayerTemplate[] }) => {
+                  set((s) => {
+                    s.playerTemplates = data;
                   });
                 });
             }),
