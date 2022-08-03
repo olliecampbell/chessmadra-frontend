@@ -1,5 +1,6 @@
 import { s, c } from "app/styles";
 import { View, Text } from "react-native";
+import { CMText } from "./CMText";
 
 export const SettingsTitle = ({ text }) => {
   return (
@@ -12,9 +13,11 @@ export const SettingsTitle = ({ text }) => {
         c.br(2)
       )}
     >
-      <Text style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightBold)}>
+      <CMText
+        style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightBold)}
+      >
         {text}
-      </Text>
+      </CMText>
     </View>
   );
 };

@@ -41,6 +41,7 @@ import { failOnTrue } from "app/utils/test_settings";
 import client from "app/client";
 import { DragAndDropInput } from "./DragAndDropInput";
 import { RepertoireTemplate } from "app/models";
+import { CMText } from "./CMText";
 
 const MOBILE_CUTOFF = 800;
 
@@ -70,7 +71,7 @@ export const RepertoireTemplateWizard = ({
                   !isMobile && s(c.flexible, c.grow)
                 )}
               >
-                <Text
+                <CMText
                   style={s(
                     c.fg(c.colors.textPrimary),
                     c.fontSize(18),
@@ -78,7 +79,7 @@ export const RepertoireTemplateWizard = ({
                   )}
                 >
                   {capitalize(side)}
-                </Text>
+                </CMText>
                 <Spacer height={12} />
                 {inner}
               </View>
@@ -119,7 +120,7 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
             setFirstMove(move);
           }}
           renderChoice={(move) => {
-            return <Text>{move}</Text>;
+            return <CMText>{move}</CMText>;
           }}
         />
       </View>
@@ -130,10 +131,10 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
           <Spacer height={24} />
           <SelectTemplate line="1.e4 c5" state={state} />
           <Spacer height={24} />
-          <Text style={s(c.fg(c.colors.textPrimary))}>
+          <CMText style={s(c.fg(c.colors.textPrimary))}>
             Which of the following openings would you like to include some
             mainline responses for?
-          </Text>
+          </CMText>
           <Spacer height={8} />
           {intersperse(
             ["1.e4 d5", "1.e4 e6", "1.e4 c6", "1.e4 d6", "1.e4 g6"].map(
@@ -148,10 +149,10 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
         </>
       ) : (
         <View style={s(c.row)}>
-          <Text style={s(c.fg(c.colors.textPrimary))}>
+          <CMText style={s(c.fg(c.colors.textPrimary))}>
             Sorry, there aren't any templates for d4 yet. They should be added
             soon.
-          </Text>
+          </CMText>
         </View>
       )}
     </View>
@@ -166,10 +167,10 @@ export const BlackTemplates = ({ state }: { state: RepertoireState }) => {
       <Spacer height={24} />
       <SelectTemplate line="1.d4" state={state} />
       <Spacer height={24} />
-      <Text style={s(c.fg(c.colors.textPrimary))}>
+      <CMText style={s(c.fg(c.colors.textPrimary))}>
         Which of the following openings would you like to include some mainline
         responses for?
-      </Text>
+      </CMText>
       <Spacer height={8} />
       {intersperse(
         ["1.c4", "1.Nf3"].map((x, i) => {
@@ -196,9 +197,9 @@ export const SelectTemplate = ({
     <View style={s(c.column)}>
       {!singular && (
         <>
-          <Text style={s(c.fg(c.colors.textPrimary))}>
+          <CMText style={s(c.fg(c.colors.textPrimary))}>
             How do you want to respond to <b>{line}</b>?
-          </Text>
+          </CMText>
           <Spacer height={8} />
         </>
       )}
@@ -264,7 +265,7 @@ export const TemplateCell = ({
         <Spacer width={12} />
         <View style={s(c.column, c.mt(-1), c.grow)}>
           <View style={s(c.row, c.fullWidth)}>
-            <Text
+            <CMText
               style={s(
                 c.fg(c.colors.textPrimary),
                 c.fontSize(14),
@@ -272,20 +273,20 @@ export const TemplateCell = ({
               )}
             >
               {template.title}
-            </Text>
+            </CMText>
             {template.followUp && (
               <>
                 <Spacer grow />
                 {singular && (
                   <>
-                    <Text style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                    <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
                       {template.line}{" "}
-                    </Text>
+                    </CMText>
                   </>
                 )}
-                <Text style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
                   {template.followUp}
-                </Text>
+                </CMText>
               </>
             )}
           </View>
@@ -296,7 +297,7 @@ export const TemplateCell = ({
                 {intersperse(
                   template.tags.map((x, i) => {
                     return (
-                      <Text
+                      <CMText
                         style={s(
                           c.fg(c.grays[70]),
                           c.fontSize(12),
@@ -307,7 +308,7 @@ export const TemplateCell = ({
                         )}
                       >
                         {x}
-                      </Text>
+                      </CMText>
                     );
                   }),
                   (i) => {

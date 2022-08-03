@@ -1,3 +1,6 @@
+export const failOnAny = (setting: void) => {
+  return setting;
+};
 export const failOnTrue = (setting: false) => {
   return setting;
 };

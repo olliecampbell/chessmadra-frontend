@@ -18,17 +18,20 @@ import {
 import { intersperse } from "../utils/intersperse";
 import { Chess } from "@lubert/chess.ts";
 import { PageContainer } from "./PageContainer";
+import { CMText } from "./CMText";
 
 export const Score = ({ score, text }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
-      <Text style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}>
+      <CMText
+        style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}
+      >
         {text}
-      </Text>
+      </CMText>
       <Spacer height={4} />
-      <Text style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
+      <CMText style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
         {score}
-      </Text>
+      </CMText>
     </View>
   );
 };
@@ -53,19 +56,19 @@ export const BlunderRecognition = () => {
         <View style={s()}>
           {state.isPlaying && !state.donePlaying && (
             <View style={s(c.column, c.alignCenter)}>
-              <Text style={s(c.fg(c.grays[70]), c.fontSize(16))}>
-                <Text
+              <CMText style={s(c.fg(c.grays[70]), c.fontSize(16))}>
+                <CMText
                   style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(16))}
                 >
                   {state.position.turn() === "b" ? "Black" : "White"}
-                </Text>{" "}
+                </CMText>{" "}
                 is thinking of playing{" "}
-                <Text
+                <CMText
                   style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(16))}
                 >
                   {state.currentMove}
-                </Text>
-              </Text>
+                </CMText>
+              </CMText>
               <Spacer height={24} />
               <View style={s(c.row, c.alignCenter)}>
                 <Button
@@ -124,9 +127,9 @@ export const BlunderRecognition = () => {
                           )}
                         >
                           <View style={s(c.column, c.alignCenter)}>
-                            <Text style={s(c.buttons.basic.textStyles)}>
+                            <CMText style={s(c.buttons.basic.textStyles)}>
                               {x}
-                            </Text>
+                            </CMText>
                           </View>
                         </Button>
                       );
@@ -137,7 +140,7 @@ export const BlunderRecognition = () => {
                   )}
                 </View>
                 <Spacer height={12} />
-                <Text
+                <CMText
                   style={s(
                     c.fg(c.colors.textSecondary),
                     c.fontSize(14),
@@ -158,18 +161,18 @@ export const BlunderRecognition = () => {
                       {getBlunderRange(state.difficulty.value)[1]} centipawns.
                     </>
                   )}
-                </Text>
+                </CMText>
                 <Spacer height={8} />
-                <Text style={s(c.fg(c.colors.textSecondary))}>
+                <CMText style={s(c.fg(c.colors.textSecondary))}>
                   Determine whether each move is a blunder, or the best move.
                   You can review the positions you missed when the round ends.
-                </Text>
+                </CMText>
                 <Spacer height={8} />
-                <Text style={s(c.fg(c.colors.textSecondary))}>
+                <CMText style={s(c.fg(c.colors.textSecondary))}>
                   Blunders taken from lichess rapid games between 2000+ ELO
                   players, and verified with Stockfish 14 at a depth of 100k
                   nodes.
-                </Text>
+                </CMText>
                 <Spacer height={12} />
                 <Button
                   onPress={() => {
@@ -184,7 +187,7 @@ export const BlunderRecognition = () => {
           )}
           {state.donePlaying && (
             <View style={s(c.column, c.alignCenter)}>
-              <Text
+              <CMText
                 style={s(
                   c.fg(
                     state.wasCorrect ? c.primaries[60] : c.colors.failureLight
@@ -201,7 +204,7 @@ export const BlunderRecognition = () => {
                 <Spacer width={12} />
                 {state.currentMove}{" "}
                 {state.isBlunder ? "is a blunder" : "is the best move"}
-              </Text>
+              </CMText>
               <Spacer height={24} />
               <View style={s(c.row)}>
                 <Button

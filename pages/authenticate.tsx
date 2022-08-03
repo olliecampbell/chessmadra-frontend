@@ -8,6 +8,7 @@ import { AuthStatus as GlobalAuthStatus, AppStore } from "app/store";
 import { PageContainer } from "app/components/PageContainer";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
+import { CMText } from "app/components/CMText";
 
 enum AuthStatus {
   Initial,
@@ -55,7 +56,7 @@ const Authenticate = (props) => {
           <BeatLoader color={c.grays[100]} size={20} />
         )}
         <Spacer height={12} />
-        <Text
+        <CMText
           style={s(
             c.weightSemiBold,
             c.fontSize(18),
@@ -68,18 +69,18 @@ const Authenticate = (props) => {
             <>
               Failed to authenticate. Your link may have expired. Try{" "}
               <Link href="/login">
-                <Text
+                <CMText
                   style={s(c.clickable, c.weightBold, c.fg(c.primaries[60]))}
                 >
                   logging in again
-                </Text>
+                </CMText>
               </Link>
               .
             </>
           ) : (
             "Authenticating..."
           )}
-        </Text>
+        </CMText>
       </View>
     </PageContainer>
   );

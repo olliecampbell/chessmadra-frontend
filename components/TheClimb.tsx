@@ -22,6 +22,7 @@ import { Score } from "app/components/ColorTraining";
 import { useVisualizationTraining } from "app/utils/useVisualizationTraining";
 import { useClimbStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
+import { CMText } from "./CMText";
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -32,13 +33,15 @@ const testPlayingUI = false;
 const ClimbScore = ({ score, highScore, text }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
-      <Text style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}>
+      <CMText
+        style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}
+      >
         {text}
-      </Text>
+      </CMText>
       <Spacer height={4} />
-      <Text style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
+      <CMText style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
         {score.value}
-      </Text>
+      </CMText>
     </View>
   );
 };
@@ -68,7 +71,7 @@ export const TheClimb = () => {
         )
       )}
     >
-      <Text>{state.delta < 0 ? state.delta : `+${state.delta}`}</Text>
+      <CMText>{state.delta < 0 ? state.delta : `+${state.delta}`}</CMText>
     </Animated.View>
   );
   const { chessboardProps, ui: visualizationUi } = useVisualizationTraining({
@@ -96,12 +99,12 @@ export const TheClimb = () => {
                 <Score score={state.highScore.value} text={"High Score"} />
               </View>
               <Spacer height={isMobile ? 12 : 24} />
-              <Text style={s(c.fg(c.colors.textSecondary))}>
+              <CMText style={s(c.fg(c.colors.textSecondary))}>
                 The <b>number of hidden moves</b> and <b>puzzle difficulty</b>{" "}
                 will increase. Solve puzzles fast to keep your score climbing.
                 Take too long, or fail a puzzle, and the difficulty will go
                 down.
-              </Text>
+              </CMText>
               <Spacer height={24} />
               <Button
                 onPress={() => {

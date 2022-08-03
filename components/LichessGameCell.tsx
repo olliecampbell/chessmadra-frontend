@@ -12,6 +12,7 @@ import { formatGameResult } from "app/utils/formatGameResult";
 import { lineToPgn } from "app/utils/repertoire";
 import { take } from "lodash";
 import { MemorizedGameStatus } from "app/utils/game_memorization_state";
+import { CMText } from "./CMText";
 
 export const LichessGameCell = ({
   game,
@@ -38,7 +39,7 @@ export const LichessGameCell = ({
     >
       {!hideLink && (
         <View style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
-          <Text style={s()}>
+          <CMText style={s()}>
             <i
               style={s(
                 c.fg(c.colors.textInverse),
@@ -47,7 +48,7 @@ export const LichessGameCell = ({
               )}
               className="fas fa-arrow-up-right-from-square"
             ></i>
-          </Text>
+          </CMText>
         </View>
       )}
       <Spacer height={0} />
@@ -61,26 +62,26 @@ export const LichessGameCell = ({
                   <View style={s(c.round, c.size(12), c.bg(color))}></View>
 
                   <Spacer width={4} />
-                  <Text
+                  <CMText
                     style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}
                   >
                     {game[`${color}Name`]}
-                  </Text>
+                  </CMText>
                   <Spacer width={4} />
-                  <Text style={s(c.fg(c.grays[40]), c.weightBold)}>
+                  <CMText style={s(c.fg(c.grays[40]), c.weightBold)}>
                     ({game[`${color}Elo`]})
-                  </Text>
+                  </CMText>
                 </View>
                 {false && (
                   <>
                     <Spacer height={4} />
-                    <Text style={s(c.fg(c.colors.textInverseSecondary))}>
+                    <CMText style={s(c.fg(c.colors.textInverseSecondary))}>
                       <b>{game[`${color}Blunders`]}</b> blunders
-                    </Text>
+                    </CMText>
                     <Spacer height={4} />
-                    <Text style={s(c.fg(c.colors.textInverseSecondary))}>
+                    <CMText style={s(c.fg(c.colors.textInverseSecondary))}>
                       <b>{game[`${color}CentipawnLoss`]}</b> avg centipawn loss
-                    </Text>
+                    </CMText>
                   </>
                 )}
               </View>
@@ -94,24 +95,24 @@ export const LichessGameCell = ({
       <Spacer height={24} />
       {showFirstMoves && (
         <View style={s(c.px(16))}>
-          <Text style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}>
+          <CMText style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}>
             {lineToPgn(take(game.moves, 8))}
-          </Text>
+          </CMText>
           <Spacer height={4} />
         </View>
       )}
 
       <View style={s(c.row, c.justifyBetween, c.alignEnd, c.px(16))}>
-        <Text style={s(c.weightBold, c.fontSize(18))}>
+        <CMText style={s(c.weightBold, c.fontSize(18))}>
           {formatGameResult(game.result)}
-        </Text>
-        <Text style={s(c.row, c.selfEnd, c.alignEnd)}>
-          <Text style={s(c.weightBold, c.fontSize(18))}>
+        </CMText>
+        <CMText style={s(c.row, c.selfEnd, c.alignEnd)}>
+          <CMText style={s(c.weightBold, c.fontSize(18))}>
             {Math.ceil(game.numberMoves / 2)}
-          </Text>
+          </CMText>
           <Spacer width={4} />
-          <Text style={s(c.fontSize(14), c.mb(0))}>moves</Text>
-        </Text>
+          <CMText style={s(c.fontSize(14), c.mb(0))}>moves</CMText>
+        </CMText>
       </View>
       {gameStatus?.everReviewed ? (
         <View

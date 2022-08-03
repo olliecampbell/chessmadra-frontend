@@ -10,6 +10,7 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { useColorTrainingStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
+import { CMText } from "./CMText";
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -20,13 +21,15 @@ const testPlayingUI = false;
 export const Score = ({ score, text }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
-      <Text style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}>
+      <CMText
+        style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}
+      >
         {text}
-      </Text>
+      </CMText>
       <Spacer height={4} />
-      <Text style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
+      <CMText style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
         {score}
-      </Text>
+      </CMText>
     </View>
   );
 };
@@ -76,7 +79,7 @@ export const ColorTraining = () => {
                   }}
                   color={c.colors.lightTile}
                 />
-                <Text
+                <CMText
                   style={s(
                     c.mx(12),
                     c.fg(c.grays[70]),
@@ -86,7 +89,7 @@ export const ColorTraining = () => {
                   )}
                 >
                   or
-                </Text>
+                </CMText>
                 <Tile
                   onPress={() => {
                     state.guessColor("dark");
@@ -124,10 +127,10 @@ export const ColorTraining = () => {
                 <Score score={state.highScore.value} text={"High Score"} />
               </View>
               <Spacer height={24} />
-              <Text style={s(c.fg(c.colors.textPrimary))}>
+              <CMText style={s(c.fg(c.colors.textPrimary))}>
                 For each highlighted square, indicate whether it is light or
                 dark. You can use the arrow keys on desktop.
-              </Text>
+              </CMText>
               <Spacer height={24} />
               <Button
                 onPress={() => {

@@ -43,6 +43,7 @@ import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "app/utils/chessboard_state";
 import { Spacer } from "app/Space";
 import { useIsMobile } from "app/utils/isMobile";
+import { CMText } from "../CMText";
 
 const animatedXYToPercentage = (x) => {
   return s(
@@ -206,10 +207,25 @@ export const ChessboardView = ({
     Object.keys(SQUARES).map((sq: Square) => {
       panResponders[sq] = PanResponder.create({
         // Ask to be the responder:
-        onStartShouldSetPanResponder: (evt, gestureState) => true,
-        onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-        onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+        onStartShouldSetPanResponder: (evt, gestureState) => {
+          if (state.frozen) {
+            return false;
+          }
+          return true;
+        },
+        onStartShouldSetPanResponderCapture: (evt, gestureState) => {
+          if (state.frozen) {
+            return false;
+          }
+          return true;
+        },
+        onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+          return !state.frozen;
+        },
         onMoveShouldSetPanResponder: (evt, gestureState) => {
+          if (state.frozen) {
+            return false;
+          }
           return true;
         },
 
@@ -515,7 +531,7 @@ export const ChessboardView = ({
                           c.bg(color),
 
                           c.center,
-                          c.clickable,
+                          !state.frozen && c.clickable,
                           c.flexible,
                           c.overflowHidden,
                           state.hideColors &&
@@ -531,6 +547,9 @@ export const ChessboardView = ({
                           style={s(c.fullWidth, c.fullHeight)}
                           onPress={() => {}}
                           onPressIn={() => {
+                            if (state.frozen) {
+                              return;
+                            }
                             state.onSquarePress(square);
                           }}
                         >
@@ -545,8 +564,8 @@ export const ChessboardView = ({
                               c.zIndex(4)
                             )}
                           ></Animated.View>
-                          {isBottomEdge && (
-                            <Text
+                          {isBottomEdge && !state.hideCoordinates && (
+                            <CMText
                               style={s(
                                 c.fg(
                                   state.hideColors ? c.grays[80] : inverseColor
@@ -560,10 +579,10 @@ export const ChessboardView = ({
                               )}
                             >
                               {tileLetter}
-                            </Text>
+                            </CMText>
                           )}
-                          {isRightEdge && (
-                            <Text
+                          {isRightEdge && !state.hideCoordinates && (
+                            <CMText
                               style={s(
                                 c.fg(
                                   state.hideColors ? c.grays[80] : inverseColor
@@ -577,7 +596,7 @@ export const ChessboardView = ({
                               )}
                             >
                               {tileNumber}
-                            </Text>
+                            </CMText>
                           )}
                         </Pressable>
                       </View>
@@ -605,7 +624,7 @@ export const ChessboardView = ({
               c.scrollX
             )}
           >
-            <Text
+            <CMText
               style={s(
                 c.fg(c.colors.textSecondary),
                 c.weightBold,
@@ -614,7 +633,7 @@ export const ChessboardView = ({
               )}
             >
               {state.moveLog}
-            </Text>
+            </CMText>
           </View>
         </>
       )}

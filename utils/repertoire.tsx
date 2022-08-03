@@ -86,6 +86,7 @@ export type SanPlus = string;
 export interface RepertoireGrade {
   // moveIncidence: Record<MoveIdentifier, number>;
   expectedDepth: number;
+  instructiveGames: LichessGame[];
   // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
 }
@@ -93,6 +94,7 @@ export interface RepertoireGrade {
 export interface RepertoireMiss {
   incidence: number;
   lines: string[];
+  epd: string;
 }
 
 export interface PendingLine {

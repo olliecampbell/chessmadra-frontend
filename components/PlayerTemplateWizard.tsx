@@ -42,6 +42,7 @@ import client from "app/client";
 import { DragAndDropInput } from "./DragAndDropInput";
 import { RepertoireTemplate } from "app/models";
 import { GridLoader } from "react-spinners";
+import { CMText } from "./CMText";
 
 const MOBILE_CUTOFF = 800;
 
@@ -86,7 +87,7 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                       />
                       <Spacer width={isMobile ? 12 : 16} />
                       <View style={s(c.column, c.flexible)}>
-                        <Text
+                        <CMText
                           style={s(
                             c.fg(c.colors.textPrimary),
                             c.weightSemiBold,
@@ -94,10 +95,10 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                           )}
                         >
                           {playerTemplate.meta.title}
-                        </Text>
+                        </CMText>
                         {/*
                         <Spacer height={8} />
-                        <Text
+                        <CMText
                           style={s(
                             c.fg(c.colors.textSecondary),
                             c.weightRegular,
@@ -105,7 +106,7 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                           )}
                         >
                           {playerTemplate.meta.description}
-                        </Text>
+                        </CMText>
                         */}
                       </View>
                       {/*
@@ -125,7 +126,7 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                     <View style={s(c.row, c.flexWrap, c.gap(6))}>
                       {playerTemplate.meta.openings.map((x, i) => {
                         return (
-                          <Text
+                          <CMText
                             style={s(
                               c.px(isMobile ? 6 : 6),
                               c.py(isMobile ? 6 : 6),
@@ -137,7 +138,7 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                             )}
                           >
                             {x}
-                          </Text>
+                          </CMText>
                         );
                       })}
                     </View>

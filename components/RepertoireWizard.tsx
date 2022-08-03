@@ -34,6 +34,7 @@ import client from "app/client";
 import { DragAndDropInput } from "./DragAndDropInput";
 import { RepertoireTemplateWizard } from "./RepertoireTemplateWizard";
 import { PlayerTemplateWizard } from "./PlayerTemplateWizard";
+import { CMText } from "./CMText";
 
 const MOBILE_CUTOFF = 800;
 
@@ -115,7 +116,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
 
   const introText = (
     <>
-      <Text
+      <CMText
         style={s(
           c.fg(c.colors.textPrimary),
           c.weightSemiBold,
@@ -124,9 +125,9 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
         )}
       >
         This tool will help you build and remember your opening repertoire.
-      </Text>
+      </CMText>
       <Spacer height={12} />
-      <Text
+      <CMText
         style={s(
           c.fg(c.colors.textPrimary),
           c.weightSemiBold,
@@ -135,7 +136,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
         )}
       >
         How do you want to create your opening?
-      </Text>
+      </CMText>
     </>
   );
 
@@ -213,9 +214,9 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                   style={s(c.fg(c.grays[70]), c.fontSize(16))}
                 />
                 <Spacer width={6} />
-                <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
+                <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
                   Back to repertoire
-                </Text>
+                </CMText>
               </View>
               <Spacer height={24} />
             </>
@@ -263,7 +264,9 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                   style={s(c.fg(c.grays[70]), c.fontSize(16))}
                 />
                 <Spacer width={6} />
-                <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>Back</Text>
+                <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
+                  Back
+                </CMText>
               </View>
             )}
             <Spacer height={12} />
@@ -362,9 +365,11 @@ const UploadPgnsView = () => {
 const PgnUploadDropper = ({ color }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
-      <Text style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightBold)}>
+      <CMText
+        style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightBold)}
+      >
         {color}
-      </Text>
+      </CMText>
       <Spacer height={12} />
       <View
         style={s(
@@ -393,9 +398,9 @@ const PgnUploadDropper = ({ color }) => {
           onChange={() => {}}
           type="file"
         ></input>
-        <Text style={s(c.fg(c.colors.textSecondary))}>
+        <CMText style={s(c.fg(c.colors.textSecondary))}>
           Drag a pgn in here, or click to browse
-        </Text>
+        </CMText>
       </View>
     </View>
   );
@@ -422,7 +427,7 @@ const ImportSection = ({
         c.br(2)
       )}
     >
-      <Text
+      <CMText
         style={s(
           c.fg(c.colors.textPrimary),
           c.weightSemiBold,
@@ -431,11 +436,11 @@ const ImportSection = ({
         )}
       >
         {title}
-      </Text>
+      </CMText>
       <Spacer height={12} />
-      <Text style={s(c.fg(c.grays[75]), c.weightRegular, c.fontSize(12))}>
+      <CMText style={s(c.fg(c.grays[75]), c.weightRegular, c.fontSize(12))}>
         {description}
-      </Text>
+      </CMText>
       <Spacer height={12} />
       {children}
       <Spacer height={isMobile ? 18 : 4} />
@@ -580,7 +585,7 @@ const ImportOptions = ({
                 <View style={s(c.column, c.flexible, c.mt(-1))}>
                   <View style={s()}>
                     <View style={s(c.row, c.justifyBetween)}>
-                      <Text
+                      <CMText
                         style={s(
                           c.fg(c.colors.textPrimary),
                           c.fontSize(16),
@@ -588,10 +593,10 @@ const ImportOptions = ({
                         )}
                       >
                         {x.title}
-                      </Text>
+                      </CMText>
                     </View>
                     <Spacer height={12} />
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(c.grays[70]),
                         c.fontSize(13),
@@ -599,7 +604,7 @@ const ImportOptions = ({
                       )}
                     >
                       {x.description}
-                    </Text>
+                    </CMText>
                   </View>
                 </View>
               </View>
@@ -634,18 +639,18 @@ const WarningSection = ({ copy, title, isMobile }) => {
       />
       <Spacer width={8} />
       <View style={s(c.column, c.flexible)}>
-        <Text style={s(c.fg(c.yellows[40]), c.fontSize(14), c.weightBold)}>
+        <CMText style={s(c.fg(c.yellows[40]), c.fontSize(14), c.weightBold)}>
           {title}
-        </Text>
+        </CMText>
         <Spacer height={4} />
-        <Text
+        <CMText
           style={s(
             c.fg(c.colors.textInverseSecondary),
             c.fontSize(isMobile ? 12 : 14)
           )}
         >
           {copy}
-        </Text>
+        </CMText>
       </View>
     </View>
   );

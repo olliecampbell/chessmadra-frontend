@@ -117,6 +117,7 @@ const relative = keyedProp("position")("relative");
 
 const border = keyedProp("border");
 const borderBottom = keyedProp("borderBottom");
+const borderTop = keyedProp("borderTop");
 const borderRight = keyedProp("borderRight");
 const borderLeft = keyedProp("borderLeft");
 
@@ -204,7 +205,7 @@ function easeInOutSine(x: number): number {
 const genGrays = () => {
   const grays = {};
   for (let i = 0; i <= 100; i = i + 5) {
-    grays[i] = `hsl(${grayHue}, 10%, ${i}%)`;
+    grays[i] = `hsl(${grayHue}, 9%, ${i}%)`;
   }
   return grays;
 };
@@ -252,10 +253,11 @@ const colors = {
   successColor: "hsl(164, 98%, 35%)",
   failureColor: "hsl(340, 70%, 52%)",
   failureLight: "hsl(348, 100%, 72%)",
-  buttonSecondary: "hsl(181, 15%, 80%)",
+  buttonSecondary: grays[80],
   backgroundColor: grays[10],
   header: "hsl(229, 19%, 14%)",
   modalColor: "hsl(229, 10%, 90%)",
+  cardBackground: grays[20],
   lightTile: hsl(180, 15, 70),
   darkTile: hsl(180, 15, 40),
 };
@@ -327,12 +329,11 @@ const noPointerEvents = keyedProp("pointer-events")("none");
 const transform = keyedProp("transform");
 const containerStyles = (isMobile, customMaxWidth?: number) =>
   s(
-    mx(isMobile ? 12 : 48),
-    maxWidth(
-      `min(calc(100vw - ${isMobile ? 12 : 24}px), ${customMaxWidth ?? 1280}px)`
+    width(
+      `min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`
     ),
     column,
-    alignStart
+    selfCenter
   );
 
 export const c = {
@@ -411,6 +412,7 @@ export const c = {
   relative,
   border,
   borderBottom,
+  borderTop,
   borderRight,
   borderLeft,
   center,

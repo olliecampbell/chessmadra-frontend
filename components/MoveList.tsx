@@ -13,6 +13,7 @@ import { forEach, isEmpty, cloneDeep, takeRight, first } from "lodash";
 import client from "app/client";
 import { Spacer } from "app/Space";
 import { Move } from "@lubert/chess.ts";
+import { CMText } from "./CMText";
 
 export const MoveList = ({
   moveList,
@@ -71,7 +72,7 @@ export const MoveList = ({
                   c.borderRight(`1px solid ${c.grays[30]}`)
                 )}
               >
-                <Text
+                <CMText
                   style={s(
                     c.fg(c.colors.textPrimary),
                     c.fontSize(18),
@@ -79,7 +80,7 @@ export const MoveList = ({
                   )}
                 >
                   {i + 1}
-                </Text>
+                </CMText>
               </View>
               <Spacer width={24} />
               <Pressable
@@ -87,28 +88,28 @@ export const MoveList = ({
                   onMoveClick(whiteMove, whiteI);
                 }}
               >
-                <Text
+                <CMText
                   style={s(
                     moveStyles,
                     focusedMoveIndex === whiteI && activeMoveStyles
                   )}
                 >
                   {whiteMove?.san ?? "..."}
-                </Text>
+                </CMText>
               </Pressable>
               <Pressable
                 onPress={() => {
                   onMoveClick(blackMove, blackI);
                 }}
               >
-                <Text
+                <CMText
                   style={s(
                     moveStyles,
                     focusedMoveIndex === blackI && activeMoveStyles
                   )}
                 >
                   {blackMove?.san ?? "..."}
-                </Text>
+                </CMText>
               </Pressable>
             </View>
             {i != pairs.length - 1 && (

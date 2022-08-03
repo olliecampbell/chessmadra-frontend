@@ -42,6 +42,7 @@ import {
   stepValueToPuzzleDifficulty,
 } from "app/types/VisualizationState";
 import { PageContainer } from "./PageContainer";
+import { CMText } from "./CMText";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -89,21 +90,21 @@ export const BlindfoldTrainer = () => {
         }
       >
         {!state.isDone && (
-          <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
-            <Text style={s(c.fg(c.grays[90]), c.weightBold)}>
+          <CMText style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
+            <CMText style={s(c.fg(c.grays[90]), c.weightBold)}>
               {state.position.turn() === "b" ? "Black" : "White"}
-            </Text>{" "}
+            </CMText>{" "}
             to play.
-          </Text>
+          </CMText>
         )}
         {state.stage === BlindfoldTrainingStage.Blindfold && (
           <>
-            <Text style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
+            <CMText style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
               <Spacer block height={12} />
               Envision the board with the pieces as shown. When you know the
               continuation, press the button below to show the board and play
               out the tactic.
-            </Text>
+            </CMText>
             <Spacer height={24} />
             <Button
               onPress={() => {
@@ -143,12 +144,12 @@ export const BlindfoldTrainer = () => {
               })();
             }}
           >
-            <Text style={s(c.buttons.basic.textStyles)}>
+            <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
                 className="fas fa-search"
               ></i>
-            </Text>
+            </CMText>
           </Button>
           {helpModal}
           <Button
@@ -157,12 +158,12 @@ export const BlindfoldTrainer = () => {
               setHelpOpen(true);
             }}
           >
-            <Text style={s(c.buttons.basic.textStyles)}>
+            <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
                 className="fas fa-circle-question"
               ></i>
-            </Text>
+            </CMText>
           </Button>
           <Button
             style={s(c.buttons.squareBasicButtons)}
@@ -306,7 +307,7 @@ const BlindfoldPieceOverview = ({
                                 (squares.sort() || []).map((square) => {
                                   return (
                                     <View style={s()}>
-                                      <Text
+                                      <CMText
                                         style={s(
                                           c.weightBold,
                                           c.fontSize(isMobile ? 16 : 24),
@@ -315,7 +316,7 @@ const BlindfoldPieceOverview = ({
                                         )}
                                       >
                                         {square}
-                                      </Text>
+                                      </CMText>
                                     </View>
                                   );
                                 }),

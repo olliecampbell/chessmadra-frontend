@@ -22,6 +22,7 @@ import {
 import { LichessGameCell } from "./LichessGameCell";
 import { ProgressMessageView } from "app/components/ProgressMessage";
 import client from "app/client";
+import { CMText } from "./CMText";
 
 export const GameMemorization = () => {
   const state = useGameMemorizationState();
@@ -41,17 +42,17 @@ export const GameMemorization = () => {
           />
         }
       >
-        <Text style={s(c.fg(c.colors.textPrimary))}>
+        <CMText style={s(c.fg(c.colors.textPrimary))}>
           <b>{state.activeGame.whiteName}</b>
           <Spacer width={4} />
           vs.
           <Spacer width={4} />
           <b>{state.activeGame.blackName}</b>
-        </Text>
+        </CMText>
         <Spacer height={12} />
-        <Text style={s(c.fg(c.colors.textPrimary))}>
+        <CMText style={s(c.fg(c.colors.textPrimary))}>
           Moves left: {state.nextMoves.length}
-        </Text>
+        </CMText>
         <Spacer height={24} />
         {state.progressMessage && (
           <>
@@ -101,12 +102,12 @@ export const GameMemorization = () => {
               })();
             }}
           >
-            <Text style={s(c.buttons.basic.textStyles)}>
+            <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
                 className="fas fa-search"
               ></i>
-            </Text>
+            </CMText>
           </Button>
           <Spacer width={12} />
           <Button
@@ -117,12 +118,12 @@ export const GameMemorization = () => {
               })();
             }}
           >
-            <Text style={s(c.buttons.basic.textStyles)}>
+            <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
                 className="fas fa-trash-can"
               ></i>
-            </Text>
+            </CMText>
           </Button>
           <Spacer width={12} />
           <Button
@@ -135,12 +136,12 @@ export const GameMemorization = () => {
               })();
             }}
           >
-            <Text style={s(c.buttons.basic.textStyles)}>
+            <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
                 className="fas fa-grid"
               ></i>
-            </Text>
+            </CMText>
           </Button>
         </View>
       </TrainerLayout>
@@ -148,9 +149,9 @@ export const GameMemorization = () => {
   } else if (state.games) {
     inner = (
       <>
-        <Text style={s(c.fg(c.colors.textPrimary))}>
+        <CMText style={s(c.fg(c.colors.textPrimary))}>
           You've reviewed {state.numReviewed.value} games in total.
-        </Text>
+        </CMText>
         <Spacer height={24} />
         <Button
           style={s(c.buttons.primary)}
@@ -190,12 +191,12 @@ export const GameMemorization = () => {
                     removeGame(game.id, state);
                   }}
                 >
-                  <Text style={s(c.buttons.basic.textStyles)}>
+                  <CMText style={s(c.buttons.basic.textStyles)}>
                     <i
                       style={s(c.fg(c.colors.textInverse))}
                       className="fas fa-trash-can"
                     ></i>
-                  </Text>
+                  </CMText>
                 </Button>
                 <Pressable
                   onPress={() => {

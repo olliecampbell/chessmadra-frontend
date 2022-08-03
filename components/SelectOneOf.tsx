@@ -2,6 +2,7 @@ import { Spacer } from "app/Space";
 import { s, c } from "app/styles";
 import { intersperse } from "app/utils/intersperse";
 import { View, Text, Pressable } from "react-native";
+import { CMText } from "./CMText";
 
 export const SelectOneOf = <T,>({
   choices,
@@ -58,7 +59,7 @@ export const SelectOneOf = <T,>({
                 cellStyles
               )}
             >
-              <Text
+              <CMText
                 style={s(
                   tabStyle
                     ? c.fg(active ? c.colors.textPrimary : c.grays[80])
@@ -70,7 +71,7 @@ export const SelectOneOf = <T,>({
                 )}
               >
                 {renderChoice(choice)}
-              </Text>
+              </CMText>
             </Pressable>
           );
         }),

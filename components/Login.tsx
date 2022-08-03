@@ -16,6 +16,8 @@ import { c, s } from "app/styles";
 import KnightWhiteIcon from "./chessboard/pieces/KnightWhiteIcon";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
+import { CMText } from "./CMText";
+import { CMTextInput } from "./TextInput";
 
 export default function Login({ signup }: { signup?: boolean }) {
   const {
@@ -69,7 +71,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                 <KnightWhiteIcon />
               </View>
               <Spacer height={12} />
-              <Text
+              <CMText
                 style={s(
                   c.fg(c.colors.textPrimary),
                   c.fontSize(24),
@@ -78,9 +80,9 @@ export default function Login({ signup }: { signup?: boolean }) {
                 )}
               >
                 Log in / Register
-              </Text>
+              </CMText>
               <Spacer height={12} />
-              <Text
+              <CMText
                 style={s(
                   c.fg(c.colors.textSecondary),
                   c.fontSize(14),
@@ -90,7 +92,7 @@ export default function Login({ signup }: { signup?: boolean }) {
               >
                 Just enter your email and you'll get a link to sign you in; no
                 password or sign-up needed.
-              </Text>
+              </CMText>
             </View>
           )}
           <Spacer height={24} />
@@ -104,7 +106,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                   ></i>
                 </View>
                 <Spacer height={12} />
-                <Text
+                <CMText
                   style={s(
                     c.fg(c.colors.textPrimary),
                     c.fontSize(16),
@@ -112,7 +114,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                   )}
                 >
                   Success! Check your email and click the link to log in.
-                </Text>
+                </CMText>
               </View>
             </View>
           ) : (

@@ -3,6 +3,7 @@ import { useIsMobile } from "app/utils/isMobile";
 import React, { useState } from "react";
 import { TextInput, Text, View } from "react-native";
 import { Spacer } from "app/Space";
+import { CMText } from "./CMText";
 
 export const DragAndDropInput = ({
   humanName,
@@ -46,17 +47,17 @@ export const DragAndDropInput = ({
       />
       {uploaded ? (
         <>
-          <Text style={s(c.fg(c.colors.textPrimary))}>Uploaded</Text>
+          <CMText style={s(c.fg(c.colors.textPrimary))}>Uploaded</CMText>
         </>
       ) : (
         <>
-          <Text style={s(c.fontSize(14), c.fg(c.grays[70]))}>
+          <CMText style={s(c.fontSize(14), c.fg(c.grays[70]))}>
             <i className="fa-light fa-plus"></i>
-          </Text>
+          </CMText>
           <Spacer width={isMobile ? 4 : 12} />
-          <Text style={s(c.fg(c.colors.textSecondary), c.fontSize(14))}>
+          <CMText style={s(c.fg(c.colors.textSecondary), c.fontSize(14))}>
             {humanName}
-          </Text>
+          </CMText>
         </>
       )}
     </View>

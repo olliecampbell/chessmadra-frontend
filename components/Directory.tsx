@@ -15,6 +15,7 @@ import { PageContainer } from "./PageContainer";
 import Link from "next/link";
 import { failOnTrue } from "app/utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
+import { CMText } from "./CMText";
 
 export const Directory = () => {
   const isMobile = useIsMobile();
@@ -30,7 +31,7 @@ export const Directory = () => {
       )}
       <Spacer height={44} />
       <View style={s(c.containerStyles(isMobile), c.grow, c.justifyCenter)}>
-        <Text
+        <CMText
           style={s(
             c.fg(c.colors.textPrimary),
             c.fontSize(32),
@@ -38,9 +39,9 @@ export const Directory = () => {
           )}
         >
           Chess Madra
-        </Text>
+        </CMText>
         <Spacer height={24} />
-        <Text
+        <CMText
           style={s(
             c.fg(c.colors.textSecondary),
             c.fontSize(16),
@@ -55,7 +56,7 @@ export const Directory = () => {
             let me know
           </a>{" "}
           if you have any feedback, or just to say hi :)
-        </Text>
+        </CMText>
         <Spacer height={44} />
         {chunked(
           navItems
@@ -96,7 +97,7 @@ export const Directory = () => {
                           className="fa-solid fa-party-horn"
                         ></i>
                         <Spacer width={12} />
-                        <Text
+                        <CMText
                           style={s(
                             c.weightHeavy,
                             c.fg(c.grays[10]),
@@ -105,7 +106,7 @@ export const Directory = () => {
                           )}
                         >
                           New
-                        </Text>
+                        </CMText>
                       </View>
                     )}
                     {beta && !isNew && (
@@ -121,7 +122,7 @@ export const Directory = () => {
                           c.py(12)
                         )}
                       >
-                        <Text
+                        <CMText
                           style={s(
                             c.weightHeavy,
                             c.fg(c.colors.textPrimary),
@@ -130,10 +131,10 @@ export const Directory = () => {
                           )}
                         >
                           Beta
-                        </Text>
+                        </CMText>
                       </View>
                     )}
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(c.colors.textInverse),
                         c.fontSize(24),
@@ -141,17 +142,19 @@ export const Directory = () => {
                       )}
                     >
                       {title}
-                    </Text>
+                    </CMText>
                     <Spacer height={isMobile ? 12 : 24} />
-                    <Text style={s(c.fg(c.grays[15]), c.lineHeight("1.5em"))}>
+                    <CMText style={s(c.fg(c.grays[15]), c.lineHeight("1.5em"))}>
                       {description}
-                    </Text>
+                    </CMText>
                     <Spacer grow height={12} />
                     <View
                       style={s(c.buttons.primary, c.selfEnd, c.minWidth(120))}
                       onPress={(e) => {}}
                     >
-                      <Text style={s(c.buttons.primary.textStyles)}>Start</Text>
+                      <CMText style={s(c.buttons.primary.textStyles)}>
+                        Start
+                      </CMText>
                     </View>
                   </View>
                 </Link>

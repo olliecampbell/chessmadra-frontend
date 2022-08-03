@@ -14,6 +14,7 @@ import {
   ProgressMessageType,
 } from "app/types/VisualizationState";
 import { useIsMobile } from "app/utils/isMobile";
+import { CMText } from "./CMText";
 
 export const ProgressMessageView = ({
   progressMessage,
@@ -23,7 +24,7 @@ export const ProgressMessageView = ({
   const isMobile = useIsMobile();
   return (
     <View style={s(c.br(4), c.fullWidth)}>
-      <Text
+      <CMText
         style={s(
           c.fg(
             progressMessage.type === ProgressMessageType.Error
@@ -35,14 +36,14 @@ export const ProgressMessageView = ({
         )}
       >
         {progressMessage.message}
-      </Text>
+      </CMText>
       {progressMessage.prompt && (
         <Pressable
           onPress={() => {
             progressMessage.onPromptPress();
           }}
         >
-          <Text
+          <CMText
             style={s(
               c.selfStart,
               c.fg(
@@ -56,7 +57,7 @@ export const ProgressMessageView = ({
             )}
           >
             {progressMessage.prompt}
-          </Text>
+          </CMText>
         </Pressable>
       )}
     </View>

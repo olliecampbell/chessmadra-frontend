@@ -59,6 +59,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   moveLog?: string;
   showMoveLog?: boolean;
   availableMovesFrom: (square: Square, _state: ChessboardState) => Move[];
+  hideCoordinates?: boolean;
 }
 
 export interface ChessboardStateParent<T> {

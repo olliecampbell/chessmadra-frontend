@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, View, Text, Animated } from "react-native";
 import { BarLoader, BeatLoader } from "react-spinners";
 import { LoaderSizeMarginProps } from "react-spinners/interfaces";
+import { CMText } from "./CMText";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export const Button = ({
@@ -20,7 +21,7 @@ export const Button = ({
 }) => {
   let inner = children;
   if (typeof inner === "string") {
-    inner = <Text style={style.textStyles}>{inner}</Text>;
+    inner = <CMText style={style.textStyles}>{inner}</CMText>;
   }
   return (
     <AnimatedPressable
@@ -39,7 +40,9 @@ export const Button = ({
           />
         </View>
       )}
-      <View style={s(c.opacity(isLoading ? 0 : 100))}>{inner}</View>
+      <View style={s(c.opacity(isLoading ? 0 : 100), c.row, c.alignCenter)}>
+        {inner}
+      </View>
     </AnimatedPressable>
   );
 };

@@ -20,6 +20,7 @@ import { Button } from "./Button";
 import { useOutsideClick } from "./useOutsideClick";
 import { failOnTrue } from "../utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
+import { CMText } from "./CMText";
 
 export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
 export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
@@ -103,12 +104,12 @@ export const NavBar = (props: {}) => {
         )}
       >
         <Link href="/">
-          <Text style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
+          <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
             <i
               style={s(c.fg(c.colors.textSecondary))}
               className="fas fa-house"
             ></i>
-          </Text>
+          </CMText>
         </Link>
         <Spacer width={12} />
         {intersperse(
@@ -124,7 +125,7 @@ export const NavBar = (props: {}) => {
                     router.push(navItem.path);
                   }}
                 >
-                  <Text
+                  <CMText
                     style={s(
                       c.fg(c.colors.textPrimary),
                       c.weightBold,
@@ -134,7 +135,7 @@ export const NavBar = (props: {}) => {
                     )}
                   >
                     {navItem.title}
-                  </Text>
+                  </CMText>
                 </Pressable>
               );
             }),
@@ -159,7 +160,7 @@ export const NavBar = (props: {}) => {
           >
             {authStatus === AuthStatus.Unauthenticated && (
               <Link href="/login">
-                <Text
+                <CMText
                   style={s(
                     c.buttons.basic,
                     c.bg(c.grays[20]),
@@ -172,13 +173,13 @@ export const NavBar = (props: {}) => {
                   )}
                 >
                   Log in / Register
-                </Text>
+                </CMText>
               </Link>
             )}
             {/*authStatus === AuthStatus.Authenticated && (
               <Link href="/login">
                 <View style={s(c.row, c.alignCenter)}>
-                  <Text
+                  <CMText
                     style={s(
                       // c.buttons.basic,
                       // c.bg(c.grays[20]),
@@ -189,7 +190,7 @@ export const NavBar = (props: {}) => {
                     )}
                   >
                     Log Out
-                  </Text>
+                  </CMText>
                 </View>
               </Link>
             )*/}
@@ -223,7 +224,7 @@ export const NavBar = (props: {}) => {
           <>
             <Spacer width={0} grow />
             <Link href="/login">
-              <Text
+              <CMText
                 style={s(
                   c.buttons.basic,
                   c.bg(c.grays[20]),
@@ -236,7 +237,7 @@ export const NavBar = (props: {}) => {
                 )}
               >
                 Log in / Register
-              </Text>
+              </CMText>
             </Link>
           </>
         )}
@@ -291,7 +292,7 @@ export const NavBar = (props: {}) => {
                       router.push(navItem.path);
                     }}
                   >
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(isActive ? c.grays[90] : c.grays[80]),
                         c.weightSemiBold,
@@ -303,7 +304,7 @@ export const NavBar = (props: {}) => {
                       )}
                     >
                       {navItem.title}
-                    </Text>
+                    </CMText>
                   </Pressable>
                 );
               }),

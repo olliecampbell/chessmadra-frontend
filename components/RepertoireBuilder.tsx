@@ -9,7 +9,10 @@ import { Animated, Text, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
+import {
+  ChessboardView,
+  PieceView,
+} from "app/components/chessboard/Chessboard";
 import {
   cloneDeep,
   map,
@@ -21,6 +24,7 @@ import {
   drop,
   last,
   keys,
+  take,
 } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
@@ -50,7 +54,16 @@ const DEPTH_CUTOFF = 4;
 import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
-import { failOnTrue } from "app/utils/test_settings";
+import { failOnAny, failOnTrue } from "app/utils/test_settings";
+import { ChessboardState, createChessState } from "app/utils/chessboard_state";
+import { Chess } from "@lubert/chess.ts";
+import { MOCK_RETURNED_GAMES } from "app/mocks/games";
+import { LichessGameCell } from "./LichessGameCell";
+import { LichessGameCellMini } from "./LichessGameCellMini";
+import { CMText } from "./CMText";
+
+let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
+let cardStyles = s(c.bg(c.colors.cardBackground), c.overflowHidden, c.br(2));
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -82,7 +95,7 @@ export const RepertoireBuilder = () => {
             c.br(8)
           )}
         >
-          <Text
+          <CMText
             style={s(
               c.fg(c.colors.textPrimary),
               c.flexShrink(1),
@@ -92,7 +105,7 @@ export const RepertoireBuilder = () => {
           >
             Are you sure you want to delete {pluralize(countToDelete, "move")}{" "}
             starting with {state.moveLog} ?
-          </Text>
+          </CMText>
           <Spacer height={18} />
           <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
             <Button
@@ -101,7 +114,9 @@ export const RepertoireBuilder = () => {
                 setConfirmMoveDeleteModalOpen(false);
               }}
             >
-              <Text style={s(c.buttons.outlineLight.textStyles)}>Cancel</Text>
+              <CMText style={s(c.buttons.outlineLight.textStyles)}>
+                Cancel
+              </CMText>
             </Button>
             <Spacer width={12} grow />
             <Button
@@ -119,7 +134,7 @@ export const RepertoireBuilder = () => {
                 }, state);
               }}
             >
-              <Text style={s(c.buttons.primary.textStyles)}>Delete</Text>
+              <CMText style={s(c.buttons.primary.textStyles)}>Delete</CMText>
             </Button>
           </View>
         </View>
@@ -148,7 +163,7 @@ export const RepertoireBuilder = () => {
             ></i>
             <Spacer width={16} />
             <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
-              <Text
+              <CMText
                 style={s(
                   c.fg(c.colors.textPrimary),
                   c.fontSize(18),
@@ -156,13 +171,13 @@ export const RepertoireBuilder = () => {
                 )}
               >
                 Export
-              </Text>
+              </CMText>
               <Spacer height={4} />
-              <Text style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
+              <CMText style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
                 Export your {state.activeSide} repertoire to a PGN file. You can
                 import this file into a Lichess study, ChessBase, Chessable
                 course, etc.
-              </Text>
+              </CMText>
               <Spacer height={12} />
               <Button
                 style={s(c.buttons.primary, c.height(36), c.selfEnd)}
@@ -170,7 +185,7 @@ export const RepertoireBuilder = () => {
                   state.exportPgn(state.activeSide);
                 }}
               >
-                <Text style={s(c.buttons.primary.textStyles)}>Export</Text>
+                <CMText style={s(c.buttons.primary.textStyles)}>Export</CMText>
               </Button>
             </View>
           </View>
@@ -189,7 +204,7 @@ export const RepertoireBuilder = () => {
             ></i>
             <Spacer width={16} />
             <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
-              <Text
+              <CMText
                 style={s(
                   c.fg(c.colors.textPrimary),
                   c.fontSize(18),
@@ -197,12 +212,12 @@ export const RepertoireBuilder = () => {
                 )}
               >
                 Delete
-              </Text>
+              </CMText>
               <Spacer height={4} />
-              <Text style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
+              <CMText style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
                 Delete your entire {state.activeSide} repertoire. This cannot be
                 undone.
-              </Text>
+              </CMText>
               <Spacer height={12} />
               <Button
                 style={s(
@@ -215,7 +230,7 @@ export const RepertoireBuilder = () => {
                   state.deleteRepertoire(state.activeSide);
                 }}
               >
-                <Text style={s(c.buttons.primary.textStyles)}>Delete</Text>
+                <CMText style={s(c.buttons.primary.textStyles)}>Delete</CMText>
               </Button>
             </View>
           </View>
@@ -228,7 +243,6 @@ export const RepertoireBuilder = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
   let centered = false;
-  let hasNoMovesAtAll = isEmpty(getAllRepertoireMoves(state.repertoire));
   let hasNoMovesThisSide = isEmpty(state.myResponsesLookup?.[state.activeSide]);
   if (state.repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
@@ -253,9 +267,9 @@ export const RepertoireBuilder = () => {
           style={s(c.fg(c.grays[70]), c.fontSize(16))}
         />
         <Spacer width={8} />
-        <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
+        <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
           Back to overview
-        </Text>
+        </CMText>
       </View>
     );
     if (state.isEditing) {
@@ -319,23 +333,23 @@ export const RepertoireBuilder = () => {
               <View
                 style={s(c.column, c.selfCenter, c.center, c.grow, c.px(12))}
               >
-                <Text>
+                <CMText>
                   <i
                     className="fa-light fa-empty-set"
                     style={s(c.fg(c.grays[50]), c.fontSize(24))}
                   />
-                </Text>
+                </CMText>
                 <Spacer height={12} />
-                <Text style={s(c.fg(c.grays[85]))}>
+                <CMText style={s(c.fg(c.grays[85]))}>
                   You don't have any moves in your repertoire yet! Play a line
                   on the board to add it.
-                </Text>
+                </CMText>
                 <Spacer height={12} />
-                <Text style={s(c.fg(c.grays[85]), c.selfStart)}>
+                <CMText style={s(c.fg(c.grays[85]), c.selfStart)}>
                   {state.activeSide === "black"
                     ? "Maybe start with a response to e4?"
                     : "e4 and d4 are the most popular first moves for white, maybe one of those?"}
-                </Text>
+                </CMText>
               </View>
             ) : (
               <>
@@ -349,7 +363,7 @@ export const RepertoireBuilder = () => {
                       c.alignCenter
                     )}
                   >
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(c.colors.textPrimary),
                         c.weightSemiBold,
@@ -357,7 +371,7 @@ export const RepertoireBuilder = () => {
                       )}
                     >
                       {state.moveLog}
-                    </Text>
+                    </CMText>
                     <Spacer grow width={12} />
                     <Button
                       style={s(
@@ -409,7 +423,7 @@ export const RepertoireBuilder = () => {
                             c.px(12)
                           )}
                         >
-                          <Text
+                          <CMText
                             style={s(
                               c.fg(c.grays[75]),
                               c.textAlign("center"),
@@ -417,7 +431,7 @@ export const RepertoireBuilder = () => {
                             )}
                           >
                             Play a move on the board to add a response
-                          </Text>
+                          </CMText>
                         </View>
                       )}
                   </View>
@@ -446,7 +460,7 @@ export const RepertoireBuilder = () => {
                             style={s(c.fontSize(20), c.fg(c.yellows[50]))}
                           ></i>
                           <Spacer width={8} />
-                          <Text
+                          <CMText
                             style={s(
                               c.fg(c.colors.textInverse),
                               c.fontSize(12)
@@ -455,7 +469,7 @@ export const RepertoireBuilder = () => {
                             Adding this line will replace{" "}
                             <b>{state.numMovesWouldBeDeleted}</b> responses in
                             your repertoire
-                          </Text>
+                          </CMText>
                         </View>
                       )}
                     <View
@@ -475,14 +489,14 @@ export const RepertoireBuilder = () => {
                           state.addPendingLine();
                         }}
                       >
-                        <Text style={s(c.buttons.primary.textStyles)}>
+                        <CMText style={s(c.buttons.primary.textStyles)}>
                           <i
                             className="fa-regular fa-plus"
                             style={s(c.fg(c.grays[90]))}
                           />
                           <Spacer width={6} />
-                          <Text style={s(c.weightBold)}>Add line</Text>
-                        </Text>
+                          <CMText style={s(c.weightBold)}>Add line</CMText>
+                        </CMText>
                       </Button>
                     </View>
                   </>
@@ -490,9 +504,9 @@ export const RepertoireBuilder = () => {
 
                 {/*
               {state.currentLine && (
-                <Text style={s(c.weightSemiBold, c.fg(c.colors.textSecondary))}>
+                <CMText style={s(c.weightSemiBold, c.fg(c.colors.textSecondary))}>
                   {lineToPgn(state.currentLine)}
-                </Text>
+                </CMText>
               )}
               */}
               </>
@@ -512,7 +526,7 @@ export const RepertoireBuilder = () => {
                 state.analyzeLineOnLichess(state.activeSide);
               }}
             >
-              <Text
+              <CMText
                 style={s(
                   c.buttons.basicInverse.textStyles,
                   c.fg(c.colors.textPrimary)
@@ -524,7 +538,7 @@ export const RepertoireBuilder = () => {
                 ></i>
                 <Spacer width={8} />
                 Analyze
-              </Text>
+              </CMText>
             </Button>
             <Spacer width={12} />
             <Button
@@ -540,7 +554,7 @@ export const RepertoireBuilder = () => {
                 state.searchOnChessable();
               }}
             >
-              <Text
+              <CMText
                 style={s(
                   c.buttons.basicInverse.textStyles,
                   c.fg(c.colors.textPrimary)
@@ -552,7 +566,7 @@ export const RepertoireBuilder = () => {
                 ></i>
                 <Spacer width={8} />
                 Chessable
-              </Text>
+              </CMText>
             </Button>
           </View>
           <Spacer height={12} />
@@ -567,7 +581,7 @@ export const RepertoireBuilder = () => {
               setEditEtcModalOpen(true);
             }}
           >
-            <Text
+            <CMText
               style={s(
                 c.buttons.basicInverse.textStyles,
                 c.fg(c.colors.textPrimary)
@@ -577,7 +591,7 @@ export const RepertoireBuilder = () => {
                 style={s(c.fontSize(14), c.fg(c.grays[60]))}
                 className="fas fa-ellipsis"
               ></i>
-            </Text>
+            </CMText>
           </Button>
         </>
       );
@@ -585,7 +599,7 @@ export const RepertoireBuilder = () => {
       innerInner = (
         <>
           {backToOverviewRow}
-          <Text
+          <CMText
             style={s(
               c.fg(c.colors.textPrimary),
               c.weightSemiBold,
@@ -593,7 +607,7 @@ export const RepertoireBuilder = () => {
             )}
           >
             Play the correct response on the board
-          </Text>
+          </CMText>
           <Spacer height={12} />
           <View style={s(c.row)}>
             <Button
@@ -612,9 +626,9 @@ export const RepertoireBuilder = () => {
                 });
               }}
             >
-              <Text style={s(c.buttons.basicInverse.textStyles)}>
+              <CMText style={s(c.buttons.basicInverse.textStyles)}>
                 <i className="fa fa-search" />
-              </Text>
+              </CMText>
             </Button>
             <Spacer width={8} />
             <Button
@@ -630,7 +644,7 @@ export const RepertoireBuilder = () => {
                 }
               }}
             >
-              <Text
+              <CMText
                 style={s(
                   state.hasGivenUp
                     ? c.buttons.primary.textStyles
@@ -647,101 +661,33 @@ export const RepertoireBuilder = () => {
                   </>
                 )}
                 {state.hasGivenUp ? "Next" : "I don't know"}
-              </Text>
+              </CMText>
             </Button>
           </View>
         </>
       );
     } else {
+      // Overview
       innerInner = (
-        <>
-          {!hasNoMovesAtAll && (
+        <View
+          style={s(
+            c.containerStyles(isMobile),
+            isMobile ? c.column : c.row,
+            c.justifyCenter
+          )}
+        >
+          <RepertoireOverview {...{ state }} />;
+          {!isMobile && (
             <>
-              {isEmpty(state.queue) ? (
-                <View
-                  style={s(
-                    c.bg(c.grays[20]),
-                    c.br(4),
-                    c.overflowHidden,
-                    c.px(16),
-                    c.py(16),
-                    c.column,
-                    c.center
-                  )}
-                >
-                  <View style={s(c.row, c.alignStart)}>
-                    <i
-                      style={s(
-                        c.fg(c.grays[50]),
-                        c.selfCenter,
-                        c.fontSize(24),
-                        c.pr(12)
-                      )}
-                      className="fas fa-check"
-                    ></i>
-                    <Text
-                      style={s(c.fg(c.colors.textSecondary), c.fontSize(13))}
-                    >
-                      You've reviewed all your moves! Now might be a good time
-                      to add moves. Or you can{" "}
-                      <span
-                        style={s(
-                          c.weightSemiBold,
-                          c.fg(c.colors.textPrimary),
-                          c.clickable
-                        )}
-                        onClick={() => {
-                          state.startReview();
-                        }}
-                      >
-                        review your moves anyway.
-                      </span>
-                    </Text>
-                  </View>
-                </View>
-              ) : (
-                <Button
-                  style={s(
-                    c.buttons.primary,
-                    c.selfStretch,
-                    c.py(16),
-                    c.px(12)
-                  )}
-                  onPress={() => {
-                    state.startReview();
-                  }}
-                >
-                  {`Review ${pluralize(state.queue?.length, "move")}`}
-                </Button>
-              )}
-              <Spacer height={12} />
+              <Spacer width={12} />
+              <View
+                style={s(c.width(2), c.bg(c.grays[15]), c.selfStretch)}
+              ></View>
+              <Spacer width={12} />
+              <ExtraActions {...{ state }} />
             </>
           )}
-
-          {intersperse(
-            SIDES.map((side, i) => {
-              return (
-                <RepertoireSideSummary key={side} side={side} state={state} />
-              );
-            }),
-            (i) => {
-              return <Spacer height={12} key={i} />;
-            }
-          )}
-          <Spacer height={12} />
-          <Button
-            style={s(c.buttons.basic, c.selfEnd, c.px(14), c.py(12))}
-            onPress={() => {
-              state.quick((s) => {
-                s.startImporting(s);
-              });
-            }}
-          >
-            <Text style={s(c.fontSize(20))}>
-              <i className="fas fa-plus" />
-            </Text>
-          </Button>
-        </>
+        </View>
       );
     }
     inner = (
@@ -756,34 +702,16 @@ export const RepertoireBuilder = () => {
         <TrainerLayout
           containerStyles={s(isMobile ? c.alignCenter : c.alignStart)}
           chessboard={
-            <ChessboardView
-              {...{
-                state: state,
-              }}
-            />
+            (state.isEditing || state.isReviewing) && (
+              <ChessboardView
+                {...{
+                  state: state,
+                }}
+              />
+            )
           }
         >
-          <View style={s(!isMobile && s(c.width(300)))}>
-            {innerInner}
-            {/*
-            <Spacer height={12} />
-            <View style={s(c.row, c.justifyEnd, c.fullWidth)}>
-              <Button
-                style={s(c.buttons.squareBasicButtons)}
-                onPress={() => {
-                  setUploadModalOpen(true);
-                }}
-              >
-                <Text style={s(c.buttons.basic.textStyles)}>
-                  <i
-                    style={s(c.fg(c.colors.textInverse))}
-                    className="fas fa-arrow-up-from-line"
-                  ></i>
-                </Text>
-              </Button>
-            </View>
-            */}
-          </View>
+          {innerInner}
         </TrainerLayout>
         {editEtcModal}
         {confirmMoveDeleteModal}
@@ -898,7 +826,7 @@ const OpeningNode = ({
             c.justifyBetween
           )}
         >
-          <Text
+          <CMText
             style={s(
               c.fg(
                 move.mine || true || move.pending ? c.grays[85] : c.grays[70]
@@ -912,26 +840,29 @@ const OpeningNode = ({
             {move.sanPlus}
             {responses && depthDifference >= DEPTH_CUTOFF && "…"}
             {move.pending && (
-              <Text style={s(c.opacity(60), c.weightSemiBold)}> [pending]</Text>
+              <CMText style={s(c.opacity(60), c.weightSemiBold)}>
+                {" "}
+                [pending]
+              </CMText>
             )}
-          </Text>
+          </CMText>
           {/*incidence && !move.mine && (
             <>
               <Spacer width={0} grow />
-              <Text style={s(c.fg(c.colors.textSecondary))}>
+              <CMText style={s(c.fg(c.colors.textSecondary))}>
                 {formatIncidence(incidence)}
-              </Text>
+              </CMText>
             </>
           )*/}
 
           {/*
           <Spacer width={12} />
-          <Text style={s(c.clickable)}>
+          <CMText style={s(c.clickable)}>
             <i
               style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
               className={`fas fa-trash`}
             ></i>
-          </Text>
+          </CMText>
           */}
         </View>
       </Pressable>
@@ -968,7 +899,7 @@ const OpeningNode = ({
   );
 };
 
-let START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
 const formatIncidence = (incidence: number) => {
   return `${removeTrailingZeros((incidence * 100).toFixed(1))}%`;
@@ -978,11 +909,87 @@ const removeTrailingZeros = (n: string) => {
   return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
 };
 
+export const SideSectionHeader = ({ header, icon }) => {
+  const isMobile = useIsMobile();
+  return (
+    <View
+      style={s(
+        c.row,
+        c.brbr(4),
+        c.px(isMobile ? 10 : 12),
+        c.pt(isMobile ? 10 : 12),
+        c.alignCenter,
+        c.justifyBetween,
+        c.fullWidth,
+        c.selfStart
+      )}
+    >
+      <CMText
+        style={s(
+          c.fontSize(isMobile ? 16 : 18),
+          c.weightBold,
+          c.fg(c.colors.textSecondary)
+        )}
+      >
+        {header}
+      </CMText>
+      <Spacer width={12} />
+      <i
+        className={icon}
+        style={s(c.fontSize(isMobile ? 20 : 28), c.fg(c.grays[15]))}
+      />
+    </View>
+  );
+};
+
+type EditButtonProps = {
+  side: Side;
+  state: RepertoireState;
+};
+
+export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
+  const isMobile = useIsMobile();
+  return (
+    <Button
+      style={s(
+        c.buttons.basic,
+        isMobile && c.bg(c.grays[70]),
+        isMobile ? c.selfCenter : c.selfStretch,
+        c.py(isMobile ? 12 : 16),
+        c.px(24)
+      )}
+      onPress={() => {
+        state.startEditing(side);
+      }}
+    >
+      <Text style={s(c.fontSize(16), c.fg(c.colors.textInverse))}>
+        <i className="fa fa-pencil" />
+      </Text>
+      {!isMobile && (
+        <>
+          <Spacer width={8} />
+          <Text
+            style={s(
+              c.fontSize(18),
+              c.weightSemiBold,
+              c.fg(c.colors.textInverse)
+            )}
+          >
+            Edit
+          </Text>
+        </>
+      )}
+    </Button>
+  );
+};
+
 const RepertoireSideSummary = ({
   side,
+  isMobile,
   state,
 }: {
   side: Side;
+  isMobile: boolean;
   state: RepertoireState;
 }) => {
   let expectedDepth = state.repertoireGrades[side]?.expectedDepth;
@@ -990,113 +997,205 @@ const RepertoireSideSummary = ({
 
   let numMoves = state.myResponsesLookup?.[side]?.length;
   let hasNoMovesThisSide = isEmpty(state.repertoire[side]?.positionResponses);
-  let biggestMissRow = createBiggestMissRow(state, side);
+  let instructiveGames = state.repertoireGrades?.[side]?.instructiveGames;
+  // let biggestMissRow = createBiggestMissRow(state, side);
   return (
-    <View style={s(c.column, c.bg(c.grays[20]), c.overflowHidden, c.fullWidth)}>
-      <View style={s(c.br(4), c.column, c.alignStart)}>
-        <View
-          style={s(c.fullWidth, c.pb(8), c.row, c.justifyBetween, c.alignStart)}
-        >
-          <Text
-            style={s(
-              c.weightSemiBold,
-              c.fg(c.colors.textPrimary),
-              c.fontSize(18),
-              c.pl(18),
-              c.py(12)
-            )}
-          >
-            {capitalize(side)}
-          </Text>
-          <Button
-            style={s(
-              c.buttons.basic,
-              c.py(12),
-              c.px(18),
-              c.bg(c.grays[30]),
-              c.br(0),
-              c.brbl(2)
-            )}
-            onPress={() => {
-              state.startEditing(side);
-            }}
-          >
-            <Text style={s(c.weightBold, c.fontSize(14), c.fg(c.grays[80]))}>
-              Edit
-            </Text>
-          </Button>
-        </View>
-        <Spacer height={4} />
-        {hasNoMovesThisSide ? (
-          <View style={s(c.column, c.selfCenter, c.center, c.grow)}>
-            <Text>
-              <i
-                className="fa-regular fa-empty-set"
-                style={s(c.fg(c.grays[50]), c.fontSize(18))}
-              />
-            </Text>
-            <Spacer height={8} />
-            <Text style={s(c.fg(c.grays[75]))}>No moves for {side}</Text>
-            <Spacer height={16} />
-          </View>
-        ) : (
-          <View
-            style={s(
-              c.row,
-              c.alignCenter,
-              c.fullWidth,
-              c.justifyBetween,
-              c.px(48)
-            )}
-          >
-            {intersperse(
-              [
-                <SummaryRow
-                  key={"move"}
-                  k={plural(numMoves, "Move")}
-                  v={numMoves}
-                />,
-                ...(expectedDepth
-                  ? [
-                      <SummaryRow
-                        key={"depth"}
-                        k="Expected depth"
-                        v={expectedDepth.toFixed(2)}
-                      />,
-                    ]
-                  : []),
-                // ...(biggestMiss
-                //   ? [
-                //       <SummaryRow
-                //         k={`Biggest miss, expected in ${(
-                //           biggestMiss.incidence * 100
-                //         ).toFixed(1)}% of games`}
-                //         v={biggestMiss.move.id}
-                //       />,
-                //     ]
-                //   : []),
-              ],
-              (i) => {
-                return <Spacer width={0} key={i} />;
-              }
-            )}
-          </View>
+    <View style={s(c.column, c.maxWidth(800), c.fullWidth)}>
+      <View
+        style={s(
+          isMobile ? c.column : c.row,
+          c.overflowHidden,
+          c.fullWidth,
+          c.selfStretch
         )}
-        <Spacer height={18} />
+      >
+        <View style={s(isMobile && s(c.row, c.selfStretch, c.justifyStart))}>
+          <View style={s(c.size(48))}>
+            <PieceView
+              piece={{ color: side === "white" ? "w" : "b", type: "k" }}
+            />
+          </View>
+
+          {isMobile && (
+            <>
+              <Spacer width={0} grow />
+              <EditButton {...{ state, side }} />
+            </>
+          )}
+        </View>
+        <Spacer
+          width={sectionSpacing(isMobile)}
+          height={sectionSpacing(isMobile)}
+          {...{ isMobile }}
+        />
+        <View style={s(c.column, c.alignStart, c.justifyCenter)}>
+          <View
+            style={s(c.column, cardStyles, c.selfStretch, c.fullWidth, c.grow)}
+          >
+            <SideSectionHeader header="Summary" icon="fa fa-chess" />
+            {
+              <View
+                style={s(
+                  c.row,
+                  c.alignCenter,
+                  c.grow,
+                  c.fullWidth,
+                  c.justifyCenter,
+                  c.py(isMobile ? 16 : 32),
+                  c.px(32)
+                )}
+              >
+                {intersperse(
+                  [
+                    <SummaryRow
+                      key={"move"}
+                      k={plural(numMoves, "Move")}
+                      v={numMoves}
+                      {...{ isMobile }}
+                    />,
+                    ...(!isNil(expectedDepth)
+                      ? [
+                          <SummaryRow
+                            {...{ isMobile }}
+                            key={"depth"}
+                            k="Expected depth"
+                            v={
+                              expectedDepth === 0
+                                ? "0"
+                                : expectedDepth.toFixed(2)
+                            }
+                          />,
+                        ]
+                      : []),
+                    // ...(biggestMiss
+                    //   ? [
+                    //       <SummaryRow
+                    //         k={`Biggest miss, expected in ${(
+                    //           biggestMiss.incidence * 100
+                    //         ).toFixed(1)}% of games`}
+                    //         v={biggestMiss.move.id}
+                    //       />,
+                    //     ]
+                    //   : []),
+                  ],
+                  (i) => {
+                    return <Spacer width={48} key={i} />;
+                  }
+                )}
+              </View>
+            }
+          </View>
+          <Spacer height={sectionSpacing(isMobile)} />
+          {biggestMiss && <BiggestMissBoards {...{ state, side }} />}
+        </View>
+        {instructiveGames && (
+          <>
+            <Spacer
+              height={sectionSpacing(isMobile)}
+              width={sectionSpacing(isMobile)}
+              isMobile={isMobile}
+            />
+            <View style={s(c.column, c.grow, isMobile && c.selfStretch)}>
+              <View
+                style={s(
+                  c.column,
+                  cardStyles,
+                  !isMobile && c.maxWidth(400),
+                  c.grow
+                )}
+              >
+                <SideSectionHeader
+                  header="Instructive games"
+                  icon="fa fa-book-open-reader"
+                />
+                <Spacer height={isMobile ? 12 : 18} />
+                {isEmpty(instructiveGames) && (
+                  <View style={s(c.column, c.grow, c.center, c.px(24))}>
+                    <Text>
+                      <i
+                        className="fa-regular fa-empty-set"
+                        style={s(c.fg(c.grays[30]), c.fontSize(24))}
+                      />
+                    </Text>
+                    <Spacer height={8} />
+                    <Text
+                      style={s(
+                        c.fg(c.grays[75]),
+                        c.maxWidth(240),
+                        c.textAlign("center")
+                      )}
+                    >
+                      Once you add some moves to your repertoire, you can find
+                      instructive games here
+                    </Text>
+                    <Spacer height={16} />
+                  </View>
+                )}
+                <View style={s(c.column, c.px(12), c.pb(12))}>
+                  {intersperse(
+                    take(instructiveGames, 3).map((x, i) => {
+                      let link = `https://lichess.org/${x.id}`;
+                      if (x.result === -1) {
+                        link += "/black";
+                      }
+                      return (
+                        <a href={link} target="_blank" key={x.id}>
+                          <LichessGameCellMini
+                            showFirstMoves
+                            game={x}
+                            hideLink
+                          />
+                        </a>
+                      );
+                    }),
+                    (i) => {
+                      return <Spacer height={12} key={i} />;
+                    }
+                  )}
+                </View>
+              </View>
+              {!isMobile && (
+                <>
+                  <Spacer height={sectionSpacing(isMobile)} />
+                  <EditButton side={side} state={state} />
+                </>
+              )}
+            </View>
+          </>
+        )}
       </View>
-      {biggestMiss && numMoves > 0 && biggestMissRow}
     </View>
   );
 };
 
-const SummaryRow = ({ k, v }) => {
+const SummaryRow = ({ k, v, isMobile }) => {
   return (
-    <View style={s(c.column, c.alignCenter)}>
-      <Text style={s(c.fg(c.colors.textPrimary), c.weightBold, c.fontSize(22))}>
+    <View
+      style={s(
+        isMobile ? c.column : c.row,
+        isMobile ? c.alignCenter : c.alignEnd
+      )}
+    >
+      <CMText
+        style={s(
+          c.fg(c.colors.textPrimary),
+          c.weightBold,
+          c.fontSize(isMobile ? 22 : 26)
+        )}
+      >
         {v}
-      </Text>
-      <Spacer height={4} />
-      <Text style={s(c.fg(c.grays[70]), c.weightSemiBold)}>{k}</Text>
+      </CMText>
+      <Spacer width={8} isMobile={isMobile} height={4} />
+      <CMText
+        style={s(
+          c.fg(c.grays[70]),
+          c.weightSemiBold,
+          isMobile ? c.fontSize(14) : c.fontSize(16),
+          c.mb(2)
+        )}
+      >
+        {k}
+      </CMText>
     </View>
   );
 };
@@ -1126,7 +1225,7 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
         )}
       >
         <View style={s(c.row, c.selfStart)}>
-          <Text
+          <CMText
             style={s(
               c.fg(c.colors.textSecondary),
               c.fontSize(12),
@@ -1136,9 +1235,9 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
             )}
           >
             Biggest miss -
-          </Text>
+          </CMText>
           <Spacer width={4} />
-          <Text
+          <CMText
             style={s(
               c.fg(c.colors.textSecondary),
               c.fontSize(12),
@@ -1148,10 +1247,10 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
             )}
           >
             {formatIncidence(biggestMiss.incidence)} of games
-          </Text>
+          </CMText>
         </View>
         <Spacer height={2} />
-        <Text
+        <CMText
           style={s(
             c.constrainWidth,
             c.fg(c.colors.textPrimary),
@@ -1167,8 +1266,282 @@ function createBiggestMissRow(state: RepertoireState, side: string) {
           )}
         >
           {biggestMiss?.lines[0]}
-        </Text>
+        </CMText>
       </View>
     </Pressable>
   );
 }
+
+enum BiggestMissTagType {
+  StartPosition,
+  Biggest,
+  Critical,
+}
+
+const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
+  return (
+    <View
+      style={s(
+        // c.bg(c.grays[75]),
+        // c.px(12),
+        c.py(4),
+        c.br(2),
+        c.row,
+        c.alignCenter,
+        c.selfStart
+      )}
+    >
+      <CMText
+        style={s(
+          c.fontSize(16),
+          c.fg(
+            type === BiggestMissTagType.StartPosition
+              ? c.grays[70]
+              : type === BiggestMissTagType.Biggest
+              ? c.grays[70]
+              : c.grays[70]
+          )
+        )}
+      >
+        {type === BiggestMissTagType.StartPosition ? (
+          <i className="fa fa-flag-checkered" />
+        ) : type === BiggestMissTagType.Biggest ? (
+          <i className="fa fa-percent" />
+        ) : (
+          <i className="fa fa-triangle-exclamation" />
+        )}
+      </CMText>
+      <Spacer width={8} />
+      <CMText
+        style={s(
+          c.fontSize(14),
+          c.weightSemiBold,
+          c.fg(c.colors.textSecondary)
+        )}
+      >
+        {type === BiggestMissTagType.StartPosition
+          ? "Start position"
+          : type === BiggestMissTagType.Biggest
+          ? "Biggest miss"
+          : "Critical position"}
+      </CMText>
+    </View>
+  );
+};
+
+function BiggestMissBoards({
+  state,
+  side,
+}: {
+  state: RepertoireState;
+  side: string;
+}) {
+  const isMobile = useIsMobile();
+  let biggestMiss = state.repertoireGrades[side]?.biggestMiss as RepertoireMiss;
+  if (!biggestMiss) {
+    return null;
+  }
+  return (
+    <View style={s(c.column, c.alignCenter, cardStyles, c.selfStretch)}>
+      <SideSectionHeader header="Add moves" icon="fa fa-hammer" />
+      <View
+        style={s(
+          c.row,
+          c.selfStretch,
+          c.alignCenter,
+          c.justifyCenter,
+          c.px(32),
+          c.py(isMobile ? 12 : 24)
+        )}
+      >
+        {intersperse(
+          [biggestMiss].map((x, i) => {
+            return (
+              <View style={s()}>
+                <View style={s(c.size(isMobile ? 120 : 160))}>
+                  <Pressable
+                    onPress={() => {
+                      state.quick((s) => {
+                        state.startEditing(side as Side, s);
+                        state.playPgn(x.lines[0], s);
+                      });
+                    }}
+                  >
+                    <ChessboardView
+                      state={createChessState(
+                        null,
+                        null,
+                        (state: ChessboardState) => {
+                          state.position = new Chess();
+                          state.frozen = true;
+                          state.flipped = side == "black";
+                          state.hideCoordinates = true;
+                          state.position.loadPgn(biggestMiss.lines[0]);
+                        }
+                      )}
+                    />
+                  </Pressable>
+                </View>
+                <Spacer height={4} />
+                <BiggestMissTag
+                  type={
+                    x.epd === START_EPD
+                      ? BiggestMissTagType.StartPosition
+                      : BiggestMissTagType.Biggest
+                  }
+                />
+              </View>
+            );
+          }),
+          (i) => {
+            return <Spacer width={24} key={i} />;
+          }
+        )}
+      </View>
+    </View>
+  );
+}
+
+const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
+  const isMobile = useIsMobile();
+  return (
+    <View style={s(c.column, c.constrainWidth)}>
+      <View style={s(c.column, c.constrainWidth, c.alignCenter)}>
+        {isMobile && (
+          <>
+            <Spacer height={24} />
+            <ReviewMovesView {...{ state, isMobile, side: null }} />
+            <Spacer height={36} />
+          </>
+        )}
+        {intersperse(
+          SIDES.map((side, i) => {
+            return (
+              <RepertoireSideSummary
+                {...{ isMobile }}
+                key={side}
+                side={side}
+                state={state}
+              />
+            );
+          }),
+          (i) => {
+            return <Spacer height={54} width={12} key={i} {...{ isMobile }} />;
+          }
+        )}
+        {isMobile && (
+          <>
+            <Spacer height={72} />
+            <ImportButton {...{ state }} />
+          </>
+        )}
+      </View>
+    </View>
+  );
+};
+
+const ReviewMovesView = ({
+  state,
+  isMobile,
+  side,
+}: {
+  state: RepertoireState;
+  isMobile: boolean;
+  side?: Side;
+}) => {
+  let hasNoMovesThisSide = state.getMyResponsesLength(side) === 0;
+  console.log({ hasNoMovesThisSide });
+  if (hasNoMovesThisSide) {
+    return null;
+  }
+  return (
+    <>
+      {state.getQueueLength(side) === 0 ? (
+        <View
+          style={s(
+            c.bg(c.grays[20]),
+            c.br(4),
+            c.overflowHidden,
+            c.px(16),
+            c.py(16),
+            c.column,
+            c.center
+          )}
+        >
+          <View style={s(c.row, c.alignStart)}>
+            <i
+              style={s(
+                c.fg(c.grays[50]),
+                c.selfCenter,
+                c.fontSize(24),
+                c.pr(12)
+              )}
+              className="fas fa-check"
+            ></i>
+            <Text style={s(c.fg(c.colors.textSecondary), c.fontSize(13))}>
+              You've reviewed all your moves! Now might be a good time to add
+              moves. Or you can{" "}
+              <span
+                style={s(
+                  c.weightSemiBold,
+                  c.fg(c.colors.textPrimary),
+                  c.clickable
+                )}
+                onClick={() => {
+                  state.startReview(side);
+                }}
+              >
+                review your moves anyway.
+              </span>
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <Button
+          style={s(c.buttons.primary, c.selfStretch, c.py(16), c.px(12))}
+          onPress={() => {
+            state.startReview(side);
+          }}
+        >
+          {`Review ${pluralize(state.getQueueLength(side), "move")}`}
+        </Button>
+      )}
+    </>
+  );
+};
+
+const ImportButton = ({ state }: { state: RepertoireState }) => {
+  return (
+    <Button
+      style={s(c.buttons.basic, c.selfEnd, c.px(14), c.py(12), c.selfStretch)}
+      onPress={() => {
+        state.quick((s) => {
+          s.startImporting(s);
+        });
+      }}
+    >
+      <Text style={s(c.fontSize(20), c.fg(c.colors.textInverse))}>
+        <i className="fas fa-plus" />
+      </Text>
+      <Spacer width={12} />
+      <Text
+        style={s(c.fontSize(18), c.weightSemiBold, c.fg(c.colors.textInverse))}
+      >
+        Import
+      </Text>
+    </Button>
+  );
+};
+
+const ExtraActions = ({ state }: { state: RepertoireState }) => {
+  const isMobile = useIsMobile();
+  let hasNoMovesAtAll = state.getMyResponsesLength(null) === 0;
+  return (
+    <View style={s(c.width(220))}>
+      <ReviewMovesView {...{ state, isMobile, side: null }} />
+      {!hasNoMovesAtAll && <Spacer height={12} />}
+
+      <ImportButton {...{ state }} />
+    </View>
+  );
+};

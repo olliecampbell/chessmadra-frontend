@@ -6,14 +6,18 @@ export const CMTextInput = ({
   value,
   placeholder,
   setValue,
+  onKeyDown,
 }: {
   value: string;
+  onKeyDown?: any;
   placeholder: string;
   setValue: (x: string) => void;
 }) => {
   const [focus, setFocus] = useState(false);
   return (
-    <TextInput
+    <CMTextInput
+      onKeyDown={onKeyDown}
+      // @ts-ignore
       className="text-input"
       style={s(
         c.bg(c.grays[20]),

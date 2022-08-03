@@ -28,25 +28,26 @@ export const TrainerLayout = ({
         alignItems: "center",
         backgroundColor: "none",
         maxWidth: "100%",
+        width: "100%",
       }}
     >
       <View
         style={s(
           c.fullWidth,
-          !isMobile && c.center,
+          c.center,
           !isMobile && c.minWidth("100vw"),
-          !isMobile && c.my(48),
-          isMobile && c.px(10),
-          isMobile && c.pt(10)
+          !isMobile && c.my(48)
         )}
       >
         {chessboard ? (
           <>
             <View
               style={s(
+                c.containerStyles(isMobile),
                 isMobile && s(c.alignCenter),
                 isMobile ? c.column : s(c.row, c.alignCenter),
-                containerStyles
+                containerStyles,
+                c.justifyCenter
               )}
             >
               <View style={s(c.width(500), c.maxWidth("100%"))}>
@@ -58,7 +59,7 @@ export const TrainerLayout = ({
                   c.column,
                   c.width(400),
                   c.maxWidth("100%"),
-                  isMobile && s(c.fullWidth, c.width(500))
+                  isMobile && s(c.width(500))
                 )}
               >
                 {children}
@@ -66,7 +67,7 @@ export const TrainerLayout = ({
             </View>
           </>
         ) : (
-          <View style={s()}>{children}</View>
+          <>{children}</>
         )}
       </View>
     </View>

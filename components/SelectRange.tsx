@@ -5,6 +5,7 @@ import { View, Text, Pressable } from "react-native";
 import * as React from "react";
 import { Range, getTrackBackground } from "react-range";
 import { isNil } from "lodash";
+import { CMText } from "./CMText";
 
 export const SelectRange: React.FC<{
   min: number;
@@ -87,7 +88,7 @@ export const SelectRange: React.FC<{
               )}
             >
               <View style={s(c.absolute, c.top(-20))}>
-                <Text
+                <CMText
                   style={s(
                     c.fg(c.colors.textSecondary),
                     c.weightBold,
@@ -95,7 +96,7 @@ export const SelectRange: React.FC<{
                   )}
                 >
                   {formatted}
-                </Text>
+                </CMText>
               </View>
             </div>
           );

@@ -61,6 +61,7 @@ import { SettingsTitle } from "app/components/SettingsTitle";
 import { SelectOneOf } from "app/components/SelectOneOf";
 import { ProgressMessageView } from "app/components/ProgressMessage";
 import { SelectRange } from "app/components/SelectRange";
+import { CMText } from "app/components/CMText";
 
 const debugButtons = false;
 
@@ -93,9 +94,9 @@ const SettingsOption = <T,>({
                 className={active ? `fas fa-circle` : `fa-regular fa-circle`}
               ></i>
               <Spacer width={12} />
-              <Text style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>
+              <CMText style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>
                 {renderChoice(choice)}
-              </Text>
+              </CMText>
             </Pressable>
           );
         }),
@@ -275,9 +276,9 @@ export const useVisualizationTraining = ({
                   c.px(24)
                 )}
               >
-                <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+                <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
                   Turn
-                </Text>
+                </CMText>
               </View>
               <View style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))} />
               <View style={s(c.size(40), c.selfCenter, c.my(12))}>
@@ -303,15 +304,15 @@ export const useVisualizationTraining = ({
                       c.center
                     )}
                   >
-                    <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+                    <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
                       Moves hidden
-                    </Text>
+                    </CMText>
                   </View>
                   <View
                     style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))}
                   />
                   <View style={s(c.selfCenter, c.my(12))}>
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(c.colors.textPrimary),
                         c.textAlign("center"),
@@ -320,7 +321,7 @@ export const useVisualizationTraining = ({
                       )}
                     >
                       {state.getPly()}
-                    </Text>
+                    </CMText>
                   </View>
                 </View>
               </>
@@ -342,15 +343,15 @@ export const useVisualizationTraining = ({
                       c.center
                     )}
                   >
-                    <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+                    <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
                       Score
-                    </Text>
+                    </CMText>
                   </View>
                   <View
                     style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))}
                   />
                   <View style={s(c.selfCenter, c.my(12))}>
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(c.colors.textPrimary),
                         c.weightSemiBold,
@@ -375,7 +376,7 @@ export const useVisualizationTraining = ({
                       >
                         {scoreChangeView}
                       </View>
-                    </Text>
+                    </CMText>
                   </View>
                 </View>
               </>
@@ -402,7 +403,7 @@ export const useVisualizationTraining = ({
               state.toggleNotation();
             }}
           >
-            <Text style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+            <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
               <i
                 style={s(
                   c.fg(c.colors.textPrimary),
@@ -430,7 +431,7 @@ export const useVisualizationTraining = ({
                     : `fas fa-angle-down`
                 }
               ></i>
-            </Text>
+            </CMText>
           </Pressable>
         </View>
       }
@@ -452,12 +453,12 @@ export const useVisualizationTraining = ({
                 });
               }}
             >
-              <Text style={s(c.buttons.basic.textStyles)}>
+              <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
                   className="fas fa-times"
                 ></i>
-              </Text>
+              </CMText>
             </Button>
             <Button
               style={s(c.buttons.squareBasicButtons)}
@@ -472,12 +473,12 @@ export const useVisualizationTraining = ({
                 });
               }}
             >
-              <Text style={s(c.buttons.basic.textStyles)}>
+              <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
                   className="fas fa-check"
                 ></i>
-              </Text>
+              </CMText>
             </Button>
           </>
         )}
@@ -494,12 +495,12 @@ export const useVisualizationTraining = ({
             })();
           }}
         >
-          <Text style={s(c.buttons.basic.textStyles)}>
+          <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
               className="fas fa-search"
             ></i>
-          </Text>
+          </CMText>
         </Button>
         <Button
           style={s(c.buttons.squareBasicButtons)}
@@ -507,12 +508,12 @@ export const useVisualizationTraining = ({
             setHelpOpen(!helpOpen);
           }}
         >
-          <Text style={s(c.buttons.basic.textStyles)}>
+          <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
               className="fas fa-circle-question"
             ></i>
-          </Text>
+          </CMText>
         </Button>
         {/* {isClimb && ( */}
         {/*   <> */}
@@ -611,7 +612,7 @@ export const useVisualizationTraining = ({
                 </Button>
                 <Spacer width={12} />
                 <View style={s(c.column, c.alignCenter, c.width(40))}>
-                  <Text
+                  <CMText
                     style={s(
                       c.fg(c.colors.textPrimary),
                       c.fontSize(24),
@@ -619,7 +620,7 @@ export const useVisualizationTraining = ({
                     )}
                   >
                     {state.plyUserSetting.value}
-                  </Text>
+                  </CMText>
                 </View>
                 <Spacer width={12} />
                 <Button
@@ -652,7 +653,7 @@ export const useVisualizationTraining = ({
               state.setPlaybackSpeed(playbackSpeed);
             }}
             renderChoice={(c) => {
-              return <Text>{getPlaybackSpeedDescription(c)}</Text>;
+              return <CMText>{getPlaybackSpeedDescription(c)}</CMText>;
             }}
           />
           <Spacer height={24} />

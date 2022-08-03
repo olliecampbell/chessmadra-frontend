@@ -9,9 +9,18 @@ class CustomDocument extends Document {
     return (
       <html>
         <Head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,75..125,100..900&display=swap"
+            rel="stylesheet"
+          />
           <style>
             {`
 
+              <style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100;8..144,1000&display=swap');
+</style>
 a:link { text-decoration: none; }
 
 a:visited { text-decoration: none; }

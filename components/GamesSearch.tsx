@@ -55,6 +55,7 @@ import { PageContainer } from "./PageContainer";
 import { LichessGameCell } from "./LichessGameCell";
 import { formatGameResult } from "app/utils/formatGameResult";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
+import { CMText } from "./CMText";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -87,7 +88,7 @@ export const GamesSearch = () => {
   const createSlider = (title, key, min, max, step) => {
     return (
       <>
-        <Text style={s(sectionTitleStyles)}>{title}</Text>
+        <CMText style={s(sectionTitleStyles)}>{title}</CMText>
         <div style={s(c.selfStretch, c.px(12))}>
           <SelectRange
             min={min}
@@ -107,7 +108,7 @@ export const GamesSearch = () => {
   };
   const formSections = [
     <>
-      <Text style={s(sectionTitleStyles)}>Result</Text>
+      <CMText style={s(sectionTitleStyles)}>Result</CMText>
       <SelectOneOf
         choices={[
           null,
@@ -125,7 +126,7 @@ export const GamesSearch = () => {
         }}
         renderChoice={(r: GameSearchResult) => {
           return (
-            <Text style={s()}>{r !== null ? formatGameResult(r) : "Any"}</Text>
+            <CMText style={s()}>{r !== null ? formatGameResult(r) : "Any"}</CMText>
           );
         }}
       />
@@ -154,14 +155,14 @@ export const GamesSearch = () => {
             });
           }}
         >
-          <Text style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
+          <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
             <i
               style={s(c.fg(c.colors.textPrimary))}
               className="fas fa-angle-left"
             ></i>
             <Spacer width={8} />
             Modify search
-          </Text>
+          </CMText>
         </Button>
         <Spacer height={24} />
         {chunked(
@@ -223,7 +224,7 @@ export const GamesSearch = () => {
             c.column
           )}
         >
-          <Text
+          <CMText
             style={s(
               c.fg(c.colors.textPrimary),
               c.lineHeight("1.5em"),
@@ -272,7 +273,7 @@ export const GamesSearch = () => {
               />
               <Spacer height={8} />
             </View>
-          </Text>
+          </CMText>
         </View>
         <Spacer height={24} />
         <View
@@ -291,11 +292,11 @@ export const GamesSearch = () => {
           )}
         >
           <>
-            <Text style={s(sectionTitleStyles)}>Opening</Text>
-            <Text style={s(c.fg(c.colors.textSecondary))}>
+            <CMText style={s(sectionTitleStyles)}>Opening</CMText>
+            <CMText style={s(c.fg(c.colors.textSecondary))}>
               Play out moves on the board to search for games that feature that
               opening.
-            </Text>
+            </CMText>
             <Spacer height={12} />
             <View
               style={s(
@@ -318,7 +319,7 @@ export const GamesSearch = () => {
                       });
                     }}
                   >
-                    <Text
+                    <CMText
                       style={s(
                         c.buttons.basic.textStyles,
                         c.row,
@@ -331,7 +332,7 @@ export const GamesSearch = () => {
                       ></i>
                       <Spacer width={8} />
                       Undo
-                    </Text>
+                    </CMText>
                   </Button>
                 </>
               )}
@@ -383,14 +384,14 @@ export const GamesSearch = () => {
               })();
             }}
           >
-            <Text style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
+            <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
               <i
                 style={s(c.fg(c.colors.textPrimary))}
                 className="fas fa-search"
               ></i>
               <Spacer width={8} />
               Find Games
-            </Text>
+            </CMText>
           </Button>
         </View>
       </>
@@ -444,11 +445,11 @@ const ExampleGame = ({
           className="fas fa-angle-right"
         ></i>
         <Spacer width={8} />
-        <Text
+        <CMText
           style={s(c.fg(c.colors.textPrimary), c.weightBold, c.fontSize(14))}
         >
           {name}
-        </Text>
+        </CMText>
       </Button>
     </View>
   );

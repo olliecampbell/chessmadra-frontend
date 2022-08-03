@@ -6,13 +6,7 @@ import {
   RepertoireTemplate,
   User,
 } from "app/models";
-import create, {
-  GetState,
-  SetState,
-  State,
-  StateCreator,
-  StoreApi,
-} from "zustand";
+import create from "zustand";
 import { devtools } from "zustand/middleware";
 import { createQuick, logProxy, setter } from "./state";
 
@@ -42,6 +36,7 @@ import {
   zip,
   drop,
   forIn,
+  sum,
 } from "lodash";
 import {
   BySide,
@@ -86,8 +81,9 @@ export interface RepertoireState
     ChessboardStateParent<RepertoireState> {
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
-  queue: QuizMove[];
+  queues: BySide<QuizMove[]>;
   currentMove?: QuizMove;
+  reviewSide?: Side;
   repertoireGrades: BySide<RepertoireGrade>;
   activeSide: Side;
   failedCurrentMove?: boolean;
@@ -112,7 +108,7 @@ export interface RepertoireState
   setupNextMove: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
-  startReview: (_state?: RepertoireState) => void;
+  startReview: (side?: Side, _state?: RepertoireState) => void;
   backToOverview: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
@@ -121,6 +117,14 @@ export interface RepertoireState
   startImporting: (_state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
   onMove: (_state?: RepertoireState | WritableDraft<RepertoireState>) => void;
+  getMyResponsesLength: (
+    side?: Side,
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => number;
+  getQueueLength: (
+    side?: Side,
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => number;
   getIsRepertoireEmpty: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => RepertoireMove;
@@ -190,6 +194,7 @@ interface FetchRepertoireResponse {
 }
 
 const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
+const EMPTY_QUEUES = { white: [], black: [] };
 
 export const useRepertoireState = create<RepertoireState>()(
   devtools(
@@ -206,6 +211,7 @@ export const useRepertoireState = create<RepertoireState>()(
           pendingResponses: {},
           positions: [START_EPD],
           currentLine: [],
+          queues: EMPTY_QUEUES,
           // hasCompletedRepertoireInitialization: failOnTrue(true),
           initState: () => {
             let state = get();
@@ -254,6 +260,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.repertoireGrades = data.grades;
                 s.onRepertoireUpdate(s);
                 s.backToOverview(s);
+                s.hasCompletedRepertoireInitialization = true;
               });
             }),
           addTemplates: (_state?: RepertoireState) =>
@@ -267,6 +274,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.repertoireGrades = data.grades;
                 s.onRepertoireUpdate(s);
                 s.backToOverview(s);
+                s.hasCompletedRepertoireInitialization = true;
               });
             }),
           initializeRepertoire: ({
@@ -447,8 +455,11 @@ export const useRepertoireState = create<RepertoireState>()(
             }),
           updateQueue: (cram: boolean, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              let queue: QuizMove[] = [];
               let seen_epds = new Set();
+              s.queues = {
+                white: [],
+                black: [],
+              };
               const recurse = (epd, line, side: Side) => {
                 map(shuffle(s.repertoire[side].positionResponses[epd]), (m) => {
                   if (
@@ -456,7 +467,7 @@ export const useRepertoireState = create<RepertoireState>()(
                     (cram || m.srs.needsReview) &&
                     m.epd !== START_EPD
                   ) {
-                    queue.push({ move: m, line: lineToPgn(line) });
+                    s.queues[side].push({ move: m, line: lineToPgn(line) });
                   }
 
                   if (!seen_epds.has(m.epdAfter)) {
@@ -465,11 +476,10 @@ export const useRepertoireState = create<RepertoireState>()(
                   }
                 });
               };
-              for (const side of shuffle(SIDES)) {
+              for (const side of SIDES) {
                 recurse(START_EPD, [], side);
                 seen_epds = new Set();
               }
-              s.queue = queue;
             }),
           updateRepertoireStructures: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -532,16 +542,20 @@ export const useRepertoireState = create<RepertoireState>()(
               s.hasGivenUp = false;
               if (s.currentMove) {
                 if (s.failedCurrentMove) {
-                  s.queue.push(s.currentMove);
+                  s.queues[s.currentMove.move.side].push(s.currentMove);
                   s.markMoveReviewed(s.currentMove.move.epd, false, s);
                 } else {
                   s.markMoveReviewed(s.currentMove.move.epd, true, s);
                 }
               }
-              s.currentMove = s.queue.shift();
+              s.currentMove = s.queues[s.reviewSide].shift();
               if (!s.currentMove) {
-                s.backToOverview(s);
-                return;
+                s.reviewSide = otherSide(s.reviewSide);
+                s.currentMove = s.queues[s.reviewSide].shift();
+                if (!s.currentMove) {
+                  s.backToOverview(s);
+                  return;
+                }
               }
               s.moveLog = s.currentMove.line;
               s.failedCurrentMove = false;
@@ -674,13 +688,14 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               s.showImportView = false;
               s.backToStartPosition(s);
+              s.reviewSide = null;
               s.moveLog = null;
               s.isReviewing = false;
               if (s.currentMove) {
-                s.queue.unshift(s.currentMove);
+                s.queues[s.currentMove.move.side].unshift(s.currentMove);
               }
               if (s.isCramming) {
-                s.queue = [];
+                s.queues = EMPTY_QUEUES;
               }
               s.isCramming = false;
               s.currentMove = null;
@@ -706,9 +721,11 @@ export const useRepertoireState = create<RepertoireState>()(
               s.frozen = false;
               s.flipped = side === "black";
             }),
-          startReview: (_state?: RepertoireState) =>
+          startReview: (_side?: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              if (isEmpty(s.queue)) {
+              let side = _side ?? shuffle(SIDES)[0];
+              s.reviewSide = side;
+              if (s.getQueueLength(side) === 0) {
                 s.updateQueue(true, s);
                 s.isCramming = true;
               }
@@ -760,6 +777,27 @@ export const useRepertoireState = create<RepertoireState>()(
                   });
                 });
             }),
+          getMyResponsesLength: (side?: Side, _state?: RepertoireState) => {
+            let s = _state ?? get();
+            if (side) {
+              return values(s.repertoire[side].positionResponses)
+                .flatMap((v) => v)
+                .filter((v) => v.mine).length;
+            } else {
+              console.log("Getting it here");
+              console.log(s.repertoire);
+              console.log(getAllRepertoireMoves(s.repertoire));
+              return getAllRepertoireMoves(s.repertoire).length;
+            }
+          },
+          getQueueLength: (side?: Side, _state?: RepertoireState) => {
+            let s = _state ?? get();
+            if (side) {
+              return s.queues[side].length;
+            } else {
+              return s.queues["white"].length + s.queues["black"].length;
+            }
+          },
           getIsRepertoireEmpty: (_state?: RepertoireState) => {
             let s = _state ?? get();
             return isEmpty(getAllRepertoireMoves(s.repertoire));
