@@ -923,7 +923,7 @@ export const SideSectionHeader = ({ header, icon: _icon }) => {
   let icon = (
     <i
       className={_icon}
-      style={s(c.fontSize(isMobile ? 20 : 30), c.fg(c.grays[11]))}
+      style={s(c.fontSize(isMobile ? 20 : 24), c.fg(c.grays[9]))}
     />
   );
   if (isEmpty(header)) {
@@ -950,7 +950,7 @@ export const SideSectionHeader = ({ header, icon: _icon }) => {
         style={s(
           c.fontSize(isMobile ? 16 : 18),
           c.weightBold,
-          c.fg(c.colors.textSecondary)
+          c.fg(c.colors.textPrimary)
         )}
       >
         {header}

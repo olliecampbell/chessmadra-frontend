@@ -36,7 +36,7 @@ export const TrainerLayout = ({
           c.fullWidth,
           c.center,
           !isMobile && c.minWidth("100vw"),
-          !isMobile && c.my(48)
+          !isMobile && c.mt(48)
         )}
       >
         {chessboard ? (

@@ -42,7 +42,7 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
         >
           {children}
         </View>
-        <Spacer height={44} />
+        <Spacer height={32} />
         <View
           style={s(
             c.fullWidth,
