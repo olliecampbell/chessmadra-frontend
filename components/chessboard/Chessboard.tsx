@@ -159,10 +159,12 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
 export const ChessboardView = ({
   state,
   disableDrag,
+  onSquarePress: customOnSquarePress,
   styles,
 }: {
   state?: ChessboardState;
   disableDrag?: boolean;
+  onSquarePress?: any;
   styles?: any;
 }) => {
   const { position, availableMoves } = state;
@@ -548,7 +550,9 @@ export const ChessboardView = ({
                           onPress={() => {}}
                           onPressIn={() => {
                             if (state.frozen) {
-                              return;
+                              // Don't know why this prevents bubbling up
+                              customOnSquarePress?.();
+                              return false;
                             }
                             state.onSquarePress(square);
                           }}

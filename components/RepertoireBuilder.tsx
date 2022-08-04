@@ -1355,18 +1355,23 @@ function BiggestMissBoards({
       >
         {intersperse(
           [biggestMiss].map((x, i) => {
+            let onClick = () =>
+              state.quick((s) => {
+                state.startEditing(side as Side, s);
+                state.playPgn(x.lines[0], s);
+              });
             return (
               <View style={s()}>
                 <View style={s(c.size(isMobile ? 120 : 160))}>
                   <Pressable
                     onPress={() => {
-                      state.quick((s) => {
-                        state.startEditing(side as Side, s);
-                        state.playPgn(x.lines[0], s);
-                      });
+                      onClick();
                     }}
                   >
                     <ChessboardView
+                      onSquarePress={() => {
+                        onClick();
+                      }}
                       state={createChessState(
                         null,
                         null,
