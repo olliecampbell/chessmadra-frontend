@@ -917,13 +917,19 @@ const removeTrailingZeros = (n: string) => {
   return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
 };
 
-export const SideSectionHeader = ({ header, icon: _icon }) => {
+export const SideSectionHeader = ({
+  header,
+  icon: _icon,
+}: {
+  header: string;
+  icon?: any;
+}) => {
   const isMobile = useIsMobile();
   let padding = isMobile ? 10 : 12;
   let icon = (
     <i
       className={_icon}
-      style={s(c.fontSize(isMobile ? 20 : 24), c.fg(c.grays[9]))}
+      style={s(c.fontSize(isMobile ? 20 : 24), c.fg(c.grays[70]))}
     />
   );
   if (isEmpty(header)) {
@@ -1049,9 +1055,16 @@ const RepertoireSideSummary = ({
         />
         <View style={s(c.column, c.alignStart, c.justifyCenter)}>
           <View
-            style={s(c.column, cardStyles, c.selfStretch, c.fullWidth, c.grow)}
+            style={s(
+              c.column,
+              cardStyles,
+              c.selfStretch,
+              c.fullWidth,
+              c.grow,
+              c.brb(0)
+            )}
           >
-            <SideSectionHeader header="" icon="fa fa-chess" />
+            <SideSectionHeader header="" icon={null} />
             {
               <View
                 style={s(
@@ -1061,7 +1074,7 @@ const RepertoireSideSummary = ({
                   c.grow,
                   c.py(isMobile ? 16 : 32),
                   c.px(32),
-                  c.width(400)
+                  !isMobile && c.width(400)
                 )}
               >
                 {intersperse(
@@ -1104,7 +1117,6 @@ const RepertoireSideSummary = ({
               </View>
             }
           </View>
-          <Spacer height={sectionSpacing(isMobile)} />
           {biggestMiss && <BiggestMissBoards {...{ state, side }} />}
         </View>
         {instructiveGames && (
@@ -1341,8 +1353,10 @@ function BiggestMissBoards({
     return null;
   }
   return (
-    <View style={s(c.column, c.alignCenter, cardStyles, c.selfStretch)}>
-      <SideSectionHeader header="" icon="fa fa-hammer" />
+    <View
+      style={s(c.column, c.alignCenter, cardStyles, c.brt(0), c.selfStretch)}
+    >
+      <SideSectionHeader header="" icon={null} />
       <View
         style={s(
           c.row,
