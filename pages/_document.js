@@ -18,9 +18,6 @@ class CustomDocument extends Document {
           <style>
             {`
 
-              <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100;8..144,1000&display=swap');
-</style>
 a:link { text-decoration: none; }
 
 a:visited { text-decoration: none; }
@@ -83,7 +80,7 @@ a:active { text-decoration: none; }
             name="viewport"
           />
         </Head>
-        <body style={{ backgroundColor: c.grays[10], lineHeight: 1.5 }}>
+        <body style={{ backgroundColor: c.grays[8], lineHeight: 1.5 }}>
           <div className="" />
           <Main />
           <NextScript />

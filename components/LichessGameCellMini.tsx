@@ -28,9 +28,9 @@ export const LichessGameCellMini = ({
   return (
     <View
       style={s(
-        c.py(16),
-        c.bg(c.grays[15]),
-        c.br(4),
+        c.py(12),
+        c.bg(c.grays[12]),
+        c.br(2),
         c.overflowHidden,
         c.clickable,
         c.relative
@@ -51,14 +51,14 @@ export const LichessGameCellMini = ({
         </View>
       )}
       <Spacer height={0} />
-      <View style={s(c.row, c.px(16))}>
+      <View style={s(c.row, c.px(12))}>
         {intersperse(
           ["white", "black"].map((color, i) => {
             // console.log(game);
             return (
               <View style={s(c.column)}>
                 <View style={s(c.row, c.alignCenter)}>
-                  <CMText style={s(c.fg(c.colors.textSecondary), c.weightBold)}>
+                  <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
                     {game[`${color}Name`]}
                   </CMText>
                 </View>
@@ -79,27 +79,9 @@ export const LichessGameCellMini = ({
       </View>
       <Spacer height={12} />
       {showFirstMoves && (
-        <View style={s(c.px(16), c.row)}>
-          <CMText style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(12))}>
+        <View style={s(c.px(12), c.row)}>
+          <CMText style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(12))}>
             {lineToPgn(take(game.moves, 4))} ...
-          </CMText>
-          <Spacer width={12} grow />
-          <CMText style={s(c.row, c.selfEnd, c.alignEnd)}>
-            <CMText
-              style={s(
-                c.weightBold,
-                c.fontSize(14),
-                c.fg(c.colors.textSecondary)
-              )}
-            >
-              {Math.ceil(game.numberMoves / 2)}
-            </CMText>
-            <Spacer width={4} />
-            <CMText
-              style={s(c.fontSize(14), c.mb(0), c.fg(c.colors.textSecondary))}
-            >
-              moves
-            </CMText>
           </CMText>
         </View>
       )}

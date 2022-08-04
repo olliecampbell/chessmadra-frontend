@@ -187,7 +187,7 @@ const black = (opacity: number) => {
   return `hsla(0, 0%, 0%, ${opacity}%)`;
 };
 
-const grayHue = 229;
+const grayHue = 239;
 // const grays = {
 //   10: `hsl(${grayHue}, 39%, 4%)`,
 //   20: `hsl(${grayHue}, 20%, 8%)`,
@@ -204,8 +204,12 @@ function easeInOutSine(x: number): number {
 }
 const genGrays = () => {
   const grays = {};
-  for (let i = 0; i <= 100; i = i + 5) {
-    grays[i] = `hsl(${grayHue}, 9%, ${i}%)`;
+  let minSaturation = 10;
+  let maxSaturation = 10;
+  for (let i = 0; i <= 100; i = i + 1) {
+    let saturation =
+      minSaturation + ((maxSaturation - minSaturation) * i) / 100;
+    grays[i] = `hsl(${grayHue}, ${saturation}%, ${i}%)`;
   }
   return grays;
 };
@@ -257,7 +261,7 @@ const colors = {
   backgroundColor: grays[10],
   header: "hsl(229, 19%, 14%)",
   modalColor: "hsl(229, 10%, 90%)",
-  cardBackground: grays[20],
+  cardBackground: grays[15],
   lightTile: hsl(180, 15, 70),
   darkTile: hsl(180, 15, 40),
 };
@@ -308,6 +312,18 @@ const disabledButtonStyles = s(
     textStyles: s(weightBold, fontSize(16), fg("white")),
   }
 );
+const basicSecondaryButtonStyles = s(
+  br(2),
+  py(16),
+  px(16),
+  bg(grays[12]),
+  border(`1px solid ${grays[20]}`),
+  clickable,
+  center,
+  {
+    textStyles: s(weightBold, fontSize(16), fg(grays[70])),
+  }
+);
 const primaryButtonStyles = s(basicButtonStyles, bg(primaries[40]), {
   textStyles: s(weightBold, fg(colors.textPrimary), fontSize(16)),
 });
@@ -317,6 +333,7 @@ const primaryDisabledButtonStyles = s(basicButtonStyles, bg(grays[40]), {
 const squareBottomRowButtonStyles = s(basicButtonStyles, size(48));
 const buttons = {
   basic: basicButtonStyles,
+  basicSecondary: basicSecondaryButtonStyles,
   basicInverse: basicInverseButtonStyles,
   disabled: disabledButtonStyles,
   primary: primaryButtonStyles,

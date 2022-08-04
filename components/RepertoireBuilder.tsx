@@ -676,14 +676,17 @@ export const RepertoireBuilder = () => {
             c.justifyCenter
           )}
         >
-          <RepertoireOverview {...{ state }} />;
+          <RepertoireOverview {...{ state }} />
           {!isMobile && (
             <>
-              <Spacer width={12} />
               <View
-                style={s(c.width(2), c.bg(c.grays[15]), c.selfStretch)}
+                style={s(
+                  c.width(2),
+                  c.bg(c.grays[10]),
+                  c.selfStretch,
+                  c.mx(24)
+                )}
               ></View>
-              <Spacer width={12} />
               <ExtraActions {...{ state }} />
             </>
           )}
@@ -936,7 +939,7 @@ export const SideSectionHeader = ({ header, icon }) => {
       <Spacer width={12} />
       <i
         className={icon}
-        style={s(c.fontSize(isMobile ? 20 : 28), c.fg(c.grays[15]))}
+        style={s(c.fontSize(isMobile ? 20 : 30), c.fg(c.grays[11]))}
       />
     </View>
   );
@@ -1038,11 +1041,11 @@ const RepertoireSideSummary = ({
                 style={s(
                   c.row,
                   c.alignCenter,
-                  c.grow,
-                  c.fullWidth,
                   c.justifyCenter,
                   c.py(isMobile ? 16 : 32),
-                  c.px(32)
+                  c.pt(16),
+                  c.px(32),
+                  c.width(400)
                 )}
               >
                 {intersperse(
@@ -1170,12 +1173,7 @@ const RepertoireSideSummary = ({
 
 const SummaryRow = ({ k, v, isMobile }) => {
   return (
-    <View
-      style={s(
-        isMobile ? c.column : c.row,
-        isMobile ? c.alignCenter : c.alignEnd
-      )}
-    >
+    <View style={s(true ? c.column : c.row, true ? c.alignCenter : c.alignEnd)}>
       <CMText
         style={s(
           c.fg(c.colors.textPrimary),
@@ -1291,18 +1289,7 @@ const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
         c.selfStart
       )}
     >
-      <CMText
-        style={s(
-          c.fontSize(16),
-          c.fg(
-            type === BiggestMissTagType.StartPosition
-              ? c.grays[70]
-              : type === BiggestMissTagType.Biggest
-              ? c.grays[70]
-              : c.grays[70]
-          )
-        )}
-      >
+      <CMText style={s(c.fontSize(16), c.fg(c.grays[40]))}>
         {type === BiggestMissTagType.StartPosition ? (
           <i className="fa fa-flag-checkered" />
         ) : type === BiggestMissTagType.Biggest ? (
@@ -1313,11 +1300,7 @@ const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
       </CMText>
       <Spacer width={8} />
       <CMText
-        style={s(
-          c.fontSize(14),
-          c.weightSemiBold,
-          c.fg(c.colors.textSecondary)
-        )}
+        style={s(c.fontSize(14), c.weightBold, c.fg(c.colors.textSecondary))}
       >
         {type === BiggestMissTagType.StartPosition
           ? "Start position"
@@ -1426,7 +1409,7 @@ const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
             );
           }),
           (i) => {
-            return <Spacer height={54} width={12} key={i} {...{ isMobile }} />;
+            return <Spacer height={32} width={12} key={i} {...{ isMobile }} />;
           }
         )}
         {isMobile && (
@@ -1513,19 +1496,29 @@ const ReviewMovesView = ({
 const ImportButton = ({ state }: { state: RepertoireState }) => {
   return (
     <Button
-      style={s(c.buttons.basic, c.selfEnd, c.px(14), c.py(12), c.selfStretch)}
+      style={s(
+        c.buttons.basicSecondary,
+        c.selfEnd,
+        c.px(14),
+        c.py(12),
+        c.selfStretch
+      )}
       onPress={() => {
         state.quick((s) => {
           s.startImporting(s);
         });
       }}
     >
-      <Text style={s(c.fontSize(20), c.fg(c.colors.textInverse))}>
+      <Text style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
         <i className="fas fa-plus" />
       </Text>
       <Spacer width={12} />
       <Text
-        style={s(c.fontSize(18), c.weightSemiBold, c.fg(c.colors.textInverse))}
+        style={s(
+          c.buttons.basicSecondary.textStyles,
+          c.fontSize(18),
+          c.weightSemiBold
+        )}
       >
         Import
       </Text>
