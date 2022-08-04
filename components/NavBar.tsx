@@ -104,12 +104,14 @@ export const NavBar = (props: {}) => {
         )}
       >
         <Link href="/">
-          <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
-            <i
-              style={s(c.fg(c.colors.textSecondary))}
-              className="fas fa-house"
-            ></i>
-          </CMText>
+          <a>
+            <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
+              <i
+                style={s(c.fg(c.colors.textSecondary))}
+                className="fas fa-house"
+              ></i>
+            </CMText>
+          </a>
         </Link>
         <Spacer width={12} />
         {intersperse(
@@ -160,40 +162,24 @@ export const NavBar = (props: {}) => {
           >
             {authStatus === AuthStatus.Unauthenticated && (
               <Link href="/login">
-                <CMText
-                  style={s(
-                    c.buttons.basic,
-                    c.bg(c.grays[20]),
-                    c.px(12),
-                    c.py(12),
-                    c.br(4),
-                    c.fg(c.primaries[70]),
-                    c.weightBold,
-                    c.fontSize(isMobile ? 14 : 16)
-                  )}
-                >
-                  Log in / Register
-                </CMText>
-              </Link>
-            )}
-            {/*authStatus === AuthStatus.Authenticated && (
-              <Link href="/login">
-                <View style={s(c.row, c.alignCenter)}>
+                <a>
                   <CMText
                     style={s(
-                      // c.buttons.basic,
-                      // c.bg(c.grays[20]),
+                      c.buttons.basic,
+                      c.bg(c.grays[20]),
+                      c.px(12),
+                      c.py(12),
                       c.br(4),
-                      c.fg(c.colors.textSecondary),
+                      c.fg(c.primaries[70]),
                       c.weightBold,
-                      c.fontSize(12)
+                      c.fontSize(isMobile ? 14 : 16)
                     )}
                   >
-                    Log Out
+                    Log in / Register
                   </CMText>
-                </View>
+                </a>
               </Link>
-            )*/}
+            )}
           </View>
         )}
       </View>
@@ -224,20 +210,22 @@ export const NavBar = (props: {}) => {
           <>
             <Spacer width={0} grow />
             <Link href="/login">
-              <CMText
-                style={s(
-                  c.buttons.basic,
-                  c.bg(c.grays[20]),
-                  c.px(12),
-                  c.height(50),
-                  c.br(4),
-                  c.fg(c.primaries[70]),
-                  c.weightBold,
-                  c.fontSize(isMobile ? 14 : 16)
-                )}
-              >
-                Log in / Register
-              </CMText>
+              <a>
+                <CMText
+                  style={s(
+                    c.buttons.basic,
+                    c.bg(c.grays[20]),
+                    c.px(12),
+                    c.height(50),
+                    c.br(4),
+                    c.fg(c.primaries[70]),
+                    c.weightBold,
+                    c.fontSize(isMobile ? 14 : 16)
+                  )}
+                >
+                  Log in / Register
+                </CMText>
+              </a>
             </Link>
           </>
         )}

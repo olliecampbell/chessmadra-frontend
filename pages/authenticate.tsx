@@ -69,11 +69,13 @@ const Authenticate = (props) => {
             <>
               Failed to authenticate. Your link may have expired. Try{" "}
               <Link href="/login">
-                <CMText
-                  style={s(c.clickable, c.weightBold, c.fg(c.primaries[60]))}
-                >
-                  logging in again
-                </CMText>
+                <a>
+                  <CMText
+                    style={s(c.clickable, c.weightBold, c.fg(c.primaries[60]))}
+                  >
+                    logging in again
+                  </CMText>
+                </a>
               </Link>
               .
             </>
