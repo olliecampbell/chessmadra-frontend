@@ -63,7 +63,12 @@ import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
-let cardStyles = s(c.bg(c.colors.cardBackground), c.overflowHidden, c.br(2));
+let cardStyles = s(
+  c.bg(c.colors.cardBackground),
+  c.overflowHidden,
+  c.br(2),
+  c.relative
+);
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -912,15 +917,29 @@ const removeTrailingZeros = (n: string) => {
   return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
 };
 
-export const SideSectionHeader = ({ header, icon }) => {
+export const SideSectionHeader = ({ header, icon: _icon }) => {
   const isMobile = useIsMobile();
+  let padding = isMobile ? 10 : 12;
+  let icon = (
+    <i
+      className={_icon}
+      style={s(c.fontSize(isMobile ? 20 : 30), c.fg(c.grays[11]))}
+    />
+  );
+  if (isEmpty(header)) {
+    return (
+      <View style={s(c.absolute, c.top(padding), c.right(padding))}>
+        {icon}
+      </View>
+    );
+  }
   return (
     <View
       style={s(
         c.row,
         c.brbr(4),
-        c.px(isMobile ? 10 : 12),
-        c.pt(isMobile ? 10 : 12),
+        c.px(padding),
+        c.pt(padding),
         c.alignCenter,
         c.justifyBetween,
         c.fullWidth,
@@ -937,10 +956,7 @@ export const SideSectionHeader = ({ header, icon }) => {
         {header}
       </CMText>
       <Spacer width={12} />
-      <i
-        className={icon}
-        style={s(c.fontSize(isMobile ? 20 : 30), c.fg(c.grays[11]))}
-      />
+      {icon}
     </View>
   );
 };
@@ -1035,15 +1051,15 @@ const RepertoireSideSummary = ({
           <View
             style={s(c.column, cardStyles, c.selfStretch, c.fullWidth, c.grow)}
           >
-            <SideSectionHeader header="Summary" icon="fa fa-chess" />
+            <SideSectionHeader header="" icon="fa fa-chess" />
             {
               <View
                 style={s(
                   c.row,
                   c.alignCenter,
                   c.justifyCenter,
+                  c.grow,
                   c.py(isMobile ? 16 : 32),
-                  c.pt(16),
                   c.px(32),
                   c.width(400)
                 )}
@@ -1052,7 +1068,7 @@ const RepertoireSideSummary = ({
                   [
                     <SummaryRow
                       key={"move"}
-                      k={plural(numMoves, "Move")}
+                      k={plural(numMoves, "Response")}
                       v={numMoves}
                       {...{ isMobile }}
                     />,
@@ -1326,7 +1342,7 @@ function BiggestMissBoards({
   }
   return (
     <View style={s(c.column, c.alignCenter, cardStyles, c.selfStretch)}>
-      <SideSectionHeader header="Add moves" icon="fa fa-hammer" />
+      <SideSectionHeader header="" icon="fa fa-hammer" />
       <View
         style={s(
           c.row,
