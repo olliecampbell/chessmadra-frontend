@@ -1,15 +1,15 @@
-import { Directory } from "app/components/Directory";
+import { OPENINGS_DESCRIPTION } from "app/components/NavBar";
 import { HeadSiteMeta } from "app/components/PageContainer";
+import { RepertoireBuilder } from "app/components/RepertoireBuilder";
 
 export default function Page() {
   return (
     <>
-      <Directory />
+      <RepertoireBuilder />
       <HeadSiteMeta
         siteMeta={{
-          title: "Chess Madra",
-          description:
-            "Build your opening repertoire. Improve your visualization. Train your tactics. Search for games. And more.",
+          title: "Opening Builder",
+          description: OPENINGS_DESCRIPTION,
         }}
       />
     </>

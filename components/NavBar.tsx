@@ -21,6 +21,7 @@ import { useOutsideClick } from "./useOutsideClick";
 import { failOnTrue } from "../utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 import { CMText } from "./CMText";
+import { some } from "lodash";
 
 export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
 export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
@@ -36,6 +37,7 @@ export const BLINDFOLD_DESCRIPTION =
 export const navItems = [
   {
     path: "/openings",
+    alternatePaths: ["/"],
     title: "Opening Builder",
     isNew: true,
     description: OPENINGS_DESCRIPTION,
@@ -118,7 +120,10 @@ export const NavBar = (props: {}) => {
           navItems
             .filter((n) => !n.beta || hasBetaAccess)
             .map((navItem) => {
-              const isActive = router.asPath == navItem.path;
+              const isActive = some(
+                [navItem.path, ...(navItem.alternatePaths ?? [])],
+                (p) => router.asPath == p
+              );
               return (
                 <Pressable
                   key={navItem.title}
@@ -270,7 +275,10 @@ export const NavBar = (props: {}) => {
             navItems
               .filter((n) => !n.beta || hasBetaAccess)
               .map((navItem) => {
-                const isActive = router.asPath == navItem.path;
+                const isActive = some(
+                  [navItem.path, ...(navItem.alternatePaths ?? [])],
+                  (p) => router.asPath == p
+                );
                 return (
                   <Pressable
                     key={navItem.title}
