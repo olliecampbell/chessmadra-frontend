@@ -1401,13 +1401,7 @@ function BiggestMissBoards({
                   </Pressable>
                 </View>
                 <Spacer height={4} />
-                <BiggestMissTag
-                  type={
-                    x.epd === START_EPD
-                      ? BiggestMissTagType.StartPosition
-                      : BiggestMissTagType.Biggest
-                  }
-                />
+                <BiggestMissTag type={BiggestMissTagType.Biggest} />
               </View>
             );
           }),
