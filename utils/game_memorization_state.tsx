@@ -226,8 +226,10 @@ export const useGameMemorizationState = create<GameMemorizationState>()(
                 s.animatePieceMove(
                   moveObj,
                   PlaybackSpeed.Normal,
-                  (s: GameMemorizationState) => {
-                    onAnimationEnd(s);
+                  (completed, s: GameMemorizationState) => {
+                    if (completed) {
+                      onAnimationEnd(s);
+                    }
                   },
                   s
                 );

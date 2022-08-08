@@ -1,4 +1,4 @@
-import { RepertoireGrade } from "./utils/repertoire";
+import { RepertoireGrade, RepertoireMove } from "./utils/repertoire";
 
 export interface LichessPuzzle {
   id: string;
@@ -28,6 +28,7 @@ export interface User {
   // subscription: ApplicationSubscription;
   apiKey: string;
   betaAccess: boolean;
+  eloRange: string;
 }
 
 export interface LichessGame {
@@ -70,4 +71,31 @@ export interface PlayerTemplateMeta {
   openings: string[];
   image: string;
   description: string;
+}
+
+export interface PositionReport {
+  suggestedMoves: SuggestedMove[];
+  stockfish?: StockfishReport;
+  results: GameResultsDistribution;
+  masterResults: GameResultsDistribution;
+}
+
+export interface StockfishReport {
+  eval: number;
+  mate: number;
+  nodesK: number;
+}
+
+export interface SuggestedMove {
+  sanPlus: string;
+  stockfish?: StockfishReport;
+  results: GameResultsDistribution;
+  masterResults: GameResultsDistribution;
+  percentagePlayedAtLevel: number;
+}
+
+export interface GameResultsDistribution {
+  white: number;
+  black: number;
+  draw: number;
 }

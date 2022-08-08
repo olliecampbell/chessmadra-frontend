@@ -5,6 +5,7 @@ import {
   PlayerTemplate,
   RepertoireTemplate,
   User,
+  PositionReport,
 } from "app/models";
 import create from "zustand";
 import { devtools } from "zustand/middleware";
@@ -82,6 +83,7 @@ export interface RepertoireState
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
   queues: BySide<QuizMove[]>;
+  positionReports: BySide<Record<string, PositionReport>>;
   currentMove?: QuizMove;
   reviewSide?: Side;
   repertoireGrades: BySide<RepertoireGrade>;
@@ -100,6 +102,7 @@ export interface RepertoireState
   user?: User;
   initState: (_state?: RepertoireState) => void;
   playPgn: (pgn: string, _state?: RepertoireState) => void;
+  playSan: (pgn: string, _state?: RepertoireState) => void;
   addPendingLine: (_state?: RepertoireState) => void;
   isAddingPendingLine: boolean;
   hasGivenUp?: boolean;
@@ -131,6 +134,9 @@ export interface RepertoireState
   getLastMoveInRepertoire: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => RepertoireMove;
+  getCurrentPositionReport: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => PositionReport;
   getCurrentEpd: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => string;
@@ -186,6 +192,7 @@ export interface RepertoireState
   ) => number;
   isDeletingMove?: boolean;
   inProgressUsingPlayerTemplate?: boolean;
+  fetchPositionReportIfNeeded: (_state?: RepertoireState) => void;
 }
 
 interface FetchRepertoireResponse {
@@ -210,6 +217,7 @@ export const useRepertoireState = create<RepertoireState>()(
           inProgressUsingPlayerTemplate: false,
           pendingResponses: {},
           positions: [START_EPD],
+          positionReports: { white: {}, black: {} },
           currentLine: [],
           queues: EMPTY_QUEUES,
           // hasCompletedRepertoireInitialization: failOnTrue(true),
@@ -231,7 +239,7 @@ export const useRepertoireState = create<RepertoireState>()(
               s.animatePieceMove(
                 moveObj,
                 PlaybackSpeed.Normal,
-                (s: RepertoireState) => {
+                (completed, s: RepertoireState) => {
                   s.hasGivenUp = true;
                 },
                 s
@@ -246,6 +254,13 @@ export const useRepertoireState = create<RepertoireState>()(
                   s.onMove(s);
                 }
               });
+            }),
+          playSan: (san: string, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.position.move(san);
+              if (s.isEditing) {
+                s.onMove(s);
+              }
             }),
           usePlayerTemplate: (id: string, _state?: RepertoireState) =>
             setter(set, _state, async (s: RepertoireState) => {
@@ -390,6 +405,7 @@ export const useRepertoireState = create<RepertoireState>()(
               let line = s.position.history();
               s.currentLine = line;
               s.moveLog = lineToPgn(line);
+              console.log("POSITIONS", logProxy(s.positions));
               s.divergenceIndex = findIndex(s.positions, (e: string, i) => {
                 let responses = s.repertoire[s.activeSide].positionResponses[e];
                 let move = s.currentLine[i];
@@ -447,10 +463,35 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.divergencePosition,
                 s
               );
+              s.fetchPositionReportIfNeeded(s);
+            }),
+          fetchPositionReportIfNeeded: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              console.log("FETCHING position report");
+              let epd = s.getCurrentEpd(s);
+              let side = s.activeSide;
+              console.log({ epd, side });
+              if (!isNil(s.getCurrentPositionReport(s))) {
+                console.log("already got it");
+                return;
+              }
+              client
+                .post("/api/v1/openings/position_report", {
+                  epd: epd,
+                })
+                .then(({ data }: { data: PositionReport }) => {
+                  set((s) => {
+                    s.positionReports[side][epd] = data;
+                  });
+                })
+                .finally(() => {
+                  // set((s) => {});
+                });
             }),
           onMove: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.positions.push(genEpd(s.position));
+              console.log("Just pushed epd: ", last(s.positions));
               s.onEditingPositionUpdate(s);
             }),
           updateQueue: (cram: boolean, _state?: RepertoireState) =>
@@ -495,29 +536,39 @@ export const useRepertoireState = create<RepertoireState>()(
 
           attemptMove: (
             move,
-            cb: (shouldMove: boolean, then: (s) => void) => void,
+            cb: (
+              shouldMove: boolean,
+              then: (completed: boolean, s: RepertoireState) => void
+            ) => void,
             _state?: RepertoireState
           ) =>
             setter(set, _state, (s) => {
               if (s.isEditing) {
-                cb(true, (s: RepertoireState) => {
-                  s.onMove(s);
+                cb(true, (completed: boolean, s: RepertoireState) => {
+                  console.log("Attempt move callback", {
+                    completed: logProxy(completed),
+                  });
+                  if (completed === false || completed === null) {
+                    s.onMove(s);
+                  }
                 });
               } else if (s.isReviewing) {
                 if (move.san == s.currentMove.move.sanPlus) {
-                  cb(true, (s: RepertoireState) => {
-                    s.flashRing(true, s);
-                    window.setTimeout(() => {
-                      set((s) => {
-                        if (s.isReviewing) {
-                          if (s.failedCurrentMove) {
-                            s.hasGivenUp = true;
-                          } else {
-                            s.setupNextMove(s);
+                  cb(true, (completed: boolean, s: RepertoireState) => {
+                    if (!completed) {
+                      s.flashRing(true, s);
+                      window.setTimeout(() => {
+                        set((s) => {
+                          if (s.isReviewing) {
+                            if (s.failedCurrentMove) {
+                              s.hasGivenUp = true;
+                            } else {
+                              s.setupNextMove(s);
+                            }
                           }
-                        }
-                      });
-                    }, 100);
+                        });
+                      }, 100);
+                    }
                   });
                 } else {
                   s.flashRing(false, s);
@@ -720,6 +771,7 @@ export const useRepertoireState = create<RepertoireState>()(
               s.isEditing = true;
               s.frozen = false;
               s.flipped = side === "black";
+              s.onEditingPositionUpdate(s);
             }),
           startReview: (_side?: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -774,6 +826,10 @@ export const useRepertoireState = create<RepertoireState>()(
                       }
                     }
                     s.onRepertoireUpdate(s);
+                    if (failOnTrue(true)) {
+                      s.startEditing("white", s);
+                      s.playPgn("1.e4 e5", s);
+                    }
                   });
                 });
             }),
@@ -813,6 +869,10 @@ export const useRepertoireState = create<RepertoireState>()(
               }
             );
           },
+          getCurrentPositionReport: (_state?: RepertoireState) => {
+            let s = _state ?? get();
+            return s.positionReports[s.activeSide][s.getCurrentEpd(s)];
+          },
           getCurrentEpd: (_state?: RepertoireState) => {
             let s = _state ?? get();
             return last(s.positions);
@@ -822,6 +882,10 @@ export const useRepertoireState = create<RepertoireState>()(
               let m = s.position.undo();
               if (m) {
                 s.positions.pop();
+                console.log(
+                  "s.positions after back one: ",
+                  logProxy(s.positions)
+                );
               }
               s.onEditingPositionUpdate(s);
               // s.onEditingPositionUpdate(s);

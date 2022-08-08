@@ -37,7 +37,8 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
             c.fullWidth,
             c.column,
             c.alignCenter,
-            centered && c.justifyCenter
+            centered && c.justifyCenter,
+            !isMobile && c.mt(48)
           )}
         >
           {children}

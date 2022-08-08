@@ -52,7 +52,10 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   animatePieceMove: (
     move: Move,
     speed: PlaybackSpeed,
-    callback: (state: ChessBoardStateAndParent<any>) => void,
+    callback: (
+      completed: boolean,
+      state: ChessBoardStateAndParent<any>
+    ) => void,
     _state: ChessboardState | WritableDraft<ChessboardState>
   ) => void;
   flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
@@ -105,13 +108,13 @@ export const createChessState = <
           let makeMove = (cb) => {
             if (skipAnimation) {
               state.position.move(availableMove);
-              cb(state);
+              cb(null, state);
             } else {
               state.animatePieceMove(
                 availableMove,
                 PlaybackSpeed.Normal,
-                (s) => {
-                  cb(s);
+                (completed, s) => {
+                  cb(completed, s);
                 },
                 state
               );
@@ -165,7 +168,7 @@ export const createChessState = <
     animatePieceMove: (
       move: Move,
       speed: PlaybackSpeed,
-      callback: (state: ChessboardState) => void,
+      callback: (completed: boolean, state: ChessboardState) => void,
       _state: ChessboardState
     ) => {
       setter(set, _state, (state: ChessboardState) => {
@@ -174,6 +177,7 @@ export const createChessState = <
         state.draggedOverSquare = null;
         state.animatedMove = move;
         state.position.move(move);
+        callback(false, state);
         let { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
@@ -189,7 +193,8 @@ export const createChessState = <
         ]).start(() => {
           set((s) => {
             s.animatedMove = null;
-            callback(s);
+
+            callback(true, s);
           });
         });
       });

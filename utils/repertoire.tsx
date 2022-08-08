@@ -101,3 +101,12 @@ export interface PendingLine {
   knownLine: SanPlus[];
   pendingLine: SanPlus[];
 }
+
+export const formatIncidence = (incidence: number) => {
+  return `${removeTrailingZeros((incidence * 100).toFixed(1))}%`;
+};
+
+const removeTrailingZeros = (n: string) => {
+  return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
+};
+

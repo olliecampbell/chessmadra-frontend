@@ -31,14 +31,7 @@ export const TrainerLayout = ({
         width: "100%",
       }}
     >
-      <View
-        style={s(
-          c.fullWidth,
-          c.center,
-          !isMobile && c.minWidth("100vw"),
-          !isMobile && c.mt(48)
-        )}
-      >
+      <View style={s(c.fullWidth, c.center, !isMobile && c.minWidth("100vw"))}>
         {chessboard ? (
           <>
             <View

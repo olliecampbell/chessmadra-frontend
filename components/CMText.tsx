@@ -8,10 +8,14 @@ export const CMText = (props) => {
     <Text
       {...{
         props,
-        style: s(props.style, {
-          fontFamily: "Roboto Flex",
-          fontVariationSettings: '"wdth" 110',
-        }),
+        style: s(
+          {
+            fontFamily: "Roboto Flex",
+            fontVariationSettings: '"wdth" 110',
+          },
+          c.fg(c.colors.textSecondary),
+          props.style
+        ),
       }}
     >
       {children}
