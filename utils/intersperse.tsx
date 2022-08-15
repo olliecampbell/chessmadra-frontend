@@ -1,9 +1,6 @@
 import { chunk, flatMap } from "lodash";
 
 export const intersperse = <T,>(arr: T[], separator: (n: number) => T): T[] => {
-  let segments = chunk(arr, 2);
-  // segments = _.map(segments, (arr) => {
-  //   })
   return arr.reduce<T[]>((acc, currentElement, currentIndex) => {
     const isLast = currentIndex === arr.length - 1;
     return [

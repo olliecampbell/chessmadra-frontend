@@ -6,6 +6,7 @@ import {
   RepertoireTemplate,
   User,
   PositionReport,
+  EcoCode,
 } from "app/models";
 import create from "zustand";
 import { devtools } from "zustand/middleware";
@@ -38,6 +39,7 @@ import {
   drop,
   forIn,
   sum,
+  sortBy,
 } from "lodash";
 import {
   BySide,
@@ -82,6 +84,12 @@ export interface RepertoireState
     ChessboardStateParent<RepertoireState> {
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
+  repertoireNumMoves: BySide<
+    Record<
+      string,
+      { withTranspositions: number; withoutTranspositions: number }
+    >
+  >;
   queues: BySide<QuizMove[]>;
   positionReports: BySide<Record<string, PositionReport>>;
   currentMove?: QuizMove;
@@ -91,6 +99,7 @@ export interface RepertoireState
   failedCurrentMove?: boolean;
   setUser: (user: User, _state?: RepertoireState) => void;
   fetchRepertoire: (_state?: RepertoireState) => void;
+  fetchEcoCodes: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
   fetchPlayerTemplates: (_state?: RepertoireState) => void;
   initializeRepertoire: (_: {
@@ -116,6 +125,15 @@ export interface RepertoireState
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   startEditing: (side: Side, _state?: RepertoireState) => void;
+  startBrowsing: (side: Side, _state?: RepertoireState) => void;
+  selectBrowserState: (
+    browserState: BrowserState,
+    _state?: RepertoireState
+  ) => void;
+  generateBrowsingSections: (
+    epd: string,
+    _state?: RepertoireState
+  ) => BrowserSection[];
   showImportView?: boolean;
   startImporting: (_state?: RepertoireState) => void;
   updateRepertoireStructures: (_state?: RepertoireState) => void;
@@ -166,6 +184,7 @@ export interface RepertoireState
     _state?: RepertoireState
   ) => void;
   isEditing?: boolean;
+  isBrowsing?: boolean;
   isReviewing?: boolean;
   editingSide?: Side;
   myResponsesLookup?: BySide<RepertoireMove[]>;
@@ -184,6 +203,7 @@ export interface RepertoireState
   // The first position where the user does not have a response for
   divergencePosition?: string;
   divergenceIndex?: number;
+  differentMoveIndices?: number[];
   isCramming?: boolean;
   pendingResponses?: Record<string, RepertoireMove[]>;
   getMovesDependentOnPosition: (
@@ -193,6 +213,34 @@ export interface RepertoireState
   isDeletingMove?: boolean;
   inProgressUsingPlayerTemplate?: boolean;
   fetchPositionReportIfNeeded: (_state?: RepertoireState) => void;
+  selectBrowserSection: (
+    section: BrowserSection,
+    _state?: RepertoireState
+  ) => void;
+  previousBrowserStates: BrowserState[];
+  ecoCodes: EcoCode[];
+  ecoCodeLookup: Record<string, EcoCode>;
+  browserState?: BrowserState;
+}
+
+interface BrowserState {
+  epd: string;
+  line: string[];
+  sections: BrowserSection[];
+  lines: BrowserLine[];
+  eco_code: EcoCode;
+}
+
+interface BrowserSection {
+  epd: string;
+  eco_code?: EcoCode;
+  line?: string[];
+  numMoves?: { withTranspositions: number; withoutTranspositions: number };
+}
+
+interface BrowserLine {
+  line: string;
+  epd: string;
 }
 
 interface FetchRepertoireResponse {
@@ -224,6 +272,7 @@ export const useRepertoireState = create<RepertoireState>()(
           initState: () => {
             let state = get();
             state.fetchRepertoire(state);
+            state.fetchEcoCodes(state);
           },
           setUser: (user: User, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -417,6 +466,20 @@ export const useRepertoireState = create<RepertoireState>()(
                 }
                 return false;
               });
+              s.differentMoveIndices = filter(
+                map(dropRight(s.positions, 1), (e: string, i) => {
+                  let responses =
+                    s.repertoire[s.activeSide].positionResponses[e];
+                  let move = s.currentLine[i];
+                  if (!move) {
+                    return i;
+                  }
+                  if (!some(responses, (r) => r.sanPlus == move)) {
+                    return i;
+                  }
+                  return null;
+                })
+              );
               s.divergenceIndex =
                 s.divergenceIndex === -1 ? null : s.divergenceIndex;
               // if (s.divergenceIndex === s.positions.length - 1) {
@@ -464,6 +527,24 @@ export const useRepertoireState = create<RepertoireState>()(
                 s
               );
               s.fetchPositionReportIfNeeded(s);
+            }),
+          selectBrowserSection: (
+            browserSection: BrowserSection,
+            includeInPreviousStates: boolean,
+            _state?: RepertoireState
+          ) =>
+            setter(set, _state, (s) => {
+              // s.browsingState.line = browserSection.line;
+              // s.browsingState.epd = browserSection.epd;
+              if (includeInPreviousStates) {
+                s.previousBrowserStates.push(s.browserState);
+              }
+              s.updateBrowserStateAndSections(
+                browserSection.epd,
+                browserSection.line,
+                s
+              );
+              console.log("Selected browser section");
             }),
           fetchPositionReportIfNeeded: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -530,6 +611,49 @@ export const useRepertoireState = create<RepertoireState>()(
                   return flatten(
                     Object.values(repertoireSide.positionResponses)
                   ).filter((m: RepertoireMove) => m.mine);
+                }
+              );
+              console.log("Generating rep num moves");
+              s.repertoireNumMoves = mapSides(
+                s.repertoire,
+                (repertoireSide: RepertoireSide) => {
+                  let epdToNumMoves = {};
+                  let seen_epds = new Set();
+                  const recurse = (epd, line) => {
+                    let sum = 0;
+                    let sumTranspositions = 0;
+                    map(repertoireSide.positionResponses[epd], (m) => {
+                      if (!seen_epds.has(m.epdAfter)) {
+                        seen_epds.add(m.epdAfter);
+                        let x = recurse(m.epdAfter, [...line, m.sanPlus]);
+                        sum += x.withoutTranspositions;
+                        sumTranspositions +=
+                          x.withTranspositions - x.withoutTranspositions;
+                        if (Number.isNaN(sumTranspositions)) {
+                          console.log({ x });
+                        }
+                      } else {
+                        if (epdToNumMoves[m.epdAfter]) {
+                          sumTranspositions +=
+                            epdToNumMoves[m.epdAfter].withTranspositions;
+                        }
+                      }
+                    });
+                    if (Number.isNaN(sum) || Number.isNaN(sumTranspositions)) {
+                      console.log("BROKEN!!!");
+                      console.log(sum, sumTranspositions);
+                    }
+                    epdToNumMoves[epd] = {
+                      withTranspositions: sum + sumTranspositions,
+                      withoutTranspositions: sum,
+                    };
+                    return {
+                      withTranspositions: sum + sumTranspositions + 1,
+                      withoutTranspositions: sum + 1,
+                    };
+                  };
+                  recurse(START_EPD, []);
+                  return epdToNumMoves;
                 }
               );
             }),
@@ -624,7 +748,7 @@ export const useRepertoireState = create<RepertoireState>()(
                       s.animatePieceMove(
                         lastOpponentMove,
                         PlaybackSpeed.Normal,
-                        (s: RepertoireState) => {},
+                        (completed, s: RepertoireState) => {},
                         s
                       );
                     }
@@ -765,6 +889,171 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               s.showImportView = true;
             }),
+          startBrowsing: (side: Side, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.isBrowsing = true;
+              s.activeSide = side;
+              s.browserState = {
+                epd: START_EPD,
+                sections: [],
+                line: [],
+                lines: [],
+                eco_code: null,
+              };
+              s.previousBrowserStates = [];
+              s.updateBrowserStateAndSections(
+                s.browserState.epd,
+                s.browserState.line,
+                s
+              );
+              s.previousBrowserStates.push(s.browserState);
+            }),
+          selectBrowserState: (
+            browserState: BrowserState,
+            _state?: RepertoireState
+          ) =>
+            setter(set, _state, (s) => {
+              s.browserState = browserState;
+              console.log("New browser state", s.browserState);
+              // let sections = s.generateBrowsingSections(
+              //   s.browsingState.line,
+              //   s.browsingState.epd,
+              //   s
+              // );
+              //
+              // if (sections.length === 1) {
+              //   s.selectBrowserSection(sections[0], s);
+              // }
+            }),
+          updateBrowserStateAndSections: (
+            epd: string,
+            line: string[],
+            _state?: RepertoireState
+          ) =>
+            setter(set, _state, (s) => {
+              s.browserState = {
+                epd: epd,
+                sections: [],
+                line: line,
+                lines: [],
+                eco_code: s.ecoCodeLookup[epd],
+              };
+              let sections = s.generateBrowsingSections(
+                s.browserState.line,
+                s.browserState.epd,
+                s
+              );
+              s.browserState.sections = sections;
+              console.log("Got sections", sections);
+
+              if (sections.length === 1) {
+                s.previousBrowserStates.pop();
+                s.selectBrowserSection(sections[0], true, s);
+              }
+              s.browserState.lines = s.generateBrowsingLines(
+                s.browserState.line,
+                s.browserState.epd,
+                s
+              );
+            }),
+          generateBrowsingLines: (
+            line: string[],
+            baseEpd: string,
+            _state?: RepertoireState
+          ) =>
+            setter(set, _state, (s) => {
+              let seenEpds = new Set(
+                s.browserState?.sections?.map((s) => s.epd) ?? []
+              );
+              console.log(s.browserState?.sections?.length);
+              console.log({ seenEpds });
+              let responses = s.repertoire[s.activeSide].positionResponses;
+              let paths = [];
+              let recurse = (path: string, epd: string, moveNumber: number) => {
+                responses[epd]?.forEach((m) => {
+                  let n = moveNumber / 2 + 1;
+                  let newPath = null;
+                  if (moveNumber % 2 == 0) {
+                    if (moveNumber == 0) {
+                      newPath = `${n}.${m.sanPlus}`;
+                    } else {
+                      newPath = `${path} ${n}.${m.sanPlus}`;
+                    }
+                  } else {
+                    newPath = `${path} ${m.sanPlus}`;
+                  }
+                  // if (
+                  //   (side == "white" && moveNumber % 2 == 0) ||
+                  //   (side == "black" && moveNumber % 2 == 1)
+                  // ) {
+                  // }
+                  if (!seenEpds.has(m.epdAfter)) {
+                    if (newPath === "1.d6") {
+                      console.log("WHy would this be added");
+                      console.log(cloneDeep(seenEpds));
+                      console.log(m);
+                    }
+                    seenEpds.add(m.epdAfter);
+                    paths.push({ line: newPath, epd: m.epdAfter });
+                    recurse(newPath, m.epdAfter, moveNumber + 1);
+                  }
+                });
+              };
+              recurse(
+                lineToPgn(s.browserState.line),
+                baseEpd,
+                s.browserState.line.length ?? 0
+              );
+              // TODO: can optimize this probably
+              paths = paths.filter(({ line }) => {
+                if (
+                  some(
+                    paths,
+                    (p2) => p2.line.startsWith(line) && line !== p2.line
+                  )
+                ) {
+                  return false;
+                } else {
+                  return true;
+                }
+              });
+              return paths.map((p) => {
+                return {
+                  line: p.line,
+                  epd: p.epd,
+                };
+              });
+            }),
+          generateBrowsingSections: (
+            line: string[],
+            epd: string,
+            _state?: RepertoireState
+          ) =>
+            setter(set, _state, (s) => {
+              let responses = s.repertoire[s.activeSide].positionResponses;
+              let sections = filter(
+                (responses[epd] ?? []).map((m) => {
+                  let ecoCode = s.ecoCodeLookup[m.epdAfter];
+                  if (ecoCode) {
+                    return {
+                      epd: m.epdAfter,
+                      eco_code: ecoCode,
+                      line: [...(s.browserState?.line ?? []), m.sanPlus],
+                      numMoves: s.repertoireNumMoves[s.activeSide][m.epdAfter],
+                    } as BrowserSection;
+                  } else {
+                    console.log("m.epdAfter is ", m.epdAfter);
+                    console.log(s.ecoCodeLookup[m.epdAfter]);
+                    return null;
+                  }
+                })
+              );
+              sections = sortBy(
+                sections,
+                (s) => -s.numMoves.withTranspositions
+              );
+              return sections;
+            }),
           startEditing: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.activeSide = side;
@@ -810,6 +1099,20 @@ export const useRepertoireState = create<RepertoireState>()(
                   });
                 });
             }),
+          fetchEcoCodes: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              client
+                .get("/api/v1/openings/eco_codes")
+                .then(({ data }: { data: EcoCode[] }) => {
+                  console.log({ codes: data });
+                  set((s) => {
+                    s.ecoCodes = data;
+                    s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
+                    console.log("LOOKUP");
+                    console.log(logProxy(s.ecoCodeLookup));
+                  });
+                });
+            }),
           fetchRepertoire: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               client
@@ -826,10 +1129,6 @@ export const useRepertoireState = create<RepertoireState>()(
                       }
                     }
                     s.onRepertoireUpdate(s);
-                    if (failOnTrue(true)) {
-                      s.startEditing("white", s);
-                      s.playPgn("1.e4 e5", s);
-                    }
                   });
                 });
             }),
@@ -840,9 +1139,6 @@ export const useRepertoireState = create<RepertoireState>()(
                 .flatMap((v) => v)
                 .filter((v) => v.mine).length;
             } else {
-              console.log("Getting it here");
-              console.log(s.repertoire);
-              console.log(getAllRepertoireMoves(s.repertoire));
               return getAllRepertoireMoves(s.repertoire).length;
             }
           },

@@ -99,3 +99,9 @@ export interface GameResultsDistribution {
   black: number;
   draw: number;
 }
+
+export interface EcoCode {
+  epd: string;
+  fullName: string;
+  code: string;
+}

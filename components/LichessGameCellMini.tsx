@@ -56,7 +56,7 @@ export const LichessGameCellMini = ({
           ["white", "black"].map((color, i) => {
             // console.log(game);
             return (
-              <View style={s(c.column)}>
+              <View style={s(c.column)} key={color}>
                 <View style={s(c.row, c.alignCenter)}>
                   <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
                     {game[`${color}Name`]}
@@ -68,6 +68,7 @@ export const LichessGameCellMini = ({
           (i) => {
             return (
               <CMText
+                key={i}
                 style={s(c.fg(c.grays[70]), c.px(4), c.pl(6), c.weightThin)}
               >
                 vs.

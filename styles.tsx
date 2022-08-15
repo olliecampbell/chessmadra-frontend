@@ -231,7 +231,6 @@ const genShades = (hue: number) => {
     let lightness = minLightness + (maxLightness - minLightness) * lightness_y;
     shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
-  console.log(shades);
   return shades;
   // return {
   //   10: `hsl(${hue}, 45%, 8%)`,
@@ -245,9 +244,14 @@ const genShades = (hue: number) => {
   //   90: `hsl(${hue}, 65%, 95%)`,
   // };
 };
-const primaries = genShades(181);
-const yellows = genShades(28);
-const failureShades = genShades(340);
+const blues = genShades(186);
+const teals = genShades(150);
+const primaries = blues;
+const yellows = genShades(45);
+const pinks = genShades(308);
+const reds = genShades(340);
+const greens = genShades(66);
+const failureShades = reds;
 const successShades = genShades(164);
 const colors = {
   textPrimary: grays[95],
@@ -342,6 +346,8 @@ const buttons = {
   outlineLight: outlineLightButtonStyles,
 };
 
+const fillNoExpand = s(minWidth("100%"), width(0));
+
 const noPointerEvents = keyedProp("pointer-events")("none");
 const transform = keyedProp("transform");
 const containerStyles = (isMobile, customMaxWidth?: number) =>
@@ -375,13 +381,19 @@ export const c = {
   mx,
   colors,
   my,
+  fillNoExpand,
   weightThin,
   weightRegular,
   weightSemiBold,
   weightBold,
   primaries,
+  blues,
+  pinks,
+  teals,
   yellows,
   failureShades,
+  reds,
+  greens,
   successShades,
   weightHeavy,
   weightBlack,

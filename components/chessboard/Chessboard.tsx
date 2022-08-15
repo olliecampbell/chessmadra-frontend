@@ -122,9 +122,16 @@ const getIconForPiece = (piece: PieceSymbol, color: ChessColor) => {
       }
   }
 };
+const pieceCache = {};
 
 export const PieceView = ({ piece }: { piece: Piece }) => {
-  return getIconForPiece(piece.type, piece.color);
+  let key = piece.type + piece.color;
+  if (pieceCache[key]) {
+    return pieceCache[key];
+  } else {
+    pieceCache[key] = getIconForPiece(piece.type, piece.color);
+    return pieceCache[key];
+  }
 };
 
 export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
@@ -167,6 +174,8 @@ export const ChessboardView = ({
   onSquarePress?: any;
   styles?: any;
 }) => {
+  console.time("chessboard");
+  console.log("chessboard start");
   const { position, availableMoves } = state;
   const tileStyles = s(c.bg("green"), c.grow);
   const stateRef = useRef(state);
@@ -331,7 +340,7 @@ export const ChessboardView = ({
   }, [state.moveLog]);
 
   const { width: windowWidth } = useWindowDimensions();
-  return (
+  let x = (
     <>
       <View
         style={s(c.pb("100%"), c.height(0), c.width("100%"), styles, {
@@ -510,10 +519,12 @@ export const ChessboardView = ({
               return (
                 <View key={i} style={s(c.fullWidth, c.row, c.grow, c.flexible)}>
                   {times(8)((j) => {
+                    console.log("Doing the inner thing");
+                    let colors = state.highContrast
+                      ? [c.grays[75], c.grays[65]]
+                      : [c.colors.lightTile, c.colors.darkTile];
                     let [color, inverseColor] =
-                      (i + j) % 2 == 0
-                        ? [c.colors.lightTile, c.colors.darkTile]
-                        : [c.colors.darkTile, c.colors.lightTile];
+                      (i + j) % 2 == 0 ? colors : [colors[1], colors[0]];
                     if (state.hideColors) {
                       color = c.grays[30];
                     }
@@ -524,7 +535,6 @@ export const ChessboardView = ({
                     let square = `${tileLetter}${tileNumber}` as Square;
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
-                    const isLeftEdge = j == 0;
                     return (
                       <View
                         key={j}
@@ -643,4 +653,6 @@ export const ChessboardView = ({
       )}
     </>
   );
+  console.timeEnd("chessboard");
+  return x;
 };

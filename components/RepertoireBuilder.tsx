@@ -39,11 +39,16 @@ const DEPTH_CUTOFF = 4;
 import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
-import { ChessboardState, createChessState } from "app/utils/chessboard_state";
+import {
+  ChessboardState,
+  createChessState,
+  createStaticChessState,
+} from "app/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
 import { RepertoireEditingView } from "./RepertoireEditingView";
+import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(
@@ -95,6 +100,8 @@ export const RepertoireBuilder = () => {
       inner = (
         <RepertoireEditingView state={state} {...{ backToOverviewRow }} />
       );
+    } else if (state.isBrowsing) {
+      inner = <RepertoireBrowsingView />;
     } else if (state.isReviewing) {
       inner = (
         <TrainerLayout
@@ -302,6 +309,48 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
   );
 };
 
+export const BrowseButton = ({ side }: { side: Side }) => {
+  const isMobile = useIsMobile();
+  const { startBrowsing } = useRepertoireState((s) => ({
+    startBrowsing: s.startBrowsing,
+  }));
+  return (
+    <Button
+      style={s(
+        c.buttons.basicSecondary,
+        // isMobile && c.bg(c.grays[70]),
+        isMobile ? c.selfCenter : c.selfStretch,
+        c.py(isMobile ? 12 : 16),
+        c.px(24)
+      )}
+      onPress={() => {
+        startBrowsing(side);
+      }}
+    >
+      <Text
+        style={s(
+          c.buttons.basicSecondary.textStyles,
+          c.fontSize(isMobile ? 14 : 16)
+        )}
+      >
+        <i className="fa fa-eye" />
+      </Text>
+      <>
+        <Spacer width={8} />
+        <Text
+          style={s(
+            c.buttons.basicSecondary.textStyles,
+            c.fontSize(isMobile ? 16 : 18),
+            c.weightSemiBold
+          )}
+        >
+          Browse
+        </Text>
+      </>
+    </Button>
+  );
+};
+
 const RepertoireSideSummary = ({
   side,
   isMobile,
@@ -497,6 +546,8 @@ const RepertoireSideSummary = ({
               {!isMobile && (
                 <>
                   <Spacer height={sectionSpacing(isMobile)} />
+                  <BrowseButton side={side} />
+                  <Spacer height={sectionSpacing(isMobile)} />
                   <EditButton side={side} state={state} />
                 </>
               )}
@@ -582,7 +633,7 @@ function BiggestMissBoards({
   side,
 }: {
   state: RepertoireState;
-  side: string;
+  side: Side;
 }) {
   const isMobile = useIsMobile();
   let biggestMiss = state.repertoireGrades[side]?.biggestMiss as RepertoireMiss;
@@ -612,7 +663,7 @@ function BiggestMissBoards({
                 state.playPgn(x.lines[0], s);
               });
             return (
-              <View style={s()}>
+              <View style={s()} key={`miss-${i}`}>
                 <View style={s(c.size(isMobile ? 120 : 160))}>
                   <Pressable
                     onPress={() => {
@@ -623,17 +674,10 @@ function BiggestMissBoards({
                       onSquarePress={() => {
                         onClick();
                       }}
-                      state={createChessState(
-                        null,
-                        null,
-                        (state: ChessboardState) => {
-                          state.position = new Chess();
-                          state.frozen = true;
-                          state.flipped = side == "black";
-                          state.hideCoordinates = true;
-                          state.position.loadPgn(biggestMiss.lines[0]);
-                        }
-                      )}
+                      state={createStaticChessState({
+                        line: biggestMiss.lines[0],
+                        side: side as Side,
+                      })}
                     />
                   </Pressable>
                 </View>

@@ -9,6 +9,7 @@ import { QuickUpdate, setter } from "./state";
 import { c } from "app/styles";
 import { getSquareOffset } from "./chess";
 import { WritableDraft } from "immer/dist/internal";
+import { Side } from "./repertoire";
 
 type ChessBoardStateAndParent<T> = ChessboardState & ChessboardStateParent<T>;
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
@@ -63,6 +64,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   showMoveLog?: boolean;
   availableMovesFrom: (square: Square, _state: ChessboardState) => Move[];
   hideCoordinates?: boolean;
+  highContrast?: boolean;
 }
 
 export interface ChessboardStateParent<T> {
@@ -311,4 +313,30 @@ export const createChessState = <
   //   }
   // });
   return state;
+};
+
+export const createStaticChessState = ({
+  line,
+  epd,
+  side,
+}: {
+  line?: string;
+  epd?: string;
+  side?: Side;
+}) => {
+  return createChessState(null, null, (state: ChessboardState) => {
+    state.position = new Chess();
+    state.frozen = true;
+    state.highContrast = true;
+    if (side) {
+      state.flipped = side == "black";
+    }
+    state.hideCoordinates = true;
+    if (epd) {
+      let fen = `${epd} 0 1`;
+      state.position = new Chess(fen);
+    } else if (line) {
+      state.position.loadPgn(line);
+    }
+  });
 };
