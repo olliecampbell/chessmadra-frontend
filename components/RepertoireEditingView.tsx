@@ -82,10 +82,9 @@ type BackControlsProps = {
 export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
   let backButtonActive = state.position.history().length > 0;
 
-  let [searchOnChessable, analyzeLineOnLichess] = useRepertoireState((s) => [
-    s.searchOnChessable,
-    s.analyzeLineOnLichess,
-  ]);
+  let [searchOnChessable, analyzeLineOnLichess, quick] = useRepertoireState(
+    (s) => [s.searchOnChessable, s.analyzeLineOnLichess, s.quick]
+  );
   const isMobile = useIsMobile();
   let gap = isMobile ? 6 : 12;
   return (
@@ -136,7 +135,9 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
       <Button
         style={s(c.buttons.basicSecondary)}
         onPress={() => {
-          searchOnChessable();
+          quick((s) => {
+            s.editingState.etcModalOpen = true;
+          });
         }}
       >
         <CMText
@@ -147,7 +148,7 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
         >
           <i
             style={s(c.fontSize(14), c.fg(c.grays[60]))}
-            className="fas fa-book-open"
+            className="fas fa-gear"
           ></i>
         </CMText>
       </Button>
@@ -209,26 +210,36 @@ export const MoveLog = () => {
         style={s(
           c.column,
           c.br(2),
-          c.px(12),
+          !isMobile && s(c.px(12), c.py(12)),
           c.width(200),
-          c.py(12),
           isMobile ? c.selfStretch : c.selfStart,
-          c.bg(c.colors.cardBackground)
+          !isMobile && c.bg(c.colors.cardBackground)
         )}
       >
-        <CMText
+        {!isMobile && (
+          <>
+            <CMText
+              style={s(
+                c.fontSize(22),
+                c.fg(c.colors.textPrimary),
+                c.py(8),
+                c.weightHeavy,
+                c.textAlign("center")
+              )}
+            >
+              Current line
+            </CMText>
+            <Spacer height={12} />
+          </>
+        )}
+        <View
           style={s(
-            c.fontSize(22),
-            c.fg(c.colors.textPrimary),
-            c.py(8),
-            c.weightHeavy,
-            c.textAlign("center")
+            !isMobile && c.bg(c.grays[20]),
+            c.py(12),
+            c.minHeight(200),
+            isMobile && c.br(2)
           )}
         >
-          Current line
-        </CMText>
-        <Spacer height={12} />
-        <View style={s(c.bg(c.grays[20]), c.py(12), c.minHeight(200))}>
           {intersperse(
             pairs.map((pair, i) => {
               const [
@@ -241,7 +252,7 @@ export const MoveLog = () => {
                   key={`pair-${i}`}
                   style={s(c.column, c.overflowHidden, c.px(16), c.py(4))}
                 >
-                  <View style={s(c.row, c.alignEnd, c.py(0))}>
+                  <View style={s(c.row, c.alignEnd, c.py(2))}>
                     <View style={s(c.minWidth(18), c.alignStart, c.mb(1))}>
                       <CMText
                         style={s(
@@ -273,12 +284,7 @@ export const MoveLog = () => {
               );
             }),
             (i) => {
-              return (
-                <View
-                  style={s(c.height(1), c.selfStretch, c.bg(c.grays[20]))}
-                  key={i}
-                ></View>
-              );
+              return null;
             }
           )}
         </View>
@@ -896,17 +902,24 @@ const SectionDivider = () => {
 };
 
 const EditEtcModal = () => {
-  let [open, activeSide, exportPgn, deleteRepertoire] = useRepertoireState(
-    (s) => [
+  let [open, activeSide, exportPgn, deleteRepertoire, quick] =
+    useRepertoireState((s) => [
       s.editingState.etcModalOpen,
       s.activeSide,
       s.exportPgn,
       s.deleteRepertoire,
-    ]
-  );
+      s.quick,
+    ]);
   const isMobile = useIsMobile();
   return (
-    <Modal onClose={() => {}} visible={open}>
+    <Modal
+      onClose={() => {
+        quick((s) => {
+          s.editingState.etcModalOpen = false;
+        });
+      }}
+      visible={open}
+    >
       <View
         style={s(c.column, c.px(isMobile ? 12 : 24), c.py(isMobile ? 12 : 24))}
       >
@@ -1430,9 +1443,14 @@ const EditingTabPicker = () => {
         }}
       />
       <Spacer height={12} />
+
       {selectedTab === EditingTab.Position && <PositionOverview />}
       {selectedTab === EditingTab.Responses && <Responses />}
-      {selectedTab === EditingTab.MoveLog && <MoveLog />}
+      {selectedTab === EditingTab.MoveLog && (
+        <View style={s(c.column, c.alignCenter)}>
+          <MoveLog />
+        </View>
+      )}
     </View>
   );
 };
