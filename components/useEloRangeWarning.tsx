@@ -48,15 +48,10 @@ export const useEloRangeWarning = () => {
       <Spacer height={12} />
       <SelectOneOf
         choices={ELO_RANGES}
-        // cellStyles={s(c.bg(c.grays[15]))}
-        // horizontal={true}
         activeChoice={selectedEloRange}
         equality={isEqual}
         onSelect={function (c): void {
           setSelectedEloRange(c);
-          // quick((s) => {
-          //   s.gameResult = c;
-          // });
         }}
         renderChoice={(r: EloRange) => {
           return `${r[0]}-${r[1]}`;
