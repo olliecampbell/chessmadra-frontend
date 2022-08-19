@@ -48,12 +48,6 @@ enum OpeningSource {
   Chessmood,
 }
 
-enum RatingSource {
-  Lichess,
-  ChessCom,
-  Fide,
-}
-
 // function formatRatingSource(ratingSource: RatingSource) {
 //   switch (ratingSource) {
 //     case RatingSource.Lichess:
@@ -64,29 +58,6 @@ enum RatingSource {
 //       return "FIDE";
 //   }
 // }
-
-enum RatingRange {
-  RatingLessThan1200 = "<1200",
-  Rating1200To1500 = "1200-1500",
-  Rating1500To1800 = "1500-1800",
-  Rating1800To2100 = "1800-2100",
-  RatingGreaterThan2100 = "2100+",
-}
-
-function formatRatingRange(ratingRange: RatingRange) {
-  switch (ratingRange) {
-    case RatingRange.RatingLessThan1200:
-      return "<1200";
-    case RatingRange.Rating1200To1500:
-      return "1200-1500";
-    case RatingRange.Rating1500To1800:
-      return "1500-1800";
-    case RatingRange.Rating1800To2100:
-      return "1800-2100";
-    case RatingRange.RatingGreaterThan2100:
-      return "2100+";
-  }
-}
 
 export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);

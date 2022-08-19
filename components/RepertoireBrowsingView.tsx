@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -7,6 +7,7 @@ import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   isEmpty,
   isNil,
+  map,
   dropRight,
   capitalize,
   drop,
@@ -27,6 +28,7 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import {
+  BrowserState,
   RepertoireState,
   useRepertoireState,
 } from "app/utils/repertoire_state";
@@ -69,13 +71,21 @@ import { failOnAny, failOnTrue } from "app/utils/test_settings";
 import { chunked } from "app/utils/intersperse";
 
 export const RepertoireBrowsingView = ({}: {}) => {
-  const [activeSide, isBrowsing, browsingState, selectBrowserSection] =
-    useRepertoireState((s) => [
-      s.activeSide,
-      s.isBrowsing,
-      s.browserState,
-      s.selectBrowserSection,
-    ]);
+  const [
+    activeSide,
+    isBrowsing,
+    browsingState,
+    selectBrowserSection,
+    quick,
+    previousBrowserStates,
+  ] = useRepertoireState((s) => [
+    s.activeSide,
+    s.isBrowsing,
+    s.browserState,
+    s.selectBrowserSection,
+    s.quick,
+    s.previousBrowserStates,
+  ]);
   console.log("Re-rendering browsing view");
   const isMobile = useIsMobile();
   const chunkSize = isMobile ? 1 : 3;
@@ -85,129 +95,204 @@ export const RepertoireBrowsingView = ({}: {}) => {
       <View style={s(c.column, c.alignStart, c.fullWidth)}>
         <BreadCrumbView />
         <Spacer height={24} />
-        <View
-          style={s(c.selfCenter, {
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "12px 24px",
-            width: "100%",
-          })}
-        >
-          {browsingState.sections.map((x, i) => {
-            const onClick = () => {
-              selectBrowserSection(x, true);
-            };
-            return (
-              <Pressable
-                key={`section-${i}`}
-                onPress={onClick}
-                style={s(
-                  c.bg(c.colors.cardBackground),
-                  c.br(2),
-                  c.pr(12),
-                  c.overflowHidden,
-                  c.row
-                )}
-              >
-                <View style={s(c.size(120))}>
-                  <ChessboardView
-                    onSquarePress={() => {
-                      onClick();
-                    }}
-                    state={createStaticChessState({
-                      epd: x.epd,
-                      side: activeSide,
-                    })}
-                  />
-                </View>
-                <Spacer width={12} />
-                <View style={s(c.column, c.py(12))}>
-                  <CMText style={s(c.fontSize(16), c.weightBold)}>
-                    {getAppropriateEcoName(x.eco_code?.fullName)}
-                  </CMText>
-                  <Spacer height={12} />
-                  <View style={s(c.row, c.alignEnd)}>
-                    <CMText style={s(c.fontSize(16), c.weightBold)}>
-                      {x.numMoves.withTranspositions}
-                    </CMText>
-                    <Spacer width={4} />
-                    <CMText style={s(c.fontSize(14), c.weightRegular)}>
-                      moves
-                    </CMText>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Spacer height={24} />
-        <View style={s(c.height(1), c.bg(c.grays[20]), c.fullWidth)}></View>
-        <Spacer height={24} />
-
-        <View
-          style={s(c.selfCenter, c.fullWidth, {
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "12px 24px",
-          })}
-        >
-          {browsingState.lines.map((browserLine, key) => {
-            return (
-              <View
-                style={s(
-                  c.row,
-                  c.flexible,
-                  c.alignStart,
-                  c.bg(c.colors.cardBackground)
-                )}
-              >
-                <View style={s(c.size(120))}>
-                  <ChessboardView
-                    onSquarePress={() => {
-                      onClick();
-                    }}
-                    state={createStaticChessState({
-                      epd: browserLine.epd,
-                      side: activeSide,
-                    })}
-                  />
-                </View>
-                <Spacer width={12} />
-                <View style={s(c.flexible, c.py(12))}>
-                  <CMText
+        {!isEmpty(browsingState.sections) && (
+          <>
+            <CMText style={s(c.fontSize(24), c.weightBold)}>Variations</CMText>
+            <Spacer height={12} />
+            <View
+              style={s(c.selfCenter, {
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+                gap: "12px 24px",
+                width: "100%",
+              })}
+            >
+              {browsingState.sections.map((x, i) => {
+                const onClick = () => {
+                  selectBrowserSection(x, true);
+                };
+                return (
+                  <Pressable
+                    key={`section-${i}`}
+                    onPress={onClick}
                     style={s(
-                      c.fg(c.colors.textSecondary),
-                      c.lineHeight("1.3rem"),
-                      c.weightSemiBold
+                      c.bg(c.grays[12]),
+                      c.br(2),
+                      c.pr(12),
+                      c.overflowHidden,
+                      c.row,
+                      c.clickable
                     )}
                   >
-                    {browserLine.line}
-                  </CMText>
-                </View>
-                <Spacer width={12} />
-              </View>
-            );
-          })}
-        </View>
+                    <View style={s(c.size(isMobile ? 100 : 120))}>
+                      <ChessboardView
+                        onSquarePress={() => {
+                          onClick();
+                        }}
+                        state={createStaticChessState({
+                          epd: x.epd,
+                          side: activeSide,
+                        })}
+                      />
+                    </View>
+                    <Spacer width={12} />
+                    <View style={s(c.column, c.py(12), c.flexible, c.grow)}>
+                      <CMText style={s(c.fontSize(16), c.weightBold)}>
+                        {
+                          getAppropriateEcoName(
+                            x.eco_code?.fullName,
+                            previousBrowserStates
+                          )[0]
+                        }
+                      </CMText>
+                      <Spacer height={2} />
+                      <CMText
+                        style={s(
+                          c.fontSize(12),
+                          c.weightSemiBold,
+                          c.fg(c.grays[70])
+                        )}
+                      >
+                        {getAppropriateEcoName(
+                          x.eco_code?.fullName,
+                          previousBrowserStates
+                        )[1]?.join(", ")}
+                      </CMText>
+                      {/*
+                      <Spacer height={12} />
+                      <View style={s(c.row, c.alignEnd)}>
+                        <CMText style={s(c.fontSize(16), c.weightBold)}>
+                          {x.numMoves.withTranspositions}
+                        </CMText>
+                        <Spacer width={4} />
+                        <CMText style={s(c.fontSize(14), c.weightRegular)}>
+                          moves
+                        </CMText>
+                      </View>
+                      */}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Spacer height={48} />
+          </>
+        )}
 
-        <View style={s(c.row, c.selfCenter)}></View>
+        {!isEmpty(browsingState.lines) && (
+          <>
+            <CMText style={s(c.fontSize(24), c.weightBold)}>
+              {!isEmpty(browsingState.sections) ? "Other lines" : "Lines"}
+            </CMText>
+            <Spacer height={12} />
+
+            <View
+              style={s(c.selfCenter, c.fullWidth, {
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+                gap: "12px 24px",
+              })}
+            >
+              {browsingState.lines.map((browserLine, key) => {
+                const onClick = () => {
+                  quick((s) => {
+                    s.isBrowsing = false;
+                    s.startEditing(activeSide as Side, s);
+                    s.playPgn(browserLine.line, s);
+                  });
+                };
+                return (
+                  <Pressable
+                    onPress={() => {
+                      onClick();
+                    }}
+                    key={`lines-${key}`}
+                    style={s(
+                      c.row,
+                      c.flexible,
+                      c.alignStart,
+                      c.bg(c.grays[12]),
+                      c.clickable
+                    )}
+                  >
+                    <View style={s(c.size(120))}>
+                      <ChessboardView
+                        onSquarePress={() => {
+                          onClick();
+                        }}
+                        state={createStaticChessState({
+                          epd: browserLine.epd,
+                          side: activeSide,
+                        })}
+                      />
+                    </View>
+                    <Spacer width={12} />
+                    <View style={s(c.flexible, c.py(12))}>
+                      <CMText
+                        style={s(
+                          c.fg(c.colors.textSecondary),
+                          c.fontSize(isMobile ? 12 : 14),
+                          c.lineHeight(isMobile ? "1.2rem" : "1.3rem"),
+                          c.weightSemiBold
+                        )}
+                      >
+                        {browserLine.line}
+                      </CMText>
+                    </View>
+                    <Spacer width={12} />
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <View style={s(c.row, c.selfCenter)}></View>
+          </>
+        )}
       </View>
     </View>
   );
 };
 
 export const BreadCrumbView = () => {
-  let [previousBrowserStates, selectBrowserState] = useRepertoireState((s) => [
-    s.previousBrowserStates,
-    s.selectBrowserState,
-  ]);
-  previousBrowserStates = filter(previousBrowserStates, (s) => s.eco_code);
+  let [previousBrowserStates, selectBrowserState, backToOverview] =
+    useRepertoireState((s) => [
+      s.previousBrowserStates,
+      s.selectBrowserState,
+      s.backToOverview,
+    ]);
+  let containerRef = useRef(null);
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = containerRef.current.scrollWidth;
+    }
+  }, [previousBrowserStates]);
+  previousBrowserStates = filter(
+    previousBrowserStates,
+    (s) => s.ecoCode
+  ) as BrowserState[];
   console.log({ previousBrowserStates });
+  const separator = (
+    <CMText style={s(c.mx(8), c.fontSize(12), c.fg(c.grays[70]))}>
+      <i className="fa fa-arrow-right" />
+    </CMText>
+  );
+  let seenEcoCodes = new Set();
   return (
-    <View style={s(c.row)}>
+    <View
+      style={s(c.row, c.alignCenter, c.scrollX, c.constrainWidth, c.py(8))}
+      ref={containerRef}
+    >
+      <Pressable
+        onPress={() => {
+          backToOverview();
+        }}
+      >
+        <CMText style={s()}>Overview</CMText>
+      </Pressable>
+      {!isEmpty(previousBrowserStates) && separator}
       {intersperse(
         previousBrowserStates.map((browserState, i) => {
+          seenEcoCodes.add(browserState.ecoCode.code);
           return (
             <Pressable
               key={`breadcrumb-${i}`}
@@ -217,33 +302,45 @@ export const BreadCrumbView = () => {
             >
               <View style={s()}>
                 <CMText style={s()}>
-                  {getAppropriateEcoName(browserState.eco_code?.fullName)}
+                  {
+                    getAppropriateEcoName(
+                      browserState.ecoCode?.fullName,
+                      take(previousBrowserStates, i)
+                    )[0]
+                  }
                 </CMText>
               </View>
             </Pressable>
           );
         }),
         (i) => {
-          return (
-            <CMText key={i} style={s(c.mx(4))}>
-              {" "}
-              --{" "}
-            </CMText>
-          );
+          return <React.Fragment key={i}>{separator}</React.Fragment>;
         }
       )}
     </View>
   );
 };
 
-function getAppropriateEcoName(fullName: string) {
+const getAppropriateEcoName = (
+  fullName: string,
+  browserStates?: BrowserState[]
+): [string, string[]] => {
   if (!fullName) {
     return null;
   }
-  if (fullName.includes(":")) {
-    let variations = fullName.split(":")[1].split(",");
-    return last(variations).trim();
+  console.log(`Getting getAppropriateEcoName for ${fullName}`);
+  let name = fullName.split(":")[0];
+  let isFirstTimeSeeing =
+    !browserStates ||
+    !some(browserStates, (s) => {
+      return s.ecoCode?.fullName.includes(`${name}:`);
+    });
+  console.log({ isFirstTimeSeeing });
+
+  let variations = map(fullName.split(":")?.[1]?.split(","), (s) => s.trim());
+  if (isFirstTimeSeeing) {
+    return [name, variations];
   } else {
-    return fullName;
+    return [last(variations) ?? name, null];
   }
-}
+};

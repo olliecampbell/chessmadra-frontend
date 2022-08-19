@@ -653,7 +653,7 @@ export const useVisualizationTraining = ({
               state.setPlaybackSpeed(playbackSpeed);
             }}
             renderChoice={(c) => {
-              return <CMText>{getPlaybackSpeedDescription(c)}</CMText>;
+              return getPlaybackSpeedDescription(c);
             }}
           />
           <Spacer height={24} />

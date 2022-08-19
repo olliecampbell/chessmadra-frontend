@@ -25,6 +25,7 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import {
+  EditingTab,
   RepertoireState,
   useRepertoireState,
 } from "app/utils/repertoire_state";
@@ -60,6 +61,17 @@ import {
   SuggestedMove,
 } from "app/models";
 import { failOnAny, failOnTrue } from "app/utils/test_settings";
+import { AddedLineModal } from "./AddedLineModal";
+import { formatStockfishEval } from "app/utils/stockfish";
+import { GameResultsBar } from "./GameResultsBar";
+import {
+  getTotalGames,
+  formatPlayPercentage,
+  formatWinPercentage,
+  getWinRate,
+} from "app/utils/results_distribution";
+import useKeypress from "react-use-keypress";
+import { SelectOneOf } from "./SelectOneOf";
 
 type BackControlsProps = {
   state: RepertoireState;
@@ -67,10 +79,17 @@ type BackControlsProps = {
 
 export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
   let backButtonActive = state.position.history().length > 0;
+
+  let [searchOnChessable, analyzeLineOnLichess] = useRepertoireState((s) => [
+    s.searchOnChessable,
+    s.analyzeLineOnLichess,
+  ]);
+  const isMobile = useIsMobile();
+  let gap = isMobile ? 6 : 12;
   return (
-    <View style={s(c.row)}>
+    <View style={s(c.row, c.height(isMobile ? 32 : 42))}>
       <Button
-        style={s(c.buttons.basicSecondary, c.height(42), c.width(64))}
+        style={s(c.buttons.basicSecondary, c.width(64))}
         onPress={() => {
           state.backToStartPosition();
         }}
@@ -80,9 +99,9 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
           style={s(c.buttons.basicSecondary.textStyles, c.fontSize(18))}
         />
       </Button>
-      <Spacer width={12} />
+      <Spacer width={gap} />
       <Button
-        style={s(c.buttons.basicSecondary, c.height(42), c.grow)}
+        style={s(c.buttons.basicSecondary, c.grow)}
         onPress={() => {
           state.backOne();
         }}
@@ -92,21 +111,60 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
           style={s(c.buttons.basicSecondary.textStyles, c.fontSize(18))}
         />
       </Button>
+      <Spacer width={gap} />
+      <Button
+        style={s(c.buttons.basicSecondary)}
+        onPress={() => {
+          analyzeLineOnLichess();
+        }}
+      >
+        <CMText
+          style={s(
+            c.buttons.basicSecondary.textStyles,
+            c.fg(c.colors.textPrimary)
+          )}
+        >
+          <i
+            style={s(c.fontSize(14), c.fg(c.grays[60]))}
+            className="fas fa-search"
+          ></i>
+        </CMText>
+      </Button>
+      <Spacer width={gap} />
+      <Button
+        style={s(c.buttons.basicSecondary)}
+        onPress={() => {
+          searchOnChessable();
+        }}
+      >
+        <CMText
+          style={s(
+            c.buttons.basicSecondary.textStyles,
+            c.fg(c.colors.textPrimary)
+          )}
+        >
+          <i
+            style={s(c.fontSize(14), c.fg(c.grays[60]))}
+            className="fas fa-book-open"
+          ></i>
+        </CMText>
+      </Button>
     </View>
   );
 };
 
-type MoveLogProps = {
-  state: RepertoireState;
-  setConfirmMoveDeleteModalOpen: (_: boolean) => void;
-};
-
-export const MoveLog = ({ state }: { state: RepertoireState }) => {
+export const MoveLog = () => {
   let pairs = [];
   let currentPair = [];
-  let moveList = state.position.history({ verbose: true });
+  const [hasPendingLineToAdd, position, differentMoveIndices] =
+    useRepertoireState((s) => [
+      s.hasPendingLineToAdd,
+      s.position,
+      s.differentMoveIndices,
+    ]);
+  let moveList = position.history({ verbose: true });
   forEach(moveList, (move, i) => {
-    let isNew = state.differentMoveIndices.includes(i);
+    let isNew = differentMoveIndices.includes(i);
     if (move.color == "b" && isEmpty(currentPair)) {
       pairs.push([{}, { move, i, isNew }]);
       return;
@@ -123,13 +181,15 @@ export const MoveLog = ({ state }: { state: RepertoireState }) => {
     }
     pairs.push(currentPair);
   }
-  if (pairs.length < 10) {
-    times(10 - pairs.length, (i) => {
+  const isMobile = useIsMobile();
+  let minimumNum = isMobile ? 4 : 10;
+  if (pairs.length < minimumNum) {
+    times(minimumNum - pairs.length, (i) => {
       pairs.push([{}, {}]);
     });
   }
   const moveStyles = s(
-    c.width(50),
+    c.width(60),
     c.weightBold,
     c.fullHeight,
     c.clickable,
@@ -137,248 +197,89 @@ export const MoveLog = ({ state }: { state: RepertoireState }) => {
     c.alignStart,
     c.justifyCenter,
     c.column,
-    c.fontSize(22),
+    c.fontSize(18),
     c.fg(c.colors.textPrimary)
   );
   return (
-    <View
-      style={s(c.column, c.br(2), c.selfStart, c.bg(c.colors.cardBackground))}
-    >
-      {intersperse(
-        pairs.map((pair, i) => {
-          const [
-            { move: whiteMove, i: whiteI, isNew: whiteIsNew },
-            { move: blackMove, i: blackI, isNew: blackIsNew },
-          ] = pair;
-          const activeMoveStyles = s(c.weightBlack, c.fontSize(20));
-          const newMoveStyles = s(c.fg(c.grays[60]));
-          const isPlaceholderRow = whiteMove?.san;
-          return (
-            <View
-              key={`pair-${i}`}
-              style={s(c.column, c.overflowHidden, c.px(16), c.py(16))}
-            >
-              <View style={s(c.row, c.alignCenter, c.py(0))}>
-                <View style={s(c.minWidth(25), c.alignStart)}>
-                  <CMText
-                    style={s(
-                      !isPlaceholderRow
-                        ? c.fg(c.grays[50])
-                        : c.fg(c.colors.textSecondary),
-                      c.fontSize(18),
-                      c.weightSemiBold
-                    )}
-                  >
-                    {i + 1}.
-                  </CMText>
-                </View>
-                <Spacer width={4} />
-                <Pressable onPress={() => {}}>
-                  <CMText style={s(moveStyles, whiteIsNew && newMoveStyles)}>
-                    {whiteMove?.san}
-                  </CMText>
-                </Pressable>
-                <Pressable onPress={() => {}}>
-                  <CMText style={s(moveStyles, blackIsNew && newMoveStyles)}>
-                    {blackMove?.san ?? ""}
-                  </CMText>
-                </Pressable>
-              </View>
-            </View>
-          );
-        }),
-        (i) => {
-          return (
-            <View
-              style={s(c.height(1), c.selfStretch, c.bg(c.grays[25]))}
-              key={i}
-            ></View>
-          );
-        }
-      )}
-    </View>
-  );
-};
-
-export const OldMoveLog: React.FC<MoveLogProps> = ({
-  state,
-  setConfirmMoveDeleteModalOpen,
-}) => {
-  const isMobile = useIsMobile();
-  const side = state.activeSide;
-  let hasNoMovesThisSide = isEmpty(state.repertoire[side]?.positionResponses);
-  let grade = state.repertoireGrades[state.activeSide];
-  return (
-    <View
-      style={s(
-        c.bg(c.grays[20]),
-        c.br(4),
-        c.overflowHidden,
-        // c.maxHeight(300),
-        c.height(isMobile ? 220 : 260),
-        c.column
-      )}
-    >
-      {hasNoMovesThisSide && !state.showPendingMoves ? (
-        <View style={s(c.column, c.selfCenter, c.center, c.grow, c.px(12))}>
-          <CMText>
-            <i
-              className="fa-light fa-empty-set"
-              style={s(c.fg(c.grays[50]), c.fontSize(24))}
-            />
-          </CMText>
-          <Spacer height={12} />
-          <CMText style={s(c.fg(c.grays[85]))}>
-            You don't have any moves in your repertoire yet! Play a line on the
-            board to add it.
-          </CMText>
-          <Spacer height={12} />
-          <CMText style={s(c.fg(c.grays[85]), c.selfStart)}>
-            {state.activeSide === "black"
-              ? "Maybe start with a response to e4?"
-              : "e4 and d4 are the most popular first moves for white, maybe one of those?"}
-          </CMText>
-        </View>
-      ) : (
-        <>
-          {state.moveLog && (
-            <View
-              style={s(
-                c.bg(c.grays[15]),
-                c.py(12),
-                c.px(12),
-                c.row,
-                c.alignCenter
-              )}
-            >
-              <CMText
-                style={s(
-                  c.fg(c.colors.textPrimary),
-                  c.weightSemiBold,
-                  c.minHeight("1em")
-                )}
+    <View style={s(c.column, isMobile && c.alignCenter)}>
+      {!isMobile && <CMText style={s(desktopHeaderStyles)}>Move log</CMText>}
+      <View
+        style={s(
+          c.column,
+          c.br(2),
+          isMobile ? c.selfStretch : c.selfStart,
+          c.bg(c.colors.cardBackground)
+        )}
+      >
+        {intersperse(
+          pairs.map((pair, i) => {
+            const [
+              { move: whiteMove, i: whiteI, isNew: whiteIsNew },
+              { move: blackMove, i: blackI, isNew: blackIsNew },
+            ] = pair;
+            const activeMoveStyles = s(c.weightBlack, c.fontSize(20));
+            const newMoveStyles = s(c.fg(c.grays[60]));
+            const isPlaceholderRow = whiteMove?.san;
+            return (
+              <View
+                key={`pair-${i}`}
+                style={s(c.column, c.overflowHidden, c.px(16), c.py(12))}
               >
-                {state.moveLog}
-              </CMText>
-              <Spacer grow width={12} />
-              <Button
-                style={s(
-                  c.buttons.basic,
-                  c.bg("none"),
-                  c.border(`1px solid ${c.failureShades[55]}`),
-                  c.px(6),
-                  c.py(6)
-                )}
-                onPress={() => {
-                  setConfirmMoveDeleteModalOpen(true);
-                }}
-              >
-                <i
-                  className="fa-regular fa-trash"
-                  style={s(c.fg(c.failureShades[55]), c.fontSize(14))}
-                />
-              </Button>
-            </View>
-          )}
-          <View style={s(c.flexShrink(1), c.grow)}>
-            <View
-              style={s(
-                c.px(12),
-                c.py(8),
-                c.fullHeight,
-                c.fullWidth,
-
-                c.scrollY
-              )}
-            >
-              <OpeningTree
-                state={state}
-                repertoire={state.repertoire.white}
-                grade={grade}
-              />
-              {!state.showPendingMoves &&
-                isEmpty(
-                  state.repertoire[state.activeSide].positionResponses[
-                    state.getCurrentEpd(state)
-                  ]
-                ) && (
-                  <View
-                    style={s(
-                      c.column,
-                      c.selfCenter,
-                      c.center,
-                      c.grow,
-                      c.px(12)
-                    )}
-                  >
+                <View style={s(c.row, c.alignCenter, c.py(0))}>
+                  <View style={s(c.minWidth(25), c.alignStart)}>
                     <CMText
                       style={s(
-                        c.fg(c.grays[75]),
-                        c.textAlign("center"),
+                        !isPlaceholderRow
+                          ? c.fg(c.grays[50])
+                          : c.fg(c.colors.textSecondary),
+                        c.fontSize(18),
                         c.weightSemiBold
                       )}
                     >
-                      Play a move on the board to add a response
+                      {i + 1}.
                     </CMText>
                   </View>
-                )}
-            </View>
-          </View>
-          {/*!isNil(biggestMiss) && !state.divergencePosition && biggestMissRow*/}
-          {state.showPendingMoves && (
-            <>
-              {!isNil(state.numMovesWouldBeDeleted) &&
-                state.numMovesWouldBeDeleted > 0 && (
-                  <View
-                    style={s(
-                      c.mx(6),
-                      c.py(4),
-                      c.br(2),
-                      c.px(6),
-                      c.bg(c.yellows[90]),
-                      c.row,
-                      c.justifyStart,
-                      c.alignCenter
-                    )}
-                  >
-                    <i
-                      className="fa-regular fa-triangle-exclamation"
-                      style={s(c.fontSize(20), c.fg(c.yellows[50]))}
-                    ></i>
-                    <Spacer width={8} />
-                    <CMText
-                      style={s(c.fg(c.colors.textInverse), c.fontSize(12))}
-                    >
-                      Adding this line will replace{" "}
-                      <b>{state.numMovesWouldBeDeleted}</b> responses in your
-                      repertoire
+                  <Spacer width={4} />
+                  <Pressable onPress={() => {}}>
+                    <CMText style={s(moveStyles, whiteIsNew && newMoveStyles)}>
+                      {whiteMove?.san}
                     </CMText>
-                  </View>
-                )}
+                  </Pressable>
+                  <Pressable onPress={() => {}}>
+                    <CMText style={s(moveStyles, blackIsNew && newMoveStyles)}>
+                      {blackMove?.san ?? ""}
+                    </CMText>
+                  </Pressable>
+                </View>
+              </View>
+            );
+          }),
+          (i) => {
+            return (
               <View
-                style={s(
-                  c.py(12),
-                  c.px(12),
-                  c.row,
-                  c.justifyEnd,
-                  c.alignCenter
-                )}
+                style={s(c.height(1), c.selfStretch, c.bg(c.grays[20]))}
+                key={i}
               ></View>
-            </>
-          )}
-
-          {/*
-          {state.currentLine && (
-            <CMText style={s(c.weightSemiBold, c.fg(c.colors.textSecondary))}>
-              {lineToPgn(state.currentLine)}
-            </CMText>
-          )}
-          */}
+            );
+          }
+        )}
+      </View>
+      {!isMobile && hasPendingLineToAdd && (
+        <>
+          <Spacer height={12} />
+          <AddPendingLineButton />
         </>
       )}
     </View>
   );
 };
+
+let desktopHeaderStyles = s(
+  c.fg(c.colors.textPrimary),
+  c.fontSize(22),
+  c.mb(12),
+  c.weightBold
+);
 
 export const RepertoireEditingView = ({
   state,
@@ -414,6 +315,11 @@ export const RepertoireEditingView = ({
     content: <EditEtcModal state={state} />,
     isOpen: false,
   });
+  useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
+    if (event.key === "ArrowLeft") {
+      state.backOne();
+    }
+  });
 
   let biggestMiss = state.repertoireGrades?.[state.activeSide]?.biggestMiss;
   let biggestMissRow = createBiggestMissRow(state, state.activeSide);
@@ -421,86 +327,44 @@ export const RepertoireEditingView = ({
   return (
     <>
       {confirmMoveDeleteModal}
+      <AddedLineModal />
       {editEtcModal}
       <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
-        <View style={s(c.column, c.alignStart)}>
+        <View style={s(c.column, c.alignStart, c.constrainWidth)}>
           {backToOverviewRow}
-
-          <View style={s(c.row, c.selfCenter)}>
-            <View style={s(c.column)}>
-              <MoveLog {...{ setConfirmMoveDeleteModalOpen, state }} />
-              {state.showPendingMoves && (
-                <>
-                  <Spacer height={12} />
-                  <Button
-                    style={s(c.buttons.primary, c.height(36), c.selfStretch)}
-                    isLoading={state.isAddingPendingLine}
-                    loaderProps={{ color: c.grays[75] }}
-                    onPress={() => {
-                      state.addPendingLine();
-                    }}
-                  >
-                    <CMText style={s(c.buttons.primary.textStyles)}>
-                      <i
-                        className="fa-regular fa-plus"
-                        style={s(c.fg(c.grays[90]))}
-                      />
-                      <Spacer width={6} />
-                      <CMText style={s(c.weightBold)}>Add line</CMText>
-                    </CMText>
-                  </Button>
-                </>
+          <Spacer height={isMobile ? 12 : 24} />
+          <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
+            <View style={s(c.column, c.constrainWidth)}>
+              {!isMobile && (
+                <CMText style={s(desktopHeaderStyles)}>Position</CMText>
               )}
-            </View>
-            <Spacer width={48} />
-            <View style={s(c.column)}>
-              {isNil(state.user.eloRange) && false && (
-                <>
-                  <EloWarningBox state={state} />
-                  <Spacer height={12} />
-                </>
-              )}
-              <View style={s(c.size(380))}>
+              <View style={s(c.width(500), c.maxWidth("100%"))}>
                 <ChessboardView state={state} />
               </View>
               <Spacer height={12} />
               <BackControls state={state} />
               <Spacer height={12} />
-              {positionReport?.stockfish && (
-                <View style={s(c.mb(12))}>
-                  <CMText style={s(c.fg(c.grays[50]))}>Stockfish eval</CMText>
-                  <Spacer height={4} />
-                  <CMText
-                    style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}
-                  >
-                    {formatStockfishEval(positionReport.stockfish)}
-                  </CMText>
-                </View>
+              {isMobile && state.hasPendingLineToAdd ? (
+                <>
+                  <AddPendingLineButton />
+                  <Spacer height={12} />
+                </>
+              ) : (
+                <Spacer height={12} />
               )}
-              {positionReport && (
-                <View style={s(c.height(18), c.fullWidth)}>
-                  <CMText style={s(c.fg(c.grays[50]))}>
-                    Results at your level
-                  </CMText>
-                  <Spacer height={4} />
-                  <GameResultsBar gameResults={positionReport.results} />
-                  {positionReport.masterResults && (
-                    <>
-                      <Spacer height={12} />
-                      <CMText style={s(c.fg(c.grays[50]))}>
-                        Results at master level
-                      </CMText>
-                      <Spacer height={4} />
-                      <GameResultsBar
-                        gameResults={positionReport.masterResults}
-                      />
-                    </>
-                  )}
-                </View>
-              )}
+              {isMobile && <EditingTabPicker />}
+              {!isMobile && <PositionOverview />}
             </View>
-            <Spacer width={48} />
-            <Responses {...{ state }} />
+            {!isMobile && (
+              <>
+                <Spacer width={48} />
+                <Responses />
+                <Spacer width={48} />
+                <View style={s(c.column)}>
+                  <MoveLog {...{ setConfirmMoveDeleteModalOpen, state }} />
+                </View>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -509,261 +373,244 @@ export const RepertoireEditingView = ({
   );
 };
 
-const Responses = ({ state }: { state: RepertoireState }) => {
-  let positionReport = state.getCurrentPositionReport();
-  if (!positionReport) {
-    return (
-      <View style={s(c.width(400))}>
-        <BeatLoader color={c.grays[100]} size={20} />
-      </View>
-    );
-  }
-  let moveNumber = Math.floor(state.currentLine.length / 2) + 1;
-  let side: Side = state.position.turn() === "b" ? "black" : "white";
+const Responses = () => {
+  let [
+    positionReport,
+    currentLine,
+    position,
+    activeSide,
+    repertoire,
+    currentEpd,
+    playSan,
+  ] = useRepertoireState((s) => [
+    s.getCurrentPositionReport(),
+    s.currentLine,
+    s.position,
+    s.activeSide,
+    s.repertoire,
+    s.getCurrentEpd(),
+    s.playSan,
+  ]);
+  let moveNumber = Math.floor(currentLine.length / 2) + 1;
+  let side: Side = position.turn() === "b" ? "black" : "white";
   let badTextColor = c.failureShades[65];
   let goodTextColor = c.successShades[60];
-  let ownSide = side === state.activeSide;
+  let ownSide = side === activeSide;
+  let suggestedMoves = positionReport
+    ? take(
+        (side === activeSide
+          ? suggestedMovesByEffectiveness
+          : suggestedMovesByPopularity)(
+          positionReport,
+          repertoire,
+          currentEpd,
+          activeSide
+        ),
+        5
+      )
+    : [];
+  const isMobile = useIsMobile();
   return (
-    <View style={s(c.column, c.width(400))}>
-      <CMText
-        style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightSemiBold)}
-      >
-        {ownSide ? "Recommended moves" : "Most likely responses"}
-      </CMText>
-      <Spacer height={12} />
-      {intersperse(
-        take(
-          (side === state.activeSide
-            ? suggestedMovesByEffectiveness
-            : suggestedMovesByPopularity)(
-            positionReport,
-            state.repertoire,
-            state.getCurrentEpd(),
-            side
-          ),
-          5
-        ).map((m, i) => {
-          let tags = take(
-            genMoveTags(
-              m,
-              positionReport,
-              state.repertoire[state.activeSide],
-              state.getCurrentEpd(),
-              side
-            ),
-            3
-          );
+    <View style={s(c.column, c.width(400), c.constrainWidth)}>
+      {!isMobile && (
+        <CMText style={s(desktopHeaderStyles)}>
+          {ownSide ? "Recommended moves" : "Prepare for..."}
+        </CMText>
+      )}
+      {(() => {
+        if (!positionReport) {
           return (
-            <Pressable
-              onPress={() => {
-                state.playSan(m.sanPlus);
-              }}
-            >
+            <View style={s(c.center, c.column, c.py(48))}>
+              <BeatLoader color={c.grays[100]} size={14} />
+            </View>
+          );
+        } else if (isEmpty(suggestedMoves)) {
+          return (
+            <>
               <View
                 style={s(
-                  c.br(2),
-                  c.py(8),
-                  c.pl(14),
-                  c.pr(8),
-                  c.bg(c.grays[12]),
-                  c.border(`1px solid ${c.grays[20]}`),
-                  c.clickable,
-                  c.row
+                  c.row,
+                  c.alignCenter,
+                  c.selfCenter,
+                  c.px(12),
+                  c.maxWidth(240),
+                  c.py(48)
                 )}
               >
-                <View style={s(c.column, c.grow)}>
-                  <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
-                    <View style={s(c.row, c.alignEnd)}>
-                      <CMText
+                <CMText>
+                  <i
+                    className="fa-light fa-empty-set"
+                    style={s(c.fg(c.grays[50]), c.fontSize(24))}
+                  />
+                </CMText>
+                <Spacer width={18} />
+                <CMText style={s(c.fg(c.grays[75]))}>
+                  No moves available for this position. You can still add a move
+                  by playing it on the board.
+                </CMText>
+              </View>
+            </>
+          );
+        } else {
+          return (
+            <>
+              {intersperse(
+                suggestedMoves.map((m, i) => {
+                  let tags = take(
+                    genMoveTags(
+                      m,
+                      positionReport,
+                      repertoire[activeSide],
+                      currentEpd,
+                      side
+                    ),
+                    3
+                  );
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        playSan(m.sanPlus);
+                      }}
+                    >
+                      <View
                         style={s(
-                          c.fg(c.grays[60]),
-                          c.weightSemiBold,
-                          c.fontSize(16)
+                          c.br(2),
+                          c.py(8),
+                          c.pl(14),
+                          c.pr(8),
+                          c.bg(c.grays[12]),
+                          c.border(`1px solid ${c.grays[20]}`),
+                          c.clickable,
+                          c.row
                         )}
                       >
-                        {moveNumber}
-                        {side === "black" ? "... " : "."}
-                      </CMText>
-                      <Spacer width={2} />
-                      <CMText
-                        key={m.sanPlus}
-                        style={s(
-                          c.fg(c.grays[85]),
-                          c.fontSize(18),
-                          c.weightSemiBold,
-                          c.keyedProp("letterSpacing")("0.04rem")
-                        )}
-                      >
-                        {m.sanPlus}
-                      </CMText>
-                    </View>
-                    {m.stockfish && (
-                      <>
-                        <Spacer width={0} grow />
-                        <View style={s(c.row, c.alignEnd)}>
-                          <CMText
-                            style={s(
-                              c.weightSemiBold,
-                              c.fontSize(14),
-                              isGoodStockfishEval(m.stockfish, state.activeSide)
-                                ? c.fg(goodTextColor)
-                                : c.fg(badTextColor)
-                            )}
-                          >
-                            {formatStockfishEval(m.stockfish)}
-                          </CMText>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                  <Spacer height={12} />
-                  <View style={s(c.row, c.selfStretch)}>
-                    <ResponseStatSection
-                      {...{ masters: false, positionReport, side, m }}
-                    />
-                    <Spacer width={12} />
-                    <ResponseStatSection
-                      {...{ masters: true, positionReport, side, m }}
-                    />
-                  </View>
-                  <Spacer height={12} />
-                  <View style={s(c.row)}>
-                    {intersperse(
-                      tags.map((tag, i) => {
-                        let [foreground, background] = getTagColors(tag.type);
-                        let icon = getTagIcon(tag.type);
-                        return (
-                          <View
-                            style={s(
-                              c.bg(background),
-                              c.br(2),
-                              c.px(8),
-                              c.py(4),
-                              c.row
-                            )}
-                          >
-                            {icon && (
+                        <View style={s(c.column, c.grow, c.constrainWidth)}>
+                          <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
+                            <View style={s(c.row, c.alignEnd)}>
+                              <CMText
+                                style={s(
+                                  c.fg(c.grays[60]),
+                                  c.weightSemiBold,
+                                  c.fontSize(16)
+                                )}
+                              >
+                                {moveNumber}
+                                {side === "black" ? "... " : "."}
+                              </CMText>
+                              <Spacer width={2} />
+                              <CMText
+                                key={m.sanPlus}
+                                style={s(
+                                  c.fg(c.grays[85]),
+                                  c.fontSize(18),
+                                  c.weightSemiBold,
+                                  c.keyedProp("letterSpacing")("0.04rem")
+                                )}
+                              >
+                                {m.sanPlus}
+                              </CMText>
+                            </View>
+                            {m.stockfish && (
                               <>
-                                <CMText style={s(c.fg(foreground))}>
-                                  <i className={getTagIcon(tag.type)} />
-                                </CMText>
-                                <Spacer width={4} />
+                                <Spacer width={0} grow />
+                                <View style={s(c.row, c.alignEnd)}>
+                                  <CMText
+                                    style={s(
+                                      c.weightSemiBold,
+                                      c.fontSize(14),
+                                      isGoodStockfishEval(
+                                        m.stockfish,
+                                        activeSide
+                                      )
+                                        ? c.fg(goodTextColor)
+                                        : c.fg(badTextColor)
+                                    )}
+                                  >
+                                    {formatStockfishEval(m.stockfish)}
+                                  </CMText>
+                                </View>
                               </>
                             )}
-                            <CMText style={s(c.fg(foreground), c.weightBold)}>
-                              {tag.type}
-                            </CMText>
                           </View>
-                        );
-                      }),
-                      (i) => {
-                        return <Spacer width={8} key={i} />;
-                      }
-                    )}
-                  </View>
-                </View>
-              </View>
-            </Pressable>
+                          <Spacer height={12} />
+                          <View
+                            style={s(
+                              isMobile ? c.column : c.row,
+                              c.selfStretch
+                            )}
+                          >
+                            <ResponseStatSection
+                              {...{ masters: false, positionReport, side, m }}
+                            />
+                            <Spacer
+                              width={12}
+                              height={12}
+                              isMobile={isMobile}
+                            />
+                            <ResponseStatSection
+                              {...{ masters: true, positionReport, side, m }}
+                            />
+                          </View>
+                          <Spacer height={12} />
+                          <View
+                            style={s(
+                              c.row,
+                              c.constrainWidth,
+                              c.flexWrap,
+                              c.gap(8)
+                            )}
+                          >
+                            {intersperse(
+                              tags.map((tag, i) => {
+                                let [foreground, background] = getTagColors(
+                                  tag.type
+                                );
+                                let icon = getTagIcon(tag.type);
+                                return (
+                                  <View
+                                    style={s(
+                                      c.bg(background),
+                                      c.br(2),
+                                      c.px(8),
+                                      c.py(4),
+                                      c.row
+                                    )}
+                                  >
+                                    {icon && (
+                                      <>
+                                        <CMText style={s(c.fg(foreground))}>
+                                          <i className={getTagIcon(tag.type)} />
+                                        </CMText>
+                                        <Spacer width={4} />
+                                      </>
+                                    )}
+                                    <CMText
+                                      style={s(c.fg(foreground), c.weightBold)}
+                                    >
+                                      {tag.type}
+                                    </CMText>
+                                  </View>
+                                );
+                              }),
+                              (i) => {
+                                return null;
+                              }
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    </Pressable>
+                  );
+                }),
+                (i) => {
+                  return <Spacer height={12} key={i} />;
+                }
+              )}
+            </>
           );
-        }),
-        (i) => {
-          return <Spacer height={12} key={i} />;
         }
-      )}
+      })()}
     </View>
-  );
-};
-
-const ExternalLinks = ({
-  state,
-  setEditEtcModalOpen,
-}: {
-  state: RepertoireState;
-  setEditEtcModalOpen: (_: boolean) => void;
-}) => {
-  return (
-    <>
-      <View style={s(c.row, c.fullWidth)}>
-        <Button
-          style={s(
-            c.buttons.basicInverse,
-            c.height(42),
-            c.flexible,
-            c.grow,
-            c.bg(c.grays[20])
-          )}
-          onPress={() => {
-            state.analyzeLineOnLichess(state.activeSide);
-          }}
-        >
-          <CMText
-            style={s(
-              c.buttons.basicInverse.textStyles,
-              c.fg(c.colors.textPrimary)
-            )}
-          >
-            <i
-              style={s(c.fontSize(14), c.fg(c.grays[60]))}
-              className="fas fa-search"
-            ></i>
-            <Spacer width={8} />
-            Analyze
-          </CMText>
-        </Button>
-        <Spacer width={12} />
-        <Button
-          style={s(
-            c.buttons.basicInverse,
-            c.height(42),
-            c.flexible,
-            c.grow,
-            c.grow,
-            c.bg(c.grays[20])
-          )}
-          onPress={() => {
-            state.searchOnChessable();
-          }}
-        >
-          <CMText
-            style={s(
-              c.buttons.basicInverse.textStyles,
-              c.fg(c.colors.textPrimary)
-            )}
-          >
-            <i
-              style={s(c.fontSize(14), c.fg(c.grays[60]))}
-              className="fas fa-book-open"
-            ></i>
-            <Spacer width={8} />
-            Chessable
-          </CMText>
-        </Button>
-      </View>
-      <Spacer height={12} />
-      <Button
-        style={s(
-          c.buttons.basicInverse,
-          c.height(36),
-          c.selfEnd,
-          c.bg(c.grays[20])
-        )}
-        onPress={() => {
-          setEditEtcModalOpen(true);
-        }}
-      >
-        <CMText
-          style={s(
-            c.buttons.basicInverse.textStyles,
-            c.fg(c.colors.textPrimary)
-          )}
-        >
-          <i
-            style={s(c.fontSize(14), c.fg(c.grays[60]))}
-            className="fas fa-ellipsis"
-          ></i>
-        </CMText>
-      </Button>
-    </>
   );
 };
 
@@ -778,7 +625,7 @@ const OpeningTree = ({
 }) => {
   return (
     <View style={s()}>
-      {state.showPendingMoves &&
+      {state.hasPendingLineToAdd &&
         (state.pendingResponses[state.divergencePosition] ?? []).map((move) => {
           return (
             <OpeningNode
@@ -795,7 +642,7 @@ const OpeningTree = ({
             />
           );
         })}
-      {!state.showPendingMoves &&
+      {!state.hasPendingLineToAdd &&
         (
           state.repertoire[state.activeSide].positionResponses[
             state.getCurrentEpd(state)
@@ -1142,7 +989,7 @@ const ConfirmMoveDeleteModal = ({
           )}
         >
           Are you sure you want to delete {pluralize(countToDelete, "move")}{" "}
-          starting with {state.moveLog} ?
+          starting with {state.moveLogPgn} ?
         </CMText>
         <Spacer height={18} />
         <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
@@ -1177,39 +1024,7 @@ const ConfirmMoveDeleteModal = ({
     </>
   );
 };
-function formatStockfishEval(stockfish: StockfishReport) {
-  let debug = failOnTrue(false);
-  let x = "";
-  if (!isNil(stockfish.eval)) {
-    if (stockfish.eval >= 0) {
-      x = `+${(stockfish.eval / 100).toFixed(2)}`;
-    } else {
-      x = `${(stockfish.eval / 100).toFixed(2)}`;
-    }
-  } else if (stockfish.mate) {
-    if (stockfish.mate < 0) {
-      x = `-M${Math.abs(stockfish.mate)}`;
-    } else {
-      x = `M${stockfish.mate}`;
-    }
-  }
-  if (debug) {
-    x += ` (${stockfish.nodesK}k)`;
-  }
-  return x;
-}
 
-function getTotalGames(results: GameResultsDistribution) {
-  return results.draw + results.black + results.white;
-}
-
-const formatPlayPercentage = (x: number) => {
-  return `${(x * 100).toFixed(0)}%`;
-};
-
-const formatWinPercentage = (x: number) => {
-  return `${(x * 100).toFixed(0)}%`;
-};
 const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   if (!isNil(stockfish.eval) && stockfish.eval >= 0 && side === "white") {
     return true;
@@ -1239,7 +1054,8 @@ const sortSuggestedMoves = (
   }
 ): SuggestedMove[] => {
   let positionWinRate = getWinRate(report.results, side);
-  let DEBUG_MOVE = "Qf6";
+  console.log("Side is ", side);
+  let DEBUG_MOVE = "Nf6";
   return reverse(
     sortBy(report.suggestedMoves, (m) => {
       let score = 0;
@@ -1252,10 +1068,10 @@ const sortSuggestedMoves = (
         score += 1000000;
       }
       if (m.stockfish?.mate < 0 && side === "black") {
-        score += 10000;
+        score += 10000 * weights.eval;
       }
       if (m.stockfish?.mate > 0 && side === "white") {
-        score += 10000;
+        score += 10000 * weights.eval;
       }
       if (!isNil(m.stockfish?.eval) && !isNil(report.stockfish?.eval)) {
         let eval_loss = Math.abs(
@@ -1268,39 +1084,52 @@ const sortSuggestedMoves = (
             `For ${m.sanPlus}, the eval_loss is ${eval_loss}, Score change is ${scoreChangeEval}`
           );
         }
-      }
-
-      let playRate = getPlayRate(m, report);
-      let scoreForPlayrate = playRate * weights.playrate;
-      score += scoreForPlayrate;
-      if (m.sanPlus === DEBUG_MOVE) {
-        console.log(
-          `For ${m.sanPlus}, the playrate is ${playRate}, Score change is ${scoreForPlayrate}`
-        );
-      }
-
-      let masterPlayRate = getPlayRate(m, report, true);
-      let scoreForMasterPlayrate = masterPlayRate * weights.masterPlayrate;
-      score += scoreForMasterPlayrate;
-      if (m.sanPlus === DEBUG_MOVE) {
-        console.log(
-          `For ${m.sanPlus}, the masters playrate is ${masterPlayRate}, Score change is ${scoreForMasterPlayrate}`
-        );
-        console.log(`Final score for ${m.sanPlus} is ${score}`);
+      } else {
+        // Punish for not having stockfish eval, so good stockfish evals get bumped up if compared against no stockfish eval
+        score -= 400 * weights.eval;
       }
 
       let moveWinRate = getWinRate(m.results, side);
       let winrateChange = moveWinRate - positionWinRate;
-      let scoreForWinrate = winrateChange * weights.winrate;
-      if (getTotalGames(m.results) > 100) {
+      let rateAdditionalWeight = Math.min(getTotalGames(m.results) / 100, 1);
+      let scoreForWinrate =
+        winrateChange * weights.winrate * rateAdditionalWeight;
+      let playRate = getPlayRate(m, report);
+      if (!Number.isNaN(playRate)) {
+        let scoreForPlayrate =
+          playRate * weights.playrate * rateAdditionalWeight;
+        score += scoreForPlayrate;
         if (m.sanPlus === DEBUG_MOVE) {
           console.log(
-            `For ${m.sanPlus}, there are ${getTotalGames(
-              m.results
-            )} games, the winrate is ${positionWinRate} -> ${moveWinRate} : ${winrateChange}, Score change is ${scoreForWinrate}`
+            `For ${m.sanPlus}, the playrate is ${playRate}, Score change is ${scoreForPlayrate}`
           );
         }
-        score += scoreForWinrate;
+      }
+      score += scoreForWinrate;
+      if (m.sanPlus === DEBUG_MOVE) {
+        console.log(
+          `For ${m.sanPlus}, there are ${getTotalGames(
+            m.results
+          )} games, the winrate is ${positionWinRate} -> ${moveWinRate} : ${winrateChange}, Score change is ${scoreForWinrate}`
+        );
+      }
+      let masterRateAdditionalWeight = Math.min(
+        getTotalGames(m.masterResults) / 100,
+        1
+      );
+      let masterPlayRate = getPlayRate(m, report, true);
+      if (!Number.isNaN(masterPlayRate)) {
+        let scoreForMasterPlayrate =
+          masterPlayRate * weights.masterPlayrate * masterRateAdditionalWeight;
+        score += scoreForMasterPlayrate;
+        if (m.sanPlus === DEBUG_MOVE) {
+          console.log(
+            `For ${m.sanPlus}, the masters playrate is ${masterPlayRate}, Score change is ${scoreForMasterPlayrate}`
+          );
+        }
+      }
+      if (m.sanPlus === DEBUG_MOVE) {
+        console.log(`Final score for ${m.sanPlus} is ${score}`);
       }
 
       return score;
@@ -1321,10 +1150,6 @@ const suggestedMovesByEffectiveness = (
     masterPlayrate: 400.0,
   });
 };
-
-function getWinRate(x: GameResultsDistribution, side: string) {
-  return x[side] / getTotalGames(x);
-}
 
 const suggestedMovesByPopularity = (
   report: PositionReport,
@@ -1349,107 +1174,6 @@ const getPlayRate = (
   return getTotalGames(m[k]) / getTotalGames(report[k]);
 };
 
-const GameResultsBar = ({
-  gameResults,
-}: {
-  gameResults: GameResultsDistribution;
-}) => {
-  let total = getTotalGames(gameResults);
-  let threshold = 0.2;
-  return (
-    <View
-      style={s(
-        c.row,
-        c.fullWidth,
-        c.fullHeight,
-        c.br(2),
-        c.border(`1px solid ${c.grays[30]}`)
-      )}
-    >
-      <View
-        style={s(
-          c.width(`${(gameResults.white / total) * 100}%`),
-          c.bg(c.grays[80]),
-          c.center
-        )}
-      >
-        {gameResults.white / total > threshold && (
-          <CMText style={s(c.fg(c.grays[30]), c.fontSize(12))}>
-            {formatWinPercentage(gameResults.white / total)}
-          </CMText>
-        )}
-      </View>
-      <View
-        style={s(
-          c.width(`${(gameResults.draw / total) * 100}%`),
-          c.bg(c.grays[50]),
-          c.center
-        )}
-      >
-        {gameResults.draw / total > threshold && (
-          <CMText style={s(c.fg(c.grays[25]), c.fontSize(12))}>
-            {formatWinPercentage(gameResults.draw / total)}
-          </CMText>
-        )}
-      </View>
-      <View
-        style={s(
-          c.width(`${(gameResults.black / total) * 100}%`),
-          c.bg(c.grays[20]),
-          c.center
-        )}
-      >
-        {gameResults.black / total > threshold && (
-          <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
-            {formatWinPercentage(gameResults.black / total)}
-          </CMText>
-        )}
-      </View>
-    </View>
-  );
-};
-
-const EloWarningBox = ({ state }: { state: RepertoireState }) => {
-  let buttonStyles = s(
-    c.buttons.basicSecondary,
-    c.fontSize(14),
-    c.px(12),
-    c.py(8)
-  );
-  return (
-    <View
-      style={s(
-        c.px(12),
-        c.py(12),
-        c.border(`1px solid ${c.grays[20]}`),
-        c.br(2),
-        c.fillNoExpand
-      )}
-    >
-      <CMText style={s(c.fg(c.colors.textPrimary), c.lineHeight("1.3rem"))}>
-        Winrate, play-rate, and other calculations are assuming an elo range of
-        1300-1500. You can change this to better reflect your level.
-      </CMText>
-      <Spacer height={12} />
-      <View style={s(c.row, c.fullWidth, c.justifyEnd, c.alignCenter)}>
-        <Button style={s(buttonStyles)}>Change elo range</Button>
-        <Spacer width={4} />
-        <Button style={s(buttonStyles, c.bg(c.grays[80]), c.py(8))}>
-          <CMText
-            style={s(
-              c.fg(c.colors.textInverseSecondary),
-              c.fontSize(16),
-              c.weightBold
-            )}
-          >
-            Sounds right
-          </CMText>
-        </Button>
-      </View>
-    </View>
-  );
-};
-
 interface ResponseTag {
   type: ResponseTagType;
 }
@@ -1460,7 +1184,7 @@ enum ResponseTagType {
   Gambit = "Gambit",
   HighWinrate = "High win-rate",
   MasterApproved = "GM-approved",
-  YourMove = "Your response",
+  YourMove = "Your move",
   Covered = "Covered",
 }
 
@@ -1523,22 +1247,34 @@ const ResponseStatSection = ({
     c.fontSize(14),
     c.fg(c.colors.textSecondary)
   );
+  let groupName = masters ? "masters" : "your peers";
+  let tooLow = getTotalGames(masters ? m.masterResults : m.results) < 3;
   return (
     <View style={s(c.column, c.grow)}>
       <View style={s(c.row, c.alignEnd)}>
-        <CMText style={s(numberStyles)}>
-          {formatPlayPercentage(getPlayRate(m, positionReport, masters))}{" "}
-        </CMText>
-        <Spacer width={2} />
+        {!tooLow && (
+          <>
+            <CMText style={s(numberStyles)}>
+              {formatPlayPercentage(getPlayRate(m, positionReport, masters))}{" "}
+            </CMText>
+            <Spacer width={2} />
+          </>
+        )}
         {/* TODO: need to add moves from repertoire that are uncovered (odd moves)*/}
         <CMText style={s(textStyles)}>
-          of {masters ? "masters" : "your peers"} play this
+          {tooLow ? `No games from ${groupName}` : `of ${groupName} plays this`}
         </CMText>
       </View>
-      <Spacer height={8} />
-      <View style={s(c.height(18), c.fullWidth)}>
-        <GameResultsBar gameResults={masters ? m.masterResults : m.results} />
-      </View>
+      {!tooLow && (
+        <>
+          <Spacer height={8} />
+          <View style={s(c.height(18), c.fullWidth)}>
+            <GameResultsBar
+              gameResults={masters ? m.masterResults : m.results}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
 };
@@ -1556,7 +1292,7 @@ const getTagColors = (tagType: ResponseTagType): [string, string] => {
     case ResponseTagType.MasterApproved:
       return [defaultFg, defaultBg];
     case ResponseTagType.YourMove:
-      return [c.grays[20], c.primaries[70]];
+      return [c.grays[90], c.primaries[35]];
     case ResponseTagType.Covered:
       return [defaultFg, defaultBg];
   }
@@ -1577,4 +1313,125 @@ const getTagIcon = (tagType: ResponseTagType): string => {
     case ResponseTagType.Covered:
       return "fa fa-check";
   }
+};
+
+const AddPendingLineButton = () => {
+  const [isAddingPendingLine, addPendingLine] = useRepertoireState((s) => [
+    s.isAddingPendingLine,
+    s.addPendingLine,
+  ]);
+  const isMobile = useIsMobile();
+  return (
+    <Button
+      style={s(c.buttons.primary, c.height(36), c.selfStretch)}
+      isLoading={isAddingPendingLine}
+      loaderProps={{ color: c.grays[75] }}
+      onPress={() => {
+        addPendingLine();
+      }}
+    >
+      <CMText style={s(c.buttons.primary.textStyles)}>
+        <i className="fas fa-plus" style={s(c.fg(c.grays[90]))} />
+        <Spacer width={6} />
+        <CMText style={s(c.weightBold, c.fg(c.colors.textPrimary))}>
+          Add line
+        </CMText>
+      </CMText>
+    </Button>
+  );
+};
+
+const EditingTabPicker = () => {
+  const [selectedTab, quick] = useRepertoireState((s) => [
+    s.editingState.selectedTab,
+    s.quick,
+  ]);
+  return (
+    <View style={s(c.column)}>
+      <SelectOneOf
+        tabStyle
+        containerStyles={s(c.fullWidth, c.justifyBetween)}
+        choices={[
+          EditingTab.Position,
+          EditingTab.Responses,
+          EditingTab.MoveLog,
+        ]}
+        activeChoice={selectedTab}
+        horizontal
+        onSelect={(tab) => {}}
+        renderChoice={(tab, active) => {
+          return (
+            <Pressable
+              onPress={() => {
+                quick((s) => {
+                  s.editingState.selectedTab = tab;
+                });
+              }}
+              style={s(
+                c.column,
+                c.grow,
+                c.alignCenter,
+                c.borderBottom(
+                  `2px solid ${active ? c.grays[90] : c.grays[20]}`
+                ),
+                c.zIndex(5),
+                c.pb(8)
+              )}
+            >
+              <CMText
+                style={s(
+                  c.fg(active ? c.colors.textPrimary : c.colors.textSecondary),
+                  c.fontSize(16),
+                  c.weightBold
+                )}
+              >
+                {tab}
+              </CMText>
+            </Pressable>
+          );
+        }}
+      />
+      <Spacer height={12} />
+      {selectedTab === EditingTab.Position && <PositionOverview />}
+      {selectedTab === EditingTab.Responses && <Responses />}
+      {selectedTab === EditingTab.MoveLog && <MoveLog />}
+    </View>
+  );
+};
+
+const PositionOverview = () => {
+  const [positionReport] = useRepertoireState((s) => [
+    s.getCurrentPositionReport(),
+  ]);
+  let fontColor = c.grays[60];
+  return (
+    <>
+      {positionReport?.stockfish && (
+        <View style={s(c.mb(12))}>
+          <CMText style={s(c.fg(fontColor))}>Stockfish eval</CMText>
+          <Spacer height={4} />
+          <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}>
+            {formatStockfishEval(positionReport.stockfish)}
+          </CMText>
+        </View>
+      )}
+      {positionReport && (
+        <View style={s(c.fullWidth)}>
+          <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
+          <Spacer height={4} />
+          <GameResultsBar gameResults={positionReport.results} />
+          {positionReport.masterResults && (
+            <>
+              <Spacer height={12} />
+              <CMText style={s(c.fg(fontColor))}>
+                Results at master level
+              </CMText>
+              <Spacer height={4} />
+              <GameResultsBar gameResults={positionReport.masterResults} />
+            </>
+          )}
+        </View>
+      )}
+    </>
+  );
 };

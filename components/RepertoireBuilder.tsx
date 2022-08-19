@@ -31,6 +31,7 @@ import {
   SIDES,
   Side,
   RepertoireMiss,
+  formatIncidence,
 } from "app/utils/repertoire";
 import { PageContainer } from "./PageContainer";
 import { RepertoireWizard } from "./RepertoireWizard";
@@ -49,6 +50,9 @@ import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
 import { RepertoireEditingView } from "./RepertoireEditingView";
 import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
+import { EloWarningBox } from "./EloWarningBox";
+import { useEloRangeWarning } from "./useEloRangeWarning";
+import { failOnAny } from "app/utils/test_settings";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(
@@ -81,7 +85,7 @@ export const RepertoireBuilder = () => {
   } else {
     let backToOverviewRow = (
       <View
-        style={s(c.row, c.alignCenter, c.clickable, c.mb(12))}
+        style={s(c.row, c.alignCenter, c.clickable)}
         onClick={() => {
           state.backToOverview();
         }}
@@ -117,6 +121,7 @@ export const RepertoireBuilder = () => {
           }
         >
           {backToOverviewRow}
+          <Spacer height={12} />
           <CMText
             style={s(
               c.fg(c.colors.textPrimary),
@@ -205,7 +210,7 @@ export const RepertoireBuilder = () => {
                   c.mx(24)
                 )}
               ></View>
-              <ExtraActions {...{ state }} />
+              <ExtraActions />
             </>
           )}
         </View>
@@ -227,7 +232,7 @@ export const SideSectionHeader = ({
   let icon = (
     <i
       className={_icon}
-      style={s(c.fontSize(isMobile ? 20 : 24), c.fg(c.grays[70]))}
+      style={s(c.fontSize(isMobile ? 20 : 24), c.fg(c.grays[30]))}
     />
   );
   if (isEmpty(header)) {
@@ -285,26 +290,28 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
         state.startEditing(side);
       }}
     >
-      <Text
+      <CMText
         style={s(
           c.buttons.basicSecondary.textStyles,
           c.fontSize(isMobile ? 14 : 16)
         )}
       >
         <i className="fa fa-pencil" />
-      </Text>
-      <>
-        <Spacer width={8} />
-        <Text
-          style={s(
-            c.buttons.basicSecondary.textStyles,
-            c.fontSize(isMobile ? 16 : 18),
-            c.weightSemiBold
-          )}
-        >
-          Edit
-        </Text>
-      </>
+      </CMText>
+      {!isMobile && (
+        <>
+          <Spacer width={8} />
+          <CMText
+            style={s(
+              c.buttons.basicSecondary.textStyles,
+              c.fontSize(isMobile ? 16 : 18),
+              c.weightSemiBold
+            )}
+          >
+            Edit
+          </CMText>
+        </>
+      )}
     </Button>
   );
 };
@@ -327,26 +334,28 @@ export const BrowseButton = ({ side }: { side: Side }) => {
         startBrowsing(side);
       }}
     >
-      <Text
+      <CMText
         style={s(
           c.buttons.basicSecondary.textStyles,
           c.fontSize(isMobile ? 14 : 16)
         )}
       >
-        <i className="fa fa-eye" />
-      </Text>
-      <>
-        <Spacer width={8} />
-        <Text
-          style={s(
-            c.buttons.basicSecondary.textStyles,
-            c.fontSize(isMobile ? 16 : 18),
-            c.weightSemiBold
-          )}
-        >
-          Browse
-        </Text>
-      </>
+        <i className="fas fa-eye" />
+      </CMText>
+      {!isMobile && (
+        <>
+          <Spacer width={8} />
+          <CMText
+            style={s(
+              c.buttons.basicSecondary.textStyles,
+              c.fontSize(isMobile ? 16 : 18),
+              c.weightSemiBold
+            )}
+          >
+            Browse
+          </CMText>
+        </>
+      )}
     </Button>
   );
 };
@@ -383,7 +392,7 @@ const RepertoireSideSummary = ({
               isMobile && s(c.row, c.selfStretch, c.justifyStart)
             )}
           >
-            <Text
+            <CMText
               style={s(
                 c.selfCenter,
                 c.fontSize(isMobile ? 22 : 18),
@@ -398,12 +407,14 @@ const RepertoireSideSummary = ({
               )}
             >
               {capitalize(side)}
-            </Text>
+            </CMText>
 
             {isMobile && (
               <>
                 <Spacer width={12} grow />
                 <EditButton {...{ state, side }} />
+                <Spacer width={12} />
+                <BrowseButton {...{ state, side }} />
               </>
             )}
           </View>
@@ -500,14 +511,14 @@ const RepertoireSideSummary = ({
                 <Spacer height={isMobile ? 12 : 18} />
                 {isEmpty(instructiveGames) && (
                   <View style={s(c.column, c.grow, c.center, c.px(24))}>
-                    <Text>
+                    <CMText>
                       <i
                         className="fa-regular fa-empty-set"
                         style={s(c.fg(c.grays[30]), c.fontSize(24))}
                       />
-                    </Text>
+                    </CMText>
                     <Spacer height={8} />
-                    <Text
+                    <CMText
                       style={s(
                         c.fg(c.grays[75]),
                         c.maxWidth(240),
@@ -516,7 +527,7 @@ const RepertoireSideSummary = ({
                     >
                       Once you add some moves to your repertoire, you can find
                       instructive games here
-                    </Text>
+                    </CMText>
                     <Spacer height={16} />
                   </View>
                 )}
@@ -628,13 +639,13 @@ const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
   );
 };
 
-function BiggestMissBoards({
+const BiggestMissBoards = ({
   state,
   side,
 }: {
   state: RepertoireState;
   side: Side;
-}) {
+}) => {
   const isMobile = useIsMobile();
   let biggestMiss = state.repertoireGrades[side]?.biggestMiss as RepertoireMiss;
   if (!biggestMiss) {
@@ -663,7 +674,7 @@ function BiggestMissBoards({
                 state.playPgn(x.lines[0], s);
               });
             return (
-              <View style={s()} key={`miss-${i}`}>
+              <View style={s(c.column, c.center)} key={`miss-${i}`}>
                 <View style={s(c.size(isMobile ? 120 : 160))}>
                   <Pressable
                     onPress={() => {
@@ -681,8 +692,22 @@ function BiggestMissBoards({
                     />
                   </Pressable>
                 </View>
-                <Spacer height={4} />
+                <Spacer height={12} />
+                <View style={s(c.row, c.alignCenter)}>
+                  <CMText
+                    style={s(
+                      c.fg(c.grays[70]),
+                      c.weightSemiBold,
+                      isMobile ? c.fontSize(14) : c.fontSize(16)
+                    )}
+                  >
+                    Biggest gap – {formatIncidence(biggestMiss.incidence)} of
+                    games{" "}
+                  </CMText>
+                </View>
+                {/*
                 <BiggestMissTag type={BiggestMissTagType.Biggest} />
+                */}
               </View>
             );
           }),
@@ -693,10 +718,11 @@ function BiggestMissBoards({
       </View>
     </View>
   );
-}
+};
 
 const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
   const isMobile = useIsMobile();
+  const { eloWarning } = useEloRangeWarning();
   return (
     <View style={s(c.column, c.constrainWidth)}>
       <View style={s(c.column, c.constrainWidth, c.alignCenter)}>
@@ -704,6 +730,12 @@ const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
           <>
             <Spacer height={24} />
             <ReviewMovesView {...{ state, isMobile, side: null }} />
+            {eloWarning && (
+              <>
+                <Spacer height={24} />
+                {eloWarning}
+              </>
+            )}
             <Spacer height={36} />
           </>
         )}
@@ -725,7 +757,7 @@ const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
         {isMobile && (
           <>
             <Spacer height={72} />
-            <ImportButton {...{ state }} />
+            <ImportButton />
           </>
         )}
       </View>
@@ -734,22 +766,23 @@ const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
 };
 
 const ReviewMovesView = ({
-  state,
   isMobile,
   side,
 }: {
-  state: RepertoireState;
   isMobile: boolean;
   side?: Side;
 }) => {
-  let hasNoMovesThisSide = state.getMyResponsesLength(side) === 0;
+  let [getMyResponsesLength, getQueueLength, startReview] = useRepertoireState(
+    (s) => [s.getMyResponsesLength, s.getQueueLength, s.startReview]
+  );
+  let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
   console.log({ hasNoMovesThisSide });
   if (hasNoMovesThisSide) {
     return null;
   }
   return (
     <>
-      {state.getQueueLength(side) === 0 ? (
+      {getQueueLength(side) === 0 ? (
         <View
           style={s(
             c.bg(c.grays[20]),
@@ -771,7 +804,7 @@ const ReviewMovesView = ({
               )}
               className="fas fa-check"
             ></i>
-            <Text style={s(c.fg(c.colors.textSecondary), c.fontSize(13))}>
+            <CMText style={s(c.fg(c.colors.textSecondary), c.fontSize(13))}>
               You've reviewed all your moves! Now might be a good time to add
               moves. Or you can{" "}
               <span
@@ -781,29 +814,30 @@ const ReviewMovesView = ({
                   c.clickable
                 )}
                 onClick={() => {
-                  state.startReview(side);
+                  startReview(side);
                 }}
               >
                 review your moves anyway.
               </span>
-            </Text>
+            </CMText>
           </View>
         </View>
       ) : (
         <Button
           style={s(c.buttons.primary, c.selfStretch, c.py(16), c.px(12))}
           onPress={() => {
-            state.startReview(side);
+            startReview(side);
           }}
         >
-          {`Review ${pluralize(state.getQueueLength(side), "move")}`}
+          {`Review ${pluralize(getQueueLength(side), "move")}`}
         </Button>
       )}
     </>
   );
 };
 
-const ImportButton = ({ state }: { state: RepertoireState }) => {
+const ImportButton = () => {
+  const [quick] = useRepertoireState((s) => [s.quick]);
   return (
     <Button
       style={s(
@@ -814,16 +848,16 @@ const ImportButton = ({ state }: { state: RepertoireState }) => {
         c.selfStretch
       )}
       onPress={() => {
-        state.quick((s) => {
+        quick((s) => {
           s.startImporting(s);
         });
       }}
     >
-      <Text style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
+      <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
         <i className="fas fa-plus" />
-      </Text>
+      </CMText>
       <Spacer width={12} />
-      <Text
+      <CMText
         style={s(
           c.buttons.basicSecondary.textStyles,
           c.fontSize(18),
@@ -831,20 +865,31 @@ const ImportButton = ({ state }: { state: RepertoireState }) => {
         )}
       >
         Import
-      </Text>
+      </CMText>
     </Button>
   );
 };
 
-const ExtraActions = ({ state }: { state: RepertoireState }) => {
+const ExtraActions = () => {
   const isMobile = useIsMobile();
-  let hasNoMovesAtAll = state.getMyResponsesLength(null) === 0;
+  const { eloWarning } = useEloRangeWarning();
+  let [user, getMyResponsesLength] = useRepertoireState((s) => [
+    s.user,
+    s.getMyResponsesLength,
+  ]);
+  let hasNoMovesAtAll = getMyResponsesLength(null) === 0;
   return (
-    <View style={s(c.width(220))}>
-      <ReviewMovesView {...{ state, isMobile, side: null }} />
+    <View style={s(c.width(280))}>
+      {eloWarning && (
+        <>
+          {eloWarning}
+          <Spacer height={12} />
+        </>
+      )}
+      <ReviewMovesView {...{ isMobile, side: null }} />
       {!hasNoMovesAtAll && <Spacer height={12} />}
 
-      <ImportButton {...{ state }} />
+      <ImportButton />
     </View>
   );
 };

@@ -25,7 +25,7 @@ export async function signupUser(email: string, password: string) {
   });
 }
 
-export async function fetchUser(token: string) {
+export async function fetchUser() {
   let { data: user } = await client.get("/api/user");
   return user;
 }

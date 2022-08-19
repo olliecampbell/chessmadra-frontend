@@ -17,7 +17,6 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   position?: Chess;
   futurePosition?: Chess;
   indicatorColor?: string;
-  squareHighlightAnims: Record<Square, Animated.Value>;
   ringColor?: string;
   ringIndicatorAnim?: Animated.Value;
   hideColors?: boolean;
@@ -60,7 +59,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
     _state: ChessboardState | WritableDraft<ChessboardState>
   ) => void;
   flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
-  moveLog?: string;
+  moveLogPgn?: string;
   showMoveLog?: boolean;
   availableMovesFrom: (square: Square, _state: ChessboardState) => Move[];
   hideCoordinates?: boolean;
@@ -88,9 +87,6 @@ export const createChessState = <
     ringColor: null,
     isVisualizingMoves: false,
     ringIndicatorAnim: new Animated.Value(0),
-    squareHighlightAnims: mapValues(SQUARES, (number, square) => {
-      return new Animated.Value(0.0);
-    }),
     flipped: false,
     position: new Chess(),
     moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
@@ -211,15 +207,18 @@ export const createChessState = <
           Animated.timing(state.ringIndicatorAnim, {
             toValue: 1,
             duration: animDuration,
-            useNativeDriver: true,
           }),
 
           Animated.timing(state.ringIndicatorAnim, {
             toValue: 0,
             duration: animDuration,
-            useNativeDriver: true,
           }),
-        ]).start();
+        ]).start((finished) => {
+          // TODO: better way to do this
+          set((s) => {
+            s.ringIndicatorAnim.setValue(0);
+          });
+        });
       });
     },
 

@@ -120,7 +120,7 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
             setFirstMove(move);
           }}
           renderChoice={(move) => {
-            return <CMText>{move}</CMText>;
+            return move;
           }}
         />
       </View>

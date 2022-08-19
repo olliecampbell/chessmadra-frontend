@@ -125,9 +125,7 @@ export const GamesSearch = () => {
           });
         }}
         renderChoice={(r: GameSearchResult) => {
-          return (
-            <CMText style={s()}>{r !== null ? formatGameResult(r) : "Any"}</CMText>
-          );
+          return r !== null ? formatGameResult(r) : "Any";
         }}
       />
     </>,

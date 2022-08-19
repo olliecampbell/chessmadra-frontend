@@ -174,8 +174,7 @@ export const ChessboardView = ({
   onSquarePress?: any;
   styles?: any;
 }) => {
-  console.time("chessboard");
-  console.log("chessboard start");
+  // console.time("chessboard");
   const { position, availableMoves } = state;
   const tileStyles = s(c.bg("green"), c.grow);
   const stateRef = useRef(state);
@@ -337,7 +336,7 @@ export const ChessboardView = ({
       console.log("SCROLLING");
       moveLogRef.current.scrollLeft = moveLogRef.current.scrollWidth;
     }
-  }, [state.moveLog]);
+  }, [state.moveLogPgn]);
 
   const { width: windowWidth } = useWindowDimensions();
   let x = (
@@ -405,29 +404,28 @@ export const ChessboardView = ({
             )}
             pointerEvents="none"
           ></Animated.View>
-          {Object.keys(SQUARES).map((sq) => {
+          {Object.keys(SQUARES).map((square) => {
             let pos = position;
             let piece: Piece = null;
             if (pos) {
-              piece = pos.get(sq);
+              piece = pos.get(square);
             }
 
             let posStyles = s(
-              c.top(`${getSquareOffset(sq, state.flipped).y * 100}%`),
-              c.left(`${getSquareOffset(sq, state.flipped).x * 100}%`)
+              c.top(`${getSquareOffset(square, state.flipped).y * 100}%`),
+              c.left(`${getSquareOffset(square, state.flipped).x * 100}%`)
             );
             let animated = false;
-            if (state.animatedMove?.to && sq == state.animatedMove?.to) {
+            if (state.animatedMove?.to && square == state.animatedMove?.to) {
               animated = true;
               posStyles = animatedXYToPercentage(state.pieceMoveAnim);
             } else {
             }
-            let priority = state.activeFromSquare === sq;
+            let priority = state.activeFromSquare === square;
             let containerViewStyles = s(
-              c.fullWidth,
               c.absolute,
               posStyles,
-              c.zIndex(priority ? 11 : 1),
+              c.zIndex(priority ? 11 : 2),
               c.size("12.5%")
             );
             let pieceView = null;
@@ -441,7 +439,7 @@ export const ChessboardView = ({
                 pieceView = (
                   <Animated.View
                     style={s(containerViewStyles)}
-                    key={`piece-${sq}`}
+                    key={`animated-${square}`}
                     pointerEvents="none"
                   >
                     {pieceViewInner}
@@ -450,18 +448,18 @@ export const ChessboardView = ({
               } else {
                 pieceView = (
                   <Animated.View
-                    key={sq}
+                    key={`piece-${square}`}
                     style={s(
                       containerViewStyles,
                       c.keyedProp("touchAction")("none"),
                       {
                         transform: [
-                          { translateX: pans[sq].x },
-                          { translateY: pans[sq].y },
+                          { translateX: pans[square].x },
+                          { translateY: pans[square].y },
                         ],
                       }
                     )}
-                    {...panResponders[sq].panHandlers}
+                    {...panResponders[square].panHandlers}
                   >
                     {pieceViewInner}
                   </Animated.View>
@@ -469,18 +467,17 @@ export const ChessboardView = ({
               }
             }
             let moveIndicatorView = null;
-            let availableMove = availableMoves.find((m) => m.to == sq);
+            let availableMove = availableMoves.find((m) => m.to == square);
             if (
               availableMove ||
-              state.activeFromSquare === sq ||
-              state.draggedOverSquare == sq
+              state.activeFromSquare === square ||
+              state.draggedOverSquare == square
             ) {
-              let isFromSquare = state.activeFromSquare === sq;
-              let isDraggedOverSquare = state.draggedOverSquare == sq;
+              let isFromSquare = state.activeFromSquare === square;
+              let isDraggedOverSquare = state.draggedOverSquare == square;
               let isJustIndicator = !isDraggedOverSquare && !isFromSquare;
               moveIndicatorView = (
                 <Animated.View
-                  key={`indicator-${sq}`}
                   style={s(
                     c.fullWidth,
                     c.absolute,
@@ -490,6 +487,7 @@ export const ChessboardView = ({
                     c.size("12.5%")
                   )}
                   pointerEvents="none"
+                  key={`indicator-${square}`}
                 >
                   <View
                     style={s(
@@ -508,7 +506,7 @@ export const ChessboardView = ({
             }
 
             return (
-              <React.Fragment key={sq}>
+              <React.Fragment key={square}>
                 {pieceView}
                 {moveIndicatorView}
               </React.Fragment>
@@ -517,9 +515,11 @@ export const ChessboardView = ({
           <View style={s(c.column, c.fullWidth, c.fullHeight)}>
             {times(8)((i) => {
               return (
-                <View key={i} style={s(c.fullWidth, c.row, c.grow, c.flexible)}>
+                <View
+                  key={i}
+                  style={s(c.fullWidth, c.row, c.grow, c.flexible, c.relative)}
+                >
                   {times(8)((j) => {
-                    console.log("Doing the inner thing");
                     let colors = state.highContrast
                       ? [c.grays[75], c.grays[65]]
                       : [c.colors.lightTile, c.colors.darkTile];
@@ -531,21 +531,31 @@ export const ChessboardView = ({
                     let tileLetter = state.flipped
                       ? COLUMNS[7 - j]
                       : COLUMNS[j];
+
+                    // Piece view / indicator view
                     let tileNumber = state.flipped ? ROWS[i] : ROWS[7 - i];
                     let square = `${tileLetter}${tileNumber}` as Square;
+
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
                     return (
-                      <View
+                      <Pressable
                         key={j}
+                        onPress={() => {}}
+                        onPressIn={() => {
+                          if (state.frozen) {
+                            // Don't know why this prevents bubbling up
+                            customOnSquarePress?.();
+                            return false;
+                          }
+                          state.onSquarePress(square);
+                        }}
                         style={s(
                           tileStyles,
                           c.bg(color),
-
                           c.center,
                           !state.frozen && c.clickable,
                           c.flexible,
-                          c.overflowHidden,
                           state.hideColors &&
                             s(
                               !isBottomEdge &&
@@ -554,66 +564,41 @@ export const ChessboardView = ({
                             )
                         )}
                       >
-                        <Pressable
-                          key={j}
-                          style={s(c.fullWidth, c.fullHeight)}
-                          onPress={() => {}}
-                          onPressIn={() => {
-                            if (state.frozen) {
-                              // Don't know why this prevents bubbling up
-                              customOnSquarePress?.();
-                              return false;
-                            }
-                            state.onSquarePress(square);
-                          }}
-                        >
-                          <Animated.View
+                        {isBottomEdge && !state.hideCoordinates && (
+                          <CMText
                             style={s(
-                              {
-                                opacity: state.squareHighlightAnims[square],
-                              },
-                              c.bg(c.primaries[60]),
+                              c.fg(
+                                state.hideColors ? c.grays[80] : inverseColor
+                              ),
+                              c.weightBold,
                               c.absolute,
-                              c.size("100%"),
-                              c.zIndex(4)
+                              c.fontSize(isMobile ? 8 : 10),
+                              c.left(isMobile ? 2 : 1),
+                              c.bottom(isMobile ? 0 : -1),
+                              c.opacity(80)
                             )}
-                          ></Animated.View>
-                          {isBottomEdge && !state.hideCoordinates && (
-                            <CMText
-                              style={s(
-                                c.fg(
-                                  state.hideColors ? c.grays[80] : inverseColor
-                                ),
-                                c.weightBold,
-                                c.absolute,
-                                c.fontSize(isMobile ? 8 : 10),
-                                c.left(isMobile ? 2 : 4),
-                                c.bottom(isMobile ? 0 : 2),
-                                c.opacity(80)
-                              )}
-                            >
-                              {tileLetter}
-                            </CMText>
-                          )}
-                          {isRightEdge && !state.hideCoordinates && (
-                            <CMText
-                              style={s(
-                                c.fg(
-                                  state.hideColors ? c.grays[80] : inverseColor
-                                ),
-                                c.weightBold,
-                                c.absolute,
-                                c.fontSize(isMobile ? 8 : 10),
-                                c.right(isMobile ? 2 : 3),
-                                c.opacity(80),
-                                c.top(isMobile ? 0 : 1)
-                              )}
-                            >
-                              {tileNumber}
-                            </CMText>
-                          )}
-                        </Pressable>
-                      </View>
+                          >
+                            {tileLetter}
+                          </CMText>
+                        )}
+                        {isRightEdge && !state.hideCoordinates && (
+                          <CMText
+                            style={s(
+                              c.fg(
+                                state.hideColors ? c.grays[80] : inverseColor
+                              ),
+                              c.weightBold,
+                              c.absolute,
+                              c.fontSize(isMobile ? 8 : 10),
+                              c.right(isMobile ? 2 : 1),
+                              c.opacity(80),
+                              c.top(isMobile ? 0 : 0)
+                            )}
+                          >
+                            {tileNumber}
+                          </CMText>
+                        )}
+                      </Pressable>
                     );
                   })}
                 </View>
@@ -622,7 +607,7 @@ export const ChessboardView = ({
           </View>
         </View>
       </View>
-      {state.showMoveLog && state.moveLog && (
+      {state.showMoveLog && state.moveLogPgn && (
         <>
           <View
             ref={moveLogRef}
@@ -646,13 +631,14 @@ export const ChessboardView = ({
                 c.whitespace("nowrap")
               )}
             >
-              {state.moveLog}
+              {state.moveLogPgn}
             </CMText>
           </View>
         </>
       )}
     </>
   );
-  console.timeEnd("chessboard");
+  // console.timeEnd("chessboard");
+  console.log("Rendered chessboard once");
   return x;
 };

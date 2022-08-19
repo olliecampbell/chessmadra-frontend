@@ -52,7 +52,7 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
     return null;
   }
   return (
-    <View style={s(c.column)}>
+    <View style={s(c.column, c.fullWidth, c.justifyCenter)}>
       {state.inProgressUsingPlayerTemplate && (
         <GridLoader color={c.primaries[40]} size={20} />
       )}

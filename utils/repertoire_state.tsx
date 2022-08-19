@@ -40,6 +40,7 @@ import {
   forIn,
   sum,
   sortBy,
+  findLast,
 } from "lodash";
 import {
   BySide,
@@ -69,6 +70,7 @@ import { WritableDraft } from "immer/dist/internal";
 import { failOnTrue } from "./test_settings";
 import { genEpd } from "./chess";
 import { ChessColor } from "app/types/Chess";
+import { formatEloRange } from "./elo_range";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -77,6 +79,12 @@ let ASSUME = null;
 export interface QuizMove {
   move: RepertoireMove;
   line: string;
+}
+
+export enum AddLineFromOption {
+  Initial = "Start Position",
+  Current = "Current Position",
+  BiggestMiss = "Biggest Gap in Repertoire",
 }
 
 export interface RepertoireState
@@ -98,6 +106,7 @@ export interface RepertoireState
   activeSide: Side;
   failedCurrentMove?: boolean;
   setUser: (user: User, _state?: RepertoireState) => void;
+  reviewLine: (line: string[], side: Side, _state?: RepertoireState) => void;
   fetchRepertoire: (_state?: RepertoireState) => void;
   fetchEcoCodes: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
@@ -121,6 +130,11 @@ export interface RepertoireState
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   startReview: (side?: Side, _state?: RepertoireState) => void;
+  reviewWithQueue: (
+    queues: BySide<QuizMove[]>,
+    _state?: RepertoireState
+  ) => void;
+  isReviewingWithCustomQueue?: boolean;
   backToOverview: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
@@ -161,7 +175,7 @@ export interface RepertoireState
   onEditingPositionUpdate: (
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
-  analyzeLineOnLichess: (side: Side, _state?: RepertoireState) => void;
+  analyzeLineOnLichess: (_state?: RepertoireState) => void;
   searchOnChessable: (_state?: RepertoireState) => void;
   backOne: (_state?: RepertoireState) => void;
   backToStartPosition: (
@@ -194,7 +208,7 @@ export interface RepertoireState
   positions?: string[];
   pendingMoves?: RepertoireMove[];
   hasCompletedRepertoireInitialization?: boolean;
-  showPendingMoves?: boolean;
+  hasPendingLineToAdd?: boolean;
   repertoireTemplates?: RepertoireTemplate[];
   playerTemplates?: PlayerTemplate[];
   selectedTemplates: Record<string, string>;
@@ -213,26 +227,56 @@ export interface RepertoireState
   isDeletingMove?: boolean;
   inProgressUsingPlayerTemplate?: boolean;
   fetchPositionReportIfNeeded: (_state?: RepertoireState) => void;
+  updateBrowserStateAndSections: (
+    epd: string,
+    line: string[],
+    _state?: RepertoireState
+  ) => void;
   selectBrowserSection: (
     section: BrowserSection,
+    includeInPreviousStates: boolean,
     _state?: RepertoireState
   ) => void;
   previousBrowserStates: BrowserState[];
   ecoCodes: EcoCode[];
   ecoCodeLookup: Record<string, EcoCode>;
   browserState?: BrowserState;
+  updateEloRange: (range: [number, number], _state?: RepertoireState) => void;
+  isUpdatingEloRange: boolean;
+  editingState: {
+    selectedTab: EditingTab;
+  };
+  addedLineState: {
+    addLineFrom: AddLineFromOption;
+    line: string[];
+    ecoCode: EcoCode;
+    stage: AddedLineStage;
+    positionReport: PositionReport;
+  };
 }
 
-interface BrowserState {
+export enum EditingTab {
+  Position = "Position",
+  MoveLog = "Move Log",
+  Responses = "Responses",
+}
+
+export enum AddedLineStage {
+  Initial,
+  AddAnother,
+}
+
+export interface BrowserState {
   epd: string;
   line: string[];
   sections: BrowserSection[];
   lines: BrowserLine[];
-  eco_code: EcoCode;
+  ecoCode: EcoCode;
 }
 
 interface BrowserSection {
   epd: string;
+  pgn: string;
   eco_code?: EcoCode;
   line?: string[];
   numMoves?: { withTranspositions: number; withoutTranspositions: number };
@@ -249,6 +293,7 @@ interface FetchRepertoireResponse {
 }
 
 const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
+export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
 const EMPTY_QUEUES = { white: [], black: [] };
 
 export const useRepertoireState = create<RepertoireState>()(
@@ -259,6 +304,7 @@ export const useRepertoireState = create<RepertoireState>()(
         ({
           // TODO: clone?
           ...createQuick(set),
+          isUpdatingEloRange: false,
           repertoire: undefined,
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
@@ -293,6 +339,25 @@ export const useRepertoireState = create<RepertoireState>()(
                 },
                 s
               );
+            }),
+          updateEloRange: (range: [number, number], _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.isUpdatingEloRange = true;
+              client
+                .post("/api/v1/user/elo_range", {
+                  min: range[0],
+                  max: range[1],
+                })
+                .then(({ data }: { data: FetchRepertoireResponse }) => {
+                  set((s) => {
+                    s.user.eloRange = formatEloRange(range);
+                  });
+                })
+                .finally(() => {
+                  set((s) => {
+                    s.isUpdatingEloRange = false;
+                  });
+                });
             }),
           playPgn: (pgn: string, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -404,8 +469,9 @@ export const useRepertoireState = create<RepertoireState>()(
                 )
                 .focus();
             }),
-          analyzeLineOnLichess: (side: Side, _state?: RepertoireState) =>
+          analyzeLineOnLichess: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              console.log({ s });
               var bodyFormData = new FormData();
               bodyFormData.append("pgn", lineToPgn(s.currentLine));
               if (isEmpty(s.currentLine)) {
@@ -414,6 +480,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 return;
               }
               var windowReference = window.open("about:blank", "_blank");
+              let side = s.activeSide;
               client
                 .post(`https://lichess.org/api/import`, bodyFormData)
                 .then(({ data }) => {
@@ -453,8 +520,7 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               let line = s.position.history();
               s.currentLine = line;
-              s.moveLog = lineToPgn(line);
-              console.log("POSITIONS", logProxy(s.positions));
+              s.moveLogPgn = lineToPgn(line);
               s.divergenceIndex = findIndex(s.positions, (e: string, i) => {
                 let responses = s.repertoire[s.activeSide].positionResponses[e];
                 let move = s.currentLine[i];
@@ -518,7 +584,7 @@ export const useRepertoireState = create<RepertoireState>()(
                   }
                 );
               }
-              s.showPendingMoves = some(
+              s.hasPendingLineToAdd = some(
                 flatten(values(s.pendingResponses)),
                 (m) => m.mine
               );
@@ -536,24 +602,24 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               // s.browsingState.line = browserSection.line;
               // s.browsingState.epd = browserSection.epd;
-              if (includeInPreviousStates) {
-                s.previousBrowserStates.push(s.browserState);
-              }
+              console.log(
+                "browser section line: ",
+                logProxy(browserSection.line)
+              );
               s.updateBrowserStateAndSections(
                 browserSection.epd,
                 browserSection.line,
                 s
               );
-              console.log("Selected browser section");
+              if (includeInPreviousStates) {
+                s.previousBrowserStates.push(s.browserState);
+              }
             }),
           fetchPositionReportIfNeeded: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
-              console.log("FETCHING position report");
               let epd = s.getCurrentEpd(s);
               let side = s.activeSide;
-              console.log({ epd, side });
               if (!isNil(s.getCurrentPositionReport(s))) {
-                console.log("already got it");
                 return;
               }
               client
@@ -572,8 +638,39 @@ export const useRepertoireState = create<RepertoireState>()(
           onMove: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
               s.positions.push(genEpd(s.position));
-              console.log("Just pushed epd: ", last(s.positions));
               s.onEditingPositionUpdate(s);
+            }),
+          reviewLine: (line: string[], side: Side, _state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              s.backToOverview(s);
+              let queues = cloneDeep(EMPTY_QUEUES);
+              let sideQueue = [];
+              let epd = START_EPD;
+              let lineSoFar = [];
+              console.log("Yeah?", side);
+              line.map((move) => {
+                let response = find(
+                  s.repertoire[side].positionResponses[epd],
+                  (m) => m.sanPlus === move
+                );
+                epd = response?.epdAfter;
+                console.log("Yeah 1?");
+                console.log("Yeah 2?");
+                if (response && response.mine) {
+                  sideQueue.push({
+                    move: response,
+                    line: lineToPgn(lineSoFar),
+                  });
+                } else {
+                  console.log("Couldn't find a move for ", epd);
+                }
+                lineSoFar.push(move);
+                console.log("Yeah 3?");
+              });
+              console.log("pre-Review w/ queue?");
+              queues[side] = sideQueue;
+              console.log("Review w/ queue?");
+              s.reviewWithQueue(queues, s);
             }),
           updateQueue: (cram: boolean, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -613,46 +710,43 @@ export const useRepertoireState = create<RepertoireState>()(
                   ).filter((m: RepertoireMove) => m.mine);
                 }
               );
-              console.log("Generating rep num moves");
               s.repertoireNumMoves = mapSides(
                 s.repertoire,
                 (repertoireSide: RepertoireSide) => {
                   let epdToNumMoves = {};
                   let seen_epds = new Set();
-                  const recurse = (epd, line) => {
+                  const recurse = (epd, line, mine) => {
                     let sum = 0;
                     let sumTranspositions = 0;
                     map(repertoireSide.positionResponses[epd], (m) => {
+                      let inc = m.mine ? 1 : 0;
                       if (!seen_epds.has(m.epdAfter)) {
                         seen_epds.add(m.epdAfter);
-                        let x = recurse(m.epdAfter, [...line, m.sanPlus]);
-                        sum += x.withoutTranspositions;
+                        let x = recurse(
+                          m.epdAfter,
+                          [...line, m.sanPlus],
+                          m.mine
+                        );
+                        sum += x.withoutTranspositions + inc;
                         sumTranspositions +=
                           x.withTranspositions - x.withoutTranspositions;
-                        if (Number.isNaN(sumTranspositions)) {
-                          console.log({ x });
-                        }
                       } else {
                         if (epdToNumMoves[m.epdAfter]) {
                           sumTranspositions +=
-                            epdToNumMoves[m.epdAfter].withTranspositions;
+                            epdToNumMoves[m.epdAfter].withTranspositions + inc;
                         }
                       }
                     });
-                    if (Number.isNaN(sum) || Number.isNaN(sumTranspositions)) {
-                      console.log("BROKEN!!!");
-                      console.log(sum, sumTranspositions);
-                    }
                     epdToNumMoves[epd] = {
                       withTranspositions: sum + sumTranspositions,
                       withoutTranspositions: sum,
                     };
                     return {
-                      withTranspositions: sum + sumTranspositions + 1,
-                      withoutTranspositions: sum + 1,
+                      withTranspositions: sum + sumTranspositions,
+                      withoutTranspositions: sum,
                     };
                   };
-                  recurse(START_EPD, []);
+                  recurse(START_EPD, [], false);
                   return epdToNumMoves;
                 }
               );
@@ -669,9 +763,6 @@ export const useRepertoireState = create<RepertoireState>()(
             setter(set, _state, (s) => {
               if (s.isEditing) {
                 cb(true, (completed: boolean, s: RepertoireState) => {
-                  console.log("Attempt move callback", {
-                    completed: logProxy(completed),
-                  });
                   if (completed === false || completed === null) {
                     s.onMove(s);
                   }
@@ -732,7 +823,7 @@ export const useRepertoireState = create<RepertoireState>()(
                   return;
                 }
               }
-              s.moveLog = s.currentMove.line;
+              s.moveLogPgn = s.currentMove.line;
               s.failedCurrentMove = false;
               s.flipped = s.currentMove.move.side === "black";
               s.position = new Chess();
@@ -861,10 +952,14 @@ export const useRepertoireState = create<RepertoireState>()(
 
           backToOverview: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              if (s.isReviewingWithCustomQueue) {
+                s.isReviewingWithCustomQueue = false;
+                s.updateQueue(false, s);
+              }
               s.showImportView = false;
               s.backToStartPosition(s);
               s.reviewSide = null;
-              s.moveLog = null;
+              s.moveLogPgn = null;
               s.isReviewing = false;
               if (s.currentMove) {
                 s.queues[s.currentMove.move.side].unshift(s.currentMove);
@@ -876,14 +971,16 @@ export const useRepertoireState = create<RepertoireState>()(
               s.currentMove = null;
               s.activeSide = "white";
               s.isEditing = false;
+              s.isBrowsing = false;
               s.position = new Chess();
               s.frozen = true;
               s.flipped = false;
               s.divergencePosition = null;
               s.divergenceIndex = null;
-              s.showPendingMoves = false;
+              s.hasPendingLineToAdd = false;
               s.pendingResponses = {};
               s.showMoveLog = false;
+              s.addedLineState = null;
             }),
           startImporting: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -898,7 +995,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 sections: [],
                 line: [],
                 lines: [],
-                eco_code: null,
+                ecoCode: null,
               };
               s.previousBrowserStates = [];
               s.updateBrowserStateAndSections(
@@ -906,24 +1003,21 @@ export const useRepertoireState = create<RepertoireState>()(
                 s.browserState.line,
                 s
               );
-              s.previousBrowserStates.push(s.browserState);
+              // s.previousBrowserStates.push(s.browserState);
             }),
           selectBrowserState: (
             browserState: BrowserState,
             _state?: RepertoireState
           ) =>
             setter(set, _state, (s) => {
-              s.browserState = browserState;
-              console.log("New browser state", s.browserState);
-              // let sections = s.generateBrowsingSections(
-              //   s.browsingState.line,
-              //   s.browsingState.epd,
-              //   s
-              // );
-              //
-              // if (sections.length === 1) {
-              //   s.selectBrowserSection(sections[0], s);
-              // }
+              while (true) {
+                let lastState = s.previousBrowserStates.pop();
+                if (lastState.ecoCode.code === browserState.ecoCode.code) {
+                  s.previousBrowserStates.push(lastState);
+                  s.browserState = browserState;
+                  break;
+                }
+              }
             }),
           updateBrowserStateAndSections: (
             epd: string,
@@ -936,39 +1030,15 @@ export const useRepertoireState = create<RepertoireState>()(
                 sections: [],
                 line: line,
                 lines: [],
-                eco_code: s.ecoCodeLookup[epd],
+                ecoCode: s.ecoCodeLookup[epd],
               };
-              let sections = s.generateBrowsingSections(
-                s.browserState.line,
-                s.browserState.epd,
-                s
-              );
-              s.browserState.sections = sections;
-              console.log("Got sections", sections);
 
-              if (sections.length === 1) {
-                s.previousBrowserStates.pop();
-                s.selectBrowserSection(sections[0], true, s);
-              }
-              s.browserState.lines = s.generateBrowsingLines(
-                s.browserState.line,
-                s.browserState.epd,
-                s
-              );
-            }),
-          generateBrowsingLines: (
-            line: string[],
-            baseEpd: string,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
+              let sections: BrowserSection[] = [];
+              let responses = s.repertoire[s.activeSide].positionResponses;
+              let paths = [];
               let seenEpds = new Set(
                 s.browserState?.sections?.map((s) => s.epd) ?? []
               );
-              console.log(s.browserState?.sections?.length);
-              console.log({ seenEpds });
-              let responses = s.repertoire[s.activeSide].positionResponses;
-              let paths = [];
               let recurse = (path: string, epd: string, moveNumber: number) => {
                 responses[epd]?.forEach((m) => {
                   let n = moveNumber / 2 + 1;
@@ -982,17 +1052,32 @@ export const useRepertoireState = create<RepertoireState>()(
                   } else {
                     newPath = `${path} ${m.sanPlus}`;
                   }
+                  let ecoCode = s.ecoCodeLookup[m.epdAfter];
+                  let myResponse = responses[m.epdAfter]?.[0];
+                  const nextEcoCode = s.ecoCodeLookup[myResponse?.epdAfter];
+                  const numMovesNext =
+                    s.repertoireNumMoves[s.activeSide][myResponse?.epdAfter];
+                  if (
+                    ecoCode &&
+                    (m.mine ||
+                      (!m.mine && !nextEcoCode) ||
+                      (!m.mine && numMovesNext.withTranspositions === 0))
+                  ) {
+                    sections.push({
+                      epd: m.epdAfter,
+                      eco_code: ecoCode,
+                      line: pgnToLine(newPath),
+                      pgn: newPath,
+                      numMoves: s.repertoireNumMoves[s.activeSide][m.epdAfter],
+                    } as BrowserSection);
+                    seenEpds.add(m.epdAfter);
+                  }
                   // if (
                   //   (side == "white" && moveNumber % 2 == 0) ||
                   //   (side == "black" && moveNumber % 2 == 1)
                   // ) {
                   // }
                   if (!seenEpds.has(m.epdAfter)) {
-                    if (newPath === "1.d6") {
-                      console.log("WHy would this be added");
-                      console.log(cloneDeep(seenEpds));
-                      console.log(m);
-                    }
                     seenEpds.add(m.epdAfter);
                     paths.push({ line: newPath, epd: m.epdAfter });
                     recurse(newPath, m.epdAfter, moveNumber + 1);
@@ -1001,7 +1086,7 @@ export const useRepertoireState = create<RepertoireState>()(
               };
               recurse(
                 lineToPgn(s.browserState.line),
-                baseEpd,
+                s.browserState.epd,
                 s.browserState.line.length ?? 0
               );
               // TODO: can optimize this probably
@@ -1010,6 +1095,10 @@ export const useRepertoireState = create<RepertoireState>()(
                   some(
                     paths,
                     (p2) => p2.line.startsWith(line) && line !== p2.line
+                  ) ||
+                  some(
+                    sections,
+                    (s) => s.pgn.startsWith(line) && line !== s.pgn
                   )
                 ) {
                   return false;
@@ -1017,42 +1106,26 @@ export const useRepertoireState = create<RepertoireState>()(
                   return true;
                 }
               });
-              return paths.map((p) => {
+              s.browserState.lines = paths.map((p) => {
                 return {
                   line: p.line,
                   epd: p.epd,
                 };
               });
-            }),
-          generateBrowsingSections: (
-            line: string[],
-            epd: string,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              let responses = s.repertoire[s.activeSide].positionResponses;
-              let sections = filter(
-                (responses[epd] ?? []).map((m) => {
-                  let ecoCode = s.ecoCodeLookup[m.epdAfter];
-                  if (ecoCode) {
-                    return {
-                      epd: m.epdAfter,
-                      eco_code: ecoCode,
-                      line: [...(s.browserState?.line ?? []), m.sanPlus],
-                      numMoves: s.repertoireNumMoves[s.activeSide][m.epdAfter],
-                    } as BrowserSection;
-                  } else {
-                    console.log("m.epdAfter is ", m.epdAfter);
-                    console.log(s.ecoCodeLookup[m.epdAfter]);
-                    return null;
-                  }
-                })
-              );
-              sections = sortBy(
+              s.browserState.sections = sortBy(
                 sections,
                 (s) => -s.numMoves.withTranspositions
               );
-              return sections;
+
+              if (sections.length === 1) {
+                console.log(
+                  "Sections length is 1, popping",
+                  logProxy(s.previousBrowserStates),
+                  logProxy(sections)
+                );
+                s.previousBrowserStates.pop();
+                s.selectBrowserSection(sections[0], true, s);
+              }
             }),
           startEditing: (side: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -1061,6 +1134,22 @@ export const useRepertoireState = create<RepertoireState>()(
               s.frozen = false;
               s.flipped = side === "black";
               s.onEditingPositionUpdate(s);
+              s.editingState = {
+                selectedTab: EditingTab.Position,
+              };
+            }),
+          reviewWithQueue: (
+            queues: BySide<QuizMove[]>,
+            _state?: RepertoireState
+          ) =>
+            setter(set, _state, (s) => {
+              let side = shuffle(SIDES)[0];
+              s.isReviewingWithCustomQueue = true;
+              s.queues = queues;
+              s.reviewSide = side;
+              s.showMoveLog = true;
+              s.isReviewing = true;
+              s.setupNextMove(s);
             }),
           startReview: (_side?: Side, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -1104,12 +1193,9 @@ export const useRepertoireState = create<RepertoireState>()(
               client
                 .get("/api/v1/openings/eco_codes")
                 .then(({ data }: { data: EcoCode[] }) => {
-                  console.log({ codes: data });
                   set((s) => {
                     s.ecoCodes = data;
                     s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
-                    console.log("LOOKUP");
-                    console.log(logProxy(s.ecoCodeLookup));
                   });
                 });
             }),
@@ -1178,10 +1264,6 @@ export const useRepertoireState = create<RepertoireState>()(
               let m = s.position.undo();
               if (m) {
                 s.positions.pop();
-                console.log(
-                  "s.positions after back one: ",
-                  logProxy(s.positions)
-                );
               }
               s.onEditingPositionUpdate(s);
               // s.onEditingPositionUpdate(s);
@@ -1210,7 +1292,17 @@ export const useRepertoireState = create<RepertoireState>()(
                 })
                 .then(({ data }: { data: FetchRepertoireResponse }) => {
                   set((s) => {
-                    s.backToStartPosition(s);
+                    s.addedLineState = {
+                      line: s.currentLine,
+                      addLineFrom: AddLineFromOption.BiggestMiss,
+                      stage: AddedLineStage.Initial,
+                      positionReport:
+                        s.positionReports[s.activeSide][s.getCurrentEpd()],
+                      ecoCode: findLast(
+                        map(s.positions, (p) => s.ecoCodeLookup[p])
+                      ),
+                    };
+                    // s.backToStartPosition(s);
                     s.repertoire = data.repertoire;
                     s.repertoireGrades = data.grades;
                     s.onRepertoireUpdate(s);

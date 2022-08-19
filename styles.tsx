@@ -114,6 +114,7 @@ const column = s(displayFlex, keyedProp("flexDirection")("column"));
 const absolute = keyedProp("position")("absolute");
 const fixed = keyedProp("position")("fixed");
 const relative = keyedProp("position")("relative");
+const posStatic = keyedProp("position")("static");
 
 const border = keyedProp("border");
 const borderBottom = keyedProp("borderBottom");
@@ -249,6 +250,7 @@ const teals = genShades(150);
 const primaries = blues;
 const yellows = genShades(45);
 const pinks = genShades(308);
+const purples = genShades(271);
 const reds = genShades(340);
 const greens = genShades(66);
 const failureShades = reds;
@@ -388,6 +390,7 @@ export const c = {
   weightBold,
   primaries,
   blues,
+  purples,
   pinks,
   teals,
   yellows,
@@ -439,6 +442,7 @@ export const c = {
   absoluteFull,
   fixed,
   relative,
+  posStatic,
   border,
   borderBottom,
   borderTop,

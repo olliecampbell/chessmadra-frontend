@@ -45,10 +45,8 @@ const AuthHandler = ({ children }) => {
   }, []);
   useEffect(() => {
     (async () => {
-      if (authStatus === AuthStatus.Initial && token) {
-        console.log("FETCHING");
-        console.log("token:", token);
-        fetchUser(token)
+      if (authStatus === AuthStatus.Initial) {
+        fetchUser()
           .then((user: User) => {
             console.log("user:", user);
             AppStore.update((s) => {

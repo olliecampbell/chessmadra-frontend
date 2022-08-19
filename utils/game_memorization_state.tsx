@@ -21,6 +21,7 @@ import {
   last,
   sample,
   shuffle,
+  sortBy,
   take,
 } from "lodash";
 import {
@@ -264,7 +265,15 @@ export const useGameMemorizationState = create<GameMemorizationState>()(
                   await client.get("/api/v1/my_games");
                 // @ts-ignore
                 set((s: GameMemorizationState) => {
-                  s.games = shuffle(resp.games);
+                  s.games = sortBy(shuffle(resp.games), (g) => {
+                    if (resp.gameStatuses[g.id].needsReview) {
+                      return -100;
+                    }
+                    if (resp.gameStatuses[g.id].everReviewed) {
+                      return -10;
+                    }
+                    return -1;
+                  });
                   s.gameStatuses = resp.gameStatuses;
                 });
               })();

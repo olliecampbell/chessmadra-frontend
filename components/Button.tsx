@@ -1,6 +1,6 @@
 import { c, s } from "app/styles";
 import React from "react";
-import { Pressable, View, Text, Animated } from "react-native";
+import { Pressable, View, Animated } from "react-native";
 import { BarLoader, BeatLoader } from "react-spinners";
 import { LoaderSizeMarginProps } from "react-spinners/interfaces";
 import { CMText } from "./CMText";

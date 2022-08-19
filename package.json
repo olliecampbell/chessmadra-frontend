@@ -32,6 +32,7 @@
     "react-range": "^1.8.12",
     "react-spinners": "^0.11.0",
     "react-storage-hooks": "^4.0.1",
+    "react-use-keypress": "^1.3.1",
     "react-usestateref": "^1.0.8",
     "use-immer": "^0.6.0",
     "zustand": "4.0.0-rc.1"
