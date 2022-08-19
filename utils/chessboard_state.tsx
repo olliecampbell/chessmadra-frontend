@@ -17,6 +17,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   position?: Chess;
   futurePosition?: Chess;
   indicatorColor?: string;
+  squareHighlightAnims: Record<Square, Animated.Value>;
   ringColor?: string;
   ringIndicatorAnim?: Animated.Value;
   hideColors?: boolean;
@@ -64,6 +65,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   availableMovesFrom: (square: Square, _state: ChessboardState) => Move[];
   hideCoordinates?: boolean;
   highContrast?: boolean;
+  isColorTraining?: boolean;
 }
 
 export interface ChessboardStateParent<T> {
@@ -83,10 +85,14 @@ export const createChessState = <
 ): ChessboardState => {
   let state = {
     allowMoves: true,
+    isColorTraining: false,
     availableMoves: [],
     ringColor: null,
     isVisualizingMoves: false,
     ringIndicatorAnim: new Animated.Value(0),
+    squareHighlightAnims: mapValues(SQUARES, (number, square) => {
+      return new Animated.Value(0.0);
+    }),
     flipped: false,
     position: new Chess(),
     moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),

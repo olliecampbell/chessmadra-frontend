@@ -542,6 +542,7 @@ export const useColorTrainingStore = create<ColorTrainingState>()(
       ...createChessState(set, get, (state: ChessboardState) => {
         state.position = null;
         state.hideColors = true;
+        state.isColorTraining = true;
       }),
       calculateRemainingTime: (state?: ColorTrainingState) => {
         setter<ColorTrainingState>(set, state, (state) => {

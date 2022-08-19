@@ -361,7 +361,7 @@ export const RepertoireEditingView = ({
                 <Responses />
                 <Spacer width={48} />
                 <View style={s(c.column)}>
-                  <MoveLog {...{ setConfirmMoveDeleteModalOpen, state }} />
+                  <MoveLog />
                 </View>
               </>
             )}
