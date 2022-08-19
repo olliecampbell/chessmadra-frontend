@@ -9,7 +9,7 @@ export const formatPlayPercentage = (x: number) => {
 };
 
 export const formatWinPercentage = (x: number) => {
-  return `${(x * 100).toFixed(0)}%`;
+  return `${(x * 100).toFixed(0)}`;
 };
 
 export function getWinRate(x: GameResultsDistribution, side: string) {

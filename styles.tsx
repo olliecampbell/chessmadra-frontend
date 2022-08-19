@@ -267,7 +267,7 @@ const colors = {
   backgroundColor: grays[10],
   header: "hsl(229, 19%, 14%)",
   modalColor: "hsl(229, 10%, 90%)",
-  cardBackground: grays[15],
+  cardBackground: grays[12],
   lightTile: hsl(180, 15, 70),
   darkTile: hsl(180, 15, 40),
 };

@@ -22,6 +22,7 @@ import { useIsMobile } from "app/utils/isMobile";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
+import { getAppropriateEcoName } from "app/utils/eco_codes";
 
 export const AddedLineModal = () => {
   let [stage] = useRepertoireState((s) => [s.addedLineState?.stage]);
@@ -221,6 +222,9 @@ const AddedLineOverview = () => {
       s.addedLineState = null;
     });
   };
+  let [name, variations] = getAppropriateEcoName(
+    addedLineState?.ecoCode?.fullName
+  );
   return (
     <>
       <ModalHeader
@@ -245,7 +249,7 @@ const AddedLineOverview = () => {
           )}
         >
           {addedLineState.ecoCode && (
-            <>
+            <View style={s(c.row, c.mb(12))}>
               <CMText
                 style={s(
                   c.fg(c.colors.textInverse),
@@ -253,10 +257,9 @@ const AddedLineOverview = () => {
                   c.fontSize(16)
                 )}
               >
-                {addedLineState.ecoCode?.fullName}
+                {addedLineState?.ecoCode?.fullName}
               </CMText>
-              <Spacer height={12} />
-            </>
+            </View>
           )}
           <CMText style={s(c.fg(c.grays[25]))}>
             {lineToPgn(addedLineState.line)}
@@ -285,7 +288,7 @@ const AddedLineOverview = () => {
                       <CMText style={s(reportHeaderStyles)}>
                         Results at your level
                       </CMText>
-                      <View style={s(c.width(80))}>
+                      <View style={s(c.width(120))}>
                         <GameResultsBar
                           smallNumbers
                           gameResults={addedLineState.positionReport.results}

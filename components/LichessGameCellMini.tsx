@@ -29,7 +29,7 @@ export const LichessGameCellMini = ({
     <View
       style={s(
         c.py(12),
-        c.bg(c.grays[12]),
+        c.bg(c.grays[15]),
         c.br(2),
         c.overflowHidden,
         c.clickable,
@@ -78,7 +78,7 @@ export const LichessGameCellMini = ({
         )}
         <Spacer width={2} grow />
       </View>
-      <Spacer height={12} />
+      <Spacer height={6} />
       {showFirstMoves && (
         <View style={s(c.px(12), c.row)}>
           <CMText style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(12))}>

@@ -6,14 +6,17 @@ import {
 import { View, Text } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
+import { Side } from "app/utils/repertoire";
 
 export const GameResultsBar = ({
   gameResults,
   hideNumbers,
+  activeSide,
   smallNumbers,
 }: {
   gameResults: GameResultsDistribution;
   hideNumbers?: boolean;
+  activeSide?: Side;
   smallNumbers?: boolean;
 }) => {
   let total = getTotalGames(gameResults);
@@ -33,17 +36,19 @@ export const GameResultsBar = ({
       <View
         style={s(
           c.width(`${(gameResults.white / total) * 100}%`),
-          c.bg(c.grays[90]),
+          c.bg(c.grays[80]),
           c.center
         )}
       >
-        {gameResults.white / total > threshold && !hideNumbers && (
-          <CMText
-            style={s(c.fg(c.grays[30]), c.weightSemiBold, c.fontSize(fontSize))}
-          >
-            {formatWinPercentage(gameResults.white / total)}
-          </CMText>
-        )}
+        {gameResults.white / total > threshold &&
+          !hideNumbers &&
+          (!activeSide || activeSide === "white") && (
+            <CMText
+              style={s(c.fg(c.grays[30]), c.weightBold, c.fontSize(fontSize))}
+            >
+              {formatWinPercentage(gameResults.white / total)}
+            </CMText>
+          )}
       </View>
       <View
         style={s(
@@ -52,13 +57,15 @@ export const GameResultsBar = ({
           c.center
         )}
       >
-        {gameResults.draw / total > threshold && !hideNumbers && (
-          <CMText
-            style={s(c.fg(c.grays[85]), c.weightSemiBold, c.fontSize(fontSize))}
-          >
-            {formatWinPercentage(gameResults.draw / total)}
-          </CMText>
-        )}
+        {gameResults.draw / total > threshold &&
+          !hideNumbers &&
+          !activeSide && (
+            <CMText
+              style={s(c.fg(c.grays[75]), c.weightBold, c.fontSize(fontSize))}
+            >
+              {formatWinPercentage(gameResults.draw / total)}
+            </CMText>
+          )}
       </View>
       <View
         style={s(
@@ -67,13 +74,15 @@ export const GameResultsBar = ({
           c.center
         )}
       >
-        {gameResults.black / total > threshold && !hideNumbers && (
-          <CMText
-            style={s(c.fg(c.grays[70]), c.weightSemiBold, c.fontSize(fontSize))}
-          >
-            {formatWinPercentage(gameResults.black / total)}
-          </CMText>
-        )}
+        {gameResults.black / total > threshold &&
+          !hideNumbers &&
+          (!activeSide || activeSide === "black") && (
+            <CMText
+              style={s(c.fg(c.grays[60]), c.weightBold, c.fontSize(fontSize))}
+            >
+              {formatWinPercentage(gameResults.black / total)}
+            </CMText>
+          )}
       </View>
     </View>
   );

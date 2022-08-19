@@ -247,6 +247,7 @@ export interface RepertoireState
   isUpdatingEloRange: boolean;
   editingState: {
     selectedTab: EditingTab;
+    etcModalOpen: boolean;
   };
   addedLineState: {
     addLineFrom: AddLineFromOption;
@@ -1139,6 +1140,7 @@ export const useRepertoireState = create<RepertoireState>()(
               s.onEditingPositionUpdate(s);
               s.editingState = {
                 selectedTab: EditingTab.Position,
+                etcModalOpen: false
               };
             }),
           reviewWithQueue: (
