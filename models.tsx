@@ -29,6 +29,7 @@ export interface User {
   apiKey: string;
   betaAccess: boolean;
   eloRange: string;
+  temporary: boolean;
 }
 
 export interface LichessGame {

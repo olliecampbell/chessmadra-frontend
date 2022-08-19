@@ -240,6 +240,7 @@ const AddedLineOverview = () => {
             c.column,
             c.pl(isMobile ? 0 : 12),
             c.py(isMobile ? 0 : 18),
+            c.flexShrink(1),
             c.constrainWidth
           )}
         >

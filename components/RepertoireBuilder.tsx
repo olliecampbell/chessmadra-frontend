@@ -722,7 +722,7 @@ const BiggestMissBoards = ({
 
 const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
   const isMobile = useIsMobile();
-  const { eloWarning } = useEloRangeWarning();
+  const { eloWarning } = useEloRangeWarning({});
   return (
     <View style={s(c.column, c.constrainWidth)}>
       <View style={s(c.column, c.constrainWidth, c.alignCenter)}>
@@ -870,9 +870,56 @@ const ImportButton = () => {
   );
 };
 
+const SettingsButton = () => {
+  const [quick] = useRepertoireState((s) => [s.quick]);
+
+  const { eloWarning, isEloModalOpen, setIsEloModalOpen, eloModal } =
+    useEloRangeWarning({
+      separate: true,
+    });
+  useEffect(() => {
+    setOpen(false);
+  }, [isEloModalOpen]);
+  const { open, setOpen, modal } = useModal({
+    content: <>eloWarning</>,
+    isOpen: false,
+  });
+  return (
+    <>
+      {eloModal}
+      <Button
+        style={s(
+          c.buttons.basicSecondary,
+          c.selfEnd,
+          c.px(14),
+          c.py(12),
+          c.selfStretch
+        )}
+        onPress={() => {
+          setIsEloModalOpen(true);
+        }}
+      >
+        <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
+          <i className="fas fa-gears" />
+        </CMText>
+        <Spacer width={12} />
+        <CMText
+          style={s(
+            c.buttons.basicSecondary.textStyles,
+            c.fontSize(18),
+            c.weightSemiBold
+          )}
+        >
+          Settings
+        </CMText>
+      </Button>
+    </>
+  );
+};
+
 const ExtraActions = () => {
   const isMobile = useIsMobile();
-  const { eloWarning } = useEloRangeWarning();
+  const { eloWarning } = useEloRangeWarning({});
   let [user, getMyResponsesLength] = useRepertoireState((s) => [
     s.user,
     s.getMyResponsesLength,
@@ -888,8 +935,9 @@ const ExtraActions = () => {
       )}
       <ReviewMovesView {...{ isMobile, side: null }} />
       {!hasNoMovesAtAll && <Spacer height={12} />}
-
       <ImportButton />
+      {<Spacer height={12} />}
+      <SettingsButton />
     </View>
   );
 };

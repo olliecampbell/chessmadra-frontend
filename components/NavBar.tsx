@@ -84,6 +84,10 @@ export const NavBar = (props: {}) => {
   const isMobile = useIsMobile();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const authStatus = AppStore.useState((s) => s.auth.authStatus);
+  const user = AppStore.useState((s) => s.auth.user);
+  const needsLogin =
+    authStatus === AuthStatus.Unauthenticated ||
+    (authStatus === AuthStatus.Authenticated && user?.temporary);
   const padding = 16;
   const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
@@ -155,38 +159,36 @@ export const NavBar = (props: {}) => {
             );
           }
         )}
-        {true && (
-          <View
-            style={
-              s(c.pl(24))
-              // c.absolute,
-              // c.top("50%"),
-              // c.transform("translate(0%, -50%)"),
-              // c.right(padding)
-            }
-          >
-            {authStatus === AuthStatus.Unauthenticated && (
-              <Link href="/login">
-                <a>
-                  <CMText
-                    style={s(
-                      c.buttons.basic,
-                      c.bg(c.grays[20]),
-                      c.px(12),
-                      c.py(12),
-                      c.br(4),
-                      c.fg(c.primaries[70]),
-                      c.weightBold,
-                      c.fontSize(isMobile ? 14 : 16)
-                    )}
-                  >
-                    Log in / Register
-                  </CMText>
-                </a>
-              </Link>
-            )}
-          </View>
-        )}
+        <View
+          style={
+            s(c.pl(24))
+            // c.absolute,
+            // c.top("50%"),
+            // c.transform("translate(0%, -50%)"),
+            // c.right(padding)
+          }
+        >
+          {needsLogin && (
+            <Link href="/login">
+              <a>
+                <CMText
+                  style={s(
+                    c.buttons.basic,
+                    c.bg(c.grays[20]),
+                    c.px(12),
+                    c.py(12),
+                    c.br(4),
+                    c.fg(c.primaries[70]),
+                    c.weightBold,
+                    c.fontSize(isMobile ? 14 : 16)
+                  )}
+                >
+                  Log in / Register
+                </CMText>
+              </a>
+            </Link>
+          )}
+        </View>
       </View>
     );
   }
@@ -199,19 +201,22 @@ export const NavBar = (props: {}) => {
           c.center,
           c.justifyStart,
           c.fullWidth,
-          c.height(80),
-          c.px(12)
+          c.px(12),
+          c.py(12)
         )}
       >
         <Button
-          style={s(c.buttons.squareBasicButtons)}
+          style={s(c.bg("none"), c.px(12), c.py(4))}
           onPress={() => {
             setMobileNavOpen(true);
           }}
         >
-          <i style={s(c.fg(c.colors.textInverse))} className="fas fa-bars"></i>
+          <i
+            style={s(c.fg(c.grays[80]), c.fontSize(18))}
+            className="fas fa-bars"
+          ></i>
         </Button>
-        {authStatus === AuthStatus.Unauthenticated && (
+        {needsLogin && (
           <>
             <Spacer width={0} grow />
             <Link href="/login">
@@ -221,11 +226,11 @@ export const NavBar = (props: {}) => {
                     c.buttons.basic,
                     c.bg(c.grays[20]),
                     c.px(12),
-                    c.height(50),
+                    c.height(40),
                     c.br(4),
                     c.fg(c.primaries[70]),
                     c.weightBold,
-                    c.fontSize(isMobile ? 14 : 16)
+                    c.fontSize(12)
                   )}
                 >
                   Log in / Register

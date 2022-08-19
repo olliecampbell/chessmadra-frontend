@@ -107,7 +107,9 @@ export interface RepertoireState
   failedCurrentMove?: boolean;
   setUser: (user: User, _state?: RepertoireState) => void;
   reviewLine: (line: string[], side: Side, _state?: RepertoireState) => void;
-  fetchRepertoire: (_state?: RepertoireState) => void;
+  fetchRepertoire: (
+    _state?: RepertoireState | WritableDraft<RepertoireState>
+  ) => void;
   fetchEcoCodes: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
   fetchPlayerTemplates: (_state?: RepertoireState) => void;
@@ -356,6 +358,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 .finally(() => {
                   set((s) => {
                     s.isUpdatingEloRange = false;
+                    s.fetchRepertoire(s);
                   });
                 });
             }),

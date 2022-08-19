@@ -25,7 +25,7 @@ const ELO_RANGES = [
   [1900, 2800],
 ];
 
-export const useEloRangeWarning = () => {
+export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
   let [user, updateEloRange, isUpdatingEloRange] = useRepertoireState((s) => [
     s.user,
     s.updateEloRange,
@@ -40,9 +40,10 @@ export const useEloRangeWarning = () => {
   let modalContent = (
     <View style={s(c.column, c.px(12), c.py(12))}>
       <CMText style={s(c.fg(c.colors.textPrimary))}>
-        Select your elo range. This will be used for win-rates and to determine
-        the biggest gaps in your repertoire, based on what moves the players at
-        your level play.
+        Select your elo range on Lichess. If you play on chess.com, bump your
+        rating up by a few hundred points. This will be used for win-rates and
+        to determine the biggest gaps in your repertoire, based on what moves
+        the players at your level play.
       </CMText>
 
       <Spacer height={12} />
@@ -60,6 +61,7 @@ export const useEloRangeWarning = () => {
       <Spacer height={12} />
       <Button
         isLoading={isUpdatingEloRange}
+        loaderProps={{ color: c.grays[75] }}
         style={s(c.buttons.primary)}
         onPress={() => {
           updateEloRange(selectedEloRange);
@@ -78,6 +80,7 @@ export const useEloRangeWarning = () => {
     isEloModalOpen: open,
     setIsEloModalOpen: setOpen,
     showEloWarning,
+    eloModal: modal,
     eloWarning: showEloWarning && (
       <>
         <EloWarningBox
@@ -88,7 +91,7 @@ export const useEloRangeWarning = () => {
             updateEloRange(DEFAULT_ELO_RANGE);
           }}
         />
-        {modal}
+        {!separate && modal}
       </>
     ),
   };
