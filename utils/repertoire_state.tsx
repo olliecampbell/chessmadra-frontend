@@ -525,69 +525,38 @@ export const useRepertoireState = create<RepertoireState>()(
               let line = s.position.history();
               s.currentLine = line;
               s.moveLogPgn = lineToPgn(line);
-              s.divergenceIndex = findIndex(s.positions, (e: string, i) => {
-                let responses = s.repertoire[s.activeSide].positionResponses[e];
-                let move = s.currentLine[i];
-                if (!move) {
-                  return false;
-                }
-                if (!some(responses, (r) => r.sanPlus == move)) {
-                  return true;
-                }
-                return false;
-              });
-              s.differentMoveIndices = filter(
-                map(dropRight(s.positions, 1), (e: string, i) => {
-                  let responses =
-                    s.repertoire[s.activeSide].positionResponses[e];
-                  let move = s.currentLine[i];
-                  if (!move) {
-                    return i;
-                  }
-                  if (!some(responses, (r) => r.sanPlus == move)) {
-                    return i;
-                  }
-                  return null;
-                })
-              );
-              s.divergenceIndex =
-                s.divergenceIndex === -1 ? null : s.divergenceIndex;
-              // if (s.divergenceIndex === s.positions.length - 1) {
-              //   s.divergenceIndex = null;
-              // }
-              s.divergencePosition = !isNil(s.divergenceIndex)
-                ? s.positions[s.divergenceIndex]
-                : null;
               s.pendingResponses = {};
-              if (!isNil(s.divergenceIndex)) {
-                map(
-                  zip(
-                    drop(s.positions, s.divergenceIndex),
-                    drop(line, s.divergenceIndex)
-                  ),
-                  ([position, san], i) => {
-                    if (!san) {
-                      return;
+              s.differentMoveIndices = [];
+              map(zip(s.positions, line), ([position, san], i) => {
+                if (!san) {
+                  return;
+                }
+                if (
+                  !some(
+                    s.repertoire[s.activeSide].positionResponses[position],
+                    (m) => {
+                      return m.sanPlus === san;
                     }
-                    s.pendingResponses[position] = [
-                      {
-                        epd: position,
-                        epdAfter: s.positions[i + s.divergenceIndex + 1],
-                        sanPlus: san,
-                        side: s.activeSide,
-                        pending: true,
-                        mine:
-                          (i + s.divergenceIndex) % 2 ===
-                          (s.activeSide === "white" ? 0 : 1),
-                        srs: {
-                          needsReview: false,
-                          firstReview: false,
-                        },
+                  )
+                ) {
+                  s.differentMoveIndices.push(i);
+                  s.pendingResponses[position] = [
+                    {
+                      epd: position,
+                      epdAfter: s.positions[i + 1],
+                      sanPlus: san,
+                      side: s.activeSide,
+                      pending: true,
+                      mine: i % 2 === (s.activeSide === "white" ? 0 : 1),
+                      srs: {
+                        needsReview: false,
+                        firstReview: false,
                       },
-                    ] as RepertoireMove[];
-                  }
-                );
-              }
+                    },
+                  ] as RepertoireMove[];
+                }
+              });
+
               s.hasPendingLineToAdd = some(
                 flatten(values(s.pendingResponses)),
                 (m) => m.mine
@@ -1140,7 +1109,7 @@ export const useRepertoireState = create<RepertoireState>()(
               s.onEditingPositionUpdate(s);
               s.editingState = {
                 selectedTab: EditingTab.Position,
-                etcModalOpen: false
+                etcModalOpen: false,
               };
             }),
           reviewWithQueue: (
@@ -1311,6 +1280,7 @@ export const useRepertoireState = create<RepertoireState>()(
                     s.repertoire = data.repertoire;
                     s.repertoireGrades = data.grades;
                     s.onRepertoireUpdate(s);
+                    s.onEditingPositionUpdate(s);
                   });
                 })
                 .finally(() => {
