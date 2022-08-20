@@ -92,10 +92,12 @@ export const NavBar = (props: {}) => {
   const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
   useOutsideClick(mobileDrawerRef, (e) => {
-    setMobileNavOpen(false);
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    if (mobileNavOpen) {
+      setMobileNavOpen(false);
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   });
   if (!isMobile) {
     return (
