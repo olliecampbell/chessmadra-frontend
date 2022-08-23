@@ -250,6 +250,7 @@ export interface RepertoireState
   updateEloRange: (range: [number, number], _state?: RepertoireState) => void;
   isUpdatingEloRange: boolean;
   editingState: {
+    lastEcoCode?: EcoCode;
     selectedTab: EditingTab;
     etcModalOpen: boolean;
   };
@@ -535,6 +536,12 @@ export const useRepertoireState = create<RepertoireState>()(
               s.moveLogPgn = lineToPgn(line);
               s.pendingResponses = {};
               s.differentMoveIndices = [];
+              s.editingState.lastEcoCode =
+                s.ecoCodeLookup[
+                  findLast(s.positions, (p) => {
+                    return s.ecoCodeLookup[p];
+                  }) as string
+                ];
               map(zip(s.positions, line), ([position, san], i) => {
                 if (!san) {
                   return;

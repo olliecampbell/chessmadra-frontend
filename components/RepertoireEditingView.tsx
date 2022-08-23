@@ -1311,6 +1311,7 @@ const ResponseStatSection = ({
           <Spacer height={8} />
           <View style={s(c.height(18), c.fullWidth)}>
             <GameResultsBar
+              activeSide={side}
               gameResults={masters ? m.masterResults : m.results}
             />
           </View>
@@ -1462,7 +1463,7 @@ const PositionOverview = () => {
       console.log(s.getCurrentPositionReport()?.pawnStructure);
       return [
         s.getCurrentPositionReport(),
-        s.ecoCodeLookup[s.getCurrentEpd()],
+        s.editingState.lastEcoCode,
         s.activeSide,
         s.pawnStructureLookup[
           s.getCurrentPositionReport()?.pawnStructure?.name
@@ -1496,29 +1497,31 @@ const PositionOverview = () => {
           <CMText style={s(c.fg(fontColor))}>Stockfish</CMText>
         </View>
       )}
-      {positionReport && (
-        <View style={s(c.fullWidth)}>
-          <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
-          <Spacer height={4} />
-          <GameResultsBar
-            activeSide={activeSide}
-            gameResults={positionReport.results}
-          />
-          {positionReport.masterResults && (
-            <>
-              <Spacer height={12} />
-              <CMText style={s(c.fg(fontColor))}>
-                Results at master level
-              </CMText>
+      <View style={s(c.row)}>
+        {positionReport?.results && (
+          <View style={s(c.grow)}>
+            <CMText style={s(c.fg(fontColor))}>Your Elo</CMText>
+            <Spacer height={4} />
+            <GameResultsBar
+              activeSide={activeSide}
+              gameResults={positionReport.results}
+            />
+          </View>
+        )}
+        {positionReport?.masterResults && (
+          <>
+            <Spacer width={12} />
+            <View style={s(c.column, c.grow)}>
+              <CMText style={s(c.fg(fontColor))}>Masters</CMText>
               <Spacer height={4} />
               <GameResultsBar
                 activeSide={activeSide}
                 gameResults={positionReport.masterResults}
               />
-            </>
-          )}
-        </View>
-      )}
+            </View>
+          </>
+        )}
+      </View>
       {/*pawnStructure && (
         <>
           <CMText>{pawnStructure.name}</CMText>
