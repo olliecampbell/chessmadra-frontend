@@ -314,6 +314,10 @@ export const useRepertoireState = create<RepertoireState>()(
           ...createQuick(set),
           isUpdatingEloRange: false,
           repertoire: undefined,
+          editingState: {
+            selectedTab: EditingTab.Position,
+            etcModalOpen: false,
+          },
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
           ecoCodeLookup: {},
@@ -531,6 +535,7 @@ export const useRepertoireState = create<RepertoireState>()(
           },
           onEditingPositionUpdate: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {
+              console.log("Calling this?");
               let line = s.position.history();
               s.currentLine = line;
               s.moveLogPgn = lineToPgn(line);
@@ -1124,11 +1129,11 @@ export const useRepertoireState = create<RepertoireState>()(
               s.isEditing = true;
               s.frozen = false;
               s.flipped = side === "black";
-              s.onEditingPositionUpdate(s);
               s.editingState = {
                 selectedTab: EditingTab.Position,
                 etcModalOpen: false,
               };
+              s.onEditingPositionUpdate(s);
             }),
           reviewWithQueue: (
             queues: BySide<QuizMove[]>,
