@@ -1,14 +1,20 @@
-import { chunk, flatMap } from "lodash";
+import { chunk, flatMap, filter } from "lodash";
 
 export const intersperse = <T,>(arr: T[], separator: (n: number) => T): T[] => {
-  return arr.reduce<T[]>((acc, currentElement, currentIndex) => {
-    const isLast = currentIndex === arr.length - 1;
-    return [
-      ...acc,
-      currentElement,
-      ...(isLast ? [] : [separator(currentIndex)]),
-    ];
-  }, []);
+  if (!arr) {
+    return null;
+  }
+  return (filter(arr, (a) => a) as T[]).reduce<T[]>(
+    (acc, currentElement, currentIndex) => {
+      const isLast = currentIndex === arr.length - 1;
+      return [
+        ...acc,
+        currentElement,
+        ...(isLast ? [] : [separator(currentIndex)]),
+      ];
+    },
+    []
+  );
 };
 
 export const chunked = <T,>(

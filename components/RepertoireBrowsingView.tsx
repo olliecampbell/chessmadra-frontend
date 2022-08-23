@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
+import shallow from "zustand/shallow";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   isEmpty,
@@ -79,14 +80,17 @@ export const RepertoireBrowsingView = ({}: {}) => {
     selectBrowserSection,
     quick,
     previousBrowserStates,
-  ] = useRepertoireState((s) => [
-    s.activeSide,
-    s.isBrowsing,
-    s.browserState,
-    s.selectBrowserSection,
-    s.quick,
-    s.previousBrowserStates,
-  ]);
+  ] = useRepertoireState(
+    (s) => [
+      s.activeSide,
+      s.isBrowsing,
+      s.browserState,
+      s.selectBrowserSection,
+      s.quick,
+      s.previousBrowserStates,
+    ],
+    shallow
+  );
   console.log("Re-rendering browsing view");
   const isMobile = useIsMobile();
   const chunkSize = isMobile ? 1 : 3;
@@ -256,11 +260,10 @@ export const RepertoireBrowsingView = ({}: {}) => {
 
 export const BreadCrumbView = () => {
   let [previousBrowserStates, selectBrowserState, backToOverview] =
-    useRepertoireState((s) => [
-      s.previousBrowserStates,
-      s.selectBrowserState,
-      s.backToOverview,
-    ]);
+    useRepertoireState(
+      (s) => [s.previousBrowserStates, s.selectBrowserState, s.backToOverview],
+      shallow
+    );
   let containerRef = useRef(null);
   useLayoutEffect(() => {
     if (containerRef.current) {

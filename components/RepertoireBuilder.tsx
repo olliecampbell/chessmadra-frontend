@@ -53,6 +53,7 @@ import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
 import { EloWarningBox } from "./EloWarningBox";
 import { useEloRangeWarning } from "./useEloRangeWarning";
 import { failOnAny } from "app/utils/test_settings";
+import shallow from "zustand/shallow";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(
@@ -773,7 +774,8 @@ const ReviewMovesView = ({
   side?: Side;
 }) => {
   let [getMyResponsesLength, getQueueLength, startReview] = useRepertoireState(
-    (s) => [s.getMyResponsesLength, s.getQueueLength, s.startReview]
+    (s) => [s.getMyResponsesLength, s.getQueueLength, s.startReview],
+    shallow
   );
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
   console.log({ hasNoMovesThisSide });
@@ -837,7 +839,7 @@ const ReviewMovesView = ({
 };
 
 const ImportButton = () => {
-  const [quick] = useRepertoireState((s) => [s.quick]);
+  const [quick] = useRepertoireState((s) => [s.quick], shallow);
   return (
     <Button
       style={s(
@@ -871,7 +873,7 @@ const ImportButton = () => {
 };
 
 const SettingsButton = () => {
-  const [quick] = useRepertoireState((s) => [s.quick]);
+  const [quick] = useRepertoireState((s) => [s.quick], shallow);
 
   const { eloWarning, isEloModalOpen, setIsEloModalOpen, eloModal } =
     useEloRangeWarning({
@@ -920,10 +922,10 @@ const SettingsButton = () => {
 const ExtraActions = () => {
   const isMobile = useIsMobile();
   const { eloWarning } = useEloRangeWarning({});
-  let [user, getMyResponsesLength] = useRepertoireState((s) => [
-    s.user,
-    s.getMyResponsesLength,
-  ]);
+  let [user, getMyResponsesLength] = useRepertoireState(
+    (s) => [s.user, s.getMyResponsesLength],
+    shallow
+  );
   let hasNoMovesAtAll = getMyResponsesLength(null) === 0;
   return (
     <View style={s(c.width(280))}>

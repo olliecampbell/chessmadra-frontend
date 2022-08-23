@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
+import shallow from "zustand/shallow";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
@@ -18,7 +19,12 @@ import {
   forEach,
   first,
   find,
+  filter,
   times,
+  findIndex,
+  zip,
+  map,
+  every,
 } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
@@ -83,7 +89,8 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
   let backButtonActive = state.position.history().length > 0;
 
   let [searchOnChessable, analyzeLineOnLichess, quick] = useRepertoireState(
-    (s) => [s.searchOnChessable, s.analyzeLineOnLichess, s.quick]
+    (s) => [s.searchOnChessable, s.analyzeLineOnLichess, s.quick],
+    shallow
   );
   const isMobile = useIsMobile();
   let gap = isMobile ? 6 : 12;
@@ -160,11 +167,10 @@ export const MoveLog = () => {
   let pairs = [];
   let currentPair = [];
   const [hasPendingLineToAdd, position, differentMoveIndices] =
-    useRepertoireState((s) => [
-      s.hasPendingLineToAdd,
-      s.position,
-      s.differentMoveIndices,
-    ]);
+    useRepertoireState(
+      (s) => [s.hasPendingLineToAdd, s.position, s.differentMoveIndices],
+      shallow
+    );
   let moveList = position.history({ verbose: true });
   forEach(moveList, (move, i) => {
     let isNew = differentMoveIndices.includes(i);
@@ -265,14 +271,14 @@ export const MoveLog = () => {
                       </CMText>
                     </View>
                     <Spacer width={4} />
-                    <Pressable onPress={() => {}}>
+                    <Pressable onPress={() => { }}>
                       <CMText
                         style={s(moveStyles, whiteIsNew && newMoveStyles)}
                       >
                         {whiteMove?.san}
                       </CMText>
                     </Pressable>
-                    <Pressable onPress={() => {}}>
+                    <Pressable onPress={() => { }}>
                       <CMText
                         style={s(moveStyles, blackIsNew && newMoveStyles)}
                       >
@@ -358,7 +364,7 @@ export const RepertoireEditingView = ({
               </>
             )}
             <View style={s(c.column, c.constrainWidth)}>
-              <View style={s(c.width(500), c.maxWidth("100%"))}>
+              <View style={s(c.width(400), c.maxWidth("100%"))}>
                 <ChessboardView state={state} />
               </View>
               <Spacer height={12} />
@@ -389,7 +395,7 @@ export const RepertoireEditingView = ({
   );
 };
 
-const Responses = () => {
+const Responses = React.memo(function Responses() {
   let [
     positionReport,
     currentLine,
@@ -397,40 +403,77 @@ const Responses = () => {
     activeSide,
     repertoire,
     currentEpd,
+    existingMoves,
     playSan,
-  ] = useRepertoireState((s) => [
-    s.getCurrentPositionReport(),
-    s.currentLine,
-    s.position,
-    s.activeSide,
-    s.repertoire,
-    s.getCurrentEpd(),
-    s.playSan,
-  ]);
-  let moveNumber = Math.floor(currentLine.length / 2) + 1;
+  ] = useRepertoireState(
+    (s) => [
+      s.getCurrentPositionReport(),
+      s.currentLine,
+      s.position,
+      s.activeSide,
+      s.repertoire,
+      s.getCurrentEpd(),
+      s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
+      s.playSan,
+    ],
+    shallow
+  );
+  console.log("Rendering with", currentEpd, positionReport);
+  let coveredSans = new Set();
+  forEach(existingMoves, (m) => {
+    coveredSans.add(m.sanPlus);
+  });
   let side: Side = position.turn() === "b" ? "black" : "white";
-  let badTextColor = c.failureShades[65];
-  let goodTextColor = c.successShades[60];
   let ownSide = side === activeSide;
   let suggestedMoves = positionReport
-    ? take(
-        (side === activeSide
-          ? suggestedMovesByEffectiveness
-          : suggestedMovesByPopularity)(
-          positionReport,
-          repertoire,
-          currentEpd,
-          activeSide
-        ),
-        5
-      )
+    ? sortSuggestedMoves(
+      positionReport,
+      activeSide,
+      repertoire,
+      currentEpd,
+      side === activeSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
+    )
     : [];
-  const isMobile = useIsMobile();
+  existingMoves = sortBy(existingMoves, (m) => {
+    return findIndex(suggestedMoves, (s) => s.sanPlus === m.sanPlus);
+  });
+  const isMobile = false;
+  let otherMoves = take(
+    filter(suggestedMoves, (m) => {
+      return !coveredSans.has(m.sanPlus);
+    }),
+    5
+  );
   return (
     <View style={s(c.column, c.width(400), c.constrainWidth)}>
+      {!isEmpty(existingMoves) && (
+        <>
+          <CMText style={s(desktopHeaderStyles)}>
+            {ownSide ? "Your move" : "Covered moves"}
+          </CMText>
+          {intersperse(
+            existingMoves.map((x, i) => {
+              let sm = find(suggestedMoves, (m) => m.sanPlus === x.sanPlus);
+              console.log("Rendering my move with suggested move: ", sm);
+              return <Response repertoireMove={x} suggestedMove={sm} />;
+            }),
+            (i) => {
+              return <Spacer height={12} key={i} />;
+            }
+          )}
+
+          <Spacer height={24} />
+        </>
+      )}
       {!isMobile && (
         <CMText style={s(desktopHeaderStyles)}>
-          {ownSide ? "You can play" : "Prepare for..."}
+          {ownSide
+            ? !isEmpty(existingMoves)
+              ? "Other moves"
+              : "You can play"
+            : !isEmpty(existingMoves)
+              ? "Other moves"
+              : "Prepare for..."}
         </CMText>
       )}
       {(() => {
@@ -471,164 +514,11 @@ const Responses = () => {
           return (
             <>
               {intersperse(
-                suggestedMoves.map((m, i) => {
-                  let tags = take(
-                    genMoveTags(
-                      m,
-                      positionReport,
-                      repertoire[activeSide],
-                      currentEpd,
-                      side
-                    ),
-                    5
-                  );
-                  return (
-                    <Pressable
-                      onPress={() => {
-                        playSan(m.sanPlus);
-                      }}
-                    >
-                      <View
-                        style={s(
-                          c.br(2),
-                          c.py(8),
-                          c.pl(14),
-                          c.pr(8),
-                          c.bg(c.grays[12]),
-                          c.border(`1px solid ${c.grays[20]}`),
-                          c.clickable,
-                          c.row
-                        )}
-                      >
-                        <View style={s(c.column, c.grow, c.constrainWidth)}>
-                          <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
-                            <View style={s(c.row, c.alignEnd)}>
-                              <CMText
-                                style={s(
-                                  c.fg(c.grays[60]),
-                                  c.weightSemiBold,
-                                  c.fontSize(16)
-                                )}
-                              >
-                                {moveNumber}
-                                {side === "black" ? "... " : "."}
-                              </CMText>
-                              <Spacer width={2} />
-                              <CMText
-                                key={m.sanPlus}
-                                style={s(
-                                  c.fg(c.grays[90]),
-                                  c.fontSize(18),
-                                  c.weightSemiBold,
-                                  c.keyedProp("letterSpacing")("0.04rem")
-                                )}
-                              >
-                                {m.sanPlus}
-                              </CMText>
-                            </View>
-                            {m.stockfish && (
-                              <>
-                                <Spacer width={0} grow />
-                                <View style={s(c.row, c.alignEnd)}>
-                                  <CMText
-                                    style={s(
-                                      c.weightSemiBold,
-                                      c.fontSize(14),
-                                      c.fg(c.grays[75])
-                                      // isGoodStockfishEval(
-                                      //   m.stockfish,
-                                      //   activeSide
-                                      // )
-                                      //   ? c.fg(goodTextColor)
-                                      //   : c.fg(badTextColor)
-                                    )}
-                                  >
-                                    {formatStockfishEval(m.stockfish)}
-                                  </CMText>
-                                </View>
-                              </>
-                            )}
-                          </View>
-                          <Spacer height={12} />
-                          <View
-                            style={s(
-                              isMobile ? c.column : c.row,
-                              c.selfStretch
-                            )}
-                          >
-                            <ResponseStatSection
-                              {...{
-                                masters: false,
-                                positionReport,
-                                side: activeSide,
-                                m,
-                              }}
-                            />
-                            <Spacer
-                              width={12}
-                              height={12}
-                              isMobile={isMobile}
-                            />
-                            <ResponseStatSection
-                              {...{
-                                masters: true,
-                                positionReport,
-                                side: activeSide,
-                                m,
-                              }}
-                            />
-                          </View>
-                          <Spacer height={12} />
-                          <View
-                            style={s(
-                              c.row,
-                              c.constrainWidth,
-                              c.flexWrap,
-                              c.gap(8)
-                            )}
-                          >
-                            {intersperse(
-                              tags.map((tag, i) => {
-                                let [foreground, background] = getTagColors(
-                                  tag.type
-                                );
-                                let icon = getTagIcon(tag.type);
-                                return (
-                                  <View
-                                    style={s(
-                                      c.bg(background),
-                                      c.border(`1px solid ${c.grays[5]}`),
-                                      c.br(2),
-                                      c.px(8),
-                                      c.py(4),
-                                      c.row
-                                    )}
-                                  >
-                                    {icon && (
-                                      <>
-                                        <CMText style={s(c.fg(foreground))}>
-                                          <i className={getTagIcon(tag.type)} />
-                                        </CMText>
-                                        <Spacer width={4} />
-                                      </>
-                                    )}
-                                    <CMText
-                                      style={s(c.fg(foreground), c.weightBold)}
-                                    >
-                                      {tag.type}
-                                    </CMText>
-                                  </View>
-                                );
-                              }),
-                              (i) => {
-                                return null;
-                              }
-                            )}
-                          </View>
-                        </View>
-                      </View>
-                    </Pressable>
-                  );
+                otherMoves.map((m, i) => {
+                  if (coveredSans.has(m.sanPlus)) {
+                    return null;
+                  }
+                  return <Response suggestedMove={m} />;
                 }),
                 (i) => {
                   return <Spacer height={12} key={i} />;
@@ -639,6 +529,167 @@ const Responses = () => {
         }
       })()}
     </View>
+  );
+});
+
+const Response = ({
+  suggestedMove,
+  repertoireMove,
+}: {
+  suggestedMove?: SuggestedMove;
+  repertoireMove?: RepertoireMove;
+}) => {
+  console.log("Yeah rendering this");
+  const [playSan, currentLine, positionReport, side] = useRepertoireState(
+    (s) => [
+      s.playSan,
+      s.currentLine,
+      s.getCurrentPositionReport(),
+      s.activeSide,
+    ],
+    shallow
+  );
+  console.log("Position report is now", positionReport);
+  const isMobile = useIsMobile();
+  let tags = [];
+  if (suggestedMove) {
+    let tags = [];
+    // take(
+    //   genMoveTags(suggestedMove, positionReport, currentEpd, side),
+    //   5
+    // );
+  }
+  let moveNumber = Math.floor(currentLine.length / 2) + 1;
+  let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
+  let mine = repertoireMove?.mine;
+  console.log({ suggestedMove, positionReport });
+
+  return (
+    <Pressable
+      onPress={() => {
+        playSan(sanPlus);
+      }}
+    >
+      <View
+        style={s(
+          c.br(2),
+          c.py(8),
+          c.pl(14),
+          c.pr(8),
+          c.bg(c.grays[12]),
+          c.border(`1px solid ${c.grays[20]}`),
+          c.clickable,
+          c.row
+        )}
+      >
+        <View style={s(c.column, c.grow, c.constrainWidth)}>
+          <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
+            <View style={s(c.row, c.alignEnd)}>
+              <CMText
+                style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(16))}
+              >
+                {moveNumber}
+                {side === "black" ? "... " : "."}
+              </CMText>
+              <Spacer width={2} />
+              <CMText
+                key={sanPlus}
+                style={s(
+                  c.fg(c.grays[90]),
+                  c.fontSize(18),
+                  c.weightSemiBold,
+                  c.keyedProp("letterSpacing")("0.04rem")
+                )}
+              >
+                {sanPlus}
+              </CMText>
+            </View>
+            {suggestedMove?.stockfish && (
+              <>
+                <Spacer width={0} grow />
+                <View style={s(c.row, c.alignEnd)}>
+                  <CMText
+                    style={s(
+                      c.weightSemiBold,
+                      c.fontSize(14),
+                      c.fg(c.grays[75])
+                      // isGoodStockfishEval(
+                      //   m.stockfish,
+                      //   activeSide
+                      // )
+                      //   ? c.fg(goodTextColor)
+                      //   : c.fg(badTextColor)
+                    )}
+                  >
+                    {formatStockfishEval(suggestedMove?.stockfish)}
+                  </CMText>
+                </View>
+              </>
+            )}
+          </View>
+          {suggestedMove && positionReport && (
+            <>
+              <Spacer height={12} />
+              <View style={s(isMobile ? c.column : c.row, c.selfStretch)}>
+                <ResponseStatSection
+                  {...{
+                    masters: false,
+                    positionReport,
+                    side,
+                    m: suggestedMove,
+                  }}
+                />
+                <Spacer width={12} height={12} isMobile={isMobile} />
+                <ResponseStatSection
+                  {...{
+                    masters: true,
+                    positionReport,
+                    side,
+                    m: suggestedMove,
+                  }}
+                />
+              </View>
+              <Spacer height={12} />
+              <View style={s(c.row, c.constrainWidth, c.flexWrap, c.gap(8))}>
+                {intersperse(
+                  tags.map((tag, i) => {
+                    let [foreground, background] = getTagColors(tag.type);
+                    let icon = getTagIcon(tag.type);
+                    return (
+                      <View
+                        style={s(
+                          c.bg(background),
+                          c.border(`1px solid ${c.grays[5]}`),
+                          c.br(2),
+                          c.px(8),
+                          c.py(4),
+                          c.row
+                        )}
+                      >
+                        {icon && (
+                          <>
+                            <CMText style={s(c.fg(foreground))}>
+                              <i className={getTagIcon(tag.type)} />
+                            </CMText>
+                            <Spacer width={4} />
+                          </>
+                        )}
+                        <CMText style={s(c.fg(foreground), c.weightBold)}>
+                          {tag.type}
+                        </CMText>
+                      </View>
+                    );
+                  }),
+                  (i) => {
+                    return null;
+                  }
+                )}
+              </View>
+            </>
+          )}
+        </View>
+      </View>
+    </Pressable>
   );
 };
 
@@ -673,7 +724,7 @@ const OpeningTree = ({
       {!state.hasPendingLineToAdd &&
         (
           state.repertoire[state.activeSide].positionResponses[
-            state.getCurrentEpd(state)
+          state.getCurrentEpd(state)
           ] ?? []
         ).map((move) => {
           return (
@@ -903,13 +954,16 @@ const SectionDivider = () => {
 
 const EditEtcModal = () => {
   let [open, activeSide, exportPgn, deleteRepertoire, quick] =
-    useRepertoireState((s) => [
-      s.editingState.etcModalOpen,
-      s.activeSide,
-      s.exportPgn,
-      s.deleteRepertoire,
-      s.quick,
-    ]);
+    useRepertoireState(
+      (s) => [
+        s.editingState.etcModalOpen,
+        s.activeSide,
+        s.exportPgn,
+        s.deleteRepertoire,
+        s.quick,
+      ],
+      shallow
+    );
   const isMobile = useIsMobile();
   return (
     <Modal
@@ -1178,32 +1232,18 @@ const sortSuggestedMoves = (
   );
 };
 
-const suggestedMovesByEffectiveness = (
-  report: PositionReport,
-  repertoire: Repertoire,
-  epd: string,
-  side: Side
-): SuggestedMove[] => {
-  return sortSuggestedMoves(report, side, repertoire, epd, {
-    eval: 1.0,
-    winrate: 700.0,
-    playrate: 200.0,
-    masterPlayrate: 400.0,
-  });
+let EFFECTIVENESS_WEIGHTS = {
+  eval: 1.0,
+  winrate: 700.0,
+  playrate: 200.0,
+  masterPlayrate: 400.0,
 };
 
-const suggestedMovesByPopularity = (
-  report: PositionReport,
-  repertoire: Repertoire,
-  epd: string,
-  side: Side
-): SuggestedMove[] => {
-  return sortSuggestedMoves(report, side, repertoire, epd, {
-    eval: 0.0,
-    winrate: 0.0,
-    playrate: 1.0,
-    masterPlayrate: 0.0,
-  });
+let PLAYRATE_WEIGHTS = {
+  eval: 0.0,
+  winrate: 0.0,
+  playrate: 1.0,
+  masterPlayrate: 0.0,
 };
 
 const getPlayRate = (
@@ -1232,22 +1272,21 @@ enum ResponseTagType {
 const genMoveTags = (
   m: SuggestedMove,
   positionReport: PositionReport,
-  repertoire: RepertoireSide,
   epd: string,
   side: Side
 ): ResponseTag[] => {
   let tags = [];
-  let r = find(
-    repertoire.positionResponses[epd],
-    (r) => r.sanPlus === m.sanPlus
-  );
-  if (r) {
-    if (r.mine) {
-      tags.push({ type: ResponseTagType.YourMove });
-    } else {
-      tags.push({ type: ResponseTagType.Covered });
-    }
-  }
+  // let r = find(
+  //   repertoire.positionResponses[epd],
+  //   (r) => r.sanPlus === m.sanPlus
+  // );
+  // if (r) {
+  //   if (r.mine) {
+  //     tags.push({ type: ResponseTagType.YourMove });
+  //   } else {
+  //     tags.push({ type: ResponseTagType.Covered });
+  //   }
+  // }
   // if (m.stockfish?.eval && positionReport.stockfish?.eval) {
   //   if (Math.abs(m.stockfish.eval - positionReport.stockfish.eval) <= 30) {
   //     tags.push({ type: ResponseTagType.Sound });
@@ -1394,10 +1433,10 @@ const AddPendingLineButton = () => {
 };
 
 const EditingTabPicker = () => {
-  const [selectedTab, quick] = useRepertoireState((s) => [
-    s.editingState.selectedTab,
-    s.quick,
-  ]);
+  const [selectedTab, quick] = useRepertoireState(
+    (s) => [s.editingState.selectedTab, s.quick],
+    shallow
+  );
   return (
     <View style={s(c.column)}>
       <SelectOneOf
@@ -1410,7 +1449,7 @@ const EditingTabPicker = () => {
         ]}
         activeChoice={selectedTab}
         horizontal
-        onSelect={(tab) => {}}
+        onSelect={(tab) => { }}
         renderChoice={(tab, active) => {
           return (
             <Pressable
@@ -1466,15 +1505,16 @@ const PositionOverview = () => {
         s.editingState.lastEcoCode,
         s.activeSide,
         s.pawnStructureLookup[
-          s.getCurrentPositionReport()?.pawnStructure?.name
+        s.getCurrentPositionReport()?.pawnStructure?.name
         ],
       ];
-    });
+    }, shallow);
   let fontColor = c.grays[60];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
     : [];
   console.log({ ecoCode });
+  const plansText = s(c.fontSize(14), c.fg(c.colors.textSecondary));
   return (
     <>
       {ecoCode && (
@@ -1522,19 +1562,54 @@ const PositionOverview = () => {
           </>
         )}
       </View>
-      {/*pawnStructure && (
+      {pawnStructure && (
         <>
-          <CMText>{pawnStructure.name}</CMText>
+          <Spacer height={24} />
+          <View
+            style={s(
+              c.bg(c.colors.cardBackground),
+              c.px(12),
+              c.py(12),
+              c.fillNoExpand
+            )}
+          >
+            <CMText
+              style={s(
+                c.fontSize(14),
+                c.weightRegular,
+                c.fg(c.colors.textSecondary)
+              )}
+            >
+              Pawn structure
+            </CMText>
+            <Spacer height={4} />
+            <CMText style={s(c.fontSize(18), c.weightBold)}>
+              {pawnStructure.name}
+            </CMText>
+            <Spacer height={12} />
+            <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
+              White plans
+            </CMText>
+            <Spacer height={4} />
+            <CMText style={s(plansText)}>{pawnStructure.plans}</CMText>
+            <Spacer height={12} />
+            <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
+              Black plans
+            </CMText>
+            <Spacer height={4} />
+            <CMText style={s(plansText)}>{pawnStructure.opponentPlans}</CMText>
+          </View>
         </>
-      )*/}
+      )}
     </>
   );
 };
 
 const MoveOverrideWarning = () => {
-  const [numMovesWouldBeDeleted] = useRepertoireState((s) => [
-    s.numMovesWouldBeDeleted,
-  ]);
+  const [numMovesWouldBeDeleted] = useRepertoireState(
+    (s) => [s.numMovesWouldBeDeleted],
+    shallow
+  );
   if (isNil(numMovesWouldBeDeleted) || numMovesWouldBeDeleted === 0) {
     return null;
   }
@@ -1563,3 +1638,17 @@ const MoveOverrideWarning = () => {
     </View>
   );
 };
+function debugEquality(a: any[], b: any[]): boolean {
+  return every(
+    map(zip(a, b), ([a, b]) => {
+      if (a === b) {
+        return true;
+      } else {
+        console.log("These are different!");
+        console.log(a);
+        console.log(b);
+        return false;
+      }
+    })
+  );
+}

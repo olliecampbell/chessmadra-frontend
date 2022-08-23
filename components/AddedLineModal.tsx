@@ -23,9 +23,10 @@ import { formatStockfishEval } from "app/utils/stockfish";
 import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
+import shallow from "zustand/shallow";
 
 export const AddedLineModal = () => {
-  let [stage] = useRepertoireState((s) => [s.addedLineState?.stage]);
+  let [stage] = useRepertoireState((s) => [s.addedLineState?.stage], shallow);
 
   const isMobile = useIsMobile();
   return (
@@ -86,7 +87,8 @@ let ModalHeader = ({ title, closeModal, icon }) => {
 
 const AddedLineAddMore = () => {
   let [addedLineState, quick, repertoireGrades, side] = useRepertoireState(
-    (s) => [s.addedLineState, s.quick, s.repertoireGrades, s.activeSide]
+    (s) => [s.addedLineState, s.quick, s.repertoireGrades, s.activeSide],
+    shallow
   );
   const isMobile = useIsMobile();
   const buttonStyles = s(c.buttons.basicInverse, c.py(12), c.px(16), {
@@ -198,13 +200,16 @@ const AddedLineAddMore = () => {
 
 const AddedLineOverview = () => {
   let [addedLineState, quick, repertoireGrades, side, reviewLine] =
-    useRepertoireState((s) => [
-      s.addedLineState,
-      s.quick,
-      s.repertoireGrades,
-      s.activeSide,
-      s.reviewLine,
-    ]);
+    useRepertoireState(
+      (s) => [
+        s.addedLineState,
+        s.quick,
+        s.repertoireGrades,
+        s.activeSide,
+        s.reviewLine,
+      ],
+      shallow
+    );
   const isMobile = useIsMobile();
   console.log({ isMobile });
   const reportHeaderStyles = s(c.fg(c.grays[35]), c.mb(4));

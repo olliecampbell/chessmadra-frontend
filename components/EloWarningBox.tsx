@@ -7,9 +7,10 @@ import {
   useRepertoireState,
 } from "app/utils/repertoire_state";
 import { Button } from "./Button";
+import shallow from "zustand/shallow";
 
 export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
-  let [] = useRepertoireState((s) => []);
+  let [] = useRepertoireState((s) => [], shallow);
   let buttonStyles = s(c.fontSize(14));
   return (
     <View

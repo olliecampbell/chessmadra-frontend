@@ -13,6 +13,7 @@ import { EloWarningBox } from "./EloWarningBox";
 import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
+import shallow from "zustand/shallow";
 
 type EloRange = [number, number];
 
@@ -26,11 +27,10 @@ const ELO_RANGES = [
 ];
 
 export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
-  let [user, updateEloRange, isUpdatingEloRange] = useRepertoireState((s) => [
-    s.user,
-    s.updateEloRange,
-    s.isUpdatingEloRange,
-  ]);
+  let [user, updateEloRange, isUpdatingEloRange] = useRepertoireState(
+    (s) => [s.user, s.updateEloRange, s.isUpdatingEloRange],
+    shallow
+  );
   let [selectedEloRange, setSelectedEloRange] = useState(
     (user?.eloRange ? parseEloRange(user.eloRange) : DEFAULT_ELO_RANGE) as [
       number,

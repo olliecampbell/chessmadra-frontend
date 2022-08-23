@@ -104,13 +104,17 @@ export const createChessState = <
       _state: ChessboardState
     ) => {
       setter(set, _state, (state: T) => {
+        console.log("square press?");
         let availableMove = state.availableMoves.find((m) => m.to == square);
         if (availableMove) {
+          console.log("Had available move!", availableMove);
           state.availableMoves = [];
           state.activeFromSquare = null;
           state.draggedOverSquare = null;
           let makeMove = (cb) => {
+            console.log("skip animation", skipAnimation);
             if (skipAnimation) {
+              console.log("Yup moving");
               state.position.move(availableMove);
               cb(null, state);
             } else {
@@ -130,6 +134,7 @@ export const createChessState = <
                 availableMove,
                 (shouldMove, cb) => {
                   if (shouldMove) {
+                    console.log("Should move, making move");
                     makeMove(cb);
                   }
                 },

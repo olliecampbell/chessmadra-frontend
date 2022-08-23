@@ -115,8 +115,9 @@ export interface EcoCode {
 }
 
 export interface PawnStructureDetails {
+  id: string;
   name: string;
   moreInfoLink: string;
   plans: string;
-  opponent_plans: string;
+  opponentPlans: string;
 }

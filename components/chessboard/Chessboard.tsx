@@ -327,13 +327,12 @@ export const ChessboardView = ({
       });
     });
     return panResponders;
-  }, []);
+  }, [state.frozen]);
 
   const isMobile = useIsMobile();
   const moveLogRef = useRef(null);
   useLayoutEffect(() => {
     if (moveLogRef.current) {
-      console.log("SCROLLING");
       moveLogRef.current.scrollLeft = moveLogRef.current.scrollWidth;
     }
   }, [state.moveLogPgn]);
@@ -449,16 +448,12 @@ export const ChessboardView = ({
                 pieceView = (
                   <Animated.View
                     key={`piece-${square}`}
-                    style={s(
-                      containerViewStyles,
-                      c.keyedProp("touchAction")("none"),
-                      {
-                        transform: [
-                          { translateX: pans[square].x },
-                          { translateY: pans[square].y },
-                        ],
-                      }
-                    )}
+                    style={s(containerViewStyles, {
+                      transform: [
+                        { translateX: pans[square].x },
+                        { translateY: pans[square].y },
+                      ],
+                    })}
                     {...panResponders[square].panHandlers}
                   >
                     {pieceViewInner}
@@ -652,6 +647,5 @@ export const ChessboardView = ({
     </>
   );
   // console.timeEnd("chessboard");
-  console.log("Rendered chessboard once");
   return x;
 };
