@@ -536,12 +536,15 @@ export const useRepertoireState = create<RepertoireState>()(
               s.moveLogPgn = lineToPgn(line);
               s.pendingResponses = {};
               s.differentMoveIndices = [];
-              s.editingState.lastEcoCode =
-                s.ecoCodeLookup[
-                  findLast(s.positions, (p) => {
-                    return s.ecoCodeLookup[p];
-                  }) as string
-                ];
+              if (s.ecoCodeLookup && s.editingState) {
+                s.editingState.lastEcoCode = last(
+                  filter(
+                    map(s.positions, (p) => {
+                      return s.ecoCodeLookup[p];
+                    })
+                  )
+                );
+              }
               map(zip(s.positions, line), ([position, san], i) => {
                 if (!san) {
                   return;
