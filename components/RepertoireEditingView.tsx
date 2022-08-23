@@ -1456,10 +1456,19 @@ const EditingTabPicker = () => {
 };
 
 const PositionOverview = () => {
-  const [positionReport, ecoCode] = useRepertoireState((s) => [
-    s.getCurrentPositionReport(),
-    s.ecoCodeLookup[s.getCurrentEpd()],
-  ]);
+  const [positionReport, ecoCode, activeSide, pawnStructure] =
+    useRepertoireState((s) => {
+      console.log(s.pawnStructureLookup);
+      console.log(s.getCurrentPositionReport()?.pawnStructure);
+      return [
+        s.getCurrentPositionReport(),
+        s.ecoCodeLookup[s.getCurrentEpd()],
+        s.activeSide,
+        s.pawnStructureLookup[
+          s.getCurrentPositionReport()?.pawnStructure?.name
+        ],
+      ];
+    });
   let fontColor = c.grays[60];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
@@ -1491,7 +1500,10 @@ const PositionOverview = () => {
         <View style={s(c.fullWidth)}>
           <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
           <Spacer height={4} />
-          <GameResultsBar gameResults={positionReport.results} />
+          <GameResultsBar
+            activeSide={activeSide}
+            gameResults={positionReport.results}
+          />
           {positionReport.masterResults && (
             <>
               <Spacer height={12} />
@@ -1499,11 +1511,19 @@ const PositionOverview = () => {
                 Results at master level
               </CMText>
               <Spacer height={4} />
-              <GameResultsBar gameResults={positionReport.masterResults} />
+              <GameResultsBar
+                activeSide={activeSide}
+                gameResults={positionReport.masterResults}
+              />
             </>
           )}
         </View>
       )}
+      {/*pawnStructure && (
+        <>
+          <CMText>{pawnStructure.name}</CMText>
+        </>
+      )*/}
     </>
   );
 };

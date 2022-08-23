@@ -33,6 +33,7 @@ const Authenticate = (props) => {
           .then(({ data }) => {
             let { token, user } = data as any;
             AppStore.update((s) => {
+              s.auth.tempUserUuid = user.id;
               s.auth.token = token;
               s.auth.user = user;
               s.auth.authStatus = GlobalAuthStatus.Authenticated;

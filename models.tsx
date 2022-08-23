@@ -23,6 +23,7 @@ export interface BlunderPuzzle {
 }
 
 export interface User {
+  id: string;
   // paid?: string;
   email: string;
   // subscription: ApplicationSubscription;
@@ -76,9 +77,15 @@ export interface PlayerTemplateMeta {
 
 export interface PositionReport {
   suggestedMoves: SuggestedMove[];
+  pawnStructure: PawnStructure;
   stockfish?: StockfishReport;
   results: GameResultsDistribution;
   masterResults: GameResultsDistribution;
+}
+
+export interface PawnStructure {
+  name: string;
+  reversed: boolean;
 }
 
 export interface StockfishReport {
@@ -105,4 +112,11 @@ export interface EcoCode {
   epd: string;
   fullName: string;
   code: string;
+}
+
+export interface PawnStructureDetails {
+  name: string;
+  moreInfoLink: string;
+  plans: string;
+  opponent_plans: string;
 }

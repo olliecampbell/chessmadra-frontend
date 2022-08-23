@@ -52,12 +52,13 @@ const AuthHandler = ({ children }) => {
             AppStore.update((s) => {
               s.auth.token = token;
               s.auth.user = user;
+              s.auth.tempUserUuid = user.id;
               s.auth.authStatus = AuthStatus.Authenticated;
             });
           })
           .catch((e) => {
             let status = e?.response?.status || 0;
-            if (status < 500 && status > 400) {
+            if (status === 401) {
               AppStore.update((s) => {
                 s.auth.token = undefined;
                 s.auth.user = undefined;

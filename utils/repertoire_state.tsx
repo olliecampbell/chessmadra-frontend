@@ -7,6 +7,7 @@ import {
   User,
   PositionReport,
   EcoCode,
+  PawnStructureDetails,
 } from "app/models";
 import create from "zustand";
 import { devtools } from "zustand/middleware";
@@ -111,6 +112,7 @@ export interface RepertoireState
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
   fetchEcoCodes: (_state?: RepertoireState) => void;
+  fetchSupplementary: (_state?: RepertoireState) => void;
   fetchRepertoireTemplates: (_state?: RepertoireState) => void;
   fetchPlayerTemplates: (_state?: RepertoireState) => void;
   initializeRepertoire: (_: {
@@ -241,7 +243,9 @@ export interface RepertoireState
   ) => void;
   previousBrowserStates: BrowserState[];
   ecoCodes: EcoCode[];
+  pawnStructures: PawnStructureDetails[];
   ecoCodeLookup: Record<string, EcoCode>;
+  pawnStructureLookup: Record<string, PawnStructureDetails>;
   browserState?: BrowserState;
   updateEloRange: (range: [number, number], _state?: RepertoireState) => void;
   isUpdatingEloRange: boolean;
@@ -311,6 +315,8 @@ export const useRepertoireState = create<RepertoireState>()(
           repertoire: undefined,
           repertoireGrades: { white: null, black: null },
           activeSide: "white",
+          ecoCodeLookup: {},
+          pawnStructureLookup: {},
           inProgressUsingPlayerTemplate: false,
           pendingResponses: {},
           positions: [START_EPD],
@@ -321,7 +327,9 @@ export const useRepertoireState = create<RepertoireState>()(
           initState: () => {
             let state = get();
             state.fetchRepertoire(state);
+            // TODO: remove
             state.fetchEcoCodes(state);
+            state.fetchSupplementary(state);
           },
           setUser: (user: User, _state?: RepertoireState) =>
             setter(set, _state, (s) => {
@@ -1161,6 +1169,29 @@ export const useRepertoireState = create<RepertoireState>()(
                     s.playerTemplates = data;
                   });
                 });
+            }),
+          fetchSupplementary: (_state?: RepertoireState) =>
+            setter(set, _state, (s) => {
+              client.get("/api/v1/openings/supplementary").then(
+                ({
+                  data,
+                }: {
+                  data: {
+                    ecoCodes: EcoCode[];
+                    pawnStructures: PawnStructureDetails[];
+                  };
+                }) => {
+                  set((s) => {
+                    s.ecoCodes = data.ecoCodes;
+                    s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
+                    s.pawnStructures = data.pawnStructures;
+                    s.pawnStructureLookup = keyBy(
+                      s.pawnStructures,
+                      (e) => e.name
+                    );
+                  });
+                }
+              );
             }),
           fetchEcoCodes: (_state?: RepertoireState) =>
             setter(set, _state, (s) => {

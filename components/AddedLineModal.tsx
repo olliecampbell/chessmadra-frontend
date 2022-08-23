@@ -265,22 +265,25 @@ const AddedLineOverview = () => {
             {lineToPgn(addedLineState.line)}
           </CMText>
           <Spacer height={24} grow />
-          <View style={s(c.row)}>
+          <View style={s(isMobile ? c.column : c.row)}>
             {addedLineState.positionReport && (
               <>
                 {addedLineState.positionReport.stockfish && (
-                  <View style={s(c.row, c.mr(24))}>
-                    <View style={s(c.column)}>
-                      <CMText style={s(reportHeaderStyles)}>
-                        Stockfish Eval
-                      </CMText>
-                      <CMText style={s(reportValueStyles)}>
-                        {formatStockfishEval(
-                          addedLineState.positionReport.stockfish
-                        )}
-                      </CMText>
+                  <>
+                    <View style={s(c.row)}>
+                      <View style={s(c.column)}>
+                        <CMText style={s(reportHeaderStyles)}>
+                          Stockfish Eval
+                        </CMText>
+                        <CMText style={s(reportValueStyles)}>
+                          {formatStockfishEval(
+                            addedLineState.positionReport.stockfish
+                          )}
+                        </CMText>
+                      </View>
                     </View>
-                  </View>
+                    <Spacer height={12} width={24} isMobile={isMobile} />
+                  </>
                 )}
                 {getTotalGames(addedLineState.positionReport.results) > 10 && (
                   <View style={s(c.row)}>
@@ -290,6 +293,7 @@ const AddedLineOverview = () => {
                       </CMText>
                       <View style={s(c.width(120))}>
                         <GameResultsBar
+                          activeSide={side}
                           smallNumbers
                           gameResults={addedLineState.positionReport.results}
                         />
