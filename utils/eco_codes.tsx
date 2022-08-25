@@ -8,14 +8,12 @@ export const getAppropriateEcoName = (
   if (!fullName) {
     return null;
   }
-  console.log(`Getting getAppropriateEcoName for ${fullName}`);
   let name = fullName.split(":")[0];
   let isFirstTimeSeeing =
     !browserStates ||
     !some(browserStates, (s) => {
       return s.ecoCode?.fullName.includes(`${name}:`);
     });
-  console.log({ isFirstTimeSeeing });
 
   let variations = map(fullName.split(":")?.[1]?.split(","), (s) => s.trim());
   if (isFirstTimeSeeing) {
@@ -23,4 +21,12 @@ export const getAppropriateEcoName = (
   } else {
     return [last(variations) ?? name, null];
   }
+};
+
+export const getNameEcoCodeIdentifier = (fullName: string): string => {
+  return getAppropriateEcoName(fullName)[0];
+};
+
+export const getVariationEcoCodeIdentifier = (fullName: string): string => {
+  return getAppropriateEcoName(fullName)[1]?.[1];
 };

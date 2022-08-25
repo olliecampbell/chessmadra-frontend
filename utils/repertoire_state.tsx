@@ -9,6 +9,7 @@ import {
   EcoCode,
   PawnStructureDetails,
 } from "app/models";
+import { RepertoireMiss } from "./repertoire";
 import create from "zustand";
 import { devtools } from "zustand/middleware";
 import { createQuick, logProxy, setter } from "./state";
@@ -72,6 +73,7 @@ import { failOnTrue } from "./test_settings";
 import { genEpd } from "./chess";
 import { ChessColor } from "app/types/Chess";
 import { formatEloRange } from "./elo_range";
+import { getNameEcoCodeIdentifier } from "./eco_codes";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -86,6 +88,7 @@ export enum AddLineFromOption {
   Initial = "Start Position",
   Current = "Current Position",
   BiggestMiss = "Biggest Gap in Repertoire",
+  BiggestMissOpening = "Biggest Gap in Opening",
 }
 
 export interface RepertoireState
@@ -255,8 +258,9 @@ export interface RepertoireState
     etcModalOpen: boolean;
   };
   addedLineState: {
-    addLineFrom: AddLineFromOption;
     line: string[];
+    addNewLineChoices?: AddNewLineChoice[];
+    addNewLineSelectedIndex?: number;
     ecoCode: EcoCode;
     stage: AddedLineStage;
     positionReport: PositionReport;
@@ -269,6 +273,13 @@ export interface RepertoireState
     i: number,
     _state?: RepertoireState | WritableDraft<RepertoireState>
   ) => void;
+}
+
+export interface AddNewLineChoice {
+  title: string;
+  line: string;
+  active?: boolean;
+  incidence?: number;
 }
 
 export enum EditingTab {
@@ -388,11 +399,16 @@ export const useRepertoireState = create<RepertoireState>()(
           setter(set, _state, (s) => {
             s.backToStartPosition(s);
             pgnToLine(pgn).map((san) => {
+              console.log({ san });
               s.position.move(san);
               if (s.isEditing) {
                 s.onMove(s);
               }
             });
+            console.log(
+              "After play pgn, positions are  ",
+              logProxy(s.positions)
+            );
           }),
         playSan: (san: string, _state?: RepertoireState) =>
           setter(set, _state, (s) => {
@@ -522,7 +538,7 @@ export const useRepertoireState = create<RepertoireState>()(
             return 0;
           }
           let total = 0;
-          let seen_epds = new Set();
+          let seenEpds = new Set();
           let recurse = (epd, isStart?: boolean) => {
             let responses = s.repertoire[s.activeSide].positionResponses[epd];
             if (isStart && first(responses)?.mine == false) {
@@ -532,8 +548,8 @@ export const useRepertoireState = create<RepertoireState>()(
               if (r.mine) {
                 total += 1;
               }
-              if (!seen_epds.has(r.epdAfter)) {
-                seen_epds.add(r.epdAfter);
+              if (!seenEpds.has(r.epdAfter)) {
+                seenEpds.add(r.epdAfter);
                 recurse(r.epdAfter);
               }
             });
@@ -558,6 +574,7 @@ export const useRepertoireState = create<RepertoireState>()(
                 )
               );
             }
+            console.log("POSITIONS", logProxy(s.positions));
             map(zip(s.positions, line), ([position, san], i) => {
               if (!san) {
                 return;
@@ -571,6 +588,22 @@ export const useRepertoireState = create<RepertoireState>()(
                 )
               ) {
                 s.differentMoveIndices.push(i);
+                let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
+                // let checker = () => {
+                //   console.log(
+                //     "Checking position and san",
+                //     position,
+                //     san,
+                //     mine
+                //   );
+                //   let chess = new Chess();
+                //   chess.load(position);
+                //   console.log(chess.ascii());
+                //   if (!chess.validateMoves([san])) {
+                //     console.warn("This was an invalid move!", i);
+                //   }
+                // };
+                // checker();
                 s.pendingResponses[position] = [
                   {
                     epd: position,
@@ -578,7 +611,7 @@ export const useRepertoireState = create<RepertoireState>()(
                     sanPlus: san,
                     side: s.activeSide,
                     pending: true,
-                    mine: i % 2 === (s.activeSide === "white" ? 0 : 1),
+                    mine: mine,
                     srs: {
                       needsReview: false,
                       firstReview: false,
@@ -643,6 +676,7 @@ export const useRepertoireState = create<RepertoireState>()(
           setter(set, _state, (s) => {
             console.log("On move called!");
             let epd = genEpd(s.position);
+            console.log("Pushing epd into positions!", epd);
             s.positions.push(epd);
             if (s.debugPawnStructuresState) {
               console.log("Should be done right now, what's the position?");
@@ -1418,21 +1452,67 @@ export const useRepertoireState = create<RepertoireState>()(
               })
               .then(({ data }: { data: FetchRepertoireResponse }) => {
                 set((s) => {
+                  // s.backToStartPosition(s);
+                  s.repertoire = data.repertoire;
+                  s.repertoireGrades = data.grades;
+                  s.onRepertoireUpdate(s);
+                  s.onEditingPositionUpdate(s);
+
                   s.addedLineState = {
                     line: s.currentLine,
-                    addLineFrom: AddLineFromOption.BiggestMiss,
                     stage: AddedLineStage.Initial,
+                    addNewLineSelectedIndex: 0,
                     positionReport:
                       s.positionReports[s.activeSide][s.getCurrentEpd()],
                     ecoCode: findLast(
                       map(s.positions, (p) => s.ecoCodeLookup[p])
                     ),
                   };
-                  // s.backToStartPosition(s);
-                  s.repertoire = data.repertoire;
-                  s.repertoireGrades = data.grades;
-                  s.onRepertoireUpdate(s);
-                  s.onEditingPositionUpdate(s);
+                  let choices = [];
+                  let seenMisses = new Set();
+                  let addMiss = (miss: RepertoireMiss, title) => {
+                    if (!miss || seenMisses.has(miss.epd)) {
+                      return;
+                    }
+                    seenMisses.add(miss.epd);
+                    choices.push({
+                      line: miss.lines[0],
+                      title: title,
+                      incidence: miss.incidence,
+                    });
+                  };
+                  let biggestMiss =
+                    s.repertoireGrades[s.activeSide].biggestMiss;
+                  if (biggestMiss) {
+                    addMiss(biggestMiss, `Biggest miss overall`);
+                  }
+
+                  let ecoCode = s.addedLineState.ecoCode;
+                  if (ecoCode) {
+                    let ecoName = getNameEcoCodeIdentifier(ecoCode.fullName);
+                    let miss = find(
+                      s.repertoireGrades[s.activeSide].biggestMisses,
+                      (m) => m.ecoCodeName == ecoName
+                    );
+                    addMiss(miss, `Biggest miss in ${ecoName}`);
+                    let fullEcoName = ecoCode.fullName;
+                    miss = find(
+                      s.repertoireGrades[s.activeSide].biggestMisses,
+                      (m) => m.ecoCodeName == fullEcoName
+                    );
+                    addMiss(miss, `Biggest miss in ${fullEcoName}`);
+                  }
+
+                  choices.push({
+                    line: "",
+                    title: "Start position",
+                  });
+                  choices.push({
+                    line: lineToPgn(s.addedLineState.line),
+                    title: "Current position",
+                  });
+                  choices = take(choices, 3);
+                  s.addedLineState.addNewLineChoices = choices;
                 });
               })
               .finally(() => {

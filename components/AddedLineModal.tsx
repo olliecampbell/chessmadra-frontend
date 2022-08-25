@@ -6,6 +6,7 @@ import { CMText } from "./CMText";
 import {
   AddedLineStage,
   AddLineFromOption,
+  AddNewLineChoice,
   DEFAULT_ELO_RANGE,
   useRepertoireState,
 } from "app/utils/repertoire_state";
@@ -22,7 +23,10 @@ import { useIsMobile } from "app/utils/isMobile";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
+import {
+  getAppropriateEcoName,
+  getNameEcoCodeIdentifier,
+} from "app/utils/eco_codes";
 import shallow from "zustand/shallow";
 
 export const AddedLineModal = () => {
@@ -30,7 +34,7 @@ export const AddedLineModal = () => {
 
   const isMobile = useIsMobile();
   return (
-    <Modal onClose={() => {}} visible={!isNil(stage)}>
+    <Modal onClose={() => { }} visible={!isNil(stage)}>
       <View
         style={s(
           c.column,
@@ -99,14 +103,11 @@ const AddedLineAddMore = () => {
       s.addedLineState = null;
     });
   };
-  let boardLine = lineToPgn(addedLineState.line);
-  let biggestMiss = repertoireGrades[side].biggestMiss;
-  if (addedLineState.addLineFrom === AddLineFromOption.BiggestMiss) {
-    boardLine = biggestMiss.lines[0];
-  }
-  if (addedLineState.addLineFrom === AddLineFromOption.Initial) {
-    boardLine = "";
-  }
+  // let biggestMiss = repertoireGrades[side].biggestMiss;
+  // let ecoFullName = addedLineState.ecoCode?.fullName;
+  let activeChoice =
+    addedLineState.addNewLineChoices[addedLineState.addNewLineSelectedIndex];
+  let boardLine = activeChoice.line;
   const chessState = createStaticChessState({
     line: boardLine,
     side: side,
@@ -121,32 +122,21 @@ const AddedLineAddMore = () => {
       <Spacer height={12} />
       <View style={s(c.row, c.fullWidth)}>
         <SelectOneOf
-          containerStyles={s(c.grow)}
-          choices={[
-            AddLineFromOption.BiggestMiss,
-            AddLineFromOption.Current,
-            AddLineFromOption.Initial,
-          ]}
+          containerStyles={s(c.grow, c.flexible)}
+          choices={addedLineState.addNewLineChoices}
           // cellStyles={s(c.bg(c.grays[15]))}
           // horizontal={true}
-          activeChoice={addedLineState.addLineFrom}
-          onSelect={(c) => {
-            quick((s) => {
-              s.addedLineState.addLineFrom = c;
-            });
-            // quick((s) => {
-            //   s.gameResult = c;
-            // });
-          }}
+          activeChoice={activeChoice}
+          onSelect={(c, i) => { }}
           separator={() => {
             return <Spacer height={12} />;
           }}
-          renderChoice={(r: AddLineFromOption, active: boolean) => {
+          renderChoice={(r: AddNewLineChoice, active: boolean, i: number) => {
             return (
               <Pressable
                 onPress={() => {
                   quick((s) => {
-                    s.addedLineState.addLineFrom = r;
+                    s.addedLineState.addNewLineSelectedIndex = i;
                   });
                 }}
               >
@@ -161,12 +151,12 @@ const AddedLineAddMore = () => {
                   )}
                 >
                   <CMText style={s(c.fg(c.colors.textInverse), c.weightBold)}>
-                    {r}
+                    {r.title}
                   </CMText>
                   <Spacer height={4} />
-                  {r === AddLineFromOption.BiggestMiss && (
+                  {r.incidence && (
                     <CMText style={s(c.fg(c.colors.textInverseSecondary))}>
-                      {(biggestMiss.incidence * 100).toFixed(1)}% of games
+                      {(r.incidence * 100).toFixed(1)}% of games
                     </CMText>
                   )}
                 </View>
@@ -176,7 +166,7 @@ const AddedLineAddMore = () => {
         />
         <Spacer width={24} />
         <View style={s(c.size(isMobile ? 120 : 160))}>
-          <ChessboardView onSquarePress={() => {}} state={chessState} />
+          <ChessboardView onSquarePress={() => { }} state={chessState} />
         </View>
       </View>
       <Spacer height={24} />
@@ -313,7 +303,7 @@ const AddedLineOverview = () => {
         <Spacer width={48} grow />
         <View style={s(c.size(isMobile ? 120 : 160))}>
           <ChessboardView
-            onSquarePress={() => {}}
+            onSquarePress={() => { }}
             state={createStaticChessState({
               line: lineToPgn(addedLineState.line),
               side: side,

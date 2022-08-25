@@ -44,7 +44,6 @@ export const Modal = ({
             c.br(2),
             c.column,
             c.unclickable,
-            c.width(400),
             c.maxWidth("calc(100% - 16px)")
           )}
         >

@@ -345,7 +345,6 @@ export const RepertoireEditingView = ({
   });
 
   let biggestMiss = state.repertoireGrades?.[state.activeSide]?.biggestMiss;
-  let biggestMissRow = createBiggestMissRow(state, state.activeSide);
   let positionReport = state.getCurrentPositionReport();
   return (
     <>
@@ -418,7 +417,6 @@ const Responses = React.memo(function Responses() {
     ],
     shallow
   );
-  console.log("Rendering with", currentEpd, positionReport);
   let coveredSans = new Set();
   forEach(existingMoves, (m) => {
     coveredSans.add(m.sanPlus);
@@ -454,7 +452,6 @@ const Responses = React.memo(function Responses() {
           {intersperse(
             existingMoves.map((x, i) => {
               let sm = find(suggestedMoves, (m) => m.sanPlus === x.sanPlus);
-              console.log("Rendering my move with suggested move: ", sm);
               return <Response repertoireMove={x} suggestedMove={sm} />;
             }),
             (i) => {
@@ -539,7 +536,6 @@ const Response = ({
   suggestedMove?: SuggestedMove;
   repertoireMove?: RepertoireMove;
 }) => {
-  console.log("Yeah rendering this");
   const [playSan, currentLine, positionReport, side] = useRepertoireState(
     (s) => [
       s.playSan,
@@ -549,7 +545,6 @@ const Response = ({
     ],
     shallow
   );
-  console.log("Position report is now", positionReport);
   const isMobile = useIsMobile();
   let tags = [];
   if (suggestedMove) {
@@ -562,7 +557,6 @@ const Response = ({
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
-  console.log({ suggestedMove, positionReport });
 
   return (
     <Pressable
@@ -871,78 +865,6 @@ const OpeningNode = ({
   );
 };
 
-function createBiggestMissRow(state: RepertoireState, side: string) {
-  let biggestMiss = state.repertoireGrades[side]?.biggestMiss as RepertoireMiss;
-  if (!biggestMiss) {
-    return null;
-  }
-  return (
-    <Pressable
-      onPress={() => {
-        state.quick((s) => {
-          state.startEditing(side as Side, s);
-          state.playPgn(biggestMiss.lines[0], s);
-        });
-      }}
-    >
-      <View
-        style={s(
-          c.bg(c.grays[15]),
-          c.py(12),
-          c.px(12),
-          c.column,
-          c.justifyBetween,
-          c.alignCenter
-        )}
-      >
-        <View style={s(c.row, c.selfStart)}>
-          <CMText
-            style={s(
-              c.fg(c.colors.textSecondary),
-              c.fontSize(12),
-              c.weightSemiBold,
-              c.weightBold,
-              c.selfStart
-            )}
-          >
-            Biggest miss -
-          </CMText>
-          <Spacer width={4} />
-          <CMText
-            style={s(
-              c.fg(c.colors.textSecondary),
-              c.fontSize(12),
-              c.weightSemiBold,
-              c.weightBold,
-              c.selfStart
-            )}
-          >
-            {formatIncidence(biggestMiss.incidence)} of games
-          </CMText>
-        </View>
-        <Spacer height={2} />
-        <CMText
-          style={s(
-            c.constrainWidth,
-            c.fg(c.colors.textPrimary),
-            c.weightSemiBold,
-            c.fontSize(13),
-            c.weightBold,
-            c.selfStart,
-            c.pb(2),
-            c.overflowHidden,
-            c.keyedProp("textOverflow")("ellipsis"),
-            c.whitespace("nowrap"),
-            c.borderBottom(`1px solid ${c.grays[40]}`)
-          )}
-        >
-          {biggestMiss?.lines[0]}
-        </CMText>
-      </View>
-    </Pressable>
-  );
-}
-
 const SectionDivider = () => {
   const isMobile = useIsMobile();
   return (
@@ -1149,7 +1071,6 @@ const sortSuggestedMoves = (
   }
 ): SuggestedMove[] => {
   let positionWinRate = getWinRate(report.results, side);
-  console.log("Side is ", side);
   let DEBUG_MOVE = "Nf6";
   return reverse(
     sortBy(report.suggestedMoves, (m) => {
@@ -1498,8 +1419,6 @@ const EditingTabPicker = () => {
 const PositionOverview = () => {
   const [positionReport, ecoCode, activeSide, pawnStructure] =
     useRepertoireState((s) => {
-      console.log(s.pawnStructureLookup);
-      console.log(s.getCurrentPositionReport()?.pawnStructure);
       return [
         s.getCurrentPositionReport(),
         s.editingState.lastEcoCode,
@@ -1513,7 +1432,6 @@ const PositionOverview = () => {
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
     : [];
-  console.log({ ecoCode });
   const plansText = s(c.fontSize(14), c.fg(c.colors.textSecondary));
   return (
     <>
@@ -1562,7 +1480,7 @@ const PositionOverview = () => {
           </>
         )}
       </View>
-      {pawnStructure && (
+      {pawnStructure && false && (
         <>
           <Spacer height={24} />
           <View
@@ -1644,9 +1562,6 @@ function debugEquality(a: any[], b: any[]): boolean {
       if (a === b) {
         return true;
       } else {
-        console.log("These are different!");
-        console.log(a);
-        console.log(b);
         return false;
       }
     })

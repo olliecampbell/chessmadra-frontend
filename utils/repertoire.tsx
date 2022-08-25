@@ -28,7 +28,10 @@ export function lineToPgn(line: string[]): string {
 }
 
 export function pgnToLine(line: string): string[] {
-  return line.replaceAll(/\d+\./g, "").split(" ");
+  return line
+    .replaceAll(/\d+\./g, "")
+    .split(" ")
+    .filter((x) => x !== "");
 }
 
 export type Repertoire = BySide<RepertoireSide>;
@@ -89,12 +92,16 @@ export interface RepertoireGrade {
   instructiveGames: LichessGame[];
   // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
+  biggestMisses: RepertoireMiss[];
 }
+
+export type OpeningIdentifier = string;
 
 export interface RepertoireMiss {
   incidence: number;
   lines: string[];
   epd: string;
+  ecoCodeName?: string;
 }
 
 export interface PendingLine {
@@ -109,4 +116,3 @@ export const formatIncidence = (incidence: number) => {
 const removeTrailingZeros = (n: string) => {
   return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
 };
-
