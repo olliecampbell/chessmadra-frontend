@@ -38,7 +38,7 @@ export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
     ]
   );
   let modalContent = (
-    <View style={s(c.column, c.px(12), c.py(12))}>
+    <View style={s(c.column, c.px(12), c.py(12), c.maxWidth(400))}>
       <CMText style={s(c.fg(c.colors.textPrimary))}>
         Select your elo range on Lichess. If you play on chess.com, bump your
         rating up by a few hundred points. This will be used for win-rates and
@@ -51,7 +51,7 @@ export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
         choices={ELO_RANGES}
         activeChoice={selectedEloRange}
         equality={isEqual}
-        onSelect={function (c): void {
+        onSelect={function(c): void {
           setSelectedEloRange(c);
         }}
         renderChoice={(r: EloRange) => {
