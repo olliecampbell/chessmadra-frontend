@@ -1190,7 +1190,7 @@ export const useRepertoireState = create<RepertoireState>()(
               s.flipped = side === "black";
               s.editingState = {
                 ...s.editingState,
-                selectedTab: EditingTab.Position,
+                selectedTab: EditingTab.Responses,
                 etcModalOpen: false,
               };
               s.onEditingPositionUpdate(s);
