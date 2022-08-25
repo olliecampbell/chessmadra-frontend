@@ -457,17 +457,17 @@ const RepertoireSideSummary = ({
                     />,
                     ...(!isNil(expectedDepth)
                       ? [
-                          <SummaryRow
-                            {...{ isMobile }}
-                            key={"depth"}
-                            k="Expected depth"
-                            v={
-                              expectedDepth === 0
-                                ? "0"
-                                : expectedDepth.toFixed(2)
-                            }
-                          />,
-                        ]
+                        <SummaryRow
+                          {...{ isMobile }}
+                          key={"depth"}
+                          k="Expected depth"
+                          v={
+                            expectedDepth === 0
+                              ? "0"
+                              : expectedDepth.toFixed(2)
+                          }
+                        />,
+                      ]
                       : []),
                     // ...(biggestMiss
                     //   ? [
@@ -512,13 +512,6 @@ const RepertoireSideSummary = ({
                 <Spacer height={isMobile ? 12 : 18} />
                 {isEmpty(instructiveGames) && (
                   <View style={s(c.column, c.grow, c.center, c.px(24))}>
-                    <CMText>
-                      <i
-                        className="fa-regular fa-empty-set"
-                        style={s(c.fg(c.grays[30]), c.fontSize(24))}
-                      />
-                    </CMText>
-                    <Spacer height={8} />
                     <CMText
                       style={s(
                         c.fg(c.grays[75]),
@@ -633,8 +626,8 @@ const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
         {type === BiggestMissTagType.StartPosition
           ? "Start position"
           : type === BiggestMissTagType.Biggest
-          ? "Biggest miss"
-          : "Critical position"}
+            ? "Biggest miss"
+            : "Critical position"}
       </CMText>
     </View>
   );

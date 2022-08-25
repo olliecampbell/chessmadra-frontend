@@ -283,6 +283,18 @@ const basicButtonStyles = s(
     textStyles: s(weightBold, fontSize(16), fg(colors.textInverse)),
   }
 );
+const outlineDarkButtonStyles = s(
+  br(2),
+  py(16),
+  px(16),
+  bg("none"),
+  border(`1px solid ${grays[20]}`),
+  clickable,
+  center,
+  {
+    textStyles: s(weightBold, fontSize(16), fg(grays[10])),
+  }
+);
 const outlineLightButtonStyles = s(
   br(2),
   py(16),
@@ -346,6 +358,7 @@ const buttons = {
   primaryDisabled: primaryDisabledButtonStyles,
   squareBasicButtons: squareBottomRowButtonStyles,
   outlineLight: outlineLightButtonStyles,
+  outlineDark: outlineDarkButtonStyles,
 };
 
 const fillNoExpand = s(minWidth("100%"), width(0));

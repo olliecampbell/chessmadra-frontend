@@ -80,6 +80,7 @@ import useKeypress from "react-use-keypress";
 import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { Modal } from "./Modal";
+import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 
 type BackControlsProps = {
   state: RepertoireState;
@@ -271,14 +272,14 @@ export const MoveLog = () => {
                       </CMText>
                     </View>
                     <Spacer width={4} />
-                    <Pressable onPress={() => { }}>
+                    <Pressable onPress={() => {}}>
                       <CMText
                         style={s(moveStyles, whiteIsNew && newMoveStyles)}
                       >
                         {whiteMove?.san}
                       </CMText>
                     </Pressable>
-                    <Pressable onPress={() => { }}>
+                    <Pressable onPress={() => {}}>
                       <CMText
                         style={s(moveStyles, blackIsNew && newMoveStyles)}
                       >
@@ -321,23 +322,6 @@ export const RepertoireEditingView = ({
 }) => {
   const isMobile = useIsMobile();
   let side = state.activeSide;
-  const {
-    open: confirmMoveDeleteModalOpen,
-    setOpen: setConfirmMoveDeleteModalOpen,
-    modal: confirmMoveDeleteModal,
-  } = useModal({
-    content: (
-      <ConfirmMoveDeleteModal
-        {...{
-          state,
-          setConfirmMoveDeleteModalOpen: (...args) => {
-            setConfirmMoveDeleteModalOpen(...args);
-          },
-        }}
-      />
-    ),
-    isOpen: false,
-  });
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
     if (event.key === "ArrowLeft") {
       state.backOne();
@@ -348,7 +332,7 @@ export const RepertoireEditingView = ({
   let positionReport = state.getCurrentPositionReport();
   return (
     <>
-      {confirmMoveDeleteModal}
+      <DeleteMoveConfirmationModal />
       <AddedLineModal />
       <EditEtcModal />
       <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
@@ -425,12 +409,12 @@ const Responses = React.memo(function Responses() {
   let ownSide = side === activeSide;
   let suggestedMoves = positionReport
     ? sortSuggestedMoves(
-      positionReport,
-      activeSide,
-      repertoire,
-      currentEpd,
-      side === activeSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
-    )
+        positionReport,
+        activeSide,
+        repertoire,
+        currentEpd,
+        side === activeSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
+      )
     : [];
   existingMoves = sortBy(existingMoves, (m) => {
     return findIndex(suggestedMoves, (s) => s.sanPlus === m.sanPlus);
@@ -469,8 +453,8 @@ const Responses = React.memo(function Responses() {
               ? "Other moves"
               : "You can play"
             : !isEmpty(existingMoves)
-              ? "Other moves"
-              : "Prepare for..."}
+            ? "Other moves"
+            : "Prepare for..."}
         </CMText>
       )}
       {(() => {
@@ -536,15 +520,17 @@ const Response = ({
   suggestedMove?: SuggestedMove;
   repertoireMove?: RepertoireMove;
 }) => {
-  const [playSan, currentLine, positionReport, side] = useRepertoireState(
-    (s) => [
-      s.playSan,
-      s.currentLine,
-      s.getCurrentPositionReport(),
-      s.activeSide,
-    ],
-    shallow
-  );
+  const [playSan, currentLine, positionReport, side, quick] =
+    useRepertoireState(
+      (s) => [
+        s.playSan,
+        s.currentLine,
+        s.getCurrentPositionReport(),
+        s.activeSide,
+        s.quick,
+      ],
+      shallow
+    );
   const isMobile = useIsMobile();
   let tags = [];
   if (suggestedMove) {
@@ -578,7 +564,7 @@ const Response = ({
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
           <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
-            <View style={s(c.row, c.alignEnd)}>
+            <View style={s(c.row, c.alignCenter)}>
               <CMText
                 style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(16))}
               >
@@ -598,28 +584,52 @@ const Response = ({
                 {sanPlus}
               </CMText>
             </View>
-            {suggestedMove?.stockfish && (
-              <>
-                <Spacer width={0} grow />
-                <View style={s(c.row, c.alignEnd)}>
-                  <CMText
-                    style={s(
-                      c.weightSemiBold,
-                      c.fontSize(14),
-                      c.fg(c.grays[75])
-                      // isGoodStockfishEval(
-                      //   m.stockfish,
-                      //   activeSide
-                      // )
-                      //   ? c.fg(goodTextColor)
-                      //   : c.fg(badTextColor)
-                    )}
+            <View style={s(c.row, c.alignCenter)}>
+              {suggestedMove?.stockfish && (
+                <>
+                  <Spacer width={0} grow />
+                  <View style={s(c.row, c.alignEnd)}>
+                    <CMText
+                      style={s(
+                        c.weightSemiBold,
+                        c.fontSize(14),
+                        c.fg(c.grays[75])
+                        // isGoodStockfishEval(
+                        //   m.stockfish,
+                        //   activeSide
+                        // )
+                        //   ? c.fg(goodTextColor)
+                        //   : c.fg(badTextColor)
+                      )}
+                    >
+                      {formatStockfishEval(suggestedMove?.stockfish)}
+                    </CMText>
+                  </View>
+                </>
+              )}
+              {repertoireMove?.mine && (
+                <>
+                  <Spacer width={12} />
+                  <Pressable
+                    style={s()}
+                    onPress={() => {
+                      quick((s) => {
+                        s.editingState.deleteConfirmationModalOpen = true;
+                        s.editingState.deleteConfirmationResponse =
+                          repertoireMove;
+                      });
+                    }}
                   >
-                    {formatStockfishEval(suggestedMove?.stockfish)}
-                  </CMText>
-                </View>
-              </>
-            )}
+                    <CMText style={s(c.clickable)}>
+                      <i
+                        style={s(c.fg(c.colors.failureColor), c.fontSize(18))}
+                        className={`fa-regular fa-trash`}
+                      ></i>
+                    </CMText>
+                  </Pressable>
+                </>
+              )}
+            </View>
           </View>
           {suggestedMove && positionReport && (
             <>
@@ -718,7 +728,7 @@ const OpeningTree = ({
       {!state.hasPendingLineToAdd &&
         (
           state.repertoire[state.activeSide].positionResponses[
-          state.getCurrentEpd(state)
+            state.getCurrentEpd(state)
           ] ?? []
         ).map((move) => {
           return (
@@ -986,72 +996,6 @@ const EditEtcModal = () => {
         </View>
       </View>
     </Modal>
-  );
-};
-
-const ConfirmMoveDeleteModal = ({
-  state,
-  setConfirmMoveDeleteModalOpen,
-}: {
-  state: RepertoireState;
-  setConfirmMoveDeleteModalOpen: (_: boolean) => void;
-}) => {
-  let countToDelete =
-    state.getMovesDependentOnPosition(state.divergencePosition) + 1;
-  return (
-    <>
-      <View
-        style={s(
-          c.column,
-          c.alignStart,
-          c.bg(c.grays[15]),
-          c.px(16),
-          c.py(16),
-          c.br(8)
-        )}
-      >
-        <CMText
-          style={s(
-            c.fg(c.colors.textPrimary),
-            c.flexShrink(1),
-            c.fontSize(14),
-            c.lineHeight("1.7em")
-          )}
-        >
-          Are you sure you want to delete {pluralize(countToDelete, "move")}{" "}
-          starting with {state.moveLogPgn} ?
-        </CMText>
-        <Spacer height={18} />
-        <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
-          <Button
-            style={s(c.buttons.outlineLight, c.height(36), c.selfEnd)}
-            onPress={() => {
-              setConfirmMoveDeleteModalOpen(false);
-            }}
-          >
-            <CMText style={s(c.buttons.outlineLight.textStyles)}>Cancel</CMText>
-          </Button>
-          <Spacer width={12} grow />
-          <Button
-            style={s(
-              c.buttons.primary,
-              c.height(36),
-              c.selfEnd,
-              c.bg(c.failureShades[50])
-            )}
-            isLoading={state.isDeletingMove}
-            loaderProps={{ color: c.grays[75] }}
-            onPress={() => {
-              state.deleteCurrentMove(() => {
-                setConfirmMoveDeleteModalOpen(false);
-              }, state);
-            }}
-          >
-            <CMText style={s(c.buttons.primary.textStyles)}>Delete</CMText>
-          </Button>
-        </View>
-      </View>
-    </>
   );
 };
 
@@ -1383,7 +1327,7 @@ const EditingTabPicker = () => {
         ]}
         activeChoice={selectedTab}
         horizontal
-        onSelect={(tab) => { }}
+        onSelect={(tab) => {}}
         renderChoice={(tab, active) => {
           return (
             <Pressable
@@ -1437,7 +1381,7 @@ const PositionOverview = () => {
         s.editingState.lastEcoCode,
         s.activeSide,
         s.pawnStructureLookup[
-        s.getCurrentPositionReport()?.pawnStructure?.name
+          s.getCurrentPositionReport()?.pawnStructure?.name
         ],
       ];
     }, shallow);
