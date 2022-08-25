@@ -448,12 +448,16 @@ export const ChessboardView = ({
                 pieceView = (
                   <Animated.View
                     key={`piece-${square}`}
-                    style={s(containerViewStyles, {
-                      transform: [
-                        { translateX: pans[square].x },
-                        { translateY: pans[square].y },
-                      ],
-                    })}
+                    style={s(
+                      containerViewStyles,
+                      c.keyedProp("touchAction")("none"),
+                      {
+                        transform: [
+                          { translateX: pans[square].x },
+                          { translateY: pans[square].y },
+                        ],
+                      }
+                    )}
                     {...panResponders[square].panHandlers}
                   >
                     {pieceViewInner}
@@ -536,7 +540,7 @@ export const ChessboardView = ({
                     return (
                       <Pressable
                         key={j}
-                        onPress={() => {}}
+                        onPress={() => { }}
                         onPressIn={() => {
                           if (state.frozen) {
                             // Don't know why this prevents bubbling up
@@ -552,11 +556,11 @@ export const ChessboardView = ({
                           !state.frozen && c.clickable,
                           c.flexible,
                           state.hideColors &&
-                            s(
-                              !isBottomEdge &&
-                                c.borderBottom(hiddenColorsBorder),
-                              !isRightEdge && c.borderRight(hiddenColorsBorder)
-                            )
+                          s(
+                            !isBottomEdge &&
+                            c.borderBottom(hiddenColorsBorder),
+                            !isRightEdge && c.borderRight(hiddenColorsBorder)
+                          )
                         )}
                       >
                         {state.isColorTraining && (
