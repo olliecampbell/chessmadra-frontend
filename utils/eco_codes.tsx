@@ -1,18 +1,19 @@
-import { some, map, last } from "lodash";
-import { BrowserState } from "app/utils/repertoire_state";
+import { some, map, last, isNil } from "lodash";
+import { BrowserDrilldownState } from "app/utils/repertoire_state";
 
 export const getAppropriateEcoName = (
   fullName: string,
-  browserStates?: BrowserState[]
+  browserStates?: BrowserDrilldownState[]
 ): [string, string[]] => {
   if (!fullName) {
     return null;
   }
+  console.log("Getting appropriate name for ", fullName);
   let name = fullName.split(":")[0];
   let isFirstTimeSeeing =
-    !browserStates ||
+    isNil(browserStates) ||
     !some(browserStates, (s) => {
-      return s.ecoCode?.fullName.includes(`${name}:`);
+      return s.ecoCode?.fullName.split(":")[0] == name;
     });
 
   let variations = map(fullName.split(":")?.[1]?.split(","), (s) => s.trim());

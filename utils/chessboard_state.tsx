@@ -5,13 +5,13 @@ import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { SetState } from "zustand";
-import { QuickUpdate, setter } from "./state";
+import { createQuick, logProxy, QuickUpdate } from "./state";
 import { c } from "app/styles";
 import { getSquareOffset } from "./chess";
 import { WritableDraft } from "immer/dist/internal";
 import { Side } from "./repertoire";
+import { RepertoireState } from "./repertoire_state";
 
-type ChessBoardStateAndParent<T> = ChessboardState & ChessboardStateParent<T>;
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
   frozen?: boolean;
   position?: Chess;
@@ -31,59 +31,51 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   allowMoves: boolean;
   highlightSquare?: Square;
   isVisualizingMoves?: boolean;
-  onSquarePress: (
-    square: Square,
-    skipAnimation?: boolean,
-    _s?: ChessBoardStateAndParent<any>
-  ) => void;
+  onSquarePress: (square: Square, skipAnimation?: boolean) => void;
   activeFromSquare?: Square;
   draggedOverSquare?: Square;
   visualizeMove: (
     move: Move,
     speed: PlaybackSpeed,
-    callback: (state: ChessboardState) => void,
-    _s: ChessBoardStateAndParent<any>
+    callback: () => void
   ) => void;
   visualizeMoves: (
     moves: Move[],
     speed: PlaybackSpeed,
-    callback: (state: ChessboardState) => void,
-    _s: ChessBoardStateAndParent<any>
+    callback: () => void
   ) => void;
   animatePieceMove: (
     move: Move,
     speed: PlaybackSpeed,
-    callback: (
-      completed: boolean,
-      state: ChessBoardStateAndParent<any>
-    ) => void,
-    _state: ChessboardState | WritableDraft<ChessboardState>
+    callback: (completed: boolean) => void
   ) => void;
-  flashRing: (success: boolean, _s: ChessBoardStateAndParent<any>) => void;
+  flashRing: (success: boolean) => void;
   moveLogPgn?: string;
   showMoveLog?: boolean;
-  availableMovesFrom: (square: Square, _state: ChessboardState) => Move[];
+  availableMovesFrom: (square: Square) => Move[];
   hideCoordinates?: boolean;
   highContrast?: boolean;
   isColorTraining?: boolean;
+  delegate?: ChessboardDelegate;
 }
 
-export interface ChessboardStateParent<T> {
+export interface ChessboardDelegate {
   attemptMove?: (
     move: Move,
-    cb: (shouldMove: boolean, cb: () => void) => void,
-    state: ChessboardStateParent<T>
+    cb: (shouldMove: boolean, cb: () => void) => void
   ) => boolean;
 }
 
-export const createChessState = <
-  T extends ChessboardState & ChessboardStateParent<any>
->(
-  set,
+export const createChessState = <T extends ChessboardState>(
+  _set,
   get,
-  initialize: any
+  initialize: (c: ChessboardState) => void
 ): ChessboardState => {
-  let state = {
+  let set = <Y,>(fn: (s: ChessboardState) => Y) =>
+    _set((s: RepertoireState) => {
+      return fn(s.chessboardState);
+    });
+  let initialState = {
     allowMoves: true,
     isColorTraining: false,
     availableMoves: [],
@@ -98,78 +90,76 @@ export const createChessState = <
     moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     moveIndicatorOpacityAnim: new Animated.Value(0),
-    onSquarePress: (
-      square: Square,
-      skipAnimation: boolean,
-      _state: ChessboardState
-    ) => {
-      setter(set, _state, (state: T) => {
+    ...createQuick(set),
+    onSquarePress: (square: Square, skipAnimation: boolean) => {
+      set((s) => {
         console.log("square press?");
-        let availableMove = state.availableMoves.find((m) => m.to == square);
+        let availableMove = s.availableMoves.find((m) => m.to == square);
         if (availableMove) {
           console.log("Had available move!", availableMove);
-          state.availableMoves = [];
-          state.activeFromSquare = null;
-          state.draggedOverSquare = null;
+          s.availableMoves = [];
+          s.activeFromSquare = null;
+          s.draggedOverSquare = null;
           let makeMove = (cb) => {
             console.log("skip animation", skipAnimation);
             if (skipAnimation) {
               console.log("Yup moving");
-              state.position.move(availableMove);
-              cb(null, state);
+              s.position.move(availableMove);
+              cb(null);
             } else {
-              state.animatePieceMove(
+              s.animatePieceMove(
                 availableMove,
                 PlaybackSpeed.Normal,
                 (completed, s) => {
                   cb(completed, s);
-                },
-                state
+                }
               );
             }
           };
           if (
-            (state.attemptMove &&
-              state.attemptMove(
-                availableMove,
-                (shouldMove, cb) => {
-                  if (shouldMove) {
-                    console.log("Should move, making move");
-                    makeMove(cb);
-                  }
-                },
-                state
-              )) ||
-            !state.attemptMove
+            (s.delegate.attemptMove &&
+              s.delegate.attemptMove(availableMove, (shouldMove, cb) => {
+                if (shouldMove) {
+                  console.log("Should move, making move");
+                  makeMove(cb);
+                }
+              })) ||
+            !s.delegate.attemptMove
           ) {
           }
           return;
         }
-        let availableMoves = state.availableMovesFrom(square, state);
+        console.log("No available move");
+        let availableMoves = s.availableMovesFrom(square);
         if (isEmpty(availableMoves)) {
-          state.availableMoves = [];
-          state.activeFromSquare = null;
-          state.draggedOverSquare = null;
+          console.log("empty");
+          s.availableMoves = [];
+          s.activeFromSquare = null;
+          s.draggedOverSquare = null;
         } else {
-          state.activeFromSquare = square;
-          state.draggedOverSquare = null;
-          state.availableMoves = availableMoves;
+          console.log("not empty");
+          s.activeFromSquare = square;
+          s.draggedOverSquare = null;
+          s.availableMoves = availableMoves;
         }
       });
     },
-    availableMovesFrom: (square: Square, _state: ChessboardState) => {
-      return setter(set, _state, (state: ChessboardState) => {
-        let position = state.futurePosition ?? state.position;
+    availableMovesFrom: (square: Square) => {
+      return set((s) => {
+        console.log("state in available moves from", logProxy(s));
+        let position = s.futurePosition ?? s.position;
+        console.log(position.ascii());
         let moves = position?.moves({
           square,
           verbose: true,
         });
+        console.log({ moves });
         if (
-          !isEmpty(state.availableMoves) &&
-          first(state.availableMoves).from == square
+          !isEmpty(s.availableMoves) &&
+          first(s.availableMoves).from == square
         ) {
           return [];
-        } else if (!state.frozen) {
+        } else if (!s.frozen) {
           return moves;
         }
       });
@@ -177,24 +167,23 @@ export const createChessState = <
     animatePieceMove: (
       move: Move,
       speed: PlaybackSpeed,
-      callback: (completed: boolean, state: ChessboardState) => void,
-      _state: ChessboardState
+      callback: (completed: boolean) => void
     ) => {
-      setter(set, _state, (state: ChessboardState) => {
-        state.availableMoves = [];
-        state.activeFromSquare = null;
-        state.draggedOverSquare = null;
-        state.animatedMove = move;
-        state.position.move(move);
-        callback(false, state);
+      set((s: ChessboardState) => {
+        s.availableMoves = [];
+        s.activeFromSquare = null;
+        s.draggedOverSquare = null;
+        s.animatedMove = move;
+        s.position.move(move);
+        callback(false);
         let { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
         let [start, end]: Square[] = [move.from, move.to];
-        state.pieceMoveAnim.setValue(getSquareOffset(start, state.flipped));
+        s.pieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
         Animated.sequence([
-          Animated.timing(state.pieceMoveAnim, {
-            toValue: getSquareOffset(end, state.flipped),
+          Animated.timing(s.pieceMoveAnim, {
+            toValue: getSquareOffset(end, s.flipped),
             duration: moveDuration,
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
@@ -203,13 +192,13 @@ export const createChessState = <
           set((s) => {
             s.animatedMove = null;
 
-            callback(true, s);
+            callback(true);
           });
         });
       });
     },
-    flashRing: (success: boolean, _state: ChessboardState) => {
-      setter(set, _state, (state: ChessboardState) => {
+    flashRing: (success: boolean) => {
+      set((state: ChessboardState) => {
         const animDuration = 200;
         state.ringColor = success
           ? c.colors.successColor
@@ -233,39 +222,34 @@ export const createChessState = <
       });
     },
 
-    visualizeMove: (
-      move: Move,
-      speed: PlaybackSpeed,
-      callback: (state: ChessboardState) => void,
-      _state: ChessboardState
-    ) => {
-      setter(set, _state, (state: ChessboardState) => {
+    visualizeMove: (move: Move, speed: PlaybackSpeed, callback: () => void) => {
+      set((s) => {
         let { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
-        state.indicatorColor =
+        s.indicatorColor =
           move.color == "b" ? c.hsl(180, 15, 10, 80) : c.hsl(180, 15, 100, 80);
         let backwards = false;
         // @ts-ignore
         let [start, end]: Square[] = backwards
           ? [move.to, move.from]
           : [move.from, move.to];
-        state.moveIndicatorAnim.setValue(getSquareOffset(start, state.flipped));
+        s.moveIndicatorAnim.setValue(getSquareOffset(start, s.flipped));
         Animated.sequence([
-          Animated.timing(state.moveIndicatorOpacityAnim, {
+          Animated.timing(s.moveIndicatorOpacityAnim, {
             toValue: 1.0,
             duration: fadeDuration,
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
           }),
           Animated.delay(stayDuration),
-          Animated.timing(state.moveIndicatorAnim, {
-            toValue: getSquareOffset(end, state.flipped),
+          Animated.timing(s.moveIndicatorAnim, {
+            toValue: getSquareOffset(end, s.flipped),
             duration: moveDuration,
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
           }),
           Animated.delay(stayDuration),
-          Animated.timing(state.moveIndicatorOpacityAnim, {
+          Animated.timing(s.moveIndicatorOpacityAnim, {
             toValue: 0,
             duration: fadeDuration,
             useNativeDriver: true,
@@ -277,44 +261,36 @@ export const createChessState = <
     visualizeMoves: (
       moves: Move[],
       speed: PlaybackSpeed,
-      callback: (state: ChessboardState) => void,
-      _state: ChessboardState
+      callback: () => void
     ) => {
-      setter(set, _state, (state: ChessboardState) => {
-        if (state.isVisualizingMoves) {
+      set((s) => {
+        if (s.isVisualizingMoves) {
           return;
         }
-        state.isVisualizingMoves = true;
+        s.isVisualizingMoves = true;
         let i = 0;
         let delay = getAnimationDurations(speed)[2];
-        let animateNextMove = (state: ChessboardState) => {
+        let animateNextMove = () => {
           let move = moves.shift();
           // TODO: something to deal with this state being old
-          if (move && state.isVisualizingMoves) {
-            state.visualizeMove(
-              move,
-              speed,
-              () => {
-                window.setTimeout(() => {
-                  set((state) => {
-                    animateNextMove(state);
-                  });
-                }, delay);
-              },
-              state
-            );
+          if (move && s.isVisualizingMoves) {
+            s.visualizeMove(move, speed, () => {
+              window.setTimeout(() => {
+                s.animateNextMove();
+              }, delay);
+            });
             i++;
           } else {
-            state.isVisualizingMoves = false;
-            callback?.(state);
+            s.isVisualizingMoves = false;
+            callback?.();
             // cb?.()
           }
         };
-        animateNextMove(state);
+        animateNextMove();
       });
     },
   } as ChessboardState;
-  initialize?.(state);
+  initialize?.(initialState);
   // useEffect(() => {
   //   if (initialize) {
   //     set((s) => {
@@ -322,7 +298,7 @@ export const createChessState = <
   //     });
   //   }
   // });
-  return state;
+  return initialState;
 };
 
 export const createStaticChessState = ({

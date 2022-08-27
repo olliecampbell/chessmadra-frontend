@@ -174,7 +174,7 @@ export const ChessboardView = ({
   onSquarePress?: any;
   styles?: any;
 }) => {
-  // console.time("chessboard");
+  console.log("Rendering chessboard!");
   const { position, availableMoves } = state;
   const tileStyles = s(c.bg("green"), c.grow);
   const stateRef = useRef(state);
@@ -540,7 +540,7 @@ export const ChessboardView = ({
                     return (
                       <Pressable
                         key={j}
-                        onPress={() => { }}
+                        onPress={() => {}}
                         onPressIn={() => {
                           if (state.frozen) {
                             // Don't know why this prevents bubbling up
@@ -556,11 +556,11 @@ export const ChessboardView = ({
                           !state.frozen && c.clickable,
                           c.flexible,
                           state.hideColors &&
-                          s(
-                            !isBottomEdge &&
-                            c.borderBottom(hiddenColorsBorder),
-                            !isRightEdge && c.borderRight(hiddenColorsBorder)
-                          )
+                            s(
+                              !isBottomEdge &&
+                                c.borderBottom(hiddenColorsBorder),
+                              !isRightEdge && c.borderRight(hiddenColorsBorder)
+                            )
                         )}
                       >
                         {state.isColorTraining && (

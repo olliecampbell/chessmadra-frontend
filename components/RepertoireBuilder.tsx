@@ -54,6 +54,8 @@ import { EloWarningBox } from "./EloWarningBox";
 import { useEloRangeWarning } from "./useEloRangeWarning";
 import { failOnAny } from "app/utils/test_settings";
 import shallow from "zustand/shallow";
+import { ShareRepertoireModal } from "./ShareRepertoireModal";
+import { debugEquality, debugEqualityObj } from "app/utils/debug_equality";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(
@@ -65,7 +67,11 @@ let cardStyles = s(
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
-  const state = useRepertoireState();
+  const state = useRepertoireState(
+    (s) => s,
+    () => false
+  );
+  console.log("Rendering repertoire builder");
   let { user, authStatus, token } = AppStore.useState((s) => s.auth);
   useEffect(() => {
     state.setUser(user);
@@ -115,7 +121,7 @@ export const RepertoireBuilder = () => {
             (state.isEditing || state.isReviewing) && (
               <ChessboardView
                 {...{
-                  state: state,
+                  state: state.chessboardState,
                 }}
               />
             )
@@ -144,9 +150,9 @@ export const RepertoireBuilder = () => {
               onPress={() => {
                 state.quick((s) => {
                   let qm = s.currentMove;
-                  s.backToOverview(s);
-                  s.startEditing(qm.move.side, s);
-                  s.playPgn(qm.line, s);
+                  s.backToOverview();
+                  s.startEditing(qm.move.side);
+                  s.playPgn(qm.line);
                 });
               }}
             >
@@ -200,7 +206,7 @@ export const RepertoireBuilder = () => {
             c.justifyCenter
           )}
         >
-          <RepertoireOverview {...{ state }} />
+          <RepertoireOverview />
           {!isMobile && (
             <>
               <View
@@ -319,9 +325,12 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
 
 export const BrowseButton = ({ side }: { side: Side }) => {
   const isMobile = useIsMobile();
-  const { startBrowsing } = useRepertoireState((s) => ({
-    startBrowsing: s.startBrowsing,
-  }));
+  const { startBrowsing } = useRepertoireState(
+    (s) => ({
+      startBrowsing: s.startBrowsing,
+    }),
+    shallow
+  );
   return (
     <Button
       style={s(
@@ -364,12 +373,11 @@ export const BrowseButton = ({ side }: { side: Side }) => {
 const RepertoireSideSummary = ({
   side,
   isMobile,
-  state,
 }: {
   side: Side;
   isMobile: boolean;
-  state: RepertoireState;
 }) => {
+  let state = useRepertoireState((s) => s, shallow);
   let expectedDepth = state.repertoireGrades[side]?.expectedDepth;
   let biggestMiss = state.repertoireGrades[side]?.biggestMiss;
 
@@ -380,6 +388,39 @@ const RepertoireSideSummary = ({
     <View style={s(c.column, c.maxWidth(800), c.fullWidth)}>
       <View
         style={s(
+          c.fullWidth,
+          isMobile && s(c.row, c.selfStretch, c.justifyStart)
+        )}
+      >
+        <CMText
+          style={s(
+            c.selfCenter,
+            c.fontSize(isMobile ? 22 : 18),
+            c.fullWidth,
+            !isMobile && c.textAlign("center"),
+            isMobile && c.pl(12),
+            c.br(2),
+            // cardStyles,
+            !isMobile && c.border(`1px solid ${c.grays[20]}`),
+            c.weightBold,
+            c.fg(c.colors.textPrimary),
+            c.py(12)
+          )}
+        >
+          {capitalize(side)}
+        </CMText>
+
+        {isMobile && (
+          <>
+            <Spacer width={12} grow />
+            <EditButton {...{ state, side }} />
+            <Spacer width={12} />
+            <BrowseButton {...{ side }} />
+          </>
+        )}
+      </View>
+      <View
+        style={s(
           isMobile ? c.column : c.row,
           c.overflowHidden,
           c.fullWidth,
@@ -387,38 +428,6 @@ const RepertoireSideSummary = ({
         )}
       >
         <View style={s(c.column, c.alignStart, c.justifyCenter)}>
-          <View
-            style={s(
-              c.fullWidth,
-              isMobile && s(c.row, c.selfStretch, c.justifyStart)
-            )}
-          >
-            <CMText
-              style={s(
-                c.selfCenter,
-                c.fontSize(isMobile ? 22 : 18),
-                c.fullWidth,
-                !isMobile && c.textAlign("center"),
-                isMobile && c.pl(12),
-                cardStyles,
-                c.bg(isMobile ? "none" : c.grays[30]),
-                c.weightBold,
-                c.fg(isMobile ? c.colors.textSecondary : c.colors.textPrimary),
-                c.py(12)
-              )}
-            >
-              {capitalize(side)}
-            </CMText>
-
-            {isMobile && (
-              <>
-                <Spacer width={12} grow />
-                <EditButton {...{ state, side }} />
-                <Spacer width={12} />
-                <BrowseButton {...{ state, side }} />
-              </>
-            )}
-          </View>
           <Spacer
             width={sectionSpacing(isMobile)}
             height={sectionSpacing(isMobile)}
@@ -457,17 +466,17 @@ const RepertoireSideSummary = ({
                     />,
                     ...(!isNil(expectedDepth)
                       ? [
-                        <SummaryRow
-                          {...{ isMobile }}
-                          key={"depth"}
-                          k="Expected depth"
-                          v={
-                            expectedDepth === 0
-                              ? "0"
-                              : expectedDepth.toFixed(2)
-                          }
-                        />,
-                      ]
+                          <SummaryRow
+                            {...{ isMobile }}
+                            key={"depth"}
+                            k="Expected depth"
+                            v={
+                              expectedDepth === 0
+                                ? "0"
+                                : expectedDepth.toFixed(2)
+                            }
+                          />,
+                        ]
                       : []),
                     // ...(biggestMiss
                     //   ? [
@@ -489,8 +498,13 @@ const RepertoireSideSummary = ({
           </View>
           {biggestMiss && <BiggestMissBoards {...{ state, side }} />}
         </View>
-        {instructiveGames && (
-          <>
+        <Spacer
+          height={sectionSpacing(isMobile)}
+          width={sectionSpacing(isMobile)}
+          isMobile={isMobile}
+        />
+        {(!isEmpty(instructiveGames) || !isMobile) && (
+          <View style={s(c.column, c.grow)}>
             <Spacer
               height={sectionSpacing(isMobile)}
               width={sectionSpacing(isMobile)}
@@ -557,7 +571,7 @@ const RepertoireSideSummary = ({
                 </>
               )}
             </View>
-          </>
+          </View>
         )}
       </View>
     </View>
@@ -626,8 +640,8 @@ const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
         {type === BiggestMissTagType.StartPosition
           ? "Start position"
           : type === BiggestMissTagType.Biggest
-            ? "Biggest miss"
-            : "Critical position"}
+          ? "Biggest miss"
+          : "Critical position"}
       </CMText>
     </View>
   );
@@ -664,8 +678,8 @@ const BiggestMissBoards = ({
           [biggestMiss].map((x, i) => {
             let onClick = () =>
               state.quick((s) => {
-                state.startEditing(side as Side, s);
-                state.playPgn(x.lines[0], s);
+                state.startEditing(side as Side);
+                state.playPgn(x.lines[0]);
               });
             return (
               <View style={s(c.column, c.center)} key={`miss-${i}`}>
@@ -714,7 +728,7 @@ const BiggestMissBoards = ({
   );
 };
 
-const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
+const RepertoireOverview = ({}: {}) => {
   const isMobile = useIsMobile();
   const { eloWarning } = useEloRangeWarning({});
   return (
@@ -723,7 +737,7 @@ const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
         {isMobile && (
           <>
             <Spacer height={24} />
-            <ReviewMovesView {...{ state, isMobile, side: null }} />
+            <ReviewMovesView {...{ isMobile, side: null }} />
             {eloWarning && (
               <>
                 <Spacer height={24} />
@@ -736,12 +750,7 @@ const RepertoireOverview = ({ state }: { state: RepertoireState }) => {
         {intersperse(
           SIDES.map((side, i) => {
             return (
-              <RepertoireSideSummary
-                {...{ isMobile }}
-                key={side}
-                side={side}
-                state={state}
-              />
+              <RepertoireSideSummary {...{ isMobile }} key={side} side={side} />
             );
           }),
           (i) => {
@@ -766,8 +775,12 @@ const ReviewMovesView = ({
   isMobile: boolean;
   side?: Side;
 }) => {
-  let [getMyResponsesLength, getQueueLength, startReview] = useRepertoireState(
-    (s) => [s.getMyResponsesLength, s.getQueueLength, s.startReview],
+  console.log("re-rendering review moves view!");
+  let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
+    (s) => {
+      console.log("In this hook?");
+      return [s.getMyResponsesLength, s.getQueueLength(side), s.startReview];
+    },
     shallow
   );
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
@@ -777,7 +790,7 @@ const ReviewMovesView = ({
   }
   return (
     <>
-      {getQueueLength(side) === 0 ? (
+      {queueLength === 0 ? (
         <View
           style={s(
             c.bg(c.grays[20]),
@@ -824,7 +837,7 @@ const ReviewMovesView = ({
             startReview(side);
           }}
         >
-          {`Review ${pluralize(getQueueLength(side), "move")}`}
+          {`Review ${pluralize(queueLength, "move")}`}
         </Button>
       )}
     </>
@@ -844,7 +857,7 @@ const ImportButton = () => {
       )}
       onPress={() => {
         quick((s) => {
-          s.startImporting(s);
+          s.startImporting();
         });
       }}
     >
@@ -912,6 +925,44 @@ const SettingsButton = () => {
   );
 };
 
+const ShareRepertoireButton = () => {
+  const [quick] = useRepertoireState((s) => [s.quick], shallow);
+
+  return (
+    <>
+      <ShareRepertoireModal />
+      <Button
+        style={s(
+          c.buttons.basicSecondary,
+          c.selfEnd,
+          c.px(14),
+          c.py(12),
+          c.selfStretch
+        )}
+        onPress={() => {
+          quick((s) => {
+            s.overviewState.isShowingShareModal = true;
+          });
+        }}
+      >
+        <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
+          <i className="fas fa-share" />
+        </CMText>
+        <Spacer width={12} />
+        <CMText
+          style={s(
+            c.buttons.basicSecondary.textStyles,
+            c.fontSize(18),
+            c.weightSemiBold
+          )}
+        >
+          Share
+        </CMText>
+      </Button>
+    </>
+  );
+};
+
 const ExtraActions = () => {
   const isMobile = useIsMobile();
   const { eloWarning } = useEloRangeWarning({});
@@ -920,6 +971,7 @@ const ExtraActions = () => {
     shallow
   );
   let hasNoMovesAtAll = getMyResponsesLength(null) === 0;
+  // let hasNoMovesAtAll = failOnAny(true);
   return (
     <View style={s(c.width(280))}>
       {eloWarning && (
@@ -930,6 +982,8 @@ const ExtraActions = () => {
       )}
       <ReviewMovesView {...{ isMobile, side: null }} />
       {!hasNoMovesAtAll && <Spacer height={12} />}
+      <ShareRepertoireButton />
+      <Spacer height={12} />
       <ImportButton />
       {<Spacer height={12} />}
       <SettingsButton />

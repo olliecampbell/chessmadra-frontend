@@ -1,4 +1,4 @@
-import { Square } from "@lubert/chess.ts/dist/types";
+import { Move, Square } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
 import {
   LichessGame,
@@ -12,7 +12,7 @@ import {
 import { RepertoireMiss } from "./repertoire";
 import create from "zustand";
 import { devtools } from "zustand/middleware";
-import { createQuick, logProxy, setter } from "./state";
+import { createQuick, logProxy } from "./state";
 
 import { immer } from "zustand/middleware/immer";
 import {
@@ -62,7 +62,7 @@ import {
 import { StorageItem } from "./storageItem";
 import {
   ChessboardState,
-  ChessboardStateParent,
+  ChessboardDelegate,
   createChessState,
 } from "./chessboard_state";
 import { Chess } from "@lubert/chess.ts";
@@ -74,6 +74,7 @@ import { genEpd } from "./chess";
 import { ChessColor } from "app/types/Chess";
 import { formatEloRange } from "./elo_range";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
+import { OpDraft } from "./op_draft";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -91,10 +92,9 @@ export enum AddLineFromOption {
   BiggestMissOpening = "Biggest Gap in Opening",
 }
 
-export interface RepertoireState
-  extends ChessboardState,
-    ChessboardStateParent<RepertoireState> {
+export interface RepertoireState {
   quick: (fn: (_: RepertoireState) => void) => void;
+  chessboardState: ChessboardState;
   repertoire: Repertoire;
   repertoireNumMoves: BySide<
     Record<
@@ -107,17 +107,17 @@ export interface RepertoireState
   currentMove?: QuizMove;
   reviewSide?: Side;
   repertoireGrades: BySide<RepertoireGrade>;
+  repertoireShareId?: string;
   activeSide: Side;
   failedCurrentMove?: boolean;
-  setUser: (user: User, _state?: RepertoireState) => void;
-  reviewLine: (line: string[], side: Side, _state?: RepertoireState) => void;
-  fetchRepertoire: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  fetchEcoCodes: (_state?: RepertoireState) => void;
-  fetchSupplementary: (_state?: RepertoireState) => void;
-  fetchRepertoireTemplates: (_state?: RepertoireState) => void;
-  fetchPlayerTemplates: (_state?: RepertoireState) => void;
+  setUser: (user: User) => void;
+  reviewLine: (line: string[], side: Side) => void;
+  fetchSharedRepertoire: (id: string) => void;
+  fetchRepertoire: () => void;
+  fetchEcoCodes: () => void;
+  fetchSupplementary: () => Promise<void>;
+  fetchRepertoireTemplates: () => void;
+  fetchPlayerTemplates: () => void;
   initializeRepertoire: (_: {
     lichessUsername?: string;
     whitePgn?: string;
@@ -125,85 +125,44 @@ export interface RepertoireState
     state?: RepertoireState;
   }) => void;
   user?: User;
-  initState: (_state?: RepertoireState) => void;
-  playPgn: (pgn: string, _state?: RepertoireState) => void;
-  playSan: (pgn: string, _state?: RepertoireState) => void;
-  addPendingLine: (_state?: RepertoireState) => void;
+  initState: () => void;
+  playPgn: (pgn: string) => void;
+  playSan: (pgn: string) => void;
+  addPendingLine: () => void;
   isAddingPendingLine: boolean;
   hasGivenUp?: boolean;
-  giveUp: (_state?: RepertoireState) => void;
-  usePlayerTemplate: (id: string, _state?: RepertoireState) => void;
-  setupNextMove: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  startReview: (side?: Side, _state?: RepertoireState) => void;
-  reviewWithQueue: (
-    queues: BySide<QuizMove[]>,
-    _state?: RepertoireState
-  ) => void;
+  giveUp: () => void;
+  usePlayerTemplate: (id: string) => void;
+  setupNextMove: () => void;
+  startReview: (side?: Side) => void;
+  reviewWithQueue: (queues: BySide<QuizMove[]>) => void;
   isReviewingWithCustomQueue?: boolean;
-  backToOverview: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  startEditing: (side: Side, _state?: RepertoireState) => void;
-  startBrowsing: (side: Side, _state?: RepertoireState) => void;
-  selectBrowserState: (
-    browserState: BrowserState,
-    _state?: RepertoireState
-  ) => void;
-  generateBrowsingSections: (
-    epd: string,
-    _state?: RepertoireState
-  ) => BrowserSection[];
+  backToOverview: () => void;
+  startEditing: (side: Side) => void;
+  startBrowsing: (side: Side) => void;
+  generateBrowsingSections: (epd: string) => BrowserSection[];
   showImportView?: boolean;
-  startImporting: (_state?: RepertoireState) => void;
-  updateRepertoireStructures: (_state?: RepertoireState) => void;
-  onMove: (_state?: RepertoireState | WritableDraft<RepertoireState>) => void;
-  getMyResponsesLength: (
-    side?: Side,
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => number;
-  getQueueLength: (
-    side?: Side,
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => number;
-  getIsRepertoireEmpty: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => RepertoireMove;
-  getLastMoveInRepertoire: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => RepertoireMove;
-  getCurrentPositionReport: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => PositionReport;
-  getCurrentEpd: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => string;
-  onEditingPositionUpdate: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  analyzeLineOnLichess: (_state?: RepertoireState) => void;
-  searchOnChessable: (_state?: RepertoireState) => void;
-  backOne: (_state?: RepertoireState) => void;
-  backToStartPosition: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  deleteRepertoire: (side: Side, _state?: RepertoireState) => void;
-  deleteMoveConfirmed: (_state?: RepertoireState) => void;
-  exportPgn: (side: Side, _state?: RepertoireState) => void;
-  addTemplates: (_state?: RepertoireState) => void;
-  updateQueue: (
-    cram: boolean,
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  onRepertoireUpdate: (
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
-  markMoveReviewed: (
-    m: string,
-    correct: boolean,
-    _state?: RepertoireState
-  ) => void;
+  startImporting: () => void;
+  updateRepertoireStructures: () => void;
+  onMove: () => void;
+  getMyResponsesLength: (side?: Side) => number;
+  getQueueLength: (side?: Side) => number;
+  getIsRepertoireEmpty: () => RepertoireMove;
+  getLastMoveInRepertoire: () => RepertoireMove;
+  getCurrentPositionReport: () => PositionReport;
+  getCurrentEpd: () => string;
+  onEditingPositionUpdate: () => void;
+  analyzeLineOnLichess: () => void;
+  searchOnChessable: () => void;
+  backOne: () => void;
+  backToStartPosition: () => void;
+  deleteRepertoire: (side: Side) => void;
+  deleteMoveConfirmed: () => void;
+  exportPgn: (side: Side) => void;
+  addTemplates: () => void;
+  updateQueue: (cram: boolean) => void;
+  onRepertoireUpdate: () => void;
+  markMoveReviewed: (m: string, correct: boolean) => void;
   isEditing?: boolean;
   isBrowsing?: boolean;
   isReviewing?: boolean;
@@ -227,29 +186,25 @@ export interface RepertoireState
   differentMoveIndices?: number[];
   isCramming?: boolean;
   pendingResponses?: Record<string, RepertoireMove[]>;
-  getMovesDependentOnPosition: (
-    epd: string,
-    _state?: RepertoireState
-  ) => number;
+  getMovesDependentOnPosition: (epd: string) => number;
   inProgressUsingPlayerTemplate?: boolean;
-  fetchPositionReportIfNeeded: (_state?: RepertoireState) => void;
-  updateBrowserStateAndSections: (
-    epd: string,
-    line: string[],
-    _state?: RepertoireState
-  ) => void;
-  selectBrowserSection: (
-    section: BrowserSection,
-    includeInPreviousStates: boolean,
-    _state?: RepertoireState
-  ) => void;
-  previousBrowserStates: BrowserState[];
+  fetchPositionReportIfNeeded: () => void;
   ecoCodes: EcoCode[];
   pawnStructures: PawnStructureDetails[];
   ecoCodeLookup: Record<string, EcoCode>;
   pawnStructureLookup: Record<string, PawnStructureDetails>;
-  browserState?: BrowserState;
-  updateEloRange: (range: [number, number], _state?: RepertoireState) => void;
+  browsingState: {
+    readOnly: boolean;
+    drilldownState?: BrowserDrilldownState;
+    previousDrilldownStates?: BrowserDrilldownState[];
+    selectDrilldownState: (drilldownState: BrowserDrilldownState) => void;
+    updateDrilldownStateAndSections: (epd: string, line: string[]) => void;
+    selectBrowserSection: (
+      section: BrowserSection,
+      includeInPreviousStates: boolean
+    ) => void;
+  };
+  updateEloRange: (range: [number, number]) => void;
   isUpdatingEloRange: boolean;
   editingState: {
     lastEcoCode?: EcoCode;
@@ -267,14 +222,22 @@ export interface RepertoireState
     stage: AddedLineStage;
     positionReport: PositionReport;
   };
+  //
+  overviewState: {
+    isShowingShareModal: boolean;
+  };
+
   // Debug pawn structure stuff
   debugPawnStructuresState: any & {};
-  fetchDebugGames: (_state?: RepertoireState) => void;
-  fetchDebugPawnStructureForPosition: (_state?: RepertoireState) => void;
-  selectDebugGame: (
-    i: number,
-    _state?: RepertoireState | WritableDraft<RepertoireState>
-  ) => void;
+  fetchDebugGames: () => void;
+  fetchDebugPawnStructureForPosition: () => void;
+  selectDebugGame: (i: number) => void;
+
+  // Chessboard delegate stuff
+  attemptMove?: (
+    move: Move,
+    cb: (shouldMove: boolean, cb: () => void) => void
+  ) => boolean;
 }
 
 export interface AddNewLineChoice {
@@ -295,7 +258,7 @@ export enum AddedLineStage {
   AddAnother,
 }
 
-export interface BrowserState {
+export interface BrowserDrilldownState {
   epd: string;
   line: string[];
   sections: BrowserSection[];
@@ -319,225 +282,413 @@ interface BrowserLine {
 interface FetchRepertoireResponse {
   repertoire: Repertoire;
   grades: BySide<RepertoireGrade>;
+  shareId: string;
+}
+
+interface GetSharedRepertoireResponse {
+  repertoire: Repertoire;
+  // grades: BySide<RepertoireGrade>;
+  // shareId: string;
 }
 
 const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
 const EMPTY_QUEUES = { white: [], black: [] };
 
+let pendingState = null;
+
 export const useRepertoireState = create<RepertoireState>()(
   devtools(
     // @ts-ignore for the set stuff
-    immer(
-      (set, get): RepertoireState =>
-        ({
-          // TODO: clone?
-          ...createQuick(set),
-          isUpdatingEloRange: false,
-          repertoire: undefined,
-          editingState: {
-            selectedTab: EditingTab.Position,
-            etcModalOpen: false,
-            deleteConfirmationModalOpen: false,
-            isDeletingMove: false,
-          },
-          repertoireGrades: { white: null, black: null },
-          activeSide: "white",
-          ecoCodeLookup: {},
-          pawnStructureLookup: {},
-          inProgressUsingPlayerTemplate: false,
-          pendingResponses: {},
-          positions: [START_EPD],
-          positionReports: { white: {}, black: {} },
-          currentLine: [],
-          queues: EMPTY_QUEUES,
-          // hasCompletedRepertoireInitialization: failOnTrue(true),
-          initState: () => {
-            let state = get();
-            state.fetchRepertoire(state);
-            // TODO: remove
-            state.fetchEcoCodes(state);
-            state.fetchSupplementary(state);
-          },
-          setUser: (user: User, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.user = user;
-            }),
-          giveUp: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let moveObj = s.position.validateMoves([
-                s.currentMove.move.sanPlus,
-              ])?.[0];
-              s.frozen = true;
-              s.failedCurrentMove = true;
-              s.animatePieceMove(
-                moveObj,
-                PlaybackSpeed.Normal,
-                (completed, s: RepertoireState) => {
-                  s.hasGivenUp = true;
-                },
-                s
+    immer((_set, _get): RepertoireState => {
+      const set = <T,>(
+        fn: (state: RepertoireState) => T,
+        identifier?: string
+      ) => {
+        console.log(`--- ${identifier} ---`);
+        if (pendingState) {
+          // debugger;
+          console.log("Using pending state!");
+          // @ts-ignore
+          // pendingState.bogus = Math.random();
+          return fn(pendingState);
+        } else {
+          let res = _set((state) => {
+            pendingState = state;
+            console.log("Setting pending state!", state);
+            // To force re-render when changing just a class or something
+            // @ts-ignore
+            let res = fn(state);
+            console.log("Done w/ function, unsetting pending state");
+            pendingState = null;
+            return res;
+          });
+          return res;
+        }
+      };
+      const get = <T,>(fn: (state: RepertoireState) => T) => {
+        if (pendingState) {
+          // @ts-ignore
+          // pendingState.bogus = Math.random();
+          return fn(pendingState);
+        } else {
+          let s = _get();
+          return fn(s);
+        }
+      };
+      let initialState = {
+        // TODO: clone?
+        ...createQuick(set),
+        isUpdatingEloRange: false,
+        repertoire: undefined,
+        overviewState: {
+          isShowingShareModal: false,
+        },
+        browsingState: {
+          selectDrilldownState: (browserState: BrowserDrilldownState) =>
+            set((s) => {
+              while (true) {
+                let lastState = s.browsingState.previousDrilldownStates.pop();
+                if (lastState.ecoCode.code === browserState.ecoCode.code) {
+                  s.browsingState.previousDrilldownStates.push(lastState);
+                  s.browsingState.drilldownState = browserState;
+                  break;
+                }
+              }
+            }, "selectDrilldownState"),
+          updateDrilldownStateAndSections: (epd: string, line: string[]) =>
+            set((s) => {
+              s.browsingState.drilldownState = {
+                epd: epd,
+                sections: [],
+                line: line,
+                lines: [],
+                ecoCode: s.ecoCodeLookup[epd],
+              };
+
+              let sections: BrowserSection[] = [];
+              let responses = s.repertoire[s.activeSide].positionResponses;
+              let paths = [];
+              if (!isEmpty(line)) {
+                paths.push({ line: lineToPgn(line), epd: epd });
+              }
+              let seenEpds = new Set(
+                s.browsingState.drilldownState?.sections?.map((s) => s.epd) ??
+                  []
               );
-            }),
-          updateEloRange: (range: [number, number], _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.isUpdatingEloRange = true;
-              client
-                .post("/api/v1/user/elo_range", {
-                  min: range[0],
-                  max: range[1],
-                })
-                .then(({ data }: { data: FetchRepertoireResponse }) => {
-                  set((s) => {
-                    s.user.eloRange = formatEloRange(range);
-                  });
-                })
-                .finally(() => {
-                  set((s) => {
-                    s.isUpdatingEloRange = false;
-                    s.fetchRepertoire(s);
-                  });
-                });
-            }),
-          playPgn: (pgn: string, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.backToStartPosition(s);
-              pgnToLine(pgn).map((san) => {
-                console.log({ san });
-                s.position.move(san);
-                if (s.isEditing) {
-                  s.onMove(s);
+              let historyEcoFullNames = new Set();
+              [
+                ...s.browsingState.previousDrilldownStates,
+                s.browsingState.drilldownState,
+              ].forEach((p) => {
+                if (p.ecoCode) {
+                  historyEcoFullNames.add(p.ecoCode.fullName);
                 }
               });
-              console.log(
-                "After play pgn, positions are  ",
-                logProxy(s.positions)
-              );
-            }),
-          playSan: (san: string, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.position.move(san);
-              if (s.isEditing) {
-                s.onMove(s);
-              }
-            }),
-          usePlayerTemplate: (id: string, _state?: RepertoireState) =>
-            setter(set, _state, async (s: RepertoireState) => {
-              s.inProgressUsingPlayerTemplate = true;
-              let { data }: { data: FetchRepertoireResponse } =
-                await client.post("/api/v1/openings/use_player_template", {
-                  id,
-                });
-              set((s) => {
-                s.inProgressUsingPlayerTemplate = false;
-                s.repertoire = data.repertoire;
-                s.repertoireGrades = data.grades;
-                s.onRepertoireUpdate(s);
-                s.backToOverview(s);
-                s.hasCompletedRepertoireInitialization = true;
-              });
-            }),
-          addTemplates: (_state?: RepertoireState) =>
-            setter(set, _state, async (s: RepertoireState) => {
-              let { data }: { data: FetchRepertoireResponse } =
-                await client.post("/api/v1/openings/add_templates", {
-                  templates: Object.values(s.selectedTemplates),
-                });
-              set((s) => {
-                s.repertoire = data.repertoire;
-                s.repertoireGrades = data.grades;
-                s.onRepertoireUpdate(s);
-                s.backToOverview(s);
-                s.hasCompletedRepertoireInitialization = true;
-              });
-            }),
-          initializeRepertoire: ({
-            state,
-            lichessUsername,
-            blackPgn,
-            whitePgn,
-          }) =>
-            setter(set, state, async (s) => {
-              let lichessGames = [];
-              let chessComGames = [];
-              if (lichessUsername) {
-                let max = 200;
-                let { data }: { data: string } = await client.get(
-                  `https://lichess.org/api/games/user/${encodeURIComponent(
-                    lichessUsername
-                  )}?max=${max}`,
-                  {
-                    headers: { Accept: "application/x-ndjson" },
+              console.log({ historyEcoFullNames });
+              let recurse = (path: string, epd: string, moveNumber: number) => {
+                responses[epd]?.forEach((m) => {
+                  let n = moveNumber / 2 + 1;
+                  let newPath = null;
+                  if (moveNumber % 2 == 0) {
+                    if (moveNumber == 0) {
+                      newPath = `${n}.${m.sanPlus}`;
+                    } else {
+                      newPath = `${path} ${n}.${m.sanPlus}`;
+                    }
+                  } else {
+                    newPath = `${path} ${m.sanPlus}`;
                   }
-                );
-                lichessGames = data
-                  .split("\n")
-                  .filter((s) => s.length > 2)
-                  .map((s) => JSON.parse(s));
-              }
-              let { data }: { data: FetchRepertoireResponse } =
-                await client.post("/api/v1/initialize_repertoire", {
-                  lichessGames,
-                  lichessUsername,
-                  chessComGames,
-                  whitePgn,
-                  blackPgn,
+                  let ecoCode = s.ecoCodeLookup[m.epdAfter];
+                  let myResponse = responses[m.epdAfter]?.[0];
+                  const nextEcoCode = s.ecoCodeLookup[myResponse?.epdAfter];
+                  const numMovesNext =
+                    s.repertoireNumMoves[s.activeSide][myResponse?.epdAfter];
+                  if (
+                    ecoCode &&
+                    !historyEcoFullNames.has(ecoCode.fullName) &&
+                    (m.mine ||
+                      (!m.mine && !nextEcoCode) ||
+                      (!m.mine && numMovesNext.withTranspositions === 0))
+                  ) {
+                    console.log(`${ecoCode.fullName} is not included in set!`);
+                    sections.push({
+                      epd: m.epdAfter,
+                      eco_code: ecoCode,
+                      line: pgnToLine(newPath),
+                      pgn: newPath,
+                      numMoves: s.repertoireNumMoves[s.activeSide][m.epdAfter],
+                    } as BrowserSection);
+                    seenEpds.add(m.epdAfter);
+                  }
+                  // if (
+                  //   (side == "white" && moveNumber % 2 == 0) ||
+                  //   (side == "black" && moveNumber % 2 == 1)
+                  // ) {
+                  // }
+                  if (!seenEpds.has(m.epdAfter)) {
+                    seenEpds.add(m.epdAfter);
+                    paths.push({ line: newPath, epd: m.epdAfter });
+                    recurse(newPath, m.epdAfter, moveNumber + 1);
+                  }
+                  if (s.browsingState.drilldownState.sections.length === 1) {
+                    s.browsingState.updateDrilldownStateAndSections(
+                      s.browsingState.drilldownState.sections[0].epd,
+                      s.browsingState.drilldownState.sections[0].line
+                    );
+                  }
                 });
-              set((s: RepertoireState) => {
-                s.repertoire = data.repertoire;
-                s.repertoireGrades = data.grades;
-                s.onRepertoireUpdate(s);
-                s.hasCompletedRepertoireInitialization = true;
-                s.backToOverview(s);
-              });
-            }),
-          searchOnChessable: (side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let fen = s.position.fen();
-              if (COURSE) {
-                window
-                  .open(
-                    `https://www.chessable.com/course/${COURSE}/fen/${fen
-                      .replaceAll("/", ";")
-                      .replaceAll(" ", "%20")}/`,
-                    "_blank"
+              };
+              recurse(
+                lineToPgn(s.browsingState.drilldownState.line),
+                s.browsingState.drilldownState.epd,
+                s.browsingState.drilldownState.line.length ?? 0
+              );
+              // TODO: can optimize this probably
+              paths = paths.filter(({ line }) => {
+                if (
+                  some(
+                    paths,
+                    (p2) => p2.line.startsWith(line) && line !== p2.line
+                  ) ||
+                  some(
+                    sections,
+                    (s) => s.pgn.startsWith(line) && line !== s.pgn
                   )
-                  .focus();
-                return;
+                ) {
+                  return false;
+                } else {
+                  return true;
+                }
+              });
+              s.browsingState.drilldownState.lines = paths.map((p) => {
+                return {
+                  line: p.line,
+                  epd: p.epd,
+                };
+              });
+              s.browsingState.drilldownState.sections = sortBy(
+                sections,
+                (s) => -s.numMoves.withTranspositions
+              );
+            }, "updateDrilldownStateAndSections"),
+          selectBrowserSection: (
+            browserSection: BrowserSection,
+            includeInPreviousStates: boolean
+          ) =>
+            set((s) => {
+              // s.browsingState.line = browserSection.line;
+              // s.browsingState.epd = browserSection.epd;
+              s.browsingState.updateDrilldownStateAndSections(
+                browserSection.epd,
+                browserSection.line
+              );
+              if (includeInPreviousStates) {
+                s.browsingState.previousDrilldownStates.push(
+                  s.browsingState.drilldownState
+                );
               }
+            }),
+        },
+        editingState: {
+          selectedTab: EditingTab.Position,
+          etcModalOpen: false,
+          deleteConfirmationModalOpen: false,
+          isDeletingMove: false,
+        },
+        repertoireGrades: { white: null, black: null },
+        activeSide: "white",
+        ecoCodeLookup: {},
+        pawnStructureLookup: {},
+        inProgressUsingPlayerTemplate: false,
+        pendingResponses: {},
+        positions: [START_EPD],
+        positionReports: { white: {}, black: {} },
+        currentLine: [],
+        queues: EMPTY_QUEUES,
+        // hasCompletedRepertoireInitialization: failOnTrue(true),
+        initState: () =>
+          set((s) => {
+            s.fetchRepertoire();
+            s.fetchSupplementary();
+          }, "initState"),
+        setUser: (user: User) =>
+          set((s) => {
+            s.user = user;
+          }, "setUser"),
+        giveUp: () =>
+          set((s) => {
+            let moveObj = s.chessboardState.position.validateMoves([
+              s.currentMove.move.sanPlus,
+            ])?.[0];
+            s.chessboardState.frozen = true;
+            s.failedCurrentMove = true;
+            s.chessboardState.animatePieceMove(
+              moveObj,
+              PlaybackSpeed.Normal,
+              (completed) => {
+                set((s) => {
+                  s.hasGivenUp = true;
+                });
+              }
+            );
+          }, "giveUp"),
+        updateEloRange: (range: [number, number]) =>
+          set((s) => {
+            s.isUpdatingEloRange = true;
+            client
+              .post("/api/v1/user/elo_range", {
+                min: range[0],
+                max: range[1],
+              })
+              .then(({ data }: { data: FetchRepertoireResponse }) => {
+                set((s) => {
+                  s.user.eloRange = formatEloRange(range);
+                });
+              })
+              .finally(() => {
+                set((s) => {
+                  s.isUpdatingEloRange = false;
+                  s.fetchRepertoire();
+                });
+              });
+          }, "updateEloRange"),
+        playPgn: (pgn: string) =>
+          set((s) => {
+            s.backToStartPosition();
+            pgnToLine(pgn).map((san) => {
+              s.chessboardState.position.move(san);
+              if (s.isEditing) {
+                s.onMove();
+              }
+            });
+          }, "playPgn"),
+        playSan: (san: string) =>
+          set((s) => {
+            s.chessboardState.position.move(san);
+            if (s.isEditing) {
+              s.onMove();
+            }
+          }, "playSan"),
+        usePlayerTemplate: (id: string) =>
+          set(async (s) => {
+            s.inProgressUsingPlayerTemplate = true;
+            let { data }: { data: FetchRepertoireResponse } = await client.post(
+              "/api/v1/openings/use_player_template",
+              {
+                id,
+              }
+            );
+            set((s) => {
+              s.inProgressUsingPlayerTemplate = false;
+              s.repertoire = data.repertoire;
+              s.repertoireGrades = data.grades;
+              s.onRepertoireUpdate();
+              s.backToOverview();
+              s.hasCompletedRepertoireInitialization = true;
+            });
+          }, "usePlayerTemplate"),
+        addTemplates: () =>
+          set(async (s) => {
+            let { data }: { data: FetchRepertoireResponse } = await client.post(
+              "/api/v1/openings/add_templates",
+              {
+                templates: Object.values(s.selectedTemplates),
+              }
+            );
+            set((s) => {
+              s.repertoire = data.repertoire;
+              s.repertoireGrades = data.grades;
+              s.onRepertoireUpdate();
+              s.backToOverview();
+              s.hasCompletedRepertoireInitialization = true;
+            });
+          }, "addTemplates"),
+        initializeRepertoire: ({
+          state,
+          lichessUsername,
+          blackPgn,
+          whitePgn,
+        }) =>
+          set(async (s) => {
+            let lichessGames = [];
+            let chessComGames = [];
+            if (lichessUsername) {
+              let max = 200;
+              let { data }: { data: string } = await client.get(
+                `https://lichess.org/api/games/user/${encodeURIComponent(
+                  lichessUsername
+                )}?max=${max}`,
+                {
+                  headers: { Accept: "application/x-ndjson" },
+                }
+              );
+              lichessGames = data
+                .split("\n")
+                .filter((s) => s.length > 2)
+                .map((s) => JSON.parse(s));
+            }
+            let { data }: { data: FetchRepertoireResponse } = await client.post(
+              "/api/v1/initialize_repertoire",
+              {
+                lichessGames,
+                lichessUsername,
+                chessComGames,
+                whitePgn,
+                blackPgn,
+              }
+            );
+            set((s: RepertoireState) => {
+              s.repertoire = data.repertoire;
+              s.repertoireGrades = data.grades;
+              s.onRepertoireUpdate();
+              s.hasCompletedRepertoireInitialization = true;
+              s.backToOverview();
+            }, "initializeRepertoire");
+          }),
+        searchOnChessable: (side: Side) =>
+          set((s) => {
+            let fen = s.chessboardState.position.fen();
+            if (COURSE) {
               window
                 .open(
-                  `https://www.chessable.com/courses/fen/${fen
-                    .replaceAll("/", "U")
+                  `https://www.chessable.com/course/${COURSE}/fen/${fen
+                    .replaceAll("/", ";")
                     .replaceAll(" ", "%20")}/`,
                   "_blank"
                 )
                 .focus();
-            }),
-          analyzeLineOnLichess: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              console.log({ s });
-              var bodyFormData = new FormData();
-              bodyFormData.append("pgn", lineToPgn(s.currentLine));
-              if (isEmpty(s.currentLine)) {
-                // TODO: figure out a way to open up analysis from black side
-                window.open(`https://lichess.org/analysis`, "_blank");
-                return;
-              }
-              var windowReference = window.open("about:blank", "_blank");
-              let side = s.activeSide;
-              client
-                .post(`https://lichess.org/api/import`, bodyFormData)
-                .then(({ data }) => {
-                  let url = data["url"];
-                  windowReference.location = `${url}/${side}#999`;
-                });
-            }),
-          getMovesDependentOnPosition: (
-            epd: string,
-            _state?: RepertoireState
-          ) => {
-            let s = _state ?? get();
+              return;
+            }
+            window
+              .open(
+                `https://www.chessable.com/courses/fen/${fen
+                  .replaceAll("/", "U")
+                  .replaceAll(" ", "%20")}/`,
+                "_blank"
+              )
+              .focus();
+          }, "searchOnChessable"),
+        analyzeLineOnLichess: () =>
+          set((s) => {
+            var bodyFormData = new FormData();
+            bodyFormData.append("pgn", lineToPgn(s.currentLine));
+            if (isEmpty(s.currentLine)) {
+              // TODO: figure out a way to open up analysis from black side
+              window.open(`https://lichess.org/analysis`, "_blank");
+              return;
+            }
+            var windowReference = window.open("about:blank", "_blank");
+            let side = s.activeSide;
+            client
+              .post(`https://lichess.org/api/import`, bodyFormData)
+              .then(({ data }) => {
+                let url = data["url"];
+                windowReference.location = `${url}/${side}#999`;
+              });
+          }, "analyzeLineOnLichess"),
+        getMovesDependentOnPosition: (epd: string) =>
+          get((s) => {
             if (!s.repertoire) {
               return 0;
             }
@@ -560,821 +711,634 @@ export const useRepertoireState = create<RepertoireState>()(
             };
             recurse(epd, true);
             return total;
-          },
-          onEditingPositionUpdate: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              console.log("Calling this?");
-              let line = s.position.history();
-              s.currentLine = line;
-              s.moveLogPgn = lineToPgn(line);
-              s.pendingResponses = {};
-              s.differentMoveIndices = [];
-              if (s.ecoCodeLookup && s.editingState) {
-                s.editingState.lastEcoCode = last(
-                  filter(
-                    map(s.positions, (p) => {
-                      return s.ecoCodeLookup[p];
-                    })
-                  )
-                );
-              }
-              console.log("POSITIONS", logProxy(s.positions));
-              map(zip(s.positions, line), ([position, san], i) => {
-                if (!san) {
-                  return;
-                }
-                if (
-                  !some(
-                    s.repertoire[s.activeSide].positionResponses[position],
-                    (m) => {
-                      return m.sanPlus === san;
-                    }
-                  )
-                ) {
-                  s.differentMoveIndices.push(i);
-                  let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-                  // let checker = () => {
-                  //   console.log(
-                  //     "Checking position and san",
-                  //     position,
-                  //     san,
-                  //     mine
-                  //   );
-                  //   let chess = new Chess();
-                  //   chess.load(position);
-                  //   console.log(chess.ascii());
-                  //   if (!chess.validateMoves([san])) {
-                  //     console.warn("This was an invalid move!", i);
-                  //   }
-                  // };
-                  // checker();
-                  s.pendingResponses[position] = [
-                    {
-                      epd: position,
-                      epdAfter: s.positions[i + 1],
-                      sanPlus: san,
-                      side: s.activeSide,
-                      pending: true,
-                      mine: mine,
-                      srs: {
-                        needsReview: false,
-                        firstReview: false,
-                      },
-                    },
-                  ] as RepertoireMove[];
-                }
-              });
-
-              s.hasPendingLineToAdd = some(
-                flatten(values(s.pendingResponses)),
-                (m) => m.mine
+          }),
+        onEditingPositionUpdate: () =>
+          set((s) => {
+            let line = s.chessboardState.position.history();
+            s.currentLine = line;
+            s.chessboardState.moveLogPgn = lineToPgn(line);
+            s.pendingResponses = {};
+            s.differentMoveIndices = [];
+            if (s.ecoCodeLookup && s.editingState) {
+              s.editingState.lastEcoCode = last(
+                filter(
+                  map(s.positions, (p) => {
+                    return s.ecoCodeLookup[p];
+                  })
+                )
               );
-              s.numMovesWouldBeDeleted = s.getMovesDependentOnPosition(
-                s.divergencePosition,
-                s
-              );
-              s.fetchPositionReportIfNeeded(s);
-            }),
-          selectBrowserSection: (
-            browserSection: BrowserSection,
-            includeInPreviousStates: boolean,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              // s.browsingState.line = browserSection.line;
-              // s.browsingState.epd = browserSection.epd;
-              console.log(
-                "browser section line: ",
-                logProxy(browserSection.line)
-              );
-              s.updateBrowserStateAndSections(
-                browserSection.epd,
-                browserSection.line,
-                s
-              );
-              if (includeInPreviousStates) {
-                s.previousBrowserStates.push(s.browserState);
-              }
-            }),
-          fetchPositionReportIfNeeded: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let epd = s.getCurrentEpd(s);
-              let side = s.activeSide;
-              if (!isNil(s.getCurrentPositionReport(s))) {
+            }
+            map(zip(s.positions, line), ([position, san], i) => {
+              if (!san) {
                 return;
               }
-              client
-                .post("/api/v1/openings/position_report", {
-                  epd: epd,
-                })
-                .then(({ data }: { data: PositionReport }) => {
-                  set((s) => {
-                    s.positionReports[side][epd] = data;
-                  });
-                })
-                .finally(() => {
-                  // set((s) => {});
+              if (
+                !some(
+                  s.repertoire[s.activeSide].positionResponses[position],
+                  (m) => {
+                    return m.sanPlus === san;
+                  }
+                )
+              ) {
+                s.differentMoveIndices.push(i);
+                let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
+                // let checker = () => {
+                //   console.log(
+                //     "Checking position and san",
+                //     position,
+                //     san,
+                //     mine
+                //   );
+                //   let chess = new Chess();
+                //   chess.load(position);
+                //   console.log(chess.ascii());
+                //   if (!chess.validateMoves([san])) {
+                //     console.warn("This was an invalid move!", i);
+                //   }
+                // };
+                // checker();
+                s.pendingResponses[position] = [
+                  {
+                    epd: position,
+                    epdAfter: s.positions[i + 1],
+                    sanPlus: san,
+                    side: s.activeSide,
+                    pending: true,
+                    mine: mine,
+                    srs: {
+                      needsReview: false,
+                      firstReview: false,
+                    },
+                  },
+                ] as RepertoireMove[];
+              }
+            });
+
+            s.hasPendingLineToAdd = some(
+              flatten(values(s.pendingResponses)),
+              (m) => m.mine
+            );
+            s.numMovesWouldBeDeleted = s.getMovesDependentOnPosition(
+              s.divergencePosition
+            );
+            s.fetchPositionReportIfNeeded();
+          }, "onEditingPositionUpdate"),
+        fetchPositionReportIfNeeded: () =>
+          set((s) => {
+            let epd = s.getCurrentEpd();
+            let side = s.activeSide;
+            if (!isNil(s.getCurrentPositionReport())) {
+              return;
+            }
+            client
+              .post("/api/v1/openings/position_report", {
+                epd: epd,
+              })
+              .then(({ data }: { data: PositionReport }) => {
+                set((s) => {
+                  s.positionReports[side][epd] = data;
                 });
-            }),
-          onMove: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              console.log("On move called!");
-              let epd = genEpd(s.position);
-              console.log("Pushing epd into positions!", epd);
-              s.positions.push(epd);
-              if (s.debugPawnStructuresState) {
-                console.log("Should be done right now, what's the position?");
-                console.log(epd);
-                s.fetchDebugPawnStructureForPosition(s);
-              }
-              if (s.isEditing) {
-                s.onEditingPositionUpdate(s);
-              }
-            }),
-          reviewLine: (line: string[], side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.backToOverview(s);
-              let queues = cloneDeep(EMPTY_QUEUES);
-              let sideQueue = [];
-              let epd = START_EPD;
-              let lineSoFar = [];
-              console.log("Yeah?", side);
-              line.map((move) => {
-                let response = find(
-                  s.repertoire[side].positionResponses[epd],
-                  (m) => m.sanPlus === move
-                );
-                epd = response?.epdAfter;
-                if (response && response.mine && response.epd !== START_EPD) {
-                  sideQueue.push({
-                    move: response,
-                    line: lineToPgn(lineSoFar),
-                  });
-                } else {
-                  console.log("Couldn't find a move for ", epd);
-                }
-                lineSoFar.push(move);
+              })
+              .finally(() => {
+                // set((s) => {});
               });
-              queues[side] = sideQueue;
-              s.reviewWithQueue(queues, s);
-            }),
-          updateQueue: (cram: boolean, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let seen_epds = new Set();
-              s.queues = {
-                white: [],
-                black: [],
-              };
-              const recurse = (epd, line, side: Side) => {
-                map(shuffle(s.repertoire[side].positionResponses[epd]), (m) => {
-                  if (
-                    m.mine &&
-                    (cram || m.srs.needsReview) &&
-                    m.epd !== START_EPD
-                  ) {
-                    s.queues[side].push({ move: m, line: lineToPgn(line) });
-                  }
-
-                  if (!seen_epds.has(m.epdAfter)) {
-                    seen_epds.add(m.epdAfter);
-                    recurse(m.epdAfter, [...line, m.sanPlus], side);
-                  }
-                });
-              };
-              for (const side of SIDES) {
-                recurse(START_EPD, [], side);
-                seen_epds = new Set();
-              }
-            }),
-          updateRepertoireStructures: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.myResponsesLookup = mapSides(
-                s.repertoire,
-                (repertoireSide: RepertoireSide) => {
-                  return flatten(
-                    Object.values(repertoireSide.positionResponses)
-                  ).filter((m: RepertoireMove) => m.mine);
-                }
+          }, "fetchPositionReportIfNeeded"),
+        onMove: () =>
+          set((s) => {
+            let epd = genEpd(s.chessboardState.position);
+            s.positions.push(epd);
+            if (s.debugPawnStructuresState) {
+              s.fetchDebugPawnStructureForPosition();
+            }
+            if (s.isEditing) {
+              s.onEditingPositionUpdate();
+            }
+          }, "onMove"),
+        reviewLine: (line: string[], side: Side) =>
+          set((s) => {
+            s.backToOverview();
+            let queues = cloneDeep(EMPTY_QUEUES);
+            let sideQueue = [];
+            let epd = START_EPD;
+            let lineSoFar = [];
+            line.map((move) => {
+              let response = find(
+                s.repertoire[side].positionResponses[epd],
+                (m) => m.sanPlus === move
               );
-              s.repertoireNumMoves = mapSides(
-                s.repertoire,
-                (repertoireSide: RepertoireSide) => {
-                  let epdToNumMoves = {};
-                  let seen_epds = new Set();
-                  const recurse = (epd, line, mine) => {
-                    let sum = 0;
-                    let sumTranspositions = 0;
-                    map(repertoireSide.positionResponses[epd], (m) => {
-                      let inc = m.mine ? 1 : 0;
-                      if (!seen_epds.has(m.epdAfter)) {
-                        seen_epds.add(m.epdAfter);
-                        let x = recurse(
-                          m.epdAfter,
-                          [...line, m.sanPlus],
-                          m.mine
-                        );
-                        sum += x.withoutTranspositions + inc;
+              epd = response?.epdAfter;
+              if (response && response.mine && response.epd !== START_EPD) {
+                sideQueue.push({
+                  move: response,
+                  line: lineToPgn(lineSoFar),
+                });
+              } else {
+                console.log("Couldn't find a move for ", epd);
+              }
+              lineSoFar.push(move);
+            });
+            queues[side] = sideQueue;
+            s.reviewWithQueue(queues);
+          }, "reviewLine"),
+        updateQueue: (cram: boolean) =>
+          set((s) => {
+            let seen_epds = new Set();
+            s.queues = {
+              white: [],
+              black: [],
+            };
+            const recurse = (epd, line, side: Side) => {
+              map(shuffle(s.repertoire[side].positionResponses[epd]), (m) => {
+                if (
+                  m.mine &&
+                  (cram || m.srs.needsReview) &&
+                  m.epd !== START_EPD
+                ) {
+                  s.queues[side].push({ move: m, line: lineToPgn(line) });
+                }
+
+                if (!seen_epds.has(m.epdAfter)) {
+                  seen_epds.add(m.epdAfter);
+                  recurse(m.epdAfter, [...line, m.sanPlus], side);
+                }
+              });
+            };
+            for (const side of SIDES) {
+              recurse(START_EPD, [], side);
+              seen_epds = new Set();
+            }
+          }, "updateQueue"),
+        updateRepertoireStructures: () =>
+          set((s) => {
+            console.log("Updating structures!");
+            s.myResponsesLookup = mapSides(
+              s.repertoire,
+              (repertoireSide: RepertoireSide) => {
+                return flatten(
+                  Object.values(repertoireSide.positionResponses)
+                ).filter((m: RepertoireMove) => m.mine);
+              }
+            );
+            s.repertoireNumMoves = mapSides(
+              s.repertoire,
+              (repertoireSide: RepertoireSide) => {
+                let epdToNumMoves = {};
+                let seen_epds = new Set();
+                const recurse = (epd, line, mine) => {
+                  let sum = 0;
+                  let sumTranspositions = 0;
+                  map(repertoireSide.positionResponses[epd], (m) => {
+                    let inc = m.mine ? 1 : 0;
+                    if (!seen_epds.has(m.epdAfter)) {
+                      seen_epds.add(m.epdAfter);
+                      let x = recurse(m.epdAfter, [...line, m.sanPlus], m.mine);
+                      sum += x.withoutTranspositions + inc;
+                      sumTranspositions +=
+                        x.withTranspositions - x.withoutTranspositions;
+                    } else {
+                      if (epdToNumMoves[m.epdAfter]) {
                         sumTranspositions +=
-                          x.withTranspositions - x.withoutTranspositions;
-                      } else {
-                        if (epdToNumMoves[m.epdAfter]) {
-                          sumTranspositions +=
-                            epdToNumMoves[m.epdAfter].withTranspositions + inc;
-                        }
+                          epdToNumMoves[m.epdAfter].withTranspositions + inc;
                       }
-                    });
-                    epdToNumMoves[epd] = {
-                      withTranspositions: sum + sumTranspositions,
-                      withoutTranspositions: sum,
-                    };
-                    return {
-                      withTranspositions: sum + sumTranspositions,
-                      withoutTranspositions: sum,
-                    };
-                  };
-                  recurse(START_EPD, [], false);
-                  return epdToNumMoves;
-                }
-              );
-            }),
-
-          attemptMove: (
-            move,
-            cb: (
-              shouldMove: boolean,
-              then: (completed: boolean, s: RepertoireState) => void
-            ) => void,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              if (s.debugPawnStructuresState) {
-                console.log("Doing this because debug pawn structure state");
-                cb(true, (completed: boolean, s: RepertoireState) => {
-                  if (completed === false || completed === null) {
-                    s.onMove(s);
-                  }
-                });
-              }
-              if (s.isEditing) {
-                console.log("Attempt move called!");
-                cb(true, (completed: boolean, s: RepertoireState) => {
-                  if (completed === false || completed === null) {
-                    s.onMove(s);
-                  }
-                });
-              } else if (s.isReviewing) {
-                if (move.san == s.currentMove.move.sanPlus) {
-                  cb(true, (completed: boolean, s: RepertoireState) => {
-                    if (!completed) {
-                      s.flashRing(true, s);
-                      window.setTimeout(() => {
-                        set((s) => {
-                          if (s.isReviewing) {
-                            if (s.failedCurrentMove) {
-                              s.hasGivenUp = true;
-                            } else {
-                              s.setupNextMove(s);
-                            }
-                          }
-                        });
-                      }, 100);
                     }
                   });
-                } else {
-                  s.flashRing(false, s);
-                  s.failedCurrentMove = true;
-                }
+                  epdToNumMoves[epd] = {
+                    withTranspositions: sum + sumTranspositions,
+                    withoutTranspositions: sum,
+                  };
+                  return {
+                    withTranspositions: sum + sumTranspositions,
+                    withoutTranspositions: sum,
+                  };
+                };
+                recurse(START_EPD, [], false);
+                return epdToNumMoves;
               }
-            }),
+            );
+          }, "updateRepertoireStructures"),
 
-          markMoveReviewed: (
-            m: string,
-            correct: boolean,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              client
-                .post("/api/v1/openings/move_reviewed", { correct, epd: m })
-                .then(({ data }) => {});
-            }),
-          setupNextMove: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.frozen = false;
-              s.hasGivenUp = false;
-              if (s.currentMove) {
-                if (s.failedCurrentMove) {
-                  s.queues[s.currentMove.move.side].push(s.currentMove);
-                  s.markMoveReviewed(s.currentMove.move.epd, false, s);
-                } else {
-                  s.markMoveReviewed(s.currentMove.move.epd, true, s);
-                }
+        markMoveReviewed: (m: string, correct: boolean) =>
+          set((s) => {
+            client
+              .post("/api/v1/openings/move_reviewed", { correct, epd: m })
+              .then(({ data }) => {});
+          }),
+        setupNextMove: () =>
+          set((s) => {
+            s.chessboardState.frozen = false;
+            s.hasGivenUp = false;
+            if (s.currentMove) {
+              if (s.failedCurrentMove) {
+                s.queues[s.currentMove.move.side].push(s.currentMove);
+                s.markMoveReviewed(s.currentMove.move.epd, false);
+              } else {
+                s.markMoveReviewed(s.currentMove.move.epd, true);
               }
+            }
+            s.currentMove = s.queues[s.reviewSide].shift();
+            if (!s.currentMove) {
+              s.reviewSide = otherSide(s.reviewSide);
               s.currentMove = s.queues[s.reviewSide].shift();
               if (!s.currentMove) {
-                s.reviewSide = otherSide(s.reviewSide);
-                s.currentMove = s.queues[s.reviewSide].shift();
-                if (!s.currentMove) {
-                  s.backToOverview(s);
-                  return;
-                }
+                s.backToOverview();
+                return;
               }
-              s.moveLogPgn = s.currentMove.line;
-              s.failedCurrentMove = false;
-              s.flipped = s.currentMove.move.side === "black";
-              s.position = new Chess();
-              // s.frozen = false;
-              s.position.loadPgn(s.currentMove.line);
-              // s.position.undo();
-              let lastOpponentMove = s.position.undo();
+            }
+            s.chessboardState.moveLogPgn = s.currentMove.line;
+            s.failedCurrentMove = false;
+            s.chessboardState.flipped = s.currentMove.move.side === "black";
+            s.chessboardState.position = new Chess();
+            // s.frozen = false;
+            s.chessboardState.position.loadPgn(s.currentMove.line);
+            // s.position.undo();
+            let lastOpponentMove = s.chessboardState.position.undo();
 
-              if (lastOpponentMove) {
-                window.setTimeout(() => {
-                  set((s) => {
-                    if (s.isReviewing) {
-                      s.animatePieceMove(
-                        lastOpponentMove,
-                        PlaybackSpeed.Normal,
-                        (completed, s: RepertoireState) => {},
-                        s
-                      );
-                    }
-                  });
-                }, 300);
-              }
-            }),
-
-          deleteMoveConfirmed: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let response = s.editingState.deleteConfirmationResponse;
-              s.editingState.isDeletingMove = true;
-              client
-                .post("/api/v1/openings/delete_move", {
-                  response: response,
-                })
-                .then(({ data }: { data: FetchRepertoireResponse }) => {
-                  set((s) => {
-                    s.repertoire = data.repertoire;
-                    s.repertoireGrades = data.grades;
-                    s.onRepertoireUpdate(s);
-                    s.backToStartPosition(s);
-                  });
-                })
-                .finally(() => {
-                  set((s) => {
-                    s.editingState.isDeletingMove = false;
-                    s.editingState.deleteConfirmationModalOpen = false;
-                  });
-                });
-            }),
-          deleteRepertoire: (side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              client
-                .post("/api/v1/openings/delete", {
-                  sides: [side],
-                })
-                .then(({ data }: { data: FetchRepertoireResponse }) => {
-                  set((s) => {
-                    s.repertoire = data.repertoire;
-                    s.repertoireGrades = data.grades;
-                    s.onRepertoireUpdate(s);
-                  });
-                });
-            }),
-          exportPgns: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {}),
-          exportPgn: (side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let pgn = "";
-
-              let seen_epds = new Set();
-              let recurse = (epd, line) => {
-                let [mainMove, ...others] =
-                  s.repertoire[side].positionResponses[epd] ?? [];
-                if (!mainMove) {
-                  return;
-                }
-                let mainLine = [...line, mainMove.sanPlus];
-                pgn = pgn + getLastMoveWithNumber(lineToPgn(mainLine)) + " ";
-                forEach(others, (variationMove) => {
-                  if (seen_epds.has(variationMove.epdAfter)) {
-                    return;
-                  }
-                  let variationLine = [...line, variationMove.sanPlus];
-                  seen_epds.add(variationMove.epdAfter);
-                  pgn += "(";
-                  pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
-
-                  recurse(variationMove.epdAfter, variationLine);
-                  pgn = pgn.trim();
-                  pgn += ") ";
-                });
-                if (
-                  !isEmpty(others) &&
-                  sideOfLastmove(lineToPgn(mainLine)) === "white"
-                ) {
-                  pgn += `${getMoveNumber(lineToPgn(mainLine))}... `;
-                }
-
-                if (seen_epds.has(mainMove.epdAfter)) {
-                  return;
-                }
-                seen_epds.add(mainMove.epdAfter);
-                recurse(mainMove.epdAfter, mainLine);
-              };
-              recurse(START_EPD, []);
-              pgn = pgn.trim();
-
-              let downloadLink = document.createElement("a");
-
-              let csvFile = new Blob([pgn], { type: "text" });
-
-              let url = window.URL.createObjectURL(csvFile);
-              // file name
-              downloadLink.download = `${side}.pgn`;
-
-              // create link to file
-              downloadLink.href = url;
-
-              // hide download link
-              downloadLink.style.display = "none";
-
-              // add link to DOM
-              document.body.appendChild(downloadLink);
-
-              // click download link
-              downloadLink.click();
-            }),
-
-          backToOverview: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              if (s.isReviewingWithCustomQueue) {
-                s.isReviewingWithCustomQueue = false;
-                s.updateQueue(false, s);
-              }
-              s.showImportView = false;
-              s.backToStartPosition(s);
-              s.reviewSide = null;
-              s.moveLogPgn = null;
-              s.isReviewing = false;
-              if (s.currentMove) {
-                s.queues[s.currentMove.move.side].unshift(s.currentMove);
-              }
-              if (s.isCramming) {
-                s.queues = EMPTY_QUEUES;
-              }
-              s.isCramming = false;
-              s.currentMove = null;
-              s.activeSide = "white";
-              s.isEditing = false;
-              s.isBrowsing = false;
-              s.position = new Chess();
-              s.frozen = true;
-              s.flipped = false;
-              s.divergencePosition = null;
-              s.divergenceIndex = null;
-              s.hasPendingLineToAdd = false;
-              s.pendingResponses = {};
-              s.showMoveLog = false;
-              s.addedLineState = null;
-            }),
-          startImporting: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.showImportView = true;
-            }),
-          startBrowsing: (side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.isBrowsing = true;
-              s.activeSide = side;
-              s.browserState = {
-                epd: START_EPD,
-                sections: [],
-                line: [],
-                lines: [],
-                ecoCode: null,
-              };
-              s.previousBrowserStates = [];
-              s.updateBrowserStateAndSections(
-                s.browserState.epd,
-                s.browserState.line,
-                s
-              );
-              // s.previousBrowserStates.push(s.browserState);
-            }),
-          selectBrowserState: (
-            browserState: BrowserState,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              while (true) {
-                let lastState = s.previousBrowserStates.pop();
-                if (lastState.ecoCode.code === browserState.ecoCode.code) {
-                  s.previousBrowserStates.push(lastState);
-                  s.browserState = browserState;
-                  break;
-                }
-              }
-            }),
-          updateBrowserStateAndSections: (
-            epd: string,
-            line: string[],
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              s.browserState = {
-                epd: epd,
-                sections: [],
-                line: line,
-                lines: [],
-                ecoCode: s.ecoCodeLookup[epd],
-              };
-
-              let sections: BrowserSection[] = [];
-              let responses = s.repertoire[s.activeSide].positionResponses;
-              let paths = [];
-              let seenEpds = new Set(
-                s.browserState?.sections?.map((s) => s.epd) ?? []
-              );
-              let recurse = (path: string, epd: string, moveNumber: number) => {
-                responses[epd]?.forEach((m) => {
-                  let n = moveNumber / 2 + 1;
-                  let newPath = null;
-                  if (moveNumber % 2 == 0) {
-                    if (moveNumber == 0) {
-                      newPath = `${n}.${m.sanPlus}`;
-                    } else {
-                      newPath = `${path} ${n}.${m.sanPlus}`;
-                    }
-                  } else {
-                    newPath = `${path} ${m.sanPlus}`;
-                  }
-                  let ecoCode = s.ecoCodeLookup[m.epdAfter];
-                  let myResponse = responses[m.epdAfter]?.[0];
-                  const nextEcoCode = s.ecoCodeLookup[myResponse?.epdAfter];
-                  const numMovesNext =
-                    s.repertoireNumMoves[s.activeSide][myResponse?.epdAfter];
-                  if (
-                    ecoCode &&
-                    (m.mine ||
-                      (!m.mine && !nextEcoCode) ||
-                      (!m.mine && numMovesNext.withTranspositions === 0))
-                  ) {
-                    sections.push({
-                      epd: m.epdAfter,
-                      eco_code: ecoCode,
-                      line: pgnToLine(newPath),
-                      pgn: newPath,
-                      numMoves: s.repertoireNumMoves[s.activeSide][m.epdAfter],
-                    } as BrowserSection);
-                    seenEpds.add(m.epdAfter);
-                  }
-                  // if (
-                  //   (side == "white" && moveNumber % 2 == 0) ||
-                  //   (side == "black" && moveNumber % 2 == 1)
-                  // ) {
-                  // }
-                  if (!seenEpds.has(m.epdAfter)) {
-                    seenEpds.add(m.epdAfter);
-                    paths.push({ line: newPath, epd: m.epdAfter });
-                    recurse(newPath, m.epdAfter, moveNumber + 1);
+            if (lastOpponentMove) {
+              window.setTimeout(() => {
+                set((s) => {
+                  if (s.isReviewing) {
+                    s.chessboardState.animatePieceMove(
+                      lastOpponentMove,
+                      PlaybackSpeed.Normal,
+                      (completed, s: RepertoireState) => {}
+                    );
                   }
                 });
-              };
-              recurse(
-                lineToPgn(s.browserState.line),
-                s.browserState.epd,
-                s.browserState.line.length ?? 0
-              );
-              // TODO: can optimize this probably
-              paths = paths.filter(({ line }) => {
-                if (
-                  some(
-                    paths,
-                    (p2) => p2.line.startsWith(line) && line !== p2.line
-                  ) ||
-                  some(
-                    sections,
-                    (s) => s.pgn.startsWith(line) && line !== s.pgn
-                  )
-                ) {
-                  return false;
-                } else {
-                  return true;
-                }
+              }, 300);
+            }
+          }, "setupNextMove"),
+
+        deleteMoveConfirmed: () =>
+          set((s) => {
+            let response = s.editingState.deleteConfirmationResponse;
+            s.editingState.isDeletingMove = true;
+            client
+              .post("/api/v1/openings/delete_move", {
+                response: response,
+              })
+              .then(({ data }: { data: FetchRepertoireResponse }) => {
+                set((s) => {
+                  s.repertoire = data.repertoire;
+                  s.repertoireGrades = data.grades;
+                  s.onRepertoireUpdate();
+                  s.backToStartPosition();
+                });
+              })
+              .finally(() => {
+                set((s) => {
+                  s.editingState.isDeletingMove = false;
+                  s.editingState.deleteConfirmationModalOpen = false;
+                });
               });
-              s.browserState.lines = paths.map((p) => {
-                return {
-                  line: p.line,
-                  epd: p.epd,
+          }, "deleteMoveConfirmed"),
+        deleteRepertoire: (side: Side) =>
+          set((s) => {
+            client
+              .post("/api/v1/openings/delete", {
+                sides: [side],
+              })
+              .then(({ data }: { data: FetchRepertoireResponse }) => {
+                set((s) => {
+                  s.repertoire = data.repertoire;
+                  s.repertoireGrades = data.grades;
+                  s.onRepertoireUpdate();
+                });
+              });
+          }, "deleteRepertoire"),
+        exportPgns: () => set((s) => {}),
+        exportPgn: (side: Side) =>
+          set((s) => {
+            let pgn = "";
+
+            let seen_epds = new Set();
+            let recurse = (epd, line) => {
+              let [mainMove, ...others] =
+                s.repertoire[side].positionResponses[epd] ?? [];
+              if (!mainMove) {
+                return;
+              }
+              let mainLine = [...line, mainMove.sanPlus];
+              pgn = pgn + getLastMoveWithNumber(lineToPgn(mainLine)) + " ";
+              forEach(others, (variationMove) => {
+                if (seen_epds.has(variationMove.epdAfter)) {
+                  return;
+                }
+                let variationLine = [...line, variationMove.sanPlus];
+                seen_epds.add(variationMove.epdAfter);
+                pgn += "(";
+                pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
+
+                recurse(variationMove.epdAfter, variationLine);
+                pgn = pgn.trim();
+                pgn += ") ";
+              });
+              if (
+                !isEmpty(others) &&
+                sideOfLastmove(lineToPgn(mainLine)) === "white"
+              ) {
+                pgn += `${getMoveNumber(lineToPgn(mainLine))}... `;
+              }
+
+              if (seen_epds.has(mainMove.epdAfter)) {
+                return;
+              }
+              seen_epds.add(mainMove.epdAfter);
+              recurse(mainMove.epdAfter, mainLine);
+            };
+            recurse(START_EPD, []);
+            pgn = pgn.trim();
+
+            let downloadLink = document.createElement("a");
+
+            let csvFile = new Blob([pgn], { type: "text" });
+
+            let url = window.URL.createObjectURL(csvFile);
+            // file name
+            downloadLink.download = `${side}.pgn`;
+
+            // create link to file
+            downloadLink.href = url;
+
+            // hide download link
+            downloadLink.style.display = "none";
+
+            // add link to DOM
+            document.body.appendChild(downloadLink);
+
+            // click download link
+            downloadLink.click();
+          }, "exportPgn"),
+
+        backToOverview: () =>
+          set((s) => {
+            if (s.isReviewingWithCustomQueue) {
+              s.isReviewingWithCustomQueue = false;
+              s.updateQueue(false);
+            }
+            s.showImportView = false;
+            s.backToStartPosition();
+            s.reviewSide = null;
+            s.chessboardState.moveLogPgn = null;
+            s.isReviewing = false;
+            if (s.currentMove) {
+              s.queues[s.currentMove.move.side].unshift(s.currentMove);
+            }
+            if (s.isCramming) {
+              s.queues = EMPTY_QUEUES;
+            }
+            s.isCramming = false;
+            s.currentMove = null;
+            s.activeSide = "white";
+            s.isEditing = false;
+            s.isBrowsing = false;
+            s.chessboardState.position = new Chess();
+            s.chessboardState.frozen = true;
+            s.chessboardState.flipped = false;
+            s.divergencePosition = null;
+            s.divergenceIndex = null;
+            s.hasPendingLineToAdd = false;
+            s.pendingResponses = {};
+            s.chessboardState.showMoveLog = false;
+            s.addedLineState = null;
+          }, "backToOverview"),
+        startImporting: () =>
+          set((s) => {
+            s.showImportView = true;
+          }, "startImporting"),
+        startBrowsing: (side: Side) =>
+          set((s) => {
+            s.isBrowsing = true;
+            s.activeSide = side;
+            s.browsingState.drilldownState = {
+              epd: START_EPD,
+              sections: [],
+              line: [],
+              lines: [],
+              ecoCode: null,
+            };
+            s.browsingState.previousDrilldownStates = [];
+            s.browsingState.updateDrilldownStateAndSections(
+              s.browsingState.drilldownState.epd,
+              s.browsingState.drilldownState.line
+            );
+
+            if (s.browsingState.drilldownState.sections.length === 1) {
+              s.browsingState.previousDrilldownStates.pop();
+              s.browsingState.selectBrowserSection(
+                s.browsingState.drilldownState.sections[0],
+                true
+              );
+            }
+            // s.browsingState.previousDrilldownStates.push(s.browsingState.drilldownState);
+          }, "startBrowsing"),
+        startEditing: (side: Side) =>
+          set((s) => {
+            s.activeSide = side;
+            s.isEditing = true;
+            s.chessboardState.frozen = false;
+            s.chessboardState.flipped = side === "black";
+            s.editingState = {
+              ...s.editingState,
+              selectedTab: EditingTab.Responses,
+              etcModalOpen: false,
+            };
+            s.onEditingPositionUpdate();
+          }),
+        reviewWithQueue: (queues: BySide<QuizMove[]>) =>
+          set((s) => {
+            let side = shuffle(SIDES)[0];
+            s.isReviewingWithCustomQueue = true;
+            s.queues = queues;
+            s.reviewSide = side;
+            s.chessboardState.showMoveLog = true;
+            s.isReviewing = true;
+            s.setupNextMove();
+          }),
+        startReview: (_side?: Side) =>
+          set((s) => {
+            let side = _side ?? shuffle(SIDES)[0];
+            s.reviewSide = side;
+            if (s.getQueueLength(side) === 0) {
+              s.updateQueue(true);
+              s.isCramming = true;
+            }
+            s.chessboardState.showMoveLog = true;
+            s.isReviewing = true;
+            s.setupNextMove();
+          }),
+        onRepertoireUpdate: () =>
+          set((s) => {
+            console.log("Repertoire during update?", logProxy(s.repertoire));
+            s.updateRepertoireStructures();
+            s.updateQueue(false);
+          }),
+        fetchRepertoireTemplates: () =>
+          set((s) => {
+            client
+              .get("/api/v1/openings/template_repertoires")
+              .then(({ data }: { data: RepertoireTemplate[] }) => {
+                set((s) => {
+                  s.repertoireTemplates = data;
+                });
+              });
+          }),
+        fetchPlayerTemplates: () =>
+          set((s) => {
+            client
+              .get("/api/v1/openings/player_templates")
+              .then(({ data }: { data: PlayerTemplate[] }) => {
+                set((s) => {
+                  s.playerTemplates = data;
+                });
+              });
+          }),
+        fetchSupplementary: () =>
+          set((s) => {
+            return client.get("/api/v1/openings/supplementary").then(
+              ({
+                data,
+              }: {
+                data: {
+                  ecoCodes: EcoCode[];
+                  pawnStructures: PawnStructureDetails[];
                 };
+              }) => {
+                set((s) => {
+                  s.ecoCodes = data.ecoCodes;
+                  s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
+                  s.pawnStructures = data.pawnStructures;
+                  s.pawnStructureLookup = keyBy(s.pawnStructures, (e) => e.id);
+                });
+              }
+            );
+          }),
+        fetchEcoCodes: () =>
+          set((s) => {
+            client
+              .get("/api/v1/openings/eco_codes")
+              .then(({ data }: { data: EcoCode[] }) => {
+                set((s) => {
+                  s.ecoCodes = data;
+                  s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
+                });
               });
-              s.browserState.sections = sortBy(
-                sections,
-                (s) => -s.numMoves.withTranspositions
-              );
-
-              if (sections.length === 1) {
-                console.log(
-                  "Sections length is 1, popping",
-                  logProxy(s.previousBrowserStates),
-                  logProxy(sections)
-                );
-                s.previousBrowserStates.pop();
-                s.selectBrowserSection(sections[0], true, s);
-              }
-            }),
-          startEditing: (side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.activeSide = side;
-              s.isEditing = true;
-              s.frozen = false;
-              s.flipped = side === "black";
-              s.editingState = {
-                ...s.editingState,
-                selectedTab: EditingTab.Responses,
-                etcModalOpen: false,
-              };
-              s.onEditingPositionUpdate(s);
-            }),
-          reviewWithQueue: (
-            queues: BySide<QuizMove[]>,
-            _state?: RepertoireState
-          ) =>
-            setter(set, _state, (s) => {
-              let side = shuffle(SIDES)[0];
-              s.isReviewingWithCustomQueue = true;
-              s.queues = queues;
-              s.reviewSide = side;
-              s.showMoveLog = true;
-              s.isReviewing = true;
-              s.setupNextMove(s);
-            }),
-          startReview: (_side?: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let side = _side ?? shuffle(SIDES)[0];
-              s.reviewSide = side;
-              if (s.getQueueLength(side) === 0) {
-                s.updateQueue(true, s);
-                s.isCramming = true;
-              }
-              s.showMoveLog = true;
-              s.isReviewing = true;
-              s.setupNextMove(s);
-            }),
-          onRepertoireUpdate: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.updateRepertoireStructures(s);
-              s.updateQueue(false, s);
-            }),
-          fetchRepertoireTemplates: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              client
-                .get("/api/v1/openings/template_repertoires")
-                .then(({ data }: { data: RepertoireTemplate[] }) => {
-                  set((s) => {
-                    s.repertoireTemplates = data;
-                  });
-                });
-            }),
-          fetchPlayerTemplates: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              client
-                .get("/api/v1/openings/player_templates")
-                .then(({ data }: { data: PlayerTemplate[] }) => {
-                  set((s) => {
-                    s.playerTemplates = data;
-                  });
-                });
-            }),
-          fetchSupplementary: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              client.get("/api/v1/openings/supplementary").then(
-                ({
-                  data,
-                }: {
-                  data: {
-                    ecoCodes: EcoCode[];
-                    pawnStructures: PawnStructureDetails[];
-                  };
-                }) => {
-                  set((s) => {
-                    s.ecoCodes = data.ecoCodes;
-                    s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
-                    s.pawnStructures = data.pawnStructures;
-                    s.pawnStructureLookup = keyBy(
-                      s.pawnStructures,
-                      (e) => e.id
-                    );
-                  });
-                }
-              );
-            }),
-          fetchEcoCodes: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              client
-                .get("/api/v1/openings/eco_codes")
-                .then(({ data }: { data: EcoCode[] }) => {
-                  set((s) => {
-                    s.ecoCodes = data;
-                    s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
-                  });
-                });
-            }),
-          fetchDebugPawnStructureForPosition: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let epd = s.getCurrentEpd(s);
-              s.debugPawnStructuresState.loadingPosition;
-              client
-                .post("/api/v1/debug/position", {
-                  epd,
-                })
-                .then(({ data }: { data: any }) => {
-                  set((s) => {
-                    s.debugPawnStructuresState.byPosition[epd] = data;
-                    console.log("Should?", s.getCurrentEpd(), epd);
-                    if (s.getCurrentEpd() === epd) {
-                      console.log("Setting pawnStructures");
-                      s.debugPawnStructuresState.loadingPosition = false;
-                      s.debugPawnStructuresState.pawnStructures = sortBy(
-                        data,
-                        (p) => {
-                          return !p.passed;
-                        }
-                      );
-                    }
-                  });
-                });
-            }),
-          fetchDebugGames: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.frozen = false;
-              s.debugPawnStructuresState = {
-                games: [],
-                loadingGames: true,
-                byPosition: {},
-                mode: "games",
-                i: 0,
-              };
-              client
-                .post("/api/v1/debug/master_games", {
-                  move_number: NUM_MOVES_DEBUG_PAWN_STRUCTURES,
-                })
-                .then(({ data }: { data: any }) => {
-                  set((s) => {
-                    s.debugPawnStructuresState.i = 0;
-                    s.debugPawnStructuresState.loadingGames = false;
-                    s.debugPawnStructuresState.games = sortBy(
-                      data.games,
-                      (g) => {
-                        return !some(g.pawnStructures, (s) => s.passed);
+          }),
+        fetchDebugPawnStructureForPosition: () =>
+          set((s) => {
+            let epd = s.getCurrentEpd();
+            s.debugPawnStructuresState.loadingPosition;
+            client
+              .post("/api/v1/debug/position", {
+                epd,
+              })
+              .then(({ data }: { data: any }) => {
+                set((s) => {
+                  s.debugPawnStructuresState.byPosition[epd] = data;
+                  console.log("Should?", s.getCurrentEpd(), epd);
+                  if (s.getCurrentEpd() === epd) {
+                    console.log("Setting pawnStructures");
+                    s.debugPawnStructuresState.loadingPosition = false;
+                    s.debugPawnStructuresState.pawnStructures = sortBy(
+                      data,
+                      (p) => {
+                        return !p.passed;
                       }
                     );
-                    if (s.debugPawnStructuresState.mode === "games") {
-                      s.selectDebugGame(0, s);
-                    }
-                  });
+                  }
                 });
-            }),
-          selectDebugGame: (i: number, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let { game, pawnStructures } =
-                s.debugPawnStructuresState.games[i];
-              s.debugPawnStructuresState.i = i;
-              s.debugPawnStructuresState.game = game;
-              s.debugPawnStructuresState.moves =
-                NUM_MOVES_DEBUG_PAWN_STRUCTURES;
-              s.debugPawnStructuresState.pawnStructures = sortBy(
-                pawnStructures,
-                (p) => {
-                  return !p.passed;
-                }
-              );
-              // s.debugPawnStructuresState.r
-              s.playPgn(
-                lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES)),
-                s
-              );
-            }),
-          fetchRepertoire: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
+              });
+          }),
+        fetchDebugGames: () =>
+          set((s) => {
+            s.chessboardState.frozen = false;
+            s.debugPawnStructuresState = {
+              games: [],
+              loadingGames: true,
+              byPosition: {},
+              mode: "games",
+              i: 0,
+            };
+            client
+              .post("/api/v1/debug/master_games", {
+                move_number: NUM_MOVES_DEBUG_PAWN_STRUCTURES,
+              })
+              .then(({ data }: { data: any }) => {
+                set((s) => {
+                  s.debugPawnStructuresState.i = 0;
+                  s.debugPawnStructuresState.loadingGames = false;
+                  s.debugPawnStructuresState.games = sortBy(data.games, (g) => {
+                    return !some(g.pawnStructures, (s) => s.passed);
+                  });
+                  if (s.debugPawnStructuresState.mode === "games") {
+                    s.selectDebugGame(0);
+                  }
+                });
+              });
+          }),
+        selectDebugGame: (i: number) =>
+          set((s) => {
+            let { game, pawnStructures } = s.debugPawnStructuresState.games[i];
+            s.debugPawnStructuresState.i = i;
+            s.debugPawnStructuresState.game = game;
+            s.debugPawnStructuresState.moves = NUM_MOVES_DEBUG_PAWN_STRUCTURES;
+            s.debugPawnStructuresState.pawnStructures = sortBy(
+              pawnStructures,
+              (p) => {
+                return !p.passed;
+              }
+            );
+            // s.debugPawnStructuresState.r
+            s.playPgn(
+              lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
+            );
+          }),
+        fetchSharedRepertoire: (id: string) =>
+          set((s) => {
+            Promise.all([
+              s.fetchSupplementary(),
+
               client
-                .get("/api/v1/openings")
-                .then(({ data }: { data: FetchRepertoireResponse }) => {
+                .get(`/api/v1/openings/shared/${id}`)
+                .then(({ data }: { data: GetSharedRepertoireResponse }) => {
                   set((s) => {
                     s.repertoire = data.repertoire;
-                    s.repertoireGrades = data.grades;
-                    if (getAllRepertoireMoves(s.repertoire).length > 0) {
-                      s.hasCompletedRepertoireInitialization = true;
-                    } else {
-                      if (!s.hasCompletedRepertoireInitialization) {
-                        s.showImportView = true;
-                      }
-                    }
-                    s.onRepertoireUpdate(s);
+                    console.log(logProxy(s));
+                    s.onRepertoireUpdate();
                   });
+                }),
+            ]).then(() => {
+              set((s) => {
+                console.log("Eco code lookup?");
+                console.log(logProxy(s.ecoCodeLookup));
+                s.startBrowsing("white");
+                s.browsingState.readOnly = true;
+              });
+            });
+          }),
+        fetchRepertoire: () =>
+          set((s) => {
+            client
+              .get("/api/v1/openings")
+              .then(({ data }: { data: FetchRepertoireResponse }) => {
+                set((s) => {
+                  console.log("Fetched repertoire!");
+                  s.repertoire = data.repertoire;
+                  s.repertoireGrades = data.grades;
+                  s.repertoireShareId = data.shareId;
+                  if (getAllRepertoireMoves(s.repertoire).length > 0) {
+                    s.hasCompletedRepertoireInitialization = true;
+                  } else {
+                    if (!s.hasCompletedRepertoireInitialization) {
+                      s.showImportView = true;
+                    }
+                  }
+                  console.log("Repertoire here?", logProxy(s.repertoire));
+                  s.onRepertoireUpdate();
                 });
-            }),
-          getMyResponsesLength: (side?: Side, _state?: RepertoireState) => {
-            let s = _state ?? get();
+              });
+          }),
+        getMyResponsesLength: (side?: Side) =>
+          get((s) => {
             if (side) {
               return values(s.repertoire[side].positionResponses)
                 .flatMap((v) => v)
@@ -1382,21 +1346,21 @@ export const useRepertoireState = create<RepertoireState>()(
             } else {
               return getAllRepertoireMoves(s.repertoire).length;
             }
-          },
-          getQueueLength: (side?: Side, _state?: RepertoireState) => {
-            let s = _state ?? get();
+          }),
+        getQueueLength: (side?: Side) =>
+          get((s) => {
             if (side) {
               return s.queues[side].length;
             } else {
               return s.queues["white"].length + s.queues["black"].length;
             }
-          },
-          getIsRepertoireEmpty: (_state?: RepertoireState) => {
-            let s = _state ?? get();
+          }),
+        getIsRepertoireEmpty: () =>
+          get((s) => {
             return isEmpty(getAllRepertoireMoves(s.repertoire));
-          },
-          getLastMoveInRepertoire: (_state?: RepertoireState) => {
-            let s = _state ?? get();
+          }),
+        getLastMoveInRepertoire: () =>
+          get((s) => {
             let previousEpd = nth(s.positions, -2);
             let currentEpd = last(s.positions);
             return find(
@@ -1405,125 +1369,180 @@ export const useRepertoireState = create<RepertoireState>()(
                 return response.epdAfter === currentEpd;
               }
             );
-          },
-          getCurrentPositionReport: (_state?: RepertoireState) => {
-            let s = _state ?? get();
-            return s.positionReports[s.activeSide][s.getCurrentEpd(s)];
-          },
-          getCurrentEpd: (_state?: RepertoireState) => {
-            let s = _state ?? get();
-            return last(s.positions);
-          },
-          backOne: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              let m = s.position.undo();
-              if (m) {
-                s.positions.pop();
-              }
-              if (s.debugPawnStructuresState) {
-                s.fetchDebugPawnStructureForPosition(s);
-              }
-              if (s.isEditing) {
-                s.onEditingPositionUpdate(s);
-              }
-              // s.onEditingPositionUpdate(s);
-            }),
-          backToStartPosition: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.position = new Chess();
-              s.positions = [START_EPD];
-              s.onEditingPositionUpdate(s);
-            }),
-          editRepertoireSide: (side: Side, _state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.editingSide = side;
-              s.isEditing = true;
-            }),
-          ...createChessState(set, get, (c) => {
-            c.frozen = true;
           }),
-          addPendingLine: (_state?: RepertoireState) =>
-            setter(set, _state, (s) => {
-              s.isAddingPendingLine = true;
-              client
-                .post("/api/v1/openings/add_moves", {
-                  moves: _.flatten(cloneDeep(_.values(s.pendingResponses))),
-                  side: s.activeSide,
-                })
-                .then(({ data }: { data: FetchRepertoireResponse }) => {
-                  set((s) => {
-                    // s.backToStartPosition(s);
-                    s.repertoire = data.repertoire;
-                    s.repertoireGrades = data.grades;
-                    s.onRepertoireUpdate(s);
-                    s.onEditingPositionUpdate(s);
+        getCurrentPositionReport: () =>
+          get((s) => {
+            return s.positionReports[s.activeSide][s.getCurrentEpd()];
+          }),
+        getCurrentEpd: () =>
+          get((s) => {
+            return last(s.positions);
+          }),
+        backOne: () =>
+          set((s) => {
+            let m = s.chessboardState.position.undo();
+            if (m) {
+              s.positions.pop();
+            }
+            if (s.debugPawnStructuresState) {
+              s.fetchDebugPawnStructureForPosition();
+            }
+            if (s.isEditing) {
+              s.onEditingPositionUpdate();
+            }
+            // s.onEditingPositionUpdate(s);
+          }),
+        backToStartPosition: () =>
+          set((s) => {
+            s.chessboardState.position = new Chess();
+            s.positions = [START_EPD];
+            s.onEditingPositionUpdate();
+          }),
+        editRepertoireSide: (side: Side) =>
+          set((s) => {
+            s.editingSide = side;
+            s.isEditing = true;
+          }),
+        addPendingLine: () =>
+          set((s) => {
+            s.isAddingPendingLine = true;
+            client
+              .post("/api/v1/openings/add_moves", {
+                moves: _.flatten(cloneDeep(_.values(s.pendingResponses))),
+                side: s.activeSide,
+              })
+              .then(({ data }: { data: FetchRepertoireResponse }) => {
+                set((s) => {
+                  // s.backToStartPosition(s);
+                  s.repertoire = data.repertoire;
+                  s.repertoireGrades = data.grades;
+                  s.onRepertoireUpdate();
+                  s.onEditingPositionUpdate();
 
-                    s.addedLineState = {
-                      line: s.currentLine,
-                      stage: AddedLineStage.Initial,
-                      addNewLineSelectedIndex: 0,
-                      positionReport:
-                        s.positionReports[s.activeSide][s.getCurrentEpd()],
-                      ecoCode: findLast(
-                        map(s.positions, (p) => s.ecoCodeLookup[p])
-                      ),
-                    };
-                    let choices = [];
-                    let seenMisses = new Set();
-                    let addMiss = (miss: RepertoireMiss, title) => {
-                      if (!miss || seenMisses.has(miss.epd)) {
-                        return;
-                      }
-                      seenMisses.add(miss.epd);
-                      choices.push({
-                        line: miss.lines[0],
-                        title: title,
-                        incidence: miss.incidence,
-                      });
-                    };
-                    let biggestMiss =
-                      s.repertoireGrades[s.activeSide].biggestMiss;
-                    if (biggestMiss) {
-                      addMiss(biggestMiss, `Biggest miss overall`);
+                  s.addedLineState = {
+                    line: s.currentLine,
+                    stage: AddedLineStage.Initial,
+                    addNewLineSelectedIndex: 0,
+                    positionReport:
+                      s.positionReports[s.activeSide][s.getCurrentEpd()],
+                    ecoCode: findLast(
+                      map(s.positions, (p) => s.ecoCodeLookup[p])
+                    ),
+                  };
+                  let choices = [];
+                  let seenMisses = new Set();
+                  let addMiss = (miss: RepertoireMiss, title) => {
+                    if (!miss || seenMisses.has(miss.epd)) {
+                      return;
                     }
-
-                    let ecoCode = s.addedLineState.ecoCode;
-                    if (ecoCode) {
-                      let ecoName = getNameEcoCodeIdentifier(ecoCode.fullName);
-                      let miss = find(
-                        s.repertoireGrades[s.activeSide].biggestMisses,
-                        (m) => m.ecoCodeName == ecoName
-                      );
-                      addMiss(miss, `Biggest miss in ${ecoName}`);
-                      let fullEcoName = ecoCode.fullName;
-                      miss = find(
-                        s.repertoireGrades[s.activeSide].biggestMisses,
-                        (m) => m.ecoCodeName == fullEcoName
-                      );
-                      addMiss(miss, `Biggest miss in ${fullEcoName}`);
-                    }
-
+                    seenMisses.add(miss.epd);
                     choices.push({
-                      line: "",
-                      title: "Start position",
+                      line: miss.lines[0],
+                      title: title,
+                      incidence: miss.incidence,
                     });
-                    choices.push({
-                      line: lineToPgn(s.addedLineState.line),
-                      title: "Current position",
-                    });
-                    choices = take(choices, 3);
-                    s.addedLineState.addNewLineChoices = choices;
+                  };
+                  let biggestMiss =
+                    s.repertoireGrades[s.activeSide].biggestMiss;
+                  if (biggestMiss) {
+                    addMiss(biggestMiss, `Biggest miss overall`);
+                  }
+
+                  let ecoCode = s.addedLineState.ecoCode;
+                  if (ecoCode) {
+                    let ecoName = getNameEcoCodeIdentifier(ecoCode.fullName);
+                    let miss = find(
+                      s.repertoireGrades[s.activeSide].biggestMisses,
+                      (m) => m.ecoCodeName == ecoName
+                    );
+                    addMiss(miss, `Biggest miss in ${ecoName}`);
+                    let fullEcoName = ecoCode.fullName;
+                    miss = find(
+                      s.repertoireGrades[s.activeSide].biggestMisses,
+                      (m) => m.ecoCodeName == fullEcoName
+                    );
+                    addMiss(miss, `Biggest miss in ${fullEcoName}`);
+                  }
+
+                  choices.push({
+                    line: "",
+                    title: "Start position",
                   });
-                })
-                .finally(() => {
-                  set((s) => {
-                    s.isAddingPendingLine = false;
+                  choices.push({
+                    line: lineToPgn(s.addedLineState.line),
+                    title: "Current position",
                   });
+                  choices = take(choices, 3);
+                  s.addedLineState.addNewLineChoices = choices;
                 });
-            }),
-          selectedTemplates: {},
-        } as RepertoireState)
-    ),
+              })
+              .finally(() => {
+                set((s) => {
+                  s.isAddingPendingLine = false;
+                });
+              });
+          }),
+        selectedTemplates: {},
+      } as RepertoireState;
+
+      initialState.chessboardState = createChessState(
+        set,
+        get,
+        (c: ChessboardState) => {
+          c.frozen = true;
+          c.delegate = {
+            attemptMove: (
+              move,
+              cb: (
+                shouldMove: boolean,
+                then: (completed: boolean) => void
+              ) => void
+            ) =>
+              set((s) => {
+                if (s.debugPawnStructuresState) {
+                  console.log("Doing this because debug pawn structure state");
+                  cb(true, (completed: boolean) => {
+                    if (completed === false || completed === null) {
+                      s.onMove();
+                    }
+                  });
+                }
+                if (s.isEditing) {
+                  console.log("Attempt move called!");
+                  cb(true, (completed: boolean) => {
+                    if (completed === false || completed === null) {
+                      s.onMove();
+                    }
+                  });
+                } else if (s.isReviewing) {
+                  if (move.san == s.currentMove.move.sanPlus) {
+                    cb(true, (completed: boolean, s: RepertoireState) => {
+                      if (!completed) {
+                        s.chessboardState.flashRing(true);
+                        window.setTimeout(() => {
+                          set((s) => {
+                            if (s.isReviewing) {
+                              if (s.failedCurrentMove) {
+                                s.hasGivenUp = true;
+                              } else {
+                                s.setupNextMove();
+                              }
+                            }
+                          });
+                        }, 100);
+                      }
+                    });
+                  } else {
+                    s.chessboardState.flashRing(false);
+                    s.failedCurrentMove = true;
+                  }
+                }
+              }),
+          };
+        }
+      );
+      return initialState;
+    }),
     { name: "RepertoireTrainingState" }
   )
 );

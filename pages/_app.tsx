@@ -6,6 +6,7 @@ import AuthHandler from "app/components/AuthHandler";
 
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
+import React from "react";
 
 Sentry.init({
   dsn: "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185",
@@ -47,8 +48,35 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Chess Madra</title>
       </Head>
-      <AuthHandler>{isMounted && <Component {...pageProps} />}</AuthHandler>
+      <AuthHandler>
+        <ErrorBoundary>
+          {isMounted && <Component {...pageProps} />}
+        </ErrorBoundary>
+      </AuthHandler>
     </>
   );
 }
+
+class ErrorBoundary extends React.Component<any, any> {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+      return { hasError: true };
+    }
+  }
+
+  componentDidCatch(error, errorInfo) {}
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+    return this.props.children;
+  }
+}
+
 export default MyApp;

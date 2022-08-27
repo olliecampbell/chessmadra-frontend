@@ -87,7 +87,7 @@ type BackControlsProps = {
 };
 
 export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
-  let backButtonActive = state.position.history().length > 0;
+  let backButtonActive = state.chessboardState.position.history().length > 0;
 
   let [searchOnChessable, analyzeLineOnLichess, quick] = useRepertoireState(
     (s) => [s.searchOnChessable, s.analyzeLineOnLichess, s.quick],
@@ -169,7 +169,11 @@ export const MoveLog = () => {
   let currentPair = [];
   const [hasPendingLineToAdd, position, differentMoveIndices] =
     useRepertoireState(
-      (s) => [s.hasPendingLineToAdd, s.position, s.differentMoveIndices],
+      (s) => [
+        s.hasPendingLineToAdd,
+        s.chessboardState.position,
+        s.differentMoveIndices,
+      ],
       shallow
     );
   let moveList = position.history({ verbose: true });
@@ -348,7 +352,7 @@ export const RepertoireEditingView = ({
             )}
             <View style={s(c.column, c.constrainWidth)}>
               <View style={s(c.width(400), c.maxWidth("100%"))}>
-                <ChessboardView state={state} />
+                <ChessboardView state={state.chessboardState} />
               </View>
               <Spacer height={12} />
               <BackControls state={state} />
@@ -392,7 +396,7 @@ const Responses = React.memo(function Responses() {
     (s) => [
       s.getCurrentPositionReport(),
       s.currentLine,
-      s.position,
+      s.chessboardState.position,
       s.activeSide,
       s.repertoire,
       s.getCurrentEpd(),
@@ -728,7 +732,7 @@ const OpeningTree = ({
       {!state.hasPendingLineToAdd &&
         (
           state.repertoire[state.activeSide].positionResponses[
-            state.getCurrentEpd(state)
+            state.getCurrentEpd()
           ] ?? []
         ).map((move) => {
           return (
@@ -1374,6 +1378,7 @@ const EditingTabPicker = () => {
 };
 
 const PositionOverview = () => {
+  return null;
   const [positionReport, ecoCode, activeSide, pawnStructure] =
     useRepertoireState((s) => {
       return [
@@ -1513,14 +1518,3 @@ const MoveOverrideWarning = () => {
     </View>
   );
 };
-function debugEquality(a: any[], b: any[]): boolean {
-  return every(
-    map(zip(a, b), ([a, b]) => {
-      if (a === b) {
-        return true;
-      } else {
-        return false;
-      }
-    })
-  );
-}

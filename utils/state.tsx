@@ -37,10 +37,11 @@ import {
 import { BlunderPuzzle, LichessGame, LichessPuzzle } from "../models";
 import {
   ChessboardState,
-  ChessboardStateParent,
+  ChessboardStateDelegate,
   createChessState,
 } from "./chessboard_state";
 import { immer } from "zustand/middleware/immer";
+import { RepertoireState } from "./repertoire_state";
 
 export const MIN_ELO = 2200;
 export const MAX_ELO = 2800;
@@ -127,6 +128,9 @@ const createPuzzleState = <
   set: SetState<T>,
   get
 ) => {
+  // Temp solution
+  // @ts-ignore
+  set.pendingStateKey = "puzzle-state";
   return {
     puzzlePosition: null,
     turn: "w" as Color,
@@ -640,7 +644,7 @@ export enum BlindfoldTrainingStage {
 
 export interface BlindfoldTrainingState
   extends ChessboardState,
-    ChessboardStateParent<BlindfoldTrainingState>,
+    ChessboardStateDelegate<BlindfoldTrainingState>,
     PuzzleState,
     PuzzleTraining<BlindfoldTrainingState> {
   quick: (fn: (_: BlindfoldTrainingState) => void) => void;
@@ -661,7 +665,7 @@ export interface BlindfoldTrainingState
 
 export interface BlunderRecognitionState
   extends ChessboardState,
-    ChessboardStateParent<BlunderRecognitionState> {
+    ChessboardStateDelegate<BlunderRecognitionState> {
   isPlaying: boolean;
   wasCorrect: boolean;
   startTime: number;
@@ -966,31 +970,35 @@ export interface QuickUpdate<T> {
   quick: (fn: (s: T) => void) => void;
 }
 
-export const setter = <T extends object>(
-  set: any,
-  state: T | undefined,
-  fn: (state: T) => void
-) => {
-  if (state) {
-    // To force re-render when changing just a class or something
-    // @ts-ignore
-    state.bogus = Math.random();
-    return fn(state);
-  } else {
-    let res = set((state: T) => {
-      // To force re-render when changing just a class or something
-      // @ts-ignore
-      state.bogus = Math.random();
-      fn(state);
-    });
-    return res;
-  }
-};
+// let pendingStates = {};
+// export const setter = <T extends object>(set: any, fn: (state: T) => void) => {
+//   let key = set.pendingStateKey;
+//   // @ts-ignore
+//   let pendingState = pendingStates[key];
+//   if (pendingState) {
+//     console.log("Using pending state!");
+//     // @ts-ignore
+//     pendingState.bogus = Math.random();
+//     return fn(pendingState as T);
+//   } else {
+//     let res = set((state: T) => {
+//       pendingStates[key] = state;
+//       console.log("Setting pending state!", key, state);
+//       // To force re-render when changing just a class or something
+//       // @ts-ignore
+//       let res = fn(state);
+//       console.log("Done w/ function, unsetting pending state");
+//       pendingStates[key] = null;
+//       return res;
+//     });
+//     return res;
+//   }
+// };
 
 export function createQuick<T extends object>(set): any {
   return {
     quick: (fn) => {
-      setter<T>(set, undefined, (state) => {
+      set((state) => {
         fn(state);
       });
     },
@@ -1053,7 +1061,7 @@ export const useGamesSearchState = create<GamesSearchState>()(
 
 export interface GamesSearchState
   extends ChessboardState,
-    ChessboardStateParent<GamesSearchState> {
+    ChessboardStateDelegate<GamesSearchState> {
   quick: (fn: (_: GamesSearchState) => void) => void;
   whiteRating: [number, number];
   blackRating: [number, number];
