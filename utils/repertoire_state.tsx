@@ -56,6 +56,12 @@ import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { logProxy } from "./state";
+import {
+  BrowserDrilldownState,
+  BrowserSection,
+  BrowsingState,
+  getInitialBrowsingState,
+} from "./browsing_state";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -85,6 +91,7 @@ export interface RepertoireState {
   >;
   queues: BySide<QuizMove[]>;
   positionReports: BySide<Record<string, PositionReport>>;
+  failedToFetchSharedRepertoire?: boolean;
   currentMove?: QuizMove;
   reviewSide?: Side;
   repertoireGrades: BySide<RepertoireGrade>;
@@ -132,7 +139,7 @@ export interface RepertoireState {
   getCurrentPositionReport: () => PositionReport;
   getCurrentEpd: () => string;
   onEditingPositionUpdate: () => void;
-  analyzeLineOnLichess: () => void;
+  analyzeLineOnLichess: (line: string[]) => void;
   searchOnChessable: (side: Side) => void;
   backOne: () => void;
   backToStartPosition: () => void;
@@ -173,17 +180,7 @@ export interface RepertoireState {
   pawnStructures: PawnStructureDetails[];
   ecoCodeLookup: Record<string, EcoCode>;
   pawnStructureLookup: Record<string, PawnStructureDetails>;
-  browsingState: {
-    readOnly: boolean;
-    drilldownState?: BrowserDrilldownState;
-    previousDrilldownStates?: BrowserDrilldownState[];
-    selectDrilldownState: (drilldownState: BrowserDrilldownState) => void;
-    updateDrilldownStateAndSections: (epd: string, line: string[]) => void;
-    selectBrowserSection: (
-      section: BrowserSection,
-      includeInPreviousStates: boolean
-    ) => void;
-  };
+  browsingState: BrowsingState;
   updateEloRange: (range: [number, number]) => void;
   isUpdatingEloRange: boolean;
   editingState: {
@@ -238,27 +235,6 @@ export enum AddedLineStage {
   AddAnother,
 }
 
-export interface BrowserDrilldownState {
-  epd: string;
-  line: string[];
-  sections: BrowserSection[];
-  lines: BrowserLine[];
-  ecoCode: EcoCode;
-}
-
-interface BrowserSection {
-  epd: string;
-  pgn: string;
-  eco_code?: EcoCode;
-  line?: string[];
-  numMoves?: { withTranspositions: number; withoutTranspositions: number };
-}
-
-interface BrowserLine {
-  line: string;
-  epd: string;
-}
-
 interface FetchRepertoireResponse {
   repertoire: Repertoire;
   grades: BySide<RepertoireGrade>;
@@ -272,10 +248,6 @@ interface GetSharedRepertoireResponse {
 const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
 const EMPTY_QUEUES = { white: [], black: [] };
-
-let pendingState = null;
-
-export const createRepertoireState = () => {};
 
 type Stack = [RepertoireState, AppState];
 
@@ -303,149 +275,9 @@ export const getInitialRepertoireState = (
     pawnStructures: [],
     isUpdatingEloRange: false,
     repertoire: undefined,
+    browsingState: getInitialBrowsingState(_set, _get),
     overviewState: {
       isShowingShareModal: false,
-    },
-    browsingState: {
-      readOnly: false,
-      selectDrilldownState: (browserState: BrowserDrilldownState) =>
-        set(([s]) => {
-          while (true) {
-            let lastState = s.browsingState.previousDrilldownStates.pop();
-            if (lastState.ecoCode.code === browserState.ecoCode.code) {
-              s.browsingState.previousDrilldownStates.push(lastState);
-              s.browsingState.drilldownState = browserState;
-              break;
-            }
-          }
-        }),
-      updateDrilldownStateAndSections: (epd: string, line: string[]) =>
-        set(([s]) => {
-          s.browsingState.drilldownState = {
-            epd: epd,
-            sections: [],
-            line: line,
-            lines: [],
-            ecoCode: s.ecoCodeLookup[epd],
-          };
-
-          let sections: BrowserSection[] = [];
-          let responses = s.repertoire[s.activeSide].positionResponses;
-          let paths = [];
-          if (!isEmpty(line)) {
-            paths.push({ line: lineToPgn(line), epd: epd });
-          }
-          let seenEpds = new Set(
-            s.browsingState.drilldownState?.sections?.map((s) => s.epd) ?? []
-          );
-          let historyEcoFullNames = new Set();
-          [
-            ...s.browsingState.previousDrilldownStates,
-            s.browsingState.drilldownState,
-          ].forEach((p) => {
-            if (p.ecoCode) {
-              historyEcoFullNames.add(p.ecoCode.fullName);
-            }
-          });
-          console.log({ historyEcoFullNames });
-          let recurse = (path: string, epd: string, moveNumber: number) => {
-            responses[epd]?.forEach((m) => {
-              let n = moveNumber / 2 + 1;
-              let newPath = null;
-              if (moveNumber % 2 == 0) {
-                if (moveNumber == 0) {
-                  newPath = `${n}.${m.sanPlus}`;
-                } else {
-                  newPath = `${path} ${n}.${m.sanPlus}`;
-                }
-              } else {
-                newPath = `${path} ${m.sanPlus}`;
-              }
-              let ecoCode = s.ecoCodeLookup[m.epdAfter];
-              let myResponse = responses[m.epdAfter]?.[0];
-              const nextEcoCode = s.ecoCodeLookup[myResponse?.epdAfter];
-              const numMovesNext =
-                s.repertoireNumMoves[s.activeSide][myResponse?.epdAfter];
-              if (
-                ecoCode &&
-                !historyEcoFullNames.has(ecoCode.fullName) &&
-                (m.mine ||
-                  (!m.mine && !nextEcoCode) ||
-                  (!m.mine && numMovesNext.withTranspositions === 0))
-              ) {
-                console.log(`${ecoCode.fullName} is not included in set!`);
-                sections.push({
-                  epd: m.epdAfter,
-                  eco_code: ecoCode,
-                  line: pgnToLine(newPath),
-                  pgn: newPath,
-                  numMoves: s.repertoireNumMoves[s.activeSide][m.epdAfter],
-                } as BrowserSection);
-                seenEpds.add(m.epdAfter);
-              }
-              // if (
-              //   (side == "white" && moveNumber % 2 == 0) ||
-              //   (side == "black" && moveNumber % 2 == 1)
-              // ) {
-              // }
-              if (!seenEpds.has(m.epdAfter)) {
-                seenEpds.add(m.epdAfter);
-                paths.push({ line: newPath, epd: m.epdAfter });
-                recurse(newPath, m.epdAfter, moveNumber + 1);
-              }
-              if (s.browsingState.drilldownState.sections.length === 1) {
-                s.browsingState.updateDrilldownStateAndSections(
-                  s.browsingState.drilldownState.sections[0].epd,
-                  s.browsingState.drilldownState.sections[0].line
-                );
-              }
-            });
-          };
-          recurse(
-            lineToPgn(s.browsingState.drilldownState.line),
-            s.browsingState.drilldownState.epd,
-            s.browsingState.drilldownState.line.length ?? 0
-          );
-          // TODO: can optimize this probably
-          paths = paths.filter(({ line }) => {
-            if (
-              some(
-                paths,
-                (p2) => p2.line.startsWith(line) && line !== p2.line
-              ) ||
-              some(sections, (s) => s.pgn.startsWith(line) && line !== s.pgn)
-            ) {
-              return false;
-            } else {
-              return true;
-            }
-          });
-          s.browsingState.drilldownState.lines = paths.map((p) => {
-            return {
-              line: p.line,
-              epd: p.epd,
-            };
-          });
-          s.browsingState.drilldownState.sections = sortBy(
-            sections,
-            (s) => -s.numMoves.withTranspositions
-          );
-        }, "updateDrilldownStateAndSections"),
-      selectBrowserSection: (
-        browserSection: BrowserSection,
-        includeInPreviousStates: boolean
-      ) =>
-        set(([s]) => {
-          s.browsingState.updateDrilldownStateAndSections(
-            browserSection.epd,
-            browserSection.line
-          );
-          if (includeInPreviousStates) {
-            s.browsingState.previousDrilldownStates.push(
-              s.browsingState.drilldownState
-            );
-          }
-        }),
     },
     editingState: {
       selectedTab: EditingTab.Position,
@@ -621,11 +453,19 @@ export const getInitialRepertoireState = (
           )
           .focus();
       }, "searchOnChessable"),
-    analyzeLineOnLichess: () =>
+    updateShareLink: () =>
+      set(([s]) => {
+        client.post(`/api/v1/openings/update-share-link`).then(({ data }) => {
+          set(([s]) => {
+            s.repertoireShareId = data.id;
+          });
+        });
+      }),
+    analyzeLineOnLichess: (line: string[]) =>
       set(([s]) => {
         var bodyFormData = new FormData();
-        bodyFormData.append("pgn", lineToPgn(s.currentLine));
-        if (isEmpty(s.currentLine)) {
+        bodyFormData.append("pgn", lineToPgn(line));
+        if (isEmpty(line)) {
           // TODO: figure out a way to open up analysis from black side
           window.open(`https://lichess.org/analysis`, "_blank");
           return;
@@ -638,7 +478,7 @@ export const getInitialRepertoireState = (
             let url = data["url"];
             windowReference.location = `${url}/${side}#999`;
           });
-      }, "analyzeLineOnLichess"),
+      }),
     getMovesDependentOnPosition: (epd: string) =>
       get(([s]) => {
         if (!s.repertoire) {
@@ -1030,6 +870,8 @@ export const getInitialRepertoireState = (
     startBrowsing: (side: Side) =>
       set(([s]) => {
         s.isBrowsing = true;
+        s.browsingState.activeSide = side;
+        // TODO: can remove this once the states are separate
         s.activeSide = side;
         s.browsingState.drilldownState = {
           epd: START_EPD,
@@ -1049,6 +891,11 @@ export const getInitialRepertoireState = (
           s.browsingState.selectBrowserSection(
             s.browsingState.drilldownState.sections[0],
             true
+          );
+        }
+        if (s.browsingState.drilldownState.epd === START_EPD) {
+          s.browsingState.previousDrilldownStates.push(
+            s.browsingState.drilldownState
           );
         }
       }, "startBrowsing"),
@@ -1223,6 +1070,11 @@ export const getInitialRepertoireState = (
                 s.repertoire = data.repertoire;
                 console.log(logProxy(s));
                 s.onRepertoireUpdate();
+              });
+            })
+            .catch(() => {
+              set(([s]) => {
+                s.failedToFetchSharedRepertoire = true;
               });
             }),
         ]).then(() => {

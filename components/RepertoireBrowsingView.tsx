@@ -10,26 +10,38 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { BrowserDrilldownState } from "app/utils/repertoire_state";
-import { Side } from "app/utils/repertoire";
+import { pgnToLine, Side } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { createStaticChessState } from "app/utils/chessboard_state";
 import { CMText } from "./CMText";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
-import { useRepertoireState } from "app/utils/app_state";
+import { AppState, useRepertoireState } from "app/utils/app_state";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 export const RepertoireBrowsingView = ({}: {}) => {
-  const [activeSide, isBrowsing, drilldownState, quick, readOnly] =
-    useRepertoireState(
-      (s) => [
-        s.activeSide,
-        s.isBrowsing,
-        s.browsingState.drilldownState,
-        s.quick,
-        s.browsingState.readOnly,
-      ],
-      shallow
-    );
+  const [
+    activeSide,
+    isBrowsing,
+    drilldownState,
+    quick,
+    readOnly,
+    failedToFetch,
+    backToOverview,
+  ] = useRepertoireState(
+    (s) => [
+      s.activeSide,
+      s.isBrowsing,
+      s.browsingState.drilldownState,
+      s.quick,
+      s.browsingState.readOnly,
+      s.failedToFetchSharedRepertoire,
+      s.backToOverview,
+    ],
+    shallow
+  );
+  const router = useRouter();
   console.log({ drilldownState });
   console.log("Re-rendering browsing view");
   const isMobile = useIsMobile();
@@ -37,74 +49,131 @@ export const RepertoireBrowsingView = ({}: {}) => {
     return null;
   }
   return (
-    <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
+    <View
+      style={s(
+        c.containerStyles(isMobile),
+        c.alignCenter,
+        failedToFetch && s(c.grow, c.justifyCenter)
+      )}
+    >
       <View style={s(c.column, c.alignStart, c.fullWidth)}>
-        {readOnly && (
-          <>
-            <ReadOnlyWarning />
-            <Spacer height={24} />
-          </>
-        )}
-        <View style={s(c.row, c.fullWidth, c.center)}>
-          <SelectOneOf
-            tabStyle
-            containerStyles={s(c.fullWidth, c.justifyBetween, c.maxWidth(400))}
-            choices={["white", "black"] as Side[]}
-            activeChoice={activeSide}
-            horizontal
-            onSelect={(side) => {}}
-            renderChoice={(side, active) => {
-              return (
+        {failedToFetch ? (
+          <View style={s(c.center, c.selfCenter, c.px(12), c.py(12), c.row)}>
+            <CMText style={s(c.fontSize(36), c.fg(c.grays[90]))}>
+              <i className="fa-light fa-face-confused" />
+            </CMText>
+            <Spacer width={18} />
+            <View style={s(c.column, c.maxWidth(400))}>
+              <CMText
+                style={s(
+                  c.weightSemiBold,
+                  c.fontSize(18),
+                  c.fg(c.colors.textPrimary)
+                )}
+              >
+                Can't find this repertoire
+              </CMText>
+              <Spacer height={8} />
+              <CMText style={s(c.fg(c.colors.textSecondary))}>
+                Looks like this link has been revoked, if you want to see this
+                user's repertoire you'll need to get another link from them. In
+                the meantime, you can{" "}
                 <Pressable
                   onPress={() => {
-                    quick((s) => {
-                      if (side !== s.activeSide) {
-                        s.startBrowsing(side);
-                      }
-                    });
+                    backToOverview();
+                    router.push("/");
                   }}
-                  style={s(
-                    c.column,
-                    c.grow,
-                    c.alignCenter,
-                    c.borderBottom(
-                      `2px solid ${active ? c.grays[90] : c.grays[20]}`
-                    ),
-                    c.zIndex(5),
-                    c.pb(8)
-                  )}
                 >
                   <CMText
                     style={s(
-                      c.fg(
-                        active ? c.colors.textPrimary : c.colors.textSecondary
-                      ),
-                      c.fontSize(isMobile ? 20 : 24),
-                      c.weightBold
+                      c.fg(c.colors.textPrimary),
+                      c.weightSemiBold,
+                      c.borderBottom(`1px solid ${c.grays[70]}`)
                     )}
                   >
-                    {capitalize(side)}
+                    work on your own repertoire.
                   </CMText>
                 </Pressable>
-              );
-            }}
-          />
-        </View>
-        <Spacer height={isMobile ? 24 : 44} />
-        <BreadCrumbView />
-        <View style={s(c.row, c.fullWidth)}>
-          <ChessboardFilter />
-          <VariationsAndLines />
-        </View>
+              </CMText>
+            </View>
+          </View>
+        ) : (
+          <>
+            {readOnly && false && (
+              <>
+                <ReadOnlyWarning />
+                <Spacer height={24} />
+              </>
+            )}
+            <View style={s(c.row, c.fullWidth, c.center)}>
+              <SelectOneOf
+                tabStyle
+                containerStyles={s(
+                  c.fullWidth,
+                  c.justifyBetween,
+                  c.maxWidth(400)
+                )}
+                choices={["white", "black"] as Side[]}
+                activeChoice={activeSide}
+                horizontal
+                onSelect={(side) => {}}
+                renderChoice={(side, active) => {
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        quick((s) => {
+                          if (side !== s.activeSide) {
+                            s.startBrowsing(side);
+                          }
+                        });
+                      }}
+                      style={s(
+                        c.column,
+                        c.grow,
+                        c.alignCenter,
+                        c.borderBottom(
+                          `2px solid ${active ? c.grays[90] : c.grays[20]}`
+                        ),
+                        c.zIndex(5),
+                        c.pb(8)
+                      )}
+                    >
+                      <CMText
+                        style={s(
+                          c.fg(
+                            active
+                              ? c.colors.textPrimary
+                              : c.colors.textSecondary
+                          ),
+                          c.fontSize(isMobile ? 20 : 24),
+                          c.weightBold
+                        )}
+                      >
+                        {capitalize(side)}
+                      </CMText>
+                    </Pressable>
+                  );
+                }}
+              />
+            </View>
+            <Spacer height={isMobile ? 24 : 44} />
+            <BreadCrumbView />
+            <View style={s(c.row, c.fullWidth)}>
+              <ChessboardFilter />
+              <VariationsAndLines />
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
 };
 
 export const ChessboardFilter = () => {
+  const state = useRepertoireState((s) => s.browsingState.chessboardState);
   return (
     <View style={s(c.column)}>
-      <ChessboardView />
+      <ChessboardView state={state} />
     </View>
   );
 };
@@ -116,6 +185,7 @@ export const VariationsAndLines = () => {
     selectBrowserSection,
     quick,
     previousDrilldownStates,
+    readOnly,
   ] = useRepertoireState(
     (s) => [
       s.activeSide,
@@ -123,12 +193,13 @@ export const VariationsAndLines = () => {
       s.browsingState.selectBrowserSection,
       s.quick,
       s.browsingState.previousDrilldownStates,
+      s.browsingState.readOnly,
     ],
     shallow
   );
   const isMobile = useIsMobile();
   return (
-    <View style={s(c.column)}>
+    <View style={s(c.column, c.constrainWidth, c.fullWidth)}>
       <Spacer height={12} />
       {!isEmpty(drilldownState.sections) && (
         <>
@@ -231,9 +302,13 @@ export const VariationsAndLines = () => {
             {drilldownState.lines.map((browserLine, key) => {
               const onClick = () => {
                 quick((s) => {
-                  s.isBrowsing = false;
-                  s.startEditing(activeSide as Side);
-                  s.playPgn(browserLine.line);
+                  if (readOnly) {
+                    s.analyzeLineOnLichess(pgnToLine(browserLine.line));
+                  } else {
+                    s.isBrowsing = false;
+                    s.startEditing(activeSide as Side);
+                    s.playPgn(browserLine.line);
+                  }
                 });
               };
               return (
@@ -308,10 +383,6 @@ export const BreadCrumbView = () => {
       containerRef.current.scrollLeft = containerRef.current.scrollWidth;
     }
   }, [previousDrilldownStates]);
-  previousDrilldownStates = filter(
-    previousDrilldownStates,
-    (s) => s.ecoCode
-  ) as BrowserDrilldownState[];
   console.log({ previousDrilldownStates });
   const separator = (
     <CMText style={s(c.mx(8), c.fontSize(12), c.fg(c.grays[70]))}>
@@ -338,7 +409,7 @@ export const BreadCrumbView = () => {
       )}
       {intersperse(
         previousDrilldownStates.map((drilldownState, i) => {
-          seenEcoCodes.add(drilldownState.ecoCode.code);
+          seenEcoCodes.add(drilldownState.ecoCode?.code);
           return (
             <Pressable
               key={`breadcrumb-${i}`}
@@ -348,12 +419,12 @@ export const BreadCrumbView = () => {
             >
               <View style={s()}>
                 <CMText style={s()}>
-                  {
-                    getAppropriateEcoName(
-                      drilldownState.ecoCode?.fullName,
-                      take(previousDrilldownStates, i)
-                    )[0]
-                  }
+                  {drilldownState?.ecoCode
+                    ? getAppropriateEcoName(
+                        drilldownState.ecoCode?.fullName,
+                        take(previousDrilldownStates, i)
+                      )[0]
+                    : "Start position"}
                 </CMText>
               </View>
             </Pressable>
@@ -371,7 +442,7 @@ const ReadOnlyWarning = () => {
   return (
     <View
       style={s(
-        c.border(`1px solid ${c.grays[20]}`),
+        c.selfCenter,
         c.py(12),
         c.px(12),
         c.column,
@@ -380,13 +451,7 @@ const ReadOnlyWarning = () => {
       )}
     >
       <View style={s(c.row, c.alignStart)}>
-        <CMText style={s()}>
-          <i className="fa fa-eye" />
-        </CMText>
-        <Spacer width={12} />
-        <CMText style={s()}>
-          This is someone else's repertoire, so you can only view the lines.
-        </CMText>
+        <CMText style={s()}>You are viewing someone else's repertoire.</CMText>
       </View>
       <Spacer height={4} />
       <Button style={s(c.buttons.primary, c.selfEnd, c.py(6), c.px(10))}>

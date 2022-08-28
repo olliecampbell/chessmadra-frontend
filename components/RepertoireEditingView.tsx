@@ -49,10 +49,16 @@ type BackControlsProps = {
 export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
   let backButtonActive = state.chessboardState.position.history().length > 0;
 
-  let [searchOnChessable, analyzeLineOnLichess, quick] = useRepertoireState(
-    (s) => [s.searchOnChessable, s.analyzeLineOnLichess, s.quick],
-    shallow
-  );
+  let [searchOnChessable, analyzeLineOnLichess, quick, currentLine] =
+    useRepertoireState(
+      (s) => [
+        s.searchOnChessable,
+        s.analyzeLineOnLichess,
+        s.quick,
+        s.currentLine,
+      ],
+      shallow
+    );
   const isMobile = useIsMobile();
   let gap = isMobile ? 6 : 12;
   return (
@@ -84,7 +90,7 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
       <Button
         style={s(c.buttons.basicSecondary)}
         onPress={() => {
-          analyzeLineOnLichess();
+          analyzeLineOnLichess(currentLine);
         }}
       >
         <CMText

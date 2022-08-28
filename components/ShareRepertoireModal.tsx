@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Modal } from "./Modal";
-import { View } from "react-native";
+import { View, Pressable } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
 import { Spacer } from "app/Space";
@@ -10,14 +10,19 @@ import shallow from "zustand/shallow";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const ShareRepertoireModal = () => {
-  let [open, shareId, quick] = useRepertoireState(
-    (s) => [s.overviewState.isShowingShareModal, s.repertoireShareId, s.quick],
+  let [open, shareId, quick, updateShareLink] = useRepertoireState(
+    (s) => [
+      s.overviewState.isShowingShareModal,
+      s.repertoireShareId,
+      s.quick,
+      s.updateShareLink,
+    ],
     shallow
   );
 
   const isMobile = useIsMobile();
   const [copied, setCopied] = useState(false);
-  let link = shareId && `https://${window.location.host}/repertoire/${shareId}`;
+  let link = shareId && `${window.location.origin}/repertoire?id=${shareId}`;
   return (
     <Modal
       onClose={() => {
@@ -50,11 +55,23 @@ export const ShareRepertoireModal = () => {
             be able to see and browse through your repertoire{" "}
           </CMText>
           <Spacer height={12} />
-          {link && (
-            <CMText style={s(c.fg(c.grays[40]), c.weightSemiBold)}>
-              {link}
-            </CMText>
-          )}
+          <View style={s(c.row, c.alignCenter, c.justifyStart)}>
+            <Pressable
+              onPress={() => {
+                updateShareLink();
+              }}
+            >
+              <CMText style={s(c.fg(c.colors.textInverseSecondary))}>
+                <i className="fa fa-arrows-rotate" />
+              </CMText>
+            </Pressable>
+            <Spacer width={12} />
+            {link && (
+              <CMText style={s(c.fg(c.grays[40]), c.weightSemiBold)}>
+                {link}
+              </CMText>
+            )}
+          </View>
           <Spacer height={12} />
           <Button
             style={s(
