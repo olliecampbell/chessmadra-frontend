@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -7,10 +7,7 @@ import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   isEmpty,
   isNil,
-  dropRight,
   capitalize,
-  drop,
-  keys,
   take,
 } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
@@ -19,12 +16,6 @@ import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { RepertoireState } from "app/utils/repertoire_state";
 import {
-  RepertoireGrade,
-  RepertoireMove,
-  getAllRepertoireMoves,
-  RepertoireSide,
-  lineToPgn,
-  pgnToLine,
   SIDES,
   Side,
   RepertoireMiss,
@@ -38,21 +29,15 @@ import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
 import {
-  ChessboardState,
-  createChessState,
   createStaticChessState,
 } from "app/utils/chessboard_state";
-import { Chess } from "@lubert/chess.ts";
 import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
 import { RepertoireEditingView } from "./RepertoireEditingView";
 import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
-import { EloWarningBox } from "./EloWarningBox";
 import { useEloRangeWarning } from "./useEloRangeWarning";
-import { failOnAny } from "app/utils/test_settings";
 import shallow from "zustand/shallow";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
-import { debugEquality, debugEqualityObj } from "app/utils/debug_equality";
 import { useRepertoireState } from "app/utils/app_state";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);

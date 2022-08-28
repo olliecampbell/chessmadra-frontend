@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
 import Cookies from "js-cookie";
 import { AppStore, AuthStatus } from "app/store";
 import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "app/utils/auth";
-import client from "app/client";
 import { User } from "app/models";
 import { uuid4 } from "@sentry/utils";
+import { useEffect } from "react";
 
 const AuthHandler = ({ children }) => {
   let { user, authStatus, token, tempUserUuid } = AppStore.useState(

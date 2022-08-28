@@ -9,7 +9,6 @@ import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
-import { RepertoireState } from "./repertoire_state";
 import { logProxy } from "./state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
@@ -19,8 +18,7 @@ import {
 import { StorageItem } from "app/utils/storageItem";
 import { Animated } from "react-native";
 import { times } from "../utils";
-import { cloneDeep, isEmpty, takeRight } from "lodash";
-import { isCheckmate } from "./chess";
+import { cloneDeep, takeRight } from "lodash";
 import { fensTheSame } from "app/utils/fens";
 import { createQuick } from "./quick";
 

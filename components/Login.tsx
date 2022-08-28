@@ -1,15 +1,10 @@
 import React, { useState } from "react";
-import { signupUser } from "app/utils/auth";
 import { useRouter } from "next/router";
-import { View, TextInput, Text } from "react-native";
-
-import { AppStore } from "app/store";
+import { View, TextInput } from "react-native";
 import { Fragment } from "react";
-import Link from "next/link";
 import client from "app/client";
 import { onEnter } from "app/utils/onEnter";
 import { BeatLoader } from "react-spinners";
-import axios from "axios";
 import { useForm } from "react-hook-form";
 import { PageContainer } from "./PageContainer";
 import { c, s } from "app/styles";
@@ -17,7 +12,6 @@ import KnightWhiteIcon from "./chessboard/pieces/KnightWhiteIcon";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { CMText } from "./CMText";
-import { CMTextInput } from "./TextInput";
 
 export default function Login({ signup }: { signup?: boolean }) {
   const {

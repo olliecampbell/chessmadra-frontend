@@ -1,14 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { Animated, Text, Pressable, View } from "react-native";
+
+import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { cloneDeep, isEmpty, isNil, takeRight, times } from "lodash";
-import { TrainerLayout } from "app/components/TrainerLayout";
-import { Button } from "app/components/Button";
+import { times } from "lodash";
 import { useIsMobile } from "app/utils/isMobile";
-import { useColorTrainingStore } from "../utils/state";
 import { navItems } from "./NavBar";
 import { chunked } from "app/utils/intersperse";
 import { PageContainer } from "./PageContainer";

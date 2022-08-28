@@ -1,7 +1,5 @@
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { OPENINGS_DESCRIPTION } from "app/components/NavBar";
-import { HeadSiteMeta, PageContainer } from "app/components/PageContainer";
-import { RepertoireBuilder } from "app/components/RepertoireBuilder";
+import { PageContainer } from "app/components/PageContainer";
 import { Spacer } from "app/Space";
 import { s, c } from "app/styles";
 import { intersperse } from "app/utils/intersperse";
@@ -11,18 +9,11 @@ import { CMText } from "app/components/CMText";
 import { filter, findIndex, some } from "lodash";
 
 import {
-  Dimensions,
-  Platform,
   Pressable,
-  useWindowDimensions,
   View,
-  Text,
 } from "react-native";
 import { Button } from "app/components/Button";
-import { CMTextInput } from "app/components/TextInput";
-import { onEnter } from "app/utils/onEnter";
 import { SelectOneOf } from "app/components/SelectOneOf";
-import { Chess } from "@lubert/chess.ts";
 import { BeatLoader } from "react-spinners";
 import { useRepertoireState } from "app/utils/app_state";
 

@@ -1,5 +1,5 @@
 import { c, s } from "app/styles";
-import React, { useState } from "react";
+import React from "react";
 import { Text } from "react-native";
 
 export const CMText = (props) => {

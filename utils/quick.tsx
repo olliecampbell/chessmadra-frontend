@@ -1,3 +1,5 @@
+import { StateSetter } from "./state_setters_getters";
+
 export interface QuickUpdate<T> {
   quick: (fn: (s: T) => void) => void;
 }

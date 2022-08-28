@@ -1,11 +1,8 @@
 import React, {
-  useCallback,
   useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
-import { Animated, Text, Pressable, View, Platform } from "react-native";
+import { View, Platform } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -13,24 +10,16 @@ import {
   ChessboardView,
   PieceView,
 } from "app/components/chessboard/Chessboard";
-import { cloneDeep, isEmpty, isNil, takeRight, chunk } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
-import { Chess, Piece, SQUARES } from "@lubert/chess.ts";
+import { Piece, SQUARES } from "@lubert/chess.ts";
 import { NewPuzzleButton } from "app/NewPuzzleButton";
 import { useHelpModal } from "./useHelpModal";
 import { Modal } from "./Modal";
 import { SettingsTitle } from "./SettingsTitle";
-import { SelectOneOf } from "./SelectOneOf";
 import { SelectRange } from "./SelectRange";
-import {
-  getPuzzleDifficultyRating,
-  getPuzzleDifficultyStepValue,
-  PuzzleDifficulty,
-  stepValueToPuzzleDifficulty,
-} from "app/types/VisualizationState";
 import { PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
 import { useBlindfoldState } from "app/utils/app_state";

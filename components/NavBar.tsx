@@ -1,10 +1,6 @@
 import {
-  Text,
-  Platform,
   Pressable,
-  useWindowDimensions,
   View,
-  Modal,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { c, s } from "app/styles";
@@ -14,11 +10,8 @@ import { intersperse } from "app/utils/intersperse";
 import { useIsMobile } from "../utils/isMobile";
 import Link from "next/link";
 import { AppStore, AuthStatus } from "app/store";
-import KnightWhiteIcon from "./chessboard/pieces/KnightWhiteIcon";
-import KnightBlackIcon from "./chessboard/pieces/KnightBlackIcon";
 import { Button } from "./Button";
 import { useOutsideClick } from "./useOutsideClick";
-import { failOnTrue } from "../utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 import { CMText } from "./CMText";
 import { some } from "lodash";

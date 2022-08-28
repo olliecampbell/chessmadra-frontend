@@ -1,7 +1,6 @@
-import { Spacer } from "app/Space";
+
 import { s, c } from "app/styles";
-import { intersperse } from "app/utils/intersperse";
-import { View, Text, Pressable } from "react-native";
+import { View } from "react-native";
 import * as React from "react";
 import { Range, getTrackBackground } from "react-range";
 import { isNil } from "lodash";

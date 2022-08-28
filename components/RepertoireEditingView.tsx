@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -8,68 +7,31 @@ import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   isEmpty,
   isNil,
-  dropRight,
-  capitalize,
-  drop,
-  keys,
   take,
   sortBy,
   reverse,
   some,
   forEach,
-  first,
   find,
   filter,
   times,
   findIndex,
-  zip,
-  map,
-  every,
 } from "lodash";
-import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { EditingTab, RepertoireState } from "app/utils/repertoire_state";
-import {
-  RepertoireGrade,
-  RepertoireMove,
-  getAllRepertoireMoves,
-  RepertoireSide,
-  lineToPgn,
-  pgnToLine,
-  SIDES,
-  Side,
-  RepertoireMiss,
-  formatIncidence,
-  otherSide,
-  Repertoire,
-} from "app/utils/repertoire";
-import { PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
-import { BeatLoader, GridLoader } from "react-spinners";
+import { RepertoireMove, Side, Repertoire } from "app/utils/repertoire";
+import { BeatLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
-import { AppStore } from "app/store";
-import { plural, pluralize } from "app/utils/pluralize";
-import { useModal } from "./useModal";
-import { ChessboardState, createChessState } from "app/utils/chessboard_state";
-import { Chess } from "@lubert/chess.ts";
-import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
-import {
-  GameResultsDistribution,
-  PositionReport,
-  StockfishReport,
-  SuggestedMove,
-} from "app/models";
-import { failOnAny, failOnTrue } from "app/utils/test_settings";
+import { PositionReport, StockfishReport, SuggestedMove } from "app/models";
 import { AddedLineModal } from "./AddedLineModal";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { GameResultsBar } from "./GameResultsBar";
 import {
   getTotalGames,
   formatPlayPercentage,
-  formatWinPercentage,
   getWinRate,
 } from "app/utils/results_distribution";
 import useKeypress from "react-use-keypress";
@@ -78,6 +40,7 @@ import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { Modal } from "./Modal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { useRepertoireState } from "app/utils/app_state";
+import React from "react";
 
 type BackControlsProps = {
   state: RepertoireState;
@@ -649,42 +612,6 @@ const Response = ({
                     m: suggestedMove,
                   }}
                 />
-              </View>
-              <Spacer height={12} />
-              <View style={s(c.row, c.constrainWidth, c.flexWrap, c.gap(8))}>
-                {intersperse(
-                  tags.map((tag, i) => {
-                    let [foreground, background] = getTagColors(tag.type);
-                    let icon = getTagIcon(tag.type);
-                    return (
-                      <View
-                        style={s(
-                          c.bg(background),
-                          c.border(`1px solid ${c.grays[5]}`),
-                          c.br(2),
-                          c.px(8),
-                          c.py(4),
-                          c.row
-                        )}
-                      >
-                        {icon && (
-                          <>
-                            <CMText style={s(c.fg(foreground))}>
-                              <i className={getTagIcon(tag.type)} />
-                            </CMText>
-                            <Spacer width={4} />
-                          </>
-                        )}
-                        <CMText style={s(c.fg(foreground), c.weightBold)}>
-                          {tag.type}
-                        </CMText>
-                      </View>
-                    );
-                  }),
-                  (i) => {
-                    return null;
-                  }
-                )}
               </View>
             </>
           )}

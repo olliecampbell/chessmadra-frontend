@@ -1,7 +1,7 @@
 import { c, s } from "app/styles";
 import { useIsMobile } from "app/utils/isMobile";
 import React, { useState } from "react";
-import { TextInput, Text, View } from "react-native";
+import { View } from "react-native";
 import { Spacer } from "app/Space";
 import { CMText } from "./CMText";
 

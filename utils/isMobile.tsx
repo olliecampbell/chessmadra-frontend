@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { useWindowDimensions } from "react-native";
 export const useIsMobile = (cutoff?: number) => {
   const { width: windowWidth } = useWindowDimensions();

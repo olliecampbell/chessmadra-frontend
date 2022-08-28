@@ -1,26 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect } from "react";
 import {
   Animated,
-  Easing,
-  Text,
-  Platform,
-  Pressable,
-  useWindowDimensions,
   View,
-  Modal,
 } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { algebraic, Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { cloneDeep, isEmpty, isNil, takeRight } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { Score } from "app/components/ColorTraining";
 import { useVisualizationTraining } from "app/utils/useVisualizationTraining";
-import { useClimbStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
 import { useClimbState } from "app/utils/app_state";

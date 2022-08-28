@@ -1,13 +1,9 @@
-import { Animated, Text, Pressable, View, Platform } from "react-native";
+import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { TrainerLayout } from "app/components/TrainerLayout";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { chunked, intersperse } from "../utils/intersperse";
+import { intersperse } from "../utils/intersperse";
 import { LichessGame } from "app/models";
-import { GameSearchResult } from "app/utils/state";
 import { formatGameResult } from "app/utils/formatGameResult";
 import { lineToPgn } from "app/utils/repertoire";
 import { take } from "lodash";

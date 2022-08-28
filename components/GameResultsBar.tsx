@@ -3,7 +3,7 @@ import {
   formatWinPercentage,
   getTotalGames,
 } from "app/utils/results_distribution";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
 import { Side } from "app/utils/repertoire";

@@ -1,31 +1,11 @@
-import { useState } from "react";
+
 import { Modal } from "./Modal";
-import { View, Text, Pressable } from "react-native";
+import { View } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
-import {
-  AddedLineStage,
-  AddLineFromOption,
-  AddNewLineChoice,
-  DEFAULT_ELO_RANGE,
-} from "app/utils/repertoire_state";
-import { isEqual, isNil, parseInt } from "lodash";
-import { useModal } from "./useModal";
-import { EloWarningBox } from "./EloWarningBox";
-import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
-import { lineToPgn } from "app/utils/repertoire";
-import { ChessboardView } from "./chessboard/Chessboard";
-import { createStaticChessState } from "app/utils/chessboard_state";
 import { useIsMobile } from "app/utils/isMobile";
-import { formatStockfishEval } from "app/utils/stockfish";
-import { getTotalGames } from "app/utils/results_distribution";
-import { GameResultsBar } from "./GameResultsBar";
-import {
-  getAppropriateEcoName,
-  getNameEcoCodeIdentifier,
-} from "app/utils/eco_codes";
 import shallow from "zustand/shallow";
 import { useRepertoireState } from "app/utils/app_state";
 

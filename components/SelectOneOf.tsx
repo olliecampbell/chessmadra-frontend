@@ -2,7 +2,7 @@ import { Spacer } from "app/Space";
 import { s, c } from "app/styles";
 import { intersperse } from "app/utils/intersperse";
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Pressable } from "react-native";
 import { CMText } from "./CMText";
 
 export const SelectOneOf = <T,>({

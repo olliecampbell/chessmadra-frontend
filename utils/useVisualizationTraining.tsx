@@ -1,8 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect } from "react";
 import {
-  Text,
   Pressable,
-  useWindowDimensions,
   View,
   Platform,
 } from "react-native";
@@ -10,50 +8,28 @@ import {
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import {
-  ChessboardView,
-  getAnimationDurations,
   getPlaybackSpeedDescription,
 } from "app/components/chessboard/Chessboard";
-import axios from "axios";
-import { Helmet } from "react-helmet";
-import { Chess, Color, Move } from "@lubert/chess.ts";
-import client from "app/client";
 import {
-  cloneDeep,
-  isEmpty,
   isNil,
-  takeRight,
-  drop,
-  dropRight,
-  indexOf,
 } from "lodash";
 import { MoveList } from "app/components/MoveList";
-import { LichessPuzzle } from "app/models";
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
 import { Button } from "app/components/Button";
 import useState from "react-usestateref";
-import { TrainerLayout } from "app/components/TrainerLayout";
 import { useIsMobile } from "app/utils/isMobile";
-import { StorageItem } from "app/utils/storageItem";
-import { fakePuzzle, fakeBlackPuzzle } from "app/mocks/puzzles";
 import KingWhiteIcon from "app/components/chessboard/pieces/KingWhiteIcon";
 import KingBlackIcon from "app/components/chessboard/pieces/KingBlackIcon";
 import { Modal } from "app/components/Modal";
 import { intersperse } from "app/utils/intersperse";
-import { Draft, WritableDraft } from "immer/dist/internal";
-import { current } from "immer";
 import AnimateNumber from "react-native-animate-number";
 import {
   PlaybackSpeed,
   PuzzleDifficulty,
   VisualizationState,
-  ProgressMessage,
   ProgressMessageType,
-  getPuzzleDifficultyRating,
 } from "app/types/VisualizationState";
-import { useClimbStore } from "app/utils/state";
-import { Animated } from "react-native";
 import { NewPuzzleButton } from "app/NewPuzzleButton";
 import { useHelpModal } from "app/components/useHelpModal";
 import { SettingsTitle } from "app/components/SettingsTitle";

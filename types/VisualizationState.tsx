@@ -1,14 +1,11 @@
 import { Animated } from "react-native";
-import { Chess, Color, Move } from "@lubert/chess.ts";
+import { Chess, Move } from "@lubert/chess.ts";
 import { StorageItem } from "app/utils/storageItem";
 import { LichessPuzzle } from "app/models";
-import { Square } from "@lubert/chess.ts/dist/types";
-import { PuzzleTraining } from "app/utils/state";
 import {
-  ChessboardDelegate,
   ChessboardState,
 } from "app/utils/chessboard_state";
-import { PuzzleState, PuzzleStateDelegate } from "app/utils/puzzle_state";
+import { PuzzleState } from "app/utils/puzzle_state";
 
 export interface VisualizationState {
   puzzleState: PuzzleState;

@@ -1,16 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+
 import {
-  Dimensions,
-  Platform,
   Pressable,
-  useWindowDimensions,
   View,
-  Text,
 } from "react-native";
 import { s, c } from "app/styles";
-import { times } from "app/utils";
-import { forEach, isEmpty, cloneDeep, takeRight, first } from "lodash";
-import client from "app/client";
+import { forEach, isEmpty } from "lodash";
 import { Spacer } from "app/Space";
 import { Move } from "@lubert/chess.ts";
 import { CMText } from "./CMText";

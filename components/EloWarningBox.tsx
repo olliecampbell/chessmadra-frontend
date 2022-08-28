@@ -4,7 +4,6 @@ import { CMText } from "./CMText";
 import { View } from "react-native";
 import { DEFAULT_ELO_RANGE } from "app/utils/repertoire_state";
 import { Button } from "./Button";
-import shallow from "zustand/shallow";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {

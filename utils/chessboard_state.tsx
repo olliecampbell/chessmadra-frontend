@@ -1,16 +1,13 @@
 import { PlaybackSpeed } from "app/types/VisualizationState";
-import { algebraic, Chess, Color, Move, SQUARES } from "@lubert/chess.ts";
-import { cloneDeep, first, isEmpty, mapValues } from "lodash";
+import { Chess, Move, SQUARES } from "@lubert/chess.ts";
+import { first, isEmpty, mapValues } from "lodash";
 import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
-import { SetState } from "zustand";
 import { logProxy } from "./state";
 import { c } from "app/styles";
 import { getSquareOffset } from "./chess";
-import { WritableDraft } from "immer/dist/internal";
 import { Side } from "./repertoire";
-import { RepertoireState } from "./repertoire_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
 

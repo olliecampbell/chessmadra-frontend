@@ -1,20 +1,10 @@
-import { Move, Square } from "@lubert/chess.ts/dist/types";
-import client from "app/client";
+import { Move } from "@lubert/chess.ts/dist/types";
 import { LichessGame } from "app/models";
-import { drop, filter, first, isEmpty, sample, shuffle, sortBy } from "lodash";
-import { StorageItem } from "./storageItem";
-import { Chess } from "@lubert/chess.ts";
-import {
-  PlaybackSpeed,
-  ProgressMessage,
-  ProgressMessageType,
-} from "app/types/VisualizationState";
+import { filter, sample } from "lodash";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
-import { logProxy } from "./state";
-import { MoveIdentifier } from "./repertoire";
 
 export interface GameSearchState extends QuickUpdate<GameSearchState> {
   chessboardState?: ChessboardState;

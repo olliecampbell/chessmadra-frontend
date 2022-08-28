@@ -1,7 +1,7 @@
 import { c, s } from "app/styles";
 import React from "react";
 import { Pressable, View, Animated } from "react-native";
-import { BarLoader, BeatLoader } from "react-spinners";
+import { BarLoader } from "react-spinners";
 import { LoaderSizeMarginProps } from "react-spinners/interfaces";
 import { CMText } from "./CMText";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

@@ -1,5 +1,5 @@
 import client from "app/client";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";

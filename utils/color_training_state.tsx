@@ -1,14 +1,8 @@
-import { algebraic, Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { ProgressMessageType } from "app/types/VisualizationState";
-import { fetchNewPuzzle } from "./api";
+import { algebraic, Chess, SQUARES } from "@lubert/chess.ts";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import { sample, takeRight } from "lodash";
-import { LichessPuzzle } from "app/models";
-import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
-import { fensTheSame } from "./fens";
-import { createQuick } from "./quick";
+import { sample } from "lodash";
 import { StorageItem } from "./storageItem";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";

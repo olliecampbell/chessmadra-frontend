@@ -1,6 +1,6 @@
 import { COLUMNS, ROWS } from "../types/Chess";
 import { dropRight, indexOf } from "lodash";
-import { BITS, Chess, Move } from "@lubert/chess.ts";
+import { Chess, Move } from "@lubert/chess.ts";
 
 export const getSquareOffset = (square: string, flipped: boolean) => {
   const [file, rank] = square.split("");

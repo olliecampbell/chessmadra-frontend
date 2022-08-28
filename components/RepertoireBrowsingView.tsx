@@ -1,74 +1,19 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import shallow from "zustand/shallow";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import {
-  isEmpty,
-  isNil,
-  map,
-  dropRight,
-  capitalize,
-  drop,
-  keys,
-  take,
-  sortBy,
-  reverse,
-  some,
-  forEach,
-  first,
-  find,
-  times,
-  filter,
-  last,
-} from "lodash";
-import { TrainerLayout } from "app/components/TrainerLayout";
+import { isEmpty, capitalize, take, filter } from "lodash";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import {
-  BrowserDrilldownState,
-  RepertoireState,
-} from "app/utils/repertoire_state";
-import {
-  RepertoireGrade,
-  RepertoireMove,
-  getAllRepertoireMoves,
-  RepertoireSide,
-  lineToPgn,
-  pgnToLine,
-  SIDES,
-  Side,
-  RepertoireMiss,
-  formatIncidence,
-  otherSide,
-  Repertoire,
-} from "app/utils/repertoire";
-import { PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
-import { BeatLoader, GridLoader } from "react-spinners";
+import { BrowserDrilldownState } from "app/utils/repertoire_state";
+import { Side } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
-import { AppStore } from "app/store";
-import { plural, pluralize } from "app/utils/pluralize";
-import { useModal } from "./useModal";
-import {
-  ChessboardState,
-  createChessState,
-  createStaticChessState,
-} from "app/utils/chessboard_state";
-import { Chess } from "@lubert/chess.ts";
-import { LichessGameCellMini } from "./LichessGameCellMini";
+import { createStaticChessState } from "app/utils/chessboard_state";
 import { CMText } from "./CMText";
-import {
-  GameResultsDistribution,
-  PositionReport,
-  StockfishReport,
-  SuggestedMove,
-} from "app/models";
-import { failOnAny, failOnTrue } from "app/utils/test_settings";
-import { chunked } from "app/utils/intersperse";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
 import { useRepertoireState } from "app/utils/app_state";
@@ -287,8 +232,8 @@ export const VariationsAndLines = () => {
               const onClick = () => {
                 quick((s) => {
                   s.isBrowsing = false;
-                  s.startEditing(activeSide as Side, s);
-                  s.playPgn(browserLine.line, s);
+                  s.startEditing(activeSide as Side);
+                  s.playPgn(browserLine.line);
                 });
               };
               return (

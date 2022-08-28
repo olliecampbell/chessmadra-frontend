@@ -1,21 +1,14 @@
 import React, {
-  useCallback,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import {
   Animated,
-  Dimensions,
-  Easing,
   PanResponder,
-  Platform,
   Pressable,
   useWindowDimensions,
   View,
-  Text,
 } from "react-native";
 import { s, c } from "app/styles";
 import { times } from "app/utils";
@@ -32,16 +25,13 @@ import QueenWhiteIcon from "app/components/chessboard/pieces/QueenWhiteIcon";
 import RookBlackIcon from "app/components/chessboard/pieces/RookBlackIcon";
 import RookWhiteIcon from "app/components/chessboard/pieces/RookWhiteIcon";
 import { Chess, PieceSymbol, SQUARES } from "@lubert/chess.ts";
-import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
+import { Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "app/types/Chess";
 import {
   PlaybackSpeed,
-  PuzzleDifficulty,
-  VisualizationState,
 } from "app/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "app/utils/chessboard_state";
-import { Spacer } from "app/Space";
 import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "../CMText";
 

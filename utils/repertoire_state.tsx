@@ -1,7 +1,6 @@
-import { Move, Square } from "@lubert/chess.ts/dist/types";
+import { Move } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
 import {
-  LichessGame,
   PlayerTemplate,
   RepertoireTemplate,
   User,
@@ -10,15 +9,9 @@ import {
   PawnStructureDetails,
 } from "app/models";
 import { RepertoireMiss } from "./repertoire";
-import create from "zustand";
-import { devtools } from "zustand/middleware";
-
-import { immer } from "zustand/middleware/immer";
 import {
   cloneDeep,
   dropRight,
-  dropWhile,
-  groupBy,
   isEmpty,
   keyBy,
   last,
@@ -32,14 +25,9 @@ import {
   first,
   find,
   values,
-  keys,
-  findIndex,
   isNil,
   nth,
   zip,
-  drop,
-  forIn,
-  sum,
   sortBy,
   findLast,
 } from "lodash";
@@ -48,7 +36,6 @@ import {
   getAllRepertoireMoves,
   lineToPgn,
   otherSide,
-  PendingLine,
   pgnToLine,
   Repertoire,
   RepertoireGrade,
@@ -58,22 +45,16 @@ import {
   sideOfLastmove,
   SIDES,
 } from "./repertoire";
-import { StorageItem } from "./storageItem";
 import {
   ChessboardState,
-  ChessboardDelegate,
   createChessState,
 } from "./chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import _ from "lodash";
-import { WritableDraft } from "immer/dist/internal";
-import { failOnTrue } from "./test_settings";
 import { genEpd } from "./chess";
-import { ChessColor } from "app/types/Chess";
 import { formatEloRange } from "./elo_range";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
-import { OpDraft } from "./op_draft";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";

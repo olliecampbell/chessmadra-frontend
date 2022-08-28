@@ -1,11 +1,4 @@
 import { Button } from "./components/Button";
-import {
-  Text,
-  Platform,
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
 import { Spacer } from "./Space";
 import { s, c } from "./styles";
 import { CMText } from "./components/CMText";

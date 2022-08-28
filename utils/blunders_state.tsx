@@ -1,26 +1,16 @@
-import { Chess, Move } from "@lubert/chess.ts";
+import { Chess } from "@lubert/chess.ts";
 import {
-  ProgressMessage,
-  VisualizationState,
-  ProgressMessageType,
   PlaybackSpeed,
 } from "app/types/VisualizationState";
-import { fetchNewBlunderPuzzle, fetchNewPuzzle } from "./api";
+import { fetchNewBlunderPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
-import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
-import { RepertoireState } from "./repertoire_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
-  DEBUG_CLIMB_START_PLAYING,
   DEBUG_DONE_BLUNDER_VIEW,
-  DEBUG_PASS_FAIL_BUTTONS,
 } from "./test_settings";
 import { StorageItem } from "app/utils/storageItem";
 import { Animated } from "react-native";
-import { times } from "../utils";
-import { cloneDeep, isEmpty, takeRight } from "lodash";
-import { isCheckmate } from "./chess";
 import { BlunderPuzzle } from "app/models";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { fakeBlackBlunderPuzzle } from "app/mocks/puzzles";

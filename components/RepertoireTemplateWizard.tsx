@@ -1,45 +1,25 @@
 import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
-import { Animated, Text, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   capitalize,
-  cloneDeep,
   filter,
   isEmpty,
-  isNil,
-  takeRight,
 } from "lodash";
-import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-import { keyBy, groupBy } from "lodash";
 import { intersperse } from "app/utils/intersperse";
 import {
   RepertoireState,
-  useRepertoireState,
 } from "app/utils/repertoire_state";
 import {
-  RepertoireGrade,
-  RepertoireMove,
-  RepertoireSide,
   SIDES,
 } from "app/utils/repertoire";
-import { PageContainer } from "./PageContainer";
-import { Modal } from "./Modal";
 import { SelectOneOf } from "./SelectOneOf";
-import { CMTextInput } from "./TextInput";
-import { failOnTrue } from "app/utils/test_settings";
-import client from "app/client";
-import { DragAndDropInput } from "./DragAndDropInput";
 import { RepertoireTemplate } from "app/models";
 import { CMText } from "./CMText";
 

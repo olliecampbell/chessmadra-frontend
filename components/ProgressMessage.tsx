@@ -1,14 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+
 import {
-  Text,
   Pressable,
-  useWindowDimensions,
   View,
-  Platform,
 } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
 import {
   ProgressMessage,
   ProgressMessageType,

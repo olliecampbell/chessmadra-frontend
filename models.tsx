@@ -1,4 +1,4 @@
-import { RepertoireGrade, RepertoireMove } from "./utils/repertoire";
+import { RepertoireGrade } from "./utils/repertoire";
 
 export interface LichessPuzzle {
   id: string;

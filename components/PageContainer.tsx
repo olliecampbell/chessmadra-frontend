@@ -1,10 +1,5 @@
 import {
-  Text,
-  Platform,
-  Pressable,
-  useWindowDimensions,
   View,
-  Modal,
 } from "react-native";
 import React from "react";
 import { c, s } from "app/styles";

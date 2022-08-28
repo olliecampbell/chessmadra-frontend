@@ -1,18 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import {
-  Text,
-  Platform,
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+import React, { useEffect } from "react";
 import {
   ChessboardView,
-  getAnimationDurations,
-  getPlaybackSpeedDescription,
 } from "app/components/chessboard/Chessboard";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { useVisualizationTraining } from "../utils/useVisualizationTraining";

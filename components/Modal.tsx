@@ -1,15 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+
 import {
-  Text,
-  Platform,
   Pressable,
-  useWindowDimensions,
-  View,
   Modal as NativeModal,
 } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
 
 export const Modal = ({
   onClose,

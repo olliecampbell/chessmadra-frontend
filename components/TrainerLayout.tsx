@@ -1,18 +1,10 @@
 import {
-  Text,
-  Platform,
-  Pressable,
-  useWindowDimensions,
   View,
-  Modal,
 } from "react-native";
 import React from "react";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { NavBar } from "app/components/NavBar";
 import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "../utils/intersperse";
-import { PageContainer } from "./PageContainer";
 
 export const TrainerLayout = ({
   chessboard,
