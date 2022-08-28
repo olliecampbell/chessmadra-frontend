@@ -51,9 +51,8 @@ import {
   ProgressMessage,
   ProgressMessageType,
   getPuzzleDifficultyRating,
-  ClimbState,
 } from "app/types/VisualizationState";
-import { useClimbStore, useVisualizationStore } from "app/utils/state";
+import { useClimbStore } from "app/utils/state";
 import { Animated } from "react-native";
 import { NewPuzzleButton } from "app/NewPuzzleButton";
 import { useHelpModal } from "app/components/useHelpModal";
@@ -123,7 +122,7 @@ export const useVisualizationTraining = ({
   scoreChangeView,
   onSuccess,
 }: {
-  state: ClimbState | VisualizationState;
+  state: VisualizationState;
   onFail?: () => void;
   autoPlay?: boolean;
   isClimb?: boolean;
@@ -282,7 +281,11 @@ export const useVisualizationTraining = ({
               </View>
               <View style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))} />
               <View style={s(c.size(40), c.selfCenter, c.my(12))}>
-                {state.turn == "b" ? <KingBlackIcon /> : <KingWhiteIcon />}
+                {state.puzzleState.turn == "b" ? (
+                  <KingBlackIcon />
+                ) : (
+                  <KingWhiteIcon />
+                )}
               </View>
             </View>
             {isNil(score) && (
@@ -488,7 +491,7 @@ export const useVisualizationTraining = ({
             (async () => {
               if (Platform.OS == "web") {
                 window.open(
-                  `https://lichess.org/training/${state.puzzle.id}`,
+                  `https://lichess.org/training/${state.puzzleState.puzzle.id}`,
                   "_blank"
                 );
               }
@@ -696,15 +699,12 @@ export const useVisualizationTraining = ({
     </>
   );
 
-  const { playbackSpeedUserSetting, solutionMoves } = state;
+  const {
+    playbackSpeedUserSetting,
+    puzzleState: { solutionMoves },
+  } = state;
   const chessboardProps = {
-    frozen: isEmpty(solutionMoves),
-    onSquarePress: (square) => {
-      state.onSquarePress(square);
-    },
-    // biref,
-    playbackSpeed: playbackSpeedUserSetting.value,
-    state,
+    state: state.chessboardState,
   };
   return {
     ui,

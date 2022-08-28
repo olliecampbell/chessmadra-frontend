@@ -17,10 +17,7 @@ import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import {
-  RepertoireState,
-  useRepertoireState,
-} from "app/utils/repertoire_state";
+import { RepertoireState } from "app/utils/repertoire_state";
 import {
   RepertoireGrade,
   RepertoireMove,
@@ -56,6 +53,7 @@ import { failOnAny } from "app/utils/test_settings";
 import shallow from "zustand/shallow";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { debugEquality, debugEqualityObj } from "app/utils/debug_equality";
+import { useRepertoireState } from "app/utils/app_state";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(
@@ -605,48 +603,6 @@ const SummaryRow = ({ k, v, isMobile }) => {
   );
 };
 
-enum BiggestMissTagType {
-  StartPosition,
-  Biggest,
-  Critical,
-}
-
-const BiggestMissTag = ({ type }: { type: BiggestMissTagType }) => {
-  return (
-    <View
-      style={s(
-        // c.bg(c.grays[75]),
-        // c.px(12),
-        c.py(4),
-        c.br(2),
-        c.row,
-        c.alignCenter,
-        c.selfStart
-      )}
-    >
-      <CMText style={s(c.fontSize(16), c.fg(c.grays[40]))}>
-        {type === BiggestMissTagType.StartPosition ? (
-          <i className="fa fa-flag-checkered" />
-        ) : type === BiggestMissTagType.Biggest ? (
-          <i className="fa fa-percent" />
-        ) : (
-          <i className="fa fa-triangle-exclamation" />
-        )}
-      </CMText>
-      <Spacer width={8} />
-      <CMText
-        style={s(c.fontSize(14), c.weightBold, c.fg(c.colors.textSecondary))}
-      >
-        {type === BiggestMissTagType.StartPosition
-          ? "Start position"
-          : type === BiggestMissTagType.Biggest
-          ? "Biggest miss"
-          : "Critical position"}
-      </CMText>
-    </View>
-  );
-};
-
 const BiggestMissBoards = ({
   state,
   side,
@@ -713,9 +669,6 @@ const BiggestMissBoards = ({
                     games{" "}
                   </CMText>
                 </View>
-                {/*
-                <BiggestMissTag type={BiggestMissTagType.Biggest} />
-                */}
               </View>
             );
           }),
@@ -768,13 +721,7 @@ const RepertoireOverview = ({}: {}) => {
   );
 };
 
-const ReviewMovesView = ({
-  isMobile,
-  side,
-}: {
-  isMobile: boolean;
-  side?: Side;
-}) => {
+const ReviewMovesView = ({ side }: { side?: Side }) => {
   console.log("re-rendering review moves view!");
   let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
     (s) => {
@@ -964,7 +911,6 @@ const ShareRepertoireButton = () => {
 };
 
 const ExtraActions = () => {
-  const isMobile = useIsMobile();
   const { eloWarning } = useEloRangeWarning({});
   let [user, getMyResponsesLength] = useRepertoireState(
     (s) => [s.user, s.getMyResponsesLength],
@@ -980,7 +926,7 @@ const ExtraActions = () => {
           <Spacer height={12} />
         </>
       )}
-      <ReviewMovesView {...{ isMobile, side: null }} />
+      <ReviewMovesView {...{ side: null }} />
       {!hasNoMovesAtAll && <Spacer height={12} />}
       <ShareRepertoireButton />
       <Spacer height={12} />

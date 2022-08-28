@@ -15,20 +15,19 @@ import { chunked } from "app/utils/intersperse";
 import Link from "next/link";
 import { failOnTrue } from "app/utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
-import {
-  GameMemorizationState,
-  useGameMemorizationState,
-} from "app/utils/game_memorization_state";
+import { GameMemorizationState } from "app/utils/game_memorization_state";
 import { LichessGameCell } from "./LichessGameCell";
 import { ProgressMessageView } from "app/components/ProgressMessage";
 import client from "app/client";
 import { CMText } from "./CMText";
+import { useGameMemorizationState } from "app/utils/app_state";
 
 export const GameMemorization = () => {
-  const state = useGameMemorizationState();
+  const state = useGameMemorizationState((s) => s);
   useEffect(() => {
     state.fetchGames();
   }, []);
+  console.log({ state });
   const isMobile = useIsMobile();
   let inner = null;
   if (state.activeGame) {
@@ -37,7 +36,7 @@ export const GameMemorization = () => {
         chessboard={
           <ChessboardView
             {...{
-              state,
+              state: state.chessboardState,
             }}
           />
         }
@@ -131,7 +130,7 @@ export const GameMemorization = () => {
             onPress={() => {
               (async () => {
                 state.quick((s) => {
-                  s.setActiveGame(null, s);
+                  s.setActiveGame(null);
                 });
               })();
             }}

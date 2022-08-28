@@ -3,10 +3,7 @@ import { Modal } from "./Modal";
 import { View, Text } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
-import {
-  DEFAULT_ELO_RANGE,
-  useRepertoireState,
-} from "app/utils/repertoire_state";
+import { DEFAULT_ELO_RANGE } from "app/utils/repertoire_state";
 import { isEqual, isNil, parseInt } from "lodash";
 import { useModal } from "./useModal";
 import { EloWarningBox } from "./EloWarningBox";
@@ -14,6 +11,7 @@ import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import shallow from "zustand/shallow";
+import { useRepertoireState } from "app/utils/app_state";
 
 type EloRange = [number, number];
 
@@ -51,7 +49,7 @@ export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
         choices={ELO_RANGES}
         activeChoice={selectedEloRange}
         equality={isEqual}
-        onSelect={function(c): void {
+        onSelect={function (c): void {
           setSelectedEloRange(c);
         }}
         renderChoice={(r: EloRange) => {

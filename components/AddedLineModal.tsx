@@ -8,7 +8,6 @@ import {
   AddLineFromOption,
   AddNewLineChoice,
   DEFAULT_ELO_RANGE,
-  useRepertoireState,
 } from "app/utils/repertoire_state";
 import { isEqual, isNil, parseInt } from "lodash";
 import { useModal } from "./useModal";
@@ -28,13 +27,14 @@ import {
   getNameEcoCodeIdentifier,
 } from "app/utils/eco_codes";
 import shallow from "zustand/shallow";
+import { useRepertoireState } from "app/utils/app_state";
 
 export const AddedLineModal = () => {
   let [stage] = useRepertoireState((s) => [s.addedLineState?.stage], shallow);
 
   const isMobile = useIsMobile();
   return (
-    <Modal onClose={() => { }} visible={!isNil(stage)}>
+    <Modal onClose={() => {}} visible={!isNil(stage)}>
       <View
         style={s(
           c.column,
@@ -127,7 +127,7 @@ const AddedLineAddMore = () => {
           // cellStyles={s(c.bg(c.grays[15]))}
           // horizontal={true}
           activeChoice={activeChoice}
-          onSelect={(c, i) => { }}
+          onSelect={(c, i) => {}}
           separator={() => {
             return <Spacer height={12} />;
           }}
@@ -166,7 +166,7 @@ const AddedLineAddMore = () => {
         />
         <Spacer width={24} />
         <View style={s(c.size(isMobile ? 120 : 160))}>
-          <ChessboardView onSquarePress={() => { }} state={chessState} />
+          <ChessboardView onSquarePress={() => {}} state={chessState} />
         </View>
       </View>
       <Spacer height={24} />
@@ -175,7 +175,7 @@ const AddedLineAddMore = () => {
           onPress={() => {
             quick((s) => {
               s.addedLineState.stage = AddedLineStage.AddAnother;
-              s.playPgn(boardLine, s);
+              s.playPgn(boardLine);
               s.addedLineState = null;
             });
           }}
@@ -303,7 +303,7 @@ const AddedLineOverview = () => {
         <Spacer width={48} grow />
         <View style={s(c.size(isMobile ? 120 : 160))}>
           <ChessboardView
-            onSquarePress={() => { }}
+            onSquarePress={() => {}}
             state={createStaticChessState({
               line: lineToPgn(addedLineState.line),
               side: side,

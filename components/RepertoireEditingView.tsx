@@ -30,11 +30,7 @@ import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import {
-  EditingTab,
-  RepertoireState,
-  useRepertoireState,
-} from "app/utils/repertoire_state";
+import { EditingTab, RepertoireState } from "app/utils/repertoire_state";
 import {
   RepertoireGrade,
   RepertoireMove,
@@ -81,6 +77,7 @@ import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { Modal } from "./Modal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
+import { useRepertoireState } from "app/utils/app_state";
 
 type BackControlsProps = {
   state: RepertoireState;
@@ -440,7 +437,13 @@ const Responses = React.memo(function Responses() {
           {intersperse(
             existingMoves.map((x, i) => {
               let sm = find(suggestedMoves, (m) => m.sanPlus === x.sanPlus);
-              return <Response repertoireMove={x} suggestedMove={sm} />;
+              return (
+                <Response
+                  key={x.sanPlus}
+                  repertoireMove={x}
+                  suggestedMove={sm}
+                />
+              );
             }),
             (i) => {
               return <Spacer height={12} key={i} />;
@@ -503,7 +506,7 @@ const Responses = React.memo(function Responses() {
                   if (coveredSans.has(m.sanPlus)) {
                     return null;
                   }
-                  return <Response suggestedMove={m} />;
+                  return <Response key={m.sanPlus} suggestedMove={m} />;
                 }),
                 (i) => {
                   return <Spacer height={12} key={i} />;
@@ -539,10 +542,6 @@ const Response = ({
   let tags = [];
   if (suggestedMove) {
     let tags = [];
-    // take(
-    //   genMoveTags(suggestedMove, positionReport, currentEpd, side),
-    //   5
-    // );
   }
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
@@ -598,12 +597,6 @@ const Response = ({
                         c.weightSemiBold,
                         c.fontSize(14),
                         c.fg(c.grays[75])
-                        // isGoodStockfishEval(
-                        //   m.stockfish,
-                        //   activeSide
-                        // )
-                        //   ? c.fg(goodTextColor)
-                        //   : c.fg(badTextColor)
                       )}
                     >
                       {formatStockfishEval(suggestedMove?.stockfish)}
@@ -698,193 +691,6 @@ const Response = ({
         </View>
       </View>
     </Pressable>
-  );
-};
-
-const OpeningTree = ({
-  repertoire,
-  state,
-  grade,
-}: {
-  repertoire: RepertoireSide;
-  grade: RepertoireGrade;
-  state: RepertoireState;
-}) => {
-  return (
-    <View style={s()}>
-      {state.hasPendingLineToAdd &&
-        (state.pendingResponses[state.divergencePosition] ?? []).map((move) => {
-          return (
-            <OpeningNode
-              key={`pending-${move.epdAfter}`}
-              seenEpds={new Set()}
-              line={dropRight(
-                state.currentLine,
-                keys(state.pendingResponses).length
-              )}
-              state={state}
-              grade={grade}
-              move={move}
-              repertoire={repertoire}
-            />
-          );
-        })}
-      {!state.hasPendingLineToAdd &&
-        (
-          state.repertoire[state.activeSide].positionResponses[
-            state.getCurrentEpd()
-          ] ?? []
-        ).map((move) => {
-          return (
-            <OpeningNode
-              key={move.epdAfter}
-              seenEpds={new Set()}
-              line={state.currentLine}
-              state={state}
-              grade={grade}
-              move={move}
-              repertoire={repertoire}
-            />
-          );
-        })}
-    </View>
-  );
-};
-
-const OpeningNode = ({
-  move,
-  grade,
-  seenEpds: _seenEpds,
-  state,
-  repertoire,
-  responseQueue,
-  line,
-}: {
-  move: RepertoireMove;
-  line?: string[];
-  responseQueue?: RepertoireMove[];
-  seenEpds: Set<string>;
-  grade: RepertoireGrade;
-  state: RepertoireState;
-  repertoire: RepertoireSide;
-}) => {
-  // let incidence = grade?.moveIncidence[move.id];
-  let responses =
-    state.repertoire[state.activeSide].positionResponses[move.epdAfter];
-  if (isEmpty(responses)) {
-    responses = state.pendingResponses[move.epdAfter];
-  }
-  let trueDepth = line?.length ?? 0;
-  // let trueDepth = 0;
-  let assumedDepth = state.currentLine.length;
-  let depthDifference = trueDepth - assumedDepth;
-  let moveNumber = Math.floor(trueDepth / 2) + 1;
-  let cumulativeLine = null;
-  let seenEpds = new Set(_seenEpds);
-  seenEpds.add(move.epd);
-  if (line) {
-    cumulativeLine = [...line, move.sanPlus];
-  } else {
-  }
-  // let responses = [];
-  return (
-    <View style={s(c.pl(2))}>
-      <Pressable
-        onPress={() => {
-          let pgn = lineToPgn(cumulativeLine);
-          state.playPgn(pgn);
-        }}
-      >
-        <View
-          style={s(
-            c.row,
-            c.br(2),
-            c.px(4),
-            // c.bg(c.grays[20]),
-            c.my(0),
-            c.py(2),
-            c.justifyBetween
-          )}
-        >
-          <CMText
-            style={s(
-              c.fg(
-                move.mine || true || move.pending ? c.grays[85] : c.grays[70]
-              ),
-              c.weightSemiBold
-
-              // move.mine ? c.weightBold : c.weightRegular
-            )}
-          >
-            {trueDepth % 2 === 0 ? `${moveNumber}.` : null}
-            {move.sanPlus}
-            {responses && depthDifference >= DEPTH_CUTOFF && "…"}
-            {move.pending && (
-              <CMText style={s(c.opacity(60), c.weightSemiBold)}>
-                {" "}
-                [pending]
-              </CMText>
-            )}
-          </CMText>
-          {/*incidence && !move.mine && (
-            <>
-              <Spacer width={0} grow />
-              <CMText style={s(c.fg(c.colors.textSecondary))}>
-                {formatIncidence(incidence)}
-              </CMText>
-            </>
-          )*/}
-
-          {/*
-          <Spacer width={12} />
-          <CMText style={s(c.clickable)}>
-            <i
-              style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
-              className={`fas fa-trash`}
-            ></i>
-          </CMText>
-          */}
-        </View>
-      </Pressable>
-      {depthDifference < DEPTH_CUTOFF && (
-        <View
-          style={s(c.pl(10), c.ml(6), c.borderLeft(`1px solid ${c.grays[25]}`))}
-        >
-          <View style={s()}>
-            {intersperse(
-              (responses || [])
-                .filter((m) => !seenEpds.has(m.epdAfter))
-                .map((move) => {
-                  return (
-                    <OpeningNode
-                      key={move.epdAfter}
-                      seenEpds={seenEpds}
-                      line={cumulativeLine}
-                      repertoire={repertoire}
-                      state={state}
-                      move={move}
-                      responseQueue={responseQueue && drop(responseQueue, 1)}
-                      grade={grade}
-                    />
-                  );
-                }),
-              (i) => {
-                return <Spacer key={i} height={0} />;
-              }
-            )}
-          </View>
-        </View>
-      )}
-    </View>
-  );
-};
-
-const SectionDivider = () => {
-  const isMobile = useIsMobile();
-  return (
-    <View
-      style={s(c.selfStretch, c.width(1), c.bg(c.grays[18]), c.mx(24))}
-    ></View>
   );
 };
 
@@ -1137,55 +943,6 @@ const getPlayRate = (
   return getTotalGames(m[k]) / getTotalGames(report[k]);
 };
 
-interface ResponseTag {
-  type: ResponseTagType;
-}
-
-enum ResponseTagType {
-  Sound = "Sound",
-  // Dubious = "Dubious",
-  Gambit = "Gambit",
-  HighWinrate = "High win-rate",
-  MasterApproved = "GM-approved",
-  YourMove = "Your move",
-  Covered = "Covered",
-}
-
-const genMoveTags = (
-  m: SuggestedMove,
-  positionReport: PositionReport,
-  epd: string,
-  side: Side
-): ResponseTag[] => {
-  let tags = [];
-  // let r = find(
-  //   repertoire.positionResponses[epd],
-  //   (r) => r.sanPlus === m.sanPlus
-  // );
-  // if (r) {
-  //   if (r.mine) {
-  //     tags.push({ type: ResponseTagType.YourMove });
-  //   } else {
-  //     tags.push({ type: ResponseTagType.Covered });
-  //   }
-  // }
-  // if (m.stockfish?.eval && positionReport.stockfish?.eval) {
-  //   if (Math.abs(m.stockfish.eval - positionReport.stockfish.eval) <= 30) {
-  //     tags.push({ type: ResponseTagType.Sound });
-  //   }
-  // }
-  // if (getPlayRate(m, positionReport, true) > 0.05) {
-  //   tags.push({ type: ResponseTagType.MasterApproved });
-  // }
-  // if (
-  //   getWinRate(m.results, side) > 0.5 &&
-  //   getPlayRate(m, positionReport) > 0.05
-  // ) {
-  //   tags.push({ type: ResponseTagType.HighWinrate });
-  // }
-  return tags;
-};
-
 const ResponseStatSection = ({
   positionReport,
   side,
@@ -1242,48 +999,11 @@ const ResponseStatSection = ({
   );
 };
 
-const getTagColors = (tagType: ResponseTagType): [string, string] => {
-  let defaultBg = c.grays[20];
-  let defaultFg = c.grays[80];
-  switch (tagType) {
-    case ResponseTagType.Sound:
-      return [defaultFg, defaultBg];
-    case ResponseTagType.Gambit:
-      return [defaultFg, defaultBg];
-    case ResponseTagType.HighWinrate:
-      return [defaultFg, defaultBg];
-    case ResponseTagType.MasterApproved:
-      return [defaultFg, defaultBg];
-    case ResponseTagType.YourMove:
-      return [c.grays[90], c.primaries[35]];
-    case ResponseTagType.Covered:
-      return [defaultFg, defaultBg];
-  }
-};
-
-const getTagIcon = (tagType: ResponseTagType): string => {
-  switch (tagType) {
-    case ResponseTagType.Sound:
-      return null;
-    case ResponseTagType.Gambit:
-      return null;
-    case ResponseTagType.HighWinrate:
-      return null;
-    case ResponseTagType.MasterApproved:
-      return null;
-    case ResponseTagType.YourMove:
-      return null;
-    case ResponseTagType.Covered:
-      return "fa fa-check";
-  }
-};
-
 const AddPendingLineButton = () => {
   const [isAddingPendingLine, addPendingLine] = useRepertoireState((s) => [
     s.isAddingPendingLine,
     s.addPendingLine,
   ]);
-  const isMobile = useIsMobile();
   return (
     <Button
       style={s(
@@ -1378,7 +1098,6 @@ const EditingTabPicker = () => {
 };
 
 const PositionOverview = () => {
-  return null;
   const [positionReport, ecoCode, activeSide, pawnStructure] =
     useRepertoireState((s) => {
       return [

@@ -16,10 +16,7 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { keyBy, groupBy } from "lodash";
 import { intersperse } from "app/utils/intersperse";
-import {
-  RepertoireState,
-  useRepertoireState,
-} from "app/utils/repertoire_state";
+import { RepertoireState } from "app/utils/repertoire_state";
 import {
   RepertoireGrade,
   RepertoireMove,
@@ -203,7 +200,7 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
                   if (openingSource === OpeningSource.Manual) {
                     state.quick((s) => {
                       s.hasCompletedRepertoireInitialization = true;
-                      s.backToOverview(s);
+                      s.backToOverview();
                     });
                   }
                 }}
@@ -319,61 +316,6 @@ export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
       </View>
       <Spacer height={0} grow />
     </>
-  );
-};
-
-const UploadPgnsView = () => {
-  const isMobile = useIsMobile(MOBILE_CUTOFF);
-  return (
-    <View style={s(isMobile ? c.column : c.row)}>
-      <PgnUploadDropper color="White" />
-      <Spacer width={12} />
-      <PgnUploadDropper color="Black" />
-    </View>
-  );
-};
-
-const PgnUploadDropper = ({ color }) => {
-  return (
-    <View style={s(c.column, c.alignCenter)}>
-      <CMText
-        style={s(c.fg(c.colors.textPrimary), c.fontSize(18), c.weightBold)}
-      >
-        {color}
-      </CMText>
-      <Spacer height={12} />
-      <View
-        style={s(
-          c.width(240),
-          c.height(200),
-          c.center,
-          c.textAlign("center"),
-          c.bg(c.grays[20]),
-          c.br(4),
-          c.clickable,
-          c.relative
-        )}
-      >
-        <input
-          style={s(
-            c.top(0),
-            c.left(0),
-            c.absolute,
-            c.fullWidth,
-            c.fullHeight,
-            c.opacity(0),
-            c.clickable
-          )}
-          accept=".pgn"
-          multiple={true}
-          onChange={() => {}}
-          type="file"
-        ></input>
-        <CMText style={s(c.fg(c.colors.textSecondary))}>
-          Drag a pgn in here, or click to browse
-        </CMText>
-      </View>
-    </View>
   );
 };
 
@@ -504,27 +446,6 @@ const ImportOptions = ({
             ),
             buttonCopy: "Import",
           },
-          // {
-          //   title: "ChessMood Pack",
-          //   buttonCopy: "Start",
-          //   source: OpeningSource.Chessmood,
-          //   logo: (
-          //     <img
-          //       style={s(c.width(100), c.opacity(80))}
-          //       src="/chessmood_logo.png"
-          //     />
-          //   ),
-          //   description: (
-          //     <>
-          //       A full repertoire from the GMs over at{" "}
-          //       <a href="https://chessmood.com">ChessMood</a>.{" "}
-          //       <span style={s(c.fg(c.grays[75]), c.weightBold)}>
-          //         Check out their videos
-          //       </span>{" "}
-          //       for the ideas behind the moves in this repertoire.
-          //     </>
-          //   ),
-          // },
         ].map((x, i) => {
           const selected = openingSource === x.source;
           return (

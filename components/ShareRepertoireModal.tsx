@@ -8,7 +8,6 @@ import {
   AddLineFromOption,
   AddNewLineChoice,
   DEFAULT_ELO_RANGE,
-  useRepertoireState,
 } from "app/utils/repertoire_state";
 import { isEqual, isNil, parseInt } from "lodash";
 import { useModal } from "./useModal";
@@ -28,6 +27,7 @@ import {
   getNameEcoCodeIdentifier,
 } from "app/utils/eco_codes";
 import shallow from "zustand/shallow";
+import { useRepertoireState } from "app/utils/app_state";
 
 export const ShareRepertoireModal = () => {
   let [open, shareId, quick] = useRepertoireState(

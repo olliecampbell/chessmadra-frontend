@@ -5,12 +5,14 @@ import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { SetState } from "zustand";
-import { createQuick, logProxy, QuickUpdate } from "./state";
+import { logProxy } from "./state";
 import { c } from "app/styles";
 import { getSquareOffset } from "./chess";
 import { WritableDraft } from "immer/dist/internal";
 import { Side } from "./repertoire";
 import { RepertoireState } from "./repertoire_state";
+import { StateGetter, StateSetter } from "./state_setters_getters";
+import { createQuick, QuickUpdate } from "./quick";
 
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
   frozen?: boolean;
@@ -60,21 +62,16 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
 }
 
 export interface ChessboardDelegate {
-  attemptMove?: (
-    move: Move,
-    cb: (shouldMove: boolean, cb: () => void) => void
-  ) => boolean;
+  shouldMakeMove?: (move: Move) => boolean;
+  madeMove?: (move: Move) => void;
+  completedMoveAnimation?: (move: Move) => void;
 }
 
 export const createChessState = <T extends ChessboardState>(
-  _set,
-  get,
-  initialize: (c: ChessboardState) => void
+  set: StateSetter<ChessboardState, any>,
+  get: StateGetter<ChessboardState, any>,
+  initialize?: (c: ChessboardState) => void
 ): ChessboardState => {
-  let set = <Y,>(fn: (s: ChessboardState) => Y) =>
-    _set((s: RepertoireState) => {
-      return fn(s.chessboardState);
-    });
   let initialState = {
     allowMoves: true,
     isColorTraining: false,
@@ -100,32 +97,27 @@ export const createChessState = <T extends ChessboardState>(
           s.availableMoves = [];
           s.activeFromSquare = null;
           s.draggedOverSquare = null;
-          let makeMove = (cb) => {
+          let makeMove = () => {
             console.log("skip animation", skipAnimation);
             if (skipAnimation) {
               console.log("Yup moving");
               s.position.move(availableMove);
-              cb(null);
+              s.delegate.madeMove(availableMove);
             } else {
+              s.delegate.madeMove(availableMove);
               s.animatePieceMove(
                 availableMove,
                 PlaybackSpeed.Normal,
-                (completed, s) => {
-                  cb(completed, s);
+                (completed) => {
+                  set((s) => {
+                    s.delegate.completedMoveAnimation(availableMove);
+                  });
                 }
               );
             }
           };
-          if (
-            (s.delegate.attemptMove &&
-              s.delegate.attemptMove(availableMove, (shouldMove, cb) => {
-                if (shouldMove) {
-                  console.log("Should move, making move");
-                  makeMove(cb);
-                }
-              })) ||
-            !s.delegate.attemptMove
-          ) {
+          if (s.delegate.shouldMakeMove(availableMove)) {
+            makeMove();
           }
           return;
         }
@@ -271,20 +263,22 @@ export const createChessState = <T extends ChessboardState>(
         let i = 0;
         let delay = getAnimationDurations(speed)[2];
         let animateNextMove = () => {
-          let move = moves.shift();
-          // TODO: something to deal with this state being old
-          if (move && s.isVisualizingMoves) {
-            s.visualizeMove(move, speed, () => {
-              window.setTimeout(() => {
-                s.animateNextMove();
-              }, delay);
-            });
-            i++;
-          } else {
-            s.isVisualizingMoves = false;
-            callback?.();
-            // cb?.()
-          }
+          set((s) => {
+            let move = moves.shift();
+
+            if (move && s.isVisualizingMoves) {
+              s.visualizeMove(move, speed, () => {
+                window.setTimeout(() => {
+                  animateNextMove();
+                }, delay);
+              });
+              i++;
+            } else {
+              s.isVisualizingMoves = false;
+              callback?.();
+              // cb?.()
+            }
+          });
         };
         animateNextMove();
       });

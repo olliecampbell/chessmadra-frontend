@@ -2,15 +2,13 @@ import { Spacer } from "app/Space";
 import { s, c } from "styles";
 import { CMText } from "./CMText";
 import { View } from "react-native";
-import {
-  DEFAULT_ELO_RANGE,
-  useRepertoireState,
-} from "app/utils/repertoire_state";
+import { DEFAULT_ELO_RANGE } from "app/utils/repertoire_state";
 import { Button } from "./Button";
 import shallow from "zustand/shallow";
+import { useRepertoireState } from "app/utils/app_state";
 
 export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
-  let [] = useRepertoireState((s) => [], shallow);
+  let [] = useRepertoireState((s) => []);
   let buttonStyles = s(c.fontSize(14));
   return (
     <View

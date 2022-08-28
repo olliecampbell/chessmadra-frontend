@@ -1,41 +1,7 @@
-import { Square } from "@lubert/chess.ts/dist/types";
+import { Move, Square } from "@lubert/chess.ts/dist/types";
 import client from "app/client";
 import { LichessGame } from "app/models";
-import create, {
-  GetState,
-  SetState,
-  State,
-  StateCreator,
-  StoreApi,
-} from "zustand";
-import { devtools } from "zustand/middleware";
-import { createQuick, logProxy, setter } from "./state";
-import { immer } from "zustand/middleware/immer";
-import {
-  cloneDeep,
-  drop,
-  dropWhile,
-  filter,
-  first,
-  isEmpty,
-  last,
-  sample,
-  shuffle,
-  sortBy,
-  take,
-} from "lodash";
-import {
-  BySide,
-  lineToPgn,
-  MoveIdentifier,
-  PendingLine,
-  Repertoire,
-  RepertoireGrade,
-  RepertoireMove,
-  RepertoireSide,
-  Side,
-  sideOfLastmove,
-} from "./repertoire";
+import { drop, filter, first, isEmpty, sample, shuffle, sortBy } from "lodash";
 import { StorageItem } from "./storageItem";
 import { Chess } from "@lubert/chess.ts";
 import {
@@ -43,34 +9,29 @@ import {
   ProgressMessage,
   ProgressMessageType,
 } from "app/types/VisualizationState";
-import {
-  ChessboardState,
-  ChessboardStateParent,
-  createChessState,
-} from "./chessboard_state";
+import { ChessboardState, createChessState } from "./chessboard_state";
+import { AppState } from "./app_state";
+import { StateGetter, StateSetter } from "./state_setters_getters";
+import { createQuick } from "./quick";
+import { logProxy } from "./state";
+import { MoveIdentifier } from "./repertoire";
 
-export interface GameMemorizationState
-  extends ChessboardState,
-    ChessboardStateParent<GameMemorizationState> {
+export interface GameMemorizationState {
   quick: (fn: (_: GameMemorizationState) => void) => void;
-  chessState: ChessboardState;
+  chessboardState: ChessboardState;
   progressMessage: ProgressMessage;
   activeGame: LichessGame;
   onSquarePress: (square: Square) => void;
-  setActiveGame: (game: LichessGame, _state?: GameMemorizationState) => void;
-  fetchGames: (_state?: GameMemorizationState) => void;
-  retryGame: (_state?: GameMemorizationState) => void;
-  makeNextMove: (
-    animateOwnMove: boolean,
-    _state?: GameMemorizationState
-  ) => void;
+  setActiveGame: (game: LichessGame) => void;
+  fetchGames: () => void;
+  retryGame: () => void;
+  makeNextMove: (animateOwnMove: boolean) => void;
   _makeNextMove: (
     animate: boolean,
-    onAnimationEnd: (state: GameMemorizationState) => void,
-    _state?: GameMemorizationState
+    onAnimationEnd: (state: GameMemorizationState) => void
   ) => void;
-  newRandomGame: (_state?: GameMemorizationState) => void;
-  giveUpOnMove: (_state?: GameMemorizationState) => void;
+  newRandomGame: () => void;
+  giveUpOnMove: () => void;
   nextMoves: MoveIdentifier[];
   movesMissed: number;
   games: LichessGame[];
@@ -92,198 +53,6 @@ export interface MemorizedGameStatus {
   everPerfect: boolean;
 }
 
-export const useGameMemorizationState = create<GameMemorizationState>()(
-  devtools(
-    // @ts-ignore for the set stuff
-    immer(
-      // TODO: figure out why typescript hates this
-      // @ts-ignore
-      (
-        set: SetState<GameMemorizationState>,
-        get: GetState<GameMemorizationState>
-      ): GameMemorizationState =>
-        ({
-          // TODO: clone?
-          ...createQuick(set),
-          ...createChessState(set, get, () => {}),
-          numReviewed: new StorageItem("memorized-games-review", 0),
-          attemptMove: (
-            move,
-            cb: (shouldMove: boolean) => void,
-            _state: GameMemorizationState
-          ) =>
-            setter(set, _state, (state: GameMemorizationState) => {
-              if (move.san == state.nextMoves[0]) {
-                state.makeNextMove(false, state);
-                state.flashRing(true, state);
-              } else {
-                state.flashRing(false, state);
-                if (!state.missedCurrentMove) {
-                  state.movesMissed += 1;
-                }
-                state.missedCurrentMove = true;
-              }
-              return;
-            }),
-          // onSquarePress: (square: Square) =>
-          //   set((state) => {
-          //     if (state.nextMoves.length === 0) {
-          //       return;
-          //     }
-          //     let availableMove = state.chessState.availableMoves.find(
-          //       (m) => m.to == square
-          //     );
-          //     if (availableMove) {
-          //     }
-          //     let from = state.chessState.availableMoves[0]?.from;
-          //     if (from === square) {
-          //       state.chessState.availableMoves = [];
-          //       return;
-          //     }
-          //     let moves = state.chessState.position.moves({
-          //       square,
-          //       verbose: true,
-          //     });
-          //     state.chessState.availableMoves = moves;
-          //   }),
-          retryGame: (_state?: GameMemorizationState) =>
-            setter(set, _state, (s) => {
-              s.setActiveGame(s.activeGame, s);
-            }),
-          makeNextMove: (
-            animateOwnMove: boolean,
-            _state?: GameMemorizationState
-          ) =>
-            setter(set, _state, (s) => {
-              s.availableMoves = [];
-              s._makeNextMove(
-                animateOwnMove,
-                (s) => {
-                  s._makeNextMove(true, () => {}, s);
-                  s.missedCurrentMove = false;
-                  if (isEmpty(s.nextMoves)) {
-                    s.numReviewed.value += 1;
-                    s.progressMessage = {
-                      message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
-                      type: ProgressMessageType.Success,
-                    };
-                    client
-                      .post("/api/v1/my_games/mark_reviewed", {
-                        gameId: s.activeGame.id,
-                        movesMissed: s.movesMissed,
-                      })
-                      .then(() => {
-                        // @ts-ignore
-                        set((s: GameMemorizationState) => {
-                          s.fetchGames(s);
-                        });
-                      });
-                  }
-                },
-                s
-              );
-            }),
-          newRandomGame: (_state?: GameMemorizationState) =>
-            setter(set, _state, (s) => {
-              console.log("Getting a new random game");
-              let game =
-                getRandomWithStatus(
-                  s.games,
-                  s.gameStatuses,
-                  (s: MemorizedGameStatus) => s.needsReview
-                ) ??
-                getRandomWithStatus(
-                  s.games,
-                  s.gameStatuses,
-                  (s: MemorizedGameStatus) => !s.needsReview && !s.everReviewed
-                );
-              // let gamesNeededToReview = s.games.filter();
-              // let game = sample(s.games);
-              s.setActiveGame(game, s);
-            }),
-          giveUpOnMove: (_state?: GameMemorizationState) =>
-            setter(set, _state, (s) => {
-              console.log("s", s);
-              s.movesMissed += 1;
-              s.makeNextMove(true, s);
-            }),
-          _makeNextMove: (
-            animate: boolean,
-            onAnimationEnd: (state: GameMemorizationState) => void,
-            _state?: GameMemorizationState
-          ) =>
-            setter(set, _state, (s) => {
-              let move = first(s.nextMoves);
-              if (!move) {
-                return;
-              }
-              s.moveNumber += 1;
-              console.log("Move is ", move);
-              s.nextMoves = drop(s.nextMoves, 1);
-              console.log("next moves", logProxy(s.nextMoves));
-              let moveObj = s.position.validateMoves([move])?.[0];
-              console.log("Move obj", moveObj);
-              if (animate) {
-                s.animatePieceMove(
-                  moveObj,
-                  PlaybackSpeed.Normal,
-                  (completed, s: GameMemorizationState) => {
-                    if (completed) {
-                      onAnimationEnd(s);
-                    }
-                  },
-                  s
-                );
-              } else {
-                s.position.move(moveObj);
-                onAnimationEnd(s);
-              }
-            }),
-
-          setActiveGame: (game: LichessGame, _state?: GameMemorizationState) =>
-            setter(set, _state, (s) => {
-              s.activeGame = game;
-              s.missedCurrentMove = false;
-              s.moveNumber = 0;
-              s.progressMessage = null;
-              s.position = new Chess();
-              s.movesMissed = 0;
-              if (s.activeGame) {
-                s.nextMoves = s.activeGame.moves;
-                if (s.activeGame.result === -1) {
-                  s.flipped = true;
-                  s._makeNextMove(false, () => {}, s);
-                } else {
-                  s.flipped = false;
-                }
-              }
-            }),
-          fetchGames: (_state?: GameMemorizationState) =>
-            setter(set, _state, (s) => {
-              (async () => {
-                let { data: resp }: { data: MyGamesResponse } =
-                  await client.get("/api/v1/my_games");
-                // @ts-ignore
-                set((s: GameMemorizationState) => {
-                  s.games = sortBy(shuffle(resp.games), (g) => {
-                    if (resp.gameStatuses[g.id].needsReview) {
-                      return -100;
-                    }
-                    if (resp.gameStatuses[g.id].everReviewed) {
-                      return -10;
-                    }
-                    return -1;
-                  });
-                  s.gameStatuses = resp.gameStatuses;
-                });
-              })();
-            }),
-        } as GameMemorizationState)
-    ),
-    { name: "GameMemorizationTrainingState" }
-  )
-);
-
 function getRandomWithStatus(
   games: LichessGame[],
   gameStatuses: Record<string, MemorizedGameStatus>,
@@ -297,3 +66,171 @@ function getRandomWithStatus(
   let randomGame = sample(filteredGames) as LichessGame;
   return randomGame;
 }
+
+export type Stack = [GameMemorizationState, AppState];
+
+export const getInitialGameMemorizationState = (
+  _set: StateSetter<AppState, any>,
+  _get: StateGetter<AppState, any>
+) => {
+  const set = <T,>(fn: (stack: Stack) => T): T => {
+    return _set((s) => fn([s.gameMemorizationState, s]));
+  };
+  const setOnly = <T,>(fn: (stack: GameMemorizationState) => T): T => {
+    return set(([s]) => fn(s));
+  };
+  const get = <T,>(fn: (stack: Stack) => T): T => {
+    return _get((s) => fn([s.gameMemorizationState, s]));
+  };
+  let initialState = {
+    ...createQuick(setOnly),
+    numReviewed: new StorageItem("memorized-games-review", 0),
+    retryGame: () =>
+      set(([s]) => {
+        s.setActiveGame(s.activeGame);
+      }),
+    makeNextMove: (animateOwnMove: boolean) =>
+      set(([s]) => {
+        s.chessboardState.availableMoves = [];
+        s._makeNextMove(animateOwnMove, () => {
+          set(([s]) => {
+            s._makeNextMove(true, () => {});
+            s.missedCurrentMove = false;
+            if (isEmpty(s.nextMoves)) {
+              s.numReviewed.value += 1;
+              s.progressMessage = {
+                message: `You're done reviewing this game! You got ${s.movesMissed} moves wrong. New game or retry?`,
+                type: ProgressMessageType.Success,
+              };
+              client
+                .post("/api/v1/my_games/mark_reviewed", {
+                  gameId: s.activeGame.id,
+                  movesMissed: s.movesMissed,
+                })
+                .then(() => {
+                  set(([s]) => {
+                    s.fetchGames();
+                  });
+                });
+            }
+          });
+        });
+      }),
+    newRandomGame: () =>
+      set(([s]) => {
+        console.log("Getting a new random game");
+        let game =
+          getRandomWithStatus(
+            s.games,
+            s.gameStatuses,
+            (s: MemorizedGameStatus) => s.needsReview
+          ) ??
+          getRandomWithStatus(
+            s.games,
+            s.gameStatuses,
+            (s: MemorizedGameStatus) => !s.needsReview && !s.everReviewed
+          );
+        // let gamesNeededToReview = s.games.filter();
+        // let game = sample(s.games);
+        s.setActiveGame(game);
+      }),
+    giveUpOnMove: () =>
+      set(([s]) => {
+        console.log("s", s);
+        s.movesMissed += 1;
+        s.makeNextMove(true);
+      }),
+    _makeNextMove: (animate: boolean, onAnimationEnd: () => void) =>
+      set(([s]) => {
+        let move = first(s.nextMoves);
+        if (!move) {
+          return;
+        }
+        s.moveNumber += 1;
+        console.log("Move is ", move);
+        s.nextMoves = drop(s.nextMoves, 1);
+        console.log("next moves", logProxy(s.nextMoves));
+        let moveObj = s.chessboardState.position.validateMoves([move])?.[0];
+        console.log("Move obj", moveObj);
+        if (animate) {
+          s.chessboardState.animatePieceMove(
+            moveObj,
+            PlaybackSpeed.Normal,
+            (completed) => {
+              if (completed) {
+                onAnimationEnd();
+              }
+            }
+          );
+        } else {
+          s.chessboardState.position.move(moveObj);
+          onAnimationEnd();
+        }
+      }),
+
+    setActiveGame: (game: LichessGame) =>
+      set(([s]) => {
+        s.activeGame = game;
+        s.missedCurrentMove = false;
+        s.moveNumber = 0;
+        s.progressMessage = null;
+        s.chessboardState.position = new Chess();
+        s.movesMissed = 0;
+        if (s.activeGame) {
+          s.nextMoves = s.activeGame.moves;
+          if (s.activeGame.result === -1) {
+            s.chessboardState.flipped = true;
+            s._makeNextMove(false, () => {});
+          } else {
+            s.chessboardState.flipped = false;
+          }
+        }
+      }),
+    fetchGames: () =>
+      set(([s]) => {
+        (async () => {
+          let { data: resp }: { data: MyGamesResponse } = await client.get(
+            "/api/v1/my_games"
+          );
+          // @ts-ignore
+          set(([s]) => {
+            s.games = sortBy(shuffle(resp.games), (g) => {
+              if (resp.gameStatuses[g.id].needsReview) {
+                return -100;
+              }
+              if (resp.gameStatuses[g.id].everReviewed) {
+                return -10;
+              }
+              return -1;
+            });
+            s.gameStatuses = resp.gameStatuses;
+          });
+        })();
+      }),
+  } as GameMemorizationState;
+
+  const setChess = <T,>(fn: (s: ChessboardState) => T): T => {
+    return _set((s) => fn(s.gameMemorizationState.chessboardState));
+  };
+  const getChess = <T,>(fn: (s: ChessboardState) => T): T => {
+    return _get((s) => fn(s.gameMemorizationState.chessboardState));
+  };
+  initialState.chessboardState = createChessState(setChess, getChess);
+  initialState.chessboardState.delegate = {
+    shouldMakeMove: (move: Move) =>
+      set(([state]) => {
+        if (move.san == state.nextMoves[0]) {
+          state.makeNextMove(false);
+          state.chessboardState.flashRing(true);
+        } else {
+          state.chessboardState.flashRing(false);
+          if (!state.missedCurrentMove) {
+            state.movesMissed += 1;
+          }
+          state.missedCurrentMove = true;
+        }
+        return false;
+      }),
+  };
+  return initialState;
+};

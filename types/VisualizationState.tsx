@@ -5,45 +5,15 @@ import { LichessPuzzle } from "app/models";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { PuzzleTraining } from "app/utils/state";
 import {
+  ChessboardDelegate,
   ChessboardState,
-  ChessboardStateParent,
 } from "app/utils/chessboard_state";
+import { PuzzleState, PuzzleStateDelegate } from "app/utils/puzzle_state";
 
-export interface ColorTrainingState
-  extends ChessboardState,
-    ChessboardStateParent<ColorTrainingState> {
-  isPlaying: boolean;
-  startTime: number;
-  score: number;
-  lastRoundScore: number;
-  widthAnim: Animated.Value;
-  highScore: StorageItem<number>;
-  roundDuration: number;
-  remainingTime: number;
-  penalties: number;
-  currentSquare: Square;
-  calculateRemainingTime: (state?: ColorTrainingState) => void;
-  stopRound: (state?: ColorTrainingState) => void;
-  startPlaying: (state?: ColorTrainingState) => void;
-  flashRing: (success: boolean, state?: ColorTrainingState) => void;
-  guessColor: (color: "light" | "dark", state?: ColorTrainingState) => void;
-  clearHighlights: (state?: ColorTrainingState) => void;
-  highlightNewSquare: (state?: ColorTrainingState) => void;
-}
+export interface VisualizationState {
+  puzzleState: PuzzleState;
+  chessboardState: ChessboardState;
 
-export interface PuzzleState {
-  puzzlePosition: any;
-  turn: Color;
-  solutionMoves: Move[];
-  puzzle: LichessPuzzle;
-  progressMessage?: ProgressMessage;
-}
-
-export interface VisualizationState
-  extends ChessboardState,
-    ChessboardStateParent<VisualizationState>,
-    PuzzleState,
-    PuzzleTraining<VisualizationState> {
   progressMessage: ProgressMessage;
   mockPassFail: boolean;
   helpOpen: boolean;
@@ -64,51 +34,39 @@ export interface VisualizationState
   focusedMove: Move;
   canFocusNextMove: boolean;
   canFocusLastMove: boolean;
-  onSuccess?: (state?: VisualizationState) => void;
-  onFail?: (state?: VisualizationState) => void;
   showNotation: StorageItem<boolean>;
-  chessState: ChessboardState;
-  getFetchOptions: (state?: VisualizationState) => any;
+  getFetchOptions: () => any;
   getPly: () => number;
-  resetState: (state?: VisualizationState) => void;
-  refreshPuzzle: (state?: VisualizationState) => void;
-  startLoopingPlayFlash: (state?: VisualizationState) => void;
-  stopLoopingPlayFlash: (state?: VisualizationState) => void;
-  flashRing: (success?: boolean, state?: VisualizationState) => void;
+  resetState: () => void;
+  refreshPuzzle: () => void;
+  startLoopingPlayFlash: () => void;
+  stopLoopingPlayFlash: () => void;
   quick: (fn: any) => void;
-  setupForPuzzle: (state?: VisualizationState) => void;
+  setupForPuzzle: () => void;
   finishedAutoPlaying: boolean;
-  onAutoPlayEnd?: (state?: VisualizationState) => void;
-  toggleNotation: (state?: VisualizationState) => void;
-  visualizeHiddenMoves: (
-    callback?: (state?: VisualizationState) => void,
-    state?: VisualizationState
-  ) => void;
-  setPlaybackSpeed: (
-    playbackSpeed: PlaybackSpeed,
-    state?: VisualizationState
-  ) => void;
-  updatePly: (increment: number, state?: VisualizationState) => void;
-}
+  toggleNotation: () => void;
+  visualizeHiddenMoves: (callback?: () => void) => void;
+  setPlaybackSpeed: (playbackSpeed: PlaybackSpeed) => void;
+  updatePly: (increment: number) => void;
 
-export interface ClimbState extends VisualizationState {
-  isPlayingClimb: boolean;
-  delta: number;
-  climb: Step[];
-  score: StorageItem<number>;
-  highScore: StorageItem<number>;
-  step: Step;
-  puzzleStartTime: number;
-  lastPuzzleSuccess: boolean;
-  currentPuzzleFailed: boolean;
-  startPlayingClimb: () => void;
-  onFail: () => void;
-  onSuccess: () => void;
-  animatePointChange: (state?: VisualizationState) => void;
-  onAutoPlayEnd: (state?: VisualizationState) => void;
-  initState: () => void;
-  updateStep: (state?: VisualizationState) => void;
-  scoreOpacityAnim: Animated.Value;
+  // Climb stuff
+  isPlayingClimb?: boolean;
+  delta?: number;
+  climb?: Step[];
+  score?: StorageItem<number>;
+  highScore?: StorageItem<number>;
+  step?: Step;
+  puzzleStartTime?: number;
+  lastPuzzleSuccess?: boolean;
+  currentPuzzleFailed?: boolean;
+  startPlayingClimb?: () => void;
+  onFail?: () => void;
+  onSuccess?: () => void;
+  animatePointChange?: () => void;
+  onAutoPlayEnd?: () => void;
+  initState?: () => void;
+  updateStep?: () => void;
+  scoreOpacityAnim?: Animated.Value;
 }
 
 interface Step {

@@ -17,21 +17,6 @@ import { cloneDeep, isEmpty, isNil, takeRight, chunk } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-import {
-  BlindfoldTrainingStage,
-  BlindfoldTrainingState,
-  BlunderRecognitionDifficulty,
-  GamesSearchState,
-  BlunderRecognitionTab,
-  FinishedBlunderPuzzle,
-  GameSearchResult,
-  getBlunderRange,
-  useBlindfoldTrainingStore,
-  useBlunderRecognitionStore,
-  useGamesSearchState,
-  MIN_ELO,
-  MAX_ELO,
-} from "../utils/state";
 import { chunked, intersperse } from "../utils/intersperse";
 import { Chess, Piece, SQUARES } from "@lubert/chess.ts";
 import { NewPuzzleButton } from "app/NewPuzzleButton";
@@ -56,6 +41,13 @@ import { LichessGameCell } from "./LichessGameCell";
 import { formatGameResult } from "app/utils/formatGameResult";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 import { CMText } from "./CMText";
+import { useGameSearchState } from "app/utils/app_state";
+import {
+  GameSearchResult,
+  GameSearchState,
+  MAX_ELO,
+  MIN_ELO,
+} from "app/utils/game_search_state";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -69,7 +61,7 @@ const MAX_BLUNDERS = 10;
 
 export const GamesSearch = () => {
   const isMobile = useIsMobile();
-  const state = useGamesSearchState();
+  const state = useGameSearchState((s) => s);
   const hasBetaAccess = useHasBetaAccess();
   console.log("state whiteRating", state.whiteRating);
   // const pieces = state.chessState.position
@@ -305,15 +297,15 @@ export const GamesSearch = () => {
                 c.fullWidth
               )}
             >
-              <ChessboardView state={state} />
-              {state.position.history().length > 0 && (
+              <ChessboardView state={state.chessboardState} />
+              {state.chessboardState.position.history().length > 0 && (
                 <>
                   <Spacer height={12} />
                   <Button
                     style={s(c.buttons.basic)}
                     onPress={() => {
                       state.quick((s) => {
-                        s.position.undo();
+                        s.chessboardState.position.undo();
                       });
                     }}
                   >
@@ -372,7 +364,7 @@ export const GamesSearch = () => {
                   // blackBlunders: state.blackBlunders,
                   numberMoves: state.numberMoves,
                   result: state.gameResult,
-                  opening: state.position.history(),
+                  opening: state.chessboardState.position.history(),
                 });
                 // @ts-ignore
                 state.quick((s) => {
@@ -417,7 +409,7 @@ const ExampleGame = ({
   // whiteBlunders: [number, number];
   // blackBlunders: [number, number];
   gameResult: GameSearchResult;
-  state: GamesSearchState;
+  state: GameSearchState;
 }) => {
   return (
     <View style={s()}>
@@ -430,9 +422,9 @@ const ExampleGame = ({
             // s.whiteBlunders = whiteBlunders;
             // s.blackBlunders = blackBlunders;
             s.gameResult = gameResult;
-            s.position = new Chess();
+            s.chessboardState.position = new Chess();
             moves.map((move) => {
-              s.position.move(move);
+              s.chessboardState.position.move(move);
             });
           });
         }}

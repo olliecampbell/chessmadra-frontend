@@ -8,16 +8,15 @@ import { cloneDeep, isEmpty, isNil, takeRight } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-import { useColorTrainingStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
+import { useColorTrainingState } from "app/utils/app_state";
 
 const Tile = ({ color, onPress }) => {
   return (
     <Pressable {...{ onPress }} style={s(c.bg(color), c.size(72))}></Pressable>
   );
 };
-const testPlayingUI = false;
 export const Score = ({ score, text }) => {
   return (
     <View style={s(c.column, c.alignCenter)}>
@@ -36,7 +35,8 @@ export const Score = ({ score, text }) => {
 
 export const ColorTraining = () => {
   const isMobile = useIsMobile();
-  const state = useColorTrainingStore();
+  const state = useColorTrainingState((s) => s);
+  console.log("Color training state!", s)
   useEffect(() => {
     if (state.isPlaying) {
       document.onkeydown = function (e) {
@@ -60,7 +60,7 @@ export const ColorTraining = () => {
         chessboard={
           <ChessboardView
             {...{
-              state: state,
+              state: state.chessboardState,
             }}
           />
         }

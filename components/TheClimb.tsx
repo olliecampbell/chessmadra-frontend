@@ -23,34 +23,11 @@ import { useVisualizationTraining } from "app/utils/useVisualizationTraining";
 import { useClimbStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
-
-const Tile = ({ color, onPress }) => {
-  return (
-    <Pressable {...{ onPress }} style={s(c.bg(color), c.size(72))}></Pressable>
-  );
-};
-const testPlayingUI = false;
-const ClimbScore = ({ score, highScore, text }) => {
-  return (
-    <View style={s(c.column, c.alignCenter)}>
-      <CMText
-        style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}
-      >
-        {text}
-      </CMText>
-      <Spacer height={4} />
-      <CMText style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
-        {score.value}
-      </CMText>
-    </View>
-  );
-};
-
-// tweak params
+import { useClimbState } from "app/utils/app_state";
 
 export const TheClimb = () => {
   const isMobile = useIsMobile();
-  const state = useClimbStore();
+  const state = useClimbState((s) => s);
   useEffect(() => {
     state.initState();
   }, []);

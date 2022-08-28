@@ -31,7 +31,6 @@ import { intersperse } from "app/utils/intersperse";
 import {
   BrowserDrilldownState,
   RepertoireState,
-  useRepertoireState,
 } from "app/utils/repertoire_state";
 import {
   RepertoireGrade,
@@ -72,33 +71,23 @@ import { failOnAny, failOnTrue } from "app/utils/test_settings";
 import { chunked } from "app/utils/intersperse";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
+import { useRepertoireState } from "app/utils/app_state";
 
 export const RepertoireBrowsingView = ({}: {}) => {
-  const [
-    activeSide,
-    isBrowsing,
-    drilldownState,
-    selectBrowserSection,
-    quick,
-    previousDrilldownStates,
-    readOnly,
-  ] = useRepertoireState(
-    (s) => [
-      s.activeSide,
-      s.isBrowsing,
-      s.browsingState.drilldownState,
-      s.browsingState.selectBrowserSection,
-      s.quick,
-      s.browsingState.previousDrilldownStates,
-      s.browsingState.readOnly,
-    ],
-    shallow
-  );
+  const [activeSide, isBrowsing, drilldownState, quick, readOnly] =
+    useRepertoireState(
+      (s) => [
+        s.activeSide,
+        s.isBrowsing,
+        s.browsingState.drilldownState,
+        s.quick,
+        s.browsingState.readOnly,
+      ],
+      shallow
+    );
   console.log({ drilldownState });
   console.log("Re-rendering browsing view");
   const isMobile = useIsMobile();
-  const chunkSize = isMobile ? 1 : 3;
-  const padding = 24;
   if (!isBrowsing) {
     return null;
   }
@@ -125,7 +114,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
                   onPress={() => {
                     quick((s) => {
                       if (side !== s.activeSide) {
-                        s.startBrowsing(side, s);
+                        s.startBrowsing(side);
                       }
                     });
                   }}
@@ -159,7 +148,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
         <Spacer height={isMobile ? 24 : 44} />
         <BreadCrumbView />
         <View style={s(c.row, c.fullWidth)}>
-        <ChessboardFilter/>
+          <ChessboardFilter />
           <VariationsAndLines />
         </View>
       </View>
@@ -168,12 +157,12 @@ export const RepertoireBrowsingView = ({}: {}) => {
 };
 
 export const ChessboardFilter = () => {
-    return (
+  return (
     <View style={s(c.column)}>
-<ChessboardView/>
+      <ChessboardView />
     </View>
-    )
-  }
+  );
+};
 
 export const VariationsAndLines = () => {
   const [

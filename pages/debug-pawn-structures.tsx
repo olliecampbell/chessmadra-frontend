@@ -6,7 +6,6 @@ import { Spacer } from "app/Space";
 import { s, c } from "app/styles";
 import { intersperse } from "app/utils/intersperse";
 import { useIsMobile } from "app/utils/isMobile";
-import { useRepertoireState } from "app/utils/repertoire_state";
 import { useEffect, useState } from "react";
 import { CMText } from "app/components/CMText";
 import { filter, findIndex, some } from "lodash";
@@ -25,10 +24,11 @@ import { onEnter } from "app/utils/onEnter";
 import { SelectOneOf } from "app/components/SelectOneOf";
 import { Chess } from "@lubert/chess.ts";
 import { BeatLoader } from "react-spinners";
+import { useRepertoireState } from "app/utils/app_state";
 
 export default function Page() {
   const isMobile = useIsMobile();
-  const state = useRepertoireState();
+  const state = useRepertoireState((s) => s);
   useEffect(() => {
     state.fetchDebugGames();
   }, []);
@@ -44,7 +44,7 @@ export default function Page() {
         <View style={s(c.containerStyles(isMobile), c.row)}>
           <View style={s(c.column)}>
             <View style={s(c.width(500))}>
-              <ChessboardView state={state} />
+              <ChessboardView state={state.chessboardState} />
             </View>
 
             {true && (
@@ -57,11 +57,10 @@ export default function Page() {
                       state.quick((s) => {
                         if (gamesMode) {
                           s.selectDebugGame(
-                            Math.max(s.debugPawnStructuresState.i - 1, 0),
-                            s
+                            Math.max(s.debugPawnStructuresState.i - 1, 0)
                           );
                         } else {
-                          s.backOne(s);
+                          s.backOne();
                         }
                       });
                     }}
@@ -80,10 +79,7 @@ export default function Page() {
                     onPress={() => {
                       state.quick((s) => {
                         if (gamesMode) {
-                          s.selectDebugGame(
-                            s.debugPawnStructuresState.i + 1,
-                            s
-                          );
+                          s.selectDebugGame(s.debugPawnStructuresState.i + 1);
                         } else {
                           // s.backOne(s);
                         }
@@ -110,7 +106,7 @@ export default function Page() {
                             }
                           );
                           console.log("Index? ", i);
-                          s.selectDebugGame(i, s);
+                          s.selectDebugGame(i);
                         });
                       }}
                     >
@@ -134,15 +130,15 @@ export default function Page() {
               // cellStyles={s(c.bg(c.grays[15]))}
               horizontal={true}
               activeChoice={state.debugPawnStructuresState?.mode}
-              onSelect={function(c): void {
+              onSelect={function (c): void {
                 state.quick((s) => {
                   s.debugPawnStructuresState.mode = c;
                   if (c === "manual") {
-                    s.backToStartPosition(s);
+                    s.backToStartPosition();
                     s.debugPawnStructuresState.pawnStructures = null;
-                    s.fetchDebugPawnStructureForPosition(s);
+                    s.fetchDebugPawnStructureForPosition();
                   } else {
-                    s.selectDebugGame(s.debugPawnStructuresState.i, s);
+                    s.selectDebugGame(s.debugPawnStructuresState.i);
                   }
                 });
               }}
@@ -221,8 +217,9 @@ const PawnStructureDebug = ({
           )}
         >
           <i
-            className={`fa ${ps.passed ? "fa-circle-check" : "fa-circle-xmark"
-              }`}
+            className={`fa ${
+              ps.passed ? "fa-circle-check" : "fa-circle-xmark"
+            }`}
           />
         </CMText>
         <Spacer width={12} />

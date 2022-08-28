@@ -17,16 +17,6 @@ import { cloneDeep, isEmpty, isNil, takeRight, chunk } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-import {
-  BlindfoldTrainingStage,
-  BlindfoldTrainingState,
-  BlunderRecognitionDifficulty,
-  BlunderRecognitionTab,
-  FinishedBlunderPuzzle,
-  getBlunderRange,
-  useBlindfoldTrainingStore,
-  useBlunderRecognitionStore,
-} from "../utils/state";
 import { intersperse } from "../utils/intersperse";
 import { Chess, Piece, SQUARES } from "@lubert/chess.ts";
 import { NewPuzzleButton } from "app/NewPuzzleButton";
@@ -43,6 +33,11 @@ import {
 } from "app/types/VisualizationState";
 import { PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
+import { useBlindfoldState } from "app/utils/app_state";
+import {
+  BlindfoldTrainingStage,
+  BlindfoldTrainingState,
+} from "app/utils/blindfold_state";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -55,7 +50,7 @@ const COLORS = ["w", "b"];
 
 export const BlindfoldTrainer = () => {
   const isMobile = useIsMobile();
-  const state = useBlindfoldTrainingStore();
+  const state = useBlindfoldState((s) => s);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (
@@ -73,7 +68,6 @@ export const BlindfoldTrainer = () => {
   useEffect(() => {
     state.refreshPuzzle();
   }, []);
-  console.log(state.puzzlePosition);
   return (
     <PageContainer>
       <TrainerLayout
@@ -83,7 +77,7 @@ export const BlindfoldTrainer = () => {
           ) : (
             <ChessboardView
               {...{
-                state: state,
+                state: state.chessboardState,
               }}
             />
           )
@@ -92,7 +86,9 @@ export const BlindfoldTrainer = () => {
         {!state.isDone && (
           <CMText style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
             <CMText style={s(c.fg(c.grays[90]), c.weightBold)}>
-              {state.position.turn() === "b" ? "Black" : "White"}
+              {state.chessboardState.position.turn() === "b"
+                ? "Black"
+                : "White"}
             </CMText>{" "}
             to play.
           </CMText>
@@ -137,7 +133,7 @@ export const BlindfoldTrainer = () => {
               (async () => {
                 if (Platform.OS == "web") {
                   window.open(
-                    `https://lichess.org/training/${state.puzzle.id}`,
+                    `https://lichess.org/training/${state.puzzleState.puzzle.id}`,
                     "_blank"
                   );
                 }
@@ -195,7 +191,7 @@ export const BlindfoldTrainer = () => {
                 step={1}
                 onFinish={() => {
                   state.quick((s) => {
-                    s.refreshPuzzle(s);
+                    s.refreshPuzzle();
                   });
                 }}
                 onChange={([lower, upper]) => {
@@ -223,7 +219,7 @@ export const BlindfoldTrainer = () => {
                 step={50}
                 onFinish={() => {
                   state.quick((s) => {
-                    s.refreshPuzzle(s);
+                    s.refreshPuzzle();
                   });
                 }}
                 onChange={([lower, upper]) => {
@@ -252,7 +248,7 @@ const BlindfoldPieceOverview = ({
     index,
     array
   ) {
-    let piece = state.position.get(square);
+    let piece = state.chessboardState.position.get(square);
     if (piece != undefined) {
       let existing = result[pieceToKey(piece)] || [];
       existing.push(square);
@@ -273,7 +269,7 @@ const BlindfoldPieceOverview = ({
         c.relative
       )}
     >
-      {state.puzzlePosition && (
+      {state.puzzleState.puzzlePosition && (
         <View style={s(c.absolute, c.fullWidth, c.fullHeight, c.top(0))}>
           {intersperse(
             COLORS.map((color) => {

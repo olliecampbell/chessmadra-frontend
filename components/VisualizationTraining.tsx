@@ -16,11 +16,11 @@ import {
 } from "app/components/chessboard/Chessboard";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { useVisualizationTraining } from "../utils/useVisualizationTraining";
-import { useVisualizationStore } from "../utils/state";
 import { PageContainer } from "./PageContainer";
+import { useVisualizationState } from "app/utils/app_state";
 
 export const VisualizationTraining = () => {
-  const state = useVisualizationStore();
+  const state = useVisualizationState((s) => s);
   const { chessboardProps, ui } = useVisualizationTraining({ state });
   useEffect(() => {
     state.refreshPuzzle();

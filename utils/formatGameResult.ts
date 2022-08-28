@@ -1,4 +1,4 @@
-import { GameSearchResult } from "./state";
+import { GameSearchResult } from "./game_search_state";
 
 export function formatGameResult(r: GameSearchResult) {
   switch (r) {

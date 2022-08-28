@@ -8,17 +8,15 @@ import { cloneDeep, isEmpty, isNil, takeRight, chunk } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-import {
-  BlunderRecognitionDifficulty,
-  BlunderRecognitionTab,
-  FinishedBlunderPuzzle,
-  getBlunderRange,
-  useBlunderRecognitionStore,
-} from "../utils/state";
 import { intersperse } from "../utils/intersperse";
 import { Chess } from "@lubert/chess.ts";
 import { PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
+import { useBlunderRecognitionState } from "app/utils/app_state";
+import {
+  BlunderRecognitionDifficulty,
+  getBlunderRange,
+} from "app/utils/blunders_state";
 
 export const Score = ({ score, text }) => {
   return (
@@ -38,7 +36,7 @@ export const Score = ({ score, text }) => {
 
 export const BlunderRecognition = () => {
   const isMobile = useIsMobile();
-  const state = useBlunderRecognitionStore();
+  const state = useBlunderRecognitionState((s) => s);
   useEffect(() => {
     state.prefetchPuzzles();
   }, []);
@@ -48,7 +46,7 @@ export const BlunderRecognition = () => {
         chessboard={
           <ChessboardView
             {...{
-              state,
+              state: state.chessboardState,
             }}
           />
         }
@@ -60,7 +58,9 @@ export const BlunderRecognition = () => {
                 <CMText
                   style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(16))}
                 >
-                  {state.position.turn() === "b" ? "Black" : "White"}
+                  {state.chessboardState.position.turn() === "b"
+                    ? "Black"
+                    : "White"}
                 </CMText>{" "}
                 is thinking of playing{" "}
                 <CMText
@@ -116,7 +116,7 @@ export const BlunderRecognition = () => {
                           onPress={() => {
                             state.quick((s) => {
                               s.difficulty.value = x;
-                              s.prefetchPuzzles(s);
+                              s.prefetchPuzzles();
                             });
                           }}
                           style={s(

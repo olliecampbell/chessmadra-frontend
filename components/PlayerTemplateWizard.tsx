@@ -96,31 +96,7 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                         >
                           {playerTemplate.meta.title}
                         </CMText>
-                        {/*
-                        <Spacer height={8} />
-                        <CMText
-                          style={s(
-                            c.fg(c.colors.textSecondary),
-                            c.weightRegular,
-                            c.fontSize(14)
-                          )}
-                        >
-                          {playerTemplate.meta.description}
-                        </CMText>
-                        */}
                       </View>
-                      {/*
-                      <Spacer width={12} />
-                      <i
-                        className="fa-light fa-angle-right"
-                        style={s(
-                          c.fontSize(42),
-                          c.fg(c.grays[50]),
-                          c.unshrinkable,
-                          c.selfCenter
-                        )}
-                      />
-                      */}
                     </View>
                     <Spacer height={12} />
                     <View style={s(c.row, c.flexWrap, c.gap(6))}>
