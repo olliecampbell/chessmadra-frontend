@@ -199,6 +199,7 @@ export interface RepertoireState {
     stage: AddedLineStage;
     positionReport: PositionReport;
   };
+  updateShareLink: () => void;
   //
   overviewState: {
     isShowingShareModal: boolean;
