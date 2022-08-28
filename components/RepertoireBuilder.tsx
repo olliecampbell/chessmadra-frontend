@@ -4,12 +4,7 @@ import { Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import {
-  isEmpty,
-  isNil,
-  capitalize,
-  take,
-} from "lodash";
+import { isEmpty, isNil, capitalize, take } from "lodash";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -28,9 +23,7 @@ const DEPTH_CUTOFF = 4;
 import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
-import {
-  createStaticChessState,
-} from "app/utils/chessboard_state";
+import { createStaticChessState } from "app/utils/chessboard_state";
 import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
 import { RepertoireEditingView } from "./RepertoireEditingView";
@@ -698,7 +691,11 @@ const RepertoireOverview = ({}: {}) => {
         {isMobile && (
           <>
             <Spacer height={72} />
+            <ShareRepertoireButton />
+            <Spacer height={12} />
             <ImportButton />
+            <Spacer height={12} />
+            <SettingsButton />
           </>
         )}
       </View>
