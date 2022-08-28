@@ -1,5 +1,5 @@
 import { some, map, last, isNil } from "lodash";
-import { BrowserDrilldownState } from "app/utils/repertoire_state";
+import { BrowserDrilldownState } from "app/utils/browsing_state";
 
 export const getAppropriateEcoName = (
   fullName: string,

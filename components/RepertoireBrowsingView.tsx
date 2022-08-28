@@ -9,7 +9,6 @@ import { isEmpty, capitalize, take, filter } from "lodash";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { BrowserDrilldownState } from "app/utils/repertoire_state";
 import { pgnToLine, Side } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { createStaticChessState } from "app/utils/chessboard_state";
@@ -244,12 +243,7 @@ export const VariationsAndLines = () => {
                   <Spacer width={12} />
                   <View style={s(c.column, c.py(12), c.flexible, c.grow)}>
                     <CMText style={s(c.fontSize(16), c.weightBold)}>
-                      {
-                        getAppropriateEcoName(
-                          x.eco_code?.fullName,
-                          previousDrilldownStates
-                        )[0]
-                      }
+                      {getAppropriateEcoName(x.eco_code?.fullName)[0]}
                     </CMText>
                     <Spacer height={2} />
                     <CMText
@@ -259,10 +253,9 @@ export const VariationsAndLines = () => {
                         c.fg(c.grays[70])
                       )}
                     >
-                      {getAppropriateEcoName(
-                        x.eco_code?.fullName,
-                        previousDrilldownStates
-                      )[1]?.join(", ")}
+                      {getAppropriateEcoName(x.eco_code?.fullName)[1]?.join(
+                        ", "
+                      )}
                     </CMText>
                     {/*
                       <Spacer height={12} />
