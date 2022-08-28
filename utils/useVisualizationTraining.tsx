@@ -1,18 +1,10 @@
 import React, { useEffect } from "react";
-import {
-  Pressable,
-  View,
-  Platform,
-} from "react-native";
+import { Pressable, View, Platform } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  getPlaybackSpeedDescription,
-} from "app/components/chessboard/Chessboard";
-import {
-  isNil,
-} from "lodash";
+import { getPlaybackSpeedDescription } from "app/components/chessboard/Chessboard";
+import { isNil } from "lodash";
 import { MoveList } from "app/components/MoveList";
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -120,12 +112,6 @@ export const useVisualizationTraining = ({
     c.fontSize(14)
   );
 
-  // useEffect(() => {
-  //   resetState()
-  // }, [])
-  // useEffect(() => {
-  //   state.refreshPuzzle();
-  // }, []);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (
@@ -138,12 +124,6 @@ export const useVisualizationTraining = ({
     ),
   });
 
-  // useEffect(() => {
-  //   if (autoPlay && puzzle && hiddenMoves) {
-  //     animateMoves()
-  //   }
-  // }, [puzzle, hiddenMoves])
-
   const nextPreviousStyles = s(c.size(60), c.center);
   const ratingTitleStyles = s(
     c.fg(c.colors.textPrimary),
@@ -153,24 +133,9 @@ export const useVisualizationTraining = ({
   const player = (
     <>
       <View style={s(c.row, c.alignStretch, c.fullWidth)}>
-        {/* <Button */}
-        {/*   style={s(nextPreviousStyles)} */}
-        {/*   onPress={() => { */}
-        {/*     focusLastMove() */}
-        {/*   }} */}
-        {/* > */}
-        {/*   <i */}
-        {/*     style={s( */}
-        {/*       c.fg(c.colors.textPrimary), */}
-        {/*       c.opacity(canFocusLastMove ? 90 : 50) */}
-        {/*     )} */}
-        {/*     className="fas fa-backward-step" */}
-        {/*   ></i> */}
-        {/* </Button> */}
         <Button
           style={s(
             c.grow,
-            // c.mx(20),
             c.buttons.primary,
             c.bg(
               state.playButtonFlashAnim.interpolate({
@@ -192,20 +157,6 @@ export const useVisualizationTraining = ({
             className={`fas ${state.isPlaying ? "fa-pause" : "fa-play"}`}
           ></i>
         </Button>
-        {/* <Button */}
-        {/*   style={s(nextPreviousStyles)} */}
-        {/*   onPress={() => { */}
-        {/*     focusNextMove() */}
-        {/*   }} */}
-        {/* > */}
-        {/*   <i */}
-        {/*     style={s( */}
-        {/*       c.fg(c.colors.textPrimary), */}
-        {/*       c.opacity(canFocusNextMove ? 90 : 50) */}
-        {/*     )} */}
-        {/*     className="fas fa-forward-step" */}
-        {/*   ></i> */}
-        {/* </Button> */}
       </View>
       <Spacer height={12} />
     </>
@@ -307,13 +258,7 @@ export const useVisualizationTraining = ({
             )}
             {!isNil(score) && (
               <>
-                <View
-                  style={s(
-                    c.width(1),
-                    c.bg(c.grays[30])
-                    // c.height(isMobile ? 36 : 48)
-                  )}
-                />
+                <View style={s(c.width(1), c.bg(c.grays[30]))} />
                 <View style={s(c.column, c.grow, c.alignStretch, c.noBasis)}>
                   <View
                     style={s(
@@ -366,12 +311,7 @@ export const useVisualizationTraining = ({
               <MoveList
                 focusedMoveIndex={state.focusedMoveIndex}
                 moveList={state.hiddenMoves}
-                onMoveClick={(move, i) => {
-                  // TODO: move click notation highlight thing
-                  // updateState((s) => {
-                  //   focusOnMove(s, i, () => {})
-                  // })
-                }}
+                onMoveClick={(move, i) => {}}
               />
             </>
           )}
@@ -494,22 +434,6 @@ export const useVisualizationTraining = ({
             ></i>
           </CMText>
         </Button>
-        {/* {isClimb && ( */}
-        {/*   <> */}
-        {/*     <Button */}
-        {/*       style={s(bottomRowButtonStyles)} */}
-        {/*       onPress={() => { */}
-        {/*         onResetClimb() */}
-        {/*         refreshPuzzle(state, updateState) */}
-        {/*       }} */}
-        {/*     > */}
-        {/*       <i */}
-        {/*         style={s(c.fg(c.colors.textInverse))} */}
-        {/*         className="fas fa-recycle" */}
-        {/*       ></i> */}
-        {/*     </Button> */}
-        {/*   </> */}
-        {/* )} */}
         {
           <>
             <Button
@@ -529,38 +453,15 @@ export const useVisualizationTraining = ({
       {debugButtons && (
         <>
           <Spacer height={12} />
-          <Button
-            style={c.buttons.basic}
-            onPress={() => {
-              // TODO
-              // biref.flashRing()
-            }}
-          >
+          <Button style={c.buttons.basic} onPress={() => {}}>
             Flash ring
           </Button>
           <Spacer height={12} />
-          <Button
-            style={c.buttons.basic}
-            onPress={() => {
-              // updateState((s) => {
-              //   debugger
-              //   // TODO
-              //   // currentPosition.move(s.hiddenMoves[0])
-              //   // s.hiddenMoves.shift()
-              // })
-            }}
-          >
+          <Button style={c.buttons.basic} onPress={() => {}}>
             Advance one move
           </Button>
           <Spacer height={12} />
-          <Button
-            style={c.buttons.basic}
-            onPress={() => {
-              // updateState((s) => {
-              //   s.chessState.showFuturePosition = true
-              // })
-            }}
-          >
+          <Button style={c.buttons.basic} onPress={() => {}}>
             Show future position
           </Button>
         </>
@@ -684,14 +585,6 @@ export const useVisualizationTraining = ({
   };
   return {
     ui,
-    // animateMoves: useCallback(
-    //   (cb) => {
-    //     animateMoves(state, cb)
-    //   },
-    //   [state]
-    // ),
     chessboardProps,
-    // refreshPuzzle
-    // updater: updateState
   };
 };

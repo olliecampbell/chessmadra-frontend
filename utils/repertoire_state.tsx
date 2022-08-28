@@ -45,10 +45,7 @@ import {
   sideOfLastmove,
   SIDES,
 } from "./repertoire";
-import {
-  ChessboardState,
-  createChessState,
-} from "./chessboard_state";
+import { ChessboardState, createChessState } from "./chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import _ from "lodash";
@@ -270,8 +267,6 @@ interface FetchRepertoireResponse {
 
 interface GetSharedRepertoireResponse {
   repertoire: Repertoire;
-  // grades: BySide<RepertoireGrade>;
-  // shareId: string;
 }
 
 const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
@@ -298,7 +293,6 @@ export const getInitialRepertoireState = (
     return _get((s) => fn([s.repertoireState, s]));
   };
   let initialState = {
-    // TODO: clone?
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
     ecoCodes: [],
@@ -442,8 +436,6 @@ export const getInitialRepertoireState = (
         includeInPreviousStates: boolean
       ) =>
         set(([s]) => {
-          // s.browsingState.line = browserSection.line;
-          // s.browsingState.epd = browserSection.epd;
           s.browsingState.updateDrilldownStateAndSections(
             browserSection.epd,
             browserSection.line
@@ -702,21 +694,6 @@ export const getInitialRepertoireState = (
           ) {
             s.differentMoveIndices.push(i);
             let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-            // let checker = () => {
-            //   console.log(
-            //     "Checking position and san",
-            //     position,
-            //     san,
-            //     mine
-            //   );
-            //   let chess = new Chess();
-            //   chess.load(position);
-            //   console.log(chess.ascii());
-            //   if (!chess.validateMoves([san])) {
-            //     console.warn("This was an invalid move!", i);
-            //   }
-            // };
-            // checker();
             s.pendingResponses[position] = [
               {
                 epd: position,
@@ -904,9 +881,7 @@ export const getInitialRepertoireState = (
         s.failedCurrentMove = false;
         s.chessboardState.flipped = s.currentMove.move.side === "black";
         s.chessboardState.position = new Chess();
-        // s.frozen = false;
         s.chessboardState.position.loadPgn(s.currentMove.line);
-        // s.position.undo();
         let lastOpponentMove = s.chessboardState.position.undo();
 
         if (lastOpponentMove) {
@@ -1009,19 +984,10 @@ export const getInitialRepertoireState = (
         let csvFile = new Blob([pgn], { type: "text" });
 
         let url = window.URL.createObjectURL(csvFile);
-        // file name
         downloadLink.download = `${side}.pgn`;
-
-        // create link to file
         downloadLink.href = url;
-
-        // hide download link
         downloadLink.style.display = "none";
-
-        // add link to DOM
         document.body.appendChild(downloadLink);
-
-        // click download link
         downloadLink.click();
       }, "exportPgn"),
 
@@ -1085,7 +1051,6 @@ export const getInitialRepertoireState = (
             true
           );
         }
-        // s.browsingState.previousDrilldownStates.push(s.browsingState.drilldownState);
       }, "startBrowsing"),
     startEditing: (side: Side) =>
       set(([s]) => {
@@ -1509,7 +1474,3 @@ function mapSides<T, Y>(bySide: BySide<T>, fn: (x: T) => Y): BySide<Y> {
 function getMoveNumber(id: string) {
   return Math.floor(id.split(" ").length / 2 + 1);
 }
-
-// function getAnySideResponse(r: Repertoire, epd: string): RepertoireMove[] {
-//   return r["black"].positionResponses[epd] ?? r["black"].positionResponses[epd];
-// }
