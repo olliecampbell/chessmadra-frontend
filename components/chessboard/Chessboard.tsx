@@ -1,8 +1,4 @@
-import React, {
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import {
   Animated,
   PanResponder,
@@ -27,9 +23,7 @@ import RookWhiteIcon from "app/components/chessboard/pieces/RookWhiteIcon";
 import { Chess, PieceSymbol, SQUARES } from "@lubert/chess.ts";
 import { Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "app/types/Chess";
-import {
-  PlaybackSpeed,
-} from "app/types/VisualizationState";
+import { PlaybackSpeed } from "app/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "app/utils/chessboard_state";
 import { useIsMobile } from "app/utils/isMobile";
@@ -249,6 +243,7 @@ export const ChessboardView = ({
         // what is happening!
         // gestureState.d{x,y} will be set to zero now
         onPanResponderMove: (evt, gesture) => {
+          console.log("On move?");
           let square = getSquareFromLayoutAndGesture(
             chessboardLayout.current,
             gesture
@@ -438,17 +433,13 @@ export const ChessboardView = ({
                 pieceView = (
                   <Animated.View
                     key={`piece-${square}`}
-                    style={s(
-                      containerViewStyles,
-                      c.keyedProp("touchAction")("none"),
-                      {
-                        transform: [
-                          { translateX: pans[square].x },
-                          { translateY: pans[square].y },
-                        ],
-                      }
-                    )}
-                    {...panResponders[square].panHandlers}
+                    pointerEvents="none"
+                    style={s(containerViewStyles, {
+                      transform: [
+                        { translateX: pans[square].x },
+                        { translateY: pans[square].y },
+                      ],
+                    })}
                   >
                     {pieceViewInner}
                   </Animated.View>
@@ -528,18 +519,10 @@ export const ChessboardView = ({
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
                     return (
-                      <Pressable
+                      <View
                         key={j}
-                        onPress={() => {}}
-                        onPressIn={() => {
-                          if (state.frozen) {
-                            // Don't know why this prevents bubbling up
-                            customOnSquarePress?.();
-                            return false;
-                          }
-                          state.onSquarePress(square);
-                        }}
                         style={s(
+                          c.keyedProp("touchAction")("none"),
                           tileStyles,
                           c.bg(color),
                           c.center,
@@ -552,6 +535,7 @@ export const ChessboardView = ({
                               !isRightEdge && c.borderRight(hiddenColorsBorder)
                             )
                         )}
+                        {...panResponders[square].panHandlers}
                       >
                         {state.isColorTraining && (
                           <Animated.View
@@ -600,7 +584,7 @@ export const ChessboardView = ({
                             {tileNumber}
                           </CMText>
                         )}
-                      </Pressable>
+                      </View>
                     );
                   })}
                 </View>

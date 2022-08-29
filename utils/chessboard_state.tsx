@@ -99,9 +99,8 @@ export const createChessState = <T extends ChessboardState>(
             if (skipAnimation) {
               console.log("Yup moving");
               s.position.move(availableMove);
-              s.delegate.madeMove(availableMove);
+              s.delegate.madeMove?.(availableMove);
             } else {
-              s.delegate.madeMove(availableMove);
               s.animatePieceMove(
                 availableMove,
                 PlaybackSpeed.Normal,
@@ -111,6 +110,7 @@ export const createChessState = <T extends ChessboardState>(
                   });
                 }
               );
+              s.delegate.madeMove?.(availableMove);
             }
           };
           if (s.delegate.shouldMakeMove(availableMove)) {

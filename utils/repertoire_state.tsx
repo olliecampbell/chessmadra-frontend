@@ -1260,7 +1260,9 @@ export const getInitialRepertoireState = (
         completedMoveAnimation: () => {},
         madeMove: () =>
           set(([s]) => {
-            s.chessboardState.flashRing(true);
+            if (s.isEditing) {
+              s.onMove();
+            }
             window.setTimeout(() => {
               set(([s]) => {
                 if (s.isReviewing) {
