@@ -134,7 +134,7 @@ export const getInitialBrowsingState = (
       set(([s]) => {
         while (true) {
           let lastState = s.previousDrilldownStates.pop();
-          if (lastState.ecoCode.code === browserState.ecoCode.code) {
+          if (lastState.ecoCode?.code === browserState.ecoCode?.code) {
             s.previousDrilldownStates.push(lastState);
             s.drilldownState = browserState;
             break;
