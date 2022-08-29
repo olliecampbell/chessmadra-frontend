@@ -28,7 +28,6 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import produce from "immer";
 
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
