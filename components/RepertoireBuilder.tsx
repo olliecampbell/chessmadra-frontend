@@ -47,7 +47,6 @@ export const RepertoireBuilder = () => {
     (s) => s,
     () => false
   );
-  console.log("Rendering repertoire builder");
   let { user, authStatus, token } = AppStore.useState((s) => s.auth);
   useEffect(() => {
     state.setUser(user);
@@ -704,16 +703,13 @@ const RepertoireOverview = ({}: {}) => {
 };
 
 const ReviewMovesView = ({ side }: { side?: Side }) => {
-  console.log("re-rendering review moves view!");
   let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
     (s) => {
-      console.log("In this hook?");
       return [s.getMyResponsesLength, s.getQueueLength(side), s.startReview];
     },
     shallow
   );
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
-  console.log({ hasNoMovesThisSide });
   if (hasNoMovesThisSide) {
     return null;
   }

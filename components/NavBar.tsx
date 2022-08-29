@@ -1,7 +1,4 @@
-import {
-  Pressable,
-  View,
-} from "react-native";
+import { Pressable, View } from "react-native";
 import React, { useRef, useState } from "react";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -15,6 +12,7 @@ import { useOutsideClick } from "./useOutsideClick";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
 import { CMText } from "./CMText";
 import { some } from "lodash";
+import { useRepertoireState } from "app/utils/app_state";
 
 export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
 export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
@@ -84,6 +82,7 @@ export const NavBar = (props: {}) => {
   const padding = 16;
   const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
+  const [backToOverview] = useRepertoireState((s) => [s.backToOverview]);
   useOutsideClick(mobileDrawerRef, (e) => {
     if (mobileNavOpen) {
       setMobileNavOpen(false);
@@ -104,16 +103,19 @@ export const NavBar = (props: {}) => {
           c.relative
         )}
       >
-        <Link href="/">
-          <a>
-            <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
-              <i
-                style={s(c.fg(c.colors.textSecondary))}
-                className="fas fa-house"
-              ></i>
-            </CMText>
-          </a>
-        </Link>
+        <Pressable
+          onPress={() => {
+            backToOverview();
+            router.push("/");
+          }}
+        >
+          <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
+            <i
+              style={s(c.fg(c.colors.textSecondary))}
+              className="fas fa-house"
+            ></i>
+          </CMText>
+        </Pressable>
         <Spacer width={12} />
         {intersperse(
           navItems

@@ -363,7 +363,7 @@ const buttons = {
 
 const fillNoExpand = s(minWidth("100%"), width(0));
 
-const noPointerEvents = keyedProp("pointer-events")("none");
+const noPointerEvents = keyedProp("pointerEvents")("none");
 const transform = keyedProp("transform");
 const containerStyles = (isMobile, customMaxWidth?: number) =>
   s(

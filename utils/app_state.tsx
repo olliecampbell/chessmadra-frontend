@@ -1,11 +1,8 @@
-
 import create from "zustand";
 import { devtools } from "zustand/middleware";
 
 import { immer } from "zustand/middleware/immer";
-import {
-  VisualizationState,
-} from "app/types/VisualizationState";
+import { VisualizationState } from "app/types/VisualizationState";
 import { OpDraft } from "./op_draft";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
 import shallow from "zustand/shallow";
@@ -31,6 +28,7 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
+import produce from "immer";
 
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
@@ -51,8 +49,7 @@ export const useAppState = create<AppState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((_set, _get): AppState => {
-      const set = <T,>(fn: (state: AppState) => T, identifier?: string) => {
-        console.log(`--- ${identifier} ---`);
+      const set = <T,>(fn: (state: AppState) => T) => {
         if (pendingState) {
           // debugger;
           // console.log("Using pending state!");
@@ -63,11 +60,8 @@ export const useAppState = create<AppState>()(
           let res = null;
           _set((state) => {
             pendingState = state;
-            // console.log("Setting pending state!", state);
-            // To force re-render when changing just a class or something
-            // @ts-ignore
-            res = fn(state);
-            // console.log("Done w/ function, unsetting pending state");
+            res = fn(state as AppState);
+            console.log("Unsetting pending state!");
             pendingState = null;
           });
           return res;
@@ -75,9 +69,7 @@ export const useAppState = create<AppState>()(
       };
       const get = <T,>(fn: (state: AppState) => T) => {
         if (pendingState) {
-          // @ts-ignore
-          // pendingState.bogus = Math.random();
-          return fn(pendingState);
+          return fn(pendingState as AppState);
         } else {
           let s = _get();
           return fn(s);

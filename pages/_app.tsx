@@ -38,7 +38,6 @@ Sentry.init({
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [isMounted, setIsMounted] = useState(false);
-  console.log("Using the app!");
   const router = useRouter();
   useEffect(() => {
     setIsMounted(true);
@@ -72,6 +71,7 @@ class ErrorBoundary extends React.Component<any, any> {
   }
 
   componentDidCatch(error, errorInfo) {
+    console.error("Caught error!", error, errorInfo);
     Sentry.withScope(function (scope) {
       Sentry.setExtra("error", error);
       Sentry.captureException(error);

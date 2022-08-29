@@ -771,7 +771,7 @@ const sortSuggestedMoves = (
   }
 ): SuggestedMove[] => {
   let positionWinRate = getWinRate(report.results, side);
-  let DEBUG_MOVE = "Nf6";
+  let DEBUG_MOVE = null;
   return reverse(
     sortBy(report.suggestedMoves, (m) => {
       let score = 0;

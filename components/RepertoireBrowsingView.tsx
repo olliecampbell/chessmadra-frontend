@@ -119,6 +119,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
                 renderChoice={(side, active) => {
                   return (
                     <Pressable
+                      key={side}
                       onPress={() => {
                         quick((s) => {
                           if (side !== s.activeSide) {

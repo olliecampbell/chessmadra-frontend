@@ -171,7 +171,6 @@ export const getInitialBrowsingState = (
             historyEcoFullNames.add(p.ecoCode.fullName);
           }
         });
-        console.log({ historyEcoFullNames });
         let recurse = (path: string, epd: string, moveNumber: number) => {
           responses[epd]?.forEach((m) => {
             let n = moveNumber / 2 + 1;
@@ -193,7 +192,6 @@ export const getInitialBrowsingState = (
               !historyEcoFullNames.has(ecoCode.fullName) &&
               (m.mine || (!m.mine && !nextEcoCode))
             ) {
-              console.log(`${ecoCode.fullName} is not included in set!`);
               sections.push({
                 epd: m.epdAfter,
                 eco_code: ecoCode,
@@ -248,7 +246,7 @@ export const getInitialBrowsingState = (
           sections,
           (s) => -s.numMoves.withTranspositions
         );
-      },),
+      }),
     selectBrowserSection: (
       browserSection: BrowserSection,
       includeInPreviousStates: boolean

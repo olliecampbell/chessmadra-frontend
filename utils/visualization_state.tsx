@@ -56,7 +56,6 @@ const generateClimb = () => {
 };
 
 const CLIMB = generateClimb();
-// console.log("CLIMB", CLIMB);
 const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
 
 export const getInitialVisualizationState = (
@@ -149,7 +148,6 @@ export const getInitialVisualizationState = (
     },
     refreshPuzzle: () =>
       set(async ([s]) => {
-        console.log("REFRESHING");
         let p = s.nextPuzzle;
         if (!p) {
           p = await fetchNewPuzzle(s.getFetchOptions());
@@ -203,8 +201,6 @@ export const getInitialVisualizationState = (
               boardForPuzzleMoves.history({ verbose: true }),
               puzzle.moves.length - 1
             );
-            console.log("Solution moves at first!");
-            console.log(logProxy(state.puzzleState.solutionMoves));
             // currentPosition.undo()
 
             state.hiddenMoves = hiddenMoves;
@@ -225,7 +221,6 @@ export const getInitialVisualizationState = (
         state.startLoopingPlayFlash();
         // @ts-ignore
         if (isClimb && state.isPlayingClimb) {
-          console.log("Should call auto play end thing");
           state.visualizeHiddenMoves(() => {
             set(([s]) => {
               if (s.onAutoPlayEnd && !s.finishedAutoPlaying) {
@@ -302,7 +297,6 @@ export const getInitialVisualizationState = (
     },
     onPuzzleSuccess: () => {
       set(([state]) => {
-        console.log("overall success");
         state.progressMessage = null;
         state.isDone = true;
         if (state.onSuccess) {
@@ -330,7 +324,6 @@ export const getInitialVisualizationState = (
       c.delegate = initialState.puzzleState;
     }
   );
-  console.log("Set puzzle state!", initialState.puzzleState);
   if (isClimb) {
     initialState = {
       ...initialState,
@@ -409,7 +402,6 @@ export const getInitialVisualizationState = (
           }),
         onAutoPlayEnd: () =>
           set(([s]) => {
-            console.log("Calling on auto play end!");
             s.puzzleStartTime = performance.now();
             s.currentPuzzleFailed = false;
           }),

@@ -394,7 +394,7 @@ export const getInitialRepertoireState = (
           s.hasCompletedRepertoireInitialization = true;
         });
       }, "addTemplates"),
-    initializeRepertoire: ({ state, lichessUsername, blackPgn, whitePgn }) =>
+    initializeRepertoire: ({ lichessUsername, blackPgn, whitePgn }) =>
       set(async ([s]) => {
         let lichessGames = [];
         let chessComGames = [];
@@ -644,7 +644,6 @@ export const getInitialRepertoireState = (
       }, "updateQueue"),
     updateRepertoireStructures: () =>
       set(([s]) => {
-        console.log("Updating structures!");
         s.myResponsesLookup = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
@@ -937,7 +936,6 @@ export const getInitialRepertoireState = (
       }),
     onRepertoireUpdate: () =>
       set(([s]) => {
-        console.log("Repertoire during update?", logProxy(s.repertoire));
         s.updateRepertoireStructures();
         s.updateQueue(false);
       }),
@@ -1003,9 +1001,7 @@ export const getInitialRepertoireState = (
           .then(({ data }: { data: any }) => {
             set(([s]) => {
               s.debugPawnStructuresState.byPosition[epd] = data;
-              console.log("Should?", s.getCurrentEpd(), epd);
               if (s.getCurrentEpd() === epd) {
-                console.log("Setting pawnStructures");
                 s.debugPawnStructuresState.loadingPosition = false;
                 s.debugPawnStructuresState.pawnStructures = sortBy(
                   data,
@@ -1069,7 +1065,6 @@ export const getInitialRepertoireState = (
             .then(({ data }: { data: GetSharedRepertoireResponse }) => {
               set(([s]) => {
                 s.repertoire = data.repertoire;
-                console.log(logProxy(s));
                 s.onRepertoireUpdate();
               });
             })
@@ -1080,8 +1075,6 @@ export const getInitialRepertoireState = (
             }),
         ]).then(() => {
           set(([s]) => {
-            console.log("Eco code lookup?");
-            console.log(logProxy(s.ecoCodeLookup));
             s.startBrowsing("white");
             s.browsingState.readOnly = true;
           });
@@ -1093,7 +1086,6 @@ export const getInitialRepertoireState = (
           .get("/api/v1/openings")
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s]) => {
-              console.log("Fetched repertoire!");
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.repertoireShareId = data.shareId;
@@ -1104,7 +1096,6 @@ export const getInitialRepertoireState = (
                   s.showImportView = true;
                 }
               }
-              console.log("Repertoire here?", logProxy(s.repertoire));
               s.onRepertoireUpdate();
             });
           });

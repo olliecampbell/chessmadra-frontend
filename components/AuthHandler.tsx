@@ -10,8 +10,6 @@ const AuthHandler = ({ children }) => {
     (s) => s.auth
   );
   // let subscribeAfterSignup = AppStore.useState((s) => s.subscribeAfterSignup);
-  console.log("token:", token);
-  console.log("authStatus:", authStatus);
   useEffect(() => {
     if (token) {
       Cookies.set(JWT_COOKIE_KEY, token, { expires: 5000 });
@@ -47,7 +45,6 @@ const AuthHandler = ({ children }) => {
       if (authStatus === AuthStatus.Initial) {
         fetchUser()
           .then((user: User) => {
-            console.log("user:", user);
             AppStore.update((s) => {
               s.auth.token = token;
               s.auth.user = user;

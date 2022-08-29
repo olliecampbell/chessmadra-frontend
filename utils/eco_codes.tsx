@@ -8,7 +8,6 @@ export const getAppropriateEcoName = (
   if (!fullName) {
     return null;
   }
-  console.log("Getting appropriate name for ", fullName);
   let name = fullName.split(":")[0];
   let isFirstTimeSeeing =
     isNil(browserStates) ||
