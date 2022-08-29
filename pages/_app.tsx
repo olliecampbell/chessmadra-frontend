@@ -15,9 +15,11 @@ Sentry.init({
     if (breadcrumb.category === "xhr") {
       let xhr = hint.xhr as XMLHttpRequest;
       const data = {
-        requestBody: hint.xhr.__sentry_xhr__.body,
-        response: hint.xhr.response,
-        responseUrl: hint.xhr.responseURL,
+        // @ts-ignore
+        requestBody: xhr.__sentry_xhr__.body,
+        responseCode: xhr.status,
+        response: xhr.response,
+        responseUrl: xhr.responseURL,
       };
       return { ...breadcrumb, data };
     }
@@ -69,7 +71,12 @@ class ErrorBoundary extends React.Component<any, any> {
     }
   }
 
-  componentDidCatch(error, errorInfo) {}
+  componentDidCatch(error, errorInfo) {
+    Sentry.withScope(function (scope) {
+      Sentry.setExtra("error", error);
+      Sentry.captureException(error);
+    });
+  }
 
   render() {
     if (this.state.hasError) {
