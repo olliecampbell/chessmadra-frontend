@@ -201,7 +201,7 @@ export const getInitialGameMemorizationState = (
               if (resp.gameStatuses[g.id].everReviewed) {
                 return -10;
               }
-              return -1;
+              return g.numberMoves;
             });
             s.gameStatuses = resp.gameStatuses;
           });

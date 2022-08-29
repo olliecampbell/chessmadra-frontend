@@ -99,15 +99,25 @@ export const LichessGameCell = ({
       )}
 
       <View style={s(c.row, c.justifyBetween, c.alignEnd, c.px(16))}>
-        <CMText style={s(c.weightBold, c.fontSize(18))}>
+        <CMText
+          style={s(c.weightBold, c.fontSize(18), c.fg(c.colors.textInverse))}
+        >
           {formatGameResult(game.result)}
         </CMText>
-        <CMText style={s(c.row, c.selfEnd, c.alignEnd)}>
-          <CMText style={s(c.weightBold, c.fontSize(18))}>
+        <CMText
+          style={s(c.row, c.selfEnd, c.alignEnd, c.fg(c.colors.textInverse))}
+        >
+          <CMText
+            style={s(c.weightBold, c.fontSize(18), c.fg(c.colors.textInverse))}
+          >
             {Math.ceil(game.numberMoves / 2)}
           </CMText>
           <Spacer width={4} />
-          <CMText style={s(c.fontSize(14), c.mb(0))}>moves</CMText>
+          <CMText
+            style={s(c.fontSize(14), c.mb(0), c.fg(c.colors.textInverse))}
+          >
+            moves
+          </CMText>
         </CMText>
       </View>
       {gameStatus?.everReviewed ? (
