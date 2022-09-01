@@ -28,6 +28,11 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
+import { every, isEqualWith, isObject, map, zip } from "lodash";
+import { Chess } from "@lubert/chess.ts";
+import { immerable } from "immer";
+
+Chess[immerable] = true;
 
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
@@ -44,12 +49,24 @@ export interface AppState {
 
 let pendingState: OpDraft<AppState> = null;
 
+function isRevokedProxy(value) {
+  try {
+    new Proxy(value, value);
+    return false;
+  } catch (err) {
+    return Object(value) === value;
+  }
+}
+
 export const useAppState = create<AppState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((_set, _get): AppState => {
       const set = <T,>(fn: (state: AppState) => T) => {
         if (pendingState) {
+          if (isRevokedProxy(pendingState)) {
+            console.log("Somehow this is revoked, the pending state we have?");
+          }
           // debugger;
           // console.log("Using pending state!");
           // @ts-ignore
@@ -59,8 +76,12 @@ export const useAppState = create<AppState>()(
           let res = null;
           _set((state) => {
             pendingState = state;
+            if (isRevokedProxy(state)) {
+              console.log(
+                "The state directly from zustand is a revoked proxy???"
+              );
+            }
             res = fn(state as AppState);
-            console.log("Unsetting pending state!");
             pendingState = null;
           });
           return res;
@@ -91,58 +112,69 @@ export const useAppState = create<AppState>()(
   )
 );
 
+const customEqualityCheck = (a, b) => {
+  if (a instanceof Chess && b instanceof Chess) {
+    return a.fen() === b.fen();
+  }
+  return undefined;
+};
+
+export function equality(a: any[], b: any[]): boolean {
+  return isEqualWith(a, b, customEqualityCheck);
+}
+
 export const useRepertoireState = <T,>(
   fn: (_: RepertoireState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.repertoireState), equality ?? shallow);
+  return useAppState((s) => fn(s.repertoireState), equality);
 };
 
 export const useVisualizationState = <T,>(
   fn: (_: VisualizationState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.visualizationState), equality ?? shallow);
+  return useAppState((s) => fn(s.visualizationState), equality);
 };
 
 export const useClimbState = <T,>(
   fn: (_: VisualizationState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.climbState), equality ?? shallow);
+  return useAppState((s) => fn(s.climbState), equality);
 };
 
 export const useBlunderRecognitionState = <T,>(
   fn: (_: BlunderRecognitionState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.blunderState), equality ?? shallow);
+  return useAppState((s) => fn(s.blunderState), equality);
 };
 
 export const useBlindfoldState = <T,>(
   fn: (_: BlindfoldTrainingState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.blindfoldState), equality ?? shallow);
+  return useAppState((s) => fn(s.blindfoldState), equality);
 };
 
 export const useColorTrainingState = <T,>(
   fn: (_: ColorTrainingState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.colorTrainingState), equality ?? shallow);
+  return useAppState((s) => fn(s.colorTrainingState), equality);
 };
 
 export const useGameMemorizationState = <T,>(
   fn: (_: GameMemorizationState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.gameMemorizationState), equality ?? shallow);
+  return useAppState((s) => fn(s.gameMemorizationState), equality);
 };
 
 export const useGameSearchState = <T,>(
   fn: (_: GameSearchState) => T,
   equality?: any
 ) => {
-  return useAppState((s) => fn(s.gameSearchState), equality ?? shallow);
+  return useAppState((s) => fn(s.gameSearchState), equality);
 };
