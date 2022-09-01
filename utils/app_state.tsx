@@ -76,13 +76,11 @@ export const useAppState = create<AppState>()(
           let res = null;
           _set((state) => {
             pendingState = state;
-            if (isRevokedProxy(state)) {
-              console.log(
-                "The state directly from zustand is a revoked proxy???"
-              );
+            try {
+              res = fn(state as AppState);
+            } finally {
+              pendingState = null;
             }
-            res = fn(state as AppState);
-            pendingState = null;
           });
           return res;
         }
