@@ -1,14 +1,10 @@
 import { Chess } from "@lubert/chess.ts";
-import {
-  PlaybackSpeed,
-} from "app/types/VisualizationState";
+import { PlaybackSpeed } from "app/types/VisualizationState";
 import { fetchNewBlunderPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import {
-  DEBUG_DONE_BLUNDER_VIEW,
-} from "./test_settings";
+import { DEBUG_DONE_BLUNDER_VIEW } from "./test_settings";
 import { StorageItem } from "app/utils/storageItem";
 import { Animated } from "react-native";
 import { BlunderPuzzle } from "app/models";
@@ -129,7 +125,7 @@ export const getInitialBlundersState = (
       : [],
     activeTab: BlunderRecognitionTab.Failed,
     ...createQuick(setOnly),
-    startPlaying: (state?: BlunderRecognitionState) =>
+    startPlaying: () =>
       set(([s]) => {
         s.donePlaying = false;
         s.isPlaying = true;
@@ -160,7 +156,6 @@ export const getInitialBlundersState = (
       }),
     setupNextRound: () => {
       set(([s]) => {
-        console.log("Calling this!");
         let showBlunder = Math.random() < 0.5;
         s.currentPuzzle = s.puzzles.shift();
         if (!s.currentPuzzle) {

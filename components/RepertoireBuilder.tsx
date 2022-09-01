@@ -32,6 +32,8 @@ import { useEloRangeWarning } from "./useEloRangeWarning";
 import shallow from "zustand/shallow";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { useRepertoireState } from "app/utils/app_state";
+import { RepertoireReview } from "./RepertoireReview";
+import { SideSettingsModal } from "./SideSettingsModal";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(
@@ -89,88 +91,7 @@ export const RepertoireBuilder = () => {
     } else if (state.isBrowsing) {
       inner = <RepertoireBrowsingView />;
     } else if (state.isReviewing) {
-      inner = (
-        <TrainerLayout
-          containerStyles={s(isMobile ? c.alignCenter : c.alignStart)}
-          chessboard={
-            (state.isEditing || state.isReviewing) && (
-              <ChessboardView
-                {...{
-                  state: state.chessboardState,
-                }}
-              />
-            )
-          }
-        >
-          {backToOverviewRow}
-          <Spacer height={12} />
-          <CMText
-            style={s(
-              c.fg(c.colors.textPrimary),
-              c.weightSemiBold,
-              c.fontSize(14)
-            )}
-          >
-            Play the correct response on the board
-          </CMText>
-          <Spacer height={12} />
-          <View style={s(c.row)}>
-            <Button
-              style={s(
-                c.buttons.squareBasicButtons,
-                c.buttons.basicInverse,
-                c.height("unset"),
-                c.selfStretch
-              )}
-              onPress={() => {
-                state.quick((s) => {
-                  let qm = s.currentMove;
-                  s.backToOverview();
-                  s.startEditing(qm.move.side);
-                  s.playPgn(qm.line);
-                });
-              }}
-            >
-              <CMText style={s(c.buttons.basicInverse.textStyles)}>
-                <i className="fa fa-search" />
-              </CMText>
-            </Button>
-            <Spacer width={8} />
-            <Button
-              style={s(
-                state.hasGivenUp ? c.buttons.primary : c.buttons.basicInverse,
-                c.grow
-              )}
-              onPress={() => {
-                if (state.hasGivenUp) {
-                  state.setupNextMove();
-                } else {
-                  state.giveUp();
-                }
-              }}
-            >
-              <CMText
-                style={s(
-                  state.hasGivenUp
-                    ? c.buttons.primary.textStyles
-                    : c.buttons.basicInverse.textStyles
-                )}
-              >
-                {!state.hasGivenUp && false && (
-                  <>
-                    <i
-                      className="fas fa-face-confused"
-                      style={s(c.fg(c.grays[50]), c.fontSize(18))}
-                    />
-                    <Spacer width={8} />
-                  </>
-                )}
-                {state.hasGivenUp ? "Next" : "I don't know"}
-              </CMText>
-            </Button>
-          </View>
-        </TrainerLayout>
-      );
+      inner = <RepertoireReview />;
     } else {
       // Overview
       inner = (
@@ -199,7 +120,14 @@ export const RepertoireBuilder = () => {
       );
     }
   }
-  return <PageContainer centered={centered}>{inner}</PageContainer>;
+  return (
+    <PageContainer
+      centered={centered}
+      {...{ hideIcons: state.isEditing, hideNavBar: state.isEditing }}
+    >
+      {inner}
+    </PageContainer>
+  );
 };
 
 export const SideSectionHeader = ({
@@ -291,6 +219,50 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
             )}
           >
             Edit
+          </CMText>
+        </>
+      )}
+    </Button>
+  );
+};
+
+export const SideSettingsButton = ({ side }: { side: Side }) => {
+  const isMobile = useIsMobile();
+  const [quick] = useRepertoireState((s) => [s.quick]);
+  return (
+    <Button
+      style={s(
+        c.buttons.basicSecondary,
+        // isMobile && c.bg(c.grays[70]),
+        isMobile ? c.selfCenter : c.selfStretch,
+        c.py(isMobile ? 12 : 16),
+        c.px(24)
+      )}
+      onPress={() => {
+        quick((s) => {
+          s.repertoireSettingsModalSide = side;
+        });
+      }}
+    >
+      <CMText
+        style={s(
+          c.buttons.basicSecondary.textStyles,
+          c.fontSize(isMobile ? 14 : 16)
+        )}
+      >
+        <i className="fas fa-wrench" />
+      </CMText>
+      {!isMobile && (
+        <>
+          <Spacer width={8} />
+          <CMText
+            style={s(
+              c.buttons.basicSecondary.textStyles,
+              c.fontSize(isMobile ? 16 : 18),
+              c.weightSemiBold
+            )}
+          >
+            More
           </CMText>
         </>
       )}
@@ -390,7 +362,7 @@ const RepertoireSideSummary = ({
             <Spacer width={12} grow />
             <EditButton {...{ state, side }} />
             <Spacer width={12} />
-            <BrowseButton {...{ side }} />
+            <SideSettingsButton {...{ side }} />
           </>
         )}
       </View>
@@ -540,9 +512,9 @@ const RepertoireSideSummary = ({
               {!isMobile && (
                 <>
                   <Spacer height={sectionSpacing(isMobile)} />
-                  <BrowseButton side={side} />
-                  <Spacer height={sectionSpacing(isMobile)} />
                   <EditButton side={side} state={state} />
+                  <Spacer height={sectionSpacing(isMobile)} />
+                  <SideSettingsButton side={side} />
                 </>
               )}
             </View>
@@ -856,6 +828,7 @@ const ShareRepertoireButton = () => {
   return (
     <>
       <ShareRepertoireModal />
+      <SideSettingsModal />
       <Button
         style={s(
           c.buttons.basicSecondary,

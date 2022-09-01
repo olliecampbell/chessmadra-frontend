@@ -80,7 +80,7 @@ a:active { text-decoration: none; }
             name="viewport"
           />
         </Head>
-        <body style={{ backgroundColor: c.grays[8], lineHeight: 1.5 }}>
+        <body style={{ backgroundColor: c.grays[7], lineHeight: 1.5 }}>
           <div className="" />
           <Main />
           <NextScript />

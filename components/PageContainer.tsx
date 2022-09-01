@@ -7,7 +7,12 @@ import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 import Head from "next/head";
 
-export const PageContainer = ({ children, centered, hideNavBar }: any) => {
+export const PageContainer = ({
+  children,
+  centered,
+  hideNavBar,
+  hideIcons,
+}: any) => {
   const isMobile = useIsMobile();
   const icons = [
     {
@@ -30,38 +35,42 @@ export const PageContainer = ({ children, centered, hideNavBar }: any) => {
           c.column,
           c.alignCenter,
           centered && c.justifyCenter,
-          !isMobile && c.mt(48)
+          !isMobile && !hideNavBar && c.mt(48)
         )}
       >
         {children}
       </View>
-      <Spacer height={32} />
-      <View
-        style={s(
-          c.fullWidth,
-          c.row,
-          c.minHeight(48),
-          c.py(32),
-          // c.bg(c.grays[40]),
-          c.center
-        )}
-      >
-        {intersperse(
-          icons.map((icon) => {
-            return (
-              <a href={icon.link} key={icon.link}>
-                <i
-                  style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
-                  className={`fas ${icon.icon}`}
-                ></i>
-              </a>
-            );
-          }),
-          (i) => {
-            return <Spacer key={i} width={24} />;
-          }
-        )}
-      </View>
+      {!hideIcons && (
+        <>
+          <Spacer height={32} />
+          <View
+            style={s(
+              c.fullWidth,
+              c.row,
+              c.minHeight(48),
+              c.py(32),
+              // c.bg(c.grays[40]),
+              c.center
+            )}
+          >
+            {intersperse(
+              icons.map((icon) => {
+                return (
+                  <a href={icon.link} key={icon.link}>
+                    <i
+                      style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
+                      className={`fas ${icon.icon}`}
+                    ></i>
+                  </a>
+                );
+              }),
+              (i) => {
+                return <Spacer key={i} width={24} />;
+              }
+            )}
+          </View>
+        </>
+      )}
     </View>
   );
 };

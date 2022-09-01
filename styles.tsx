@@ -330,6 +330,18 @@ const disabledButtonStyles = s(
     textStyles: s(weightBold, fontSize(16), fg("white")),
   }
 );
+const extraDarkButtonStyles = s(
+  br(2),
+  py(16),
+  px(16),
+  bg(grays[10]),
+  border(`1px solid ${grays[7]}`),
+  clickable,
+  center,
+  {
+    textStyles: s(weightBold, fontSize(16), fg(grays[70])),
+  }
+);
 const basicSecondaryButtonStyles = s(
   br(2),
   py(16),
@@ -352,6 +364,7 @@ const squareBottomRowButtonStyles = s(basicButtonStyles, size(48));
 const buttons = {
   basic: basicButtonStyles,
   basicSecondary: basicSecondaryButtonStyles,
+  extraDark: extraDarkButtonStyles,
   basicInverse: basicInverseButtonStyles,
   disabled: disabledButtonStyles,
   primary: primaryButtonStyles,

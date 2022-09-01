@@ -16,6 +16,7 @@ import {
   filter,
   times,
   findIndex,
+  map,
 } from "lodash";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -33,6 +34,7 @@ import {
   getTotalGames,
   formatPlayPercentage,
   getWinRate,
+  getPlayRate,
 } from "app/utils/results_distribution";
 import useKeypress from "react-use-keypress";
 import { SelectOneOf } from "./SelectOneOf";
@@ -40,7 +42,13 @@ import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { Modal } from "./Modal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { useRepertoireState } from "app/utils/app_state";
-import React from "react";
+import React, { useState } from "react";
+import { plural, pluralize } from "app/utils/pluralize";
+import { RepertoirePageLayout } from "./RepertoirePageLayout";
+import { LichessLogoIcon } from "./icons/LichessLogoIcon";
+import { RepertoireMovesTable, TableResponse } from "./RepertoireMovesTable";
+import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
+import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 
 type BackControlsProps = {
   state: RepertoireState;
@@ -61,69 +69,53 @@ export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
     );
   const isMobile = useIsMobile();
   let gap = isMobile ? 6 : 12;
+  let foreground = c.grays[90];
+  let textColor = c.fg(foreground);
   return (
     <View style={s(c.row, c.height(isMobile ? 32 : 42))}>
       <Button
-        style={s(c.buttons.basicSecondary, c.width(64))}
+        style={s(c.buttons.extraDark, c.width(48))}
         onPress={() => {
           state.backToStartPosition();
         }}
       >
         <i
           className="fas fa-angles-left"
-          style={s(c.buttons.basicSecondary.textStyles, c.fontSize(18))}
+          style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
       <Spacer width={gap} />
       <Button
-        style={s(c.buttons.basicSecondary, c.grow)}
+        style={s(c.buttons.extraDark, c.grow)}
         onPress={() => {
           state.backOne();
         }}
       >
         <i
           className="fas fa-angle-left"
-          style={s(c.buttons.basicSecondary.textStyles, c.fontSize(18))}
+          style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
       <Spacer width={gap} />
       <Button
-        style={s(c.buttons.basicSecondary)}
+        style={s(c.buttons.extraDark)}
         onPress={() => {
           analyzeLineOnLichess(currentLine);
         }}
       >
+        <View style={s(c.size(22))}>
+          <LichessLogoIcon color={foreground} />
+        </View>
+        <Spacer width={8} />
         <CMText
           style={s(
-            c.buttons.basicSecondary.textStyles,
-            c.fg(c.colors.textPrimary)
+            c.buttons.extraDark.textStyles,
+            textColor,
+            c.weightRegular,
+            c.fontSize(14)
           )}
         >
-          <i
-            style={s(c.fontSize(14), c.fg(c.grays[60]))}
-            className="fas fa-search"
-          ></i>
-        </CMText>
-      </Button>
-      <Spacer width={gap} />
-      <Button
-        style={s(c.buttons.basicSecondary)}
-        onPress={() => {
-          quick((s) => {
-            s.editingState.etcModalOpen = true;
-          });
-        }}
-      >
-        <CMText
-          style={s(
-            c.buttons.basicSecondary.textStyles,
-            c.fg(c.colors.textPrimary)
-          )}
-        >
-          <i
-            style={s(c.fontSize(14), c.fg(c.grays[60]))}
-            className="fas fa-gear"
-          ></i>
+          Analyze on Lichess
         </CMText>
       </Button>
     </View>
@@ -265,12 +257,6 @@ export const MoveLog = () => {
             }
           )}
         </View>
-        {!isMobile && hasPendingLineToAdd && (
-          <>
-            <Spacer height={12} />
-            <AddPendingLineButton />
-          </>
-        )}
       </View>
     </View>
   );
@@ -285,10 +271,8 @@ let desktopHeaderStyles = s(
 
 export const RepertoireEditingView = ({
   state,
-  backToOverviewRow,
 }: {
   state: RepertoireState;
-  backToOverviewRow: any;
 }) => {
   const isMobile = useIsMobile();
   let side = state.activeSide;
@@ -303,47 +287,35 @@ export const RepertoireEditingView = ({
   return (
     <>
       <DeleteMoveConfirmationModal />
+      <ConfirmMoveConflictModal />
       <AddedLineModal />
-      <EditEtcModal />
-      <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
-        <View style={s(c.column, c.alignStart, c.constrainWidth)}>
-          {backToOverviewRow}
-          <Spacer height={isMobile ? 12 : 24} />
-          <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
-            {!isMobile && (
-              <>
-                <MoveLog />
-                <Spacer width={48} />
-              </>
-            )}
-            <View style={s(c.column, c.constrainWidth)}>
-              <View style={s(c.width(400), c.maxWidth("100%"))}>
-                <ChessboardView state={state.chessboardState} />
-              </View>
-              <Spacer height={12} />
-              <BackControls state={state} />
-              <Spacer height={12} />
-              {isMobile && state.hasPendingLineToAdd ? (
-                <>
-                  <AddPendingLineButton />
-                  <Spacer height={12} />
-                </>
-              ) : (
+      <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
+        <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
+          <View style={s(c.column, c.alignStart, c.constrainWidth)}>
+            <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
+              <View style={s(c.column, c.constrainWidth)}>
+                <View style={s(c.width(400), c.maxWidth("100%"))}>
+                  <ChessboardView state={state.chessboardState} />
+                </View>
                 <Spacer height={12} />
+                <BackControls state={state} />
+                <Spacer height={12} />
+                {isMobile && <EditingTabPicker />}
+              </View>
+              {!isMobile && (
+                <>
+                  <Spacer width={48} />
+                  <View style={s(c.column)}>
+                    <PositionOverview />
+                    <Spacer height={48} />
+                    <Responses />
+                  </View>
+                </>
               )}
-              {isMobile && <EditingTabPicker />}
-              {!isMobile && <PositionOverview />}
             </View>
-            {!isMobile && (
-              <>
-                <Spacer width={48} />
-                <Responses />
-              </>
-            )}
           </View>
         </View>
-      </View>
-      <Spacer height={12} />
+      </RepertoirePageLayout>
     </>
   );
 };
@@ -377,6 +349,7 @@ const Responses = React.memo(function Responses() {
   });
   let side: Side = position.turn() === "b" ? "black" : "white";
   let ownSide = side === activeSide;
+  console.warn({ positionReport });
   let suggestedMoves = positionReport
     ? sortSuggestedMoves(
         positionReport,
@@ -386,361 +359,131 @@ const Responses = React.memo(function Responses() {
         side === activeSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
       )
     : [];
-  existingMoves = sortBy(existingMoves, (m) => {
-    return findIndex(suggestedMoves, (s) => s.sanPlus === m.sanPlus);
-  });
-  const isMobile = false;
-  let otherMoves = take(
-    filter(suggestedMoves, (m) => {
-      return !coveredSans.has(m.sanPlus);
-    }),
-    5
+  console.log({ suggestedMoves });
+  // existingMoves = sortBy(existingMoves, (m) => {
+  //   return findIndex(suggestedMoves, (s) => s.sanPlus === m.sanPlus);
+  // });
+  let tableResponses: TableResponse[] = map(
+    suggestedMoves,
+    (sm: SuggestedMove) => {
+      let existingMove = find(existingMoves, (rm) => rm.sanPlus === sm.sanPlus);
+      return {
+        repertoireMove: existingMove,
+        suggestedMove: sm,
+      };
+    }
   );
+  let myMoves = filter(tableResponses, (tr) => {
+    return !isNil(tr.repertoireMove) && activeSide === side;
+  });
+  let otherMoves = filter(tableResponses, (tr) => {
+    return isNil(tr.repertoireMove) && activeSide === side;
+  });
+  let prepareFor = filter(
+    sortBy(tableResponses, (tr) => {
+      return isNil(tr.repertoireMove);
+    }),
+    (tr) => {
+      return activeSide !== side;
+    }
+  );
+  const isMobile = false;
+  const [showOtherMoves, setShowOtherMoves] = useState(false);
   return (
-    <View style={s(c.column, c.width(400), c.constrainWidth)}>
-      {!isEmpty(existingMoves) && (
+    <View style={s(c.column, c.width(500), c.constrainWidth)}>
+      {!isEmpty(myMoves) && (
+        <RepertoireMovesTable
+          {...{
+            header: `Your ${plural(myMoves.length, "move")}`,
+            activeSide,
+            side,
+            responses: myMoves,
+            setShouldShowOtherMoves: (show: boolean) => {
+              setShowOtherMoves(true);
+            },
+            showOtherMoves: showOtherMoves,
+            myMoves: true,
+          }}
+        />
+      )}
+      {!isEmpty(otherMoves) && showOtherMoves && (
         <>
-          <CMText style={s(desktopHeaderStyles)}>
-            {ownSide ? "Your move" : "Covered moves"}
-          </CMText>
-          {intersperse(
-            existingMoves.map((x, i) => {
-              let sm = find(suggestedMoves, (m) => m.sanPlus === x.sanPlus);
-              return (
-                <Response
-                  key={x.sanPlus}
-                  repertoireMove={x}
-                  suggestedMove={sm}
-                />
-              );
-            }),
-            (i) => {
-              return <Spacer height={12} key={i} />;
-            }
-          )}
-
-          <Spacer height={24} />
+          <Spacer height={12} />
+          <RepertoireMovesTable
+            {...{
+              header: "Other moves",
+              activeSide,
+              side,
+              responses: otherMoves,
+              myMoves: false,
+            }}
+          />
         </>
       )}
-      {!isMobile && (
-        <CMText style={s(desktopHeaderStyles)}>
-          {ownSide
-            ? !isEmpty(existingMoves)
-              ? "Other moves"
-              : "You can play"
-            : !isEmpty(existingMoves)
-            ? "Other moves"
-            : "Prepare for..."}
-        </CMText>
+      {!isEmpty(otherMoves) && isEmpty(myMoves) && (
+        <RepertoireMovesTable
+          {...{
+            header: "You can play...",
+            activeSide,
+            side,
+            responses: otherMoves,
+            myMoves: false,
+          }}
+        />
       )}
-      {(() => {
-        if (!positionReport) {
-          return (
-            <View style={s(c.center, c.column, c.py(48))}>
-              <BeatLoader color={c.grays[100]} size={14} />
-            </View>
-          );
-        } else if (isEmpty(suggestedMoves)) {
-          return (
-            <>
-              <View
-                style={s(
-                  c.row,
-                  c.alignCenter,
-                  c.selfCenter,
-                  c.px(12),
-                  c.maxWidth(240),
-                  c.py(48)
-                )}
-              >
-                <CMText>
-                  <i
-                    className="fa-light fa-empty-set"
-                    style={s(c.fg(c.grays[50]), c.fontSize(24))}
-                  />
-                </CMText>
-                <Spacer width={18} />
-                <CMText style={s(c.fg(c.grays[75]))}>
-                  No moves available for this position. You can still add a move
-                  by playing it on the board.
-                </CMText>
+      {!isEmpty(prepareFor) && (
+        <RepertoireMovesTable
+          {...{
+            header: "Prepare for...",
+            activeSide,
+            side,
+            responses: prepareFor,
+            myMoves: false,
+          }}
+        />
+      )}
+      {!ownSide &&
+        (() => {
+          if (!positionReport) {
+            return (
+              <View style={s(c.center, c.column, c.py(48))}>
+                <BeatLoader color={c.grays[100]} size={14} />
               </View>
-            </>
-          );
-        } else {
-          return (
-            <>
-              {intersperse(
-                otherMoves.map((m, i) => {
-                  if (coveredSans.has(m.sanPlus)) {
-                    return null;
-                  }
-                  return <Response key={m.sanPlus} suggestedMove={m} />;
-                }),
-                (i) => {
-                  return <Spacer height={12} key={i} />;
-                }
-              )}
-            </>
-          );
-        }
-      })()}
+            );
+          } else if (isEmpty(prepareFor)) {
+            return (
+              <>
+                <View
+                  style={s(
+                    c.row,
+                    c.alignCenter,
+                    c.selfCenter,
+                    c.px(12),
+                    c.maxWidth(240),
+                    c.py(48)
+                  )}
+                >
+                  <CMText>
+                    <i
+                      className="fa-light fa-empty-set"
+                      style={s(c.fg(c.grays[50]), c.fontSize(24))}
+                    />
+                  </CMText>
+                  <Spacer width={18} />
+                  <CMText style={s(c.fg(c.grays[75]))}>
+                    No moves available for this position. You can still add a
+                    move by playing it on the board.
+                  </CMText>
+                </View>
+              </>
+            );
+          } else {
+            return <></>;
+          }
+        })()}
     </View>
   );
 });
-
-const Response = ({
-  suggestedMove,
-  repertoireMove,
-}: {
-  suggestedMove?: SuggestedMove;
-  repertoireMove?: RepertoireMove;
-}) => {
-  const [playSan, currentLine, positionReport, side, quick] =
-    useRepertoireState(
-      (s) => [
-        s.playSan,
-        s.currentLine,
-        s.getCurrentPositionReport(),
-        s.activeSide,
-        s.quick,
-      ],
-      shallow
-    );
-  const isMobile = useIsMobile();
-  let tags = [];
-  if (suggestedMove) {
-    let tags = [];
-  }
-  let moveNumber = Math.floor(currentLine.length / 2) + 1;
-  let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
-  let mine = repertoireMove?.mine;
-
-  return (
-    <Pressable
-      onPress={() => {
-        playSan(sanPlus);
-      }}
-    >
-      <View
-        style={s(
-          c.br(2),
-          c.py(8),
-          c.pl(14),
-          c.pr(8),
-          c.bg(c.grays[12]),
-          c.border(`1px solid ${c.grays[20]}`),
-          c.clickable,
-          c.row
-        )}
-      >
-        <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.justifyBetween, c.fullWidth)}>
-            <View style={s(c.row, c.alignCenter)}>
-              <CMText
-                style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(16))}
-              >
-                {moveNumber}
-                {side === "black" ? "... " : "."}
-              </CMText>
-              <Spacer width={2} />
-              <CMText
-                key={sanPlus}
-                style={s(
-                  c.fg(c.grays[90]),
-                  c.fontSize(18),
-                  c.weightSemiBold,
-                  c.keyedProp("letterSpacing")("0.04rem")
-                )}
-              >
-                {sanPlus}
-              </CMText>
-            </View>
-            <View style={s(c.row, c.alignCenter)}>
-              {suggestedMove?.stockfish && (
-                <>
-                  <Spacer width={0} grow />
-                  <View style={s(c.row, c.alignEnd)}>
-                    <CMText
-                      style={s(
-                        c.weightSemiBold,
-                        c.fontSize(14),
-                        c.fg(c.grays[75])
-                      )}
-                    >
-                      {formatStockfishEval(suggestedMove?.stockfish)}
-                    </CMText>
-                  </View>
-                </>
-              )}
-              {repertoireMove?.mine && (
-                <>
-                  <Spacer width={12} />
-                  <Pressable
-                    style={s()}
-                    onPress={() => {
-                      quick((s) => {
-                        s.editingState.deleteConfirmationModalOpen = true;
-                        s.editingState.deleteConfirmationResponse =
-                          repertoireMove;
-                      });
-                    }}
-                  >
-                    <CMText style={s(c.clickable)}>
-                      <i
-                        style={s(c.fg(c.colors.failureColor), c.fontSize(18))}
-                        className={`fa-regular fa-trash`}
-                      ></i>
-                    </CMText>
-                  </Pressable>
-                </>
-              )}
-            </View>
-          </View>
-          {suggestedMove && positionReport && (
-            <>
-              <Spacer height={12} />
-              <View style={s(isMobile ? c.column : c.row, c.selfStretch)}>
-                <ResponseStatSection
-                  {...{
-                    masters: false,
-                    positionReport,
-                    side,
-                    m: suggestedMove,
-                  }}
-                />
-                <Spacer width={12} height={12} isMobile={isMobile} />
-                <ResponseStatSection
-                  {...{
-                    masters: true,
-                    positionReport,
-                    side,
-                    m: suggestedMove,
-                  }}
-                />
-              </View>
-            </>
-          )}
-        </View>
-      </View>
-    </Pressable>
-  );
-};
-
-const EditEtcModal = () => {
-  let [open, activeSide, exportPgn, deleteRepertoire, quick] =
-    useRepertoireState(
-      (s) => [
-        s.editingState.etcModalOpen,
-        s.activeSide,
-        s.exportPgn,
-        s.deleteRepertoire,
-        s.quick,
-      ],
-      shallow
-    );
-  const isMobile = useIsMobile();
-  return (
-    <Modal
-      onClose={() => {
-        quick((s) => {
-          s.editingState.etcModalOpen = false;
-        });
-      }}
-      visible={open}
-    >
-      <View style={s(c.maxWidth(500))}>
-        <View
-          style={s(
-            c.column,
-            c.alignStretch,
-            c.px(isMobile ? 12 : 24),
-            c.py(isMobile ? 12 : 24)
-          )}
-        >
-          <View style={s(c.row, c.alignStart)}>
-            <i
-              style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
-              className="fas fa-arrow-down-to-line"
-            ></i>
-            <Spacer width={16} />
-            <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
-              <CMText
-                style={s(
-                  c.fg(c.colors.textPrimary),
-                  c.fontSize(18),
-                  c.flexShrink(0)
-                )}
-              >
-                Export
-              </CMText>
-              <Spacer height={4} />
-              <CMText style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
-                Export your {activeSide} repertoire to a PGN file. You can
-                import this file into a Lichess study, ChessBase, Chessable
-                course, etc.
-              </CMText>
-              <Spacer height={12} />
-              <Button
-                style={s(c.buttons.primary, c.height(36), c.selfEnd)}
-                onPress={() => {
-                  exportPgn(activeSide);
-                }}
-              >
-                <CMText style={s(c.buttons.primary.textStyles)}>Export</CMText>
-              </Button>
-            </View>
-          </View>
-        </View>
-        <View
-          style={s(
-            c.column,
-            c.px(isMobile ? 12 : 24),
-            c.py(isMobile ? 12 : 24)
-          )}
-        >
-          <View style={s(c.row, c.alignStart)}>
-            <i
-              style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
-              className="fa-regular fa-trash"
-            ></i>
-            <Spacer width={16} />
-            <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
-              <CMText
-                style={s(
-                  c.fg(c.colors.textPrimary),
-                  c.fontSize(18),
-                  c.flexShrink(0)
-                )}
-              >
-                Delete
-              </CMText>
-              <Spacer height={4} />
-              <CMText style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
-                Delete your entire {activeSide} repertoire. This cannot be
-                undone.
-              </CMText>
-              <Spacer height={12} />
-              <Button
-                style={s(
-                  c.buttons.primary,
-                  c.bg(c.failureShades[50]),
-                  c.height(36),
-                  c.selfEnd
-                )}
-                onPress={() => {
-                  deleteRepertoire(activeSide);
-                }}
-              >
-                <CMText style={s(c.buttons.primary.textStyles)}>Delete</CMText>
-              </Button>
-            </View>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-};
 
 const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   if (!isNil(stockfish.eval) && stockfish.eval >= 0 && side === "white") {
@@ -867,15 +610,6 @@ let PLAYRATE_WEIGHTS = {
   masterPlayrate: 0.0,
 };
 
-const getPlayRate = (
-  m: SuggestedMove,
-  report: PositionReport,
-  masters?: boolean
-): number => {
-  let k = masters ? "masterResults" : "results";
-  return getTotalGames(m[k]) / getTotalGames(report[k]);
-};
-
 const ResponseStatSection = ({
   positionReport,
   side,
@@ -932,41 +666,6 @@ const ResponseStatSection = ({
   );
 };
 
-const AddPendingLineButton = () => {
-  const [isAddingPendingLine, addPendingLine] = useRepertoireState((s) => [
-    s.isAddingPendingLine,
-    s.addPendingLine,
-  ]);
-  return (
-    <Button
-      style={s(
-        c.buttons.primary,
-        c.height(36),
-        c.selfStretch,
-        c.bg(c.purples[45])
-      )}
-      isLoading={isAddingPendingLine}
-      loaderProps={{ color: c.grays[75] }}
-      onPress={() => {
-        addPendingLine();
-      }}
-    >
-      <CMText style={s(c.buttons.primary.textStyles)}>
-        <i
-          className="fas fa-check"
-          style={s(c.fg(c.grays[90]), c.fontSize(14))}
-        />
-        <Spacer width={8} />
-        <CMText
-          style={s(c.weightBold, c.fg(c.colors.textPrimary), c.fontSize(14))}
-        >
-          Save to repertoire
-        </CMText>
-      </CMText>
-    </Button>
-  );
-};
-
 const EditingTabPicker = () => {
   const [selectedTab, quick] = useRepertoireState(
     (s) => [s.editingState.selectedTab, s.quick],
@@ -977,11 +676,7 @@ const EditingTabPicker = () => {
       <SelectOneOf
         tabStyle
         containerStyles={s(c.fullWidth, c.justifyBetween)}
-        choices={[
-          EditingTab.Position,
-          EditingTab.Responses,
-          EditingTab.MoveLog,
-        ]}
+        choices={[EditingTab.Position, EditingTab.Responses]}
         activeChoice={selectedTab}
         horizontal
         onSelect={(tab) => {}}
@@ -1017,15 +712,10 @@ const EditingTabPicker = () => {
           );
         }}
       />
-      <Spacer height={12} />
+      <Spacer height={24} />
 
       {selectedTab === EditingTab.Position && <PositionOverview />}
       {selectedTab === EditingTab.Responses && <Responses />}
-      {selectedTab === EditingTab.MoveLog && (
-        <View style={s(c.column, c.alignCenter)}>
-          <MoveLog />
-        </View>
-      )}
     </View>
   );
 };
@@ -1134,39 +824,5 @@ const PositionOverview = () => {
         </>
       )}
     </>
-  );
-};
-
-const MoveOverrideWarning = () => {
-  const [numMovesWouldBeDeleted] = useRepertoireState(
-    (s) => [s.numMovesWouldBeDeleted],
-    shallow
-  );
-  if (isNil(numMovesWouldBeDeleted) || numMovesWouldBeDeleted === 0) {
-    return null;
-  }
-  return (
-    <View
-      style={s(
-        c.mx(6),
-        c.py(4),
-        c.br(2),
-        c.px(6),
-        c.bg(c.yellows[90]),
-        c.row,
-        c.justifyStart,
-        c.alignCenter
-      )}
-    >
-      <i
-        className="fa-regular fa-triangle-exclamation"
-        style={s(c.fontSize(20), c.fg(c.yellows[50]))}
-      ></i>
-      <Spacer width={8} />
-      <CMText style={s(c.fg(c.colors.textInverse), c.fontSize(12))}>
-        Adding this line will replace <b>{numMovesWouldBeDeleted}</b> responses
-        in your repertoire
-      </CMText>
-    </View>
   );
 };
