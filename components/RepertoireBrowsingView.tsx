@@ -18,6 +18,9 @@ import { SelectOneOf } from "./SelectOneOf";
 import { AppState, useRepertoireState } from "app/utils/app_state";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { RepertoirePageLayout } from "./RepertoirePageLayout";
+import { BrowsingTab } from "app/utils/browsing_state";
+import { BackControls } from "./BackControls";
 
 export const RepertoireBrowsingView = ({}: {}) => {
   const [
@@ -28,6 +31,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
     readOnly,
     failedToFetch,
     backToOverview,
+    chessboardState,
   ] = useRepertoireState(
     (s) => [
       s.activeSide,
@@ -37,6 +41,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
       s.browsingState.readOnly,
       s.failedToFetchSharedRepertoire,
       s.backToOverview,
+      s.browsingState.chessboardState,
     ],
     shallow
   );
@@ -48,125 +53,105 @@ export const RepertoireBrowsingView = ({}: {}) => {
     return null;
   }
   return (
-    <View
-      style={s(
-        c.containerStyles(isMobile),
-        c.alignCenter,
-        failedToFetch && s(c.grow, c.justifyCenter)
-      )}
-    >
-      <View style={s(c.column, c.alignStart, c.fullWidth)}>
-        {failedToFetch ? (
-          <View style={s(c.center, c.selfCenter, c.px(12), c.py(12), c.row)}>
-            <CMText style={s(c.fontSize(36), c.fg(c.grays[90]))}>
-              <i className="fa-light fa-face-confused" />
-            </CMText>
-            <Spacer width={18} />
-            <View style={s(c.column, c.maxWidth(400))}>
+    <RepertoirePageLayout>
+      <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
+        <View style={s(c.column, c.alignStart, c.constrainWidth)}>
+          <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
+            <View style={s(c.column, c.constrainWidth)}>
               <CMText
                 style={s(
-                  c.weightSemiBold,
-                  c.fontSize(18),
-                  c.fg(c.colors.textPrimary)
+                  c.fg(c.colors.textPrimary),
+                  c.fontSize(20),
+                  c.weightBold
                 )}
               >
-                Can't find this repertoire
+                Filters
               </CMText>
-              <Spacer height={8} />
-              <CMText style={s(c.fg(c.colors.textSecondary))}>
-                Looks like this link has been revoked, if you want to see this
-                user's repertoire you'll need to get another link from them. In
-                the meantime, you can{" "}
-                <Pressable
-                  onPress={() => {
-                    backToOverview();
-                    router.push("/");
-                  }}
-                >
-                  <CMText
-                    style={s(
-                      c.fg(c.colors.textPrimary),
-                      c.weightSemiBold,
-                      c.borderBottom(`1px solid ${c.grays[70]}`)
-                    )}
-                  >
-                    work on your own repertoire.
-                  </CMText>
-                </Pressable>
-              </CMText>
+              <Spacer height={12} />
+              <View style={s(c.width(300), c.maxWidth("100%"))}>
+                <ChessboardView state={chessboardState} />
+              </View>
+              <Spacer height={12} />
+              <BackControls />
+              <Spacer height={12} />
+              {isMobile && <BrowsingTabPicker />}
             </View>
-          </View>
-        ) : (
-          <>
-            {readOnly && false && (
+            {!isMobile && (
               <>
-                <ReadOnlyWarning />
-                <Spacer height={24} />
+                <Spacer width={48} />
+                <View style={s(c.column)}>
+                  <BrowsingResults />
+                </View>
               </>
             )}
-            <View style={s(c.row, c.fullWidth, c.center)}>
-              <SelectOneOf
-                tabStyle
-                containerStyles={s(
-                  c.fullWidth,
-                  c.justifyBetween,
-                  c.maxWidth(400)
-                )}
-                choices={["white", "black"] as Side[]}
-                activeChoice={activeSide}
-                horizontal
-                onSelect={(side) => {}}
-                renderChoice={(side, active) => {
-                  return (
-                    <Pressable
-                      key={side}
-                      onPress={() => {
-                        quick((s) => {
-                          if (side !== s.activeSide) {
-                            s.startBrowsing(side);
-                          }
-                        });
-                      }}
-                      style={s(
-                        c.column,
-                        c.grow,
-                        c.alignCenter,
-                        c.borderBottom(
-                          `2px solid ${active ? c.grays[90] : c.grays[20]}`
-                        ),
-                        c.zIndex(5),
-                        c.pb(8)
-                      )}
-                    >
-                      <CMText
-                        style={s(
-                          c.fg(
-                            active
-                              ? c.colors.textPrimary
-                              : c.colors.textSecondary
-                          ),
-                          c.fontSize(isMobile ? 20 : 24),
-                          c.weightBold
-                        )}
-                      >
-                        {capitalize(side)}
-                      </CMText>
-                    </Pressable>
-                  );
-                }}
-              />
-            </View>
-            <Spacer height={isMobile ? 24 : 44} />
-            <BreadCrumbView />
-            <View style={s(c.row, c.fullWidth)}>
-              <ChessboardFilter />
-              <VariationsAndLines />
-            </View>
-          </>
-        )}
+          </View>
+        </View>
       </View>
+    </RepertoirePageLayout>
+  );
+};
+
+const BrowsingTabPicker = () => {
+  const [selectedTab, quick] = useRepertoireState(
+    (s) => [s.browsingState.selectedTab, s.quick],
+    shallow
+  );
+  return (
+    <View style={s(c.column)}>
+      <SelectOneOf
+        tabStyle
+        containerStyles={s(c.fullWidth, c.justifyBetween)}
+        choices={[
+          BrowsingTab.Lines,
+          BrowsingTab.Misses,
+          BrowsingTab.InstructiveGames,
+        ]}
+        activeChoice={selectedTab}
+        horizontal
+        onSelect={(tab) => {}}
+        renderChoice={(tab, active) => {
+          return (
+            <Pressable
+              onPress={() => {
+                quick((s) => {
+                  s.browsingState.selectedTab = tab;
+                });
+              }}
+              style={s(
+                c.column,
+                c.grow,
+                c.alignCenter,
+                c.borderBottom(
+                  `2px solid ${active ? c.grays[90] : c.grays[20]}`
+                ),
+                c.zIndex(5),
+                c.pb(8)
+              )}
+            >
+              <CMText
+                style={s(
+                  c.fg(active ? c.colors.textPrimary : c.colors.textSecondary),
+                  c.fontSize(16),
+                  c.weightBold
+                )}
+              >
+                {tab}
+              </CMText>
+            </Pressable>
+          );
+        }}
+      />
+      <Spacer height={24} />
+
+      {selectedTab === BrowsingTab.Lines && <View />}
+      {selectedTab === BrowsingTab.Misses && <View />}
+      {selectedTab === BrowsingTab.InstructiveGames && <View />}
     </View>
   );
+};
+
+export const BrowsingResults = () => {
+  return <View style={s()}></View>;
 };
 
 export const ChessboardFilter = () => {
@@ -453,6 +438,55 @@ const ReadOnlyWarning = () => {
           Make your own
         </CMText>
       </Button>
+    </View>
+  );
+};
+
+const RevokedLinkWarning = () => {
+  const router = useRouter();
+  const [backToOverview] = useRepertoireState(
+    (s) => [s.backToOverview],
+    shallow
+  );
+  return (
+    <View style={s(c.center, c.selfCenter, c.px(12), c.py(12), c.row)}>
+      <CMText style={s(c.fontSize(36), c.fg(c.grays[90]))}>
+        <i className="fa-light fa-face-confused" />
+      </CMText>
+      <Spacer width={18} />
+      <View style={s(c.column, c.maxWidth(400))}>
+        <CMText
+          style={s(
+            c.weightSemiBold,
+            c.fontSize(18),
+            c.fg(c.colors.textPrimary)
+          )}
+        >
+          Can't find this repertoire
+        </CMText>
+        <Spacer height={8} />
+        <CMText style={s(c.fg(c.colors.textSecondary))}>
+          Looks like this link has been revoked, if you want to see this user's
+          repertoire you'll need to get another link from them. In the meantime,
+          you can{" "}
+          <Pressable
+            onPress={() => {
+              backToOverview();
+              router.push("/");
+            }}
+          >
+            <CMText
+              style={s(
+                c.fg(c.colors.textPrimary),
+                c.weightSemiBold,
+                c.borderBottom(`1px solid ${c.grays[70]}`)
+              )}
+            >
+              work on your own repertoire.
+            </CMText>
+          </Pressable>
+        </CMText>
+      </View>
     </View>
   );
 };

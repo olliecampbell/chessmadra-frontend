@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -16,6 +13,7 @@ import { DragAndDropInput } from "./DragAndDropInput";
 import { RepertoireTemplateWizard } from "./RepertoireTemplateWizard";
 import { PlayerTemplateWizard } from "./PlayerTemplateWizard";
 import { CMText } from "./CMText";
+import { useRepertoireState } from "app/utils/app_state";
 
 const MOBILE_CUTOFF = 800;
 
@@ -40,8 +38,9 @@ enum OpeningSource {
 //   }
 // }
 
-export const RepertoireWizard = ({ state }: { state: RepertoireState }) => {
+export const RepertoireWizard = () => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
+  const state = useRepertoireState((s) => s);
   useEffect(() => {
     state.fetchRepertoireTemplates();
     state.fetchPlayerTemplates();

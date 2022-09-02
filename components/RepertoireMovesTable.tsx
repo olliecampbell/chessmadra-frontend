@@ -80,7 +80,6 @@ export const RepertoireMovesTable = ({
   let MAX_TRUNCATED = 4;
   let truncated = responses.length > MAX_TRUNCATED && !expanded;
   let numTruncated = responses.length - MAX_TRUNCATED;
-  console.warn({ responses });
   if (!expanded) {
     responses = take(responses, MAX_TRUNCATED);
   }
@@ -241,7 +240,7 @@ const Response = ({
   sections: any[];
 }) => {
   const { suggestedMove, repertoireMove } = tableResponse;
-  const [playSan, currentLine, positionReport, side, quick] =
+  const [playSan, currentLine, positionReport, activeSide, quick, position] =
     useRepertoireState(
       (s) => [
         s.playSan,
@@ -249,9 +248,11 @@ const Response = ({
         s.getCurrentPositionReport(),
         s.activeSide,
         s.quick,
+        s.chessboardState.position,
       ],
       shallow
     );
+  let side: Side = position?.turn() === "b" ? "black" : "white";
   const isMobile = useIsMobile();
   let tags = [];
   if (suggestedMove) {

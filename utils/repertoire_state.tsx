@@ -50,7 +50,7 @@ import { ChessboardState, createChessState } from "./chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import _ from "lodash";
-import { genEpd } from "./chess";
+import { genEpd, START_EPD } from "./chess";
 import { formatEloRange } from "./elo_range";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
 import { AppState } from "./app_state";
@@ -145,7 +145,6 @@ export interface RepertoireState {
   getMyResponsesLength: (side?: Side) => number;
   getQueueLength: (side?: Side) => number;
   getIsRepertoireEmpty: () => boolean;
-  getLastMoveInRepertoire: () => RepertoireMove;
   getCurrentPositionReport: () => PositionReport;
   getCurrentEpd: () => string;
   onEditingPositionUpdate: () => void;
@@ -167,8 +166,6 @@ export interface RepertoireState {
   myResponsesLookup?: BySide<RepertoireMove[]>;
   moveLookup?: BySide<Record<string, RepertoireMove>>;
   currentLine?: string[];
-  // Previous positions, starting with the EPD after the first move
-  positions?: string[];
   pendingMoves?: RepertoireMove[];
   hasCompletedRepertoireInitialization?: boolean;
   hasPendingLineToAdd?: boolean;
@@ -262,7 +259,6 @@ interface GetSharedRepertoireResponse {
   repertoire: Repertoire;
 }
 
-const START_EPD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
 const EMPTY_QUEUES = { white: [], black: [] };
 
@@ -323,7 +319,6 @@ export const getInitialRepertoireState = (
     pawnStructureLookup: {},
     inProgressUsingPlayerTemplate: false,
     pendingResponses: {},
-    positions: [START_EPD],
     positionReports: { white: {}, black: {} },
     currentLine: [],
     queues: EMPTY_QUEUES,
@@ -383,7 +378,7 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         s.backToStartPosition();
         pgnToLine(pgn).map((san) => {
-          s.chessboardState.position.move(san);
+          s.chessboardState.makeMove(san);
           if (s.isEditing) {
             s.onMove();
           }
@@ -391,7 +386,7 @@ export const getInitialRepertoireState = (
       }, "playPgn"),
     playSan: (san: string) =>
       set(([s]) => {
-        s.chessboardState.position.move(san);
+        s.chessboardState.makeMove(san);
         if (s.isEditing) {
           s.onMove();
         }
@@ -561,54 +556,57 @@ export const getInitialRepertoireState = (
         if (s.ecoCodeLookup && s.editingState) {
           s.editingState.lastEcoCode = last(
             filter(
-              map(s.positions, (p) => {
+              map(s.chessboardState.positionHistory, (p) => {
                 return s.ecoCodeLookup[p];
               })
             )
           );
         }
         s.pendingLineHasConflictingMoves = false;
-        map(zip(s.positions, line), ([position, san], i) => {
-          if (!san) {
-            return;
-          }
-          let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-          let existingResponses =
-            s.repertoire[s.activeSide].positionResponses[position];
-          if (
-            !isEmpty(existingResponses) &&
-            mine &&
-            !some(existingResponses, (m) => {
-              return m.sanPlus === san;
-            })
-          ) {
-            s.pendingLineHasConflictingMoves = true;
-          }
-          if (
-            !some(
-              s.repertoire[s.activeSide].positionResponses[position],
-              (m) => {
+        map(
+          zip(s.chessboardState.positionHistory, line),
+          ([position, san], i) => {
+            if (!san) {
+              return;
+            }
+            let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
+            let existingResponses =
+              s.repertoire[s.activeSide].positionResponses[position];
+            if (
+              !isEmpty(existingResponses) &&
+              mine &&
+              !some(existingResponses, (m) => {
                 return m.sanPlus === san;
-              }
-            )
-          ) {
-            s.differentMoveIndices.push(i);
-            s.pendingResponses[position] = [
-              {
-                epd: position,
-                epdAfter: s.positions[i + 1],
-                sanPlus: san,
-                side: s.activeSide,
-                pending: true,
-                mine: mine,
-                srs: {
-                  needsReview: false,
-                  firstReview: false,
+              })
+            ) {
+              s.pendingLineHasConflictingMoves = true;
+            }
+            if (
+              !some(
+                s.repertoire[s.activeSide].positionResponses[position],
+                (m) => {
+                  return m.sanPlus === san;
+                }
+              )
+            ) {
+              s.differentMoveIndices.push(i);
+              s.pendingResponses[position] = [
+                {
+                  epd: position,
+                  epdAfter: s.chessboardState.positionHistory[i + 1],
+                  sanPlus: san,
+                  side: s.activeSide,
+                  pending: true,
+                  mine: mine,
+                  srs: {
+                    needsReview: false,
+                    firstReview: false,
+                  },
                 },
-              },
-            ] as RepertoireMove[];
+              ] as RepertoireMove[];
+            }
           }
-        });
+        );
 
         s.hasPendingLineToAdd = some(
           flatten(values(s.pendingResponses)),
@@ -638,8 +636,6 @@ export const getInitialRepertoireState = (
       }, "fetchPositionReportIfNeeded"),
     onMove: () =>
       set(([s]) => {
-        let epd = genEpd(s.chessboardState.position);
-        s.positions.push(epd);
         if (s.debugPawnStructuresState) {
           s.fetchDebugPawnStructureForPosition();
         }
@@ -939,6 +935,16 @@ export const getInitialRepertoireState = (
       }, "startImporting"),
     startBrowsing: (side: Side) =>
       set(([s]) => {
+        s.setBreadcrumbs([
+          {
+            text: `${capitalize(side)}`,
+            onPress: () => {
+              set(([s]) => {
+                s.backToStartPosition();
+              });
+            },
+          },
+        ]);
         s.isBrowsing = true;
         s.browsingState.activeSide = side;
         // TODO: can remove this once the states are separate
@@ -1183,7 +1189,7 @@ export const getInitialRepertoireState = (
               }
               s.onRepertoireUpdate();
               // if (failOnAny(true) && !s.isEditing) {
-              //   s.startEditing("white");
+              //   s.startBrowsing("white");
               // }
             });
           });
@@ -1210,31 +1216,21 @@ export const getInitialRepertoireState = (
       get(([s]) => {
         return isEmpty(getAllRepertoireMoves(s.repertoire));
       }),
-    getLastMoveInRepertoire: () =>
-      get(([s]) => {
-        let previousEpd = nth(s.positions, -2);
-        let currentEpd = last(s.positions);
-        return find(
-          s.repertoire[s.activeSide].positionResponses[previousEpd],
-          (response: RepertoireMove) => {
-            return response.epdAfter === currentEpd;
-          }
-        );
-      }),
     getCurrentPositionReport: () =>
       get(([s]) => {
         return s.positionReports[s.activeSide][s.getCurrentEpd()];
       }),
     getCurrentEpd: () =>
       get(([s]) => {
-        return last(s.positions);
+        return last(s.chessboardState.positionHistory);
       }),
     backOne: () =>
       set(([s]) => {
-        let m = s.chessboardState.position.undo();
-        if (m) {
-          s.positions.pop();
+        if (s.isBrowsing) {
+          s.browsingState.chessboardState.backOne();
+          return;
         }
+        s.chessboardState.backOne();
         if (s.debugPawnStructuresState) {
           s.fetchDebugPawnStructureForPosition();
         }
@@ -1245,8 +1241,11 @@ export const getInitialRepertoireState = (
       }),
     backToStartPosition: () =>
       set(([s]) => {
-        s.chessboardState.position = new Chess();
-        s.positions = [START_EPD];
+        if (s.isBrowsing) {
+          s.browsingState.chessboardState.resetPosition();
+          return;
+        }
+        s.chessboardState.resetPosition();
         s.onEditingPositionUpdate();
       }),
     editRepertoireSide: (side: Side) =>
@@ -1279,7 +1278,12 @@ export const getInitialRepertoireState = (
                 addNewLineSelectedIndex: 0,
                 positionReport:
                   s.positionReports[s.activeSide][s.getCurrentEpd()],
-                ecoCode: findLast(map(s.positions, (p) => s.ecoCodeLookup[p])),
+                ecoCode: findLast(
+                  map(
+                    s.chessboardState.positionHistory,
+                    (p) => s.ecoCodeLookup[p]
+                  )
+                ),
               };
               let choices = [];
               let seenMisses = new Set();

@@ -6,13 +6,14 @@ import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { logProxy } from "./state";
 import { c } from "app/styles";
-import { getSquareOffset } from "./chess";
+import { genEpd, getSquareOffset, START_EPD } from "./chess";
 import { Side } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
 
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
   frozen?: boolean;
+  positionHistory: string[];
   position?: Chess;
   futurePosition?: Chess;
   indicatorColor?: string;
@@ -27,7 +28,6 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   moveIndicatorOpacityAnim: Animated.Value;
   pieceMoveAnim: Animated.ValueXY;
   animatedMove?: Move;
-  allowMoves: boolean;
   highlightSquare?: Square;
   isVisualizingMoves?: boolean;
   onSquarePress: (square: Square, skipAnimation?: boolean) => void;
@@ -56,6 +56,9 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   highContrast?: boolean;
   isColorTraining?: boolean;
   delegate?: ChessboardDelegate;
+  makeMove: (m: Move | string) => void;
+  backOne: () => void;
+  resetPosition: () => void;
 }
 
 export interface ChessboardDelegate {
@@ -70,10 +73,10 @@ export const createChessState = <T extends ChessboardState>(
   initialize?: (c: ChessboardState) => void
 ): ChessboardState => {
   let initialState = {
-    allowMoves: true,
     isColorTraining: false,
     availableMoves: [],
     ringColor: null,
+    positionHistory: [START_EPD],
     isVisualizingMoves: false,
     ringIndicatorAnim: new Animated.Value(0),
     squareHighlightAnims: mapValues(SQUARES, (number, square) => {
@@ -85,6 +88,18 @@ export const createChessState = <T extends ChessboardState>(
     pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     moveIndicatorOpacityAnim: new Animated.Value(0),
     ...createQuick(set),
+    backOne: () => {
+      set((s) => {
+        s.positionHistory.pop();
+        s.position.undo();
+      });
+    },
+    resetPosition: () => {
+      set((s) => {
+        s.positionHistory = [START_EPD];
+        s.position = new Chess();
+      });
+    },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
       set((s) => {
         console.log("square press?");
@@ -98,7 +113,7 @@ export const createChessState = <T extends ChessboardState>(
             console.log("skip animation", skipAnimation);
             if (skipAnimation) {
               console.log("Yup moving");
-              s.position.move(availableMove);
+              s.makeMove(availableMove);
               s.delegate.madeMove?.(availableMove);
             } else {
               s.animatePieceMove(
@@ -163,7 +178,7 @@ export const createChessState = <T extends ChessboardState>(
         s.activeFromSquare = null;
         s.draggedOverSquare = null;
         s.animatedMove = move;
-        s.position.move(move);
+        s.makeMove(move);
         callback(false);
         let { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
@@ -184,6 +199,16 @@ export const createChessState = <T extends ChessboardState>(
             callback(true);
           });
         });
+      });
+    },
+    makeMove: (m: Move | string) => {
+      set((s) => {
+        s.availableMoves = [];
+        let moveObject = s.position.move(m);
+        if (moveObject) {
+          let epd = genEpd(s.position);
+          s.positionHistory.push(epd);
+        }
       });
     },
     flashRing: (success: boolean) => {

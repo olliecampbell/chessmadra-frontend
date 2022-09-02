@@ -74,8 +74,15 @@ export enum AddLineFromOption {
   BiggestMissOpening = "Biggest Gap in Opening",
 }
 
+export enum BrowsingTab {
+  Lines = "Position",
+  InstructiveGames = "Responses",
+  Misses = "Misses",
+}
+
 export interface BrowsingState {
   readOnly: boolean;
+  selectedTab: BrowsingTab;
   activeSide?: Side;
   chessboardState?: ChessboardState;
   drilldownState?: BrowserDrilldownState;
@@ -130,6 +137,7 @@ export const getInitialBrowsingState = (
   };
   let initialState = {
     readOnly: false,
+    selectedTab: BrowsingTab.Lines,
     selectDrilldownState: (browserState: BrowserDrilldownState) =>
       set(([s]) => {
         while (true) {
@@ -274,7 +282,7 @@ export const getInitialBrowsingState = (
     setChess,
     getChess,
     (c: ChessboardState) => {
-      c.frozen = true;
+      // c.frozen = true;
       c.delegate = {
         completedMoveAnimation: () => {},
         madeMove: () => set(([s]) => {}),

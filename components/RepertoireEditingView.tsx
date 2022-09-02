@@ -49,78 +49,7 @@ import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { RepertoireMovesTable, TableResponse } from "./RepertoireMovesTable";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
-
-type BackControlsProps = {
-  state: RepertoireState;
-};
-
-export const BackControls: React.FC<BackControlsProps> = ({ state }) => {
-  let backButtonActive = state.chessboardState.position.history().length > 0;
-
-  let [searchOnChessable, analyzeLineOnLichess, quick, currentLine] =
-    useRepertoireState(
-      (s) => [
-        s.searchOnChessable,
-        s.analyzeLineOnLichess,
-        s.quick,
-        s.currentLine,
-      ],
-      shallow
-    );
-  const isMobile = useIsMobile();
-  let gap = isMobile ? 6 : 12;
-  let foreground = c.grays[90];
-  let textColor = c.fg(foreground);
-  return (
-    <View style={s(c.row, c.height(isMobile ? 32 : 42))}>
-      <Button
-        style={s(c.buttons.extraDark, c.width(48))}
-        onPress={() => {
-          state.backToStartPosition();
-        }}
-      >
-        <i
-          className="fas fa-angles-left"
-          style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
-        />
-      </Button>
-      <Spacer width={gap} />
-      <Button
-        style={s(c.buttons.extraDark, c.grow)}
-        onPress={() => {
-          state.backOne();
-        }}
-      >
-        <i
-          className="fas fa-angle-left"
-          style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
-        />
-      </Button>
-      <Spacer width={gap} />
-      <Button
-        style={s(c.buttons.extraDark)}
-        onPress={() => {
-          analyzeLineOnLichess(currentLine);
-        }}
-      >
-        <View style={s(c.size(22))}>
-          <LichessLogoIcon color={foreground} />
-        </View>
-        <Spacer width={8} />
-        <CMText
-          style={s(
-            c.buttons.extraDark.textStyles,
-            textColor,
-            c.weightRegular,
-            c.fontSize(14)
-          )}
-        >
-          Analyze on Lichess
-        </CMText>
-      </Button>
-    </View>
-  );
-};
+import { BackControls } from "./BackControls";
 
 export const MoveLog = () => {
   let pairs = [];
@@ -269,21 +198,18 @@ let desktopHeaderStyles = s(
   c.weightBold
 );
 
-export const RepertoireEditingView = ({
-  state,
-}: {
-  state: RepertoireState;
-}) => {
+export const RepertoireEditingView = () => {
   const isMobile = useIsMobile();
-  let side = state.activeSide;
+  const [chessboardState, backOne] = useRepertoireState((s) => [
+    s.chessboardState,
+    s.backOne,
+  ]);
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
     if (event.key === "ArrowLeft") {
-      state.backOne();
+      backOne();
     }
   });
 
-  let biggestMiss = state.repertoireGrades?.[state.activeSide]?.biggestMiss;
-  let positionReport = state.getCurrentPositionReport();
   return (
     <>
       <DeleteMoveConfirmationModal />
@@ -295,10 +221,10 @@ export const RepertoireEditingView = ({
             <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
               <View style={s(c.column, c.constrainWidth)}>
                 <View style={s(c.width(400), c.maxWidth("100%"))}>
-                  <ChessboardView state={state.chessboardState} />
+                  <ChessboardView state={chessboardState} />
                 </View>
                 <Spacer height={12} />
-                <BackControls state={state} />
+                <BackControls includeAnalyze />
                 <Spacer height={12} />
                 {isMobile && <EditingTabPicker />}
               </View>
@@ -320,7 +246,7 @@ export const RepertoireEditingView = ({
   );
 };
 
-const Responses = React.memo(function Responses() {
+const Responses = () => {
   let [
     positionReport,
     currentLine,
@@ -348,6 +274,8 @@ const Responses = React.memo(function Responses() {
     coveredSans.add(m.sanPlus);
   });
   let side: Side = position.turn() === "b" ? "black" : "white";
+  console.warn("---------");
+  console.log(position.turn());
   let ownSide = side === activeSide;
   console.warn({ positionReport });
   let suggestedMoves = positionReport
@@ -483,7 +411,7 @@ const Responses = React.memo(function Responses() {
         })()}
     </View>
   );
-});
+};
 
 const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   if (!isNil(stockfish.eval) && stockfish.eval >= 0 && side === "white") {

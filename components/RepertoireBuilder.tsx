@@ -45,52 +45,44 @@ let cardStyles = s(
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
-  const state = useRepertoireState(
-    (s) => s,
-    () => false
-  );
+  const [
+    repertoire,
+    showImportView,
+    isBrowsing,
+    isEditing,
+    isReviewing,
+    setUser,
+    initState,
+  ] = useRepertoireState((s) => [
+    s.repertoire,
+    s.showImportView,
+    s.isBrowsing,
+    s.isEditing,
+    s.isReviewing,
+    s.setUser,
+    s.initState,
+  ]);
   let { user, authStatus, token } = AppStore.useState((s) => s.auth);
   useEffect(() => {
-    state.setUser(user);
+    setUser(user);
   }, [user]);
   useEffect(() => {
-    state.initState();
+    initState();
   }, []);
 
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   let inner = null;
   let centered = false;
-  let hasNoMovesThisSide = isEmpty(state.myResponsesLookup?.[state.activeSide]);
-  if (state.repertoire === undefined) {
+  if (repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
-  } else if (state.showImportView) {
-    inner = <RepertoireWizard state={state} />;
+  } else if (showImportView) {
+    inner = <RepertoireWizard />;
   } else {
-    let backToOverviewRow = (
-      <View
-        style={s(c.row, c.alignCenter, c.clickable)}
-        onClick={() => {
-          state.backToOverview();
-        }}
-      >
-        <i
-          className="fa-light fa-angle-left"
-          style={s(c.fg(c.grays[70]), c.fontSize(16))}
-        />
-        <Spacer width={8} />
-        <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
-          Back to overview
-        </CMText>
-      </View>
-    );
-    if (state.isEditing) {
-      inner = (
-        <RepertoireEditingView state={state} {...{ backToOverviewRow }} />
-      );
-    } else if (state.isBrowsing) {
+    if (isEditing) {
+      inner = <RepertoireEditingView />;
+    } else if (isBrowsing) {
       inner = <RepertoireBrowsingView />;
-    } else if (state.isReviewing) {
+    } else if (isReviewing) {
       inner = <RepertoireReview />;
     } else {
       // Overview
@@ -123,7 +115,10 @@ export const RepertoireBuilder = () => {
   return (
     <PageContainer
       centered={centered}
-      {...{ hideIcons: state.isEditing, hideNavBar: state.isEditing }}
+      {...{
+        hideIcons: isEditing || isBrowsing,
+        hideNavBar: isEditing || isBrowsing,
+      }}
     >
       {inner}
     </PageContainer>
@@ -190,7 +185,7 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
   return (
     <Button
       style={s(
-        c.buttons.basicSecondary,
+        c.buttons.basic,
         // isMobile && c.bg(c.grays[70]),
         isMobile ? c.selfCenter : c.selfStretch,
         c.py(isMobile ? 12 : 16),
@@ -201,10 +196,7 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
       }}
     >
       <CMText
-        style={s(
-          c.buttons.basicSecondary.textStyles,
-          c.fontSize(isMobile ? 14 : 16)
-        )}
+        style={s(c.buttons.basic.textStyles, c.fontSize(isMobile ? 14 : 16))}
       >
         <i className="fa fa-pencil" />
       </CMText>
@@ -213,7 +205,7 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
           <Spacer width={8} />
           <CMText
             style={s(
-              c.buttons.basicSecondary.textStyles,
+              c.buttons.basic.textStyles,
               c.fontSize(isMobile ? 16 : 18),
               c.weightSemiBold
             )}
