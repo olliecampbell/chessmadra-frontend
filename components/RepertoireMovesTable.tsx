@@ -165,7 +165,7 @@ let getSections = ({
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
         if (!playRate || isNaN(playRate)) {
-          return null;
+          return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
         }
         return (
           <>{<CMText style={s()}>{formatPlayPercentage(playRate)}</CMText>}</>
