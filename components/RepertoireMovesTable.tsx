@@ -17,6 +17,7 @@ import {
   times,
   findIndex,
   every,
+  isNaN,
 } from "lodash";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -158,34 +159,36 @@ let getSections = ({
   if (!myTurn) {
     sections.push({
       width: 40,
-      content: ({ suggestedMove, positionReport }) => (
-        <>
-          {suggestedMove && positionReport && (
-            <CMText style={s()}>
-              {formatPlayPercentage(
-                getPlayRate(suggestedMove, positionReport, false)
-              )}
-            </CMText>
-          )}
-        </>
-      ),
+      content: ({ suggestedMove, positionReport }) => {
+        let playRate =
+          suggestedMove &&
+          positionReport &&
+          getPlayRate(suggestedMove, positionReport, false);
+        if (!playRate || isNaN(playRate)) {
+          return null;
+        }
+        return (
+          <>{<CMText style={s()}>{formatPlayPercentage(playRate)}</CMText>}</>
+        );
+      },
       header: "Peers",
     });
   }
   if (myTurn) {
     sections.push({
       width: 40,
-      content: ({ suggestedMove, positionReport }) => (
-        <>
-          {suggestedMove && positionReport && (
-            <CMText style={s()}>
-              {formatPlayPercentage(
-                getPlayRate(suggestedMove, positionReport, true)
-              )}
-            </CMText>
-          )}
-        </>
-      ),
+      content: ({ suggestedMove, positionReport }) => {
+        let playRate =
+          suggestedMove &&
+          positionReport &&
+          getPlayRate(suggestedMove, positionReport, true);
+        if (!playRate || isNaN(playRate)) {
+          return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
+        }
+        return (
+          <>{<CMText style={s()}>{formatPlayPercentage(playRate)}</CMText>}</>
+        );
+      },
       header: "Masters",
     });
   }
