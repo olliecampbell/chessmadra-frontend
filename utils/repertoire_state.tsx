@@ -1382,28 +1382,33 @@ export const getInitialRepertoireState = (
 
                 s.completedReviewPositionMoves[matchingResponse.sanPlus] =
                   matchingResponse;
-                window.setTimeout(() => {
-                  set(([s]) => {
-                    if (!s.isReviewing) {
-                      return;
-                    }
-                    if (isEmpty(s.getRemainingReviewPositionMoves())) {
-                      if (s.currentMove?.moves.length > 1) {
-                        s.showNext = true;
-                      } else {
-                        console.log("Should setup next?");
-                        if (isEmpty(s.failedReviewPositionMoves)) {
-                          console.log("Yup?");
-                          s.setupNextMove();
-                        } else {
-                          s.showNext = true;
-                        }
+                // TODO: this is really dirty
+                const willUndo = !isEmpty(s.getRemainingReviewPositionMoves());
+                window.setTimeout(
+                  () => {
+                    set(([s]) => {
+                      if (!s.isReviewing) {
+                        return;
                       }
-                    } else {
-                      s.chessboardState.position.undo();
-                    }
-                  });
-                }, 100);
+                      if (isEmpty(s.getRemainingReviewPositionMoves())) {
+                        if (s.currentMove?.moves.length > 1) {
+                          s.showNext = true;
+                        } else {
+                          console.log("Should setup next?");
+                          if (isEmpty(s.failedReviewPositionMoves)) {
+                            console.log("Yup?");
+                            s.setupNextMove();
+                          } else {
+                            s.showNext = true;
+                          }
+                        }
+                      } else {
+                        s.chessboardState.position.undo();
+                      }
+                    });
+                  },
+                  willUndo ? 500 : 100
+                );
                 return true;
               } else {
                 s.chessboardState.flashRing(false);
