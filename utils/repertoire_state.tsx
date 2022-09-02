@@ -658,7 +658,7 @@ export const getInitialRepertoireState = (
           epd = response?.epdAfter;
           if (response && response.mine && response.epd !== START_EPD) {
             sideQueue.push({
-              move: response,
+              moves: [response],
               line: lineToPgn(lineSoFar),
             });
           } else {
@@ -679,7 +679,11 @@ export const getInitialRepertoireState = (
         const recurse = (epd, line, side: Side) => {
           let responses = s.repertoire[side].positionResponses[epd];
           if (responses?.[0]?.mine) {
-            s.queues[side].push({ moves: responses, line: lineToPgn(line) });
+            let needsToReviewAny =
+              some(responses, (r) => r.srs.needsReview) || cram;
+            if (needsToReviewAny) {
+              s.queues[side].push({ moves: responses, line: lineToPgn(line) });
+            }
           }
 
           map(shuffle(responses), (m) => {
