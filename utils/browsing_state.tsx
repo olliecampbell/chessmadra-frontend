@@ -195,10 +195,11 @@ export const getInitialBrowsingState = (
             }
           });
         };
+        let currentLine = pgnToLine(s.chessboardState.position.pgn());
         recurse(
-          s.chessboardState.moveLogPgn,
+          lineToPgn(currentLine),
           last(s.chessboardState.positionHistory),
-          pgnToLine(s.chessboardState.moveLogPgn)?.length ?? 0,
+          currentLine.length,
           new Set(),
           null
         );
