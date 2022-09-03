@@ -530,7 +530,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
             `[${line.deleteMove?.sanPlus}]`
           )*/}
         </CMText>
-        <Spacer height={4} grow />
+        <Spacer height={4} />
         <CMText
           style={s(
             c.fontSize(isMobile ? 16 : 16),
