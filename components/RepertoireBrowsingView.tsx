@@ -542,7 +542,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
           {formatIncidence(miss.incidence)} of games
         </CMText>
       </View>
-      <View style={s(c.size(chessboardSize))}>
+      <View style={s(c.size(chessboardSize - 2))}>
         {isVisible && (
           <ChessboardView
             onSquarePress={() => {
@@ -643,7 +643,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
           )*/}
         </CMText>
       </View>
-      <View style={s(c.size(chessboardSize))}>
+      <View style={s(c.size(chessboardSize - 2))}>
         {isVisible && (
           <ChessboardView
             onSquarePress={() => {
