@@ -75,6 +75,7 @@ const textAlign = keyedProp("textAlign");
 
 const pageHeight = keyedProp("minHeight")("100vh");
 const constrainWidth = keyedProp("maxWidth")("100%");
+const constrainHeight = keyedProp("maxHeight")("100%");
 const fullHeight = keyedProp("height")("100%");
 const fullWidth = keyedProp("width")("100%");
 
@@ -439,6 +440,7 @@ export const c = {
   fullHeight,
   fullWidth,
   constrainWidth,
+  constrainHeight,
   height,
   width,
   minWidth,

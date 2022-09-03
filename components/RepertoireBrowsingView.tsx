@@ -90,9 +90,18 @@ export const RepertoireBrowsingView = ({}: {}) => {
                 <ChessboardView state={chessboardState} />
               </View>
               <Spacer height={12} />
-              <BackControls />
-              <Spacer height={12} />
-              {readOnly ? <SwitchSideButton /> : <EditButton />}
+              <BackControls
+                extraButton={
+                  isMobile && (readOnly ? <SwitchSideButton /> : <EditButton />)
+                }
+              />
+              {!isMobile && (
+                <>
+                  <Spacer height={12} />
+                  {readOnly && <SwitchSideButton />}
+                  {!readOnly && <EditButton />}
+                </>
+              )}
               {isMobile && (
                 <>
                   <Spacer height={24} />
@@ -126,8 +135,8 @@ export const SwitchSideButton = () => {
       style={s(
         c.buttons.extraDark,
         // isMobile && c.bg(c.grays[70]),
-        isMobile ? c.selfCenter : c.selfStretch,
-        c.py(isMobile ? 12 : 16),
+        c.selfStretch,
+        !isMobile && c.py(16),
         c.px(24)
       )}
       onPress={() => {
@@ -174,8 +183,8 @@ export const EditButton = () => {
       style={s(
         c.buttons.extraDark,
         // isMobile && c.bg(c.grays[70]),
-        isMobile ? c.selfCenter : c.selfStretch,
-        c.py(isMobile ? 12 : 16),
+        c.selfStretch,
+        !isMobile && c.py(16),
         c.px(24)
       )}
       onPress={() => {
@@ -192,20 +201,16 @@ export const EditButton = () => {
       >
         <i className="fa-sharp fa-solid fa-compass-drafting" />
       </CMText>
-      {!isMobile && (
-        <>
-          <Spacer width={8} />
-          <CMText
-            style={s(
-              c.buttons.extraDark.textStyles,
-              c.fontSize(isMobile ? 16 : 18),
-              c.weightSemiBold
-            )}
-          >
-            Edit
-          </CMText>
-        </>
-      )}
+      <Spacer width={8} />
+      <CMText
+        style={s(
+          c.buttons.extraDark.textStyles,
+          c.fontSize(isMobile ? 16 : 18),
+          c.weightSemiBold
+        )}
+      >
+        Edit
+      </CMText>
     </Button>
   );
 };

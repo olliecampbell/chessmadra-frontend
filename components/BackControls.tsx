@@ -52,10 +52,12 @@ import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 
 type BackControlsProps = {
   includeAnalyze?: boolean;
+  extraButton?: any;
 };
 
 export const BackControls: React.FC<BackControlsProps> = ({
   includeAnalyze,
+  extraButton,
 }) => {
   let [
     searchOnChessable,
@@ -77,9 +79,9 @@ export const BackControls: React.FC<BackControlsProps> = ({
   let foreground = c.grays[90];
   let textColor = c.fg(foreground);
   return (
-    <View style={s(c.row, c.height(isMobile ? 32 : 42))}>
+    <View style={s(c.row, c.height(isMobile ? 42 : 42))}>
       <Button
-        style={s(c.buttons.extraDark, c.width(48))}
+        style={s(c.buttons.extraDark, c.width(48), c.constrainHeight)}
         onPress={() => {
           backToStartPosition();
         }}
@@ -91,7 +93,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
       </Button>
       <Spacer width={gap} />
       <Button
-        style={s(c.buttons.extraDark, c.grow)}
+        style={s(c.buttons.extraDark, c.grow, c.constrainHeight)}
         onPress={() => {
           backOne();
         }}
@@ -101,6 +103,12 @@ export const BackControls: React.FC<BackControlsProps> = ({
           style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
+      {extraButton && (
+        <>
+          <Spacer width={gap} />
+          {extraButton}
+        </>
+      )}
       {includeAnalyze && (
         <>
           <Spacer width={gap} />
