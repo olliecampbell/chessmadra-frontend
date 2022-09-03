@@ -143,6 +143,8 @@ export const getInitialBrowsingState = (
         let responses =
           repertoireState.repertoire[s.activeSide].positionResponses;
         let uniqueLines = [] as BrowserLine[];
+        let currentLine = pgnToLine(s.chessboardState.position.pgn());
+        let startEpd = last(s.chessboardState.positionHistory);
         let recurse = (
           path: string,
           epd: string,
@@ -152,7 +154,7 @@ export const getInitialBrowsingState = (
           lastOnlyMove?: RepertoireMove
         ) => {
           let moves = responses[epd];
-          if (isEmpty(moves) && !isEmpty(path)) {
+          if (isEmpty(moves) && pgnToLine(path).length !== currentLine.length) {
             uniqueLines.push({
               epd: epd,
               pgn: path,
@@ -195,8 +197,6 @@ export const getInitialBrowsingState = (
             }
           });
         };
-        let currentLine = pgnToLine(s.chessboardState.position.pgn());
-        let startEpd = last(s.chessboardState.positionHistory);
         recurse(
           lineToPgn(currentLine),
           startEpd,
