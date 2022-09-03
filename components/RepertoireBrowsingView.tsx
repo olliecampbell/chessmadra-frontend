@@ -211,65 +211,70 @@ export const EditButton = () => {
 };
 
 export const ResultsView = React.memo(function () {
-  const [selectedTab, quick] = useRepertoireState((s) => [
+  const [selectedTab, quick, readOnly] = useRepertoireState((s) => [
     s.browsingState.selectedTab,
     s.quick,
+    s.browsingState.readOnly,
   ]);
   const isMobile = useIsMobile();
   return (
     <View style={s(c.column, isMobile && c.fullWidth)}>
-      <SelectOneOf
-        tabStyle
-        containerStyles={s(c.fullWidth, c.justifyBetween)}
-        choices={[
-          BrowsingTab.Lines,
-          BrowsingTab.Misses,
-          BrowsingTab.InstructiveGames,
-        ]}
-        activeChoice={selectedTab}
-        separator={() => {
-          // if (isMobile) {
-          //   return null;
-          // }
-          return null;
-        }}
-        horizontal
-        onSelect={(tab) => {}}
-        renderChoice={(tab, active, i) => {
-          return (
-            <Pressable
-              key={i}
-              onPress={() => {
-                quick((s) => {
-                  s.browsingState.selectedTab = tab;
-                });
-              }}
-              style={s(
-                c.column,
-                c.grow,
-                c.alignCenter,
-                c.borderBottom(
-                  `2px solid ${active ? c.grays[90] : c.grays[20]}`
-                ),
-                c.zIndex(5),
-                c.px(isMobile ? 0 : 48),
-                c.pb(isMobile ? 8 : 4)
-              )}
-            >
-              <CMText
-                style={s(
-                  c.fg(active ? c.colors.textPrimary : c.grays[70]),
-                  c.fontSize(16),
-                  c.weightSemiBold
-                )}
-              >
-                {tab}
-              </CMText>
-            </Pressable>
-          );
-        }}
-      />
-      <Spacer height={isMobile ? 36 : 36} />
+      {!readOnly && (
+        <>
+          <SelectOneOf
+            tabStyle
+            containerStyles={s(c.fullWidth, c.justifyBetween)}
+            choices={[
+              BrowsingTab.Lines,
+              BrowsingTab.Misses,
+              BrowsingTab.InstructiveGames,
+            ]}
+            activeChoice={selectedTab}
+            separator={() => {
+              // if (isMobile) {
+              //   return null;
+              // }
+              return null;
+            }}
+            horizontal
+            onSelect={(tab) => {}}
+            renderChoice={(tab, active, i) => {
+              return (
+                <Pressable
+                  key={i}
+                  onPress={() => {
+                    quick((s) => {
+                      s.browsingState.selectedTab = tab;
+                    });
+                  }}
+                  style={s(
+                    c.column,
+                    c.grow,
+                    c.alignCenter,
+                    c.borderBottom(
+                      `2px solid ${active ? c.grays[90] : c.grays[20]}`
+                    ),
+                    c.zIndex(5),
+                    c.px(isMobile ? 0 : 48),
+                    c.pb(isMobile ? 8 : 8)
+                  )}
+                >
+                  <CMText
+                    style={s(
+                      c.fg(active ? c.colors.textPrimary : c.grays[70]),
+                      c.fontSize(16),
+                      c.weightSemiBold
+                    )}
+                  >
+                    {tab}
+                  </CMText>
+                </Pressable>
+              );
+            }}
+          />
+          <Spacer height={isMobile ? 36 : 36} />
+        </>
+      )}
       {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}
       {selectedTab === BrowsingTab.Misses && <BrowsingMissesView />}
       {selectedTab === BrowsingTab.InstructiveGames && <InstructiveGamesView />}
