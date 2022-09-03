@@ -196,12 +196,13 @@ export const getInitialBrowsingState = (
           });
         };
         let currentLine = pgnToLine(s.chessboardState.position.pgn());
+        let startEpd = last(s.chessboardState.positionHistory);
         recurse(
           lineToPgn(currentLine),
-          last(s.chessboardState.positionHistory),
+          startEpd,
           currentLine.length,
           new Set(),
-          null
+          repertoireState.ecoCodeLookup[startEpd]
         );
         uniqueLines = sortBy(uniqueLines, (l) => {
           console.log("Yeah hitting this case");

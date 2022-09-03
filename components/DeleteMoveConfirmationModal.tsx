@@ -21,7 +21,14 @@ export const DeleteMoveConfirmationModal = () => {
   const isMobile = useIsMobile();
   console.log({ open });
   return (
-    <Modal onClose={() => {}} visible={open}>
+    <Modal
+      onClose={() => {
+        quick((s) => {
+          s.deleteMoveState.modalOpen = false;
+        });
+      }}
+      visible={open}
+    >
       <View
         style={s(
           c.column,
@@ -33,7 +40,7 @@ export const DeleteMoveConfirmationModal = () => {
           c.maxWidth("calc(100vw - 16px)")
         )}
       >
-        {open && (
+        {
           <View style={s(c.column, c.alignStart, c.px(16), c.py(16), c.br(8))}>
             <CMText
               style={s(
@@ -79,7 +86,7 @@ export const DeleteMoveConfirmationModal = () => {
               </Button>
             </View>
           </View>
-        )}
+        }
       </View>
     </Modal>
   );

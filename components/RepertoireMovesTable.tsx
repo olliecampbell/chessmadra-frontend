@@ -48,6 +48,8 @@ import { plural, pluralize } from "app/utils/pluralize";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 
+const DELETE_WIDTH = 30;
+
 export interface TableResponse {
   repertoireMove: RepertoireMove;
   suggestedMove: SuggestedMove;
@@ -103,7 +105,7 @@ export const RepertoireMovesTable = ({
       >
         {header}
       </CMText>
-      <TableHeader sections={sections} />
+      <TableHeader myMoves={myMoves} sections={sections} />
       <Spacer height={12} />
       {intersperse(
         responses.map((tableResponse, i) => {
@@ -244,16 +246,14 @@ const Response = ({
 }) => {
   const { suggestedMove, repertoireMove } = tableResponse;
   const [playSan, currentLine, positionReport, activeSide, quick, position] =
-    useRepertoireState(
-      (s) => [
-        s.playSan,
-        s.currentLine,
-        s.getCurrentPositionReport(),
-        s.activeSide,
-        s.quick,
-        s.chessboardState.position,
-      ],
-    );
+    useRepertoireState((s) => [
+      s.playSan,
+      s.currentLine,
+      s.getCurrentPositionReport(),
+      s.activeSide,
+      s.quick,
+      s.chessboardState.position,
+    ]);
   let side: Side = position?.turn() === "b" ? "black" : "white";
   const isMobile = useIsMobile();
   let tags = [];
@@ -265,13 +265,13 @@ const Response = ({
   let mine = repertoireMove?.mine;
 
   return (
-    <Pressable
-      onPress={() => {
-        playSan(sanPlus);
-      }}
-    >
-      <View
+    <View style={s(c.row, c.alignCenter)}>
+      <Pressable
+        onPress={() => {
+          playSan(sanPlus);
+        }}
         style={s(
+          c.grow,
           c.br(2),
           c.py(8),
           c.pl(14),
@@ -325,7 +325,11 @@ const Response = ({
                       style={s(c.width(section.width), c.center, c.row)}
                       key={i}
                     >
-                      {section.content({ suggestedMove, positionReport, side })}
+                      {section.content({
+                        suggestedMove,
+                        positionReport,
+                        side,
+                      })}
                     </View>
                   );
                 }),
@@ -338,12 +342,42 @@ const Response = ({
             </View>
           </View>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+      {repertoireMove?.mine && (
+        <>
+          <Pressable
+            onPress={() => {
+              quick((s) => {
+                s.deleteMoveState.modalOpen = true;
+                s.deleteMoveState.response = repertoireMove;
+              });
+            }}
+            style={s(
+              c.width(DELETE_WIDTH),
+              c.row,
+              c.selfStretch,
+              c.alignCenter
+            )}
+          >
+            <Spacer width={12} />
+            <i
+              style={s(c.fontSize(16), c.fg(c.failureShades[50]))}
+              className="fa-regular fa-trash"
+            ></i>
+          </Pressable>
+        </>
+      )}
+    </View>
   );
 };
 
-const TableHeader = ({ sections }: { sections: any[] }) => {
+const TableHeader = ({
+  sections,
+  myMoves,
+}: {
+  sections: any[];
+  myMoves: boolean;
+}) => {
   const isMobile = useIsMobile();
   return (
     <View style={s(c.row, c.fullWidth, c.pl(14), c.pr(8))}>
@@ -373,6 +407,7 @@ const TableHeader = ({ sections }: { sections: any[] }) => {
           }
         )}
       </View>
+      {myMoves && <Spacer width={DELETE_WIDTH} />}
     </View>
   );
 };
