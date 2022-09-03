@@ -15,7 +15,7 @@ export default function Page() {
   }, []);
   return (
     <>
-      <PageContainer>
+      <PageContainer hideNavBar hideIcons>
         <RepertoireBrowsingView />
       </PageContainer>
       <HeadSiteMeta

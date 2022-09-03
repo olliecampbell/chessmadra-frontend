@@ -74,6 +74,8 @@ export interface QuizMove {
   line: string;
 }
 
+import Router from "next/router";
+
 export interface ReviewPositionResults {
   correct: boolean;
   epd: string;
@@ -230,7 +232,7 @@ export interface RepertoireState {
 
 export interface NavBreadcrumb {
   text: string;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 export interface AddNewLineChoice {
@@ -307,6 +309,7 @@ export const getInitialRepertoireState = (
         text: "Home",
         onPress: () => {
           set(([s]) => {
+            Router.push("/");
             s.backToOverview();
           });
         },
@@ -920,16 +923,18 @@ export const getInitialRepertoireState = (
       }, "startImporting"),
     startBrowsing: (side: Side) =>
       set(([s]) => {
-        s.setBreadcrumbs([
+        let breadcrumbs = [
           {
             text: `${capitalize(side)}`,
-            onPress: () => {
-              set(([s]) => {
-                s.startBrowsing(side);
-              });
-            },
           },
-        ]);
+        ];
+        if (s.browsingState.readOnly) {
+          breadcrumbs.unshift({
+            text: "Shared repertoire",
+          });
+        }
+
+        s.setBreadcrumbs(breadcrumbs);
         s.isBrowsing = true;
         s.isEditing = false;
         s.browsingState.activeSide = side;
@@ -1129,8 +1134,8 @@ export const getInitialRepertoireState = (
             }),
         ]).then(() => {
           set(([s]) => {
-            s.startBrowsing("white");
             s.browsingState.readOnly = true;
+            s.startBrowsing("white");
           });
         });
       }),
@@ -1151,9 +1156,6 @@ export const getInitialRepertoireState = (
                 }
               }
               s.onRepertoireUpdate();
-              if (!s.isEditing) {
-                s.startBrowsing("white");
-              }
             });
           });
       }),

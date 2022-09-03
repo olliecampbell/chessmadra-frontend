@@ -11,6 +11,7 @@ import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import {
   formatIncidence,
+  otherSide,
   pgnToLine,
   RepertoireMiss,
   Side,
@@ -91,7 +92,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
               <Spacer height={12} />
               <BackControls />
               <Spacer height={12} />
-              <EditButton />
+              {readOnly ? <SwitchSideButton /> : <EditButton />}
               {isMobile && (
                 <>
                   <Spacer height={24} />
@@ -111,6 +112,54 @@ export const RepertoireBrowsingView = ({}: {}) => {
         </View>
       </View>
     </RepertoirePageLayout>
+  );
+};
+
+export const SwitchSideButton = () => {
+  const isMobile = useIsMobile();
+  const [side, q] = useRepertoireState((s) => [
+    s.browsingState.activeSide,
+    s.quick,
+  ]);
+  return (
+    <Button
+      style={s(
+        c.buttons.extraDark,
+        // isMobile && c.bg(c.grays[70]),
+        isMobile ? c.selfCenter : c.selfStretch,
+        c.py(isMobile ? 12 : 16),
+        c.px(24)
+      )}
+      onPress={() => {
+        q((s) => {
+          s.startBrowsing(otherSide(side));
+          s.browsingState.chessboardState.resetPosition();
+        });
+      }}
+    >
+      <CMText
+        style={s(
+          c.buttons.extraDark.textStyles,
+          c.fontSize(isMobile ? 14 : 16)
+        )}
+      >
+        <i className="fa-sharp fa-solid fa-arrows-rotate" />
+      </CMText>
+      {!isMobile && (
+        <>
+          <Spacer width={8} />
+          <CMText
+            style={s(
+              c.buttons.extraDark.textStyles,
+              c.fontSize(isMobile ? 16 : 18),
+              c.weightSemiBold
+            )}
+          >
+            Switch side
+          </CMText>
+        </>
+      )}
+    </Button>
   );
 };
 
