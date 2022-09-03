@@ -243,7 +243,6 @@ export const ChessboardView = ({
         // what is happening!
         // gestureState.d{x,y} will be set to zero now
         onPanResponderMove: (evt, gesture) => {
-          console.log("On move?");
           let square = getSquareFromLayoutAndGesture(
             chessboardLayout.current,
             gesture

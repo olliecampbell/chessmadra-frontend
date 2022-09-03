@@ -58,7 +58,6 @@ export const SideSettingsModal = () => {
       s.deleteRepertoire,
       s.quick,
     ],
-    shallow
   );
   const isMobile = useIsMobile();
   console.log("side", side);

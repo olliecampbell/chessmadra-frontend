@@ -180,7 +180,6 @@ export interface RepertoireState {
   differentMoveIndices?: number[];
   isCramming?: boolean;
   pendingResponses?: Record<string, RepertoireMove[]>;
-  getMovesDependentOnPosition: (epd: string) => number;
   inProgressUsingPlayerTemplate?: boolean;
   fetchPositionReportIfNeeded: () => void;
   ecoCodes: EcoCode[];
@@ -194,9 +193,11 @@ export interface RepertoireState {
     lastEcoCode?: EcoCode;
     selectedTab: EditingTab;
     etcModalOpen: boolean;
-    deleteConfirmationModalOpen: boolean;
     addConflictingMoveModalOpen: boolean;
-    deleteConfirmationResponse?: RepertoireMove;
+  };
+  deleteMoveState: {
+    modalOpen: boolean;
+    response?: RepertoireMove;
     isDeletingMove: boolean;
   };
   addedLineState: {
@@ -280,6 +281,10 @@ export const getInitialRepertoireState = (
   let initialState = {
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
+    deleteMoveState: {
+      modalOpen: false,
+      isDeletingMove: false,
+    },
     ecoCodes: [],
     debugPawnStructuresState: null,
     addedLineState: null,
@@ -295,9 +300,7 @@ export const getInitialRepertoireState = (
     editingState: {
       selectedTab: EditingTab.Position,
       etcModalOpen: false,
-      deleteConfirmationModalOpen: false,
       addConflictingMoveModalOpen: false,
-      isDeletingMove: false,
     },
     breadcrumbs: [
       {
@@ -520,31 +523,6 @@ export const getInitialRepertoireState = (
         return filter(s.currentMove.moves, (m) => {
           return isNil(s.completedReviewPositionMoves[m.sanPlus]);
         });
-      }),
-    getMovesDependentOnPosition: (epd: string) =>
-      get(([s]) => {
-        if (!s.repertoire) {
-          return 0;
-        }
-        let total = 0;
-        let seenEpds = new Set();
-        let recurse = (epd, isStart?: boolean) => {
-          let responses = s.repertoire[s.activeSide].positionResponses[epd];
-          if (isStart && first(responses)?.mine == false) {
-            return;
-          }
-          map(responses, (r) => {
-            if (r.mine) {
-              total += 1;
-            }
-            if (!seenEpds.has(r.epdAfter)) {
-              seenEpds.add(r.epdAfter);
-              recurse(r.epdAfter);
-            }
-          });
-        };
-        recurse(epd, true);
-        return total;
       }),
     onEditingPositionUpdate: () =>
       set(([s]) => {
@@ -811,8 +789,8 @@ export const getInitialRepertoireState = (
 
     deleteMoveConfirmed: () =>
       set(([s]) => {
-        let response = s.editingState.deleteConfirmationResponse;
-        s.editingState.isDeletingMove = true;
+        let response = s.deleteMoveState.response;
+        s.deleteMoveState.isDeletingMove = true;
         client
           .post("/api/v1/openings/delete_move", {
             response: response,
@@ -822,13 +800,16 @@ export const getInitialRepertoireState = (
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.onRepertoireUpdate();
-              s.backToStartPosition();
+              if (s.isBrowsing) {
+                s.browsingState.onPositionUpdate();
+              }
             });
           })
           .finally(() => {
             set(([s]) => {
-              s.editingState.isDeletingMove = false;
-              s.editingState.deleteConfirmationModalOpen = false;
+              s.deleteMoveState.isDeletingMove = false;
+              s.deleteMoveState.response = null;
+              s.deleteMoveState.modalOpen = false;
             });
           });
       }, "deleteMoveConfirmed"),
@@ -944,40 +925,17 @@ export const getInitialRepertoireState = (
             text: `${capitalize(side)}`,
             onPress: () => {
               set(([s]) => {
-                s.backToStartPosition();
+                s.startBrowsing(side);
               });
             },
           },
         ]);
         s.isBrowsing = true;
+        s.isEditing = false;
         s.browsingState.activeSide = side;
-        // TODO: can remove this once the states are separate
-        s.activeSide = side;
-        s.browsingState.drilldownState = {
-          epd: START_EPD,
-          sections: [],
-          line: [],
-          lines: [],
-          ecoCode: null,
-        };
-        s.browsingState.previousDrilldownStates = [];
-        s.browsingState.updateDrilldownStateAndSections(
-          s.browsingState.drilldownState.epd,
-          s.browsingState.drilldownState.line
-        );
-
-        if (s.browsingState.drilldownState.sections.length === 1) {
-          s.browsingState.previousDrilldownStates.pop();
-          s.browsingState.selectBrowserSection(
-            s.browsingState.drilldownState.sections[0],
-            true
-          );
-        }
-        if (s.browsingState.drilldownState.epd === START_EPD) {
-          s.browsingState.previousDrilldownStates.push(
-            s.browsingState.drilldownState
-          );
-        }
+        s.browsingState.onPositionUpdate();
+        s.browsingState.chessboardState.flipped =
+          s.browsingState.activeSide === "black";
       }, "startBrowsing"),
     startEditing: (side: Side) =>
       set(([s]) => {
@@ -986,7 +944,7 @@ export const getInitialRepertoireState = (
             text: `${capitalize(side)}`,
             onPress: () => {
               set(([s]) => {
-                s.startEditing(side);
+                s.startBrowsing(side);
               });
             },
           },
@@ -996,6 +954,7 @@ export const getInitialRepertoireState = (
           },
         ]);
         s.activeSide = side;
+        s.isBrowsing = false;
         s.isEditing = true;
         s.chessboardState.frozen = false;
         s.chessboardState.flipped = side === "black";
@@ -1192,9 +1151,9 @@ export const getInitialRepertoireState = (
                 }
               }
               s.onRepertoireUpdate();
-              // if (failOnAny(true) && !s.isEditing) {
-              //   s.startBrowsing("white");
-              // }
+              if (!s.isEditing) {
+                s.startBrowsing("white");
+              }
             });
           });
       }),

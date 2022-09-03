@@ -61,7 +61,6 @@ export const MoveLog = () => {
         s.chessboardState.position,
         s.differentMoveIndices,
       ],
-      shallow
     );
   let moveList = position.history({ verbose: true });
   forEach(moveList, (move, i) => {
@@ -267,7 +266,6 @@ const Responses = () => {
       s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
       s.playSan,
     ],
-    shallow
   );
   let coveredSans = new Set();
   forEach(existingMoves, (m) => {
@@ -597,7 +595,6 @@ const ResponseStatSection = ({
 const EditingTabPicker = () => {
   const [selectedTab, quick] = useRepertoireState(
     (s) => [s.editingState.selectedTab, s.quick],
-    shallow
   );
   return (
     <View style={s(c.column)}>
@@ -659,7 +656,7 @@ const PositionOverview = () => {
           s.getCurrentPositionReport()?.pawnStructure?.name
         ],
       ];
-    }, shallow);
+    }, );
   let fontColor = c.grays[60];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)

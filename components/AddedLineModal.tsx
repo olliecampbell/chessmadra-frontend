@@ -19,7 +19,7 @@ import shallow from "zustand/shallow";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const AddedLineModal = () => {
-  let [stage] = useRepertoireState((s) => [s.addedLineState?.stage], shallow);
+  let [stage] = useRepertoireState((s) => [s.addedLineState?.stage]);
 
   const isMobile = useIsMobile();
   return (
@@ -80,8 +80,7 @@ let ModalHeader = ({ title, closeModal, icon }) => {
 
 const AddedLineAddMore = () => {
   let [addedLineState, quick, repertoireGrades, side] = useRepertoireState(
-    (s) => [s.addedLineState, s.quick, s.repertoireGrades, s.activeSide],
-    shallow
+    (s) => [s.addedLineState, s.quick, s.repertoireGrades, s.activeSide]
   );
   const isMobile = useIsMobile();
   const buttonStyles = s(c.buttons.basicInverse, c.py(12), c.px(16), {
@@ -180,16 +179,13 @@ const AddedLineAddMore = () => {
 
 const AddedLineOverview = () => {
   let [addedLineState, quick, repertoireGrades, side, reviewLine] =
-    useRepertoireState(
-      (s) => [
-        s.addedLineState,
-        s.quick,
-        s.repertoireGrades,
-        s.activeSide,
-        s.reviewLine,
-      ],
-      shallow
-    );
+    useRepertoireState((s) => [
+      s.addedLineState,
+      s.quick,
+      s.repertoireGrades,
+      s.activeSide,
+      s.reviewLine,
+    ]);
   const isMobile = useIsMobile();
   console.log({ isMobile });
   const reportHeaderStyles = s(c.fg(c.grays[35]), c.mb(4));

@@ -271,6 +271,7 @@ const colors = {
   lightTile: hsl(180, 15, 70),
   darkTile: hsl(180, 15, 40),
 };
+const extraDarkBorder = border(`1px solid ${grays[7]}`);
 
 const basicButtonStyles = s(
   br(2),
@@ -526,4 +527,5 @@ export const c = {
   black,
   buttons,
   transform,
+  extraDarkBorder,
 };

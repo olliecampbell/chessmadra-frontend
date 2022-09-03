@@ -253,7 +253,6 @@ const Response = ({
         s.quick,
         s.chessboardState.position,
       ],
-      shallow
     );
   let side: Side = position?.turn() === "b" ? "black" : "white";
   const isMobile = useIsMobile();

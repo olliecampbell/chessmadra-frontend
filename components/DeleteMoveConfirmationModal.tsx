@@ -1,4 +1,3 @@
-
 import { Modal } from "./Modal";
 import { View } from "react-native";
 import { c, s } from "app/styles";
@@ -12,12 +11,11 @@ import { useRepertoireState } from "app/utils/app_state";
 export const DeleteMoveConfirmationModal = () => {
   let [open, isDeletingMove, deleteMoveConfirmed, quick] = useRepertoireState(
     (s) => [
-      s.editingState.deleteConfirmationModalOpen,
-      s.editingState.isDeletingMove,
+      s.deleteMoveState.modalOpen,
+      s.deleteMoveState.isDeletingMove,
       s.deleteMoveConfirmed,
       s.quick,
-    ],
-    shallow
+    ]
   );
 
   const isMobile = useIsMobile();
@@ -55,7 +53,7 @@ export const DeleteMoveConfirmationModal = () => {
                 style={s(c.buttons.outlineDark, c.height(36), c.selfEnd)}
                 onPress={() => {
                   quick((s) => {
-                    s.editingState.deleteConfirmationModalOpen = false;
+                    s.deleteMoveState.modalOpen = false;
                   });
                 }}
               >

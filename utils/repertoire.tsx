@@ -110,7 +110,15 @@ export interface PendingLine {
 }
 
 export const formatIncidence = (incidence: number) => {
-  return `${removeTrailingZeros((incidence * 100).toFixed(1))}%`;
+  let format = (i: number) => {
+    return `${removeTrailingZeros((incidence * 100).toFixed(i))}%`;
+  };
+  let x = format(1);
+  if (x === "0%") {
+    return format(2);
+  } else {
+    return x;
+  }
 };
 
 const removeTrailingZeros = (n: string) => {

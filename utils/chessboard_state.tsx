@@ -64,10 +64,11 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
 export interface ChessboardDelegate {
   shouldMakeMove?: (move: Move) => boolean;
   madeMove?: (move: Move) => void;
+  onPositionUpdated?: () => void;
   completedMoveAnimation?: (move: Move) => void;
 }
 
-export const createChessState = <T extends ChessboardState>(
+export const createChessState = (
   set: StateSetter<ChessboardState, any>,
   get: StateGetter<ChessboardState, any>,
   initialize?: (c: ChessboardState) => void
@@ -86,18 +87,23 @@ export const createChessState = <T extends ChessboardState>(
     position: new Chess(),
     moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
+    moveLogPgn: "",
     moveIndicatorOpacityAnim: new Animated.Value(0),
     ...createQuick(set),
     backOne: () => {
       set((s) => {
-        s.positionHistory.pop();
-        s.position.undo();
+        if (s.positionHistory.length > 1) {
+          s.positionHistory.pop();
+          s.position.undo();
+          s.delegate?.onPositionUpdated?.();
+        }
       });
     },
     resetPosition: () => {
       set((s) => {
         s.positionHistory = [START_EPD];
         s.position = new Chess();
+        s.delegate?.onPositionUpdated?.();
       });
     },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
@@ -114,7 +120,6 @@ export const createChessState = <T extends ChessboardState>(
             if (skipAnimation) {
               console.log("Yup moving");
               s.makeMove(availableMove);
-              s.delegate.madeMove?.(availableMove);
             } else {
               s.animatePieceMove(
                 availableMove,
@@ -125,7 +130,6 @@ export const createChessState = <T extends ChessboardState>(
                   });
                 }
               );
-              s.delegate.madeMove?.(availableMove);
             }
           };
           if (s.delegate.shouldMakeMove(availableMove)) {
@@ -206,8 +210,11 @@ export const createChessState = <T extends ChessboardState>(
         s.availableMoves = [];
         let moveObject = s.position.move(m);
         if (moveObject) {
+          console.log("Made move?");
           let epd = genEpd(s.position);
           s.positionHistory.push(epd);
+          s.delegate.madeMove?.(moveObject);
+          s.delegate?.onPositionUpdated?.();
         }
       });
     },

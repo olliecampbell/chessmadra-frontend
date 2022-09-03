@@ -30,6 +30,7 @@ import {
   zip,
   sortBy,
   findLast,
+  groupBy,
 } from "lodash";
 import {
   BySide,
@@ -57,11 +58,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { logProxy } from "./state";
 import { RepertoireState } from "./repertoire_state";
-// let COURSE = "99306";
-let COURSE = null;
-// let ASSUME = "1.c4";
-let ASSUME = null;
-let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
+
 export interface QuizMove {
   move: RepertoireMove;
   line: string;
@@ -75,9 +72,9 @@ export enum AddLineFromOption {
 }
 
 export enum BrowsingTab {
-  Lines = "Position",
-  InstructiveGames = "Responses",
-  Misses = "Misses",
+  Lines = "Saved lines",
+  InstructiveGames = "Instructive games",
+  Misses = "Biggest gaps",
 }
 
 export interface BrowsingState {
@@ -85,10 +82,8 @@ export interface BrowsingState {
   selectedTab: BrowsingTab;
   activeSide?: Side;
   chessboardState?: ChessboardState;
-  drilldownState?: BrowserDrilldownState;
-  previousDrilldownStates?: BrowserDrilldownState[];
-  selectDrilldownState: (drilldownState: BrowserDrilldownState) => void;
-  updateDrilldownStateAndSections: (epd: string, line: string[]) => void;
+  sections: BrowserSection[];
+  onPositionUpdate: () => void;
   selectBrowserSection: (
     section: BrowserSection,
     includeInPreviousStates: boolean
@@ -103,17 +98,17 @@ export interface BrowserDrilldownState {
   ecoCode: EcoCode;
 }
 
-export interface BrowserSection {
+export interface BrowserLine {
   epd: string;
   pgn: string;
-  eco_code?: EcoCode;
-  line?: string[];
-  numMoves?: { withTranspositions: number; withoutTranspositions: number };
+  ecoCode: EcoCode;
+  line: string[];
+  deleteMove: RepertoireMove;
 }
 
-interface BrowserLine {
-  line: string;
-  epd: string;
+export interface BrowserSection {
+  lines: BrowserLine[];
+  ecoCode: EcoCode;
 }
 
 type Stack = [BrowsingState, RepertoireState, AppState];
@@ -138,51 +133,41 @@ export const getInitialBrowsingState = (
   let initialState = {
     readOnly: false,
     selectedTab: BrowsingTab.Lines,
-    selectDrilldownState: (browserState: BrowserDrilldownState) =>
-      set(([s]) => {
-        while (true) {
-          let lastState = s.previousDrilldownStates.pop();
-          console.log("Previous states", logProxy(s.previousDrilldownStates));
-          if (lastState.ecoCode?.fullName === browserState.ecoCode?.fullName) {
-            console.log(`Pushing`, logProxy(lastState));
-            s.previousDrilldownStates.push(lastState);
-            s.drilldownState = browserState;
-            break;
-          }
-        }
-      }),
-    updateDrilldownStateAndSections: (epd: string, line: string[]) =>
+    onPositionUpdate: (epd: string, line: string[]) =>
       set(([s, repertoireState]) => {
         if (!repertoireState.repertoire) {
           return;
         }
         let ecoCodeLookup = repertoireState.ecoCodeLookup;
-        s.drilldownState = {
-          epd: epd,
-          sections: [],
-          line: line,
-          lines: [],
-          ecoCode: ecoCodeLookup[epd],
-        };
 
-        let sections: BrowserSection[] = [];
         let responses =
           repertoireState.repertoire[s.activeSide].positionResponses;
-        let paths = [];
-        if (!isEmpty(line)) {
-          paths.push({ line: lineToPgn(line), epd: epd });
-        }
-        let seenEpds = new Set(
-          s.drilldownState?.sections?.map((s) => s.epd) ?? []
-        );
-        let historyEcoFullNames = new Set();
-        [...s.previousDrilldownStates, s.drilldownState].forEach((p) => {
-          if (p.ecoCode) {
-            historyEcoFullNames.add(p.ecoCode.fullName);
+        let uniqueLines = [] as BrowserLine[];
+        let recurse = (
+          path: string,
+          epd: string,
+          moveNumber: number,
+          seenEpds: Set<string>,
+          lastEcoCode: EcoCode,
+          lastOnlyMove?: RepertoireMove
+        ) => {
+          let moves = responses[epd];
+          if (isEmpty(moves) && !isEmpty(path)) {
+            uniqueLines.push({
+              epd: epd,
+              pgn: path,
+              ecoCode: lastEcoCode,
+              line: pgnToLine(path),
+              deleteMove: lastOnlyMove,
+            });
+            return;
           }
-        });
-        let recurse = (path: string, epd: string, moveNumber: number) => {
-          responses[epd]?.forEach((m) => {
+          if (moves?.length === 1 && isNil(lastOnlyMove)) {
+            lastOnlyMove = moves[0];
+          } else if (moves?.length !== 1) {
+            lastOnlyMove = null;
+          }
+          moves?.forEach((m) => {
             let n = moveNumber / 2 + 1;
             let newPath = null;
             if (moveNumber % 2 == 0) {
@@ -195,80 +180,54 @@ export const getInitialBrowsingState = (
               newPath = `${path} ${m.sanPlus}`;
             }
             let ecoCode = ecoCodeLookup[m.epdAfter];
-            let myResponse = responses[m.epdAfter]?.[0];
-            const nextEcoCode = ecoCodeLookup[myResponse?.epdAfter];
-            if (
-              ecoCode &&
-              !historyEcoFullNames.has(ecoCode.fullName) &&
-              (m.mine || (!m.mine && !nextEcoCode))
-            ) {
-              sections.push({
-                epd: m.epdAfter,
-                eco_code: ecoCode,
-                line: pgnToLine(newPath),
-                pgn: newPath,
-                numMoves:
-                  repertoireState.repertoireNumMoves[s.activeSide][m.epdAfter],
-              } as BrowserSection);
-              seenEpds.add(m.epdAfter);
-            }
-            // if (
-            //   (side == "white" && moveNumber % 2 == 0) ||
-            //   (side == "black" && moveNumber % 2 == 1)
-            // ) {
-            // }
             if (!seenEpds.has(m.epdAfter)) {
-              seenEpds.add(m.epdAfter);
-              paths.push({ line: newPath, epd: m.epdAfter });
-              recurse(newPath, m.epdAfter, moveNumber + 1);
-            }
-            if (s.drilldownState.sections.length === 1) {
-              s.updateDrilldownStateAndSections(
-                s.drilldownState.sections[0].epd,
-                s.drilldownState.sections[0].line
+              let newSeenEpds = new Set(seenEpds);
+              newSeenEpds.add(m.epdAfter);
+              // paths.push({ line: newPath, epd: m.epdAfter });
+              recurse(
+                newPath,
+                m.epdAfter,
+                moveNumber + 1,
+                newSeenEpds,
+                ecoCode ?? lastEcoCode,
+                lastOnlyMove ?? m
               );
             }
           });
         };
         recurse(
-          lineToPgn(s.drilldownState.line),
-          s.drilldownState.epd,
-          s.drilldownState.line.length ?? 0
+          s.chessboardState.moveLogPgn,
+          last(s.chessboardState.positionHistory),
+          pgnToLine(s.chessboardState.moveLogPgn)?.length ?? 0,
+          new Set(),
+          null
         );
-        // TODO: can optimize this probably
-        paths = paths.filter(({ line }) => {
-          if (
-            some(paths, (p2) => p2.line.startsWith(line) && line !== p2.line) ||
-            some(sections, (s) => s.pgn.startsWith(line) && line !== s.pgn)
-          ) {
-            return false;
-          } else {
-            return true;
+        uniqueLines = sortBy(uniqueLines, (l) => {
+          console.log("Yeah hitting this case");
+          if (isNil(l.ecoCode) || !l.ecoCode.fullName.includes(":")) {
+            console.log("Yeah hitting this case");
+            return "ZZZ";
           }
+          return l.ecoCode?.fullName;
         });
-        s.drilldownState.lines = paths.map((p) => {
-          return {
-            line: p.line,
-            epd: p.epd,
-          };
-        });
-        s.drilldownState.sections = sortBy(
-          sections,
-          (s) => -s.numMoves.withTranspositions
+        s.sections = sortBy(
+          map(
+            groupBy(
+              uniqueLines,
+              (line) =>
+                line.ecoCode && getNameEcoCodeIdentifier(line.ecoCode.fullName)
+            ),
+            (lines, ecoName) => {
+              return {
+                lines: lines,
+                ecoCode: lines[0].ecoCode,
+              } as BrowserSection;
+            }
+          ),
+          (section) => {
+            return -section.lines.length;
+          }
         );
-      }),
-    selectBrowserSection: (
-      browserSection: BrowserSection,
-      includeInPreviousStates: boolean
-    ) =>
-      set(([s]) => {
-        s.updateDrilldownStateAndSections(
-          browserSection.epd,
-          browserSection.line
-        );
-        if (includeInPreviousStates) {
-          s.previousDrilldownStates.push(s.drilldownState);
-        }
       }),
   } as BrowsingState;
 
@@ -285,7 +244,12 @@ export const getInitialBrowsingState = (
       // c.frozen = true;
       c.delegate = {
         completedMoveAnimation: () => {},
-        madeMove: () => set(([s]) => {}),
+        onPositionUpdated: () => {
+          set(([s]) => {
+            s.onPositionUpdate();
+          });
+        },
+        madeMove: () => {},
 
         shouldMakeMove: (move: Move) =>
           set(([s]) => {

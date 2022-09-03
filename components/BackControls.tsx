@@ -64,17 +64,14 @@ export const BackControls: React.FC<BackControlsProps> = ({
     currentLine,
     backToStartPosition,
     backOne,
-  ] = useRepertoireState(
-    (s) => [
-      s.searchOnChessable,
-      s.analyzeLineOnLichess,
-      s.quick,
-      s.currentLine,
-      s.backToStartPosition,
-      s.backOne,
-    ],
-    shallow
-  );
+  ] = useRepertoireState((s) => [
+    s.searchOnChessable,
+    s.analyzeLineOnLichess,
+    s.quick,
+    s.currentLine,
+    s.backToStartPosition,
+    s.backOne,
+  ]);
   const isMobile = useIsMobile();
   let gap = isMobile ? 6 : 12;
   let foreground = c.grays[90];
@@ -113,7 +110,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
               analyzeLineOnLichess(currentLine);
             }}
           >
-            <View style={s(c.size(22))}>
+            <View style={s(c.size(isMobile ? 20 : 22))}>
               <LichessLogoIcon color={foreground} />
             </View>
             <Spacer width={8} />

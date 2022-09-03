@@ -17,7 +17,6 @@ export const ShareRepertoireModal = () => {
       s.quick,
       s.updateShareLink,
     ],
-    shallow
   );
 
   const isMobile = useIsMobile();

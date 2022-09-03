@@ -28,9 +28,10 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import { every, isEqualWith, isObject, map, zip } from "lodash";
+import { every, isEqualWith, isObject, keysIn, map, zip } from "lodash";
 import { Chess } from "@lubert/chess.ts";
 import { immerable } from "immer";
+import { Animated } from "react-native";
 
 Chess[immerable] = true;
 
@@ -109,23 +110,85 @@ export const useAppState = create<AppState>()(
     { name: "AppState" }
   )
 );
+const logUnequal = (a, b, path) => {
+  console.log(`This wasn't equal! Path is ${path}`, a, b);
+};
 
-const customEqualityCheck = (a, b) => {
+const customEqualityCheck = (a, b, path, debug) => {
+  // if (debug) {
+  //   console.log("What about this path?", path);
+  // }
+  // if (a === b) {
+  //   if (debug) {
+  //     console.log("Reference equality checks out");
+  //   }
+  //   return true;
+  // }
   if (a instanceof Chess && b instanceof Chess) {
     return a.fen() === b.fen();
   }
-  return undefined;
+  if (a instanceof Animated.Value || b instanceof Animated.Value) {
+    return a === b;
+  }
+  if (a instanceof Animated.ValueXY || b instanceof Animated.ValueXY) {
+    return a === b;
+  }
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) {
+      if (debug) {
+        logUnequal(a, b, path);
+      }
+      return false;
+    }
+    let arrayEqual = every(
+      zip(a, b).map(([a, b], i) => {
+        let newPath = path;
+        if (debug) {
+          newPath = newPath + `[${i}]`;
+        }
+        return customEqualityCheck(a, b, newPath, debug);
+      })
+    );
+    return arrayEqual;
+  }
+  if (isObject(a) && isObject(b)) {
+    let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
+    // console.log({ allKeys: allKeys.keys() });
+    return every([...allKeys], (k) => {
+      let newPath = path;
+      let a1 = a[k];
+      let b1 = b[k];
+      if (debug) {
+        newPath = newPath + `.${k}`;
+      }
+      // console.log(`Recursing w/ key ${k}`);
+      return customEqualityCheck(a1, b1, newPath, debug);
+    });
+  }
+  let plainEquality = a == b;
+  if (!plainEquality && debug) {
+    logUnequal(a, b, path);
+  }
+  return plainEquality;
 };
 
-export function equality(a: any[], b: any[]): boolean {
-  return isEqualWith(a, b, customEqualityCheck);
+export function equality(a: any, b: any, debug?: boolean): boolean {
+  return customEqualityCheck(a, b, "", debug);
+  // let isEqual = isEqualWith(a, b, customEqualityCheck);
+  // if (debug) {
+  //   console.log("Not equal!", a, b);
+  // }
+  // return isEqual;
 }
 
 export const useRepertoireState = <T,>(
   fn: (_: RepertoireState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppState((s) => fn(s.repertoireState), equality);
+  return useAppState(
+    (s) => fn(s.repertoireState),
+    (a, b) => equality(a, b, debug)
+  );
 };
 
 export const useVisualizationState = <T,>(

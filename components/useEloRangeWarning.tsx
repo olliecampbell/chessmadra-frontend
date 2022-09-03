@@ -26,7 +26,6 @@ const ELO_RANGES = [
 export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
   let [user, updateEloRange, isUpdatingEloRange] = useRepertoireState(
     (s) => [s.user, s.updateEloRange, s.isUpdatingEloRange],
-    shallow
   );
   let [selectedEloRange, setSelectedEloRange] = useState(
     (user?.eloRange ? parseEloRange(user.eloRange) : DEFAULT_ELO_RANGE) as [
