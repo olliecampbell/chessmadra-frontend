@@ -9,4 +9,5 @@ RUN npx expo export:web
 
 FROM joseluisq/static-web-server
 COPY --from=base /base/web-build /public
+COPY ./entrypoint.sh ./
 ENTRYPOINT ["./entrypoint.sh"]
