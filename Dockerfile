@@ -9,4 +9,4 @@ RUN npx expo export:web
 
 FROM joseluisq/static-web-server
 COPY --from=base /base/web-build /public
-CMD ["--port=80", "--page-fallback=/public/index.html"]
+ENTRYPOINT ["static-web-server", "--port=80", "--page-fallback=/public/index.html"]
