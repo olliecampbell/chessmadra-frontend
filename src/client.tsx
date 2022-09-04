@@ -8,7 +8,7 @@ const client = applyCaseMiddleware(
   axios.create({
     baseURL:
       !process.env.NODE_ENV || process.env.NODE_ENV === "development"
-        ? "http://localhost:8040"
+        ? "http://marcus.local:8040"
         : undefined,
   }),
   {

@@ -298,8 +298,9 @@ const Responses = () => {
     }
   );
   let youCanPlay = filter(tableResponses, (tr) => {
-    return !isNil(tr.repertoireMove) && activeSide === side;
+    return activeSide === side;
   });
+  console.log({ youCanPlay });
   // let myMoves =
   // let otherMoves = filter(tableResponses, (tr) => {
   //   return isNil(tr.repertoireMove) && activeSide === side;
@@ -317,11 +318,7 @@ const Responses = () => {
   return (
     <View style={s(c.column, c.width(500), c.constrainWidth)}>
       {!isEmpty(youCanPlay) && (
-        <Animated.View
-          entering={SlideInLeft}
-          style={s()}
-          key={`you-can-play-${currentEpd}`}
-        >
+        <Animated.View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
             {...{
               header: `You can play`,
