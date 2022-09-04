@@ -1,4 +1,3 @@
 #!/bin/sh
 static-web-server --help
-echo "SERVER PORT: " $SERVER_PORT
-static-web-server --port 80 --page-fallback /public/index.html
+SERVER_PORT=80 static-web-server --port 80 --page-fallback /public/index.html
