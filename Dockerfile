@@ -7,7 +7,8 @@ COPY . .
 ENV NODE_ENV=production
 RUN npx expo export:web
 
-FROM joseluisq/static-web-server
+FROM joseluisq/static-web-server:2
 COPY --from=base /base/web-build /public
-COPY ./entrypoint.sh ./
-ENTRYPOINT ["./entrypoint.sh"]
+COPY ./entrypoint.sh /
+RUN ls
+ENTRYPOINT ["/entrypoint.sh"]
