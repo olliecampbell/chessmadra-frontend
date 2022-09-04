@@ -285,6 +285,7 @@ export const getInitialVisualizationState = (
         state.showPuzzlePosition = true;
         state.chessboardState.flashRing(true);
         state.chessboardState.position = state.puzzleState.puzzlePosition;
+        state.chessboardState.futurePosition = null;
       });
     },
     onPuzzleMoveFailure: (move: Move) => {

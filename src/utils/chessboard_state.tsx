@@ -246,10 +246,11 @@ export const createChessState = (
     makeMove: (m: Move | string) => {
       set((s) => {
         s.availableMoves = [];
-        let moveObject = s.position.move(m);
+        let pos = s.futurePosition ?? s.position;
+        let moveObject = pos.move(m);
         if (moveObject) {
           console.log("Made move?");
-          let epd = genEpd(s.position);
+          let epd = genEpd(pos);
           s.positionHistory.push(epd);
           s.getDelegate()?.madeMove?.(moveObject);
           s.getDelegate()?.onPositionUpdated?.();
