@@ -581,6 +581,9 @@ export const getInitialRepertoireState = (
     fetchNeededPositionReports: () =>
       set(([s]) => {
         let side = s.activeSide;
+        if (isNil(side)) {
+          return;
+        }
         let neededPositions = [];
         s.chessboardState.positionHistory.forEach((epd) => {
           if (!s.positionReports[epd]) {
