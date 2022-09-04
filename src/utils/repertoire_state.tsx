@@ -848,7 +848,16 @@ export const getInitialRepertoireState = (
             let variationLine = [...line, variationMove.sanPlus];
             seen_epds.add(variationMove.epdAfter);
             pgn += "(";
-            pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
+            if (sideOfLastmove(variationLine) === "black") {
+              let n = Math.floor(variationLine.length / 2);
+
+              pgn +=
+                `${n}...` +
+                getLastMoveWithNumber(lineToPgn(variationLine)).trim() +
+                " ";
+            } else {
+              pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
+            }
 
             recurse(variationMove.epdAfter, variationLine);
             pgn = pgn.trim();
@@ -869,6 +878,7 @@ export const getInitialRepertoireState = (
         };
         recurse(START_EPD, []);
         pgn = pgn.trim();
+        console.log("Pgn exported is: ", pgn);
 
         let downloadLink = document.createElement("a");
 
