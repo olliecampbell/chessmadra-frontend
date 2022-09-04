@@ -855,7 +855,7 @@ export const getInitialRepertoireState = (
               let n = Math.floor(variationLine.length / 2);
 
               pgn +=
-                `${n}...` +
+                `${n}... ` +
                 getLastMoveWithNumber(lineToPgn(variationLine)).trim() +
                 " ";
             } else {
