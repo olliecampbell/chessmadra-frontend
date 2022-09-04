@@ -8,6 +8,5 @@ ENV NODE_ENV=production
 RUN npx expo export:web
 
 FROM joseluisq/static-web-server
-ENV SERVER_FALLBACK_PAGE=./public/index.html
-ENV SERVER_PORT=80
 COPY --from=base /base/web-build /public
+RUN static-web-server --port=80 --page-fallback=/public/index.html
