@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -152,14 +152,14 @@ export const Directory = () => {
                       {description}
                     </CMText>
                     <Spacer grow height={12} />
-                    <View
+                    <Pressable
                       style={s(c.buttons.primary, c.selfEnd, c.minWidth(120))}
                       onPress={(e) => {}}
                     >
                       <CMText style={s(c.buttons.primary.textStyles)}>
                         Start
                       </CMText>
-                    </View>
+                    </Pressable>
                   </View>
                 </Link>
               );

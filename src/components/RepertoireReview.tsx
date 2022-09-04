@@ -65,9 +65,9 @@ export const RepertoireReview = (props: {}) => {
     s.currentMove,
   ]);
   let backToOverviewRow = (
-    <View
+    <Pressable
       style={s(c.row, c.alignCenter, c.clickable)}
-      onClick={() => {
+      onPress={() => {
         backToOverview();
       }}
     >
@@ -79,7 +79,7 @@ export const RepertoireReview = (props: {}) => {
       <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
         Back to overview
       </CMText>
-    </View>
+    </Pressable>
   );
   return (
     <TrainerLayout
@@ -156,7 +156,7 @@ export const RepertoireReview = (props: {}) => {
               let qm = s.currentMove;
               s.backToOverview();
               s.startEditing(qm.moves[0].side);
-              s.playPgn(qm.line);
+              s.chessboardState.playPgn(qm.line);
             });
           }}
         >

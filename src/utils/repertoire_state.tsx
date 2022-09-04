@@ -122,7 +122,6 @@ export interface RepertoireState {
   }) => void;
   user?: User;
   initState: () => void;
-  playPgn: (pgn: string) => void;
   playSan: (pgn: string) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
   isAddingPendingLine: boolean;
@@ -180,7 +179,7 @@ export interface RepertoireState {
   isCramming?: boolean;
   pendingResponses?: Record<string, RepertoireMove[]>;
   inProgressUsingPlayerTemplate?: boolean;
-  fetchPositionReportIfNeeded: () => void;
+  fetchNeededPositionReports: () => void;
   ecoCodes: EcoCode[];
   pawnStructures: PawnStructureDetails[];
   ecoCodeLookup: Record<string, EcoCode>;
@@ -377,23 +376,10 @@ export const getInitialRepertoireState = (
             });
           });
       }, "updateEloRange"),
-    playPgn: (pgn: string) =>
-      set(([s]) => {
-        s.backToStartPosition();
-        pgnToLine(pgn).map((san) => {
-          s.chessboardState.makeMove(san);
-          if (s.isEditing) {
-            s.onMove();
-          }
-        });
-      }, "playPgn"),
     playSan: (san: string) =>
       set(([s]) => {
         s.chessboardState.makeMove(san);
-        if (s.isEditing) {
-          s.onMove();
-        }
-      }, "playSan"),
+      }),
     usePlayerTemplate: (id: string) =>
       set(async ([s]) => {
         s.inProgressUsingPlayerTemplate = true;
@@ -590,28 +576,45 @@ export const getInitialRepertoireState = (
           flatten(values(s.pendingResponses)),
           (m) => m.mine
         );
-        s.fetchPositionReportIfNeeded();
+        s.fetchNeededPositionReports();
       }, "onEditingPositionUpdate"),
-    fetchPositionReportIfNeeded: () =>
+    fetchNeededPositionReports: () =>
       set(([s]) => {
         let epd = s.getCurrentEpd();
         let side = s.activeSide;
-        if (!isNil(s.getCurrentPositionReport())) {
+        let neededPositions = [];
+        s.chessboardState.positionHistory.forEach((epd) => {
+          if (!s.positionReports[epd]) {
+            neededPositions.push(epd);
+          }
+        });
+        let currentReport = s.positionReports[side][s.getCurrentEpd()];
+        if (currentReport) {
+          currentReport.suggestedMoves.forEach((sm) => {
+            let epd = sm.epdAfter;
+            if (!s.positionReports[epd]) {
+              neededPositions.push(epd);
+            }
+          });
+        }
+        if (isEmpty(neededPositions)) {
           return;
         }
         client
-          .post("/api/v1/openings/position_report", {
-            epd: epd,
+          .post("/api/v1/openings/position_reports", {
+            epds: neededPositions,
           })
-          .then(({ data }: { data: PositionReport }) => {
+          .then(({ data: reports }: { data: PositionReport[] }) => {
             set(([s]) => {
-              s.positionReports[side][epd] = data;
+              reports.forEach((report) => {
+                s.positionReports[side][report.epd] = report;
+              });
             });
           })
           .finally(() => {
             // set(([s]) => {});
           });
-      }, "fetchPositionReportIfNeeded"),
+      }),
     onMove: () =>
       set(([s]) => {
         if (s.debugPawnStructuresState) {
@@ -948,6 +951,16 @@ export const getInitialRepertoireState = (
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
           s.browsingState.activeSide === "black";
+
+        if (s.browsingState.activeSide === "white") {
+          let startResponses =
+            s.repertoire?.[s.browsingState.activeSide]?.positionResponses[
+              START_EPD
+            ];
+          if (startResponses?.length === 1) {
+            s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
+          }
+        }
       }, "startBrowsing"),
     startEditing: (side: Side) =>
       set(([s]) => {
@@ -1119,7 +1132,9 @@ export const getInitialRepertoireState = (
           }
         );
         // s.debugPawnStructuresState.r
-        s.playPgn(lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES)));
+        s.chessboardState.playPgn(
+          lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
+        );
       }),
     fetchSharedRepertoire: (id: string) =>
       set(([s]) => {
@@ -1163,6 +1178,10 @@ export const getInitialRepertoireState = (
                 }
               }
               s.onRepertoireUpdate();
+              s.startEditing("white");
+              s.chessboardState.playPgn(
+                "1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e5 6.Ndb5 d6 7.Bg5 a6 8.Na3 b5 9.Nd5 Be7 10.Bxf6 Bxf6 11.c3 O-O 12.Nc2 Bg5"
+              );
             });
           });
       }),
@@ -1321,7 +1340,7 @@ export const getInitialRepertoireState = (
       c.frozen = true;
       c.delegate = {
         completedMoveAnimation: () => {},
-        madeMove: () =>
+        onPositionUpdated: () =>
           set(([s]) => {
             if (s.isEditing) {
               s.onMove();

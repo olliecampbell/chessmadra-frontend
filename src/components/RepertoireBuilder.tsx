@@ -524,7 +524,7 @@ const BiggestMissBoards = ({
             let onClick = () =>
               state.quick((s) => {
                 state.startEditing(side as Side);
-                state.playPgn(x.lines[0]);
+                state.chessboardState.playPgn(x.lines[0]);
               });
             return (
               <View style={s(c.column, c.center)} key={`miss-${i}`}>

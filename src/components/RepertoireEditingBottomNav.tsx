@@ -62,6 +62,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
     Animated.timing(fadeAnim, {
       toValue: visible ? 1 : 0,
       duration: 200,
+      useNativeDriver: false,
     }).start();
   }, [visible]);
 

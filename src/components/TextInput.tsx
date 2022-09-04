@@ -16,6 +16,7 @@ export const CMTextInput = ({
   const [focus, setFocus] = useState(false);
   return (
     <TextInput
+      // @ts-ignore
       onKeyDown={onKeyDown}
       // @ts-ignore
       className="text-input"

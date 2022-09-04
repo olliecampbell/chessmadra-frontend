@@ -164,7 +164,7 @@ const AddedLineAddMore = () => {
           onPress={() => {
             quick((s) => {
               s.addedLineState.stage = AddedLineStage.AddAnother;
-              s.playPgn(boardLine);
+              s.chessboardState.playPgn(boardLine);
               s.addedLineState = null;
             });
           }}

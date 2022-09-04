@@ -76,6 +76,7 @@ export interface PlayerTemplateMeta {
 }
 
 export interface PositionReport {
+  epd: string;
   suggestedMoves: SuggestedMove[];
   pawnStructure: PawnStructure;
   stockfish?: StockfishReport;
@@ -96,6 +97,7 @@ export interface StockfishReport {
 
 export interface SuggestedMove {
   sanPlus: string;
+  epdAfter: string;
   stockfish?: StockfishReport;
   results: GameResultsDistribution;
   masterResults: GameResultsDistribution;

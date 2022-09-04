@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useMemo, useRef } from "react";
 import {
   Animated,
   PanResponder,
+  PanResponderInstance,
   Pressable,
   useWindowDimensions,
   View,
@@ -197,7 +198,7 @@ export const ChessboardView = ({
   const didImmediatelyTap = useRef(false);
   const panResponders = useMemo(() => {
     // @ts-ignore
-    let panResponders: Record<Square, PanResponder> = {};
+    let panResponders: Record<Square, PanResponderInstance> = {};
     Object.keys(SQUARES).map((sq: Square) => {
       panResponders[sq] = PanResponder.create({
         // Ask to be the responder:

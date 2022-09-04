@@ -2,7 +2,7 @@ import { c, s } from "app/styles";
 import React from "react";
 import { Pressable, View, Animated } from "react-native";
 import { BarLoader } from "react-spinners";
-import { LoaderSizeMarginProps } from "react-spinners/interfaces";
+// import { LoaderSizeMarginProps } from "react-spinners/interfaces";
 import { CMText } from "./CMText";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -14,7 +14,7 @@ export const Button = ({
   loaderProps,
 }: {
   onPress?: any;
-  loaderProps?: LoaderSizeMarginProps;
+  loaderProps?: any;
   style?: any;
   children: any;
   isLoading?: boolean;

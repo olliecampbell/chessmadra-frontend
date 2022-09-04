@@ -154,9 +154,9 @@ export const RepertoireWizard = () => {
         {isNil(activeOpeningSource) &&
           state.hasCompletedRepertoireInitialization && (
             <>
-              <View
+              <Pressable
                 style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
-                onClick={() => {
+                onPress={() => {
                   state.backToOverview();
                 }}
               >
@@ -168,7 +168,7 @@ export const RepertoireWizard = () => {
                 <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
                   Back to repertoire
                 </CMText>
-              </View>
+              </Pressable>
               <Spacer height={24} />
             </>
           )}
@@ -204,9 +204,9 @@ export const RepertoireWizard = () => {
         {!isNil(activeOpeningSource) && (
           <View style={s(c.column, c.fullWidth)}>
             {!state.inProgressUsingPlayerTemplate && (
-              <View
+              <Pressable
                 style={s(c.row, c.alignCenter, c.clickable, c.pl(4))}
-                onClick={() => {
+                onPress={() => {
                   setActiveOpeningSource(null);
                 }}
               >
@@ -218,7 +218,7 @@ export const RepertoireWizard = () => {
                 <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
                   Back
                 </CMText>
-              </View>
+              </Pressable>
             )}
             <Spacer height={12} />
             {activeOpeningSource === OpeningSource.Templates && (

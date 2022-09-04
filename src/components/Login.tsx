@@ -121,8 +121,10 @@ export default function Login({ signup }: { signup?: boolean }) {
                           signIn();
                         }}
                         placeholder="E-mail"
+                        // @ts-ignore
                         type="email"
                         onChange={(e) => {
+                          // @ts-ignore
                           setEmail(e.target.value);
                         }}
                         autoComplete="email"

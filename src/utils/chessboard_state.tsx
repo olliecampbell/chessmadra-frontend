@@ -10,8 +10,10 @@ import { genEpd, getSquareOffset, START_EPD } from "./chess";
 import { Side } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
+import { pgnToLine } from "app/utils/repertoire";
 
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
+  playPgn: (pgn: string) => void;
   frozen?: boolean;
   positionHistory: string[];
   position?: Chess;
@@ -59,6 +61,10 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   makeMove: (m: Move | string) => void;
   backOne: () => void;
   resetPosition: () => void;
+  stopNotifyingDelegates: () => void;
+  getDelegate: () => ChessboardDelegate;
+  resumeNotifyingDelegates: () => void;
+  notifyingDelegates: boolean;
 }
 
 export interface ChessboardDelegate {
@@ -75,6 +81,26 @@ export const createChessState = (
 ): ChessboardState => {
   let initialState = {
     isColorTraining: false,
+    notifyingDelegates: true,
+    getDelegate: () => {
+      return get((s) => {
+        if (s.notifyingDelegates) {
+          return s.delegate;
+        } else {
+          return null;
+        }
+      });
+    },
+    stopNotifyingDelegates: () => {
+      set((s) => {
+        s.notifyingDelegates = false;
+      });
+    },
+    resumeNotifyingDelegates: () => {
+      set((s) => {
+        s.notifyingDelegates = true;
+      });
+    },
     availableMoves: [],
     ringColor: null,
     positionHistory: [START_EPD],
@@ -95,7 +121,7 @@ export const createChessState = (
         if (s.positionHistory.length > 1) {
           s.positionHistory.pop();
           s.position.undo();
-          s.delegate?.onPositionUpdated?.();
+          s.getDelegate()?.onPositionUpdated?.();
         }
       });
     },
@@ -103,7 +129,7 @@ export const createChessState = (
       set((s) => {
         s.positionHistory = [START_EPD];
         s.position = new Chess();
-        s.delegate?.onPositionUpdated?.();
+        s.getDelegate()?.onPositionUpdated?.();
       });
     },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
@@ -126,13 +152,13 @@ export const createChessState = (
                 PlaybackSpeed.Normal,
                 (completed) => {
                   set((s) => {
-                    s.delegate.completedMoveAnimation(availableMove);
+                    s.getDelegate().completedMoveAnimation(availableMove);
                   });
                 }
               );
             }
           };
-          if (s.delegate.shouldMakeMove(availableMove)) {
+          if (s.getDelegate().shouldMakeMove(availableMove)) {
             makeMove();
           }
           return;
@@ -205,6 +231,18 @@ export const createChessState = (
         });
       });
     },
+    playPgn: (pgn: string) => {
+      set((s) => {
+        s.stopNotifyingDelegates();
+        s.availableMoves = [];
+        s.resetPosition();
+        pgnToLine(pgn).map((san) => {
+          s.makeMove(san);
+        });
+        s.resumeNotifyingDelegates();
+        s.getDelegate()?.onPositionUpdated?.();
+      });
+    },
     makeMove: (m: Move | string) => {
       set((s) => {
         s.availableMoves = [];
@@ -213,8 +251,10 @@ export const createChessState = (
           console.log("Made move?");
           let epd = genEpd(s.position);
           s.positionHistory.push(epd);
-          s.delegate.madeMove?.(moveObject);
-          s.delegate?.onPositionUpdated?.();
+          s.getDelegate()?.madeMove?.(moveObject);
+          s.getDelegate()?.onPositionUpdated?.();
+        } else {
+          console.log("This move wasn't valid!", m);
         }
       });
     },

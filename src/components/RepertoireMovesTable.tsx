@@ -13,11 +13,14 @@ import {
   some,
   forEach,
   find,
+  max,
+  maxBy,
   filter,
   times,
   findIndex,
   every,
   isNaN,
+  takeWhile,
 } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -47,12 +50,14 @@ import React, { useState } from "react";
 import { plural, pluralize } from "app/utils/pluralize";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
+import { failOnAny } from "app/utils/test_settings";
 
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
-  repertoireMove: RepertoireMove;
-  suggestedMove: SuggestedMove;
+  repertoireMove?: RepertoireMove;
+  suggestedMove?: SuggestedMove;
+  score?: number;
 }
 let desktopHeaderStyles = s(
   c.fg(c.colors.textPrimary),
@@ -79,16 +84,28 @@ export const RepertoireMovesTable = ({
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let sections = getSections({
     myTurn: side === activeSide,
-    anyMine,
   });
   let [expanded, setExpanded] = useState(false);
-  let MAX_TRUNCATED = 4;
-  let truncated = responses.length > MAX_TRUNCATED && !expanded;
-  let numTruncated = responses.length - MAX_TRUNCATED;
-  if (!expanded) {
-    responses = take(responses, MAX_TRUNCATED);
-  }
   const isMobile = useIsMobile();
+  let MAX_TRUNCATED = isMobile ? 4 : 6;
+  let MIN_TRUNCATED = isMobile ? 2 : 3;
+  let truncated = responses.length > MAX_TRUNCATED && !expanded;
+  let trimmedResponses = [...responses];
+  if (!expanded) {
+    trimmedResponses = takeWhile(responses, (r, i) => {
+      console.log({ i });
+      console.log({ r });
+      if (r.repertoireMove) {
+        return true;
+      }
+      if (i > MAX_TRUNCATED) {
+        return false;
+      }
+      return i < MIN_TRUNCATED || r.repertoireMove || r.score > 0;
+    });
+    console.log({ trimmedResponses });
+  }
+  let numTruncated = responses.length - trimmedResponses.length;
   return (
     <View style={s(c.column)}>
       <CMText
@@ -110,7 +127,7 @@ export const RepertoireMovesTable = ({
       <TableHeader anyMine={anyMine} sections={sections} />
       <Spacer height={12} />
       {intersperse(
-        responses.map((tableResponse, i) => {
+        trimmedResponses.map((tableResponse, i) => {
           return (
             <Response
               anyMine={anyMine}
@@ -303,6 +320,14 @@ const Response = ({
                 >
                   {sanPlus}
                 </CMText>
+                {false && (
+                  <>
+                    <Spacer width={4} />
+                    <CMText style={s()}>
+                      ({tableResponse.score?.toFixed(1)})
+                    </CMText>
+                  </>
+                )}
               </View>
               {repertoireMove && !mine && (
                 <>

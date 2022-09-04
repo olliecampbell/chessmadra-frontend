@@ -373,7 +373,9 @@ export const BrowsingSectionsView = React.memo(() => {
             onPress={() => {
               quick((s) => {
                 s.startEditing(s.browsingState.activeSide);
-                s.playPgn(s.browsingState.chessboardState.position.pgn());
+                s.chessboardState.playPgn(
+                  s.browsingState.chessboardState.position.pgn()
+                );
               });
             }}
           >
@@ -484,7 +486,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
       onPress={() => {
         quick((s) => {
           s.startEditing(activeSide);
-          s.playPgn(miss.lines[0]);
+          s.chessboardState.playPgn(miss.lines[0]);
         });
       }}
       style={s(
@@ -577,7 +579,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
       onPress={() => {
         quick((s) => {
           s.startEditing(activeSide);
-          s.playPgn(line.pgn);
+          s.chessboardState.playPgn(line.pgn);
         });
       }}
       style={s(

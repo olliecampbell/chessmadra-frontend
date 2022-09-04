@@ -15,6 +15,7 @@ import {
   find,
   filter,
   times,
+  values,
   findIndex,
   map,
 } from "lodash-es";
@@ -50,8 +51,6 @@ import { RepertoireMovesTable, TableResponse } from "./RepertoireMovesTable";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
-import { SlideInLeft } from "react-native-reanimated";
-import { Animated } from "react-native";
 
 export const MoveLog = () => {
   let pairs = [];
@@ -265,38 +264,31 @@ const Responses = () => {
     s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
     s.playSan,
   ]);
-  let coveredSans = new Set();
-  forEach(existingMoves, (m) => {
-    coveredSans.add(m.sanPlus);
-  });
   let side: Side = position.turn() === "b" ? "black" : "white";
   console.warn("---------");
   console.log(position.turn());
   let ownSide = side === activeSide;
-  console.warn({ positionReport });
-  let suggestedMoves = positionReport
-    ? sortSuggestedMoves(
-        positionReport,
-        activeSide,
-        repertoire,
-        currentEpd,
-        side === activeSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
-      )
-    : [];
-  console.log({ suggestedMoves });
-  // existingMoves = sortBy(existingMoves, (m) => {
-  //   return findIndex(suggestedMoves, (s) => s.sanPlus === m.sanPlus);
-  // });
-  let tableResponses: TableResponse[] = map(
-    suggestedMoves,
-    (sm: SuggestedMove) => {
-      let existingMove = find(existingMoves, (rm) => rm.sanPlus === sm.sanPlus);
-      return {
-        repertoireMove: existingMove,
-        suggestedMove: sm,
-      };
+  let _tableResponses: Record<string, TableResponse> = {};
+  positionReport?.suggestedMoves.map((sm) => {
+    _tableResponses[sm.sanPlus] = {
+      suggestedMove: sm,
+    };
+  });
+  existingMoves?.map((r) => {
+    if (_tableResponses[r.sanPlus]) {
+      _tableResponses[r.sanPlus].repertoireMove = r;
+    } else {
+      _tableResponses[r.sanPlus] = { repertoireMove: r };
     }
+  });
+  let tableResponses = scoreTableResponses(
+    values(_tableResponses),
+    positionReport,
+    side,
+    currentEpd,
+    ownSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
   );
+  console.log({ tableResponses });
   let youCanPlay = filter(tableResponses, (tr) => {
     return activeSide === side;
   });
@@ -318,7 +310,7 @@ const Responses = () => {
   return (
     <View style={s(c.column, c.width(500), c.constrainWidth)}>
       {!isEmpty(youCanPlay) && (
-        <Animated.View style={s()} key={`you-can-play-${currentEpd}`}>
+        <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
             {...{
               header: `You can play`,
@@ -327,7 +319,7 @@ const Responses = () => {
               responses: youCanPlay,
             }}
           />
-        </Animated.View>
+        </View>
       )}
       {!isEmpty(prepareFor) && (
         <RepertoireMovesTable
@@ -399,95 +391,118 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   return false;
 };
 
-const sortSuggestedMoves = (
+const scoreTableResponses = (
+  tableResponses: TableResponse[],
   report: PositionReport,
   side: Side,
-  repertoire: Repertoire,
   epd: string,
   weights: {
+    startScore: number;
     eval: number;
     winrate: number;
     playrate: number;
     masterPlayrate: number;
   }
-): SuggestedMove[] => {
-  let positionWinRate = getWinRate(report.results, side);
+): TableResponse[] => {
+  let positionWinRate = report ? getWinRate(report?.results, side) : NaN;
   let DEBUG_MOVE = null;
   return reverse(
-    sortBy(report.suggestedMoves, (m) => {
-      let score = 0;
-      if (
-        some(
-          repertoire[side].positionResponses[epd],
-          (r) => r.sanPlus === m.sanPlus
-        )
-      ) {
-        score += 1000000;
+    sortBy(tableResponses, (tableResponse: TableResponse) => {
+      let score = weights.startScore;
+      if (isNil(report)) {
+        return score;
       }
-      if (m.stockfish?.mate < 0 && side === "black") {
-        score += 10000 * weights.eval;
-      }
-      if (m.stockfish?.mate > 0 && side === "white") {
-        score += 10000 * weights.eval;
-      }
-      if (!isNil(m.stockfish?.eval) && !isNil(report.stockfish?.eval)) {
-        let eval_loss = Math.abs(
-          Math.max(report.stockfish.eval - m.stockfish.eval, 0)
-        );
-        let scoreChangeEval = -eval_loss * weights.eval;
-        score += scoreChangeEval;
-        if (m.sanPlus === DEBUG_MOVE) {
-          console.log(
-            `For ${m.sanPlus}, the eval_loss is ${eval_loss}, Score change is ${scoreChangeEval}`
-          );
+      let suggestedMove = tableResponse.suggestedMove;
+      if (suggestedMove) {
+        let stockfish = tableResponse.suggestedMove?.stockfish;
+        if (stockfish?.mate < 0 && side === "black") {
+          score += 10000 * weights.eval;
         }
+        if (stockfish?.mate > 0 && side === "white") {
+          score += 10000 * weights.eval;
+        }
+        if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
+          let eval_loss = Math.abs(
+            Math.max(report.stockfish.eval - stockfish.eval, 0)
+          );
+          let scoreChangeEval = -eval_loss * weights.eval;
+          score += scoreChangeEval;
+          // if (m.sanPlus === DEBUG_MOVE) {
+          //   console.log(
+          //     `For ${m.sanPlus}, the eval_loss is ${eval_loss}, Score change is ${scoreChangeEval}`
+          //   );
+          // }
+        } else {
+          // Punish for not having stockfish eval, so good stockfish evals get bumped up if compared against no stockfish eval
+          // score -= 400 * weights.eval;
+        }
+        let moveWinRate = getWinRate(
+          tableResponse.suggestedMove?.results,
+          side
+        );
+        let winrateChange = moveWinRate - positionWinRate;
+        let rateAdditionalWeight = Math.min(
+          getTotalGames(tableResponse?.suggestedMove.results) / 100,
+          1
+        );
+        let scoreForWinrate =
+          winrateChange * weights.winrate * rateAdditionalWeight;
+        let playRate = getPlayRate(tableResponse.suggestedMove, report);
+        if (
+          !Number.isNaN(playRate) &&
+          getTotalGames(suggestedMove.results) > 10
+        ) {
+          let scoreForPlayrate =
+            playRate * weights.playrate * rateAdditionalWeight;
+          score += scoreForPlayrate;
+          // if (m.sanPlus === DEBUG_MOVE) {
+          //   console.log(
+          //     `For ${m.sanPlus}, the playrate is ${playRate}, Score change is ${scoreForPlayrate}`
+          //   );
+          // }
+        }
+        if (getTotalGames(suggestedMove.results) > 10) {
+          score += scoreForWinrate;
+        }
+        // if (m.sanPlus === DEBUG_MOVE) {
+        //   console.log(
+        //     `For ${m.sanPlus}, there are ${getTotalGames(
+        //       m.results
+        //     )} games, the winrate is ${positionWinRate} -> ${moveWinRate} : ${winrateChange}, Score change is ${scoreForWinrate}`
+        //   );
+        // }
+        let masterRateAdditionalWeight = Math.min(
+          getTotalGames(tableResponse.suggestedMove?.masterResults) / 100,
+          1
+        );
+        let masterPlayRate = getPlayRate(
+          tableResponse?.suggestedMove,
+          report,
+          true
+        );
+        if (!Number.isNaN(masterPlayRate)) {
+          let scoreForMasterPlayrate =
+            (masterPlayRate - 0.03) *
+            weights.masterPlayrate *
+            masterRateAdditionalWeight;
+          score += scoreForMasterPlayrate;
+          // if (m.sanPlus === DEBUG_MOVE) {
+          //   console.log(
+          //     `For ${m.sanPlus}, the masters playrate is ${masterPlayRate}, Score change is ${scoreForMasterPlayrate}`
+          //   );
+          // }
+        }
+      }
+      tableResponse.score = score;
+      if (tableResponse.repertoireMove) {
+        return tableResponse.score + 1000000;
       } else {
-        // Punish for not having stockfish eval, so good stockfish evals get bumped up if compared against no stockfish eval
-        score -= 400 * weights.eval;
+        return tableResponse.score;
       }
 
-      let moveWinRate = getWinRate(m.results, side);
-      let winrateChange = moveWinRate - positionWinRate;
-      let rateAdditionalWeight = Math.min(getTotalGames(m.results) / 100, 1);
-      let scoreForWinrate =
-        winrateChange * weights.winrate * rateAdditionalWeight;
-      let playRate = getPlayRate(m, report);
-      if (!Number.isNaN(playRate)) {
-        let scoreForPlayrate =
-          playRate * weights.playrate * rateAdditionalWeight;
-        score += scoreForPlayrate;
-        if (m.sanPlus === DEBUG_MOVE) {
-          console.log(
-            `For ${m.sanPlus}, the playrate is ${playRate}, Score change is ${scoreForPlayrate}`
-          );
-        }
-      }
-      score += scoreForWinrate;
-      if (m.sanPlus === DEBUG_MOVE) {
-        console.log(
-          `For ${m.sanPlus}, there are ${getTotalGames(
-            m.results
-          )} games, the winrate is ${positionWinRate} -> ${moveWinRate} : ${winrateChange}, Score change is ${scoreForWinrate}`
-        );
-      }
-      let masterRateAdditionalWeight = Math.min(
-        getTotalGames(m.masterResults) / 100,
-        1
-      );
-      let masterPlayRate = getPlayRate(m, report, true);
-      if (!Number.isNaN(masterPlayRate)) {
-        let scoreForMasterPlayrate =
-          masterPlayRate * weights.masterPlayrate * masterRateAdditionalWeight;
-        score += scoreForMasterPlayrate;
-        if (m.sanPlus === DEBUG_MOVE) {
-          console.log(
-            `For ${m.sanPlus}, the masters playrate is ${masterPlayRate}, Score change is ${scoreForMasterPlayrate}`
-          );
-        }
-      }
-      if (m.sanPlus === DEBUG_MOVE) {
-        console.log(`Final score for ${m.sanPlus} is ${score}`);
-      }
+      // if (m.sanPlus === DEBUG_MOVE) {
+      //   console.log(`Final score for ${m.sanPlus} is ${score}`);
+      // }
 
       return score;
     })
@@ -495,73 +510,19 @@ const sortSuggestedMoves = (
 };
 
 let EFFECTIVENESS_WEIGHTS = {
+  startScore: 0.0,
   eval: 1.0,
   winrate: 700.0,
-  playrate: 200.0,
-  masterPlayrate: 400.0,
+  playrate: 0.0,
+  masterPlayrate: 800.0,
 };
 
 let PLAYRATE_WEIGHTS = {
+  startScore: -0.2,
   eval: 0.0,
   winrate: 0.0,
   playrate: 1.0,
   masterPlayrate: 0.0,
-};
-
-const ResponseStatSection = ({
-  positionReport,
-  side,
-  masters,
-  m,
-}: {
-  positionReport: PositionReport;
-  m: SuggestedMove;
-  masters: boolean;
-  side: Side;
-}) => {
-  let neutralTextColor = c.grays[75];
-  let numberStyles = s(
-    c.weightBold,
-    c.fontSize(16),
-    c.fg(neutralTextColor),
-    c.unshrinkable
-  );
-  let textStyles = s(
-    c.weightRegular,
-    c.fontSize(14),
-    c.fg(c.colors.textSecondary)
-  );
-  let groupName = masters ? "masters" : "your peers";
-  let tooLow = getTotalGames(masters ? m.masterResults : m.results) < 3;
-  return (
-    <View style={s(c.column, c.grow)}>
-      <View style={s(c.row, c.alignEnd)}>
-        {!tooLow && (
-          <>
-            <CMText style={s(numberStyles)}>
-              {formatPlayPercentage(getPlayRate(m, positionReport, masters))}{" "}
-            </CMText>
-            <Spacer width={2} />
-          </>
-        )}
-        {/* TODO: need to add moves from repertoire that are uncovered (odd moves)*/}
-        <CMText style={s(textStyles)}>
-          {tooLow ? `No games from ${groupName}` : `of ${groupName} play this`}
-        </CMText>
-      </View>
-      {!tooLow && (
-        <>
-          <Spacer height={8} />
-          <View style={s(c.height(18), c.fullWidth)}>
-            <GameResultsBar
-              activeSide={side}
-              gameResults={masters ? m.masterResults : m.results}
-            />
-          </View>
-        </>
-      )}
-    </View>
-  );
 };
 
 const EditingTabPicker = () => {
@@ -660,26 +621,13 @@ const PositionOverview = () => {
       <View style={s(c.row)}>
         {positionReport?.results && (
           <View style={s(c.grow)}>
-            <CMText style={s(c.fg(fontColor))}>Your Elo</CMText>
+            <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
             <Spacer height={4} />
             <GameResultsBar
               activeSide={activeSide}
               gameResults={positionReport.results}
             />
           </View>
-        )}
-        {positionReport?.masterResults && (
-          <>
-            <Spacer width={12} />
-            <View style={s(c.column, c.grow)}>
-              <CMText style={s(c.fg(fontColor))}>Masters</CMText>
-              <Spacer height={4} />
-              <GameResultsBar
-                activeSide={activeSide}
-                gameResults={positionReport.masterResults}
-              />
-            </View>
-          </>
         )}
       </View>
       {pawnStructure && false && (

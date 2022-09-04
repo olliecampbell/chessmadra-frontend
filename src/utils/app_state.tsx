@@ -46,7 +46,7 @@ export interface AppState {
   colorTrainingState: ColorTrainingState;
   gameSearchState: GameSearchState;
   gameMemorizationState: GameMemorizationState;
-  navigate: NavigateFunction;
+  navigate?: NavigateFunction;
   // authState: AuthState
 }
 
