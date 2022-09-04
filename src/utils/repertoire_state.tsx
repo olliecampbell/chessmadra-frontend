@@ -580,7 +580,6 @@ export const getInitialRepertoireState = (
       }, "onEditingPositionUpdate"),
     fetchNeededPositionReports: () =>
       set(([s]) => {
-        let epd = s.getCurrentEpd();
         let side = s.activeSide;
         let neededPositions = [];
         s.chessboardState.positionHistory.forEach((epd) => {
@@ -609,6 +608,7 @@ export const getInitialRepertoireState = (
               reports.forEach((report) => {
                 s.positionReports[side][report.epd] = report;
               });
+              s.fetchNeededPositionReports();
             });
           })
           .finally(() => {
