@@ -92,6 +92,7 @@ export interface RepertoireState {
   repertoire: Repertoire;
   repertoireNumMoves: BySide<
     Record<
+      // TODO) change this to Side
       string,
       { withTranspositions: number; withoutTranspositions: number }
     >
@@ -586,7 +587,7 @@ export const getInitialRepertoireState = (
         }
         let neededPositions = [];
         s.chessboardState.positionHistory.forEach((epd) => {
-          if (!s.positionReports[epd]) {
+          if (!s.positionReports[side][epd]) {
             neededPositions.push(epd);
           }
         });
@@ -594,7 +595,7 @@ export const getInitialRepertoireState = (
         if (currentReport) {
           currentReport.suggestedMoves.forEach((sm) => {
             let epd = sm.epdAfter;
-            if (!s.positionReports[epd]) {
+            if (!s.positionReports[side][epd]) {
               neededPositions.push(epd);
             }
           });
