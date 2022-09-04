@@ -5,13 +5,10 @@ COPY yarn.lock ./
 RUN yarn install
 COPY . .
 ENV NODE_ENV=production
-# RUN npm set progress=false && \
-#   npm install -g expo-cli
-RUN yarn build
-RUN yarn next export
+RUN npx expo export:web
 
-FROM nginx:latest
+FROM joseluisq/static-web-server
 # RUN rm -rf /etc/nginx
 # COPY nginx /etc/nginx
-COPY templates /etc/nginx/templates/
-COPY --from=base /base/out /usr/share/nginx/html
+ENV SERVER_FALLBACK_PAGE=./public/index.html
+COPY --from=base /base/web-build /public

@@ -1,16 +1,26 @@
-// @generated: @expo/next-adapter@2.1.52
-// Learn more: https://docs.expo.dev/guides/using-nextjs/
+const tsconfig = require("./tsconfig.json");
+let rawAlias = tsconfig.compilerOptions.paths;
+let alias = {};
 
-module.exports = {
-  presets: ["@expo/next-adapter/babel"],
-  plugins: [
-    [
-      "module-resolver",
-      {
-        alias: {
-          app: "./",
+for (let x in rawAlias) {
+  alias[x.replace("/*", "")] = rawAlias[x].map((p) => p.replace("/*", ""));
+}
+
+module.exports = function (api) {
+  api.cache(true);
+
+  return {
+    presets: ["babel-preset-expo"],
+    plugins: [
+      [
+        "module-resolver",
+        {
+          root: ["./"],
+          extensions: [".ios.js", ".android.js", ".js", ".ts", ".tsx", ".json"],
+          alias,
         },
-      },
+      ],
+      "react-native-reanimated/plugin",
     ],
-  ],
+  };
 };
