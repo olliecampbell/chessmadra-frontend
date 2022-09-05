@@ -33,6 +33,8 @@ import { every, isEqualWith, isObject, keysIn, map, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { immerable } from "immer";
 import { Animated } from "react-native";
+import { DebugState, getInitialDebugState } from "./debug_state";
+import { getInitialNavigationState, NavigationState } from "./navigation_state";
 
 Chess[immerable] = true;
 
@@ -46,7 +48,8 @@ export interface AppState {
   colorTrainingState: ColorTrainingState;
   gameSearchState: GameSearchState;
   gameMemorizationState: GameMemorizationState;
-  navigate?: NavigateFunction;
+  debugState: DebugState;
+  navigationState: NavigationState;
   // authState: AuthState
 }
 
@@ -105,6 +108,8 @@ const useAppStateInternal = create<AppState>()(
         colorTrainingState: getInitialColorState(set, get),
         gameSearchState: getInitialGameSearchState(set, get),
         gameMemorizationState: getInitialGameMemorizationState(set, get),
+        debugState: getInitialDebugState(set, get),
+        navigationState: getInitialNavigationState(set, get),
         ...createQuick<AppState>(set),
       };
       return initialState;
@@ -240,6 +245,10 @@ export const useGameSearchState = <T,>(
   equality?: any
 ) => {
   return useAppStateInternal((s) => fn(s.gameSearchState), equality);
+};
+
+export const useDebugState = <T,>(fn: (_: DebugState) => T, equality?: any) => {
+  return useAppStateInternal((s) => fn(s.debugState), equality);
 };
 
 export const useAppState = <T,>(fn: (_: AppState) => T, equality?: any) => {

@@ -18,6 +18,7 @@ import {
   values,
   findIndex,
   map,
+  sumBy,
 } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -42,12 +43,16 @@ import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { Modal } from "./Modal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
-import { useRepertoireState } from "app/utils/app_state";
+import { useDebugState, useRepertoireState } from "app/utils/app_state";
 import React, { useState } from "react";
 import { plural, pluralize } from "app/utils/pluralize";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { RepertoireMovesTable, TableResponse } from "./RepertoireMovesTable";
+import {
+  RepertoireMovesTable,
+  ScoreTable,
+  TableResponse,
+} from "./RepertoireMovesTable";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
@@ -391,6 +396,13 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   return false;
 };
 
+export enum TableResponseScoreSource {
+  Eval = "eval",
+  Winrate = "winrate",
+  Playrate = "playrate",
+  MasterPlayrate = "masterPlayrate",
+}
+
 const scoreTableResponses = (
   tableResponses: TableResponse[],
   report: PositionReport,
@@ -409,6 +421,7 @@ const scoreTableResponses = (
   return reverse(
     sortBy(tableResponses, (tableResponse: TableResponse) => {
       let score = weights.startScore;
+      let scoreTable = { factors: [], notes: [] } as ScoreTable;
       if (isNil(report)) {
         return score;
       }
@@ -416,17 +429,25 @@ const scoreTableResponses = (
       if (suggestedMove) {
         let stockfish = tableResponse.suggestedMove?.stockfish;
         if (stockfish?.mate < 0 && side === "black") {
-          score += 10000 * weights.eval;
+          scoreTable.factors.push({
+            source: TableResponseScoreSource.Eval,
+            value: 10000,
+          });
         }
         if (stockfish?.mate > 0 && side === "white") {
-          score += 10000 * weights.eval;
+          scoreTable.factors.push({
+            source: TableResponseScoreSource.Eval,
+            value: 10000,
+          });
         }
         if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
           let eval_loss = Math.abs(
             Math.max(report.stockfish.eval - stockfish.eval, 0)
           );
-          let scoreChangeEval = -eval_loss * weights.eval;
-          score += scoreChangeEval;
+          scoreTable.factors.push({
+            source: TableResponseScoreSource.Eval,
+            value: -eval_loss,
+          });
           // if (m.sanPlus === DEBUG_MOVE) {
           //   console.log(
           //     `For ${m.sanPlus}, the eval_loss is ${eval_loss}, Score change is ${scoreChangeEval}`
@@ -436,41 +457,40 @@ const scoreTableResponses = (
           // Punish for not having stockfish eval, so good stockfish evals get bumped up if compared against no stockfish eval
           // score -= 400 * weights.eval;
         }
-        let moveWinRate = getWinRate(
-          tableResponse.suggestedMove?.results,
-          side
-        );
-        let winrateChange = moveWinRate - positionWinRate;
         let rateAdditionalWeight = Math.min(
           getTotalGames(tableResponse?.suggestedMove.results) / 100,
           1
         );
-        let scoreForWinrate =
-          winrateChange * weights.winrate * rateAdditionalWeight;
         let playRate = getPlayRate(tableResponse.suggestedMove, report);
         if (
           !Number.isNaN(playRate) &&
           getTotalGames(suggestedMove.results) > 10
         ) {
-          let scoreForPlayrate =
-            playRate * weights.playrate * rateAdditionalWeight;
-          score += scoreForPlayrate;
+          let scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
+          scoreTable.factors.push({
+            source: TableResponseScoreSource.Playrate,
+            value: scoreForPlayrate,
+          });
           // if (m.sanPlus === DEBUG_MOVE) {
           //   console.log(
           //     `For ${m.sanPlus}, the playrate is ${playRate}, Score change is ${scoreForPlayrate}`
           //   );
           // }
+        } else if (weights[TableResponseScoreSource.Playrate] != 0) {
+          scoreTable.notes.push("Insufficient games for playrate");
         }
+        let moveWinRate = getWinRate(
+          tableResponse.suggestedMove?.results,
+          side
+        );
+        let winrateChange = moveWinRate - positionWinRate;
+        let scoreForWinrate = winrateChange * 100 * rateAdditionalWeight;
         if (getTotalGames(suggestedMove.results) > 10) {
-          score += scoreForWinrate;
+          scoreTable.factors.push({
+            source: TableResponseScoreSource.Winrate,
+            value: scoreForWinrate,
+          });
         }
-        // if (m.sanPlus === DEBUG_MOVE) {
-        //   console.log(
-        //     `For ${m.sanPlus}, there are ${getTotalGames(
-        //       m.results
-        //     )} games, the winrate is ${positionWinRate} -> ${moveWinRate} : ${winrateChange}, Score change is ${scoreForWinrate}`
-        //   );
-        // }
         let masterRateAdditionalWeight = Math.min(
           getTotalGames(tableResponse.suggestedMove?.masterResults) / 100,
           1
@@ -480,12 +500,16 @@ const scoreTableResponses = (
           report,
           true
         );
-        if (!Number.isNaN(masterPlayRate)) {
+        if (
+          !Number.isNaN(masterPlayRate) &&
+          getTotalGames(tableResponse.suggestedMove?.masterResults) > 10
+        ) {
           let scoreForMasterPlayrate =
-            (masterPlayRate - 0.03) *
-            weights.masterPlayrate *
-            masterRateAdditionalWeight;
-          score += scoreForMasterPlayrate;
+            masterPlayRate * 100 * masterRateAdditionalWeight;
+          scoreTable.factors.push({
+            source: TableResponseScoreSource.MasterPlayrate,
+            value: scoreForMasterPlayrate,
+          });
           // if (m.sanPlus === DEBUG_MOVE) {
           //   console.log(
           //     `For ${m.sanPlus}, the masters playrate is ${masterPlayRate}, Score change is ${scoreForMasterPlayrate}`
@@ -493,28 +517,29 @@ const scoreTableResponses = (
           // }
         }
       }
-      tableResponse.score = score;
+      scoreTable.factors.forEach((f) => {
+        f.weight = weights[f.source] ?? 1.0;
+        f.total = f.weight * f.value;
+      });
+      tableResponse.scoreTable = scoreTable;
+      tableResponse.score = sumBy(scoreTable.factors, (f) => {
+        return f.total;
+      });
       if (tableResponse.repertoireMove) {
         return tableResponse.score + 1000000;
       } else {
         return tableResponse.score;
       }
-
-      // if (m.sanPlus === DEBUG_MOVE) {
-      //   console.log(`Final score for ${m.sanPlus} is ${score}`);
-      // }
-
-      return score;
     })
   );
 };
 
 let EFFECTIVENESS_WEIGHTS = {
   startScore: 0.0,
-  eval: 1.0,
-  winrate: 700.0,
+  eval: 0.2,
+  winrate: 4.0,
   playrate: 0.0,
-  masterPlayrate: 800.0,
+  masterPlayrate: 8.0,
 };
 
 let PLAYRATE_WEIGHTS = {
@@ -596,6 +621,7 @@ const PositionOverview = () => {
     ? getAppropriateEcoName(ecoCode.fullName)
     : [];
   const plansText = s(c.fontSize(14), c.fg(c.colors.textSecondary));
+  const debugUi = useDebugState((s) => s.debugUi);
   return (
     <>
       {ecoCode && (
@@ -621,7 +647,17 @@ const PositionOverview = () => {
       <View style={s(c.row)}>
         {positionReport?.results && (
           <View style={s(c.grow)}>
-            <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
+            <View style={s(c.row)}>
+              <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
+              {debugUi && (
+                <>
+                  <Spacer width={4} />
+                  <CMText style={s(c.fg(c.colors.debugColor))}>
+                    ({getTotalGames(positionReport.results)} games)
+                  </CMText>
+                </>
+              )}
+            </View>
             <Spacer height={4} />
             <GameResultsBar
               activeSide={activeSide}

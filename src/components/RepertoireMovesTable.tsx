@@ -45,12 +45,14 @@ import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { Modal } from "./Modal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
-import { useRepertoireState } from "app/utils/app_state";
+import { useDebugState, useRepertoireState } from "app/utils/app_state";
 import React, { useState } from "react";
 import { plural, pluralize } from "app/utils/pluralize";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { failOnAny } from "app/utils/test_settings";
+import { useHovering } from "app/hooks/useHovering";
+import { TableResponseScoreSource } from "./RepertoireEditingView";
 
 const DELETE_WIDTH = 30;
 
@@ -58,7 +60,21 @@ export interface TableResponse {
   repertoireMove?: RepertoireMove;
   suggestedMove?: SuggestedMove;
   score?: number;
+  scoreTable?: ScoreTable;
 }
+
+export interface ScoreTable {
+  factors: ScoreFactor[];
+  notes: string[];
+}
+
+export interface ScoreFactor {
+  weight?: number;
+  value: number;
+  source: TableResponseScoreSource;
+  total?: number;
+}
+
 let desktopHeaderStyles = s(
   c.fg(c.colors.textPrimary),
   c.fontSize(22),
@@ -176,7 +192,11 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
-        if (!playRate || isNaN(playRate)) {
+        if (
+          !playRate ||
+          isNaN(playRate) ||
+          formatPlayPercentage(playRate) === "0%"
+        ) {
           return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
         }
         return (
@@ -194,7 +214,11 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, true);
-        if (!playRate || isNaN(playRate)) {
+        if (
+          !playRate ||
+          isNaN(playRate) ||
+          formatPlayPercentage(playRate) === "0%"
+        ) {
           return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
         }
         return (
@@ -256,6 +280,8 @@ const Response = ({
   anyMine: boolean;
   sections: any[];
 }) => {
+  const debugUi = useDebugState((s) => s.debugUi);
+  const { hovering, hoverRef } = useHovering();
   const { suggestedMove, repertoireMove } = tableResponse;
   const [playSan, currentLine, positionReport, activeSide, quick, position] =
     useRepertoireState((s) => [
@@ -320,13 +346,28 @@ const Response = ({
                 >
                   {sanPlus}
                 </CMText>
-                {false && (
-                  <>
+                {debugUi && (
+                  <View style={s(c.row)} ref={hoverRef}>
                     <Spacer width={4} />
-                    <CMText style={s()}>
-                      ({tableResponse.score?.toFixed(1)})
+
+                    <CMText style={s(c.fg(c.colors.debugColor), c.relative)}>
+                      (score: {tableResponse.score?.toFixed(1)})
+                      {hovering && (
+                        <View
+                          style={s(
+                            c.absolute,
+                            c.bottom(20),
+                            c.border(`1px solid ${c.colors.debugColor}`),
+                            c.px(12),
+                            c.py(12),
+                            c.bg(c.grays[20])
+                          )}
+                        >
+                          <DebugScoreView tableResponse={tableResponse} />
+                        </View>
+                      )}
                     </CMText>
-                  </>
+                  </View>
                 )}
               </View>
               {repertoireMove && !mine && (
@@ -340,7 +381,7 @@ const Response = ({
                 </>
               )}
             </View>
-            <Spacer width={12} grow />
+            <Spacer width={12} grow style={s(c.noPointerEvents)} />
             <View style={s(c.row, c.alignCenter)}>
               {intersperse(
                 sections.map((section, i) => {
@@ -438,6 +479,52 @@ const TableHeader = ({
         )}
       </View>
       {anyMine && <Spacer width={DELETE_WIDTH} />}
+    </View>
+  );
+};
+
+export const DebugScoreView = ({
+  tableResponse,
+}: {
+  tableResponse: TableResponse;
+}) => {
+  return (
+    <View style={s()}>
+      <View style={s(c.row, c.textAlign("end"), c.weightBold)}>
+        <CMText style={s(c.width(120))}>Source</CMText>
+        <Spacer width={12} />
+        <CMText style={s(c.width(60))}>Value</CMText>
+        <Spacer width={12} />
+        <CMText style={s(c.width(60))}>Weight</CMText>
+        <Spacer width={12} grow />
+        <CMText style={s(c.width(60))}>Total</CMText>
+      </View>
+      <Spacer height={12} />
+      {intersperse(
+        tableResponse.scoreTable.factors.map((factor, i) => {
+          return (
+            <View style={s(c.row, c.fullWidth, c.textAlign("end"))} key={i}>
+              <CMText style={s(c.width(120))}>{factor.source}</CMText>
+              <Spacer width={12} />
+              <CMText style={s(c.width(60))}>{factor.value.toFixed(1)}</CMText>
+              <Spacer width={12} />
+              <CMText style={s(c.width(60))}>{factor.weight.toFixed(1)}</CMText>
+              <Spacer width={12} grow />
+              <CMText style={s(c.width(60))}>{factor.total.toFixed(1)}</CMText>
+            </View>
+          );
+        }),
+        (i) => {
+          return <Spacer height={12} key={i} />;
+        }
+      )}
+
+      <Spacer height={24} />
+      <View style={s(c.row)}>
+        <CMText style={s(c.weightBold)}>Total</CMText>
+        <Spacer width={12} grow />
+        <CMText style={s()}>{tableResponse.score.toFixed(1)}</CMText>
+      </View>
     </View>
   );
 };

@@ -6,9 +6,10 @@ export const Spacer = ({
   height = null,
   block = false,
   grow = false,
+  style = {},
   isMobile = null,
 }) => {
-  let styles: any = { flexGrow: grow ? 1 : 0 };
+  let styles: any = { flexGrow: grow ? 1 : 0, ...style };
   if (block) {
     styles.display = "block";
   }

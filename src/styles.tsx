@@ -271,6 +271,7 @@ const colors = {
   cardBackground: grays[12],
   lightTile: hsl(180, 15, 70),
   darkTile: hsl(180, 15, 40),
+  debugColor: hsl(71, 100, 42),
 };
 const extraDarkBorder = border(`1px solid ${grays[7]}`);
 

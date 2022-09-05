@@ -306,7 +306,7 @@ export const getInitialRepertoireState = (
         text: "Home",
         onPress: () => {
           set(([s, appState]) => {
-            appState.navigate("/");
+            appState.navigationState.push("/");
             s.backToOverview();
           });
         },
@@ -368,6 +368,7 @@ export const getInitialRepertoireState = (
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s]) => {
               s.user.eloRange = formatEloRange(range);
+              s.positionReports = { white: {}, black: {} };
             });
           })
           .finally(() => {
@@ -1182,10 +1183,10 @@ export const getInitialRepertoireState = (
                 }
               }
               s.onRepertoireUpdate();
-              // s.startEditing("white");
-              // s.chessboardState.playPgn(
-              //   "1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e5 6.Ndb5 d6 7.Bg5 a6 8.Na3 b5 9.Nd5 Be7 10.Bxf6 Bxf6 11.c3 O-O 12.Nc2 Bg5"
-              // );
+              s.startEditing("white");
+              s.chessboardState.playPgn(
+                "1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e5 6.Ndb5 d6 7.Bg5 a6 8.Na3 b5 9.Nd5 Be7 10.Bxf6 Bxf6 11.c3 O-O 12.Nc2 Bg5"
+              );
             });
           });
       }),

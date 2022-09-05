@@ -270,7 +270,7 @@ const AddedLineOverview = () => {
                   <View style={s(c.row)}>
                     <View style={s(c.column)}>
                       <CMText style={s(reportHeaderStyles)}>
-                        Results at your level
+                        Results at your level{" "}
                       </CMText>
                       <View style={s(c.width(120))}>
                         <GameResultsBar

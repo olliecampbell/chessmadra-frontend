@@ -21,7 +21,7 @@ enum AuthStatus {
 const Authenticate = (props) => {
   const [authStatus, setAuthStatus] = useState(AuthStatus.Initial);
   const [searchParams] = useSearchParams();
-  const [navigate] = useAppState((s) => [s.navigate]);
+  const [navigate] = useAppState((s) => [s.navigationState.push]);
   let t = searchParams.get("t");
   useEffect(() => {
     if (t && authStatus === AuthStatus.Initial) {

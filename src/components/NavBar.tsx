@@ -111,7 +111,7 @@ export const NavBar = (props: {}) => {
           onPress={() => {
             quick((s) => {
               s.repertoireState.backToOverview();
-              s.navigate("/");
+              s.navigationState.push("/");
             });
           }}
         >
@@ -137,7 +137,7 @@ export const NavBar = (props: {}) => {
                   style={s(c.clickable)}
                   onPress={() => {
                     quick((s) => {
-                      s.navigate(navItem.path);
+                      s.navigationState.push(navItem.path);
                     });
                   }}
                 >
@@ -295,7 +295,7 @@ export const NavBar = (props: {}) => {
                     style={s(c.clickable)}
                     onPress={() => {
                       quick((s) => {
-                        s.navigate(navItem.path);
+                        s.navigationState.push(navItem.path);
                       });
                     }}
                   >

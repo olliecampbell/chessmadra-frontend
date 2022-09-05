@@ -960,7 +960,7 @@ const RevokedLinkWarning = () => {
             onPress={() => {
               quick((s) => {
                 s.repertoireState.backToOverview();
-                s.navigate("/");
+                s.navigationState.push("/");
               });
             }}
           >

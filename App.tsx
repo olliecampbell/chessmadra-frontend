@@ -13,6 +13,8 @@ import {
   Routes,
   Route,
   useNavigate,
+  useSearchParams,
+  useLocation,
 } from "react-router-dom";
 import Login from "app/components/Login";
 import { BlindfoldTrainer } from "app/components/BlindfoldTrainer";
@@ -23,9 +25,10 @@ import { GameMemorization } from "app/components/GameMemorization";
 import { GamesSearch } from "app/components/GamesSearch";
 import { TheClimb } from "app/components/TheClimb";
 import { VisualizationTraining } from "app/components/VisualizationTraining";
-import { useAppState } from "app/utils/app_state";
+import { useAppState, useDebugState } from "app/utils/app_state";
 import SharedRepertoireView from "app/components/SharedRepertoire";
 import * as Sentry from "sentry-expo";
+import { isNil } from "lodash-es";
 
 const SENTRY_DSN: string =
   process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -76,6 +79,7 @@ export default function App() {
         <AuthHandler>
           <Router>
             <RouteProvider>
+              <GlobalParamsReader />
               <Routes>
                 <Route path="/" element={<RepertoireBuilder />} />
                 <Route path="/repertoire" element={<SharedRepertoireView />} />
@@ -106,16 +110,34 @@ export default function App() {
     </View>
   );
 }
+export const GlobalParamsReader = () => {
+  let quick = useAppState((s) => s.quick);
+  const [searchParams] = useSearchParams();
+  let debugUi = searchParams.get("debug-ui");
+  useEffect(() => {
+    quick((s) => {
+      s.debugState.debugUi = !isNil(debugUi);
+    });
+  }, [debugUi]);
+  return null;
+};
 
 export const RouteProvider = ({ children }) => {
   let navigate = useNavigate();
   let [quick] = useAppState((s) => [s.quick]);
+  let { search } = useLocation();
   useEffect(() => {
     console.log("Setting navigate");
     quick((s) => {
-      s.navigate = navigate;
+      s.navigationState._navigate = navigate;
     });
   }, []);
+  useEffect(() => {
+    console.log("Search updated!");
+    quick((s) => {
+      s.navigationState.search = search;
+    });
+  }, [search]);
   return children;
 };
 
