@@ -21,8 +21,8 @@ export const useHovering = () => {
 
     return () => {
       console.log("Removing!");
-      element.removeEventListener("mouseover", handleEnter);
-      element.removeEventListener("mouseleave", handleLeave);
+      element?.removeEventListener("mouseover", handleEnter);
+      element?.removeEventListener("mouseleave", handleLeave);
     };
   }, []);
   return { hovering, hoverRef: ref };
