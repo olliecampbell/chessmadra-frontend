@@ -66,6 +66,7 @@ import { failOnAny } from "./test_settings";
 
 export interface DebugState {
   debugUi: boolean;
+  underConstruction?: boolean;
   quick: (fn: (_: DebugState) => void) => void;
 }
 
@@ -87,6 +88,7 @@ export const getInitialDebugState = (
   let initialState = {
     ...createQuick<DebugState>(setOnly),
     debugUi: false,
+    underConstruction: true,
   } as DebugState;
 
   return initialState;

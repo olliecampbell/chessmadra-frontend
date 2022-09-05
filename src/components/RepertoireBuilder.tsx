@@ -31,7 +31,11 @@ import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
 import { useEloRangeWarning } from "./useEloRangeWarning";
 import shallow from "zustand/shallow";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
-import { useRepertoireState, equality } from "app/utils/app_state";
+import {
+  useRepertoireState,
+  equality,
+  useDebugState,
+} from "app/utils/app_state";
 import { RepertoireReview } from "./RepertoireReview";
 import { SideSettingsModal } from "./SideSettingsModal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
@@ -47,6 +51,10 @@ let cardStyles = s(
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
+  const [underConstruction, debugUi] = useDebugState((s) => [
+    s.underConstruction,
+    s.debugUi,
+  ]);
   const [
     repertoire,
     showImportView,
@@ -75,7 +83,26 @@ export const RepertoireBuilder = () => {
 
   let inner = null;
   let centered = false;
-  if (repertoire === undefined) {
+  if (underConstruction && !debugUi) {
+    inner = (
+      <View style={s(c.column, c.center)}>
+        {!isMobile && <Spacer height={48} />}
+        <i
+          className="fa fa-hammer"
+          style={s(c.fontSize(32), c.fg(c.grays[80]))}
+        />
+        <Spacer height={12} />
+        <CMText style={s(c.fontSize(18), c.weightSemiBold)}>
+          Under construction
+        </CMText>
+        <Spacer height={12} />
+        <CMText style={s()}>
+          Doing some housekeeping, will be down for a while. Everything will be
+          much snappier when we're back!
+        </CMText>
+      </View>
+    );
+  } else if (repertoire === undefined) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
   } else if (showImportView) {
