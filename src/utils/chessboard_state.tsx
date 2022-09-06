@@ -7,7 +7,7 @@ import { Square } from "@lubert/chess.ts/dist/types";
 import { logProxy } from "./state";
 import { c } from "app/styles";
 import { genEpd, getSquareOffset, START_EPD } from "./chess";
-import { Side } from "./repertoire";
+import { lineToPgn, Side } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
 import { pgnToLine } from "app/utils/repertoire";
@@ -63,6 +63,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   resetPosition: () => void;
   stopNotifyingDelegates: () => void;
   getDelegate: () => ChessboardDelegate;
+  updateMoveLogPgn: () => void;
   resumeNotifyingDelegates: () => void;
   notifyingDelegates: boolean;
 }
@@ -116,11 +117,17 @@ export const createChessState = (
     moveLogPgn: "",
     moveIndicatorOpacityAnim: new Animated.Value(0),
     ...createQuick(set),
+    updateMoveLogPgn: () => {
+      set((s) => {
+        s.moveLogPgn = lineToPgn(s.position.history());
+      });
+    },
     backOne: () => {
       set((s) => {
         if (s.positionHistory.length > 1) {
           s.positionHistory.pop();
           s.position.undo();
+          s.updateMoveLogPgn();
           s.getDelegate()?.onPositionUpdated?.();
         }
       });
@@ -129,6 +136,7 @@ export const createChessState = (
       set((s) => {
         s.positionHistory = [START_EPD];
         s.position = new Chess();
+        s.updateMoveLogPgn();
         s.getDelegate()?.onPositionUpdated?.();
       });
     },
@@ -252,6 +260,7 @@ export const createChessState = (
           console.log("Made move?");
           let epd = genEpd(pos);
           s.positionHistory.push(epd);
+          s.updateMoveLogPgn();
           s.getDelegate()?.madeMove?.(moveObject);
           s.getDelegate()?.onPositionUpdated?.();
         } else {

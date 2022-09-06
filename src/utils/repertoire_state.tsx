@@ -517,7 +517,6 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         let line = s.chessboardState.position.history();
         s.currentLine = line;
-        s.chessboardState.moveLogPgn = lineToPgn(line);
         s.pendingResponses = {};
         s.differentMoveIndices = [];
         if (s.ecoCodeLookup && s.editingState) {
@@ -772,14 +771,15 @@ export const getInitialRepertoireState = (
             return;
           }
         }
-        console.log("Got a move!", logProxy(s.currentMove));
-        s.chessboardState.moveLogPgn = s.currentMove.line;
         s.failedReviewPositionMoves = {};
         s.completedReviewPositionMoves = {};
         s.chessboardState.flipped = s.currentMove.moves[0].side === "black";
-        s.chessboardState.position = new Chess();
-        s.chessboardState.position.loadPgn(s.currentMove.line);
-        let lastOpponentMove = s.chessboardState.position.undo();
+        s.chessboardState.resetPosition();
+        s.chessboardState.playPgn(s.currentMove.line);
+        let lastOpponentMove = last(
+          s.chessboardState.position.history({ verbose: true })
+        );
+        s.chessboardState.backOne();
 
         if (lastOpponentMove) {
           window.setTimeout(() => {
@@ -910,7 +910,6 @@ export const getInitialRepertoireState = (
         s.showImportView = false;
         s.backToStartPosition();
         s.reviewSide = null;
-        s.chessboardState.moveLogPgn = null;
         s.isReviewing = false;
         if (s.currentMove) {
           s.queues[s.currentMove.moves[0].side].unshift(s.currentMove);
@@ -923,7 +922,7 @@ export const getInitialRepertoireState = (
         s.activeSide = "white";
         s.isEditing = false;
         s.isBrowsing = false;
-        s.chessboardState.position = new Chess();
+        s.chessboardState.resetPosition();
         s.chessboardState.frozen = true;
         s.chessboardState.flipped = false;
         s.divergencePosition = null;
@@ -1011,7 +1010,7 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         let side = _side ?? shuffle(SIDES)[0];
         s.reviewSide = side;
-        if (s.getQueueLength(side) === 0) {
+        if (!isNil(side) && s.getQueueLength(side) === 0) {
           s.updateQueue(true);
           s.isCramming = true;
         }
@@ -1392,7 +1391,7 @@ export const getInitialRepertoireState = (
                           }
                         }
                       } else {
-                        s.chessboardState.position.undo();
+                        s.chessboardState.backOne();
                       }
                     });
                   },

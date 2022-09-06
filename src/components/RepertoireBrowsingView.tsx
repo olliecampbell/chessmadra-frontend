@@ -189,6 +189,7 @@ export const EditButton = () => {
       onPress={() => {
         q((s) => {
           s.startEditing(side);
+          s.chessboardState.playPgn(s.browsingState.chessboardState.moveLogPgn)
         });
       }}
     >
