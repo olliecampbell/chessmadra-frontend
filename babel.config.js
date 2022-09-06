@@ -7,7 +7,7 @@ for (let x in rawAlias) {
 }
 
 module.exports = function (api) {
-  api.cache(true);
+  api.cache.using(() => process.env.NODE_ENV);
 
   return {
     presets: ["babel-preset-expo"],

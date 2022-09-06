@@ -1,7 +1,8 @@
 const createExpoWebpackConfigAsync = require("@expo/webpack-config");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
-module.exports = async (env, argv) => {
+module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(env, argv);
 
   // Optionally you can enable the bundle size report.
@@ -13,6 +14,11 @@ module.exports = async (env, argv) => {
   //     })
   //   );
   // }
+
+  // Use the React refresh plugin in development mode
+  if (env.mode === "development") {
+    config.plugins.push(new ReactRefreshWebpackPlugin({}));
+  }
 
   return config;
 };
