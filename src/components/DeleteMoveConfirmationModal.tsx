@@ -19,7 +19,6 @@ export const DeleteMoveConfirmationModal = () => {
   );
 
   const isMobile = useIsMobile();
-  console.log({ open });
   return (
     <Modal
       onClose={() => {

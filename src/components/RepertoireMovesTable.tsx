@@ -109,8 +109,6 @@ export const RepertoireMovesTable = ({
   let trimmedResponses = [...responses];
   if (!expanded) {
     trimmedResponses = takeWhile(responses, (r, i) => {
-      console.log({ i });
-      console.log({ r });
       if (r.repertoireMove) {
         return true;
       }
@@ -119,7 +117,6 @@ export const RepertoireMovesTable = ({
       }
       return i < MIN_TRUNCATED || r.repertoireMove || r.score > 0;
     });
-    console.log({ trimmedResponses });
   }
   let numTruncated = responses.length - trimmedResponses.length;
   return (
@@ -183,7 +180,8 @@ export const RepertoireMovesTable = ({
 };
 
 let getSections = ({ myTurn }: { myTurn: boolean }) => {
-  let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
+  let [activeSide] = useRepertoireState((s) => [s.activeSide]);
+  console.log("active side is ", activeSide);
   let sections = [];
   if (!myTurn) {
     sections.push({

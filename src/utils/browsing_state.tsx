@@ -57,6 +57,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { logProxy } from "./state";
 import { RepertoireState } from "./repertoire_state";
+import { getPawnOnlyEpd } from "./pawn_structures";
 
 export interface QuizMove {
   move: RepertoireMove;
@@ -132,7 +133,7 @@ export const getInitialBrowsingState = (
   let initialState = {
     readOnly: false,
     selectedTab: BrowsingTab.Lines,
-    onPositionUpdate: (epd: string, line: string[]) =>
+    onPositionUpdate: () =>
       set(([s, repertoireState]) => {
         if (!repertoireState.repertoire) {
           return;
@@ -144,6 +145,7 @@ export const getInitialBrowsingState = (
         let uniqueLines = [] as BrowserLine[];
         let currentLine = pgnToLine(s.chessboardState.position.pgn());
         let startEpd = last(s.chessboardState.positionHistory);
+        console.log("Pawn only epd: ", getPawnOnlyEpd(startEpd));
         let recurse = (
           path: string,
           epd: string,
@@ -204,9 +206,7 @@ export const getInitialBrowsingState = (
           repertoireState.ecoCodeLookup[startEpd]
         );
         uniqueLines = sortBy(uniqueLines, (l) => {
-          console.log("Yeah hitting this case");
           if (isNil(l.ecoCode) || !l.ecoCode.fullName.includes(":")) {
-            console.log("Yeah hitting this case");
             return "ZZZ";
           }
           return l.ecoCode?.fullName;

@@ -58,7 +58,9 @@ export const RepertoirePageLayout = ({
         c.fullWidth,
         c.bg(c.grays[14]),
         c.grow,
-        c.height("100vh")
+        c.height("100vh"),
+        c.keyedProp("minHeight")("-webkit-fill-available"),
+        c.keyedProp("maxHeight")("-webkit-fill-available")
       )}
     >
       <View
@@ -96,9 +98,7 @@ export const RepertoirePageLayout = ({
       >
         {children}
       </View>
-      <View style={s(c.absolute, c.left(0), c.right(0), c.bottom(0))}>
-        {bottom && <>{bottom}</>}
-      </View>
+      {bottom}
     </View>
   );
 };

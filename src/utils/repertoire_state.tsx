@@ -63,6 +63,7 @@ import {
   getInitialBrowsingState,
 } from "./browsing_state";
 import { failOnAny } from "./test_settings";
+import { getPawnOnlyEpd } from "./pawn_structures";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";

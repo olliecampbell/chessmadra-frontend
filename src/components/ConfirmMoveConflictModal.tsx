@@ -19,7 +19,6 @@ export const ConfirmMoveConflictModal = () => {
   );
 
   const isMobile = useIsMobile();
-  console.log({ open });
   return (
     <Modal onClose={() => {}} visible={open}>
       <View

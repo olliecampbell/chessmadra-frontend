@@ -83,6 +83,17 @@ export const RepertoireBuilder = () => {
 
   let inner = null;
   let centered = false;
+  const etcChildren = (
+    <>
+      <HeadSiteMeta
+        siteMeta={{
+          title: "Opening Builder",
+          description: OPENINGS_DESCRIPTION,
+        }}
+      />
+      <DeleteMoveConfirmationModal />
+    </>
+  );
   if (underConstruction && !debugUi) {
     inner = (
       <View style={s(c.column, c.center)}>
@@ -109,9 +120,19 @@ export const RepertoireBuilder = () => {
     inner = <RepertoireWizard />;
   } else {
     if (isEditing) {
-      inner = <RepertoireEditingView />;
+      return (
+        <>
+          {etcChildren}
+          <RepertoireEditingView />
+        </>
+      );
     } else if (isBrowsing) {
-      inner = <RepertoireBrowsingView />;
+      return (
+        <>
+          {etcChildren}
+          <RepertoireBrowsingView />
+        </>
+      );
     } else if (isReviewing) {
       inner = <RepertoireReview />;
     } else {
@@ -150,13 +171,6 @@ export const RepertoireBuilder = () => {
         hideNavBar: isEditing || isBrowsing,
       }}
     >
-      <HeadSiteMeta
-        siteMeta={{
-          title: "Opening Builder",
-          description: OPENINGS_DESCRIPTION,
-        }}
-      />
-      <DeleteMoveConfirmationModal />
       {inner}
     </PageContainer>
   );

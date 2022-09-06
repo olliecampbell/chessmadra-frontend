@@ -67,51 +67,61 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
   }, [visible]);
 
   return (
-    <Animated.View
+    <View
       style={s(
-        c.fullWidth,
-        c.bg(c.grays[10]),
-        c.opacity(fadeAnim),
-        c.borderTop(`2px solid ${c.grays[8]}`)
+        c.absolute,
+        c.left(0),
+        c.right(0),
+        c.bottom(0),
+        !visible && c.noPointerEvents
       )}
     >
-      <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
-        <View
-          style={s(
-            c.row,
-            c.fullWidth,
-            c.justifyStart,
-            c.alignCenter,
-            c.py(24),
-            c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
-          )}
-        >
-          <View style={s(c.column, c.flexShrink(1))}>
-            <CMText
-              style={s(
-                c.fontSize(16),
-                c.fg(c.colors.textPrimary),
-                c.weightSemiBold
-              )}
-            >
-              Current line
-            </CMText>
-            <Spacer height={12} />
-            <CMText
-              style={s(
-                c.fontSize(14),
-                c.fg(c.colors.textSecondary),
-                c.height(16)
-              )}
-            >
-              {moveLogPgn}
-            </CMText>
+      <Animated.View
+        style={s(
+          c.fullWidth,
+          c.bg(c.grays[10]),
+          c.opacity(fadeAnim),
+          c.borderTop(`2px solid ${c.grays[8]}`)
+        )}
+      >
+        <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
+          <View
+            style={s(
+              c.row,
+              c.fullWidth,
+              c.justifyStart,
+              c.alignCenter,
+              c.py(24),
+              c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
+            )}
+          >
+            <View style={s(c.column, c.flexShrink(1))}>
+              <CMText
+                style={s(
+                  c.fontSize(16),
+                  c.fg(c.colors.textPrimary),
+                  c.weightSemiBold
+                )}
+              >
+                Current line
+              </CMText>
+              <Spacer height={12} />
+              <CMText
+                style={s(
+                  c.fontSize(14),
+                  c.fg(c.colors.textSecondary),
+                  c.height(16)
+                )}
+              >
+                {moveLogPgn}
+              </CMText>
+            </View>
+            <Spacer width={24} grow />
+            {hasPendingLineToAdd && <AddPendingLineButton />}
           </View>
-          <Spacer width={24} grow />
-          {hasPendingLineToAdd && <AddPendingLineButton />}
         </View>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 };
 
