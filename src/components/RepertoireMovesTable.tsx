@@ -183,6 +183,7 @@ export const RepertoireMovesTable = ({
 };
 
 let getSections = ({ myTurn }: { myTurn: boolean }) => {
+  let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
   let sections = [];
   if (!myTurn) {
     sections.push({
@@ -255,7 +256,7 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
         {suggestedMove && (
           <View style={s(c.width(100))}>
             <GameResultsBar
-              activeSide={side}
+              activeSide={activeSide}
               gameResults={suggestedMove.results}
             />
           </View>
