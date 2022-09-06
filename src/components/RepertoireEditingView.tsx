@@ -397,6 +397,7 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
 };
 
 export enum TableResponseScoreSource {
+  Start = "start",
   Eval = "eval",
   Winrate = "winrate",
   Playrate = "playrate",
@@ -521,6 +522,14 @@ const scoreTableResponses = (
         f.weight = weights[f.source] ?? 1.0;
         f.total = f.weight * f.value;
       });
+      if (weights.startScore) {
+        scoreTable.factors.push({
+          source: TableResponseScoreSource.Start,
+          weight: 1.0,
+          value: weights.startScore,
+          total: weights.startScore,
+        });
+      }
       tableResponse.scoreTable = scoreTable;
       tableResponse.score = sumBy(scoreTable.factors, (f) => {
         return f.total;
@@ -543,7 +552,7 @@ let EFFECTIVENESS_WEIGHTS = {
 };
 
 let PLAYRATE_WEIGHTS = {
-  startScore: -0.2,
+  startScore: -3,
   eval: 0.0,
   winrate: 0.0,
   playrate: 1.0,

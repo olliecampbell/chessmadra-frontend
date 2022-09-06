@@ -505,11 +505,11 @@ export const DebugScoreView = ({
             <View style={s(c.row, c.fullWidth, c.textAlign("end"))} key={i}>
               <CMText style={s(c.width(120))}>{factor.source}</CMText>
               <Spacer width={12} />
-              <CMText style={s(c.width(60))}>{factor.value.toFixed(1)}</CMText>
+              <CMText style={s(c.width(60))}>{factor.value.toFixed(2)}</CMText>
               <Spacer width={12} />
-              <CMText style={s(c.width(60))}>{factor.weight.toFixed(1)}</CMText>
+              <CMText style={s(c.width(60))}>{factor.weight.toFixed(2)}</CMText>
               <Spacer width={12} grow />
-              <CMText style={s(c.width(60))}>{factor.total.toFixed(1)}</CMText>
+              <CMText style={s(c.width(60))}>{factor.total.toFixed(2)}</CMText>
             </View>
           );
         }),
@@ -522,7 +522,7 @@ export const DebugScoreView = ({
       <View style={s(c.row)}>
         <CMText style={s(c.weightBold)}>Total</CMText>
         <Spacer width={12} grow />
-        <CMText style={s()}>{tableResponse.score.toFixed(1)}</CMText>
+        <CMText style={s()}>{tableResponse.score.toFixed(2)}</CMText>
       </View>
     </View>
   );
