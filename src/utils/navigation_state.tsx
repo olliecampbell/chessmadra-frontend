@@ -67,7 +67,7 @@ import { NavigateFunction } from "react-router-dom";
 
 export interface NavigationState {
   quick: (fn: (_: NavigationState) => void) => void;
-  push: (path: string) => void;
+  push: (path: string, options?: { removeParams: boolean }) => void;
   _navigate?: NavigateFunction;
   search?: string;
 }
@@ -90,9 +90,13 @@ export const getInitialNavigationState = (
   let initialState = {
     ...createQuick<NavigationState>(setOnly),
     navigationUi: false,
-    push: (path: string) => {
+    push: (path: string, options) => {
       set(([s]) => {
-        s._navigate(`${path}${s.search}`);
+        if (options?.removeParams) {
+          s._navigate(`${path}`);
+        } else {
+          s._navigate(`${path}${s.search}`);
+        }
       });
     },
   } as NavigationState;

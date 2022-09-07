@@ -12,9 +12,7 @@ import { CMText } from "./CMText";
 import { some } from "lodash-es";
 import { useRepertoireState, useAppState } from "app/utils/app_state";
 import { useLocation } from "react-router-dom";
-const Link = (x: any) => {
-  return null;
-};
+import { Link } from "react-router-dom";
 
 export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
 export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
@@ -81,6 +79,7 @@ export const NavBar = (props: {}) => {
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
+  console.log({ needsLogin });
   const padding = 16;
   const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
@@ -174,7 +173,7 @@ export const NavBar = (props: {}) => {
           }
         >
           {needsLogin && (
-            <Link href="/login">
+            <Link to="/login">
               <a>
                 <CMText
                   style={s(
@@ -224,7 +223,7 @@ export const NavBar = (props: {}) => {
         {needsLogin && (
           <>
             <Spacer width={0} grow />
-            <Link href="/login">
+            <Link to="/login">
               <a>
                 <CMText
                   style={s(

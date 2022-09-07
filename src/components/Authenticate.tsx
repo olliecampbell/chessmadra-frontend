@@ -20,7 +20,7 @@ enum AuthStatus {
 
 const Authenticate = (props) => {
   const [authStatus, setAuthStatus] = useState(AuthStatus.Initial);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [navigate] = useAppState((s) => [s.navigationState.push]);
   let t = searchParams.get("t");
   useEffect(() => {
@@ -41,7 +41,7 @@ const Authenticate = (props) => {
             });
             setAuthStatus(AuthStatus.SuccessWaiting);
             setTimeout(() => {
-              navigate("/");
+              navigate("/", { removeParams: true });
             }, 1000);
           })
           .catch((e) => {
@@ -50,7 +50,7 @@ const Authenticate = (props) => {
           });
       })();
     }
-  });
+  }, [t]);
   return (
     <PageContainer centered>
       <View style={s(c.column, c.alignCenter)}>

@@ -29,6 +29,7 @@ import { useAppState, useDebugState } from "app/utils/app_state";
 import SharedRepertoireView from "app/components/SharedRepertoire";
 import * as Sentry from "sentry-expo";
 import { isNil } from "lodash-es";
+import Authenticate from "app/components/Authenticate";
 
 const SENTRY_DSN: string =
   process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -82,6 +83,7 @@ export default function App() {
               <GlobalParamsReader />
               <Routes>
                 <Route path="/" element={<RepertoireBuilder />} />
+                <Route path="/authenticate" element={<Authenticate />} />
                 <Route path="/repertoire" element={<SharedRepertoireView />} />
                 <Route path="/openings" element={<RepertoireBuilder />} />
                 <Route path="/login" element={<Login />} />
