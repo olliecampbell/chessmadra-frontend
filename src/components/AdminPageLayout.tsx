@@ -29,7 +29,7 @@ export const AdminPageLayout = ({ children }) => {
   }
   if (user && !user?.isAdmin) {
     inner = (
-      <View style={s()}>
+      <View style={s(c.containerStyles(isMobile))}>
         <CMText style={s()}>
           You don't seem to be an admin. Do you have the password?
         </CMText>

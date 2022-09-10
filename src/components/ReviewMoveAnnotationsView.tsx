@@ -3,11 +3,7 @@ import { View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import {
-  isEmpty,
-  isNil,
-  capitalize,
-} from "lodash-es";
+import { isEmpty, isNil, capitalize } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -53,8 +49,8 @@ export const ReviewMoveAnnotationsView = ({}) => {
         let fen = `${review.epd} 0 1`;
         let position = new Chess(fen);
         return (
-          <View style={s(c.row)}>
-            <View style={s(c.size(400))}>
+          <View style={s(isMobile ? c.column : c.row, c.constrainWidth)}>
+            <View style={s(c.size(400), c.constrainWidth)}>
               <ChessboardView
                 onSquarePress={() => {}}
                 state={createStaticChessState({
