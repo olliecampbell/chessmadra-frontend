@@ -2,12 +2,7 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  some,
-  isNaN,
-  takeWhile,
-  debounce,
-} from "lodash-es";
+import { some, isNaN, takeWhile, debounce, isEmpty } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { RepertoireMove, Side } from "app/utils/repertoire";
@@ -309,7 +304,9 @@ const Response = ({
   let mine = repertoireMove?.mine;
   let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
   useEffect(() => {
-    setAnnotation(suggestedMove?.annotation);
+    if (isEmpty(annotation)) {
+      setAnnotation(suggestedMove?.annotation);
+    }
   }, [suggestedMove?.annotation]);
   const [focus, setFocus] = useState(false);
   const updateAnnotation = useCallback(
