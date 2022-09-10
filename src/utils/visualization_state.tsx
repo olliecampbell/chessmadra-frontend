@@ -9,7 +9,6 @@ import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
-import { logProxy } from "./state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
   DEBUG_CLIMB_START_PLAYING,

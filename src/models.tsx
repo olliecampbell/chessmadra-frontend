@@ -31,6 +31,7 @@ export interface User {
   betaAccess: boolean;
   eloRange: string;
   temporary: boolean;
+  isAdmin: boolean;
 }
 
 export interface LichessGame {
@@ -102,6 +103,7 @@ export interface SuggestedMove {
   results: GameResultsDistribution;
   masterResults: GameResultsDistribution;
   percentagePlayedAtLevel: number;
+  annotation: string;
 }
 
 export interface GameResultsDistribution {
@@ -121,5 +123,15 @@ export interface PawnStructureDetails {
   name: string;
   moreInfoLink: string;
   plans: string;
+  pawnEpds: string;
   opponentPlans: string;
+}
+
+export interface MoveAnnotationReview {
+  epd: string;
+  san: string;
+  annotations: {
+    userId: string;
+    text: string;
+  }[];
 }

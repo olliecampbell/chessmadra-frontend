@@ -1,5 +1,4 @@
 import * as React from "react";
-import Svg, { Path, Rect } from "react-native-svg";
 
 export function LichessLogoIcon({ color }: { color: any }) {
   return (

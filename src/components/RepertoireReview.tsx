@@ -1,44 +1,19 @@
-import React, { useEffect, useState } from "react";
+
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
-  isEmpty,
   isNil,
-  capitalize,
-  take,
-  values,
   sortBy,
-  isEqual,
 } from "lodash-es";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { RepertoireState } from "app/utils/repertoire_state";
-import {
-  SIDES,
-  Side,
-  RepertoireMiss,
-  formatIncidence,
-} from "app/utils/repertoire";
-import { PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
-import { GridLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
-import { AppStore } from "app/store";
-import { plural, pluralize } from "app/utils/pluralize";
-import { useModal } from "./useModal";
-import { createStaticChessState } from "app/utils/chessboard_state";
-import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
-import { RepertoireEditingView } from "./RepertoireEditingView";
-import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
-import { useEloRangeWarning } from "./useEloRangeWarning";
-import shallow from "zustand/shallow";
-import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const RepertoireReview = (props: {}) => {

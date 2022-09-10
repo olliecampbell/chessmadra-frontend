@@ -1,5 +1,5 @@
 import { LichessGame } from "app/models";
-import { flatten, forEach, isArray } from "lodash-es";
+import { flatten, forEach } from "lodash-es";
 
 export function sideOfLastmove(_line: string[] | string): Side {
   let line = _line;

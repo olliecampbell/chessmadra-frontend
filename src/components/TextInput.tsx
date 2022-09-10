@@ -7,8 +7,10 @@ export const CMTextInput = ({
   placeholder,
   setValue,
   onKeyDown,
+  style,
 }: {
   value: string;
+  style?: any;
   onKeyDown?: any;
   placeholder: string;
   setValue: (x: string) => void;
@@ -30,7 +32,8 @@ export const CMTextInput = ({
           : c.border(`1px solid ${c.grays[35]}`),
         c.br(4),
         c.keyedProp("outline")("none"),
-        c.fg(c.colors.textPrimary)
+        c.fg(c.colors.textPrimary),
+        style ?? {}
       )}
       placeholder={placeholder}
       onFocus={() => {

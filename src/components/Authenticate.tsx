@@ -2,7 +2,7 @@ import client from "app/client";
 import { View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { BeatLoader } from "react-spinners";
-import { AuthStatus as GlobalAuthStatus, AppStore } from "app/store";
+import { AuthStatus as GlobalAuthStatus } from "app/utils/user_state";
 import { PageContainer } from "app/components/PageContainer";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -22,6 +22,10 @@ const Authenticate = (props) => {
   const [authStatus, setAuthStatus] = useState(AuthStatus.Initial);
   const [searchParams, setSearchParams] = useSearchParams();
   const [navigate] = useAppState((s) => [s.navigationState.push]);
+  const [user, quick] = useAppState((s) => [
+    s.userState.user,
+    s.userState.quick,
+  ]);
   let t = searchParams.get("t");
   useEffect(() => {
     if (t && authStatus === AuthStatus.Initial) {
@@ -33,11 +37,11 @@ const Authenticate = (props) => {
           })
           .then(({ data }) => {
             let { token, user } = data as any;
-            AppStore.update((s) => {
-              s.auth.tempUserUuid = user.id;
-              s.auth.token = token;
-              s.auth.user = user;
-              s.auth.authStatus = GlobalAuthStatus.Authenticated;
+            quick((s) => {
+              s.tempUserUuid = user.id;
+              s.token = token;
+              s.user = user;
+              s.authStatus = GlobalAuthStatus.Authenticated;
             });
             setAuthStatus(AuthStatus.SuccessWaiting);
             setTimeout(() => {

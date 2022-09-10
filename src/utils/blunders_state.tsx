@@ -4,7 +4,6 @@ import { fetchNewBlunderPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import { DEBUG_DONE_BLUNDER_VIEW } from "./test_settings";
 import { StorageItem } from "app/utils/storageItem";
 import { Animated } from "react-native";
 import { BlunderPuzzle } from "app/models";

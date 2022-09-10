@@ -1,7 +1,7 @@
 import axios from "axios";
 import applyCaseMiddleware from "axios-case-converter";
-import { AppStore } from "./store";
 import { camelCase } from "camel-case";
+import { useAppStateInternal } from "./utils/app_state";
 import { clearCookies } from "./utils/auth";
 
 const client = applyCaseMiddleware(
@@ -37,7 +37,7 @@ client.interceptors.request.use(function (config) {
   if (config.url?.includes("lichess")) {
     return config;
   }
-  const { token, tempUserUuid } = AppStore.getRawState().auth;
+  const { token, tempUserUuid } = useAppStateInternal.getState().userState;
   if (token) {
     config.headers.Authorization = token;
   } else {
@@ -53,8 +53,8 @@ client.interceptors.response.use(
   function (error) {
     console.log({ error });
     if (error?.response?.status === 401) {
-      AppStore.update((s) => {
-        s.auth.token = undefined;
+      useAppStateInternal.getState().quick((s) => {
+        s.userState.token = undefined;
         clearCookies();
         window.location.href = `${window.location.origin}/login`;
         // window.location = "/login";

@@ -30,6 +30,8 @@ import SharedRepertoireView from "app/components/SharedRepertoire";
 import * as Sentry from "sentry-expo";
 import { isNil } from "lodash-es";
 import Authenticate from "app/components/Authenticate";
+import { AdminView } from "app/components/AdminView";
+import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
 
 const SENTRY_DSN: string =
   process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -103,6 +105,11 @@ export default function App() {
                 <Route
                   path="/visualization"
                   element={<VisualizationTraining />}
+                />
+                <Route path="/admin" element={<AdminView />} />
+                <Route
+                  path="/admin/move-annotations"
+                  element={<ReviewMoveAnnotationsView />}
                 />
               </Routes>
             </RouteProvider>

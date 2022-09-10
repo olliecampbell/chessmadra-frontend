@@ -5,7 +5,6 @@ import { CMText } from "./CMText";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { useIsMobile } from "app/utils/isMobile";
-import shallow from "zustand/shallow";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const DeleteMoveConfirmationModal = () => {

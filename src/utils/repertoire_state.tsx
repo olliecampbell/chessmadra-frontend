@@ -3,7 +3,6 @@ import client from "app/client";
 import {
   PlayerTemplate,
   RepertoireTemplate,
-  User,
   PositionReport,
   EcoCode,
   PawnStructureDetails,
@@ -26,7 +25,6 @@ import {
   find,
   values,
   isNil,
-  nth,
   zip,
   sortBy,
   findLast,
@@ -37,7 +35,6 @@ import {
   getAllRepertoireMoves,
   lineToPgn,
   otherSide,
-  pgnToLine,
   Repertoire,
   RepertoireGrade,
   RepertoireMove,
@@ -47,23 +44,18 @@ import {
   SIDES,
 } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
-import { Chess } from "@lubert/chess.ts";
 import { PlaybackSpeed } from "app/types/VisualizationState";
-import { genEpd, START_EPD } from "./chess";
+import { START_EPD } from "./chess";
 import { formatEloRange } from "./elo_range";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { logProxy } from "./state";
 import {
-  BrowserDrilldownState,
-  BrowserSection,
   BrowsingState,
   getInitialBrowsingState,
 } from "./browsing_state";
-import { failOnAny } from "./test_settings";
-import { getPawnOnlyEpd } from "./pawn_structures";
+import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -99,7 +91,7 @@ export interface RepertoireState {
     >
   >;
   queues: BySide<QuizMove[]>;
-  positionReports: BySide<Record<string, PositionReport>>;
+  positionReports: Record<string, PositionReport>;
   failedToFetchSharedRepertoire?: boolean;
   currentMove?: QuizMove;
   reviewSide?: Side;
@@ -108,7 +100,6 @@ export interface RepertoireState {
   activeSide: Side;
   failedReviewPositionMoves?: Record<string, RepertoireMove>;
   completedReviewPositionMoves?: Record<string, RepertoireMove>;
-  setUser: (user: User) => void;
   reviewLine: (line: string[], side: Side) => void;
   fetchSharedRepertoire: (id: string) => void;
   fetchRepertoire: () => void;
@@ -122,7 +113,6 @@ export interface RepertoireState {
     blackPgn?: string;
     state?: RepertoireState;
   }) => void;
-  user?: User;
   initState: () => void;
   playSan: (pgn: string) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
@@ -136,6 +126,15 @@ export interface RepertoireState {
   reviewWithQueue: (queues: BySide<QuizMove[]>) => void;
   isReviewingWithCustomQueue?: boolean;
   backToOverview: () => void;
+  uploadMoveAnnotation: ({
+    epd,
+    san,
+    text,
+  }: {
+    epd: string;
+    san: string;
+    text: string;
+  }) => void;
   startEditing: (side: Side) => void;
   startBrowsing: (side: Side) => void;
   showImportView?: boolean;
@@ -224,7 +223,7 @@ export interface RepertoireState {
   // Debug pawn structure stuff
   debugPawnStructuresState: any & {};
   fetchDebugGames: () => void;
-  fetchDebugPawnStructureForPosition: () => void;
+  // fetchDebugPawnStructureForPosition: () => void;
   selectDebugGame: (i: number) => void;
 }
 
@@ -323,7 +322,7 @@ export const getInitialRepertoireState = (
     pawnStructureLookup: {},
     inProgressUsingPlayerTemplate: false,
     pendingResponses: {},
-    positionReports: { white: {}, black: {} },
+    positionReports: {},
     currentLine: [],
     queues: EMPTY_QUEUES,
     // hasCompletedRepertoireInitialization: failOnTrue(true),
@@ -332,10 +331,6 @@ export const getInitialRepertoireState = (
         s.fetchRepertoire();
         s.fetchSupplementary();
       }, "initState"),
-    setUser: (user: User) =>
-      set(([s]) => {
-        s.user = user;
-      }, "setUser"),
     giveUp: () =>
       set(([s]) => {
         let move = s.getNextReviewPositionMove();
@@ -367,9 +362,9 @@ export const getInitialRepertoireState = (
             max: range[1],
           })
           .then(({ data }: { data: FetchRepertoireResponse }) => {
-            set(([s]) => {
-              s.user.eloRange = formatEloRange(range);
-              s.positionReports = { white: {}, black: {} };
+            set(([s, appState]) => {
+              appState.userState.user.eloRange = formatEloRange(range);
+              s.positionReports = {};
             });
           })
           .finally(() => {
@@ -588,15 +583,15 @@ export const getInitialRepertoireState = (
         }
         let neededPositions = [];
         s.chessboardState.positionHistory.forEach((epd) => {
-          if (!s.positionReports[side][epd]) {
+          if (!s.positionReports[epd]) {
             neededPositions.push(epd);
           }
         });
-        let currentReport = s.positionReports[side][s.getCurrentEpd()];
+        let currentReport = s.positionReports[s.getCurrentEpd()];
         if (currentReport) {
           currentReport.suggestedMoves.forEach((sm) => {
             let epd = sm.epdAfter;
-            if (!s.positionReports[side][epd]) {
+            if (!s.positionReports[epd]) {
               neededPositions.push(epd);
             }
           });
@@ -611,7 +606,7 @@ export const getInitialRepertoireState = (
           .then(({ data: reports }: { data: PositionReport[] }) => {
             set(([s]) => {
               reports.forEach((report) => {
-                s.positionReports[side][report.epd] = report;
+                s.positionReports[report.epd] = report;
               });
               s.fetchNeededPositionReports();
             });
@@ -623,7 +618,7 @@ export const getInitialRepertoireState = (
     onMove: () =>
       set(([s]) => {
         if (s.debugPawnStructuresState) {
-          s.fetchDebugPawnStructureForPosition();
+          // s.fetchDebugPawnStructureForPosition();
         }
         if (s.isEditing) {
           s.onEditingPositionUpdate();
@@ -901,6 +896,47 @@ export const getInitialRepertoireState = (
         downloadLink.click();
       }, "exportPgn"),
 
+    getPawnStructure: (epd: string) =>
+      get(([s]) => {
+        let pawnEpd = getPawnOnlyEpd(epd);
+        let pawnStructure = s.pawnStructureLookup[pawnEpd];
+        if (pawnStructure) {
+          return { reversed: false, pawnStructure };
+        }
+        let reversed = reversePawnEpd(pawnEpd);
+        console.log({ reversed });
+        pawnStructure = s.pawnStructureLookup[reversed];
+        if (pawnStructure) {
+          return { reversed: true, pawnStructure };
+        }
+        return {};
+      }),
+    uploadMoveAnnotation: ({
+      epd,
+      san,
+      text,
+    }: {
+      epd: string;
+      san: string;
+      text: string;
+    }) =>
+      get(([s]) => {
+        client
+          .post("/api/v1/openings/move_annotation", {
+            text: text,
+            epd: epd,
+            san,
+          })
+          .then(({ data }: { data: any }) => {
+            set(([s]) => {
+              s.positionReports[epd]?.suggestedMoves?.forEach((sm) => {
+                if (sm.sanPlus === san) {
+                  sm.annotation = text;
+                }
+              });
+            });
+          });
+      }),
     backToOverview: () =>
       set(([s]) => {
         if (s.isReviewingWithCustomQueue) {
@@ -1058,7 +1094,12 @@ export const getInitialRepertoireState = (
               s.ecoCodes = data.ecoCodes;
               s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
               s.pawnStructures = data.pawnStructures;
-              s.pawnStructureLookup = keyBy(s.pawnStructures, (e) => e.id);
+              s.pawnStructureLookup = {};
+              forEach(s.pawnStructures, (e) => {
+                forEach(e.pawnEpds, (pawnEpd) => {
+                  s.pawnStructureLookup[pawnEpd] = e;
+                });
+              });
             });
           }
         );
@@ -1071,29 +1112,6 @@ export const getInitialRepertoireState = (
             set(([s]) => {
               s.ecoCodes = data;
               s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
-            });
-          });
-      }),
-    fetchDebugPawnStructureForPosition: () =>
-      set(([s]) => {
-        let epd = s.getCurrentEpd();
-        s.debugPawnStructuresState.loadingPosition;
-        client
-          .post("/api/v1/debug/position", {
-            epd,
-          })
-          .then(({ data }: { data: any }) => {
-            set(([s]) => {
-              s.debugPawnStructuresState.byPosition[epd] = data;
-              if (s.getCurrentEpd() === epd) {
-                s.debugPawnStructuresState.loadingPosition = false;
-                s.debugPawnStructuresState.pawnStructures = sortBy(
-                  data,
-                  (p) => {
-                    return !p.passed;
-                  }
-                );
-              }
             });
           });
       }),
@@ -1215,7 +1233,7 @@ export const getInitialRepertoireState = (
       }),
     getCurrentPositionReport: () =>
       get(([s]) => {
-        return s.positionReports[s.activeSide][s.getCurrentEpd()];
+        return s.positionReports[s.getCurrentEpd()];
       }),
     getCurrentEpd: () =>
       get(([s]) => {
@@ -1229,7 +1247,7 @@ export const getInitialRepertoireState = (
         }
         s.chessboardState.backOne();
         if (s.debugPawnStructuresState) {
-          s.fetchDebugPawnStructureForPosition();
+          // s.fetchDebugPawnStructureForPosition();
         }
         if (s.isEditing) {
           s.onEditingPositionUpdate();
@@ -1268,8 +1286,7 @@ export const getInitialRepertoireState = (
                 line: s.currentLine,
                 stage: AddedLineStage.Initial,
                 addNewLineSelectedIndex: 0,
-                positionReport:
-                  s.positionReports[s.activeSide][s.getCurrentEpd()],
+                positionReport: s.positionReports[s.getCurrentEpd()],
                 ecoCode: findLast(
                   map(
                     s.chessboardState.positionHistory,

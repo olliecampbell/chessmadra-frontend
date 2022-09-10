@@ -1,52 +1,16 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import shallow from "zustand/shallow";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   isEmpty,
-  isNil,
-  take,
-  sortBy,
-  reverse,
-  some,
-  forEach,
-  find,
-  filter,
-  times,
-  findIndex,
-  map,
 } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import { EditingTab, RepertoireState } from "app/utils/repertoire_state";
-import { RepertoireMove, Side, Repertoire } from "app/utils/repertoire";
-import { BeatLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { PositionReport, StockfishReport, SuggestedMove } from "app/models";
-import { AddedLineModal } from "./AddedLineModal";
-import { formatStockfishEval } from "app/utils/stockfish";
-import { GameResultsBar } from "./GameResultsBar";
-import {
-  getTotalGames,
-  formatPlayPercentage,
-  getWinRate,
-  getPlayRate,
-} from "app/utils/results_distribution";
-import useKeypress from "react-use-keypress";
-import { SelectOneOf } from "./SelectOneOf";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { Modal } from "./Modal";
-import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { useRepertoireState } from "app/utils/app_state";
 import React from "react";
-import { plural, pluralize } from "app/utils/pluralize";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { RepertoireMovesTable, TableResponse } from "./RepertoireMovesTable";
 import { Animated } from "react-native";
 
 export const RepertoireEditingBottomNav = ({}: {}) => {

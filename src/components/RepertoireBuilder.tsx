@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, isNil, capitalize, take } from "lodash-es";
-import { TrainerLayout } from "app/components/TrainerLayout";
+import { isEmpty, isNil, capitalize } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -20,20 +19,16 @@ import { HeadSiteMeta, PageContainer } from "./PageContainer";
 import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
-import { AppStore } from "app/store";
 import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
 import { createStaticChessState } from "app/utils/chessboard_state";
-import { LichessGameCellMini } from "./LichessGameCellMini";
 import { CMText } from "./CMText";
 import { RepertoireEditingView } from "./RepertoireEditingView";
 import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
 import { useEloRangeWarning } from "./useEloRangeWarning";
-import shallow from "zustand/shallow";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import {
   useRepertoireState,
-  equality,
   useDebugState,
 } from "app/utils/app_state";
 import { RepertoireReview } from "./RepertoireReview";
@@ -61,7 +56,6 @@ export const RepertoireBuilder = () => {
     isBrowsing,
     isEditing,
     isReviewing,
-    setUser,
     initState,
   ] = useRepertoireState((s) => [
     s.repertoire,
@@ -69,14 +63,8 @@ export const RepertoireBuilder = () => {
     s.isBrowsing,
     s.isEditing,
     s.isReviewing,
-    s.setUser,
     s.initState,
   ]);
-  let { user, authStatus, token } = AppStore.useState((s) => s.auth);
-  useEffect(() => {
-    setUser(user);
-    console.log("User changed?");
-  }, [user]);
   useEffect(() => {
     initState();
   }, []);
@@ -843,8 +831,7 @@ const ShareRepertoireButton = () => {
 
 const ExtraActions = () => {
   const { eloWarning } = useEloRangeWarning({});
-  let [user, getMyResponsesLength] = useRepertoireState((s) => [
-    s.user,
+  let [getMyResponsesLength] = useRepertoireState((s) => [
     s.getMyResponsesLength,
   ]);
   let hasNoMovesAtAll = getMyResponsesLength(null) === 0;

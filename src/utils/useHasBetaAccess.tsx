@@ -1,6 +1,6 @@
-import { AppStore } from "app/store";
+import { useAppState } from "./app_state";
 
 export const useHasBetaAccess = () => {
-  const betaAccess = AppStore.useState((s) => s.auth?.user?.betaAccess);
+  const betaAccess = useAppState((s) => s.userState.user?.betaAccess);
   return betaAccess;
 };

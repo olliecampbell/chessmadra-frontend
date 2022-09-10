@@ -15,7 +15,6 @@ import { formatStockfishEval } from "app/utils/stockfish";
 import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import shallow from "zustand/shallow";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const AddedLineModal = () => {

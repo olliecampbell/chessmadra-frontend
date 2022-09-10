@@ -1,7 +1,6 @@
 import { isCheckmate } from "../utils/chess";
 import { Color, Move } from "@lubert/chess.ts";
 import { isEmpty } from "lodash-es";
-import { DEBUG_MOCK_FETCH } from "./test_settings";
 import { LichessPuzzle } from "../models";
 import { ChessboardDelegate } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";

@@ -3,7 +3,6 @@ import {
   Animated,
   PanResponder,
   PanResponderInstance,
-  Pressable,
   useWindowDimensions,
   View,
 } from "react-native";

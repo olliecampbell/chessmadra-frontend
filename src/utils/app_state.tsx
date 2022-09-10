@@ -1,12 +1,9 @@
 import create from "zustand";
 import { devtools } from "zustand/middleware";
-
-import { NavigateFunction } from "react-router-dom";
 import { immer } from "zustand/middleware/immer";
 import { VisualizationState } from "app/types/VisualizationState";
 import { OpDraft } from "./op_draft";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
-import shallow from "zustand/shallow";
 import { getInitialVisualizationState } from "./visualization_state";
 import {
   BlunderRecognitionState,
@@ -29,17 +26,20 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import { every, isEqualWith, isObject, keysIn, map, zip } from "lodash-es";
+import { every, isObject, keysIn, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { immerable } from "immer";
 import { Animated } from "react-native";
 import { DebugState, getInitialDebugState } from "./debug_state";
 import { getInitialNavigationState, NavigationState } from "./navigation_state";
+import { AdminState, getInitialAdminState } from "./admin_state";
+import { getInitialUserState, UserState } from "./user_state";
 
 Chess[immerable] = true;
 
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
+  adminState: AdminState;
   visualizationState: VisualizationState;
   climbState: VisualizationState;
   repertoireState: RepertoireState;
@@ -50,7 +50,7 @@ export interface AppState {
   gameMemorizationState: GameMemorizationState;
   debugState: DebugState;
   navigationState: NavigationState;
-  // authState: AuthState
+  userState: UserState;
 }
 
 let pendingState: OpDraft<AppState> = null;
@@ -64,7 +64,7 @@ function isRevokedProxy(value) {
   }
 }
 
-const useAppStateInternal = create<AppState>()(
+export const useAppStateInternal = create<AppState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((_set, _get): AppState => {
@@ -101,6 +101,7 @@ const useAppStateInternal = create<AppState>()(
       };
       let initialState = {
         repertoireState: getInitialRepertoireState(set, get),
+        adminState: getInitialAdminState(set, get),
         visualizationState: getInitialVisualizationState(set, get, false),
         climbState: getInitialVisualizationState(set, get, true),
         blunderState: getInitialBlundersState(set, get),
@@ -110,6 +111,7 @@ const useAppStateInternal = create<AppState>()(
         gameMemorizationState: getInitialGameMemorizationState(set, get),
         debugState: getInitialDebugState(set, get),
         navigationState: getInitialNavigationState(set, get),
+        userState: getInitialUserState(set, get),
         ...createQuick<AppState>(set),
       };
       return initialState;
@@ -249,6 +251,10 @@ export const useGameSearchState = <T,>(
 
 export const useDebugState = <T,>(fn: (_: DebugState) => T, equality?: any) => {
   return useAppStateInternal((s) => fn(s.debugState), equality);
+};
+
+export const useAdminState = <T,>(fn: (_: AdminState) => T, equality?: any) => {
+  return useAppStateInternal((s) => fn(s.adminState), equality);
 };
 
 export const useAppState = <T,>(fn: (_: AppState) => T, equality?: any) => {

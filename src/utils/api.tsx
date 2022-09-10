@@ -1,6 +1,5 @@
 import { BlunderPuzzle, LichessPuzzle } from "app/models";
 import client from "app/client";
-import { cloneDeep } from "lodash-es";
 
 interface PuzzleFetchOptions {
   ratingGte?: number;

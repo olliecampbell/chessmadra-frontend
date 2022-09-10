@@ -1,53 +1,42 @@
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import shallow from "zustand/shallow";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
   isEmpty,
   isNil,
-  take,
   sortBy,
   reverse,
-  some,
   forEach,
-  find,
   filter,
   times,
   values,
-  findIndex,
-  map,
   sumBy,
 } from "lodash-es";
-import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { EditingTab, RepertoireState } from "app/utils/repertoire_state";
-import { RepertoireMove, Side, Repertoire } from "app/utils/repertoire";
+import { EditingTab } from "app/utils/repertoire_state";
+import { Side } from "app/utils/repertoire";
 import { BeatLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { PositionReport, StockfishReport, SuggestedMove } from "app/models";
+import { PositionReport, StockfishReport } from "app/models";
 import { AddedLineModal } from "./AddedLineModal";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { GameResultsBar } from "./GameResultsBar";
 import {
   getTotalGames,
-  formatPlayPercentage,
   getWinRate,
   getPlayRate,
 } from "app/utils/results_distribution";
 import useKeypress from "react-use-keypress";
 import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { Modal } from "./Modal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { useDebugState, useRepertoireState } from "app/utils/app_state";
 import React, { useState } from "react";
-import { plural, pluralize } from "app/utils/pluralize";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import {
   RepertoireMovesTable,
   ScoreTable,
@@ -270,8 +259,6 @@ const Responses = () => {
     s.playSan,
   ]);
   let side: Side = position.turn() === "b" ? "black" : "white";
-  console.warn("---------");
-  console.log(position.turn());
   let ownSide = side === activeSide;
   let _tableResponses: Record<string, TableResponse> = {};
   positionReport?.suggestedMoves.map((sm) => {
@@ -313,7 +300,7 @@ const Responses = () => {
   const isMobile = false;
   const [showOtherMoves, setShowOtherMoves] = useState(false);
   return (
-    <View style={s(c.column, c.width(500), c.constrainWidth)}>
+    <View style={s(c.column, c.width(600), c.constrainWidth)}>
       {!isEmpty(youCanPlay) && (
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
@@ -614,17 +601,21 @@ const EditingTabPicker = () => {
 };
 
 const PositionOverview = () => {
-  const [positionReport, ecoCode, activeSide, pawnStructure] =
-    useRepertoireState((s) => {
-      return [
-        s.getCurrentPositionReport(),
-        s.editingState.lastEcoCode,
-        s.activeSide,
-        s.pawnStructureLookup[
-          s.getCurrentPositionReport()?.pawnStructure?.name
-        ],
-      ];
-    });
+  const pawnStructure = null;
+  const pawnStructureReversed = false;
+  const [
+    positionReport,
+    ecoCode,
+    activeSide,
+    // { pawnStructure, reversed: pawnStructureReversed },
+  ] = useRepertoireState((s) => {
+    return [
+      s.getCurrentPositionReport(),
+      s.editingState.lastEcoCode,
+      s.activeSide,
+      // s.getPawnStructure(s.getCurrentEpd()),
+    ];
+  });
   let fontColor = c.grays[60];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
@@ -675,7 +666,7 @@ const PositionOverview = () => {
           </View>
         )}
       </View>
-      {pawnStructure && false && (
+      {pawnStructure && (
         <>
           <Spacer height={24} />
           <View

@@ -4,7 +4,6 @@ import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { intersperse } from "app/utils/intersperse";
 import { useIsMobile } from "../utils/isMobile";
-import { AppStore, AuthStatus } from "app/store";
 import { Button } from "./Button";
 import { useOutsideClick } from "./useOutsideClick";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
@@ -13,6 +12,7 @@ import { some } from "lodash-es";
 import { useRepertoireState, useAppState } from "app/utils/app_state";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { AuthStatus } from "app/utils/user_state";
 
 export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
 export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
@@ -74,8 +74,10 @@ export const NavBar = (props: {}) => {
   // const router = useRouter();
   const isMobile = useIsMobile();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const authStatus = AppStore.useState((s) => s.auth.authStatus);
-  const user = AppStore.useState((s) => s.auth.user);
+  const [authStatus, user] = useAppState((s) => [
+    s.userState.authStatus,
+    s.userState.user,
+  ]);
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);

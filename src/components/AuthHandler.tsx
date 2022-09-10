@@ -1,14 +1,19 @@
 import Cookies from "js-cookie";
-import { AppStore, AuthStatus } from "app/store";
 import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "app/utils/auth";
 import { User } from "app/models";
 import { uuid4 } from "@sentry/utils";
 import { useEffect } from "react";
+import { useAppState } from "app/utils/app_state";
+import { AuthStatus } from "app/utils/user_state";
 
 const AuthHandler = ({ children }) => {
-  let { user, authStatus, token, tempUserUuid } = AppStore.useState(
-    (s) => s.auth
-  );
+  let [user, authStatus, token, tempUserUuid, quick] = useAppState((s) => [
+    s.userState.user,
+    s.userState.authStatus,
+    s.userState.token,
+    s.userState.tempUserUuid,
+    s.userState.quick,
+  ]);
   // let subscribeAfterSignup = AppStore.useState((s) => s.subscribeAfterSignup);
   useEffect(() => {
     if (token) {
@@ -21,22 +26,22 @@ const AuthHandler = ({ children }) => {
     }
   }, [tempUserUuid]);
   useEffect(() => {
-    AppStore.update((s) => {
+    quick((s) => {
       let cookieToken = Cookies.get(JWT_COOKIE_KEY);
       if (cookieToken) {
-        s.auth.token = cookieToken;
+        s.token = cookieToken;
       } else {
-        s.auth.authStatus = AuthStatus.Unauthenticated;
+        s.authStatus = AuthStatus.Unauthenticated;
       }
     });
   }, []);
   useEffect(() => {
-    AppStore.update((s) => {
+    quick((s) => {
       let tempUserUuid = Cookies.get(TEMP_USER_UUID);
       if (tempUserUuid) {
-        s.auth.tempUserUuid = tempUserUuid;
+        s.tempUserUuid = tempUserUuid;
       } else {
-        s.auth.tempUserUuid = uuid4();
+        s.tempUserUuid = uuid4();
       }
     });
   }, []);
@@ -45,20 +50,20 @@ const AuthHandler = ({ children }) => {
       if (authStatus === AuthStatus.Initial) {
         fetchUser()
           .then((user: User) => {
-            AppStore.update((s) => {
-              s.auth.token = token;
-              s.auth.user = user;
-              s.auth.tempUserUuid = user.id;
-              s.auth.authStatus = AuthStatus.Authenticated;
+            quick((s) => {
+              s.token = token;
+              s.user = user;
+              s.tempUserUuid = user.id;
+              s.authStatus = AuthStatus.Authenticated;
             });
           })
           .catch((e) => {
             let status = e?.response?.status || 0;
             if (status === 401) {
-              AppStore.update((s) => {
-                s.auth.token = undefined;
-                s.auth.user = undefined;
-                s.auth.authStatus = AuthStatus.Unauthenticated;
+              quick((s) => {
+                s.token = undefined;
+                s.user = undefined;
+                s.authStatus = AuthStatus.Unauthenticated;
                 Cookies.remove(JWT_COOKIE_KEY);
               });
             }

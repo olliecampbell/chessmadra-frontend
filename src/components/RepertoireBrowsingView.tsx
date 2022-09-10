@@ -1,20 +1,17 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import shallow from "zustand/shallow";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, capitalize, take, filter, sortBy } from "lodash-es";
+import { isEmpty, take, sortBy } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import {
   formatIncidence,
   otherSide,
-  pgnToLine,
   RepertoireMiss,
-  Side,
 } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { createStaticChessState } from "app/utils/chessboard_state";
@@ -24,7 +21,7 @@ import {
   getNameEcoCodeIdentifier,
 } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
-import { AppState, useRepertoireState } from "app/utils/app_state";
+import { useRepertoireState } from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,

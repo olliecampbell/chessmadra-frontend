@@ -1,56 +1,27 @@
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import shallow from "zustand/shallow";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
 import {
-  isEmpty,
-  isNil,
-  take,
-  sortBy,
-  reverse,
   some,
-  forEach,
-  find,
-  max,
-  maxBy,
-  filter,
-  times,
-  findIndex,
-  every,
   isNaN,
   takeWhile,
+  debounce,
 } from "lodash-es";
-import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { EditingTab, RepertoireState } from "app/utils/repertoire_state";
-import { RepertoireMove, Side, Repertoire } from "app/utils/repertoire";
-import { BeatLoader } from "react-spinners";
+import { RepertoireMove, Side } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { PositionReport, StockfishReport, SuggestedMove } from "app/models";
-import { AddedLineModal } from "./AddedLineModal";
+import { SuggestedMove } from "app/models";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { GameResultsBar } from "./GameResultsBar";
 import {
-  getTotalGames,
   formatPlayPercentage,
-  getWinRate,
   getPlayRate,
 } from "app/utils/results_distribution";
-import useKeypress from "react-use-keypress";
-import { SelectOneOf } from "./SelectOneOf";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { Modal } from "./Modal";
-import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { useDebugState, useRepertoireState } from "app/utils/app_state";
-import React, { useState } from "react";
-import { plural, pluralize } from "app/utils/pluralize";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { failOnAny } from "app/utils/test_settings";
+import React, { useCallback, useEffect, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
 import { TableResponseScoreSource } from "./RepertoireEditingView";
 
@@ -106,6 +77,7 @@ export const RepertoireMovesTable = ({
   let MAX_TRUNCATED = isMobile ? 4 : 6;
   let MIN_TRUNCATED = isMobile ? 2 : 3;
   let truncated = responses.length > MAX_TRUNCATED && !expanded;
+  const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
     trimmedResponses = takeWhile(responses, (r, i) => {
@@ -137,7 +109,11 @@ export const RepertoireMovesTable = ({
       >
         {header}
       </CMText>
-      <TableHeader anyMine={anyMine} sections={sections} />
+      <View style={s(c.height(16))}>
+        {!editingAnnotations && (
+          <TableHeader anyMine={anyMine} sections={sections} />
+        )}
+      </View>
       <Spacer height={12} />
       {intersperse(
         trimmedResponses.map((tableResponse, i) => {
@@ -145,6 +121,7 @@ export const RepertoireMovesTable = ({
             <Response
               anyMine={anyMine}
               sections={sections}
+              editing={editingAnnotations}
               key={
                 tableResponse.repertoireMove?.sanPlus ||
                 tableResponse.suggestedMove?.sanPlus
@@ -174,6 +151,23 @@ export const RepertoireMovesTable = ({
             <Spacer width={12} />
           </>
         )}
+        {
+          <>
+            <Pressable
+              style={s(c.borderBottom(`1px solid ${c.grays[40]}`), c.pb(1))}
+              onPress={() => {
+                setEditingAnnotations(!editingAnnotations);
+              }}
+            >
+              <CMText style={s(c.fontSize(12))}>
+                {editingAnnotations
+                  ? "Stop editing annotations"
+                  : "Add/edit annotations"}
+              </CMText>
+            </Pressable>
+            <Spacer width={12} />
+          </>
+        }
       </View>
     </View>
   );
@@ -268,29 +262,42 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
 
 const SPACE_BETWEEN_STATS = 24;
 
-const START_CELL_WIDTH = 40;
+const START_CELL_WIDTH = 70;
+const MAX_ANNOTATION_LENGTH = 300;
 
 const Response = ({
   tableResponse,
   sections,
   anyMine,
+  editing,
 }: {
   tableResponse: TableResponse;
   anyMine: boolean;
   sections: any[];
+  editing;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoverRef } = useHovering();
   const { suggestedMove, repertoireMove } = tableResponse;
-  const [playSan, currentLine, positionReport, activeSide, quick, position] =
-    useRepertoireState((s) => [
-      s.playSan,
-      s.currentLine,
-      s.getCurrentPositionReport(),
-      s.activeSide,
-      s.quick,
-      s.chessboardState.position,
-    ]);
+  const [
+    playSan,
+    currentLine,
+    positionReport,
+    activeSide,
+    quick,
+    position,
+    uploadMoveAnnotation,
+    currentEpd,
+  ] = useRepertoireState((s) => [
+    s.playSan,
+    s.currentLine,
+    s.getCurrentPositionReport(),
+    s.activeSide,
+    s.quick,
+    s.chessboardState.position,
+    s.uploadMoveAnnotation,
+    s.getCurrentEpd(),
+  ]);
   let side: Side = position?.turn() === "b" ? "black" : "white";
   const isMobile = useIsMobile();
   let tags = [];
@@ -300,6 +307,119 @@ const Response = ({
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
+  let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
+  useEffect(() => {
+    setAnnotation(suggestedMove?.annotation);
+  }, [suggestedMove?.annotation]);
+  const [focus, setFocus] = useState(false);
+  const updateAnnotation = useCallback(
+    debounce(
+      (annotation: string) => {
+        uploadMoveAnnotation({
+          epd: currentEpd,
+          san: sanPlus,
+          text: annotation,
+        });
+      },
+      400,
+      { leading: true }
+    ),
+    []
+  );
+
+  if (editing) {
+    return (
+      <View style={s(c.row, c.alignCenter)}>
+        <Pressable
+          onPress={() => {}}
+          style={s(
+            c.grow,
+            c.height(128),
+            c.br(2),
+            // c.py(8),
+            // c.pl(14),
+            // c.pr(8),
+            c.bg(c.grays[10]),
+            c.clickable,
+            c.row
+          )}
+        >
+          <View
+            style={s(c.width(80), c.selfStretch, c.row, c.px(12), c.py(12))}
+          >
+            <CMText
+              style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(18))}
+            >
+              {moveNumber}
+              {side === "black" ? "... " : "."}
+            </CMText>
+            <Spacer width={2} />
+            <CMText
+              key={sanPlus}
+              style={s(
+                c.fg(c.grays[90]),
+                c.fontSize(18),
+                c.weightSemiBold,
+                c.keyedProp("letterSpacing")("0.04rem")
+              )}
+            >
+              {sanPlus}
+            </CMText>
+          </View>
+          <View style={s(c.grow, c.relative)}>
+            <textarea
+              value={annotation ?? ""}
+              style={s(
+                {
+                  fontFamily: "Roboto Flex",
+                  fontVariationSettings: '"wdth" 110',
+                },
+                c.grow,
+                c.border("none"),
+                c.br(0),
+                c.px(12),
+                c.py(12),
+                c.pb(24),
+                c.keyedProp("resize")("none")
+              )}
+              placeholder={'ex. "Intending Bg5 after d4"'}
+              onFocus={() => {
+                setFocus(true);
+              }}
+              onBlur={() => {
+                setFocus(false);
+              }}
+              onChange={(e) => {
+                setAnnotation(e.target.value);
+                updateAnnotation(e.target.value);
+              }}
+            />
+            <View
+              style={s(
+                c.absolute,
+                c.bottom(12),
+                c.right(12),
+                c.opacity(focus ? 100 : 0)
+              )}
+            >
+              <CMText
+                style={s(
+                  annotation?.length > MAX_ANNOTATION_LENGTH && c.weightBold,
+                  c.fg(
+                    annotation?.length > MAX_ANNOTATION_LENGTH
+                      ? c.reds[60]
+                      : c.grays[50]
+                  )
+                )}
+              >
+                {annotation?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
+              </CMText>
+            </View>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={s(c.row, c.alignCenter)}>
@@ -324,9 +444,9 @@ const Response = ({
         )}
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.fullWidth)}>
+          <View style={s(c.row, c.fullWidth, c.alignStart)}>
             <View style={s(c.row, c.alignCenter, c.width(START_CELL_WIDTH))}>
-              <View style={s(c.row, c.alignCenter, c.minWidth(54))}>
+              <View style={s(c.row, c.alignCenter)}>
                 <CMText
                   style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(16))}
                 >
@@ -380,7 +500,15 @@ const Response = ({
                 </>
               )}
             </View>
-            <Spacer width={12} grow style={s(c.noPointerEvents)} />
+            <Spacer width={12} />
+            {!isMobile && (
+              <View style={s(c.width(0), c.grow, c.mt(4))}>
+                <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
+                  {suggestedMove?.annotation}
+                </CMText>
+              </View>
+            )}
+            <Spacer width={12} />
             <View style={s(c.row, c.alignCenter)}>
               {intersperse(
                 sections.map((section, i) => {
@@ -405,9 +533,16 @@ const Response = ({
               )}
             </View>
           </View>
+          {isMobile && (
+            <View style={s(c.grow, c.pt(6), c.px(12))}>
+              <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
+                {suggestedMove?.annotation}
+              </CMText>
+            </View>
+          )}
         </View>
       </Pressable>
-      {anyMine && (
+      {anyMine && false && (
         <>
           <Pressable
             onPress={() => {
@@ -477,7 +612,7 @@ const TableHeader = ({
           }
         )}
       </View>
-      {anyMine && <Spacer width={DELETE_WIDTH} />}
+      {anyMine && false && <Spacer width={DELETE_WIDTH} />}
     </View>
   );
 };
