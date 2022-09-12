@@ -27,6 +27,7 @@ import {
 } from "app/utils/game_search_state";
 import { HeadSiteMeta } from "app/components/PageContainer";
 import { GAME_SEARCH_DESCRIPTION } from "./NavBar";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -332,6 +333,7 @@ export const GamesSearch = () => {
             style={s(c.buttons.primary, c.selfEnd)}
             onPress={() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
+              trackEvent("game_search.search");
               (async () => {
                 state.quick((s) => {
                   s.loading = true;
@@ -412,6 +414,7 @@ const ExampleGame = ({
             // s.blackBlunders = blackBlunders;
             s.gameResult = gameResult;
             s.chessboardState.position = new Chess();
+            trackEvent("game_search.use_example");
             moves.map((move) => {
               s.chessboardState.position.move(move);
             });

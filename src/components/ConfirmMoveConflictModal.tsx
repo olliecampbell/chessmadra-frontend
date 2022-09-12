@@ -6,6 +6,7 @@ import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const ConfirmMoveConflictModal = () => {
   let [open, isAddingPendingLine, addPendingLine, quick] = useRepertoireState(
@@ -86,6 +87,7 @@ export const ConfirmMoveConflictModal = () => {
                 isLoading={isAddingPendingLine}
                 loaderProps={{ color: c.failureShades[55] }}
                 onPress={() => {
+                  trackEvent(`editor.replace_line`);
                   addPendingLine({ replace: true });
                 }}
               >
@@ -104,6 +106,7 @@ export const ConfirmMoveConflictModal = () => {
                 isLoading={isAddingPendingLine}
                 loaderProps={{ color: c.grays[75] }}
                 onPress={() => {
+                  trackEvent(`editor.add_alternate_line`);
                   addPendingLine({ replace: false });
                 }}
               >

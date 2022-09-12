@@ -94,7 +94,6 @@ export const ReviewMoveAnnotationsView = ({}) => {
                           c.selfEnd
                         )}
                         onPress={() => {
-                          console.log("Yeah?");
                           acceptMoveAnnotation(
                             review.epd,
                             review.san,

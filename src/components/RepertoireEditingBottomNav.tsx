@@ -2,9 +2,7 @@ import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  isEmpty,
-} from "lodash-es";
+import { isEmpty } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 const DEPTH_CUTOFF = 4;
@@ -12,6 +10,7 @@ import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
 import React from "react";
 import { Animated } from "react-native";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const RepertoireEditingBottomNav = ({}: {}) => {
   const isMobile = useIsMobile();
@@ -118,6 +117,7 @@ const AddPendingLineButton = () => {
             s.editingState.addConflictingMoveModalOpen = true;
           });
         } else {
+          trackEvent("repertoire.add_pending_line");
           addPendingLine();
         }
       }}

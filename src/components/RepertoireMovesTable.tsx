@@ -19,6 +19,8 @@ import { useDebugState, useRepertoireState } from "app/utils/app_state";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
 import { TableResponseScoreSource } from "./RepertoireEditingView";
+import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const DELETE_WIDTH = 30;
 
@@ -40,13 +42,6 @@ export interface ScoreFactor {
   source: TableResponseScoreSource;
   total?: number;
 }
-
-let desktopHeaderStyles = s(
-  c.fg(c.colors.textPrimary),
-  c.fontSize(22),
-  c.mb(12),
-  c.weightBold
-);
 
 export const RepertoireMovesTable = ({
   header,
@@ -88,22 +83,8 @@ export const RepertoireMovesTable = ({
   let numTruncated = responses.length - trimmedResponses.length;
   return (
     <View style={s(c.column)}>
-      <CMText
-        style={s(
-          desktopHeaderStyles,
-          c.mb(-2),
-          isMobile &&
-            s(
-              c.mb(8),
-              c.selfStart,
-              c.fontSize(14),
-              c.pb(2),
-              c.borderBottom(`2px solid ${c.grays[80]}`)
-            )
-        )}
-      >
-        {header}
-      </CMText>
+      <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
+      {isMobile && <Spacer height={8} />}
       <View style={s(c.height(16))}>
         {!editingAnnotations && (
           <TableHeader anyMine={anyMine} sections={sections} />
@@ -134,12 +115,15 @@ export const RepertoireMovesTable = ({
         {truncated && (
           <>
             <Pressable
-              style={s(c.borderBottom(`1px solid ${c.grays[40]}`), c.pb(1))}
+              style={s(c.borderBottom(`1px solid ${c.grays[50]}`), c.pb(1))}
               onPress={() => {
                 setExpanded(true);
+                trackEvent("repertoire.moves_table.show_more");
               }}
             >
-              <CMText style={s(c.fontSize(12))}>
+              <CMText
+                style={s(c.fontSize(12), c.fg(c.grays[60]), c.weightSemiBold)}
+              >
                 Show more moves <>({numTruncated})</>
               </CMText>
             </Pressable>
@@ -149,12 +133,15 @@ export const RepertoireMovesTable = ({
         {
           <>
             <Pressable
-              style={s(c.borderBottom(`1px solid ${c.grays[40]}`), c.pb(1))}
+              style={s(c.borderBottom(`1px solid ${c.grays[50]}`), c.pb(1))}
               onPress={() => {
+                trackEvent("repertoire.moves_table.edit_annotations");
                 setEditingAnnotations(!editingAnnotations);
               }}
             >
-              <CMText style={s(c.fontSize(12))}>
+              <CMText
+                style={s(c.fontSize(12), c.fg(c.grays[60]), c.weightSemiBold)}
+              >
                 {editingAnnotations
                   ? "Stop editing annotations"
                   : "Add/edit annotations"}
@@ -170,7 +157,6 @@ export const RepertoireMovesTable = ({
 
 let getSections = ({ myTurn }: { myTurn: boolean }) => {
   let [activeSide] = useRepertoireState((s) => [s.activeSide]);
-  console.log("active side is ", activeSide);
   let sections = [];
   if (!myTurn) {
     sections.push({
@@ -423,19 +409,19 @@ const Response = ({
       <Pressable
         onPress={() => {
           playSan(sanPlus);
+          trackEvent("repertoire.moves_table.select_move");
         }}
         style={s(
           c.grow,
+          c.flexible,
           c.br(2),
           c.py(8),
           c.pl(14),
           c.pr(8),
-          c.bg(c.grays[10]),
-          c.border(
-            `${repertoireMove?.mine ? 2 : 1}px solid ${
-              repertoireMove?.mine ? c.purples[65] : c.grays[7]
-            }`
-          ),
+          c.bg(c.colors.cardBackground),
+
+          mine && c.border(`2px solid ${c.purples[60]}`),
+          c.cardShadow,
           c.clickable,
           c.row
         )}
@@ -531,7 +517,7 @@ const Response = ({
             </View>
           </View>
           {isMobile && (
-            <View style={s(c.grow, c.pt(6), c.px(12))}>
+            <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
               <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
                 {suggestedMove?.annotation}
               </CMText>

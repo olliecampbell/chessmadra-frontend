@@ -2,9 +2,7 @@ import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  isNil,
-} from "lodash-es";
+import { isNil } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 const DEPTH_CUTOFF = 4;
@@ -13,16 +11,13 @@ import { Modal } from "./Modal";
 import { useRepertoireState } from "app/utils/app_state";
 
 export const SideSettingsModal = () => {
-  let [side, exportPgn, deleteRepertoire, quick] = useRepertoireState(
-    (s) => [
-      s.repertoireSettingsModalSide,
-      s.exportPgn,
-      s.deleteRepertoire,
-      s.quick,
-    ],
-  );
+  let [side, exportPgn, deleteRepertoire, quick] = useRepertoireState((s) => [
+    s.repertoireSettingsModalSide,
+    s.exportPgn,
+    s.deleteRepertoire,
+    s.quick,
+  ]);
   const isMobile = useIsMobile();
-  console.log("side", side);
   return (
     <Modal
       onClose={() => {

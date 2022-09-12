@@ -27,29 +27,22 @@ import { RepertoireEditingView } from "./RepertoireEditingView";
 import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
 import { useEloRangeWarning } from "./useEloRangeWarning";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
-import {
-  useRepertoireState,
-  useDebugState,
-} from "app/utils/app_state";
+import { useRepertoireState, useDebugState } from "app/utils/app_state";
 import { RepertoireReview } from "./RepertoireReview";
 import { SideSettingsModal } from "./SideSettingsModal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
+import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
-let cardStyles = s(
-  c.bg(c.colors.cardBackground),
-  c.overflowHidden,
-  c.br(2),
-  c.relative
-);
+let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
-  const [underConstruction, debugUi] = useDebugState((s) => [
-    s.underConstruction,
-    s.debugUi,
-  ]);
+  const [underConstruction, debugUi] = useDebugState(
+    (s) => [s.underConstruction, s.debugUi],
+    true
+  );
   const [
     repertoire,
     showImportView,
@@ -57,14 +50,17 @@ export const RepertoireBuilder = () => {
     isEditing,
     isReviewing,
     initState,
-  ] = useRepertoireState((s) => [
-    s.repertoire,
-    s.showImportView,
-    s.isBrowsing,
-    s.isEditing,
-    s.isReviewing,
-    s.initState,
-  ]);
+  ] = useRepertoireState(
+    (s) => [
+      s.repertoire,
+      s.showImportView,
+      s.isBrowsing,
+      s.isEditing,
+      s.isReviewing,
+      s.initState,
+    ],
+    true
+  );
   useEffect(() => {
     initState();
   }, []);
@@ -221,6 +217,7 @@ type EditButtonProps = {
 
 export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
   const isMobile = useIsMobile();
+  const track = useTrack();
   return (
     <Button
       style={s(
@@ -231,6 +228,7 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
         c.px(24)
       )}
       onPress={() => {
+        track("overview.edit_repertoire");
         state.startEditing(side);
       }}
     >
@@ -306,6 +304,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
   const { startBrowsing } = useRepertoireState((s) => ({
     startBrowsing: s.startBrowsing,
   }));
+  const track = useTrack();
   return (
     <Button
       style={s(
@@ -316,6 +315,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
         c.px(24)
       )}
       onPress={() => {
+        track("overview.browse_repertoire");
         startBrowsing(side);
       }}
     >
@@ -554,6 +554,7 @@ const BiggestMissBoards = ({
               state.quick((s) => {
                 state.startEditing(side as Side);
                 state.chessboardState.playPgn(x.lines[0]);
+                trackEvent("overview.go_to_biggest_miss");
               });
             return (
               <View style={s(c.column, c.center)} key={`miss-${i}`}>
@@ -700,6 +701,7 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
           style={s(c.buttons.primary, c.selfStretch, c.py(16), c.px(12))}
           onPress={() => {
             startReview(side);
+            trackEvent("overview.review_moves");
           }}
         >
           {`Review ${pluralize(queueLength, "move")}`}
@@ -723,6 +725,7 @@ const ImportButton = () => {
       onPress={() => {
         quick((s) => {
           s.startImporting();
+          trackEvent("overview.import_to_repertoire");
         });
       }}
     >
@@ -808,6 +811,7 @@ const ShareRepertoireButton = () => {
         onPress={() => {
           quick((s) => {
             s.overviewState.isShowingShareModal = true;
+            trackEvent("overview.share_repertoire");
           });
         }}
       >

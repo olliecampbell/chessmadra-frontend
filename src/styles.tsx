@@ -181,6 +181,7 @@ const shadow = (x, y, blur, spread, color) => {
     boxShadow: `${x}px ${y}px ${blur}px ${spread}px ${color}`,
   };
 };
+const cardShadow = shadow(0, 1, 4, 0, "rgba(0, 0, 0, 0.5)");
 
 const white = (opacity: number) => {
   return `hsla(0, 0%, 100%, ${opacity}%)`;
@@ -204,18 +205,19 @@ const grayHue = 239;
 function easeInOutSine(x: number): number {
   return -(Math.cos(Math.PI * x) - 1) / 2;
 }
-const genGrays = () => {
+const genGrays = (trueGrays?: boolean) => {
   const grays = {};
-  let minSaturation = 10;
-  let maxSaturation = 10;
+  let minSaturation = 5;
+  let maxSaturation = 5;
   for (let i = 0; i <= 100; i = i + 1) {
     let saturation =
       minSaturation + ((maxSaturation - minSaturation) * i) / 100;
-    grays[i] = `hsl(${grayHue}, ${saturation}%, ${i}%)`;
+    grays[i] = `hsl(${grayHue}, ${trueGrays ? 0 : saturation}%, ${i}%)`;
   }
   return grays;
 };
 const grays = genGrays();
+const trueGrays = genGrays(true);
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -268,9 +270,12 @@ const colors = {
   backgroundColor: grays[10],
   header: "hsl(229, 19%, 14%)",
   modalColor: "hsl(229, 10%, 90%)",
-  cardBackground: grays[12],
-  lightTile: hsl(180, 15, 70),
-  darkTile: hsl(180, 15, 40),
+  cardBackground: grays[18],
+  // lightTile: grays[48],
+  // darkTile: grays[38],
+
+  lightTile: hsl(180, 12, 70),
+  darkTile: hsl(180, 12, 40),
   debugColor: hsl(71, 100, 42),
 };
 const extraDarkBorder = border(`1px solid ${grays[7]}`);
@@ -375,6 +380,20 @@ const buttons = {
   squareBasicButtons: squareBottomRowButtonStyles,
   outlineLight: outlineLightButtonStyles,
   outlineDark: outlineDarkButtonStyles,
+};
+
+export const chessboardColors = {
+  outlineWidth: 0.8,
+  blackFill: trueGrays[35],
+  blackOutline: trueGrays[10],
+  blackLightAccent: trueGrays[40],
+  blackDarkAccent: "hsla(0, 0%, 10%, 40%)",
+  blackKnightAccent: trueGrays[20],
+  whiteFill: trueGrays[95],
+  whiteOutline: trueGrays[0],
+  whiteLightAccent: trueGrays[100],
+  whiteKnightAccent: trueGrays[40],
+  whiteDarkAccent: "hsla(0, 0%, 60%, 40%)",
 };
 
 const fillNoExpand = s(minWidth("100%"), width(0));
@@ -513,6 +532,7 @@ export const c = {
   inlineBlock: display("inline-block"),
   whitespace: keyedProp("whiteSpace"),
   shadow,
+  cardShadow,
   stif: (x, styles) => {
     return x ? styles : {};
   },

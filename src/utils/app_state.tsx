@@ -34,6 +34,7 @@ import { DebugState, getInitialDebugState } from "./debug_state";
 import { getInitialNavigationState, NavigationState } from "./navigation_state";
 import { AdminState, getInitialAdminState } from "./admin_state";
 import { getInitialUserState, UserState } from "./user_state";
+import * as amplitude from "@amplitude/analytics-browser";
 
 Chess[immerable] = true;
 
@@ -51,6 +52,7 @@ export interface AppState {
   debugState: DebugState;
   navigationState: NavigationState;
   userState: UserState;
+  trackEvent: (name: string, props?: Object) => void;
 }
 
 let pendingState: OpDraft<AppState> = null;
@@ -112,6 +114,12 @@ export const useAppStateInternal = create<AppState>()(
         debugState: getInitialDebugState(set, get),
         navigationState: getInitialNavigationState(set, get),
         userState: getInitialUserState(set, get),
+        trackEvent: (name: string, props?: Object) => {
+          get((s) => {
+            console.log(`EVENT\n\t---- ${name} ----`);
+            amplitude.track(name);
+          });
+        },
         ...createQuick<AppState>(set),
       };
       return initialState;
@@ -202,61 +210,97 @@ export const useRepertoireState = <T,>(
 
 export const useVisualizationState = <T,>(
   fn: (_: VisualizationState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.visualizationState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.visualizationState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
 export const useClimbState = <T,>(
   fn: (_: VisualizationState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.climbState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.climbState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
 export const useBlunderRecognitionState = <T,>(
   fn: (_: BlunderRecognitionState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.blunderState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.blunderState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
 export const useBlindfoldState = <T,>(
   fn: (_: BlindfoldTrainingState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.blindfoldState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.blindfoldState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
 export const useColorTrainingState = <T,>(
   fn: (_: ColorTrainingState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.colorTrainingState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.colorTrainingState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
 export const useGameMemorizationState = <T,>(
   fn: (_: GameMemorizationState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.gameMemorizationState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.gameMemorizationState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
 export const useGameSearchState = <T,>(
   fn: (_: GameSearchState) => T,
-  equality?: any
+  debug?: boolean
 ) => {
-  return useAppStateInternal((s) => fn(s.gameSearchState), equality);
+  return useAppStateInternal(
+    (s) => fn(s.gameSearchState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
-export const useDebugState = <T,>(fn: (_: DebugState) => T, equality?: any) => {
-  return useAppStateInternal((s) => fn(s.debugState), equality);
+export const useDebugState = <T,>(
+  fn: (_: DebugState) => T,
+  debug?: boolean
+) => {
+  return useAppStateInternal(
+    (s) => fn(s.debugState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
-export const useAdminState = <T,>(fn: (_: AdminState) => T, equality?: any) => {
-  return useAppStateInternal((s) => fn(s.adminState), equality);
+export const useAdminState = <T,>(
+  fn: (_: AdminState) => T,
+  debug?: boolean
+) => {
+  return useAppStateInternal(
+    (s) => fn(s.adminState),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };
 
-export const useAppState = <T,>(fn: (_: AppState) => T, equality?: any) => {
-  return useAppStateInternal((s) => fn(s), equality);
+export const useAppState = <T,>(fn: (_: AppState) => T, debug?: boolean) => {
+  return useAppStateInternal(
+    (s) => fn(s),
+    debug ? (a, b) => equality(a, b, true) : equality
+  );
 };

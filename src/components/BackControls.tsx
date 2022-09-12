@@ -8,6 +8,7 @@ const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 type BackControlsProps = {
   includeAnalyze?: boolean;
@@ -74,6 +75,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
           <Button
             style={s(c.buttons.extraDark)}
             onPress={() => {
+              trackEvent("repertoire.analyze_on_lichess");
               analyzeLineOnLichess(currentLine);
             }}
           >

@@ -11,6 +11,7 @@ import { HeadSiteMeta, PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
 import { useColorTrainingState } from "app/utils/app_state";
 import { COLOR_TRAINER_DESCRIPTION } from "./NavBar";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -142,6 +143,7 @@ export const ColorTraining = () => {
               <Button
                 onPress={() => {
                   state.startPlaying();
+                    trackEvent("color_training.start");
                 }}
                 style={s(c.buttons.primary)}
               >

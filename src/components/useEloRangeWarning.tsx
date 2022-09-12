@@ -10,6 +10,7 @@ import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { useRepertoireState, useAppState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 type EloRange = [number, number];
 
@@ -61,6 +62,7 @@ export const useEloRangeWarning = ({ separate }: { separate?: boolean }) => {
         loaderProps={{ color: c.grays[75] }}
         style={s(c.buttons.primary)}
         onPress={() => {
+          trackEvent(`user.update_elo_range`);
           updateEloRange(selectedEloRange);
         }}
       >

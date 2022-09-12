@@ -52,8 +52,7 @@ const AuthHandler = ({ children }) => {
           .then((user: User) => {
             quick((s) => {
               s.token = token;
-              s.user = user;
-              s.tempUserUuid = user.id;
+              s.setUser(user);
               s.authStatus = AuthStatus.Authenticated;
             });
           })

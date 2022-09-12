@@ -13,6 +13,7 @@ import { HeadSiteMeta, PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
 import { useClimbState } from "app/utils/app_state";
 import { CLIMB_DESCRIPTION } from "./NavBar";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const TheClimb = () => {
   const isMobile = useIsMobile();
@@ -81,6 +82,7 @@ export const TheClimb = () => {
               <Button
                 onPress={() => {
                   state.startPlayingClimb();
+                  trackEvent("climb.start_playing");
                 }}
                 style={s(c.buttons.primary)}
               >

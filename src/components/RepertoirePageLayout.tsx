@@ -21,7 +21,7 @@ export const RepertoirePageLayout = ({
       style={s(
         c.column,
         c.fullWidth,
-        c.bg(c.grays[16]),
+        c.bg(c.grays[12]),
         c.grow,
         c.height("100vh"),
         c.keyedProp("minHeight")("-webkit-fill-available"),

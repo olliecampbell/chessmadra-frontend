@@ -1,18 +1,14 @@
-
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  isEmpty,
-} from "lodash-es";
+import { isEmpty } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import {
-  RepertoireState,
-} from "app/utils/repertoire_state";
+import { RepertoireState } from "app/utils/repertoire_state";
 import { GridLoader } from "react-spinners";
 import { CMText } from "./CMText";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const MOBILE_CUTOFF = 800;
 
@@ -34,6 +30,9 @@ export const PlayerTemplateWizard = ({ state }: { state: RepertoireState }) => {
                 <Pressable
                   onPress={() => {
                     state.usePlayerTemplate(playerTemplate.id);
+                    trackEvent("import.from_player_template", {
+                      player_template_id: playerTemplate.id,
+                    });
                   }}
                 >
                   <View

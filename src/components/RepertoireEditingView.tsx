@@ -45,6 +45,7 @@ import {
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
+import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 
 export const MoveLog = () => {
   let pairs = [];
@@ -225,7 +226,7 @@ export const RepertoireEditingView = () => {
                   <Spacer width={48} />
                   <View style={s(c.column)}>
                     <PositionOverview />
-                    <Spacer height={48} />
+                    <Spacer height={24} />
                     <Responses />
                   </View>
                 </>
@@ -280,7 +281,6 @@ const Responses = () => {
     currentEpd,
     ownSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
   );
-  console.log({ tableResponses });
   let youCanPlay = filter(tableResponses, (tr) => {
     return activeSide === side;
   });
@@ -305,7 +305,7 @@ const Responses = () => {
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
             {...{
-              header: `You can play`,
+              header: `Choose your next move`,
               activeSide,
               side,
               responses: youCanPlay,
@@ -624,87 +624,97 @@ const PositionOverview = () => {
   const debugUi = useDebugState((s) => s.debugUi);
   return (
     <>
-      {ecoCode && (
-        <View style={s(c.mb(12))}>
-          <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(16))}>
-            {openingName}
-          </CMText>
-          <Spacer height={4} />
-          <CMText style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(14))}>
-            {variations.join(", ")}
-          </CMText>
-        </View>
-      )}
-      {positionReport?.stockfish && (
-        <View style={s(c.mb(12), c.row, c.alignEnd)}>
-          <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}>
-            {formatStockfishEval(positionReport.stockfish)}
-          </CMText>
-          <Spacer width={6} />
-          <CMText style={s(c.fg(fontColor))}>Stockfish</CMText>
-        </View>
-      )}
-      <View style={s(c.row)}>
-        {positionReport?.results && (
-          <View style={s(c.grow)}>
-            <View style={s(c.row)}>
-              <CMText style={s(c.fg(fontColor))}>Results at your level</CMText>
-              {debugUi && (
-                <>
-                  <Spacer width={4} />
-                  <CMText style={s(c.fg(c.colors.debugColor))}>
-                    ({getTotalGames(positionReport.results)} games)
-                  </CMText>
-                </>
-              )}
-            </View>
+      <RepertoireEditingHeader>Current position</RepertoireEditingHeader>
+      <Spacer height={12} />
+      <View style={s(c.px(12), c.py(12), c.border(`1px solid ${c.grays[33]}`))}>
+        {ecoCode && (
+          <View style={s(c.mb(12))}>
+            <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(16))}>
+              {openingName}
+            </CMText>
             <Spacer height={4} />
-            <GameResultsBar
-              activeSide={activeSide}
-              gameResults={positionReport.results}
-            />
+            <CMText
+              style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(14))}
+            >
+              {variations.join(", ")}
+            </CMText>
           </View>
         )}
-      </View>
-      {pawnStructure && (
-        <>
-          <Spacer height={24} />
-          <View
-            style={s(
-              c.bg(c.colors.cardBackground),
-              c.px(12),
-              c.py(12),
-              c.fillNoExpand
-            )}
-          >
-            <CMText
+        {positionReport?.stockfish && (
+          <View style={s(c.mb(12), c.row, c.alignEnd)}>
+            <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}>
+              {formatStockfishEval(positionReport.stockfish)}
+            </CMText>
+            <Spacer width={6} />
+            <CMText style={s(c.fg(fontColor))}>Stockfish</CMText>
+          </View>
+        )}
+        <View style={s(c.row)}>
+          {positionReport?.results && (
+            <View style={s(c.grow)}>
+              <View style={s(c.row)}>
+                <CMText style={s(c.fg(fontColor))}>
+                  Results at your level
+                </CMText>
+                {debugUi && (
+                  <>
+                    <Spacer width={4} />
+                    <CMText style={s(c.fg(c.colors.debugColor))}>
+                      ({getTotalGames(positionReport.results)} games)
+                    </CMText>
+                  </>
+                )}
+              </View>
+              <Spacer height={4} />
+              <GameResultsBar
+                activeSide={activeSide}
+                gameResults={positionReport.results}
+              />
+            </View>
+          )}
+        </View>
+        {pawnStructure && (
+          <>
+            <Spacer height={24} />
+            <View
               style={s(
-                c.fontSize(14),
-                c.weightRegular,
-                c.fg(c.colors.textSecondary)
+                c.bg(c.colors.cardBackground),
+                c.px(12),
+                c.py(12),
+                c.fillNoExpand
               )}
             >
-              Pawn structure
-            </CMText>
-            <Spacer height={4} />
-            <CMText style={s(c.fontSize(18), c.weightBold)}>
-              {pawnStructure.name}
-            </CMText>
-            <Spacer height={12} />
-            <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
-              White plans
-            </CMText>
-            <Spacer height={4} />
-            <CMText style={s(plansText)}>{pawnStructure.plans}</CMText>
-            <Spacer height={12} />
-            <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
-              Black plans
-            </CMText>
-            <Spacer height={4} />
-            <CMText style={s(plansText)}>{pawnStructure.opponentPlans}</CMText>
-          </View>
-        </>
-      )}
+              <CMText
+                style={s(
+                  c.fontSize(14),
+                  c.weightRegular,
+                  c.fg(c.colors.textSecondary)
+                )}
+              >
+                Pawn structure
+              </CMText>
+              <Spacer height={4} />
+              <CMText style={s(c.fontSize(18), c.weightBold)}>
+                {pawnStructure.name}
+              </CMText>
+              <Spacer height={12} />
+              <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
+                White plans
+              </CMText>
+              <Spacer height={4} />
+              <CMText style={s(plansText)}>{pawnStructure.plans}</CMText>
+              <Spacer height={12} />
+              <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
+                Black plans
+              </CMText>
+              <Spacer height={4} />
+              <CMText style={s(plansText)}>
+                {pawnStructure.opponentPlans}
+              </CMText>
+            </View>
+          </>
+        )}
+      </View>
     </>
   );
 };

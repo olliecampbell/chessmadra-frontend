@@ -32,6 +32,19 @@ import { isNil } from "lodash-es";
 import Authenticate from "app/components/Authenticate";
 import { AdminView } from "app/components/AdminView";
 import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
+import { init as amplitudeInit } from "@amplitude/analytics-browser";
+
+console.log(
+  "Development?",
+  !process.env.NODE_ENV || process.env.NODE_ENV === "development"
+);
+amplitudeInit(
+  !process.env.NODE_ENV || process.env.NODE_ENV === "development"
+    ? "a15d3fdaf95400ebeae67dafbb5e8929"
+    : "3709b7c3cbe8ef56eecec29da70f3d3c"
+);
+
+// Option 1, initialize with API_KEY only
 
 const SENTRY_DSN: string =
   process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -136,13 +149,11 @@ export const RouteProvider = ({ children }) => {
   let [quick] = useAppState((s) => [s.quick]);
   let { search } = useLocation();
   useEffect(() => {
-    console.log("Setting navigate");
     quick((s) => {
       s.navigationState._navigate = navigate;
     });
   }, []);
   useEffect(() => {
-    console.log("Search updated!");
     quick((s) => {
       s.navigationState.search = search;
     });

@@ -16,6 +16,7 @@ import {
   getBlunderRange,
 } from "app/utils/blunders_state";
 import { BLUNDER_DESCRIPTION } from "./NavBar";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const Score = ({ score, text }) => {
   return (
@@ -78,6 +79,7 @@ export const BlunderRecognition = () => {
               <View style={s(c.row, c.alignCenter)}>
                 <Button
                   onPress={() => {
+                    trackEvent("blunder_recognition.guess");
                     state.guess(false);
                   }}
                   style={s(c.buttons.basic, c.width(140))}
@@ -87,6 +89,7 @@ export const BlunderRecognition = () => {
                 <Spacer width={24} />
                 <Button
                   onPress={() => {
+                    trackEvent("blunder_recognition.guess");
                     state.guess(true);
                   }}
                   style={s(c.buttons.basic, c.width(140))}
@@ -182,6 +185,7 @@ export const BlunderRecognition = () => {
                 <Button
                   onPress={() => {
                     state.startPlaying();
+                    trackEvent("blunder_recognition.start");
                   }}
                   style={s(c.buttons.primary, c.fullWidth)}
                 >
@@ -227,6 +231,7 @@ export const BlunderRecognition = () => {
                 <Button
                   onPress={() => {
                     state.setupNextRound();
+                    trackEvent("blunder_recognition.next_puzzle");
                   }}
                   style={s(c.buttons.primary, c.width(140))}
                 >

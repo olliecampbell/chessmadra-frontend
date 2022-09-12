@@ -81,7 +81,6 @@ export const NavBar = (props: {}) => {
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
-  console.log({ needsLogin });
   const padding = 16;
   const hasBetaAccess = useHasBetaAccess();
   const mobileDrawerRef = useRef(null);
@@ -176,22 +175,20 @@ export const NavBar = (props: {}) => {
         >
           {needsLogin && (
             <Link to="/login">
-              <a>
-                <CMText
-                  style={s(
-                    c.buttons.basic,
-                    c.bg(c.grays[20]),
-                    c.px(12),
-                    c.py(12),
-                    c.br(4),
-                    c.fg(c.primaries[70]),
-                    c.weightBold,
-                    c.fontSize(isMobile ? 14 : 16)
-                  )}
-                >
-                  Log in / Register
-                </CMText>
-              </a>
+              <CMText
+                style={s(
+                  c.buttons.basic,
+                  c.bg(c.grays[20]),
+                  c.px(12),
+                  c.py(12),
+                  c.br(4),
+                  c.fg(c.primaries[70]),
+                  c.weightBold,
+                  c.fontSize(isMobile ? 14 : 16)
+                )}
+              >
+                Log in / Register
+              </CMText>
             </Link>
           )}
         </View>
@@ -226,22 +223,20 @@ export const NavBar = (props: {}) => {
           <>
             <Spacer width={0} grow />
             <Link to="/login">
-              <a>
-                <CMText
-                  style={s(
-                    c.buttons.basic,
-                    c.bg(c.grays[20]),
-                    c.px(12),
-                    c.height(40),
-                    c.br(4),
-                    c.fg(c.primaries[70]),
-                    c.weightBold,
-                    c.fontSize(12)
-                  )}
-                >
-                  Log in / Register
-                </CMText>
-              </a>
+              <CMText
+                style={s(
+                  c.buttons.basic,
+                  c.bg(c.grays[20]),
+                  c.px(12),
+                  c.height(40),
+                  c.br(4),
+                  c.fg(c.primaries[70]),
+                  c.weightBold,
+                  c.fontSize(12)
+                )}
+              >
+                Log in / Register
+              </CMText>
             </Link>
           </>
         )}

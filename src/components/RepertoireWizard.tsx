@@ -14,6 +14,7 @@ import { RepertoireTemplateWizard } from "./RepertoireTemplateWizard";
 import { PlayerTemplateWizard } from "./PlayerTemplateWizard";
 import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const MOBILE_CUTOFF = 800;
 
@@ -63,6 +64,7 @@ export const RepertoireWizard = () => {
 
   const importFromLichessUsername = () => {
     state.initializeRepertoire({ lichessUsername: username });
+    trackEvent("import.from_lichess_username");
   };
 
   const introText = (
@@ -181,6 +183,7 @@ export const RepertoireWizard = () => {
                 onPress={() => {
                   setActiveOpeningSource(openingSource);
                   if (openingSource === OpeningSource.Manual) {
+                    trackEvent("import.skip_import");
                     state.quick((s) => {
                       s.hasCompletedRepertoireInitialization = true;
                       s.backToOverview();
@@ -246,6 +249,7 @@ export const RepertoireWizard = () => {
                       blackPgn,
                       whitePgn,
                     });
+                    trackEvent("import.from_pgns");
                   }}
                 >
                   <View style={s(c.row)}>

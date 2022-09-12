@@ -9,6 +9,7 @@ import { Spacer } from "app/Space";
 import { CMText } from "app/components/CMText";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAppState } from "app/utils/app_state";
+import { useTrack } from "app/hooks/useTrackEvent";
 
 enum AuthStatus {
   Initial,
@@ -22,6 +23,7 @@ const Authenticate = (props) => {
   const [authStatus, setAuthStatus] = useState(AuthStatus.Initial);
   const [searchParams, setSearchParams] = useSearchParams();
   const [navigate] = useAppState((s) => [s.navigationState.push]);
+  const track = useTrack();
   const [user, quick] = useAppState((s) => [
     s.userState.user,
     s.userState.quick,
@@ -38,11 +40,11 @@ const Authenticate = (props) => {
           .then(({ data }) => {
             let { token, user } = data as any;
             quick((s) => {
-              s.tempUserUuid = user.id;
               s.token = token;
-              s.user = user;
+              s.setUser(user);
               s.authStatus = GlobalAuthStatus.Authenticated;
             });
+            track("login.authenticated");
             setAuthStatus(AuthStatus.SuccessWaiting);
             setTimeout(() => {
               navigate("/", { removeParams: true });
@@ -50,6 +52,7 @@ const Authenticate = (props) => {
           })
           .catch((e) => {
             console.log("e:", e);
+            track("login.auth_failed");
             setAuthStatus(AuthStatus.Failed);
           });
       })();

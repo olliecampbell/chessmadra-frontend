@@ -51,10 +51,7 @@ import { getNameEcoCodeIdentifier } from "./eco_codes";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import {
-  BrowsingState,
-  getInitialBrowsingState,
-} from "./browsing_state";
+import { BrowsingState, getInitialBrowsingState } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 // let COURSE = "99306";
 let COURSE = null;
@@ -728,7 +725,7 @@ export const getInitialRepertoireState = (
       }, "updateRepertoireStructures"),
 
     markMovesReviewed: (results: ReviewPositionResults[]) =>
-      set(([s]) => {
+      set(([s, gs]) => {
         client
           .post("/api/v1/openings/moves_reviewed", { results })
           .then(({ data }) => {});
@@ -1264,7 +1261,7 @@ export const getInitialRepertoireState = (
         s.onEditingPositionUpdate();
       }),
     addPendingLine: (cfg) =>
-      set(([s]) => {
+      set(([s, gs]) => {
         let { replace } = cfg ?? { replace: false };
         s.isAddingPendingLine = true;
         client

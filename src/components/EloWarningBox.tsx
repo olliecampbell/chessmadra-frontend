@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { DEFAULT_ELO_RANGE } from "app/utils/repertoire_state";
 import { Button } from "./Button";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
   let [] = useRepertoireState((s) => []);
@@ -38,6 +39,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
         <Button
           style={s(buttonStyles)}
           onPress={() => {
+            trackEvent(`elo_range_warning.dismiss`);
             onDismiss();
           }}
         >
@@ -47,6 +49,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
         <Button
           style={s(buttonStyles, c.weightSemiBold)}
           onPress={() => {
+            trackEvent(`elo_range_warning.update`);
             onUpdateElo();
           }}
         >

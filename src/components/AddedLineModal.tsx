@@ -16,6 +16,7 @@ import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const AddedLineModal = () => {
   let [stage] = useRepertoireState((s) => [s.addedLineState?.stage]);
@@ -303,6 +304,7 @@ const AddedLineOverview = () => {
             quick((s) => {
               s.addedLineState.stage = AddedLineStage.AddAnother;
             });
+            trackEvent("added_line.add_another");
           }}
           style={s(buttonStyles)}
         >
@@ -312,6 +314,7 @@ const AddedLineOverview = () => {
         <Button
           onPress={() => {
             reviewLine(addedLineState.line, side);
+            trackEvent("added_line.review_line");
           }}
           style={s(buttonStyles)}
         >

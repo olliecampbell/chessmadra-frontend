@@ -1,15 +1,14 @@
-
-import {
-  User,
-} from "app/models";
+import { User } from "app/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
+import { setUserId } from "@amplitude/analytics-browser";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
   token?: string;
   user?: User;
+  setUser: (user: User) => void;
   authStatus: AuthStatus;
   tempUserUuid?: string;
 }
@@ -41,6 +40,15 @@ export const getInitialUserState = (
     token: undefined,
     user: undefined,
     authStatus: AuthStatus.Initial,
+    setUser: (user: User) => {
+      set(([s]) => {
+        s.user = user;
+        s.tempUserUuid = user.id
+        if (user.email) {
+          setUserId(user.email);
+        }
+      });
+    },
   } as UserState;
 
   return initialState;

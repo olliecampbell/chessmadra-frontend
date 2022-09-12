@@ -1,13 +1,9 @@
-
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import {
-  isNil,
-  sortBy,
-} from "lodash-es";
+import { isNil, sortBy } from "lodash-es";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -15,6 +11,7 @@ import { intersperse } from "app/utils/intersperse";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -128,6 +125,7 @@ export const RepertoireReview = (props: {}) => {
           )}
           onPress={() => {
             quick((s) => {
+              trackEvent(`reviewing.inspect_line`);
               let qm = s.currentMove;
               s.backToOverview();
               s.startEditing(qm.moves[0].side);
@@ -149,6 +147,7 @@ export const RepertoireReview = (props: {}) => {
             if (showNext) {
               setupNextMove();
             } else {
+              trackEvent(`reviewing.give_up`);
               giveUp();
             }
           }}

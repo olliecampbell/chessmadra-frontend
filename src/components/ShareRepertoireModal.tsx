@@ -7,16 +7,15 @@ import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const ShareRepertoireModal = () => {
-  let [open, shareId, quick, updateShareLink] = useRepertoireState(
-    (s) => [
-      s.overviewState.isShowingShareModal,
-      s.repertoireShareId,
-      s.quick,
-      s.updateShareLink,
-    ],
-  );
+  let [open, shareId, quick, updateShareLink] = useRepertoireState((s) => [
+    s.overviewState.isShowingShareModal,
+    s.repertoireShareId,
+    s.quick,
+    s.updateShareLink,
+  ]);
 
   const isMobile = useIsMobile();
   const [copied, setCopied] = useState(false);
@@ -56,6 +55,7 @@ export const ShareRepertoireModal = () => {
           <View style={s(c.row, c.alignCenter, c.justifyStart)}>
             <Pressable
               onPress={() => {
+                trackEvent(`sharing.update_link`);
                 updateShareLink();
               }}
             >
@@ -79,6 +79,7 @@ export const ShareRepertoireModal = () => {
               c.alignEnd
             )}
             onPress={() => {
+              trackEvent(`sharing.copy_link`);
               navigator.clipboard.writeText(link);
               setCopied(true);
               window.setTimeout(() => {

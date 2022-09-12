@@ -28,6 +28,7 @@ import { SelectOneOf } from "app/components/SelectOneOf";
 import { ProgressMessageView } from "app/components/ProgressMessage";
 import { SelectRange } from "app/components/SelectRange";
 import { CMText } from "app/components/CMText";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const debugButtons = false;
 
@@ -98,6 +99,7 @@ export const useVisualizationTraining = ({
   scoreChangeView?: JSX.Element;
   onSuccess?: () => void;
 }) => {
+  const eventsIdentifier = isClimb ? "climb" : "visualization";
   const isMobile = useIsMobile();
   useEffect(() => {
     setTimeout(() => {
@@ -148,6 +150,7 @@ export const useVisualizationTraining = ({
             c.overflowHidden
           )}
           onPress={() => {
+            trackEvent(`${eventsIdentifier}.play_hidden_moves`);
             state.visualizeHiddenMoves();
           }}
         >
@@ -173,6 +176,7 @@ export const useVisualizationTraining = ({
         <>
           <NewPuzzleButton
             onPress={() => {
+              trackEvent(`${eventsIdentifier}.new_puzzle`);
               state.refreshPuzzle();
             }}
           />
@@ -404,6 +408,8 @@ export const useVisualizationTraining = ({
           style={s(c.buttons.squareBasicButtons)}
           onPress={() => {
             (async () => {
+
+            trackEvent(`${eventsIdentifier}.analyze_on_lichess`);
               if (Platform.OS == "web") {
                 window.open(
                   `https://lichess.org/training/${state.puzzleState.puzzle.id}`,
@@ -423,6 +429,7 @@ export const useVisualizationTraining = ({
         <Button
           style={s(c.buttons.squareBasicButtons)}
           onPress={() => {
+            trackEvent(`${eventsIdentifier}.get_help`);
             setHelpOpen(!helpOpen);
           }}
         >
@@ -438,6 +445,7 @@ export const useVisualizationTraining = ({
             <Button
               style={s(c.buttons.squareBasicButtons)}
               onPress={() => {
+            trackEvent(`${eventsIdentifier}.open_settings`);
                 setSettingsOpen(true);
               }}
             >

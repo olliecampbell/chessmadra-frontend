@@ -6,6 +6,7 @@ import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const DeleteMoveConfirmationModal = () => {
   let [open, isDeletingMove, deleteMoveConfirmed, quick] = useRepertoireState(
@@ -77,6 +78,7 @@ export const DeleteMoveConfirmationModal = () => {
                 isLoading={isDeletingMove}
                 loaderProps={{ color: c.grays[75] }}
                 onPress={() => {
+                  trackEvent(`repertoire.deleted_move`);
                   deleteMoveConfirmed();
                 }}
               >

@@ -31,6 +31,7 @@ import {
 import { BackControls } from "./BackControls";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { useAppState } from "app/utils/app_state";
+import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 
 export const RepertoireBrowsingView = ({}: {}) => {
   const [
@@ -122,6 +123,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
 
 export const SwitchSideButton = () => {
   const isMobile = useIsMobile();
+  const track = useTrack();
   const [side, q] = useRepertoireState((s) => [
     s.browsingState.activeSide,
     s.quick,
@@ -137,6 +139,7 @@ export const SwitchSideButton = () => {
       )}
       onPress={() => {
         q((s) => {
+          track("browsing.switched_side");
           s.startBrowsing(otherSide(side));
           s.browsingState.chessboardState.resetPosition();
         });
@@ -185,8 +188,9 @@ export const EditButton = () => {
       )}
       onPress={() => {
         q((s) => {
+          trackEvent(`browsing.to_editor`);
           s.startEditing(side);
-          s.chessboardState.playPgn(s.browsingState.chessboardState.moveLogPgn)
+          s.chessboardState.playPgn(s.browsingState.chessboardState.moveLogPgn);
         });
       }}
     >
@@ -370,6 +374,7 @@ export const BrowsingSectionsView = React.memo(() => {
             )}
             onPress={() => {
               quick((s) => {
+                trackEvent(`browsing.empty_lines.to_editor`);
                 s.startEditing(s.browsingState.activeSide);
                 s.chessboardState.playPgn(
                   s.browsingState.chessboardState.position.pgn()
@@ -455,6 +460,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
             c.selfCenter
           )}
           onPress={() => {
+            trackEvent(`browsing.show_more_lines`);
             setExpanded(true);
           }}
         >
@@ -485,6 +491,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
         quick((s) => {
           s.startEditing(activeSide);
           s.chessboardState.playPgn(miss.lines[0]);
+          trackEvent(`browsing.miss_tapped`);
         });
       }}
       style={s(
@@ -578,6 +585,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
         quick((s) => {
           s.startEditing(activeSide);
           s.chessboardState.playPgn(line.pgn);
+          trackEvent(`browsing.line_tapped`);
         });
       }}
       style={s(
@@ -616,6 +624,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
                 console.log({ line });
                 s.deleteMoveState.modalOpen = true;
                 s.deleteMoveState.response = line.deleteMove;
+                trackEvent(`browsing.line_delete_tapped`);
               });
             }}
           >
@@ -656,277 +665,6 @@ const LineView = ({ line }: { line: BrowserLine }) => {
         )}
       </View>
     </Pressable>
-  );
-};
-
-// export const VariationsAndLines = () => {
-//   const [activeSide, selectBrowserSection, quick, readOnly] =
-//     useRepertoireState(
-//       (s) => [
-//         s.activeSide,
-//         s.browsingState.selectBrowserSection,
-//         s.quick,
-//         s.browsingState.readOnly,
-//       ],
-//       shallow
-//     );
-//   const isMobile = useIsMobile();
-//   return (
-//     <View style={s(c.column, c.constrainWidth, c.fullWidth)}>
-//       <Spacer height={12} />
-//       {!isEmpty(drilldownState.sections) && (
-//         <>
-//           <CMText style={s(c.fontSize(24), c.weightBold)}>Variations</CMText>
-//           <Spacer height={12} />
-//           <View
-//             style={s(c.selfCenter, {
-//               display: "grid",
-//               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
-//               gap: "12px 24px",
-//               width: "100%",
-//             })}
-//           >
-//             {drilldownState.sections.map((x, i) => {
-//               const onClick = () => {
-//                 selectBrowserSection(x, true);
-//               };
-//               return (
-//                 <Pressable
-//                   key={`section-${i}`}
-//                   onPress={onClick}
-//                   style={s(
-//                     c.bg(c.grays[12]),
-//                     c.br(2),
-//                     c.pr(12),
-//                     c.overflowHidden,
-//                     c.row,
-//                     c.clickable
-//                   )}
-//                 >
-//                   <View style={s(c.size(isMobile ? 100 : 120))}>
-//                     <ChessboardView
-//                       onSquarePress={() => {
-//                         onClick();
-//                       }}
-//                       state={createStaticChessState({
-//                         epd: x.epd,
-//                         side: activeSide,
-//                       })}
-//                     />
-//                   </View>
-//                   <Spacer width={12} />
-//                   <View style={s(c.column, c.py(12), c.flexible, c.grow)}>
-//                     <CMText style={s(c.fontSize(16), c.weightBold)}>
-//                       {getAppropriateEcoName(x.eco_code?.fullName)[0]}
-//                     </CMText>
-//                     <Spacer height={2} />
-//                     <CMText
-//                       style={s(
-//                         c.fontSize(12),
-//                         c.weightSemiBold,
-//                         c.fg(c.grays[70])
-//                       )}
-//                     >
-//                       {getAppropriateEcoName(x.eco_code?.fullName)[1]?.join(
-//                         ", "
-//                       )}
-//                     </CMText>
-//                     {/*
-//                       <Spacer height={12} />
-//                       <View style={s(c.row, c.alignEnd)}>
-//                         <CMText style={s(c.fontSize(16), c.weightBold)}>
-//                           {x.numMoves.withTranspositions}
-//                         </CMText>
-//                         <Spacer width={4} />
-//                         <CMText style={s(c.fontSize(14), c.weightRegular)}>
-//                           moves
-//                         </CMText>
-//                       </View>
-//                       */}
-//                   </View>
-//                 </Pressable>
-//               );
-//             })}
-//           </View>
-//           <Spacer height={48} />
-//         </>
-//       )}
-//
-//       {!isEmpty(drilldownState.lines) && (
-//         <>
-//           <CMText style={s(c.fontSize(24), c.weightBold)}>
-//             {!isEmpty(drilldownState.sections) ? "Lines" : "Lines"}
-//           </CMText>
-//           <Spacer height={12} />
-//
-//           <View
-//             style={s(c.selfCenter, c.fullWidth, {
-//               display: "grid",
-//               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
-//               gap: "12px 24px",
-//             })}
-//           >
-//             {drilldownState.lines.map((browserLine, key) => {
-//               const onClick = () => {
-//                 quick((s) => {
-//                   if (readOnly) {
-//                     s.analyzeLineOnLichess(pgnToLine(browserLine.line));
-//                   } else {
-//                     s.isBrowsing = false;
-//                     s.startEditing(activeSide as Side);
-//                     s.playPgn(browserLine.line);
-//                   }
-//                 });
-//               };
-//               return (
-//                 <Pressable
-//                   onPress={() => {
-//                     onClick();
-//                   }}
-//                   key={`lines-${key}`}
-//                   style={s(
-//                     c.row,
-//                     c.flexible,
-//                     c.alignStart,
-//                     c.bg(c.grays[12]),
-//                     c.clickable
-//                   )}
-//                 >
-//                   <View style={s(c.size(120))}>
-//                     <ChessboardView
-//                       onSquarePress={() => {
-//                         onClick();
-//                       }}
-//                       state={createStaticChessState({
-//                         epd: browserLine.epd,
-//                         side: activeSide,
-//                       })}
-//                     />
-//                   </View>
-//                   <Spacer width={12} />
-//                   <View style={s(c.flexible, c.py(12))}>
-//                     <CMText
-//                       style={s(
-//                         c.fg(c.colors.textSecondary),
-//                         c.fontSize(isMobile ? 12 : 14),
-//                         c.lineHeight(isMobile ? "1.2rem" : "1.3rem"),
-//                         c.weightSemiBold
-//                       )}
-//                     >
-//                       {browserLine.line}
-//                     </CMText>
-//                   </View>
-//                   <Spacer width={12} />
-//                 </Pressable>
-//               );
-//             })}
-//           </View>
-//
-//           <View style={s(c.row, c.selfCenter)}></View>
-//         </>
-//       )}
-//     </View>
-//   );
-// };
-
-// export const BreadCrumbView = () => {
-//   let [
-//     previousDrilldownStates,
-//     selectDrilldownState,
-//     backToOverview,
-//     readOnly,
-//   ] = useRepertoireState(
-//     (s) => [
-//       s.browsingState.previousDrilldownStates,
-//       s.browsingState.selectDrilldownState,
-//       s.backToOverview,
-//       s.browsingState.readOnly,
-//     ],
-//     shallow
-//   );
-//   let containerRef = useRef(null);
-//   useLayoutEffect(() => {
-//     if (containerRef.current) {
-//       containerRef.current.scrollLeft = containerRef.current.scrollWidth;
-//     }
-//   }, [previousDrilldownStates]);
-//   console.log({ previousDrilldownStates });
-//   const separator = (
-//     <CMText style={s(c.mx(8), c.fontSize(12), c.fg(c.grays[70]))}>
-//       <i className="fa fa-arrow-right" />
-//     </CMText>
-//   );
-//   let seenEcoCodes = new Set();
-//   return (
-//     <View
-//       style={s(c.row, c.alignCenter, c.scrollX, c.constrainWidth, c.py(8))}
-//       ref={containerRef}
-//     >
-//       {!readOnly && (
-//         <>
-//           <Pressable
-//             onPress={() => {
-//               backToOverview();
-//             }}
-//           >
-//             <CMText style={s()}>Overview</CMText>
-//           </Pressable>
-//           {!isEmpty(previousDrilldownStates) && separator}
-//         </>
-//       )}
-//       {intersperse(
-//         previousDrilldownStates.map((drilldownState, i) => {
-//           seenEcoCodes.add(drilldownState.ecoCode?.code);
-//           return (
-//             <Pressable
-//               key={`breadcrumb-${i}`}
-//               onPress={() => {
-//                 selectDrilldownState(drilldownState);
-//               }}
-//             >
-//               <View style={s()}>
-//                 <CMText style={s()}>
-//                   {drilldownState?.ecoCode
-//                     ? getAppropriateEcoName(
-//                         drilldownState.ecoCode?.fullName,
-//                         take(previousDrilldownStates, i)
-//                       )[0]
-//                     : "Start position"}
-//                 </CMText>
-//               </View>
-//             </Pressable>
-//           );
-//         }),
-//         (i) => {
-//           return <React.Fragment key={i}>{separator}</React.Fragment>;
-//         }
-//       )}
-//     </View>
-//   );
-// };
-
-const ReadOnlyWarning = () => {
-  return (
-    <View
-      style={s(
-        c.selfCenter,
-        c.py(12),
-        c.px(12),
-        c.column,
-        c.alignStart,
-        c.maxWidth(400)
-      )}
-    >
-      <View style={s(c.row, c.alignStart)}>
-        <CMText style={s()}>You are viewing someone else's repertoire.</CMText>
-      </View>
-      <Spacer height={4} />
-      <Button style={s(c.buttons.primary, c.selfEnd, c.py(6), c.px(10))}>
-        <CMText style={s(c.buttons.primary.textStyles, c.fontSize(14))}>
-          Make your own
-        </CMText>
-      </Button>
-    </View>
   );
 };
 

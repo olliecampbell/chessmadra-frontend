@@ -324,14 +324,21 @@ export const ChessboardView = ({
   let x = (
     <>
       <View
-        style={s(c.pb("100%"), c.height(0), c.width("100%"), styles, {
-          WebkitTouchCallout: "none",
-          WebkitUserSelect: "none",
-          KhtmlUserSelect: "none",
-          MozUserSelect: "none",
-          MsUserSelect: "none",
-          UserSelect: "none",
-        })}
+        style={s(
+          c.pb("100%"),
+          c.height(0),
+          c.width("100%"),
+          styles,
+          c.cardShadow,
+          {
+            WebkitTouchCallout: "none",
+            WebkitUserSelect: "none",
+            KhtmlUserSelect: "none",
+            MozUserSelect: "none",
+            MsUserSelect: "none",
+            UserSelect: "none",
+          }
+        )}
       >
         <View
           style={s(

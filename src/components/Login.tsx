@@ -10,11 +10,13 @@ import KnightWhiteIcon from "./chessboard/pieces/KnightWhiteIcon";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { CMText } from "./CMText";
+import { useTrack } from "app/hooks/useTrackEvent";
 
 export default function Login({ signup }: { signup?: boolean }) {
   const onSubmit = (data) => console.log(data);
   // let applicationName = AppStore.useState((s) => s.meta.applicationMeta?.name);
   let [email, setEmail] = useState("");
+  const track = useTrack();
   // let [password, setPassword] = useState("");
   // EmailValidator.validate("test@email.com"); // true
   // let errors: string[] = [];
@@ -36,6 +38,7 @@ export default function Login({ signup }: { signup?: boolean }) {
     let { data } = await client.post("/api/send_auth_email", {
       email,
     });
+    track("login.email_sent", { email: email });
     setLoading(false);
     setSubmitted(true);
   };

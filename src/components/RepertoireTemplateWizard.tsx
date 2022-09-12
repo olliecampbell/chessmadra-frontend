@@ -1,27 +1,18 @@
-import React, {
-  useState,
-} from "react";
+import React, { useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  capitalize,
-  filter,
-  isEmpty,
-} from "lodash-es";
+import { capitalize, filter, isEmpty } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import {
-  RepertoireState,
-} from "app/utils/repertoire_state";
-import {
-  SIDES,
-} from "app/utils/repertoire";
+import { RepertoireState } from "app/utils/repertoire_state";
+import { SIDES } from "app/utils/repertoire";
 import { SelectOneOf } from "./SelectOneOf";
 import { RepertoireTemplate } from "app/models";
 import { CMText } from "./CMText";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const MOBILE_CUTOFF = 800;
 
@@ -77,6 +68,8 @@ export const RepertoireTemplateWizard = ({
         style={s(c.buttons.primary, c.selfEnd)}
         onPress={() => {
           state.addTemplates();
+
+          trackEvent("import.basic_templates.add_selected");
         }}
       >
         Continue
@@ -218,6 +211,7 @@ export const TemplateCell = ({
           } else {
             s.selectedTemplates[template.line] = template.id;
           }
+          trackEvent("import.basic_templates.select_template");
         });
       }}
     >
