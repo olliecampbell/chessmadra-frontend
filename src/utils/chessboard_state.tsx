@@ -254,6 +254,7 @@ export const createChessState = (
     makeMove: (m: Move | string) => {
       set((s) => {
         s.availableMoves = [];
+        s.activeFromSquare = null;
         let pos = s.futurePosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {

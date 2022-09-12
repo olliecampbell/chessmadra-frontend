@@ -53,6 +53,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { BrowsingState, getInitialBrowsingState } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
+import { getPlayRate } from "./results_distribution";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -77,6 +78,7 @@ export enum AddLineFromOption {
 }
 
 export interface RepertoireState {
+  getCurrentThreshold(side: Side): number;
   quick: (fn: (_: RepertoireState) => void) => void;
   chessboardState: ChessboardState;
   repertoire: Repertoire;
@@ -211,6 +213,7 @@ export interface RepertoireState {
   };
   getRemainingReviewPositionMoves: () => RepertoireMove[];
   getNextReviewPositionMove(): RepertoireMove;
+  getIncidenceOfCurrentLine(): number;
 
   repertoireSettingsModalSide?: Side;
   // Nav bar stuff
@@ -494,6 +497,38 @@ export const getInitialRepertoireState = (
             let url = data["url"];
             windowReference.location = `${url}/${side}#999`;
           });
+      }),
+    getIncidenceOfCurrentLine: () =>
+      get(([s]) => {
+        let startPosition = START_EPD;
+
+        let incidence = 1.0;
+        map(
+          zip(
+            s.chessboardState.positionHistory,
+            s.chessboardState.position.history()
+          ),
+          ([position, san], i) => {
+            let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
+            if (!mine) {
+              let positionReport = s.positionReports[position];
+              if (positionReport) {
+                let suggestedMove = find(
+                  positionReport.suggestedMoves,
+                  (sm) => sm.sanPlus === san
+                );
+                if (suggestedMove) {
+                  let moveIncidence = getPlayRate(
+                    suggestedMove,
+                    positionReport
+                  );
+                  incidence *= moveIncidence;
+                }
+              }
+            }
+          }
+        );
+        return incidence;
       }),
     getNextReviewPositionMove: () =>
       get(([s]) => {
@@ -1230,6 +1265,14 @@ export const getInitialRepertoireState = (
     getCurrentPositionReport: () =>
       get(([s]) => {
         return s.positionReports[s.getCurrentEpd()];
+      }),
+    getCurrentThreshold: (side: Side) =>
+      get(([s]) => {
+        // TODO: use user miss threshold
+        return Math.min(
+          0.03,
+          s.repertoireGrades[side].biggestMiss.incidence ?? 1.0
+        );
       }),
     getCurrentEpd: () =>
       get(([s]) => {

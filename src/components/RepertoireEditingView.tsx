@@ -249,6 +249,7 @@ const Responses = () => {
     currentEpd,
     existingMoves,
     playSan,
+    currentLineIncidence,
   ] = useRepertoireState((s) => [
     s.getCurrentPositionReport(),
     s.currentLine,
@@ -258,6 +259,7 @@ const Responses = () => {
     s.getCurrentEpd(),
     s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
     s.playSan,
+    s.getIncidenceOfCurrentLine(),
   ]);
   let side: Side = position.turn() === "b" ? "black" : "white";
   let ownSide = side === activeSide;
@@ -281,10 +283,18 @@ const Responses = () => {
     currentEpd,
     ownSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
   );
+  tableResponses.forEach((tr) => {
+    let moveIncidence = 0.0;
+    if (ownSide) {
+      moveIncidence = 1.0;
+    } else if (tr.suggestedMove) {
+      moveIncidence = getPlayRate(tr.suggestedMove, positionReport);
+    }
+    tr.incidence = currentLineIncidence * moveIncidence;
+  });
   let youCanPlay = filter(tableResponses, (tr) => {
     return activeSide === side;
   });
-  console.log({ youCanPlay });
   // let myMoves =
   // let otherMoves = filter(tableResponses, (tr) => {
   //   return isNil(tr.repertoireMove) && activeSide === side;

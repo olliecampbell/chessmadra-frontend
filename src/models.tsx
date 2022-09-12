@@ -32,6 +32,7 @@ export interface User {
   eloRange: string;
   temporary: boolean;
   isAdmin: boolean;
+  missThreshold: number;
 }
 
 export interface LichessGame {

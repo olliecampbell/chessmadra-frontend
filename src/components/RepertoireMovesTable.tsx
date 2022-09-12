@@ -2,10 +2,10 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { some, isNaN, takeWhile, debounce, isEmpty } from "lodash-es";
+import { some, isNaN, takeWhile, debounce, isEmpty, filter } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { RepertoireMove, Side } from "app/utils/repertoire";
+import { formatIncidence, RepertoireMove, Side } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { SuggestedMove } from "app/models";
@@ -15,18 +15,24 @@ import {
   formatPlayPercentage,
   getPlayRate,
 } from "app/utils/results_distribution";
-import { useDebugState, useRepertoireState } from "app/utils/app_state";
+import {
+  useAppState,
+  useDebugState,
+  useRepertoireState,
+} from "app/utils/app_state";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
 import { TableResponseScoreSource } from "./RepertoireEditingView";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { getAppropriateEcoName } from "app/utils/eco_codes";
 
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
   repertoireMove?: RepertoireMove;
   suggestedMove?: SuggestedMove;
+  incidence?: number;
   score?: number;
   scoreTable?: ScoreTable;
 }
@@ -59,8 +65,13 @@ export const RepertoireMovesTable = ({
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
+  let [currentThreshold] = useRepertoireState((s) => [
+    s.getCurrentThreshold(activeSide),
+  ]);
+  let user = useAppState((s) => s.userState.user);
+  let myTurn = side === activeSide;
   let sections = getSections({
-    myTurn: side === activeSide,
+    myTurn,
   });
   let [expanded, setExpanded] = useState(false);
   const isMobile = useIsMobile();
@@ -70,7 +81,10 @@ export const RepertoireMovesTable = ({
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
-    trimmedResponses = takeWhile(responses, (r, i) => {
+    trimmedResponses = filter(responses, (r, i) => {
+      if (r.incidence > currentThreshold && !myTurn) {
+        return true;
+      }
       if (r.repertoireMove) {
         return true;
       }
@@ -78,7 +92,7 @@ export const RepertoireMovesTable = ({
         return false;
       }
       return i < MIN_TRUNCATED || r.repertoireMove || r.score > 0;
-    });
+    }) as TableResponse[];
   }
   let numTruncated = responses.length - trimmedResponses.length;
   return (
@@ -259,7 +273,7 @@ const Response = ({
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoverRef } = useHovering();
-  const { suggestedMove, repertoireMove } = tableResponse;
+  const { suggestedMove, repertoireMove, incidence } = tableResponse;
   const [
     playSan,
     currentLine,
@@ -269,6 +283,8 @@ const Response = ({
     position,
     uploadMoveAnnotation,
     currentEpd,
+    ecoCodeLookup,
+    currentEcoCode,
   ] = useRepertoireState((s) => [
     s.playSan,
     s.currentLine,
@@ -278,6 +294,8 @@ const Response = ({
     s.chessboardState.position,
     s.uploadMoveAnnotation,
     s.getCurrentEpd(),
+    s.ecoCodeLookup,
+    s.editingState.lastEcoCode,
   ]);
   let side: Side = position?.turn() === "b" ? "black" : "white";
   const isMobile = useIsMobile();
@@ -403,6 +421,18 @@ const Response = ({
       </View>
     );
   }
+  let newOpeningName = null;
+  let nextEcoCode = ecoCodeLookup[suggestedMove?.epdAfter];
+  let [currentOpeningName] = currentEcoCode
+    ? getAppropriateEcoName(currentEcoCode.fullName)
+    : [];
+  if (nextEcoCode) {
+    let [name] = getAppropriateEcoName(nextEcoCode.fullName);
+    if (name != currentOpeningName) {
+      newOpeningName = name;
+    }
+  }
+  let annotationOrOpeningName = suggestedMove?.annotation ?? newOpeningName;
 
   return (
     <View style={s(c.row, c.alignCenter)}>
@@ -448,29 +478,6 @@ const Response = ({
                 >
                   {sanPlus}
                 </CMText>
-                {debugUi && (
-                  <View style={s(c.row)} ref={hoverRef}>
-                    <Spacer width={4} />
-
-                    <CMText style={s(c.fg(c.colors.debugColor), c.relative)}>
-                      (score: {tableResponse.score?.toFixed(1)})
-                      {hovering && (
-                        <View
-                          style={s(
-                            c.absolute,
-                            c.bottom(20),
-                            c.border(`1px solid ${c.colors.debugColor}`),
-                            c.px(12),
-                            c.py(12),
-                            c.bg(c.grays[20])
-                          )}
-                        >
-                          <DebugScoreView tableResponse={tableResponse} />
-                        </View>
-                      )}
-                    </CMText>
-                  </View>
-                )}
               </View>
               {repertoireMove && !mine && (
                 <>
@@ -487,7 +494,7 @@ const Response = ({
             {!isMobile && (
               <View style={s(c.width(0), c.grow, c.mt(4))}>
                 <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
-                  {suggestedMove?.annotation}
+                  {annotationOrOpeningName}
                 </CMText>
               </View>
             )}
@@ -516,10 +523,40 @@ const Response = ({
               )}
             </View>
           </View>
-          {isMobile && (
+          {isMobile && annotationOrOpeningName && (
             <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
               <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
-                {suggestedMove?.annotation}
+                {annotationOrOpeningName}
+              </CMText>
+            </View>
+          )}
+          {debugUi && (
+            <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
+              <CMText style={s(c.fg(c.colors.debugColor), c.fontSize(14))}>
+                {incidence ? formatIncidence(incidence) : "No incidence"}
+              </CMText>
+            </View>
+          )}
+          {debugUi && (
+            <View style={s(c.row)} ref={hoverRef}>
+              <CMText
+                style={s(c.fg(c.colors.debugColor), c.relative, c.px(12))}
+              >
+                (score: {tableResponse.score?.toFixed(1)})
+                {hovering && (
+                  <View
+                    style={s(
+                      c.absolute,
+                      c.bottom(20),
+                      c.border(`1px solid ${c.colors.debugColor}`),
+                      c.px(12),
+                      c.py(12),
+                      c.bg(c.grays[20])
+                    )}
+                  >
+                    <DebugScoreView tableResponse={tableResponse} />
+                  </View>
+                )}
               </CMText>
             </View>
           )}
