@@ -54,6 +54,7 @@ import { createQuick } from "./quick";
 import { BrowsingState, getInitialBrowsingState } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getPlayRate } from "./results_distribution";
+import { trackEvent } from "app/hooks/useTrackEvent";
 // let COURSE = "99306";
 let COURSE = null;
 // let ASSUME = "1.c4";
@@ -761,6 +762,7 @@ export const getInitialRepertoireState = (
 
     markMovesReviewed: (results: ReviewPositionResults[]) =>
       set(([s, gs]) => {
+        trackEvent(`reviewing.reviewed_move`);
         client
           .post("/api/v1/openings/moves_reviewed", { results })
           .then(({ data }) => {});
