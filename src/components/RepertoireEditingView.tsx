@@ -213,11 +213,11 @@ export const RepertoireEditingView = () => {
           <View style={s(c.column, c.alignStart, c.constrainWidth)}>
             <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
               <View style={s(c.column, c.constrainWidth)}>
-                <View style={s(c.width(400), c.maxWidth("100%"))}>
+                <View style={s(c.width(400), c.maxWidth("100%"), c.selfCenter)}>
                   <ChessboardView state={chessboardState} />
+                  <Spacer height={12} />
+                  <BackControls includeAnalyze />
                 </View>
-                <Spacer height={12} />
-                <BackControls includeAnalyze />
                 <Spacer height={12} />
                 {isMobile && <EditingTabPicker />}
               </View>

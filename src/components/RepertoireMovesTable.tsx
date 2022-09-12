@@ -492,7 +492,7 @@ const Response = ({
             </View>
             <Spacer width={12} />
             {!isMobile && (
-              <View style={s(c.width(0), c.grow, c.mt(4))}>
+              <View style={s(c.width(0), c.grow, c.mt(4), c.pr(8))}>
                 <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
                   {annotationOrOpeningName}
                 </CMText>
