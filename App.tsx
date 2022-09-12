@@ -34,14 +34,17 @@ import { AdminView } from "app/components/AdminView";
 import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
 
-console.log(
-  "Development?",
-  !process.env.NODE_ENV || process.env.NODE_ENV === "development"
-);
+const development =
+  !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+console.log("Development?", development);
 amplitudeInit(
-  !process.env.NODE_ENV || process.env.NODE_ENV === "development"
+  development
     ? "a15d3fdaf95400ebeae67dafbb5e8929"
-    : "3709b7c3cbe8ef56eecec29da70f3d3c"
+    : "3709b7c3cbe8ef56eecec29da70f3d3c",
+  undefined,
+  {
+    serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
+  }
 );
 
 // Option 1, initialize with API_KEY only
