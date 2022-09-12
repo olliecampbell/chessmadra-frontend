@@ -312,14 +312,9 @@ const Responses = () => {
   // let otherMoves = filter(tableResponses, (tr) => {
   //   return isNil(tr.repertoireMove) && activeSide === side;
   // });
-  let prepareFor = filter(
-    sortBy(tableResponses, (tr) => {
-      return isNil(tr.repertoireMove);
-    }),
-    (tr) => {
-      return activeSide !== side;
-    }
-  );
+  let prepareFor = filter(tableResponses, (tr) => {
+    return activeSide !== side;
+  });
   const isMobile = false;
   const [showOtherMoves, setShowOtherMoves] = useState(false);
   return (
@@ -544,7 +539,7 @@ const scoreTableResponses = (
       tableResponse.score = sumBy(scoreTable.factors, (f) => {
         return f.total;
       });
-      if (tableResponse.repertoireMove) {
+      if (tableResponse.repertoireMove && tableResponse.repertoireMove?.mine) {
         return tableResponse.score + 1000000;
       } else {
         return tableResponse.score;
