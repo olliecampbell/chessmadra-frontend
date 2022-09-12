@@ -879,7 +879,6 @@ export const getInitialRepertoireState = (
         };
         recurse(START_EPD, []);
         pgn = pgn.trim();
-        console.log("Pgn exported is: ", pgn);
 
         let downloadLink = document.createElement("a");
 

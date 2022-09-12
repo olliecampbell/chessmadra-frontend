@@ -9,6 +9,7 @@ const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { Modal } from "./Modal";
 import { useRepertoireState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const SideSettingsModal = () => {
   let [side, exportPgn, deleteRepertoire, quick] = useRepertoireState((s) => [
@@ -61,6 +62,7 @@ export const SideSettingsModal = () => {
               <Button
                 style={s(c.buttons.primary, c.height(36), c.selfEnd)}
                 onPress={() => {
+                  trackEvent("repertoire.export_pgn");
                   exportPgn(side);
                 }}
               >
@@ -106,6 +108,7 @@ export const SideSettingsModal = () => {
                 )}
                 onPress={() => {
                   deleteRepertoire(side);
+                  trackEvent("repertoire.delete_side");
                 }}
               >
                 <CMText style={s(c.buttons.primary.textStyles)}>Delete</CMText>
