@@ -1,25 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-export const useHovering = () => {
+export const useHovering = (
+  onHover?: () => void,
+  onHoverLeave?: () => void
+) => {
   let [hovering, setHovering] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleEnter = (event) => {
-      setHovering(true);
-    };
-    const handleLeave = (event) => {
+  const startTime = useRef(performance.now());
+  let hoveringProps = {
+    onMouseEnter: () => {
+      let timeSince = performance.now() - startTime.current;
+      if (timeSince > 300) {
+        setHovering(true);
+        onHover?.();
+      }
+    },
+    onMouseLeave: () => {
       setHovering(false);
-    };
-
-    let element = ref.current;
-    element?.addEventListener("mouseover", handleEnter);
-    element?.addEventListener("mouseleave", handleLeave);
-
-    return () => {
-      element?.removeEventListener("mouseover", handleEnter);
-      element?.removeEventListener("mouseleave", handleLeave);
-    };
-  }, []);
-  return { hovering, hoverRef: ref };
+      onHoverLeave?.();
+    },
+  };
+  return { hovering, hoveringProps, onHover, onHoverLeave };
 };

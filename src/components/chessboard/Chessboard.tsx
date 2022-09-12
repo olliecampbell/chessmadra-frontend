@@ -158,7 +158,8 @@ export const ChessboardView = ({
   onSquarePress?: any;
   styles?: any;
 }) => {
-  const { position, availableMoves } = state;
+  const { availableMoves } = state;
+  const position = state.previewPosition ?? state.position;
   const tileStyles = s(c.bg("green"), c.grow);
   const stateRef = useRef(state);
   stateRef.current = state;

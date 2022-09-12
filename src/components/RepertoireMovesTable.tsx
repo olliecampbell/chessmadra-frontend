@@ -272,7 +272,7 @@ const Response = ({
   editing;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
-  const { hovering, hoverRef } = useHovering();
+  const { hovering, hoveringProps } = useHovering();
   const { suggestedMove, repertoireMove, incidence } = tableResponse;
   const [
     playSan,
@@ -285,6 +285,7 @@ const Response = ({
     currentEpd,
     ecoCodeLookup,
     currentEcoCode,
+    previewMove,
   ] = useRepertoireState((s) => [
     s.playSan,
     s.currentLine,
@@ -296,6 +297,7 @@ const Response = ({
     s.getCurrentEpd(),
     s.ecoCodeLookup,
     s.editingState.lastEcoCode,
+    s.chessboardState.previewMove,
   ]);
   let side: Side = position?.turn() === "b" ? "black" : "white";
   const isMobile = useIsMobile();
@@ -307,6 +309,15 @@ const Response = ({
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
   let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
+
+  let { hoveringProps: responseHoverProps } = useHovering(
+    () => {
+      previewMove(sanPlus);
+    },
+    () => {
+      previewMove(null);
+    }
+  );
   useEffect(() => {
     if (isEmpty(annotation)) {
       setAnnotation(suggestedMove?.annotation);
@@ -435,7 +446,7 @@ const Response = ({
   let annotationOrOpeningName = suggestedMove?.annotation ?? newOpeningName;
 
   return (
-    <View style={s(c.row, c.alignCenter)}>
+    <View style={s(c.row, c.alignCenter)} {...responseHoverProps}>
       <Pressable
         onPress={() => {
           playSan(sanPlus);
@@ -537,7 +548,7 @@ const Response = ({
             </View>
           )}
           {debugUi && (
-            <View style={s(c.row)} ref={hoverRef}>
+            <View style={s(c.row)} {...hoveringProps}>
               <CMText
                 style={s(c.fg(c.colors.debugColor), c.relative, c.px(12))}
               >

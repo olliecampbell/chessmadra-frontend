@@ -18,6 +18,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   positionHistory: string[];
   position?: Chess;
   futurePosition?: Chess;
+  previewPosition?: Chess;
   indicatorColor?: string;
   squareHighlightAnims: Record<Square, Animated.Value>;
   ringColor?: string;
@@ -59,6 +60,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   isColorTraining?: boolean;
   delegate?: ChessboardDelegate;
   makeMove: (m: Move | string) => void;
+  previewMove: (m: Move | string) => void;
   backOne: () => void;
   resetPosition: () => void;
   stopNotifyingDelegates: () => void;
@@ -251,11 +253,29 @@ export const createChessState = (
         s.getDelegate()?.onPositionUpdated?.();
       });
     },
+    previewMove: (m: Move | string) => {
+      set((s) => {
+        if (m) {
+          s.previewPosition = new Chess(s.position.fen());
+          let [moveObject] = s.previewPosition.validateMoves([m]);
+          s.previewPosition.move(m);
+          // s.makeMove(m);
+          // s.animatePieceMove(moveObject, PlaybackSpeed.Slow, (completed) => {
+          //   set((s) => {});
+          // });
+        } else {
+          s.previewPosition = null;
+        }
+      });
+    },
     makeMove: (m: Move | string) => {
       set((s) => {
+        if (s.previewPosition) {
+          s.previewMove(null);
+        }
         s.availableMoves = [];
         s.activeFromSquare = null;
-        let pos = s.futurePosition ?? s.position;
+        let pos = s.futurePosition ?? s.previewPosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {
           console.log("Made move?");
