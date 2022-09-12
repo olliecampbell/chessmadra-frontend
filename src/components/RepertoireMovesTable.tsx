@@ -257,7 +257,7 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
 
 const SPACE_BETWEEN_STATS = 24;
 
-const START_CELL_WIDTH = 70;
+const START_CELL_WIDTH = 90;
 const MAX_ANNOTATION_LENGTH = 300;
 
 const Response = ({
@@ -498,7 +498,6 @@ const Response = ({
                 </CMText>
               </View>
             )}
-            <Spacer width={12} />
             <View style={s(c.row, c.alignCenter)}>
               {intersperse(
                 sections.map((section, i) => {
