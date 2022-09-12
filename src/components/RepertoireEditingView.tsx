@@ -263,6 +263,7 @@ const Responses = () => {
     existingMoves,
     playSan,
     currentLineIncidence,
+    hasPendingLine,
   ] = useRepertoireState((s) => [
     s.getCurrentPositionReport(),
     s.currentLine,
@@ -273,6 +274,7 @@ const Responses = () => {
     s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
     s.playSan,
     s.getIncidenceOfCurrentLine(),
+    s.hasPendingLineToAdd,
   ]);
   let side: Side = position.turn() === "b" ? "black" : "white";
   let ownSide = side === activeSide;
@@ -317,6 +319,22 @@ const Responses = () => {
   });
   const isMobile = false;
   const [showOtherMoves, setShowOtherMoves] = useState(false);
+  useEffect(() => {
+    const beforeUnloadListener = (event) => {
+      if (hasPendingLine) {
+        event.preventDefault();
+        let prompt = "You have an unsaved line, are you sure you want to exit?";
+        event.returnValue = prompt;
+        return prompt;
+      }
+    };
+    addEventListener("beforeunload", beforeUnloadListener, { capture: true });
+    return () => {
+      removeEventListener("beforeunload", beforeUnloadListener, {
+        capture: true,
+      });
+    };
+  }, []);
   return (
     <View style={s(c.column, c.width(600), c.constrainWidth)}>
       {!isEmpty(youCanPlay) && (
