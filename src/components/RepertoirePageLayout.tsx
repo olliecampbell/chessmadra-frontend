@@ -6,7 +6,10 @@ import { intersperse } from "app/utils/intersperse";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
-import React from "react";
+import React, { useEffect } from "react";
+import { HeadSiteMeta } from "./PageContainer";
+import { OPENINGS_DESCRIPTION } from "./NavBar";
+import { BeatLoader } from "react-spinners";
 
 export const RepertoirePageLayout = ({
   children,
@@ -16,6 +19,15 @@ export const RepertoirePageLayout = ({
   bottom?: any;
 }) => {
   const isMobile = useIsMobile();
+  const [repertoire, initState] = useRepertoireState((s) => [
+    s.repertoire,
+    s.initState,
+  ]);
+  useEffect(() => {
+    if (repertoire === undefined) {
+      initState();
+    }
+  }, []);
   return (
     <View
       style={s(
@@ -28,6 +40,12 @@ export const RepertoirePageLayout = ({
         c.keyedProp("maxHeight")("-webkit-fill-available")
       )}
     >
+      <HeadSiteMeta
+        siteMeta={{
+          title: "Opening Builder",
+          description: OPENINGS_DESCRIPTION,
+        }}
+      />
       <View
         style={s(
           c.fullWidth,
@@ -61,7 +79,7 @@ export const RepertoirePageLayout = ({
           c.pb(isMobile ? 128 : 128)
         )}
       >
-        {children}
+        {repertoire ? children : <BeatLoader color={c.grays[100]} size={20} />}
       </View>
       {bottom}
     </View>

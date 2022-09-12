@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -12,6 +12,7 @@ import {
   formatIncidence,
   otherSide,
   RepertoireMiss,
+  Side,
 } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { createStaticChessState } from "app/utils/chessboard_state";
@@ -32,6 +33,7 @@ import { BackControls } from "./BackControls";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
+import { useParams } from "react-router-dom";
 
 export const RepertoireBrowsingView = ({}: {}) => {
   const [
@@ -42,6 +44,7 @@ export const RepertoireBrowsingView = ({}: {}) => {
     failedToFetch,
     backToOverview,
     chessboardState,
+    repertoire,
   ] = useRepertoireState(
     (s) => [
       s.activeSide,
@@ -51,14 +54,20 @@ export const RepertoireBrowsingView = ({}: {}) => {
       s.failedToFetchSharedRepertoire,
       s.backToOverview,
       s.browsingState.chessboardState,
+      s.repertoire,
     ],
     true
   );
+  let { side: paramSide } = useParams();
+  useEffect(() => {
+    if ((paramSide !== activeSide || !isBrowsing) && repertoire) {
+      quick((s) => {
+        s.startBrowsing(paramSide as Side);
+      });
+    }
+  }, [repertoire]);
   // const router = useRouter();
   const isMobile = useIsMobile();
-  if (!isBrowsing) {
-    return null;
-  }
   return (
     <RepertoirePageLayout>
       <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
@@ -173,10 +182,8 @@ export const SwitchSideButton = () => {
 
 export const EditButton = () => {
   const isMobile = useIsMobile();
-  const [side, q] = useRepertoireState((s) => [
-    s.browsingState.activeSide,
-    s.quick,
-  ]);
+  const [side] = useRepertoireState((s) => [s.browsingState.activeSide]);
+  const [q] = useAppState((s) => [s.quick]);
   return (
     <Button
       style={s(
@@ -189,8 +196,10 @@ export const EditButton = () => {
       onPress={() => {
         q((s) => {
           trackEvent(`browsing.to_editor`);
-          s.startEditing(side);
-          s.chessboardState.playPgn(s.browsingState.chessboardState.moveLogPgn);
+          s.repertoireState.startEditing(side);
+          s.repertoireState.chessboardState.playPgn(
+            s.repertoireState.browsingState.chessboardState.moveLogPgn
+          );
         });
       }}
     >
@@ -386,16 +395,17 @@ export const BrowsingSectionsView = React.memo(() => {
           </Button>
         </View>
       )}
-      {intersperse(
-        sections.map((section, i) => {
-          return (
-            <SectionView key={section.ecoCode?.fullName} section={section} />
-          );
-        }),
-        (i) => {
-          return <Spacer height={isMobile ? 48 : 48} key={i} />;
-        }
-      )}
+      {sections &&
+        intersperse(
+          sections.map((section, i) => {
+            return (
+              <SectionView key={section.ecoCode?.fullName} section={section} />
+            );
+          }),
+          (i) => {
+            return <Spacer height={isMobile ? 48 : 48} key={i} />;
+          }
+        )}
     </View>
   );
 });

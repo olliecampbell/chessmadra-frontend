@@ -537,7 +537,7 @@ export const getInitialRepertoireState = (
       }),
     getRemainingReviewPositionMoves: () =>
       get(([s]) => {
-        return filter(s.currentMove.moves, (m) => {
+        return filter(s.currentMove?.moves, (m) => {
           return isNil(s.completedReviewPositionMoves[m.sanPlus]);
         });
       }),
@@ -984,6 +984,7 @@ export const getInitialRepertoireState = (
           s.queues[s.currentMove.moves[0].side].unshift(s.currentMove);
         }
         if (s.isCramming) {
+          console.log("Is cramming?");
           s.queues = EMPTY_QUEUES;
         }
         s.isCramming = false;
@@ -1006,7 +1007,8 @@ export const getInitialRepertoireState = (
         s.showImportView = true;
       }, "startImporting"),
     startBrowsing: (side: Side) =>
-      set(([s]) => {
+      set(([s, gs]) => {
+        gs.navigationState.push(`/openings/${side}/browse`);
         let breadcrumbs = [
           {
             text: `${capitalize(side)}`,
@@ -1037,7 +1039,8 @@ export const getInitialRepertoireState = (
         }
       }, "startBrowsing"),
     startEditing: (side: Side) =>
-      set(([s]) => {
+      set(([s, gs]) => {
+        gs.navigationState.push(`/openings/${side}/edit`);
         s.setBreadcrumbs([
           {
             text: `${capitalize(side)}`,
@@ -1076,10 +1079,17 @@ export const getInitialRepertoireState = (
         s.setupNextMove();
       }),
     startReview: (_side?: Side) =>
-      set(([s]) => {
+      set(([s, gs]) => {
+        gs.navigationState.push("/openings/review");
+        s.setBreadcrumbs([
+          {
+            text: `Review`,
+            onPress: null,
+          },
+        ]);
         let side = _side ?? shuffle(SIDES)[0];
         s.reviewSide = side;
-        if (!isNil(side) && s.getQueueLength(side) === 0) {
+        if (!isNil(_side) && s.getQueueLength(side) === 0) {
           s.updateQueue(true);
           s.isCramming = true;
         }

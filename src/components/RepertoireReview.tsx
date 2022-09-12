@@ -12,6 +12,9 @@ const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { RepertoirePageLayout } from "./RepertoirePageLayout";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -25,6 +28,8 @@ export const RepertoireReview = (props: {}) => {
     completedReviewPositionMoves,
     remainingReviewPositionMoves,
     currentMove,
+    isReviewing,
+    repertoire,
   ] = useRepertoireState((s) => [
     s.chessboardState,
     s.backToOverview,
@@ -35,134 +40,131 @@ export const RepertoireReview = (props: {}) => {
     s.completedReviewPositionMoves,
     s.getRemainingReviewPositionMoves(),
     s.currentMove,
+    s.isReviewing,
+    s.repertoire,
   ]);
-  let backToOverviewRow = (
-    <Pressable
-      style={s(c.row, c.alignCenter, c.clickable)}
-      onPress={() => {
-        backToOverview();
-      }}
-    >
-      <i
-        className="fa-light fa-angle-left"
-        style={s(c.fg(c.grays[70]), c.fontSize(16))}
-      />
-      <Spacer width={8} />
-      <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
-        Back to overview
-      </CMText>
-    </Pressable>
-  );
+  useEffect(() => {
+    if (!isReviewing && repertoire) {
+      quick((s) => {
+        s.startReview();
+      });
+    }
+  }, [repertoire]);
   return (
-    <TrainerLayout
-      containerStyles={s(isMobile ? c.alignCenter : c.alignStart)}
-      chessboard={
-        <ChessboardView
-          {...{
-            state: chessboardState,
-          }}
-        />
-      }
-    >
-      {backToOverviewRow}
-      <Spacer height={12} />
-      <CMText
-        style={s(c.fg(c.colors.textPrimary), c.weightSemiBold, c.fontSize(14))}
+    <RepertoirePageLayout>
+      <TrainerLayout
+        containerStyles={s(isMobile ? c.alignCenter : c.alignStart)}
+        chessboard={
+          <ChessboardView
+            {...{
+              state: chessboardState,
+            }}
+          />
+        }
       >
-        {currentMove.moves.length === 1
-          ? "Play the correct response on the board"
-          : `You have ${currentMove.moves.length} responses to this position in your repertoire. Play all your responses on the board`}
-      </CMText>
-      <Spacer height={12} />
-      {currentMove?.moves.length > 1 && (
-        <>
-          <View
+        <Spacer height={12} />
+        <CMText
+          style={s(
+            c.fg(c.colors.textPrimary),
+            c.weightSemiBold,
+            c.fontSize(14)
+          )}
+        >
+          {currentMove?.moves.length === 1
+            ? "Play the correct response on the board"
+            : `You have ${currentMove?.moves.length} responses to this position in your repertoire. Play all your responses on the board`}
+        </CMText>
+        <Spacer height={12} />
+        {currentMove?.moves.length > 1 && (
+          <>
+            <View
+              style={s(
+                c.row,
+                c.overflowHidden,
+                c.fullWidth,
+                c.height(12),
+                c.round,
+                c.alignStretch,
+                c.border(`1px solid ${c.grays[20]}`)
+              )}
+            >
+              {intersperse(
+                sortBy(currentMove.moves, (m) =>
+                  isNil(completedReviewPositionMoves[m.sanPlus])
+                ).map((x, i) => {
+                  let hasCompleted = !isNil(
+                    completedReviewPositionMoves[x.sanPlus]
+                  );
+                  return (
+                    <View
+                      style={s(
+                        hasCompleted ? c.bg(c.grays[80]) : c.bg(c.grays[10]),
+                        c.grow
+                      )}
+                    ></View>
+                  );
+                }),
+                (i) => {
+                  return (
+                    <View
+                      style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
+                    ></View>
+                  );
+                }
+              )}
+            </View>
+            <Spacer height={12} />
+          </>
+        )}
+        <View style={s(c.row)}>
+          <Button
             style={s(
-              c.row,
-              c.overflowHidden,
-              c.fullWidth,
-              c.height(12),
-              c.round,
-              c.alignStretch,
-              c.border(`1px solid ${c.grays[20]}`)
+              c.buttons.squareBasicButtons,
+              c.buttons.basicInverse,
+              c.height("unset"),
+              c.selfStretch
             )}
+            onPress={() => {
+              quick((s) => {
+                trackEvent(`reviewing.inspect_line`);
+                let qm = s.currentMove;
+                s.backToOverview();
+                s.startEditing(qm.moves[0].side);
+                s.chessboardState.playPgn(qm.line);
+              });
+            }}
           >
-            {intersperse(
-              sortBy(currentMove.moves, (m) =>
-                isNil(completedReviewPositionMoves[m.sanPlus])
-              ).map((x, i) => {
-                let hasCompleted = !isNil(
-                  completedReviewPositionMoves[x.sanPlus]
-                );
-                return (
-                  <View
-                    style={s(
-                      hasCompleted ? c.bg(c.grays[80]) : c.bg(c.grays[10]),
-                      c.grow
-                    )}
-                  ></View>
-                );
-              }),
-              (i) => {
-                return (
-                  <View
-                    style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
-                  ></View>
-                );
+            <CMText style={s(c.buttons.basicInverse.textStyles)}>
+              <i className="fa fa-search" />
+            </CMText>
+          </Button>
+          <Spacer width={8} />
+          <Button
+            style={s(
+              showNext ? c.buttons.primary : c.buttons.basicInverse,
+              c.grow
+            )}
+            onPress={() => {
+              if (showNext) {
+                setupNextMove();
+              } else {
+                trackEvent(`reviewing.give_up`);
+                giveUp();
               }
-            )}
-          </View>
-          <Spacer height={12} />
-        </>
-      )}
-      <View style={s(c.row)}>
-        <Button
-          style={s(
-            c.buttons.squareBasicButtons,
-            c.buttons.basicInverse,
-            c.height("unset"),
-            c.selfStretch
-          )}
-          onPress={() => {
-            quick((s) => {
-              trackEvent(`reviewing.inspect_line`);
-              let qm = s.currentMove;
-              s.backToOverview();
-              s.startEditing(qm.moves[0].side);
-              s.chessboardState.playPgn(qm.line);
-            });
-          }}
-        >
-          <CMText style={s(c.buttons.basicInverse.textStyles)}>
-            <i className="fa fa-search" />
-          </CMText>
-        </Button>
-        <Spacer width={8} />
-        <Button
-          style={s(
-            showNext ? c.buttons.primary : c.buttons.basicInverse,
-            c.grow
-          )}
-          onPress={() => {
-            if (showNext) {
-              setupNextMove();
-            } else {
-              trackEvent(`reviewing.give_up`);
-              giveUp();
-            }
-          }}
-        >
-          <CMText
-            style={s(
-              showNext
-                ? c.buttons.primary.textStyles
-                : c.buttons.basicInverse.textStyles
-            )}
+            }}
           >
-            {showNext ? "Next" : "I don't know"}
-          </CMText>
-        </Button>
-      </View>
-    </TrainerLayout>
+            <CMText
+              style={s(
+                showNext
+                  ? c.buttons.primary.textStyles
+                  : c.buttons.basicInverse.textStyles
+              )}
+            >
+              {showNext ? "Next" : "I don't know"}
+            </CMText>
+          </Button>
+        </View>
+      </TrainerLayout>
+    </RepertoirePageLayout>
   );
 };

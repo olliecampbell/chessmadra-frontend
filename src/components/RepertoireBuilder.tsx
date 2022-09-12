@@ -62,7 +62,9 @@ export const RepertoireBuilder = () => {
     true
   );
   useEffect(() => {
-    initState();
+    if (repertoire === undefined) {
+      initState();
+    }
   }, []);
 
   let inner = null;

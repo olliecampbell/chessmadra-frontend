@@ -35,7 +35,7 @@ import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { useDebugState, useRepertoireState } from "app/utils/app_state";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   RepertoireMovesTable,
@@ -46,6 +46,7 @@ import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
+import { useParams } from "react-router-dom";
 
 export const MoveLog = () => {
   let pairs = [];
@@ -193,10 +194,22 @@ let desktopHeaderStyles = s(
 
 export const RepertoireEditingView = () => {
   const isMobile = useIsMobile();
-  const [chessboardState, backOne] = useRepertoireState((s) => [
-    s.chessboardState,
-    s.backOne,
-  ]);
+  const [chessboardState, backOne, activeSide, isEditing, quick] =
+    useRepertoireState((s) => [
+      s.chessboardState,
+      s.backOne,
+      s.activeSide,
+      s.isEditing,
+      s.quick,
+    ]);
+  let { side: paramSide } = useParams();
+  useEffect(() => {
+    if (paramSide !== activeSide || !isEditing) {
+      quick((s) => {
+        s.startEditing(paramSide as Side);
+      });
+    }
+  }, []);
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
     if (event.key === "ArrowLeft") {
       backOne();

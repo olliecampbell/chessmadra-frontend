@@ -33,6 +33,9 @@ import Authenticate from "app/components/Authenticate";
 import { AdminView } from "app/components/AdminView";
 import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
+import { RepertoireEditingView } from "app/components/RepertoireEditingView";
+import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
+import { RepertoireReview } from "app/components/RepertoireReview";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -104,6 +107,15 @@ export default function App() {
                 <Route path="/authenticate" element={<Authenticate />} />
                 <Route path="/repertoire" element={<SharedRepertoireView />} />
                 <Route path="/openings" element={<RepertoireBuilder />} />
+                <Route
+                  path="/openings/:side/browse"
+                  element={<RepertoireBrowsingView />}
+                />
+                <Route path="/openings/review" element={<RepertoireReview />} />
+                <Route
+                  path="/openings/:side/edit"
+                  element={<RepertoireEditingView />}
+                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/blindfold" element={<BlindfoldTrainer />} />
                 <Route
@@ -153,7 +165,7 @@ export const RouteProvider = ({ children }) => {
   let { search } = useLocation();
   useEffect(() => {
     quick((s) => {
-      s.navigationState._navigate = navigate;
+      s.navigationState.setNavigate(navigate);
     });
   }, []);
   useEffect(() => {

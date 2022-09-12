@@ -116,7 +116,7 @@ export const useAppStateInternal = create<AppState>()(
         userState: getInitialUserState(set, get),
         trackEvent: (name: string, props?: Object) => {
           get((s) => {
-            console.log(`EVENT\n\t---- ${name} ----`);
+            console.log(`---- ${name} ----`);
             amplitude.track(name);
           });
         },

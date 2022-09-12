@@ -1,4 +1,3 @@
-
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -7,7 +6,9 @@ import { NavigateFunction } from "react-router-dom";
 export interface NavigationState {
   quick: (fn: (_: NavigationState) => void) => void;
   push: (path: string, options?: { removeParams: boolean }) => void;
+  setNavigate: (n: NavigateFunction) => void;
   _navigate?: NavigateFunction;
+  _pendingPath?: string;
   search?: string;
 }
 
@@ -29,12 +30,25 @@ export const getInitialNavigationState = (
   let initialState = {
     ...createQuick<NavigationState>(setOnly),
     navigationUi: false,
+    setNavigate: (navigate: NavigateFunction) => {
+      set(([s]) => {
+        s._navigate = navigate;
+        if (s._pendingPath) {
+          s._navigate(s._pendingPath);
+        }
+      });
+    },
     push: (path: string, options) => {
       set(([s]) => {
-        if (options?.removeParams) {
-          s._navigate(`${path}`);
+        let p = `${path}`;
+        if (!options?.removeParams && s.search) {
+          p = `${path}${s.search}`;
+        }
+        console.log(`PUSH - ${path}`);
+        if (!s._navigate) {
+          s._pendingPath = p;
         } else {
-          s._navigate(`${path}${s.search}`);
+          s._navigate(p);
         }
       });
     },
