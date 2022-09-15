@@ -19,12 +19,12 @@ export const RepertoirePageLayout = ({
   bottom?: any;
 }) => {
   const isMobile = useIsMobile();
-  const [repertoire, initState] = useRepertoireState((s) => [
-    s.repertoire,
+  const [repertoireLoading, initState] = useRepertoireState((s) => [
+    s.repertoire === undefined,
     s.initState,
   ]);
   useEffect(() => {
-    if (repertoire === undefined) {
+    if (repertoireLoading) {
       initState();
     }
   }, []);
@@ -79,7 +79,11 @@ export const RepertoirePageLayout = ({
           c.pb(isMobile ? 128 : 128)
         )}
       >
-        {repertoire ? children : <BeatLoader color={c.grays[100]} size={20} />}
+        {!repertoireLoading ? (
+          children
+        ) : (
+          <BeatLoader color={c.grays[100]} size={20} />
+        )}
       </View>
       {bottom}
     </View>

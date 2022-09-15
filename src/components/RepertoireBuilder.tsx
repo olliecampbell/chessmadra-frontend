@@ -39,30 +39,27 @@ let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
-  const [underConstruction, debugUi] = useDebugState(
-    (s) => [s.underConstruction, s.debugUi],
-    true
-  );
+  const [underConstruction, debugUi] = useDebugState((s) => [
+    s.underConstruction,
+    s.debugUi,
+  ]);
   const [
-    repertoire,
+    repertoireLoading,
     showImportView,
     isBrowsing,
     isEditing,
     isReviewing,
     initState,
-  ] = useRepertoireState(
-    (s) => [
-      s.repertoire,
-      s.showImportView,
-      s.isBrowsing,
-      s.isEditing,
-      s.isReviewing,
-      s.initState,
-    ],
-    true
-  );
+  ] = useRepertoireState((s) => [
+    s.repertoire === undefined,
+    s.showImportView,
+    s.isBrowsing,
+    s.isEditing,
+    s.isReviewing,
+    s.initState,
+  ]);
   useEffect(() => {
-    if (repertoire === undefined) {
+    if (repertoireLoading) {
       initState();
     }
   }, []);
@@ -99,7 +96,7 @@ export const RepertoireBuilder = () => {
         </CMText>
       </View>
     );
-  } else if (repertoire === undefined) {
+  } else if (repertoireLoading) {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
   } else if (showImportView) {
@@ -214,12 +211,12 @@ export const SideSectionHeader = ({
 
 type EditButtonProps = {
   side: Side;
-  state: RepertoireState;
 };
 
-export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
+export const EditButton: React.FC<EditButtonProps> = ({ side }) => {
   const isMobile = useIsMobile();
   const track = useTrack();
+  const [startEditing] = useRepertoireState((s) => [s.startEditing]);
   return (
     <Button
       style={s(
@@ -231,7 +228,7 @@ export const EditButton: React.FC<EditButtonProps> = ({ side, state }) => {
       )}
       onPress={() => {
         track("overview.edit_repertoire");
-        state.startEditing(side);
+        startEditing(side);
       }}
     >
       <CMText
@@ -351,12 +348,11 @@ const RepertoireSideSummary = ({
   side: Side;
   isMobile: boolean;
 }) => {
-  let state = useRepertoireState((s) => s);
-  let expectedDepth = state.repertoireGrades[side]?.expectedDepth;
-  let biggestMiss = state.repertoireGrades[side]?.biggestMiss;
-
-  let numMoves = state.myResponsesLookup?.[side]?.length;
-  let instructiveGames = state.repertoireGrades?.[side]?.instructiveGames;
+  let [expectedDepth, biggestMiss, numMoves] = useRepertoireState((s) => [
+    s.repertoireGrades[side]?.expectedDepth,
+    s.repertoireGrades[side]?.biggestMiss,
+    s.myResponsesLookup?.[side]?.length,
+  ]);
   // let biggestMissRow = createBiggestMissRow(state, side);
   return (
     <View style={s(c.column, c.maxWidth(800), c.fullWidth)}>
@@ -387,7 +383,7 @@ const RepertoireSideSummary = ({
         {isMobile && (
           <>
             <Spacer width={12} grow />
-            <EditButton {...{ state, side }} />
+            <EditButton {...{ side }} />
             <Spacer width={12} grow />
             <BrowseButton {...{ side }} />
             <Spacer width={12} />
@@ -472,7 +468,7 @@ const RepertoireSideSummary = ({
               </View>
             }
           </View>
-          {biggestMiss && <BiggestMissBoards {...{ state, side }} />}
+          {biggestMiss && <BiggestMissBoards {...{ side }} />}
         </View>
         <Spacer
           height={sectionSpacing(isMobile)}
@@ -483,7 +479,7 @@ const RepertoireSideSummary = ({
           <View style={s(c.column, c.grow, c.width(260))}>
             <View style={s(c.column, c.grow, isMobile && c.selfStretch)}>
               <Spacer height={sectionSpacing(isMobile)} />
-              <EditButton side={side} state={state} />
+              <EditButton side={side} />
               <Spacer height={sectionSpacing(isMobile)} />
               <BrowseButton side={side} />
               <Spacer height={sectionSpacing(isMobile)} />
@@ -523,15 +519,12 @@ const SummaryRow = ({ k, v, isMobile }) => {
   );
 };
 
-const BiggestMissBoards = ({
-  state,
-  side,
-}: {
-  state: RepertoireState;
-  side: Side;
-}) => {
+const BiggestMissBoards = ({ side }: { side: Side }) => {
+  const [biggestMiss, quick] = useRepertoireState((s) => [
+    s.repertoireGrades[side]?.biggestMiss,
+    s.quick,
+  ]);
   const isMobile = useIsMobile();
-  let biggestMiss = state.repertoireGrades[side]?.biggestMiss as RepertoireMiss;
   if (!biggestMiss) {
     return null;
   }
@@ -553,9 +546,9 @@ const BiggestMissBoards = ({
         {intersperse(
           [biggestMiss].map((x, i) => {
             let onClick = () =>
-              state.quick((s) => {
-                state.startEditing(side as Side);
-                state.chessboardState.playPgn(x.lines[0]);
+              quick((s) => {
+                s.startEditing(side as Side);
+                s.chessboardState.playPgn(x.lines[0]);
                 trackEvent("overview.go_to_biggest_miss");
               });
             return (

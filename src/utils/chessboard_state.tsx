@@ -144,17 +144,13 @@ export const createChessState = (
     },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
       set((s) => {
-        console.log("square press?");
         let availableMove = s.availableMoves.find((m) => m.to == square);
         if (availableMove) {
-          console.log("Had available move!", availableMove);
           s.availableMoves = [];
           s.activeFromSquare = null;
           s.draggedOverSquare = null;
           let makeMove = () => {
-            console.log("skip animation", skipAnimation);
             if (skipAnimation) {
-              console.log("Yup moving");
               s.makeMove(availableMove);
             } else {
               s.animatePieceMove(
@@ -173,15 +169,12 @@ export const createChessState = (
           }
           return;
         }
-        console.log("No available move");
         let availableMoves = s.availableMovesFrom(square);
         if (isEmpty(availableMoves)) {
-          console.log("empty");
           s.availableMoves = [];
           s.activeFromSquare = null;
           s.draggedOverSquare = null;
         } else {
-          console.log("not empty");
           s.activeFromSquare = square;
           s.draggedOverSquare = null;
           s.availableMoves = availableMoves;
@@ -190,14 +183,11 @@ export const createChessState = (
     },
     availableMovesFrom: (square: Square) => {
       return set((s) => {
-        console.log("state in available moves from", logProxy(s));
         let position = s.futurePosition ?? s.position;
-        console.log(position.ascii());
         let moves = position?.moves({
           square,
           verbose: true,
         });
-        console.log({ moves });
         if (
           !isEmpty(s.availableMoves) &&
           first(s.availableMoves).from == square
@@ -278,7 +268,6 @@ export const createChessState = (
         let pos = s.futurePosition ?? s.previewPosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {
-          console.log("Made move?");
           let epd = genEpd(pos);
           s.positionHistory.push(epd);
           s.updateMoveLogPgn();

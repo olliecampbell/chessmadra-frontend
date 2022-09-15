@@ -232,7 +232,7 @@ export const TemplateCell = ({
               ? singular
                 ? "fas fa-circle-check"
                 : "fas fa-circle"
-              : "fa-sharp fa-circle"
+              : "fa-regular fa-circle"
           }
           style={s(c.fontSize(14), c.fg(selected ? c.grays[80] : c.grays[50]))}
         />

@@ -26,7 +26,15 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import { clone, cloneDeep, every, isObject, keysIn, zip } from "lodash-es";
+import {
+  clone,
+  cloneDeep,
+  every,
+  isObject,
+  keysIn,
+  take,
+  zip,
+} from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { immerable } from "immer";
 import { Animated } from "react-native";
@@ -36,6 +44,8 @@ import { AdminState, getInitialAdminState } from "./admin_state";
 import { getInitialUserState, UserState } from "./user_state";
 import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "app/styles";
+import { isDevelopment } from "./env";
+import { Ref, RefObject, useEffect, useRef } from "react";
 
 Chess[immerable] = true;
 
@@ -119,7 +129,7 @@ export const useAppStateInternal = create<AppState>()(
     { name: "AppState" }
   )
 );
-const logUnequal = (a, b, path) => {
+const logUnequal = (a, b, path, stackTrace: RefObject<any>) => {
   console.log(
     `%c \n  Re-rendering, %c${path}%c used to be`,
     `padding: 12px; padding-top: 24px; padding-right: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}`,
@@ -128,11 +138,38 @@ const logUnequal = (a, b, path) => {
     "\n\n\n",
     a,
     "\n\nBut is now:\n\n",
-    b
+    b,
+    "\n\nStack trace:\n\n",
+    (take(stackTrace?.current, 5) ?? []).join("\n")
   );
 };
 
-const customEqualityCheck = (a, b, path, debug) => {
+const logExpensive = (
+  a,
+  b,
+  path,
+  keys: number,
+  stackTrace?: RefObject<any>
+) => {
+  console.log(
+    `%c ${path}%c is expensive, ${keys} keys`,
+    `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.grays[80]}; color: ${c.purples[55]}; font-weight: 600;`,
+    `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}; margin-bottom: 8px;`,
+    "\n\n\n",
+    a,
+    "\n\nBut is now:\n\n",
+    b,
+    stackTrace?.current
+  );
+};
+
+const customEqualityCheck = (
+  a,
+  b,
+  path,
+  debug,
+  stackTrace?: RefObject<any>
+) => {
   if (a instanceof Chess && b instanceof Chess) {
     return a.fen() === b.fen();
   }
@@ -145,53 +182,77 @@ const customEqualityCheck = (a, b, path, debug) => {
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) {
       if (debug) {
-        logUnequal(a, b, path);
+        logUnequal(a, b, path, stackTrace);
       }
       return false;
+    }
+    if (a.length > 100 || b.length > 100) {
+      logExpensive(a, b, path, Math.max(a.length, b.length), stackTrace);
     }
     let arrayEqual = every(
       zip(a, b).map(([a, b], i) => {
         let newPath = path;
-        if (debug) {
-          newPath = newPath + `[${i}]`;
-        }
-        return customEqualityCheck(a, b, newPath, debug);
+        newPath = newPath + `[${i}]`;
+        return customEqualityCheck(a, b, newPath, debug, stackTrace);
       })
     );
     return arrayEqual;
   }
   if (isObject(a) && isObject(b)) {
     let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
+    if (allKeys.size > 100) {
+      logExpensive(a, b, path, allKeys.size, stackTrace);
+    }
     return every([...allKeys], (k) => {
       let newPath = path;
       let a1 = a[k];
       let b1 = b[k];
-      if (debug) {
-        newPath = newPath + `.${k}`;
-      }
-      return customEqualityCheck(a1, b1, newPath, debug);
+      newPath = newPath + `.${k}`;
+      return customEqualityCheck(a1, b1, newPath, debug, stackTrace);
     });
   }
   let plainEquality = a == b;
   if (!plainEquality && debug) {
-    logUnequal(a, b, path);
+    logUnequal(a, b, path, stackTrace);
   }
   return plainEquality;
 };
 
-export function equality(a: any, b: any, debug?: boolean): boolean {
-  return customEqualityCheck(a, b, "", debug);
+export function equality(
+  a: any,
+  b: any,
+  debug?: boolean,
+  stackTrace?: RefObject<any>
+): boolean {
+  return customEqualityCheck(a, b, "", debug, stackTrace);
 }
 
 // Hooks for slices
+function getStackTrace() {
+  var stack;
+  try {
+    throw new Error("");
+  } catch (error) {
+    stack = error.stack || "";
+  }
+
+  stack = stack.split("\n").map(function (line) {
+    return line.trim();
+  });
+  return stack.splice(stack[0] == "Error" ? 2 : 1);
+}
 
 export const useRepertoireState = <T,>(
   fn: (_: RepertoireState) => T,
   debug?: boolean
 ) => {
+  let stackTrace = useRef(null);
+  if (isDevelopment && stackTrace.current === null) {
+    stackTrace.current = getStackTrace();
+  }
   return useAppStateInternal(
     (s) => fn(s.repertoireState),
-    (a, b) => equality(a, b, debug)
+    (a, b) => equality(a, b, debug, stackTrace)
   );
 };
 

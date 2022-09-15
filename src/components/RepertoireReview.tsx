@@ -29,7 +29,7 @@ export const RepertoireReview = (props: {}) => {
     remainingReviewPositionMoves,
     currentMove,
     isReviewing,
-    repertoire,
+    repertoireLoading,
   ] = useRepertoireState((s) => [
     s.chessboardState,
     s.backToOverview,
@@ -41,15 +41,15 @@ export const RepertoireReview = (props: {}) => {
     s.getRemainingReviewPositionMoves(),
     s.currentMove,
     s.isReviewing,
-    s.repertoire,
+    s.repertoire === undefined,
   ]);
   useEffect(() => {
-    if (!isReviewing && repertoire) {
+    if (!isReviewing && !repertoireLoading) {
       quick((s) => {
         s.startReview();
       });
     }
-  }, [repertoire]);
+  }, [repertoireLoading]);
   return (
     <RepertoirePageLayout>
       <TrainerLayout

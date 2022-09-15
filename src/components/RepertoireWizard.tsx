@@ -453,7 +453,7 @@ const ImportOptions = ({
               >
                 <i
                   className={
-                    selected ? "fas fa-circle" : "fa-sharp fa-circle"
+                    selected ? "fas fa-circle" : "fa-regular fa-circle"
                   }
                   style={s(
                     c.fontSize(18),

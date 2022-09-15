@@ -44,28 +44,25 @@ export const RepertoireBrowsingView = ({}: {}) => {
     failedToFetch,
     backToOverview,
     chessboardState,
-    repertoire,
-  ] = useRepertoireState(
-    (s) => [
-      s.activeSide,
-      s.isBrowsing,
-      s.quick,
-      s.browsingState.readOnly,
-      s.failedToFetchSharedRepertoire,
-      s.backToOverview,
-      s.browsingState.chessboardState,
-      s.repertoire,
-    ],
-    true
-  );
+    repertoireLoading,
+  ] = useRepertoireState((s) => [
+    s.activeSide,
+    s.isBrowsing,
+    s.quick,
+    s.browsingState.readOnly,
+    s.failedToFetchSharedRepertoire,
+    s.backToOverview,
+    s.browsingState.chessboardState,
+    s.repertoire === undefined,
+  ]);
   let { side: paramSide } = useParams();
   useEffect(() => {
-    if ((paramSide !== activeSide || !isBrowsing) && repertoire) {
+    if ((paramSide !== activeSide || !isBrowsing) && !repertoireLoading) {
       quick((s) => {
         s.startBrowsing(paramSide as Side);
       });
     }
-  }, [repertoire]);
+  }, [repertoireLoading]);
   // const router = useRouter();
   const isMobile = useIsMobile();
   return (

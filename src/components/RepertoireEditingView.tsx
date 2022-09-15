@@ -261,18 +261,15 @@ const Responses = () => {
     existingMoves,
     currentLineIncidence,
     hasPendingLine,
-  ] = useRepertoireState(
-    (s) => [
-      s.getCurrentPositionReport(),
-      s.chessboardState.position,
-      s.activeSide,
-      s.getCurrentEpd(),
-      s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
-      s.getIncidenceOfCurrentLine(),
-      s.hasPendingLineToAdd,
-    ],
-    true
-  );
+  ] = useRepertoireState((s) => [
+    s.getCurrentPositionReport(),
+    s.chessboardState.position,
+    s.activeSide,
+    s.getCurrentEpd(),
+    s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
+    s.getIncidenceOfCurrentLine(),
+    s.hasPendingLineToAdd,
+  ]);
   let side: Side = position.turn() === "b" ? "black" : "white";
   let ownSide = side === activeSide;
   let _tableResponses: Record<string, TableResponse> = {};
