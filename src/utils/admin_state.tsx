@@ -1,8 +1,5 @@
-
 import client from "app/client";
-import {
-  MoveAnnotationReview,
-} from "app/models";
+import { MoveAnnotationReview } from "app/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -17,19 +14,20 @@ export interface AdminState {
 }
 
 type Stack = [AdminState, AppState];
+const selector = (s: AppState): Stack => [s.adminState, s];
 
 export const getInitialAdminState = (
   _set: StateSetter<AppState, any>,
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _set((s) => fn([s.adminState, s]));
+    return _set((s) => fn(selector(s)));
   };
   const setOnly = <T,>(fn: (stack: AdminState) => T, id?: string): T => {
     return _set((s) => fn(s.adminState));
   };
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _get((s) => fn([s.adminState, s]));
+    return _get((s) => fn(selector(s)));
   };
   let initialState = {
     ...createQuick<AdminState>(setOnly),
