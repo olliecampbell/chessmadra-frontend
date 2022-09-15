@@ -255,7 +255,6 @@ export const RepertoireEditingView = () => {
 const Responses = () => {
   let [
     positionReport,
-    chessboardState, // remove
     position,
     activeSide,
     currentEpd,
@@ -265,7 +264,6 @@ const Responses = () => {
   ] = useRepertoireState(
     (s) => [
       s.getCurrentPositionReport(),
-      s.chessboardState,
       s.chessboardState.position,
       s.activeSide,
       s.getCurrentEpd(),
