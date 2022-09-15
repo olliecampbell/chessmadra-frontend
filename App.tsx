@@ -162,17 +162,11 @@ export const GlobalParamsReader = () => {
 export const RouteProvider = ({ children }) => {
   let navigate = useNavigate();
   let [quick] = useAppState((s) => [s.quick]);
-  let { search } = useLocation();
   useEffect(() => {
     quick((s) => {
       s.navigationState.setNavigate(navigate);
     });
   }, []);
-  useEffect(() => {
-    quick((s) => {
-      s.navigationState.search = search;
-    });
-  }, [search]);
   return children;
 };
 
