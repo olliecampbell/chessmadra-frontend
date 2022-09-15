@@ -50,7 +50,6 @@ export const getInitialNavigationState = (
         } else {
           let p = `${path}${window.location.search}`;
           if (options?.removeParams || isNil(window.location.search)) {
-            console.log("Removing params");
             p = `${path}`;
           }
           s._navigate(p);

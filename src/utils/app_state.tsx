@@ -58,28 +58,13 @@ export interface AppState {
 
 let pendingState: OpDraft<AppState> = null;
 
-function isRevokedProxy(value) {
-  try {
-    new Proxy(value, value);
-    return false;
-  } catch (err) {
-    return Object(value) === value;
-  }
-}
-
 export const useAppStateInternal = create<AppState>()(
   devtools(
     // @ts-ignore for the set stuff
     immer((_set, _get): AppState => {
       const set = <T,>(fn: (state: AppState) => T) => {
         if (pendingState) {
-          if (isRevokedProxy(pendingState)) {
-            console.log("Somehow this is revoked, the pending state we have?");
-          }
-          // debugger;
-          // console.log("Using pending state!");
           // @ts-ignore
-          // pendingState.bogus = Math.random();
           return fn(pendingState);
         } else {
           let res = null;
@@ -105,9 +90,8 @@ export const useAppStateInternal = create<AppState>()(
       let initialState = {
         toJSON: () => {
           return get((s) => {
-            // Undo this for debugging
+            // Redux devtools slows down with big states, undo this for debugging
             return {};
-            return s;
           });
         },
         repertoireState: getInitialRepertoireState(set, get),
@@ -149,15 +133,6 @@ const logUnequal = (a, b, path) => {
 };
 
 const customEqualityCheck = (a, b, path, debug) => {
-  // if (debug) {
-  //   console.log("What about this path?", path);
-  // }
-  // if (a === b) {
-  //   if (debug) {
-  //     console.log("Reference equality checks out");
-  //   }
-  //   return true;
-  // }
   if (a instanceof Chess && b instanceof Chess) {
     return a.fen() === b.fen();
   }
@@ -187,7 +162,6 @@ const customEqualityCheck = (a, b, path, debug) => {
   }
   if (isObject(a) && isObject(b)) {
     let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
-    // console.log({ allKeys: allKeys.keys() });
     return every([...allKeys], (k) => {
       let newPath = path;
       let a1 = a[k];
@@ -195,7 +169,6 @@ const customEqualityCheck = (a, b, path, debug) => {
       if (debug) {
         newPath = newPath + `.${k}`;
       }
-      // console.log(`Recursing w/ key ${k}`);
       return customEqualityCheck(a1, b1, newPath, debug);
     });
   }
@@ -208,12 +181,9 @@ const customEqualityCheck = (a, b, path, debug) => {
 
 export function equality(a: any, b: any, debug?: boolean): boolean {
   return customEqualityCheck(a, b, "", debug);
-  // let isEqual = isEqualWith(a, b, customEqualityCheck);
-  // if (debug) {
-  //   console.log("Not equal!", a, b);
-  // }
-  // return isEqual;
 }
+
+// Hooks for slices
 
 export const useRepertoireState = <T,>(
   fn: (_: RepertoireState) => T,
