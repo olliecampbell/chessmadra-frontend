@@ -12,7 +12,7 @@ export const NewPuzzleButton = ({ onPress }) => {
       }}
     >
       <CMText style={s(c.buttons.primary.textStyles)}>
-        <i style={s(c.fg(c.colors.textPrimary))} className="fas fa-random"></i>
+        <i style={s(c.fg(c.colors.textPrimary))} className="fa-sharp fa-random"></i>
         <Spacer width={8} />
         New puzzle
       </CMText>

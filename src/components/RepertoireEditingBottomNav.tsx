@@ -124,7 +124,7 @@ const AddPendingLineButton = () => {
     >
       <CMText style={s(c.buttons.primary.textStyles, c.row, c.alignCenter)}>
         <i
-          className="fas fa-check"
+          className="fa-sharp fa-check"
           style={s(c.fg(c.grays[90]), c.fontSize(20))}
         />
         <Spacer width={8} />

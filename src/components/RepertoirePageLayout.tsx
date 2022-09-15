@@ -117,7 +117,7 @@ export const RepertoireNavBreadcrumbs = () => {
           return (
             <View key={i} style={s(c.mx(12))}>
               <CMText style={s()}>
-                <i className="fa fa-angle-right" />
+                <i className="fa-sharp fa-angle-right" />
               </CMText>
             </View>
           );

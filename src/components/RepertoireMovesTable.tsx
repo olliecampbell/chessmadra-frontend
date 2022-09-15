@@ -8,7 +8,7 @@ import { intersperse } from "app/utils/intersperse";
 import { formatIncidence, RepertoireMove, Side } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { SuggestedMove } from "app/models";
+import { PositionReport, SuggestedMove } from "app/models";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { GameResultsBar } from "./GameResultsBar";
 import {
@@ -26,6 +26,7 @@ import { TableResponseScoreSource } from "./RepertoireEditingView";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
+import { css } from "@emotion/react";
 
 const DELETE_WIDTH = 30;
 
@@ -197,7 +198,16 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
   if (myTurn) {
     sections.push({
       width: 40,
-      content: ({ suggestedMove, positionReport }) => {
+      content: ({
+        suggestedMove,
+        positionReport,
+      }: {
+        suggestedMove: SuggestedMove;
+        positionReport: PositionReport;
+      }) => {
+        if (suggestedMove?.sanPlus === "e4") {
+          console.log({ suggestedMove, positionReport });
+        }
         let playRate =
           suggestedMove &&
           positionReport &&
@@ -278,24 +288,22 @@ const Response = ({
     playSan,
     currentLine,
     positionReport,
-    activeSide,
     quick,
     position,
     uploadMoveAnnotation,
     currentEpd,
-    ecoCodeLookup,
+    nextEcoCode,
     currentEcoCode,
     previewMove,
   ] = useRepertoireState((s) => [
     s.playSan,
     s.currentLine,
     s.getCurrentPositionReport(),
-    s.activeSide,
     s.quick,
     s.chessboardState.position,
     s.uploadMoveAnnotation,
     s.getCurrentEpd(),
-    s.ecoCodeLookup,
+    s.ecoCodeLookup[suggestedMove?.epdAfter],
     s.editingState.lastEcoCode,
     s.chessboardState.previewMove,
   ]);
@@ -310,14 +318,15 @@ const Response = ({
   let mine = repertoireMove?.mine;
   let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
 
-  let { hoveringProps: responseHoverProps } = useHovering(
-    () => {
-      previewMove(sanPlus);
-    },
-    () => {
-      previewMove(null);
-    }
-  );
+  let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
+    useHovering(
+      () => {
+        previewMove(sanPlus);
+      },
+      () => {
+        previewMove(null);
+      }
+    );
   useEffect(() => {
     if (isEmpty(annotation)) {
       setAnnotation(suggestedMove?.annotation);
@@ -433,7 +442,6 @@ const Response = ({
     );
   }
   let newOpeningName = null;
-  let nextEcoCode = ecoCodeLookup[suggestedMove?.epdAfter];
   let [currentOpeningName] = currentEcoCode
     ? getAppropriateEcoName(currentEcoCode.fullName)
     : [];
@@ -459,7 +467,7 @@ const Response = ({
           c.py(8),
           c.pl(14),
           c.pr(8),
-          c.bg(c.colors.cardBackground),
+          c.bg(hoveringRow ? c.grays[20] : c.colors.cardBackground),
 
           mine && c.border(`2px solid ${c.purples[60]}`),
           c.cardShadow,
@@ -595,7 +603,7 @@ const Response = ({
                 <Spacer width={12} />
                 <i
                   style={s(c.fontSize(16), c.fg(c.grays[60]))}
-                  className="fa-regular fa-trash"
+                  className="fa-sharp fa-trash"
                 ></i>
               </>
             )}
@@ -665,7 +673,7 @@ export const DebugScoreView = ({
       </View>
       <Spacer height={12} />
       {intersperse(
-        tableResponse.scoreTable.factors.map((factor, i) => {
+        tableResponse.scoreTable?.factors.map((factor, i) => {
           return (
             <View style={s(c.row, c.fullWidth, c.textAlign("end"))} key={i}>
               <CMText style={s(c.width(120))}>{factor.source}</CMText>

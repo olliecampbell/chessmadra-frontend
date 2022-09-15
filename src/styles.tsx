@@ -205,19 +205,18 @@ const grayHue = 239;
 function easeInOutSine(x: number): number {
   return -(Math.cos(Math.PI * x) - 1) / 2;
 }
-const genGrays = (trueGrays?: boolean) => {
+const genGrays = (hue, saturation) => {
   const grays = {};
-  let minSaturation = 5;
-  let maxSaturation = 5;
   for (let i = 0; i <= 100; i = i + 1) {
-    let saturation =
-      minSaturation + ((maxSaturation - minSaturation) * i) / 100;
-    grays[i] = `hsl(${grayHue}, ${trueGrays ? 0 : saturation}%, ${i}%)`;
+    // let saturation =
+    //   minSaturation + ((maxSaturation - minSaturation) * i) / 100;
+    grays[i] = `hsl(${hue}, ${saturation}%, ${i}%)`;
   }
   return grays;
 };
-const grays = genGrays();
-const trueGrays = genGrays(true);
+const grays = genGrays(grayHue, 5);
+const trueGrays = genGrays(0, 0);
+const chessboardGrays = genGrays(182, 5);
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -384,15 +383,15 @@ const buttons = {
 
 export const chessboardColors = {
   outlineWidth: 0.8,
-  blackFill: trueGrays[35],
-  blackOutline: trueGrays[10],
-  blackLightAccent: trueGrays[40],
-  blackDarkAccent: "hsla(0, 0%, 10%, 40%)",
-  blackKnightAccent: trueGrays[20],
-  whiteFill: trueGrays[95],
-  whiteOutline: trueGrays[0],
-  whiteLightAccent: trueGrays[100],
-  whiteKnightAccent: trueGrays[40],
+  blackFill: chessboardGrays[33],
+  blackOutline: chessboardGrays[10],
+  blackLightAccent: chessboardGrays[40],
+  blackDarkAccent: "hsla(0, 0%, 10%, 33%)",
+  blackKnightAccent: chessboardGrays[20],
+  whiteFill: chessboardGrays[95],
+  whiteOutline: chessboardGrays[0],
+  whiteLightAccent: chessboardGrays[100],
+  whiteKnightAccent: chessboardGrays[40],
   whiteDarkAccent: "hsla(0, 0%, 60%, 40%)",
 };
 

@@ -71,7 +71,7 @@ let ModalHeader = ({ title, closeModal, icon }) => {
         }}
       >
         <CMText style={s(c.fontSize(28), c.fg(c.grays[50]))}>
-          <i className="fas fa-close" />
+          <i className="fa-sharp fa-close" />
         </CMText>
       </Pressable>
     </View>

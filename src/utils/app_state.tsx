@@ -26,7 +26,7 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import { every, isObject, keysIn, zip } from "lodash-es";
+import { clone, cloneDeep, every, isObject, keysIn, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { immerable } from "immer";
 import { Animated } from "react-native";
@@ -35,6 +35,7 @@ import { getInitialNavigationState, NavigationState } from "./navigation_state";
 import { AdminState, getInitialAdminState } from "./admin_state";
 import { getInitialUserState, UserState } from "./user_state";
 import * as amplitude from "@amplitude/analytics-browser";
+import { c } from "app/styles";
 
 Chess[immerable] = true;
 
@@ -102,6 +103,13 @@ export const useAppStateInternal = create<AppState>()(
         }
       };
       let initialState = {
+        toJSON: () => {
+          return get((s) => {
+            // Undo this for debugging
+            return {};
+            return s;
+          });
+        },
         repertoireState: getInitialRepertoireState(set, get),
         adminState: getInitialAdminState(set, get),
         visualizationState: getInitialVisualizationState(set, get, false),
@@ -128,7 +136,16 @@ export const useAppStateInternal = create<AppState>()(
   )
 );
 const logUnequal = (a, b, path) => {
-  console.log(`This wasn't equal! Path is ${path}`, a, b);
+  console.log(
+    `%c \n  Re-rendering, %c${path}%c used to be`,
+    `padding: 12px; padding-top: 24px; padding-right: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}`,
+    `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.grays[80]}; color: ${c.purples[55]}; font-weight: 600;`,
+    `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}; margin-bottom: 8px;`,
+    "\n\n\n",
+    a,
+    "\n\nBut is now:\n\n",
+    b
+  );
 };
 
 const customEqualityCheck = (a, b, path, debug) => {

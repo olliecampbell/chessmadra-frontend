@@ -135,7 +135,7 @@ export const RepertoireReview = (props: {}) => {
             }}
           >
             <CMText style={s(c.buttons.basicInverse.textStyles)}>
-              <i className="fa fa-search" />
+              <i className="fa-sharp fa-search" />
             </CMText>
           </Button>
           <Spacer width={8} />

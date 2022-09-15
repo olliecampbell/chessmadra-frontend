@@ -40,7 +40,7 @@ export const LichessGameCellMini = ({
                 c.fontSize(18),
                 c.fg(c.grays[40])
               )}
-              className="fas fa-arrow-up-right-from-square"
+              className="fa-sharp fa-arrow-up-right-from-square"
             ></i>
           </CMText>
         </View>

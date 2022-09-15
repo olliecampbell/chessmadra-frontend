@@ -47,7 +47,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
         }}
       >
         <i
-          className="fas fa-angles-left"
+          className="fa-sharp fa-angles-left"
           style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
@@ -59,7 +59,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
         }}
       >
         <i
-          className="fas fa-angle-left"
+          className="fa-sharp fa-angle-left"
           style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
         />
       </Button>

@@ -128,7 +128,7 @@ export const GamesSearch = () => {
           <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
             <i
               style={s(c.fg(c.colors.textPrimary))}
-              className="fas fa-angle-left"
+              className="fa-sharp fa-angle-left"
             ></i>
             <Spacer width={8} />
             Modify search
@@ -298,7 +298,7 @@ export const GamesSearch = () => {
                     >
                       <i
                         style={s(c.fg(c.colors.textInverse))}
-                        className="fas fa-undo"
+                        className="fa-sharp fa-undo"
                       ></i>
                       <Spacer width={8} />
                       Undo
@@ -358,7 +358,7 @@ export const GamesSearch = () => {
             <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
               <i
                 style={s(c.fg(c.colors.textPrimary))}
-                className="fas fa-search"
+                className="fa-sharp fa-search"
               ></i>
               <Spacer width={8} />
               Find Games
@@ -424,7 +424,7 @@ const ExampleGame = ({
       >
         <i
           style={s(c.fg(c.colors.textPrimary), c.mt(4))}
-          className="fas fa-angle-right"
+          className="fa-sharp fa-angle-right"
         ></i>
         <Spacer width={8} />
         <CMText

@@ -255,27 +255,26 @@ export const RepertoireEditingView = () => {
 const Responses = () => {
   let [
     positionReport,
-    currentLine,
+    chessboardState, // remove
     position,
     activeSide,
-    repertoire,
     currentEpd,
     existingMoves,
-    playSan,
     currentLineIncidence,
     hasPendingLine,
-  ] = useRepertoireState((s) => [
-    s.getCurrentPositionReport(),
-    s.currentLine,
-    s.chessboardState.position,
-    s.activeSide,
-    s.repertoire,
-    s.getCurrentEpd(),
-    s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
-    s.playSan,
-    s.getIncidenceOfCurrentLine(),
-    s.hasPendingLineToAdd,
-  ]);
+  ] = useRepertoireState(
+    (s) => [
+      s.getCurrentPositionReport(),
+      s.chessboardState,
+      s.chessboardState.position,
+      s.activeSide,
+      s.getCurrentEpd(),
+      s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
+      s.getIncidenceOfCurrentLine(),
+      s.hasPendingLineToAdd,
+    ],
+    true
+  );
   let side: Side = position.turn() === "b" ? "black" : "white";
   let ownSide = side === activeSide;
   let _tableResponses: Record<string, TableResponse> = {};

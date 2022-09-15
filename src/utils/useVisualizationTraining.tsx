@@ -58,7 +58,7 @@ const SettingsOption = <T,>({
             >
               <i
                 style={s(c.fg(c.colors.textPrimary))}
-                className={active ? `fas fa-circle` : `fa-regular fa-circle`}
+                className={active ? `fas fa-circle` : `fa-sharp fa-circle`}
               ></i>
               <Spacer width={12} />
               <CMText style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>
@@ -146,7 +146,7 @@ export const useVisualizationTraining = ({
             ),
             c.height(60),
             c.py(0),
-            c.fontSize(18),
+            c.fontSize(22),
             c.overflowHidden
           )}
           onPress={() => {
@@ -156,7 +156,7 @@ export const useVisualizationTraining = ({
         >
           <i
             style={s(c.fg(c.colors.textPrimary))}
-            className={`fas ${state.isPlaying ? "fa-pause" : "fa-play"}`}
+            className={`fa-sharp ${state.isPlaying ? "fa-pause" : "fa-play"}`}
           ></i>
         </Button>
       </View>
@@ -378,7 +378,7 @@ export const useVisualizationTraining = ({
               <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
-                  className="fas fa-times"
+                  className="fa-sharp fa-times"
                 ></i>
               </CMText>
             </Button>
@@ -398,7 +398,7 @@ export const useVisualizationTraining = ({
               <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
-                  className="fas fa-check"
+                  className="fa-sharp fa-check"
                 ></i>
               </CMText>
             </Button>
@@ -408,8 +408,7 @@ export const useVisualizationTraining = ({
           style={s(c.buttons.squareBasicButtons)}
           onPress={() => {
             (async () => {
-
-            trackEvent(`${eventsIdentifier}.analyze_on_lichess`);
+              trackEvent(`${eventsIdentifier}.analyze_on_lichess`);
               if (Platform.OS == "web") {
                 window.open(
                   `https://lichess.org/training/${state.puzzleState.puzzle.id}`,
@@ -422,7 +421,7 @@ export const useVisualizationTraining = ({
           <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fas fa-search"
+              className="fa-sharp fa-search"
             ></i>
           </CMText>
         </Button>
@@ -436,7 +435,7 @@ export const useVisualizationTraining = ({
           <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fas fa-circle-question"
+              className="fa-sharp fa-circle-question"
             ></i>
           </CMText>
         </Button>
@@ -445,13 +444,13 @@ export const useVisualizationTraining = ({
             <Button
               style={s(c.buttons.squareBasicButtons)}
               onPress={() => {
-            trackEvent(`${eventsIdentifier}.open_settings`);
+                trackEvent(`${eventsIdentifier}.open_settings`);
                 setSettingsOpen(true);
               }}
             >
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fas fa-gear"
+                className="fa-sharp fa-gear"
               ></i>
             </Button>
           </>
@@ -494,7 +493,7 @@ export const useVisualizationTraining = ({
                 >
                   <i
                     style={s(incrementDecrementTextStyles)}
-                    className="fas fa-minus"
+                    className="fa-sharp fa-minus"
                   ></i>
                 </Button>
                 <Spacer width={12} />
@@ -518,7 +517,7 @@ export const useVisualizationTraining = ({
                 >
                   <i
                     style={s(incrementDecrementTextStyles)}
-                    className="fas fa-plus"
+                    className="fa-sharp fa-plus"
                   ></i>
                 </Button>
               </View>

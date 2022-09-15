@@ -118,7 +118,7 @@ export const NavBar = (props: {}) => {
           <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
             <i
               style={s(c.fg(c.colors.textSecondary))}
-              className="fas fa-house"
+              className="fa-sharp fa-house"
             ></i>
           </CMText>
         </Pressable>
@@ -216,7 +216,7 @@ export const NavBar = (props: {}) => {
         >
           <i
             style={s(c.fg(c.grays[80]), c.fontSize(18))}
-            className="fas fa-bars"
+            className="fa-sharp fa-bars"
           ></i>
         </Button>
         {needsLogin && (

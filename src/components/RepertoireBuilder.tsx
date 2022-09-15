@@ -85,7 +85,7 @@ export const RepertoireBuilder = () => {
       <View style={s(c.column, c.center)}>
         {!isMobile && <Spacer height={48} />}
         <i
-          className="fa fa-hammer"
+          className="fa-sharp fa-hammer"
           style={s(c.fontSize(32), c.fg(c.grays[80]))}
         />
         <Spacer height={12} />
@@ -281,7 +281,7 @@ export const SideSettingsButton = ({ side }: { side: Side }) => {
           c.fontSize(isMobile ? 14 : 16)
         )}
       >
-        <i className="fas fa-wrench" />
+        <i className="fa-sharp fa-wrench" />
       </CMText>
       {!isMobile && (
         <>
@@ -650,7 +650,8 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
   let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
     (s) => {
       return [s.getMyResponsesLength, s.getQueueLength(side), s.startReview];
-    }
+    },
+    true
   );
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
   if (hasNoMovesThisSide) {
@@ -678,7 +679,7 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
                 c.fontSize(24),
                 c.pr(12)
               )}
-              className="fas fa-check"
+              className="fa-sharp fa-check"
             ></i>
             <CMText style={s(c.fg(c.colors.textSecondary), c.fontSize(13))}>
               You've reviewed all your moves! Now might be a good time to add
@@ -732,7 +733,7 @@ const ImportButton = () => {
       }}
     >
       <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
-        <i className="fas fa-plus" />
+        <i className="fa-sharp fa-plus" />
       </CMText>
       <Spacer width={12} />
       <CMText
@@ -778,7 +779,7 @@ const SettingsButton = () => {
         }}
       >
         <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
-          <i className="fas fa-gears" />
+          <i className="fa-sharp fa-gears" />
         </CMText>
         <Spacer width={12} />
         <CMText
@@ -818,7 +819,7 @@ const ShareRepertoireButton = () => {
         }}
       >
         <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
-          <i className="fas fa-share" />
+          <i className="fa-sharp fa-share" />
         </CMText>
         <Spacer width={12} />
         <CMText

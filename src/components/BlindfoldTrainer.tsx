@@ -138,7 +138,7 @@ export const BlindfoldTrainer = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fas fa-search"
+                className="fa-sharp fa-search"
               ></i>
             </CMText>
           </Button>
@@ -153,7 +153,7 @@ export const BlindfoldTrainer = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fas fa-circle-question"
+                className="fa-sharp fa-circle-question"
               ></i>
             </CMText>
           </Button>
@@ -166,7 +166,7 @@ export const BlindfoldTrainer = () => {
           >
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fas fa-gear"
+              className="fa-sharp fa-gear"
             ></i>
           </Button>
           <Modal

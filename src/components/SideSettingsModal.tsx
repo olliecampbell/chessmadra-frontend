@@ -40,7 +40,7 @@ export const SideSettingsModal = () => {
           <View style={s(c.row, c.alignStart)}>
             <i
               style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
-              className="fas fa-arrow-down-to-line"
+              className="fa-sharp fa-arrow-down-to-line"
             ></i>
             <Spacer width={16} />
             <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
@@ -81,7 +81,7 @@ export const SideSettingsModal = () => {
           <View style={s(c.row, c.alignStart)}>
             <i
               style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
-              className="fa-regular fa-trash"
+              className="fa-sharp fa-trash"
             ></i>
             <Spacer width={16} />
             <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>

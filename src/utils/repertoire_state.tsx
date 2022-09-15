@@ -264,19 +264,20 @@ export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
 const EMPTY_QUEUES = { white: [], black: [] };
 
 type Stack = [RepertoireState, AppState];
+const selector = (s: AppState): Stack => [s.repertoireState, s];
 
 export const getInitialRepertoireState = (
   _set: StateSetter<AppState, any>,
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _set((s) => fn([s.repertoireState, s]));
+    return _set((s) => fn(selector(s)));
   };
   const setOnly = <T,>(fn: (stack: RepertoireState) => T, id?: string): T => {
     return _set((s) => fn(s.repertoireState));
   };
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _get((s) => fn([s.repertoireState, s]));
+    return _get((s) => fn(selector(s)));
   };
   let initialState = {
     ...createQuick<RepertoireState>(setOnly),
@@ -1283,7 +1284,7 @@ export const getInitialRepertoireState = (
         // TODO: use user miss threshold
         return Math.min(
           0.03,
-          s.repertoireGrades[side].biggestMiss.incidence ?? 1.0
+          s.repertoireGrades[side]?.biggestMiss?.incidence ?? 1.0
         );
       }),
     getCurrentEpd: () =>

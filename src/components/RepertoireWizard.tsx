@@ -453,7 +453,7 @@ const ImportOptions = ({
               >
                 <i
                   className={
-                    selected ? "fas fa-circle" : "fa-regular fa-circle"
+                    selected ? "fas fa-circle" : "fa-sharp fa-circle"
                   }
                   style={s(
                     c.fontSize(18),
@@ -513,7 +513,7 @@ const WarningSection = ({ copy, title, isMobile }) => {
       )}
     >
       <i
-        className="fa fa-triangle-exclamation"
+        className="fa-sharp fa-triangle-exclamation"
         style={s(c.fontSize(14), c.mt(2), c.fg(c.yellows[50]))}
       />
       <Spacer width={8} />

@@ -253,12 +253,12 @@ export const createChessState = (
         s.getDelegate()?.onPositionUpdated?.();
       });
     },
-    previewMove: (m: Move | string) => {
+    previewMove: (m: string) => {
       set((s) => {
         if (m) {
-          s.previewPosition = new Chess(s.position.fen());
-          let [moveObject] = s.previewPosition.validateMoves([m]);
-          s.previewPosition.move(m);
+          // s.previewPosition = new Chess(s.position.fen());
+          // let [moveObject] = s.previewPosition.validateMoves([m]) ?? [];
+          // s.previewPosition.move(m);
           // s.makeMove(m);
           // s.animatePieceMove(moveObject, PlaybackSpeed.Slow, (completed) => {
           //   set((s) => {});
@@ -271,7 +271,7 @@ export const createChessState = (
     makeMove: (m: Move | string) => {
       set((s) => {
         if (s.previewPosition) {
-          s.previewMove(null);
+          return;
         }
         s.availableMoves = [];
         s.activeFromSquare = null;

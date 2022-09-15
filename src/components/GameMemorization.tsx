@@ -99,7 +99,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fas fa-search"
+                className="fa-sharp fa-search"
               ></i>
             </CMText>
           </Button>
@@ -115,7 +115,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fas fa-trash-can"
+                className="fa-sharp fa-trash-can"
               ></i>
             </CMText>
           </Button>
@@ -133,7 +133,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fas fa-grid"
+                className="fa-sharp fa-grid"
               ></i>
             </CMText>
           </Button>
@@ -188,7 +188,7 @@ export const GameMemorization = () => {
                   <CMText style={s(c.buttons.basic.textStyles)}>
                     <i
                       style={s(c.fg(c.colors.textInverse))}
-                      className="fas fa-trash-can"
+                      className="fa-sharp fa-trash-can"
                     ></i>
                   </CMText>
                 </Button>

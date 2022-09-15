@@ -60,7 +60,7 @@ export const ShareRepertoireModal = () => {
               }}
             >
               <CMText style={s(c.fg(c.colors.textInverseSecondary))}>
-                <i className="fa fa-arrows-rotate" />
+                <i className="fa-sharp fa-arrows-rotate" />
               </CMText>
             </Pressable>
             <Spacer width={12} />

@@ -304,7 +304,7 @@ export const InstructiveGamesView = React.memo(() => {
       {!isMobile && <Spacer height={48} />}
       <i
         style={s(c.fontSize(32), c.fg(c.grays[80]))}
-        className="fa-regular fa-hammer"
+        className="fa-sharp fa-hammer"
       ></i>
       <Spacer height={12} />
       <CMText style={s(c.fontSize(16), c.weightSemiBold)}>Coming soon</CMText>
@@ -640,7 +640,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
           >
             <i
               style={s(c.fontSize(16), c.fg(c.failureShades[50]))}
-              className="fa-regular fa-trash"
+              className="fa-sharp fa-trash"
             ></i>
           </Pressable>
         </View>
