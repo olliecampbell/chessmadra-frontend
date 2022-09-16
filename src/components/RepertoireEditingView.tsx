@@ -47,6 +47,7 @@ import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { useParams } from "react-router-dom";
+import { failOnAny } from "app/utils/test_settings";
 
 export const MoveLog = () => {
   let pairs = [];
@@ -438,6 +439,10 @@ const scoreTableResponses = (
   let DEBUG_MOVE = null;
   return reverse(
     sortBy(tableResponses, (tableResponse: TableResponse) => {
+      // let san =
+      //   tableResponse.suggestedMove?.sanPlus ??
+      //   tableResponse.repertoireMove?.sanPlus;
+      // return failOnAny(san);
       let score = weights.startScore;
       let scoreTable = { factors: [], notes: [] } as ScoreTable;
       if (isNil(report)) {

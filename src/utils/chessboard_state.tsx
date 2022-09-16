@@ -1,6 +1,6 @@
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { first, isEmpty, isEqual, mapValues } from "lodash-es";
+import { first, isEmpty, isEqual, last, mapValues } from "lodash-es";
 import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
@@ -16,6 +16,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   playPgn: (pgn: string) => void;
   frozen?: boolean;
   positionHistory: string[];
+  moveHistory: Move[];
   position?: Chess;
   futurePosition?: Chess;
   indicatorColor?: string;
@@ -23,7 +24,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   currentHighlightedSquares: Set<string>;
   clearHighlightedSquares: () => void;
   highlightLastMove: () => void;
-  lastMove?: Move;
+  getLastMove: () => Move;
   highlightMoveSquares: (
     move: Move,
     duration?: number,
@@ -148,6 +149,7 @@ export const createChessState = (
     availableMoves: [],
     ringColor: null,
     positionHistory: [START_EPD],
+    moveHistory: [],
     isVisualizingMoves: false,
     ringIndicatorAnim: new Animated.Value(0),
     squareHighlightAnims: mapValues(SQUARES, (number, square) => {
@@ -159,6 +161,11 @@ export const createChessState = (
     pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     previewPieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     moveLogPgn: "",
+    getLastMove: () => {
+      return get((s) => {
+        return last(s.moveHistory);
+      });
+    },
     moveIndicatorOpacityAnim: new Animated.Value(0),
     ...createQuick(set),
     updateMoveLogPgn: () => {
@@ -171,8 +178,8 @@ export const createChessState = (
         if (s.positionHistory.length > 1) {
           s.clearHighlightedSquares();
           // TODO: do this better
-          s.lastMove = null;
           s.positionHistory.pop();
+          s.moveHistory.pop();
           s.position.undo();
           s.updateMoveLogPgn();
           s.getDelegate()?.onPositionUpdated?.();
@@ -182,6 +189,7 @@ export const createChessState = (
     resetPosition: () => {
       set((s) => {
         s.positionHistory = [START_EPD];
+        s.moveHistory = [];
         s.position = new Chess();
         s.updateMoveLogPgn();
         s.getDelegate()?.onPositionUpdated?.();
@@ -245,8 +253,8 @@ export const createChessState = (
     },
     highlightLastMove: () =>
       set((s) => {
-        if (s.lastMove) {
-          s.highlightMoveSquares(s.lastMove);
+        if (s.getLastMove()) {
+          s.highlightMoveSquares(s.getLastMove());
         }
       }),
     highlightMoveSquares: (
@@ -275,7 +283,6 @@ export const createChessState = (
         ];
         let duration = getAnimationTime(start, end);
         s.highlightMoveSquares(s.previewedMove, duration, true);
-        s.highlightLastMove();
         s.previewPieceMoveAnim.setValue(start);
         Animated.sequence([
           Animated.timing(s.previewPieceMoveAnim, {
@@ -285,13 +292,11 @@ export const createChessState = (
             easing: Easing.out(Easing.ease),
           }),
         ]).start(({ finished }) => {
-          if (finished) {
-            set((s) => {
-              s.previewedMove = null;
-              s.isReversingPreviewMove = false;
-              s.stepPreviewMove();
-            });
-          }
+          set((s) => {
+            s.previewedMove = null;
+            s.isReversingPreviewMove = false;
+            s.stepPreviewMove();
+          });
         });
       });
     },
@@ -299,6 +304,9 @@ export const createChessState = (
       set((s: ChessboardState) => {
         if (s.isReversingPreviewMove || s.isAnimatingPreviewMove) {
           return;
+        }
+        if (!s.previewedMove && !s.nextPreviewMove) {
+          s.highlightLastMove();
         }
         if (
           s.previewedMove &&
@@ -322,6 +330,7 @@ export const createChessState = (
         s.previewedMove = s.nextPreviewMove;
         s.isAnimatingPreviewMove = true;
         s.previewedMove = move;
+        s.clearHighlightedSquares();
         s.availableMoves = [];
         s.activeFromSquare = null;
         s.draggedOverSquare = null;
@@ -341,12 +350,10 @@ export const createChessState = (
             easing: Easing.inOut(Easing.ease),
           }),
         ]).start(({ finished }) => {
-          if (finished) {
-            set((s) => {
-              s.isAnimatingPreviewMove = false;
-              s.stepPreviewMove();
-            });
-          }
+          set((s) => {
+            s.isAnimatingPreviewMove = false;
+            s.stepPreviewMove();
+          });
         });
       });
     },
@@ -433,10 +440,10 @@ export const createChessState = (
         let pos = s.futurePosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {
-          s.lastMove = moveObject;
-          s.highlightLastMove();
           let epd = genEpd(pos);
           s.positionHistory.push(epd);
+          s.moveHistory.push(moveObject);
+          s.highlightLastMove();
           s.updateMoveLogPgn();
           s.getDelegate()?.madeMove?.(moveObject);
           s.getDelegate()?.onPositionUpdated?.();
