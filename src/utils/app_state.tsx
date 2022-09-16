@@ -46,6 +46,9 @@ import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "app/styles";
 import { isDevelopment } from "./env";
 import { Ref, RefObject, useEffect, useRef } from "react";
+import { enableMapSet } from "immer";
+
+enableMapSet();
 
 Chess[immerable] = true;
 

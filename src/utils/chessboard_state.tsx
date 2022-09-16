@@ -20,8 +20,10 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   futurePosition?: Chess;
   indicatorColor?: string;
   squareHighlightAnims: Record<Square, Animated.Value>;
-  currentHighlightedSquares: string[];
+  currentHighlightedSquares: Set<string>;
   clearHighlightedSquares: () => void;
+  highlightLastMove: () => void;
+  lastMove?: Move;
   highlightMoveSquares: (
     move: Move,
     duration?: number,
@@ -123,7 +125,7 @@ export const createChessState = (
   let initialState = {
     isColorTraining: false,
     notifyingDelegates: true,
-    currentHighlightedSquares: [],
+    currentHighlightedSquares: new Set(),
     getDelegate: () => {
       return get((s) => {
         if (s.notifyingDelegates) {
@@ -167,6 +169,9 @@ export const createChessState = (
     backOne: () => {
       set((s) => {
         if (s.positionHistory.length > 1) {
+          s.clearHighlightedSquares();
+          // TODO: do this better
+          s.lastMove = null;
           s.positionHistory.pop();
           s.position.undo();
           s.updateMoveLogPgn();
@@ -238,13 +243,20 @@ export const createChessState = (
         }
       });
     },
+    highlightLastMove: () =>
+      set((s) => {
+        if (s.lastMove) {
+          s.highlightMoveSquares(s.lastMove);
+        }
+      }),
     highlightMoveSquares: (
       move: Move,
       duration?: number,
       unhighlight?: boolean
     ) =>
       set((s) => {
-        s.currentHighlightedSquares = [move.to, move.from];
+        s.currentHighlightedSquares.add(move.to);
+        s.currentHighlightedSquares.add(move.from);
         [move.to, move.from].forEach((sq) => {
           Animated.timing(s.squareHighlightAnims[sq], {
             toValue: unhighlight ? 0.0 : 0.4,
@@ -263,6 +275,7 @@ export const createChessState = (
         ];
         let duration = getAnimationTime(start, end);
         s.highlightMoveSquares(s.previewedMove, duration, true);
+        s.highlightLastMove();
         s.previewPieceMoveAnim.setValue(start);
         Animated.sequence([
           Animated.timing(s.previewPieceMoveAnim, {
@@ -396,6 +409,10 @@ export const createChessState = (
     },
     clearHighlightedSquares: () => {
       set((s) => {
+        console.log(
+          "HIGHLIGHTED SQUARES",
+          logProxy(s.currentHighlightedSquares)
+        );
         if (s.currentHighlightedSquares) {
           s.currentHighlightedSquares.forEach((sq) => {
             Animated.timing(s.squareHighlightAnims[sq], {
@@ -404,6 +421,7 @@ export const createChessState = (
               useNativeDriver: true,
             }).start();
           });
+          s.currentHighlightedSquares = new Set();
         }
       });
     },
@@ -415,6 +433,8 @@ export const createChessState = (
         let pos = s.futurePosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {
+          s.lastMove = moveObject;
+          s.highlightLastMove();
           let epd = genEpd(pos);
           s.positionHistory.push(epd);
           s.updateMoveLogPgn();
