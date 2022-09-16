@@ -20,6 +20,13 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   futurePosition?: Chess;
   indicatorColor?: string;
   squareHighlightAnims: Record<Square, Animated.Value>;
+  currentHighlightedSquares: string[];
+  clearHighlightedSquares: () => void;
+  highlightMoveSquares: (
+    move: Move,
+    duration?: number,
+    unhighlight?: boolean
+  ) => void;
   ringColor?: string;
   ringIndicatorAnim?: Animated.Value;
   hideColors?: boolean;
@@ -30,7 +37,6 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   moveIndicatorOpacityAnim: Animated.Value;
   pieceMoveAnim: Animated.ValueXY;
   animatedMove?: Move;
-  highlightSquare?: Square;
   isVisualizingMoves?: boolean;
   onSquarePress: (square: Square, skipAnimation?: boolean) => void;
   activeFromSquare?: Square;
@@ -83,7 +89,31 @@ export interface ChessboardDelegate {
   onPositionUpdated?: () => void;
   completedMoveAnimation?: (move: Move) => void;
 }
-const PREVIEW_MOVE_DURATION = 300;
+
+const getAnimationTime = (
+  start: { x: number; y: number },
+  end: { x: number; y: number }
+) => {
+  let distance =
+    Math.sqrt(
+      Math.pow(Math.abs(end.x - start.x), 2) +
+        Math.pow(Math.abs(end.y - start.y), 2)
+    ) * 8;
+  // console.log({ distance });
+  // console.log("1");
+  // console.log(getAnimationTimeForDistance(1));
+  // console.log("2");
+  // console.log(getAnimationTimeForDistance(2));
+  // console.log("4");
+  // console.log(getAnimationTimeForDistance(4));
+  // console.log("8");
+  // console.log(getAnimationTimeForDistance(8));
+  return getAnimationTimeForDistance(distance);
+};
+
+export const getAnimationTimeForDistance = (distance: number) => {
+  return Math.log(distance + 6) * 80;
+};
 
 export const createChessState = (
   set: StateSetter<ChessboardState, any>,
@@ -93,6 +123,7 @@ export const createChessState = (
   let initialState = {
     isColorTraining: false,
     notifyingDelegates: true,
+    currentHighlightedSquares: [],
     getDelegate: () => {
       return get((s) => {
         if (s.notifyingDelegates) {
@@ -207,19 +238,38 @@ export const createChessState = (
         }
       });
     },
+    highlightMoveSquares: (
+      move: Move,
+      duration?: number,
+      unhighlight?: boolean
+    ) =>
+      set((s) => {
+        s.currentHighlightedSquares = [move.to, move.from];
+        [move.to, move.from].forEach((sq) => {
+          Animated.timing(s.squareHighlightAnims[sq], {
+            toValue: unhighlight ? 0.0 : 0.4,
+            duration: duration ?? 100,
+            useNativeDriver: true,
+          }).start();
+        });
+      }),
     reversePreviewMove: () => {
       set((s: ChessboardState) => {
         s.isReversingPreviewMove = true;
-        let moveDuration = PREVIEW_MOVE_DURATION;
         // @ts-ignore
-        let [start, end]: Square[] = [s.previewedMove.to, s.previewedMove.from];
-        s.previewPieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
+        let [start, end]: { x: number; y: number }[] = [
+          getSquareOffset(s.previewedMove.to, s.flipped),
+          getSquareOffset(s.previewedMove.from, s.flipped),
+        ];
+        let duration = getAnimationTime(start, end);
+        s.highlightMoveSquares(s.previewedMove, duration, true);
+        s.previewPieceMoveAnim.setValue(start);
         Animated.sequence([
           Animated.timing(s.previewPieceMoveAnim, {
-            toValue: getSquareOffset(end, s.flipped),
-            duration: moveDuration,
+            toValue: end,
+            duration,
             useNativeDriver: true,
-            easing: Easing.inOut(Easing.ease),
+            easing: Easing.out(Easing.ease),
           }),
         ]).start(({ finished }) => {
           if (finished) {
@@ -263,14 +313,17 @@ export const createChessState = (
         s.activeFromSquare = null;
         s.draggedOverSquare = null;
         // s.makeMove(move);
-        let moveDuration = PREVIEW_MOVE_DURATION;
-        // @ts-ignore
-        let [start, end]: Square[] = [move.from, move.to];
-        s.previewPieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
+        let [start, end]: { x: number; y: number }[] = [
+          getSquareOffset(move.from, s.flipped),
+          getSquareOffset(move.to, s.flipped),
+        ];
+        let duration = getAnimationTime(start, end);
+        s.highlightMoveSquares(move, duration);
+        s.previewPieceMoveAnim.setValue(start);
         Animated.sequence([
           Animated.timing(s.previewPieceMoveAnim, {
-            toValue: getSquareOffset(end, s.flipped),
-            duration: moveDuration,
+            toValue: end,
+            duration: duration,
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
           }),
@@ -341,10 +394,24 @@ export const createChessState = (
         }
       });
     },
+    clearHighlightedSquares: () => {
+      set((s) => {
+        if (s.currentHighlightedSquares) {
+          s.currentHighlightedSquares.forEach((sq) => {
+            Animated.timing(s.squareHighlightAnims[sq], {
+              toValue: 0.0,
+              duration: 150,
+              useNativeDriver: true,
+            }).start();
+          });
+        }
+      });
+    },
     makeMove: (m: Move | string) => {
       set((s) => {
         s.availableMoves = [];
         s.activeFromSquare = null;
+        s.clearHighlightedSquares();
         let pos = s.futurePosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {

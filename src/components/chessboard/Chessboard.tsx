@@ -465,6 +465,12 @@ export const ChessboardView = ({
                 );
               }
             }
+            if (
+              state.previewedMove?.to === square &&
+              state.previewedMove?.color !== piece?.color
+            ) {
+              pieceView = null;
+            }
             let moveIndicatorView = null;
             let availableMove = availableMoves.find((m) => m.to == square);
             if (
@@ -556,19 +562,17 @@ export const ChessboardView = ({
                         )}
                         {...panResponders[square].panHandlers}
                       >
-                        {state.isColorTraining && (
-                          <Animated.View
-                            style={s(
-                              {
-                                opacity: state.squareHighlightAnims[square],
-                              },
-                              c.bg(c.primaries[60]),
-                              c.absolute,
-                              c.size("100%"),
-                              c.zIndex(4)
-                            )}
-                          ></Animated.View>
-                        )}
+                        <Animated.View
+                          style={s(
+                            {
+                              opacity: state.squareHighlightAnims[square],
+                            },
+                            c.bg(c.primaries[60]),
+                            c.absolute,
+                            c.size("100%"),
+                            c.zIndex(4)
+                          )}
+                        ></Animated.View>
                         {isBottomEdge && !state.hideCoordinates && (
                           <CMText
                             style={s(
