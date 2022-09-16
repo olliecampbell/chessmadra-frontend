@@ -87,14 +87,14 @@ Sentry.init({
 export default function App() {
   return (
     <View style={s(c.bg(c.grays[7]), c.lineHeight(1.5))}>
+      <HeadSiteMeta
+        siteMeta={{
+          title: "Chess Madra",
+          description:
+            "Build your opening repertoire, improve your visualization, train your tactics, and more.",
+        }}
+      />
       <Helmet>
-        <HeadSiteMeta
-          siteMeta={{
-            title: "Chess Madra",
-            description:
-              "Build your opening repertoire, improve your visualization, train your tactics, and more.",
-          }}
-        />
         <meta name="theme-color" content={c.grays[10]} />
       </Helmet>
       <ErrorBoundary>
