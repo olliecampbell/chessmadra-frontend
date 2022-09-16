@@ -13,6 +13,7 @@ import { BeatLoader } from "react-spinners";
 import { Spacer } from "app/Space";
 import { Helmet } from "react-helmet";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
+import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 
 export const RepertoirePageLayout = ({
   children,
@@ -53,6 +54,7 @@ export const RepertoirePageLayout = ({
       <Helmet>
         <meta name="theme-color" content={backgroundColor} />
       </Helmet>
+      <DeleteMoveConfirmationModal />
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",

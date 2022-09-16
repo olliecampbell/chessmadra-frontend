@@ -192,6 +192,7 @@ export const createChessState = (
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
         s.position = new Chess();
+        s.clearHighlightedSquares();
         s.updateMoveLogPgn();
         s.getDelegate()?.onPositionUpdated?.();
       });

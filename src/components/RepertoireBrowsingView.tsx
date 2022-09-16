@@ -184,7 +184,7 @@ export const EditButton = () => {
   return (
     <Button
       style={s(
-        c.buttons.extraDark,
+        c.buttons.darkFloater,
         // isMobile && c.bg(c.grays[70]),
         c.selfStretch,
         !isMobile && c.py(16),
@@ -202,7 +202,7 @@ export const EditButton = () => {
     >
       <CMText
         style={s(
-          c.buttons.extraDark.textStyles,
+          c.buttons.darkFloater.textStyles,
           c.fontSize(isMobile ? 14 : 16)
         )}
       >
@@ -211,7 +211,7 @@ export const EditButton = () => {
       <Spacer width={8} />
       <CMText
         style={s(
-          c.buttons.extraDark.textStyles,
+          c.buttons.darkFloater.textStyles,
           c.fontSize(isMobile ? 16 : 18),
           c.weightSemiBold
         )}
