@@ -395,6 +395,14 @@ const buttons = {
   outlineDark: outlineDarkButtonStyles,
 };
 
+const duotone = (primary, secondary) => {
+  return {
+    "--fa-primary-color": primary,
+    "--fa-secondary-color": secondary,
+    "--fa-secondary-opacity": 1.0,
+  };
+};
+
 export const chessboardColors = {
   outlineWidth: 0.8,
   blackFill: chessboardGrays[33],
@@ -565,4 +573,5 @@ export const c = {
   buttons,
   transform,
   extraDarkBorder,
+  duotone,
 };

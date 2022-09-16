@@ -32,7 +32,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
   return (
     <View
       style={s(
-        c.absolute,
+        isMobile ? c.fixed : c.absolute,
         c.left(0),
         c.right(0),
         c.bottom(0),
@@ -73,7 +73,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
                 style={s(
                   c.fontSize(14),
                   c.fg(c.colors.textSecondary),
-                  c.height(16)
+                  c.minHeight(16)
                 )}
               >
                 {moveLogPgn}
@@ -92,11 +92,13 @@ const AddPendingLineButton = () => {
   const [
     isAddingPendingLine,
     addPendingLine,
+    hasPendingLineToAdd,
     pendingLineHasConflictingMoves,
     quick,
   ] = useRepertoireState((s) => [
     s.isAddingPendingLine,
     s.addPendingLine,
+    s.hasPendingLineToAdd,
     s.pendingLineHasConflictingMoves,
     s.quick,
   ]);
@@ -107,7 +109,9 @@ const AddPendingLineButton = () => {
         c.buttons.primary,
         c.height(isMobile ? 36 : 54),
         c.selfStretch,
-        c.bg(c.purples[45])
+        hasPendingLineToAdd
+          ? c.bg(c.purples[45])
+          : s(c.border(`2px solid ${c.purples[45]}`), c.bg("transparent"))
       )}
       isLoading={isAddingPendingLine}
       loaderProps={{ color: c.grays[75] }}
@@ -125,13 +129,24 @@ const AddPendingLineButton = () => {
       <CMText style={s(c.buttons.primary.textStyles, c.row, c.alignCenter)}>
         <i
           className="fa-sharp fa-check"
-          style={s(c.fg(c.grays[90]), c.fontSize(20))}
+          style={s(
+            c.fg(hasPendingLineToAdd ? c.grays[90] : c.purples[45]),
+            c.fontSize(20)
+          )}
         />
         <Spacer width={8} />
         <CMText
-          style={s(c.weightBold, c.fg(c.colors.textPrimary), c.fontSize(14))}
+          style={s(
+            c.weightBold,
+            c.fg(hasPendingLineToAdd ? c.colors.textPrimary : c.purples[45]),
+            c.fontSize(14)
+          )}
         >
-          Save{!isMobile && " to repertoire"}
+          {hasPendingLineToAdd ? (
+            <>Save{!isMobile && " to repertoire"}</>
+          ) : (
+            "In repertoire"
+          )}
         </CMText>
       </CMText>
     </Button>

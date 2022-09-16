@@ -6,11 +6,13 @@ import { intersperse } from "app/utils/intersperse";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { HeadSiteMeta } from "./PageContainer";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { BeatLoader } from "react-spinners";
 import { Spacer } from "app/Space";
+import { Helmet } from "react-helmet";
+import useIntersectionObserver from "app/utils/useIntersectionObserver";
 
 export const RepertoirePageLayout = ({
   children,
@@ -24,40 +26,47 @@ export const RepertoirePageLayout = ({
     s.repertoire === undefined,
     s.initState,
   ]);
+  const ref = useRef(null);
+  const entry = useIntersectionObserver(ref, {});
+
+  const isVisible = !!entry?.isIntersecting;
+  console.log({ isVisible });
   useEffect(() => {
     if (repertoireLoading) {
       initState();
     }
   }, []);
+  const backgroundColor = c.grays[12];
+  const navColor = c.colors.cardBackground;
   return (
     <View
       style={s(
         c.column,
         c.fullWidth,
-        c.bg(c.grays[12]),
+        c.bg(backgroundColor),
         c.grow,
         c.height("100vh"),
         c.keyedProp("minHeight")("-webkit-fill-available"),
         c.keyedProp("maxHeight")("-webkit-fill-available")
       )}
     >
+      <Helmet>
+        <meta name="theme-color" content={backgroundColor} />
+      </Helmet>
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",
           description: OPENINGS_DESCRIPTION,
         }}
       />
-      <View
-        style={s(
-          isMobile ? s(c.grow, c.scrollY, c.flexShrink(1)) : c.flexShrink(1)
-        )}
-      >
+      <View style={s(isMobile ? s(c.grow) : c.flexShrink(1))}>
         <View
+          ref={ref}
           style={s(
             c.fullWidth,
             c.height(72),
             // c.borderBottom(`2px solid ${c.grays[8]}`)
-            c.bg(c.colors.cardBackground),
+            c.bg(navColor),
             c.lightCardShadow
             // c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
           )}
@@ -128,7 +137,7 @@ export const RepertoireNavBreadcrumbs = () => {
         (i) => {
           return (
             <View key={i} style={s(c.mx(12))}>
-              <CMText style={s()}>
+              <CMText style={s(c.fg(c.colors.textSecondary))}>
                 <i className="fa-sharp fa-angle-right" />
               </CMText>
             </View>

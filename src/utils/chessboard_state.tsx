@@ -180,6 +180,7 @@ export const createChessState = (
           // TODO: do this better
           s.positionHistory.pop();
           s.moveHistory.pop();
+          s.highlightLastMove();
           s.position.undo();
           s.updateMoveLogPgn();
           s.getDelegate()?.onPositionUpdated?.();
@@ -254,20 +255,25 @@ export const createChessState = (
     highlightLastMove: () =>
       set((s) => {
         if (s.getLastMove()) {
+          console.log("Calling highlight from highlightLastMove");
           s.highlightMoveSquares(s.getLastMove());
         }
       }),
-    highlightMoveSquares: (
-      move: Move,
-      duration?: number,
-      unhighlight?: boolean
-    ) =>
+    highlightMoveSquares: (move: Move, duration?: number) =>
       set((s) => {
-        s.currentHighlightedSquares.add(move.to);
-        s.currentHighlightedSquares.add(move.from);
-        [move.to, move.from].forEach((sq) => {
+        let highlightSquares = getHighlightSquares(move);
+        highlightSquares.forEach((sq) => {
+          s.currentHighlightedSquares.add(sq);
+        });
+        console.log("___HIGHLIGHTED SQUARES___");
+        console.log(
+          "squares to highlight, new squares",
+          logProxy(Array.from(s.currentHighlightedSquares)),
+          highlightSquares
+        );
+        highlightSquares.forEach((sq) => {
           Animated.timing(s.squareHighlightAnims[sq], {
-            toValue: unhighlight ? 0.0 : 0.4,
+            toValue: 0.4,
             duration: duration ?? 100,
             useNativeDriver: true,
           }).start();
@@ -282,7 +288,7 @@ export const createChessState = (
           getSquareOffset(s.previewedMove.from, s.flipped),
         ];
         let duration = getAnimationTime(start, end);
-        s.highlightMoveSquares(s.previewedMove, duration, true);
+        s.clearHighlightedSquares();
         s.previewPieceMoveAnim.setValue(start);
         Animated.sequence([
           Animated.timing(s.previewPieceMoveAnim, {
@@ -306,6 +312,7 @@ export const createChessState = (
           return;
         }
         if (!s.previewedMove && !s.nextPreviewMove) {
+          console.log("Calling highlight last move from step preview");
           s.highlightLastMove();
         }
         if (
@@ -316,6 +323,7 @@ export const createChessState = (
           s.reversePreviewMove();
         }
         if (s.previewedMove && !s.nextPreviewMove) {
+          console.log("It should be this one!");
           s.reversePreviewMove();
         }
         if (!s.previewedMove && s.nextPreviewMove) {
@@ -340,8 +348,10 @@ export const createChessState = (
           getSquareOffset(move.to, s.flipped),
         ];
         let duration = getAnimationTime(start, end);
+        console.log("Calling highlight from animate preview move");
         s.highlightMoveSquares(move, duration);
         s.previewPieceMoveAnim.setValue(start);
+        let supplementaryMove = getSupplementaryMove(move);
         Animated.sequence([
           Animated.timing(s.previewPieceMoveAnim, {
             toValue: end,
@@ -349,6 +359,16 @@ export const createChessState = (
             useNativeDriver: true,
             easing: Easing.inOut(Easing.ease),
           }),
+          ...(supplementaryMove
+            ? [
+                Animated.timing(s.previewPieceMoveAnim, {
+                  toValue: end,
+                  duration: duration,
+                  useNativeDriver: true,
+                  easing: Easing.inOut(Easing.ease),
+                }),
+              ]
+            : []),
         ]).start(({ finished }) => {
           set((s) => {
             s.isAnimatingPreviewMove = false;
@@ -416,9 +436,10 @@ export const createChessState = (
     },
     clearHighlightedSquares: () => {
       set((s) => {
+        console.log("___CLEAR HIGHLIGHTED___");
         console.log(
-          "HIGHLIGHTED SQUARES",
-          logProxy(s.currentHighlightedSquares)
+          "squares to clear",
+          logProxy(Array.from(s.currentHighlightedSquares))
         );
         if (s.currentHighlightedSquares) {
           s.currentHighlightedSquares.forEach((sq) => {
@@ -437,6 +458,8 @@ export const createChessState = (
         s.availableMoves = [];
         s.activeFromSquare = null;
         s.clearHighlightedSquares();
+        s.nextPreviewMove = null;
+        s.previewedMove = null;
         let pos = s.futurePosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {
@@ -584,4 +607,27 @@ export const createStaticChessState = ({
       state.position.loadPgn(line);
     }
   });
+};
+
+export const getHighlightSquares = (move: Move) => {
+  if (move.san === "O-O" || move.san === "O-O-O") {
+    return [];
+  } else {
+    return [move.to, move.from];
+  }
+};
+
+export const getSupplementaryMove = (move: Move): Move => {
+  if (move.san === "O-O" || move.san === "O-O-O") {
+    return {
+      to: "f1",
+      from: "h1",
+      piece: "r",
+      color: "w",
+      flags: "",
+      san: "",
+    };
+  } else {
+    return null;
+  }
 };

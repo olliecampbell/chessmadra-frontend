@@ -264,7 +264,7 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
 
 const SPACE_BETWEEN_STATS = 24;
 
-const START_CELL_WIDTH = 90;
+const START_CELL_WIDTH = 60;
 const MAX_ANNOTATION_LENGTH = 300;
 
 const Response = ({
@@ -461,20 +461,54 @@ const Response = ({
           c.grow,
           c.flexible,
           c.br(2),
-          c.py(8),
-          c.pl(14),
           c.pr(8),
-          c.bg(hoveringRow ? c.grays[20] : c.colors.cardBackground),
+          c.bg(hoveringRow ? c.grays[16] : c.colors.cardBackground),
 
-          mine && c.border(`2px solid ${c.purples[60]}`),
+          // mine && c.border(`2px solid ${c.purples[60]}`),
           c.cardShadow,
           c.clickable,
           c.row
         )}
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            <View style={s(c.row, c.alignCenter, c.width(START_CELL_WIDTH))}>
+          <View style={s(c.row, c.fullWidth, c.alignCenter)}>
+            <View style={s(c.px(12), c.center)}>
+              <i
+                style={s(
+                  !repertoireMove && anyMine && !hoveringRow
+                    ? s(c.fg("transparent"))
+                    : repertoireMove
+                    ? c.duotone(c.grays[90], c.purples[55])
+                    : hoveringRow
+                    ? c.duotone(c.grays[90], c.purples[55])
+                    : c.fg(c.grays[40]),
+                  hoveringRow && !repertoireMove && c.opacity(60),
+                  c.fontSize(22)
+                )}
+                className={
+                  repertoireMove || hoveringRow
+                    ? `fa-duotone fa-square-check`
+                    : `fa-thin fa-square`
+                }
+              ></i>
+            </View>
+            <View
+              style={s(
+                c.fullHeight,
+                c.width(1),
+                c.bg(c.grays[100]),
+                c.opacity(0)
+              )}
+            ></View>
+            <View
+              style={s(
+                c.row,
+                c.alignCenter,
+                c.width(START_CELL_WIDTH),
+                c.py(8),
+                c.pl(4)
+              )}
+            >
               <View style={s(c.row, c.alignCenter)}>
                 <CMText
                   style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(16))}
@@ -495,20 +529,10 @@ const Response = ({
                   {sanPlus}
                 </CMText>
               </View>
-              {repertoireMove && !mine && (
-                <>
-                  <Spacer width={8} />
-
-                  <i
-                    style={s(c.fg(c.purples[60]), c.fontSize(22))}
-                    className={`fas fa-check`}
-                  ></i>
-                </>
-              )}
             </View>
             <Spacer width={12} />
             {!isMobile && (
-              <View style={s(c.width(0), c.grow, c.mt(4), c.pr(8))}>
+              <View style={s(c.width(0), c.grow, c.mt(4), c.pr(8), c.py(8))}>
                 <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
                   {annotationOrOpeningName}
                 </CMText>
