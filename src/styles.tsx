@@ -181,7 +181,8 @@ const shadow = (x, y, blur, spread, color) => {
     boxShadow: `${x}px ${y}px ${blur}px ${spread}px ${color}`,
   };
 };
-const cardShadow = shadow(0, 1, 4, 0, "rgba(0, 0, 0, 0.5)");
+const cardShadow = shadow(0, 0, 4, 0, "rgba(0, 0, 0, 0.5)");
+const lightCardShadow = shadow(0, 0, 4, 0, "rgba(0, 0, 0, 0.3)");
 
 const white = (opacity: number) => {
   return `hsla(0, 0%, 100%, ${opacity}%)`;
@@ -545,6 +546,7 @@ export const c = {
   whitespace: keyedProp("whiteSpace"),
   shadow,
   cardShadow,
+  lightCardShadow,
   stif: (x, styles) => {
     return x ? styles : {};
   },

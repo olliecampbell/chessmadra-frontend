@@ -42,9 +42,9 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
       <Animated.View
         style={s(
           c.fullWidth,
-          c.bg(c.grays[10]),
-          c.opacity(fadeAnim),
-          c.borderTop(`2px solid ${c.grays[8]}`)
+          c.bg(c.colors.cardBackground),
+          c.lightCardShadow,
+          c.opacity(fadeAnim)
         )}
       >
         <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
@@ -54,8 +54,8 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
               c.fullWidth,
               c.justifyStart,
               c.alignCenter,
-              c.py(24),
-              c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
+              c.py(isMobile ? 12 : 24)
+              // c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
             )}
           >
             <View style={s(c.column, c.flexShrink(1))}>
