@@ -120,6 +120,12 @@ export const PieceView = ({ piece }: { piece: Piece }) => {
 
 export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
   switch (playbackSpeed) {
+    case PlaybackSpeed.DebugSlow:
+      return {
+        moveDuration: 1000,
+        fadeDuration: 1000,
+        stayDuration: 1000,
+      };
     case PlaybackSpeed.Slow:
       return {
         moveDuration: 300,
@@ -410,6 +416,13 @@ export const ChessboardView = ({
               animated = true;
               posStyles = animatedXYToPercentage(state.pieceMoveAnim);
             } else {
+            }
+            if (
+              state.previewedMove?.from &&
+              square == state.previewedMove?.from
+            ) {
+              animated = true;
+              posStyles = animatedXYToPercentage(state.previewPieceMoveAnim);
             }
             let priority = state.activeFromSquare === square;
             let containerViewStyles = s(

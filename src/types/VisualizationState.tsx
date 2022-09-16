@@ -2,9 +2,7 @@ import { Animated } from "react-native";
 import { Chess, Move } from "@lubert/chess.ts";
 import { StorageItem } from "app/utils/storageItem";
 import { LichessPuzzle } from "app/models";
-import {
-  ChessboardState,
-} from "app/utils/chessboard_state";
+import { ChessboardState } from "app/utils/chessboard_state";
 import { PuzzleState } from "app/utils/puzzle_state";
 
 export interface VisualizationState {
@@ -90,6 +88,7 @@ export enum PuzzleDifficulty {
 }
 
 export enum PlaybackSpeed {
+  DebugSlow = 5,
   Slow = 0,
   Normal = 1,
   Fast = 2,

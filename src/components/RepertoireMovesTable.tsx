@@ -205,9 +205,6 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
         suggestedMove: SuggestedMove;
         positionReport: PositionReport;
       }) => {
-        if (suggestedMove?.sanPlus === "e4") {
-          console.log({ suggestedMove, positionReport });
-        }
         let playRate =
           suggestedMove &&
           positionReport &&

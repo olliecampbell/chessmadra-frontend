@@ -1,6 +1,6 @@
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { first, isEmpty, mapValues } from "lodash-es";
+import { first, isEmpty, isEqual, mapValues } from "lodash-es";
 import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
@@ -18,7 +18,6 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   positionHistory: string[];
   position?: Chess;
   futurePosition?: Chess;
-  previewPosition?: Chess;
   indicatorColor?: string;
   squareHighlightAnims: Record<Square, Animated.Value>;
   ringColor?: string;
@@ -60,7 +59,6 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   isColorTraining?: boolean;
   delegate?: ChessboardDelegate;
   makeMove: (m: Move | string) => void;
-  previewMove: (m: Move | string) => void;
   backOne: () => void;
   resetPosition: () => void;
   stopNotifyingDelegates: () => void;
@@ -68,6 +66,15 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   updateMoveLogPgn: () => void;
   resumeNotifyingDelegates: () => void;
   notifyingDelegates: boolean;
+  previewMove: (m: Move | string) => void;
+  previewPieceMoveAnim: Animated.ValueXY;
+  previewedMove?: Move;
+  nextPreviewMove?: Move;
+  reversePreviewMove?: () => void;
+  animatePreviewMove?: () => void;
+  isReversingPreviewMove?: boolean;
+  isAnimatingPreviewMove?: boolean;
+  stepPreviewMove: () => void;
 }
 
 export interface ChessboardDelegate {
@@ -76,6 +83,7 @@ export interface ChessboardDelegate {
   onPositionUpdated?: () => void;
   completedMoveAnimation?: (move: Move) => void;
 }
+const PREVIEW_MOVE_DURATION = 300;
 
 export const createChessState = (
   set: StateSetter<ChessboardState, any>,
@@ -116,6 +124,7 @@ export const createChessState = (
     position: new Chess(),
     moveIndicatorAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     pieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
+    previewPieceMoveAnim: new Animated.ValueXY({ x: 0, y: 0 }),
     moveLogPgn: "",
     moveIndicatorOpacityAnim: new Animated.Value(0),
     ...createQuick(set),
@@ -198,6 +207,83 @@ export const createChessState = (
         }
       });
     },
+    reversePreviewMove: () => {
+      set((s: ChessboardState) => {
+        s.isReversingPreviewMove = true;
+        let moveDuration = PREVIEW_MOVE_DURATION;
+        // @ts-ignore
+        let [start, end]: Square[] = [s.previewedMove.to, s.previewedMove.from];
+        s.previewPieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
+        Animated.sequence([
+          Animated.timing(s.previewPieceMoveAnim, {
+            toValue: getSquareOffset(end, s.flipped),
+            duration: moveDuration,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.ease),
+          }),
+        ]).start(({ finished }) => {
+          if (finished) {
+            set((s) => {
+              s.previewedMove = null;
+              s.isReversingPreviewMove = false;
+              s.stepPreviewMove();
+            });
+          }
+        });
+      });
+    },
+    stepPreviewMove: () => {
+      set((s: ChessboardState) => {
+        if (s.isReversingPreviewMove || s.isAnimatingPreviewMove) {
+          return;
+        }
+        if (
+          s.previewedMove &&
+          s.nextPreviewMove &&
+          !isEqual(s.previewedMove, s.nextPreviewMove)
+        ) {
+          s.reversePreviewMove();
+        }
+        if (s.previewedMove && !s.nextPreviewMove) {
+          s.reversePreviewMove();
+        }
+        if (!s.previewedMove && s.nextPreviewMove) {
+          s.animatePreviewMove();
+        }
+      });
+    },
+    animatePreviewMove: () => {
+      set((s: ChessboardState) => {
+        let move = s.nextPreviewMove;
+        // s.nextPreviewMove = null;
+        s.previewedMove = s.nextPreviewMove;
+        s.isAnimatingPreviewMove = true;
+        s.previewedMove = move;
+        s.availableMoves = [];
+        s.activeFromSquare = null;
+        s.draggedOverSquare = null;
+        // s.makeMove(move);
+        let moveDuration = PREVIEW_MOVE_DURATION;
+        // @ts-ignore
+        let [start, end]: Square[] = [move.from, move.to];
+        s.previewPieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
+        Animated.sequence([
+          Animated.timing(s.previewPieceMoveAnim, {
+            toValue: getSquareOffset(end, s.flipped),
+            duration: moveDuration,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.ease),
+          }),
+        ]).start(({ finished }) => {
+          if (finished) {
+            set((s) => {
+              s.isAnimatingPreviewMove = false;
+              s.stepPreviewMove();
+            });
+          }
+        });
+      });
+    },
     animatePieceMove: (
       move: Move,
       speed: PlaybackSpeed,
@@ -246,26 +332,20 @@ export const createChessState = (
     previewMove: (m: string) => {
       set((s) => {
         if (m) {
-          // s.previewPosition = new Chess(s.position.fen());
-          // let [moveObject] = s.previewPosition.validateMoves([m]) ?? [];
-          // s.previewPosition.move(m);
-          // s.makeMove(m);
-          // s.animatePieceMove(moveObject, PlaybackSpeed.Slow, (completed) => {
-          //   set((s) => {});
-          // });
+          let [moveObject] = s.position.validateMoves([m]) ?? [];
+          s.nextPreviewMove = moveObject;
+          s.stepPreviewMove();
         } else {
-          s.previewPosition = null;
+          s.nextPreviewMove = null;
+          s.stepPreviewMove();
         }
       });
     },
     makeMove: (m: Move | string) => {
       set((s) => {
-        if (s.previewPosition) {
-          return;
-        }
         s.availableMoves = [];
         s.activeFromSquare = null;
-        let pos = s.futurePosition ?? s.previewPosition ?? s.position;
+        let pos = s.futurePosition ?? s.position;
         let moveObject = pos.move(m);
         if (moveObject) {
           let epd = genEpd(pos);

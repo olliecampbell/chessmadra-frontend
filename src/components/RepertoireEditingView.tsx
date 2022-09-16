@@ -252,7 +252,7 @@ export const RepertoireEditingView = () => {
   );
 };
 
-const Responses = () => {
+const Responses = React.memo(function Responses() {
   let [
     positionReport,
     position,
@@ -395,7 +395,7 @@ const Responses = () => {
         })()}
     </View>
   );
-};
+});
 
 const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   if (!isNil(stockfish.eval) && stockfish.eval >= 0 && side === "white") {
