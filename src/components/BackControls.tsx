@@ -41,26 +41,26 @@ export const BackControls: React.FC<BackControlsProps> = ({
   return (
     <View style={s(c.row, c.height(isMobile ? 42 : 42))}>
       <Button
-        style={s(c.buttons.extraDark, c.width(48), c.constrainHeight)}
+        style={s(c.buttons.darkFloater, c.width(48), c.constrainHeight)}
         onPress={() => {
           backToStartPosition();
         }}
       >
         <i
           className="fa-sharp fa-angles-left"
-          style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
+          style={s(c.buttons.darkFloater.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
       <Spacer width={gap} />
       <Button
-        style={s(c.buttons.extraDark, c.grow, c.constrainHeight)}
+        style={s(c.buttons.darkFloater, c.grow, c.constrainHeight)}
         onPress={() => {
           backOne();
         }}
       >
         <i
           className="fa-sharp fa-angle-left"
-          style={s(c.buttons.extraDark.textStyles, c.fontSize(18), textColor)}
+          style={s(c.buttons.darkFloater.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
       {extraButton && (
@@ -73,7 +73,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
         <>
           <Spacer width={gap} />
           <Button
-            style={s(c.buttons.extraDark)}
+            style={s(c.buttons.darkFloater)}
             onPress={() => {
               trackEvent("repertoire.analyze_on_lichess");
               analyzeLineOnLichess(currentLine);
@@ -85,7 +85,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
             <Spacer width={8} />
             <CMText
               style={s(
-                c.buttons.extraDark.textStyles,
+                c.buttons.darkFloater.textStyles,
                 textColor,
                 c.weightRegular,
                 c.fontSize(14)

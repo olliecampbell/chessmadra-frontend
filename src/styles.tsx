@@ -372,6 +372,19 @@ const buttons = {
   basic: basicButtonStyles,
   basicSecondary: basicSecondaryButtonStyles,
   extraDark: extraDarkButtonStyles,
+  darkFloater: s(
+    br(2),
+    py(16),
+    px(16),
+    bg(colors.cardBackground),
+    cardShadow,
+    clickable,
+    center,
+    {
+      textStyles: s(weightBold, fontSize(16), fg(grays[70])),
+    }
+  ),
+
   basicInverse: basicInverseButtonStyles,
   disabled: disabledButtonStyles,
   primary: primaryButtonStyles,
