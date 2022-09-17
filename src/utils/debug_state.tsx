@@ -1,4 +1,3 @@
-
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -27,7 +26,7 @@ export const getInitialDebugState = (
   let initialState = {
     ...createQuick<DebugState>(setOnly),
     debugUi: false,
-    underConstruction: false,
+    underConstruction: true,
   } as DebugState;
 
   return initialState;
