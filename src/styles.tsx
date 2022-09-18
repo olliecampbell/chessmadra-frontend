@@ -430,6 +430,8 @@ const containerStyles = (isMobile, customMaxWidth?: number) =>
     selfCenter
   );
 
+export const rotate = (x) => transform(`rotate(${x}deg)`);
+
 export const c = {
   keyedProp,
   containerStyles,
@@ -574,4 +576,5 @@ export const c = {
   transform,
   extraDarkBorder,
   duotone,
+  rotate,
 };

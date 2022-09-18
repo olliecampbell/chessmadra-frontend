@@ -19,7 +19,6 @@ import { intersperse } from "app/utils/intersperse";
 import { EditingTab } from "app/utils/repertoire_state";
 import { Side } from "app/utils/repertoire";
 import { BeatLoader } from "react-spinners";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { PositionReport, StockfishReport } from "app/models";
 import { AddedLineModal } from "./AddedLineModal";
@@ -48,6 +47,9 @@ import { BackControls } from "./BackControls";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { useParams } from "react-router-dom";
 import { failOnAny } from "app/utils/test_settings";
+import { START_EPD } from "app/utils/chess";
+import { formatLargeNumber } from "app/utils/number_formatting";
+// import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const MoveLog = () => {
   let pairs = [];
@@ -259,6 +261,7 @@ const Responses = React.memo(function Responses() {
     position,
     activeSide,
     currentEpd,
+    currentLine,
     existingMoves,
     currentLineIncidence,
     hasPendingLine,
@@ -267,6 +270,7 @@ const Responses = React.memo(function Responses() {
     s.chessboardState.position,
     s.activeSide,
     s.getCurrentEpd(),
+    s.currentLine,
     s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
     s.getIncidenceOfCurrentLine(),
     s.hasPendingLineToAdd,
@@ -313,6 +317,7 @@ const Responses = React.memo(function Responses() {
     return activeSide !== side;
   });
   const isMobile = false;
+  console.log({ currentLine });
   const [showOtherMoves, setShowOtherMoves] = useState(false);
   useEffect(() => {
     const beforeUnloadListener = (event) => {
@@ -336,7 +341,9 @@ const Responses = React.memo(function Responses() {
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
             {...{
-              header: `Choose your next move`,
+              header: `Choose your ${
+                isEmpty(currentLine) ? "first" : "next"
+              } move`,
               activeSide,
               side,
               responses: youCanPlay,
@@ -642,113 +649,140 @@ const PositionOverview = () => {
     positionReport,
     ecoCode,
     activeSide,
+    isStartPosition,
     // { pawnStructure, reversed: pawnStructureReversed },
   ] = useRepertoireState((s) => {
     return [
       s.getCurrentPositionReport(),
       s.editingState.lastEcoCode,
       s.activeSide,
+      s.getCurrentEpd() === START_EPD,
       // s.getPawnStructure(s.getCurrentEpd()),
     ];
   });
-  let fontColor = c.grays[60];
+  let fontColor = c.grays[80];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
     : [];
   const plansText = s(c.fontSize(14), c.fg(c.colors.textSecondary));
   const debugUi = useDebugState((s) => s.debugUi);
+  const isMobile = useIsMobile();
   return (
     <>
-      <RepertoireEditingHeader>Current position</RepertoireEditingHeader>
-      <Spacer height={12} />
-      <View style={s(c.px(12), c.py(12), c.border(`1px solid ${c.grays[33]}`))}>
-        {ecoCode && (
-          <View style={s(c.mb(12))}>
-            <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(16))}>
-              {openingName}
-            </CMText>
-            <Spacer height={4} />
-            <CMText
-              style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(14))}
-            >
-              {variations.join(", ")}
-            </CMText>
-          </View>
-        )}
-        {positionReport?.stockfish && (
-          <View style={s(c.mb(12), c.row, c.alignEnd)}>
-            <CMText style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}>
-              {formatStockfishEval(positionReport.stockfish)}
-            </CMText>
-            <Spacer width={6} />
-            <CMText style={s(c.fg(fontColor))}>Stockfish</CMText>
-          </View>
-        )}
-        <View style={s(c.row)}>
-          {positionReport?.results && (
-            <View style={s(c.grow)}>
-              <View style={s(c.row)}>
-                <CMText style={s(c.fg(fontColor))}>
-                  Results at your level
+      <View style={s(c.px(12), c.py(12), c.border(`1px solid ${c.grays[24]}`))}>
+        <View style={s(c.row, c.alignStart)}>
+          <View style={s(c.column)}>
+            {(ecoCode || isStartPosition) && (
+              <View style={s(c.mb(12))}>
+                <CMText
+                  style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(16))}
+                >
+                  {openingName || "Starting position"}
                 </CMText>
-                {debugUi && (
+                {variations && (
                   <>
-                    <Spacer width={4} />
-                    <CMText style={s(c.fg(c.colors.debugColor))}>
-                      ({getTotalGames(positionReport.results)} games)
+                    <Spacer height={4} />
+                    <CMText
+                      style={s(
+                        c.fg(c.grays[60]),
+                        c.weightRegular,
+                        c.fontSize(14)
+                      )}
+                    >
+                      {variations.join(", ")}
                     </CMText>
                   </>
                 )}
               </View>
-              <Spacer height={4} />
-              <GameResultsBar
-                activeSide={activeSide}
-                gameResults={positionReport.results}
-              />
+            )}
+            <Spacer height={4} />
+            <View style={s(c.row)}>
+              {positionReport?.results && (
+                <View style={s(c.grow, c.fullWidth, c.maxWidth(300))}>
+                  <View style={s(c.row)}>
+                    <CMText style={s(c.fg(fontColor))}>
+                      Results at your level
+                    </CMText>
+                    {(debugUi ||
+                      getTotalGames(positionReport.results) > 10) && (
+                      <>
+                        <Spacer width={4} />
+                        <CMText
+                          style={s(
+                            c.fg(debugUi ? c.colors.debugColor : c.grays[80])
+                          )}
+                        >
+                          –{" "}
+                          {formatLargeNumber(
+                            getTotalGames(positionReport.results),
+                            false
+                          )}{" "}
+                          games
+                        </CMText>
+                      </>
+                    )}
+                  </View>
+                  <Spacer height={4} />
+                  <GameResultsBar
+                    activeSide={activeSide}
+                    gameResults={positionReport.results}
+                  />
+                </View>
+              )}
+            </View>
+            {pawnStructure && (
+              <>
+                <Spacer height={24} />
+                <View
+                  style={s(
+                    c.bg(c.colors.cardBackground),
+                    c.px(12),
+                    c.py(12),
+                    c.fillNoExpand
+                  )}
+                >
+                  <CMText
+                    style={s(
+                      c.fontSize(14),
+                      c.weightRegular,
+                      c.fg(c.colors.textSecondary)
+                    )}
+                  >
+                    Pawn structure
+                  </CMText>
+                  <Spacer height={4} />
+                  <CMText style={s(c.fontSize(18), c.weightBold)}>
+                    {pawnStructure.name}
+                  </CMText>
+                  <Spacer height={12} />
+                  <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
+                    White plans
+                  </CMText>
+                  <Spacer height={4} />
+                  <CMText style={s(plansText)}>{pawnStructure.plans}</CMText>
+                  <Spacer height={12} />
+                  <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
+                    Black plans
+                  </CMText>
+                  <Spacer height={4} />
+                  <CMText style={s(plansText)}>
+                    {pawnStructure.opponentPlans}
+                  </CMText>
+                </View>
+              </>
+            )}
+          </View>
+          <Spacer width={12} grow />
+          {positionReport?.stockfish && (
+            <View style={s(c.mb(12), c.row, c.alignEnd)}>
+              <CMText
+                style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}
+              >
+                {formatStockfishEval(positionReport.stockfish)}
+              </CMText>
             </View>
           )}
         </View>
-        {pawnStructure && (
-          <>
-            <Spacer height={24} />
-            <View
-              style={s(
-                c.bg(c.colors.cardBackground),
-                c.px(12),
-                c.py(12),
-                c.fillNoExpand
-              )}
-            >
-              <CMText
-                style={s(
-                  c.fontSize(14),
-                  c.weightRegular,
-                  c.fg(c.colors.textSecondary)
-                )}
-              >
-                Pawn structure
-              </CMText>
-              <Spacer height={4} />
-              <CMText style={s(c.fontSize(18), c.weightBold)}>
-                {pawnStructure.name}
-              </CMText>
-              <Spacer height={12} />
-              <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
-                White plans
-              </CMText>
-              <Spacer height={4} />
-              <CMText style={s(plansText)}>{pawnStructure.plans}</CMText>
-              <Spacer height={12} />
-              <CMText style={s(c.fontSize(12), c.fg(c.colors.textPrimary))}>
-                Black plans
-              </CMText>
-              <Spacer height={4} />
-              <CMText style={s(plansText)}>
-                {pawnStructure.opponentPlans}
-              </CMText>
-            </View>
-          </>
-        )}
       </View>
     </>
   );

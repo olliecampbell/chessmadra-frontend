@@ -98,8 +98,7 @@ export const RepertoireMovesTable = ({
   let numTruncated = responses.length - trimmedResponses.length;
   return (
     <View style={s(c.column)}>
-      <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
-      {isMobile && <Spacer height={8} />}
+      {!isMobile && <RepertoireEditingHeader>{header}</RepertoireEditingHeader>}
       <View style={s(c.height(16))}>
         {!editingAnnotations && (
           <TableHeader anyMine={anyMine} sections={sections} />
@@ -261,8 +260,6 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
   });
   return sections;
 };
-
-const SPACE_BETWEEN_STATS = 24;
 
 const START_CELL_WIDTH = 60;
 const MAX_ANNOTATION_LENGTH = 300;
@@ -451,7 +448,7 @@ const Response = ({
   let annotationOrOpeningName = suggestedMove?.annotation ?? newOpeningName;
 
   return (
-    <View style={s(c.row, c.alignCenter)} {...responseHoverProps}>
+    <View style={s(c.row, c.alignStart)} {...responseHoverProps}>
       <Pressable
         onPress={() => {
           playSan(sanPlus);
@@ -462,7 +459,8 @@ const Response = ({
           c.flexible,
           c.br(2),
           c.pr(8),
-          c.bg(hoveringRow ? c.grays[16] : c.colors.cardBackground),
+          c.py(12),
+          c.bg(hoveringRow ? c.grays[22] : c.colors.cardBackground),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
           c.cardShadow,
@@ -471,7 +469,7 @@ const Response = ({
         )}
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.fullWidth, c.alignCenter)}>
+          <View style={s(c.row, c.fullWidth, c.alignStart)}>
             <View style={s(c.px(12), c.center)}>
               <i
                 style={s(
@@ -482,7 +480,7 @@ const Response = ({
                     : hoveringRow
                     ? c.duotone(c.grays[90], c.purples[55])
                     : c.fg(c.grays[40]),
-                  hoveringRow && !repertoireMove && c.opacity(60),
+                  hoveringRow && !repertoireMove && c.opacity(40),
                   c.fontSize(22)
                 )}
                 className={
@@ -505,7 +503,6 @@ const Response = ({
                 c.row,
                 c.alignCenter,
                 c.width(START_CELL_WIDTH),
-                c.py(8),
                 c.pl(4)
               )}
             >
@@ -531,12 +528,20 @@ const Response = ({
               </View>
             </View>
             <Spacer width={12} />
-            {!isMobile && (
-              <View style={s(c.width(0), c.grow, c.mt(4), c.pr(8), c.py(8))}>
-                <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
+            {!isMobile ? (
+              <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
+                <CMText
+                  style={s(
+                    c.fg(c.grays[85]),
+                    c.fontSize(14),
+                    c.lineHeight("1.3rem")
+                  )}
+                >
                   {annotationOrOpeningName}
                 </CMText>
               </View>
+            ) : (
+              <Spacer width={0} grow />
             )}
             <View style={s(c.row, c.alignCenter)}>
               {intersperse(
@@ -556,14 +561,17 @@ const Response = ({
                 }),
                 (i) => {
                   return (
-                    <Spacer width={SPACE_BETWEEN_STATS} key={`${i}-spacer`} />
+                    <Spacer
+                      width={getSpaceBetweenStats(isMobile)}
+                      key={`${i}-spacer`}
+                    />
                   );
                 }
               )}
             </View>
           </View>
           {isMobile && annotationOrOpeningName && (
-            <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
+            <View style={s(c.grow, c.pt(12), c.px(12), c.minWidth(0))}>
               <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
                 {annotationOrOpeningName}
               </CMText>
@@ -667,7 +675,12 @@ const TableHeader = ({
             );
           }),
           (i) => {
-            return <Spacer width={SPACE_BETWEEN_STATS} key={`${i}-spacer`} />;
+            return (
+              <Spacer
+                width={getSpaceBetweenStats(isMobile)}
+                key={`${i}-spacer`}
+              />
+            );
           }
         )}
       </View>
@@ -720,4 +733,8 @@ export const DebugScoreView = ({
       </View>
     </View>
   );
+};
+
+const getSpaceBetweenStats = (isMobile: boolean) => {
+  return isMobile ? 12 : 24;
 };

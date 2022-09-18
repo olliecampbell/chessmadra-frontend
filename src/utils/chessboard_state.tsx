@@ -256,7 +256,6 @@ export const createChessState = (
     highlightLastMove: () =>
       set((s) => {
         if (s.getLastMove()) {
-          console.log("Calling highlight from highlightLastMove");
           s.highlightMoveSquares(s.getLastMove());
         }
       }),
@@ -266,12 +265,12 @@ export const createChessState = (
         highlightSquares.forEach((sq) => {
           s.currentHighlightedSquares.add(sq);
         });
-        console.log("___HIGHLIGHTED SQUARES___");
-        console.log(
-          "squares to highlight, new squares",
-          logProxy(Array.from(s.currentHighlightedSquares)),
-          highlightSquares
-        );
+        // console.log("___HIGHLIGHTED SQUARES___");
+        // console.log(
+        //   "squares to highlight, new squares",
+        //   logProxy(Array.from(s.currentHighlightedSquares)),
+        //   highlightSquares
+        // );
         highlightSquares.forEach((sq) => {
           Animated.timing(s.squareHighlightAnims[sq], {
             toValue: 0.4,
@@ -313,7 +312,6 @@ export const createChessState = (
           return;
         }
         if (!s.previewedMove && !s.nextPreviewMove) {
-          console.log("Calling highlight last move from step preview");
           s.highlightLastMove();
         }
         if (
@@ -324,7 +322,6 @@ export const createChessState = (
           s.reversePreviewMove();
         }
         if (s.previewedMove && !s.nextPreviewMove) {
-          console.log("It should be this one!");
           s.reversePreviewMove();
         }
         if (!s.previewedMove && s.nextPreviewMove) {
@@ -349,7 +346,6 @@ export const createChessState = (
           getSquareOffset(move.to, s.flipped),
         ];
         let duration = getAnimationTime(start, end);
-        console.log("Calling highlight from animate preview move");
         s.highlightMoveSquares(move, duration);
         s.previewPieceMoveAnim.setValue(start);
         let supplementaryMove = getSupplementaryMove(move);
@@ -437,11 +433,11 @@ export const createChessState = (
     },
     clearHighlightedSquares: () => {
       set((s) => {
-        console.log("___CLEAR HIGHLIGHTED___");
-        console.log(
-          "squares to clear",
-          logProxy(Array.from(s.currentHighlightedSquares))
-        );
+        // console.log("___CLEAR HIGHLIGHTED___");
+        // console.log(
+        //   "squares to clear",
+        //   logProxy(Array.from(s.currentHighlightedSquares))
+        // );
         if (s.currentHighlightedSquares) {
           s.currentHighlightedSquares.forEach((sq) => {
             Animated.timing(s.squareHighlightAnims[sq], {

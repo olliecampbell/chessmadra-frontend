@@ -45,7 +45,7 @@ export const GameResultsBar = ({
     <View
       style={s(
         c.width(`${(gameResults.black / total) * 100}%`),
-        c.bg(c.grays[20]),
+        c.bg(c.grays[6]),
         c.center
       )}
     >
@@ -65,15 +65,7 @@ export const GameResultsBar = ({
       ? [whiteResults, blackResults]
       : [blackResults, whiteResults];
   return (
-    <View
-      style={s(
-        c.row,
-        c.fullWidth,
-        c.fullHeight,
-        c.height(18),
-        c.border(`1px solid ${c.grays[30]}`)
-      )}
-    >
+    <View style={s(c.row, c.fullWidth, c.fullHeight, c.height(18))}>
       {first}
       <View
         style={s(

@@ -46,9 +46,12 @@ export const RepertoirePageLayout = ({
         c.fullWidth,
         c.bg(backgroundColor),
         c.grow,
-        c.height("100vh"),
-        c.keyedProp("minHeight")("-webkit-fill-available"),
-        c.keyedProp("maxHeight")("-webkit-fill-available")
+        !isMobile &&
+          s(
+            c.height("100vh"),
+            c.keyedProp("minHeight")("-webkit-fill-available"),
+            c.keyedProp("maxHeight")("-webkit-fill-available")
+          )
       )}
     >
       <Helmet>
