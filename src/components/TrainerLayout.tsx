@@ -33,7 +33,15 @@ export const TrainerLayout = ({
                 c.justifyCenter
               )}
             >
-              <View style={s(c.width(500), c.maxWidth("100%"))}>
+              <View
+                style={s(
+                  c.width(500),
+                  c.maxWidth("100%"),
+                  c.cardShadow,
+                  c.br(2),
+                  c.overflowHidden
+                )}
+              >
                 {chessboard}
               </View>
               <Spacer height={12} width={24} isMobile={isMobile} />
