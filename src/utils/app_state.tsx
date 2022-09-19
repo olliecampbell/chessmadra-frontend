@@ -339,6 +339,13 @@ export const useDebugState = <T,>(
   );
 };
 
+export const useUserState = <T,>(fn: (_: UserState) => T, user?: boolean) => {
+  return useAppStateInternal(
+    (s) => fn(s.userState),
+    user ? (a, b) => equality(a, b, true) : equality
+  );
+};
+
 export const useAdminState = <T,>(
   fn: (_: AdminState) => T,
   debug?: boolean
@@ -354,4 +361,8 @@ export const useAppState = <T,>(fn: (_: AppState) => T, debug?: boolean) => {
     (s) => fn(s),
     debug ? (a, b) => equality(a, b, true) : equality
   );
+};
+
+export const getAppState = () => {
+  return useAppStateInternal.getState();
 };

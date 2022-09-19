@@ -29,10 +29,14 @@ export interface User {
   // subscription: ApplicationSubscription;
   apiKey: string;
   betaAccess: boolean;
+  // The behind-the-scenes range
   eloRange: string;
   temporary: boolean;
   isAdmin: boolean;
   missThreshold: number;
+  // The range/system that's visible to the user
+  ratingRange: string;
+  ratingSystem: string;
 }
 
 export interface LichessGame {

@@ -46,7 +46,6 @@ import {
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { START_EPD } from "./chess";
-import { formatEloRange } from "./elo_range";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -186,8 +185,6 @@ export interface RepertoireState {
   ecoCodeLookup: Record<string, EcoCode>;
   pawnStructureLookup: Record<string, PawnStructureDetails>;
   browsingState: BrowsingState;
-  updateEloRange: (range: [number, number]) => void;
-  isUpdatingEloRange: boolean;
   editingState: {
     lastEcoCode?: EcoCode;
     selectedTab: EditingTab;
@@ -355,27 +352,6 @@ export const getInitialRepertoireState = (
           }
         );
       }, "giveUp"),
-    updateEloRange: (range: [number, number]) =>
-      set(([s]) => {
-        s.isUpdatingEloRange = true;
-        client
-          .post("/api/v1/user/elo_range", {
-            min: range[0],
-            max: range[1],
-          })
-          .then(({ data }: { data: FetchRepertoireResponse }) => {
-            set(([s, appState]) => {
-              appState.userState.user.eloRange = formatEloRange(range);
-              s.positionReports = {};
-            });
-          })
-          .finally(() => {
-            set(([s]) => {
-              s.isUpdatingEloRange = false;
-              s.fetchRepertoire();
-            });
-          });
-      }, "updateEloRange"),
     playSan: (san: string) =>
       set(([s]) => {
         s.chessboardState.makeMove(san);
