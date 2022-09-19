@@ -11,15 +11,17 @@ import { useRepertoireState } from "app/utils/app_state";
 import React from "react";
 import { Animated } from "react-native";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { useResponsive } from "app/utils/useResponsive";
 
 export const RepertoireEditingBottomNav = ({}: {}) => {
-  const isMobile = useIsMobile();
   const [moveLogPgn, hasPendingLineToAdd] = useRepertoireState((s) => [
     s.chessboardState.moveLogPgn,
     s.hasPendingLineToAdd,
   ]);
   const fadeAnim = React.useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
   const visible = !isEmpty(moveLogPgn);
+  const responsive = useResponsive();
+  const isMobile = responsive.isMobile;
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -47,7 +49,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
           c.opacity(fadeAnim)
         )}
       >
-        <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
+        <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
           <View
             style={s(
               c.row,

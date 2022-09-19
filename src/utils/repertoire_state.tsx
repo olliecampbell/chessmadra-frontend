@@ -612,24 +612,27 @@ export const getInitialRepertoireState = (
     fetchNeededPositionReports: () =>
       set(([s]) => {
         let side = s.activeSide;
-        if (isNil(side)) {
-          return;
-        }
-        let neededPositions = [];
-        s.chessboardState.positionHistory.forEach((epd) => {
-          if (!s.positionReports[epd]) {
-            neededPositions.push(epd);
-          }
-        });
-        let currentReport = s.positionReports[s.getCurrentEpd()];
-        if (currentReport) {
-          currentReport.suggestedMoves.forEach((sm) => {
-            let epd = sm.epdAfter;
+        let neededPositions = [START_EPD];
+        if (!isNil(side)) {
+          s.chessboardState.positionHistory.forEach((epd) => {
             if (!s.positionReports[epd]) {
               neededPositions.push(epd);
             }
           });
+          let currentReport = s.positionReports[s.getCurrentEpd()];
+          if (currentReport) {
+            currentReport.suggestedMoves.forEach((sm) => {
+              let epd = sm.epdAfter;
+              if (!s.positionReports[epd]) {
+                neededPositions.push(epd);
+              }
+            });
+          }
         }
+        neededPositions = filter(
+          neededPositions,
+          (epd) => !s.positionReports[epd]
+        );
         if (isEmpty(neededPositions)) {
           return;
         }

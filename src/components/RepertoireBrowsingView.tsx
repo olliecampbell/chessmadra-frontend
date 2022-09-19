@@ -22,7 +22,7 @@ import {
   getNameEcoCodeIdentifier,
 } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
-import { useRepertoireState } from "app/utils/app_state";
+import { useDebugState, useRepertoireState } from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,
@@ -34,6 +34,9 @@ import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
+import { BP, useResponsive } from "app/utils/useResponsive";
+
+const VERTICAL_BREAKPOINT = BP.md;
 
 export const RepertoireBrowsingView = ({}: {}) => {
   const [
@@ -64,63 +67,91 @@ export const RepertoireBrowsingView = ({}: {}) => {
     }
   }, [repertoireLoading]);
   // const router = useRouter();
-  const isMobile = useIsMobile();
+  const responsive = useResponsive();
+  const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
   return (
     <RepertoirePageLayout>
-      <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
-        <View style={s(c.column, c.alignStart, c.constrainWidth, c.fullWidth)}>
-          <View style={s(c.row, c.selfCenter, c.constrainWidth, c.fullWidth)}>
+      <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
+        <View
+          style={s(
+            vertical ? c.column : c.row,
+            vertical ? c.alignCenter : c.alignStart,
+            c.constrainWidth,
+            c.fullWidth
+          )}
+        >
+          <View
+            style={s(
+              c.column,
+              !vertical && c.grow,
+              c.constrainWidth,
+              !vertical && s(c.minWidth(340), c.grow)
+            )}
+          >
+            {!responsive.isMobile && (
+              <>
+                <CMText
+                  style={s(
+                    c.fg(c.colors.textPrimary),
+                    c.fontSize(20),
+                    c.weightBold
+                  )}
+                >
+                  Filter
+                </CMText>
+                <Spacer height={12} />
+              </>
+            )}
             <View
-              style={s(c.column, c.constrainWidth, isMobile && c.fullWidth)}
-            >
-              {!isMobile && (
-                <>
-                  <CMText
-                    style={s(
-                      c.fg(c.colors.textPrimary),
-                      c.fontSize(20),
-                      c.weightBold
-                    )}
-                  >
-                    Filter
-                  </CMText>
-                  <Spacer height={12} />
-                </>
+              style={s(
+                c.column,
+                c.center,
+                vertical ? c.selfCenter : c.selfStretch,
+                c.width("min(400px, 100%)")
               )}
-              <View
-                style={s(c.width(isMobile ? "100%" : 300), c.maxWidth("100%"))}
-              >
+            >
+              <View style={s(c.fullWidth)}>
                 <ChessboardView state={chessboardState} />
               </View>
               <Spacer height={12} />
               <BackControls
                 extraButton={
-                  isMobile && (readOnly ? <SwitchSideButton /> : <EditButton />)
+                  responsive.isMobile &&
+                  (readOnly ? <SwitchSideButton /> : <EditButton />)
                 }
               />
-              {!isMobile && (
+              {!responsive.isMobile && (
                 <>
                   <Spacer height={12} />
                   {readOnly && <SwitchSideButton />}
                   {!readOnly && <EditButton />}
                 </>
               )}
-              {isMobile && (
-                <>
-                  <Spacer height={24} />
-                  <ResultsView />
-                </>
-              )}
             </View>
-            {!isMobile && (
+            {responsive.isMobile && (
               <>
-                <Spacer width={48} />
-                <View style={s(c.column, c.flexShrink(1), c.grow)}>
-                  <ResultsView />
-                </View>
+                <Spacer height={24} />
+                <ResultsView />
               </>
             )}
           </View>
+          {!responsive.isMobile && (
+            <>
+              <Spacer width={responsive.switch(24, [BP.xl, 48])} />
+              <View
+                style={s(
+                  c.column,
+                  c.flexShrink(1),
+                  c.flexGrow(10)
+                  // c.width(
+                  //   `min(${responsive.bp >= BP.xxl ? 1000 : 800}px, 100%)`
+                  // )
+                )}
+              >
+                <ResultsView />
+              </View>
+            </>
+          )}
         </View>
       </View>
     </RepertoirePageLayout>
@@ -128,7 +159,8 @@ export const RepertoireBrowsingView = ({}: {}) => {
 };
 
 export const SwitchSideButton = () => {
-  const isMobile = useIsMobile();
+  const responsive = useResponsive();
+  const isMobile = responsive.isMobile;
   const track = useTrack();
   const [side, q] = useRepertoireState((s) => [
     s.browsingState.activeSide,
@@ -230,7 +262,7 @@ export const ResultsView = React.memo(function () {
   ]);
   const isMobile = useIsMobile();
   return (
-    <View style={s(c.column, isMobile && c.fullWidth)}>
+    <View style={s(c.column)}>
       {!readOnly && (
         <>
           <SelectOneOf
@@ -409,8 +441,9 @@ export const BrowsingSectionsView = React.memo(() => {
 
 const SectionView = ({ section }: { section: BrowserSection }) => {
   let [expanded, setExpanded] = useState(false);
+  const responsive = useResponsive();
   const isMobile = useIsMobile();
-  let MAX_TRUNCATED = isMobile ? 2 : 4;
+  let MAX_TRUNCATED = responsive.bp >= BP.xxl ? 4 : 2;
   let truncated = section.lines.length > MAX_TRUNCATED && !expanded;
   let numTruncated = section.lines.length - MAX_TRUNCATED;
   let lines = section.lines;
@@ -446,7 +479,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
       <View
         style={s({
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gridTemplateColumns: responsive.bp >= BP.xxl ? "1fr 1fr" : "1fr",
           gap: "24px 24px",
         })}
       >
@@ -502,9 +535,9 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
         });
       }}
       style={s(
-        c.bg(c.grays[10]),
+        c.bg(c.colors.cardBackground),
         c.height(chessboardSize),
-        c.extraDarkBorder,
+        c.cardShadow,
         c.br(2),
         c.overflowHidden,
         c.row,
@@ -584,7 +617,9 @@ const LineView = ({ line }: { line: BrowserLine }) => {
 
   const isVisible = !!entry?.isIntersecting;
 
-  const chessboardSize = isMobile ? 120 : 160;
+  const responsive = useResponsive();
+  const chessboardSize = responsive.switch(120, [BP.lg, 160]);
+  const debugUi = useDebugState((s) => s.debugUi);
   return (
     <Pressable
       ref={ref}
@@ -596,9 +631,9 @@ const LineView = ({ line }: { line: BrowserLine }) => {
         });
       }}
       style={s(
-        c.bg(c.grays[10]),
+        c.bg(c.colors.cardBackground),
         c.height(chessboardSize),
-        c.extraDarkBorder,
+        c.cardShadow,
         c.br(2),
         c.overflowHidden,
         c.row,
@@ -608,10 +643,9 @@ const LineView = ({ line }: { line: BrowserLine }) => {
       <View
         style={s(
           c.column,
-          c.py(isMobile ? 12 : 24),
           c.flexible,
           c.grow,
-          c.px(isMobile ? 12 : 24)
+          c.p(responsive.switch(12, [BP.lg, 24]))
         )}
       >
         <View style={s(c.row)}>
@@ -641,7 +675,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
             ></i>
           </Pressable>
         </View>
-        <Spacer height={isMobile ? 6 : 8} />
+        <Spacer height={responsive.switch(12, [BP.md, 18])} />
         <CMText
           style={s(
             c.fontSize(isMobile ? 12 : 14),
@@ -650,12 +684,12 @@ const LineView = ({ line }: { line: BrowserLine }) => {
             c.overflowHidden
           )}
         >
-          {line.pgn}
-          {/*line.pgn*/}
-          {/*line.pgn.replace(
-            line.deleteMove?.sanPlus,
-            `[${line.deleteMove?.sanPlus}]`
-          )*/}
+          {debugUi
+            ? line.pgn.replace(
+                line.deleteMove?.sanPlus,
+                `[${line.deleteMove?.sanPlus}]`
+              )
+            : line.pgn}
         </CMText>
       </View>
       <View style={s(c.size(chessboardSize - 2))}>

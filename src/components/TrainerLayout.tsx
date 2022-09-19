@@ -1,6 +1,4 @@
-import {
-  View,
-} from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -28,7 +26,7 @@ export const TrainerLayout = ({
           <>
             <View
               style={s(
-                c.containerStyles(isMobile),
+                c.oldContainerStyles(isMobile),
                 isMobile && s(c.alignCenter),
                 isMobile ? c.column : s(c.row, c.alignCenter),
                 containerStyles,

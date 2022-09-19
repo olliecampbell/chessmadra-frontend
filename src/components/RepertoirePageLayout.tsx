@@ -14,6 +14,7 @@ import { Spacer } from "app/Space";
 import { Helmet } from "react-helmet";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
+import { useResponsive } from "app/utils/useResponsive";
 
 export const RepertoirePageLayout = ({
   children,
@@ -27,11 +28,7 @@ export const RepertoirePageLayout = ({
     s.repertoire === undefined,
     s.initState,
   ]);
-  const ref = useRef(null);
-  const entry = useIntersectionObserver(ref, {});
 
-  const isVisible = !!entry?.isIntersecting;
-  console.log({ isVisible });
   useEffect(() => {
     if (repertoireLoading) {
       initState();
@@ -39,6 +36,7 @@ export const RepertoirePageLayout = ({
   }, []);
   const backgroundColor = c.grays[12];
   const navColor = c.colors.cardBackground;
+  const responsive = useResponsive();
   return (
     <View
       style={s(
@@ -66,10 +64,9 @@ export const RepertoirePageLayout = ({
       />
       <View style={s(isMobile ? s(c.grow) : c.flexShrink(1))}>
         <View
-          ref={ref}
           style={s(
             c.fullWidth,
-            c.height(72),
+            c.height(64),
             // c.borderBottom(`2px solid ${c.grays[8]}`)
             c.bg(navColor),
             c.lightCardShadow
@@ -78,7 +75,7 @@ export const RepertoirePageLayout = ({
         >
           <View
             style={s(
-              c.containerStyles(isMobile),
+              c.containerStyles(responsive.bp),
               c.alignStart,
               c.justifyEnd,
               c.column,
@@ -96,7 +93,7 @@ export const RepertoirePageLayout = ({
             c.center,
             c.justifyStart,
             c.flexShrink(1),
-            c.pt(isMobile ? 24 : 92)
+            c.pt(isMobile ? 24 : 48)
           )}
         >
           {!repertoireLoading ? (

@@ -4,6 +4,7 @@ import { RepertoireBuilder } from "./src/components/RepertoireBuilder";
 import { s, c } from "app/styles";
 import { Helmet } from "react-helmet";
 import { HeadSiteMeta } from "app/components/PageContainer";
+import { Identify, identify } from "@amplitude/analytics-browser";
 
 import { BrowserTracing } from "@sentry/tracing";
 import AuthHandler from "app/components/AuthHandler";
@@ -36,6 +37,8 @@ import { init as amplitudeInit } from "@amplitude/analytics-browser";
 import { RepertoireEditingView } from "app/components/RepertoireEditingView";
 import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
 import { RepertoireReview } from "app/components/RepertoireReview";
+import { BP, useResponsive } from "app/utils/useResponsive";
+import { isDevelopment } from "app/utils/env";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -102,6 +105,7 @@ export default function App() {
           <Router>
             <RouteProvider>
               <GlobalParamsReader />
+              <UserPropsSetter />
               <Routes>
                 <Route path="/" element={<RepertoireBuilder />} />
                 <Route path="/authenticate" element={<Authenticate />} />
@@ -147,6 +151,7 @@ export default function App() {
     </View>
   );
 }
+
 export const GlobalParamsReader = () => {
   let quick = useAppState((s) => s.quick);
   const [searchParams] = useSearchParams();
@@ -156,6 +161,20 @@ export const GlobalParamsReader = () => {
       s.debugState.debugUi = !isNil(debugUi);
     });
   }, [debugUi]);
+  return null;
+};
+
+export const UserPropsSetter = () => {
+  const responsive = useResponsive();
+  useEffect(() => {
+    const identifyObj = new Identify();
+    if (responsive.bp <= BP.md) {
+      identifyObj.setOnce("mobile", "true");
+    } else {
+      identifyObj.setOnce("desktop", "true");
+    }
+    identify(identifyObj);
+  }, [responsive.bp]);
   return null;
 };
 
@@ -177,7 +196,7 @@ class ErrorBoundary extends React.Component<any, any> {
   }
 
   static getDerivedStateFromError(error) {
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+    if (isDevelopment) {
       return { hasError: true };
     }
   }

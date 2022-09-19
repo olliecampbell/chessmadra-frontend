@@ -165,7 +165,7 @@ export const ChessboardView = ({
   styles?: any;
 }) => {
   const { availableMoves } = state;
-  const position = state.previewPosition ?? state.position;
+  const position = state.position;
   const tileStyles = s(c.bg("green"), c.grow);
   const stateRef = useRef(state);
   stateRef.current = state;

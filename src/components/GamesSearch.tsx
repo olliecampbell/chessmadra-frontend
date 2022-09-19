@@ -116,7 +116,7 @@ export const GamesSearch = () => {
     );
   } else if (!isEmpty(state.returnedGames)) {
     inner = (
-      <View style={s(c.containerStyles(isMobile), c.alignStart)}>
+      <View style={s(c.oldContainerStyles(isMobile), c.alignStart)}>
         <Button
           style={s(c.buttons.primary)}
           onPress={() => {
@@ -187,7 +187,7 @@ export const GamesSearch = () => {
             // c.selfStretch,
             c.fullWidth,
             c.maxWidth(900),
-            c.containerStyles(isMobile),
+            c.oldContainerStyles(isMobile),
             c.px(12),
             c.py(12),
             c.alignStretch,
@@ -254,7 +254,7 @@ export const GamesSearch = () => {
             // c.selfStretch,
             c.fullWidth,
             c.maxWidth(900),
-            c.containerStyles(isMobile),
+            c.oldContainerStyles(isMobile),
             c.px(12),
             c.py(12),
             c.alignStretch,

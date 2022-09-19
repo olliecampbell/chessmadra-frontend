@@ -1,4 +1,5 @@
 import { assign } from "lodash-es";
+import { BP } from "./utils/useResponsive";
 
 export const s = (...args) => assign({}, ...args);
 
@@ -17,6 +18,13 @@ const keyedPixelProp = (key: string) => (x: any) => {
   return {
     [key]: x,
   };
+};
+
+const pixelifyIfNeeded = (x: number) => {
+  if (typeof x === "number") {
+    return `${x}px`;
+  }
+  return x;
 };
 
 const keyedPercentProp = (key: string) => (x: number | string | any) => {
@@ -421,7 +429,7 @@ const fillNoExpand = s(minWidth("100%"), width(0));
 
 const noPointerEvents = keyedProp("pointerEvents")("none");
 const transform = keyedProp("transform");
-const containerStyles = (isMobile, customMaxWidth?: number) =>
+const oldContainerStyles = (isMobile, customMaxWidth?: number) =>
   s(
     width(
       `min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`
@@ -430,10 +438,56 @@ const containerStyles = (isMobile, customMaxWidth?: number) =>
     selfCenter
   );
 
+const containerStyles = (breakpoint: BP) =>
+  s(
+    width(
+      `min(calc(100vw - ${breakpoint <= BP.md ? 24 : 96}px), ${
+        breakpoint >= BP.xxl ? 1440 : 1280
+      }px)`
+    ),
+    column,
+    selfCenter
+  );
+
 export const rotate = (x) => transform(`rotate(${x}deg)`);
+
+const grid = ({
+  templateColumns,
+  templateRows,
+  rowGap,
+  columnGap,
+}: {
+  templateColumns: any[];
+  templateRows: any[];
+  rowGap: number;
+  columnGap: number;
+}) => {
+  return s(
+    c.displayGrid,
+    c.keyedProp("gridTemplateColumns")(
+      templateColumns ? templateColumns.join(" ") : "1fr"
+    ),
+    c.keyedProp("gridTemplateRows")(
+      templateRows ? templateRows.join(" ") : "1fr"
+    ),
+    c.keyedProp("rowGap")(rowGap ?? 12),
+    c.keyedProp("columnGap")(columnGap ?? 12)
+  );
+};
+
+const minmax = (min, max) => {
+  return `minmax(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
+};
+const min = (min, max) => {
+  return `min(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
+};
+const max = (min, max) => {
+  return `max(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
+};
 
 export const c = {
   keyedProp,
+  oldContainerStyles,
   containerStyles,
   displayNone,
   rounded,
@@ -577,4 +631,8 @@ export const c = {
   extraDarkBorder,
   duotone,
   rotate,
+  grid,
+  minmax,
+  min,
+  max,
 };

@@ -1,7 +1,5 @@
 import { Move } from "@lubert/chess.ts/dist/types";
-import {
-  EcoCode,
-} from "app/models";
+import { EcoCode } from "app/models";
 import {
   isEmpty,
   last,
@@ -9,19 +7,17 @@ import {
   isNil,
   sortBy,
   groupBy,
+  find,
+  nth,
 } from "lodash-es";
-import {
-  lineToPgn,
-  pgnToLine,
-  RepertoireMove,
-  Side,
-} from "./repertoire";
+import { lineToPgn, pgnToLine, RepertoireMove, Side } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { RepertoireState } from "./repertoire_state";
 import { getPawnOnlyEpd } from "./pawn_structures";
+import { logProxy } from "./state";
 
 export interface QuizMove {
   move: RepertoireMove;
@@ -130,6 +126,10 @@ export const getInitialBrowsingState = (
             return;
           }
           if (moves?.length === 1 && isNil(lastOnlyMove)) {
+            console.log(
+              "last only move is nil, seting to ",
+              logProxy(moves[0])
+            );
             lastOnlyMove = moves[0];
           } else if (moves?.length !== 1) {
             lastOnlyMove = null;
@@ -162,12 +162,18 @@ export const getInitialBrowsingState = (
             }
           });
         };
+        const lastResponse = find(
+          responses[nth(s.chessboardState.positionHistory, -2)],
+          (r) => r.sanPlus === last(currentLine)
+        );
+        console.log("Last response was", lastResponse);
         recurse(
           lineToPgn(currentLine),
           startEpd,
           currentLine.length,
           new Set(),
-          repertoireState.ecoCodeLookup[startEpd]
+          repertoireState.ecoCodeLookup[startEpd],
+          lastResponse
         );
         uniqueLines = sortBy(uniqueLines, (l) => {
           if (isNil(l.ecoCode) || !l.ecoCode.fullName.includes(":")) {

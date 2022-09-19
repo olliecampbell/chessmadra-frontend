@@ -9,16 +9,20 @@ import { CMText } from "./CMText";
 import { useRepertoireState } from "app/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { useResponsive, BP } from "app/utils/useResponsive";
 
 type BackControlsProps = {
   includeAnalyze?: boolean;
   extraButton?: any;
+  height?: number;
 };
 
 export const BackControls: React.FC<BackControlsProps> = ({
   includeAnalyze,
+  height,
   extraButton,
 }) => {
+  const bp = useResponsive();
   let [
     searchOnChessable,
     analyzeLineOnLichess,
@@ -39,7 +43,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
   let foreground = c.grays[90];
   let textColor = c.fg(foreground);
   return (
-    <View style={s(c.row, c.height(isMobile ? 42 : 42))}>
+    <View style={s(c.row, c.height(height ?? 48), c.selfStretch)}>
       <Button
         style={s(c.buttons.darkFloater, c.width(48), c.constrainHeight)}
         onPress={() => {

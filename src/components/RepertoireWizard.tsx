@@ -137,7 +137,7 @@ export const RepertoireWizard = () => {
       <View
         style={s(
           c.column,
-          c.containerStyles(
+          c.oldContainerStyles(
             isMobile,
             activeOpeningSource === OpeningSource.Templates ||
               activeOpeningSource === OpeningSource.PlayerTemplates

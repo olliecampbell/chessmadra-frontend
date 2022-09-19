@@ -123,7 +123,7 @@ export const RepertoireBuilder = () => {
       inner = (
         <View
           style={s(
-            c.containerStyles(isMobile),
+            c.oldContainerStyles(isMobile),
             isMobile ? c.column : c.row,
             c.justifyCenter
           )}

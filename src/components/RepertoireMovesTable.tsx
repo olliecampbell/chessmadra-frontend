@@ -2,7 +2,15 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { some, isNaN, takeWhile, debounce, isEmpty, filter } from "lodash-es";
+import {
+  some,
+  isNaN,
+  takeWhile,
+  debounce,
+  isEmpty,
+  filter,
+  isNil,
+} from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { formatIncidence, RepertoireMove, Side } from "app/utils/repertoire";
@@ -27,6 +35,11 @@ import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { css } from "@emotion/react";
+import {
+  getMoveRating,
+  getMoveRatingIcon,
+  getWinPercentage,
+} from "app/utils/move_inaccuracy";
 
 const DELETE_WIDTH = 30;
 
@@ -129,7 +142,7 @@ export const RepertoireMovesTable = ({
         {truncated && (
           <>
             <Pressable
-              style={s(c.borderBottom(`1px solid ${c.grays[50]}`), c.pb(1))}
+              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
               onPress={() => {
                 setExpanded(true);
                 trackEvent("repertoire.moves_table.show_more");
@@ -147,7 +160,7 @@ export const RepertoireMovesTable = ({
         {
           <>
             <Pressable
-              style={s(c.borderBottom(`1px solid ${c.grays[50]}`), c.pb(1))}
+              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
               onPress={() => {
                 trackEvent("repertoire.moves_table.edit_annotations");
                 setEditingAnnotations(!editingAnnotations);
@@ -261,7 +274,6 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
   return sections;
 };
 
-const START_CELL_WIDTH = 60;
 const MAX_ANNOTATION_LENGTH = 300;
 
 const Response = ({
@@ -311,6 +323,11 @@ const Response = ({
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
   let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
+  let moveRating = getMoveRating(
+    positionReport?.stockfish,
+    suggestedMove?.stockfish,
+    side
+  );
 
   let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
@@ -498,22 +515,8 @@ const Response = ({
                 c.opacity(0)
               )}
             ></View>
-            <View
-              style={s(
-                c.row,
-                c.alignCenter,
-                c.width(START_CELL_WIDTH),
-                c.pl(4)
-              )}
-            >
-              <View style={s(c.row, c.alignCenter)}>
-                <CMText
-                  style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(16))}
-                >
-                  {moveNumber}
-                  {side === "black" ? "... " : "."}
-                </CMText>
-                <Spacer width={2} />
+            <View style={s(c.row, c.alignCenter, c.pl(4))}>
+              <View style={s(c.row, c.alignCenter, c.minWidth(60))}>
                 <CMText
                   key={sanPlus}
                   style={s(
@@ -525,6 +528,12 @@ const Response = ({
                 >
                   {sanPlus}
                 </CMText>
+                {!isNil(moveRating) && (
+                  <>
+                    <Spacer width={4} />
+                    {getMoveRatingIcon(moveRating)}
+                  </>
+                )}
               </View>
             </View>
             <Spacer width={12} />
@@ -578,9 +587,21 @@ const Response = ({
             </View>
           )}
           {debugUi && (
-            <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
-              <CMText style={s(c.fg(c.colors.debugColor), c.fontSize(14))}>
-                {incidence ? formatIncidence(incidence) : "No incidence"}
+            <View style={s(c.row)}>
+              <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
+                <CMText style={s(c.fg(c.colors.debugColor), c.fontSize(14))}>
+                  {incidence ? formatIncidence(incidence) : "No incidence"}
+                </CMText>
+              </View>
+              <Spacer width={4} />
+              <CMText style={s(c.fg(c.colors.debugColor))}>
+                Win before:{" "}
+                {getWinPercentage(positionReport?.stockfish, side).toFixed(1)}
+              </CMText>
+              <Spacer width={4} />
+              <CMText style={s(c.fg(c.colors.debugColor))}>
+                Win after:{" "}
+                {getWinPercentage(suggestedMove?.stockfish, side).toFixed(1)}
               </CMText>
             </View>
           )}
@@ -653,7 +674,6 @@ const TableHeader = ({
   const isMobile = useIsMobile();
   return (
     <View style={s(c.row, c.fullWidth, c.pl(14), c.pr(8))}>
-      <View style={s(c.width(START_CELL_WIDTH))}></View>
       <Spacer width={12} grow />
       <View style={s(c.row, c.alignCenter)}>
         {intersperse(

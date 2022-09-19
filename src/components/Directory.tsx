@@ -34,7 +34,7 @@ export const Directory = () => {
         </View>
       )}
       <Spacer height={44} />
-      <View style={s(c.containerStyles(isMobile), c.grow, c.justifyCenter)}>
+      <View style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
         <CMText
           style={s(
             c.fg(c.colors.textPrimary),

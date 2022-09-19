@@ -68,6 +68,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   isColorTraining?: boolean;
   delegate?: ChessboardDelegate;
   makeMove: (m: Move | string) => void;
+  getCurrentEpd: () => string;
   backOne: () => void;
   resetPosition: () => void;
   stopNotifyingDelegates: () => void;
@@ -448,6 +449,11 @@ export const createChessState = (
           });
           s.currentHighlightedSquares = new Set();
         }
+      });
+    },
+    getCurrentEpd: () => {
+      return get((s) => {
+        return last(s.positionHistory);
       });
     },
     makeMove: (m: Move | string) => {

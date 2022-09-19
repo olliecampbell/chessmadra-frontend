@@ -49,6 +49,7 @@ import { useParams } from "react-router-dom";
 import { failOnAny } from "app/utils/test_settings";
 import { START_EPD } from "app/utils/chess";
 import { formatLargeNumber } from "app/utils/number_formatting";
+import { BP, useResponsive } from "app/utils/useResponsive";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const MoveLog = () => {
@@ -195,6 +196,8 @@ let desktopHeaderStyles = s(
   c.weightBold
 );
 
+const VERTICAL_BREAKPOINT = BP.md;
+
 export const RepertoireEditingView = () => {
   const isMobile = useIsMobile();
   const [chessboardState, backOne, activeSide, isEditing, quick] =
@@ -219,35 +222,61 @@ export const RepertoireEditingView = () => {
     }
   });
 
+  const responsive = useResponsive();
+  const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
+  console.log("WHAT?", c.minmax(400, "100%"));
   return (
     <>
       <DeleteMoveConfirmationModal />
       <ConfirmMoveConflictModal />
       <AddedLineModal />
       <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
-        <View style={s(c.containerStyles(isMobile), c.alignCenter)}>
-          <View style={s(c.column, c.alignStart, c.constrainWidth)}>
-            <View style={s(c.row, c.selfCenter, c.constrainWidth)}>
-              <View style={s(c.column, c.constrainWidth)}>
-                <View style={s(c.width(400), c.maxWidth("100%"), c.selfCenter)}>
-                  <ChessboardView state={chessboardState} />
-                  <Spacer height={12} />
-                  <BackControls includeAnalyze />
-                </View>
-                <Spacer height={12} />
-                {isMobile && <EditingTabPicker />}
-              </View>
-              {!isMobile && (
-                <>
-                  <Spacer width={48} />
-                  <View style={s(c.column)}>
-                    <PositionOverview />
-                    <Spacer height={24} />
-                    <Responses />
-                  </View>
-                </>
+        <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
+          <View
+            style={s(
+              vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
+              vertical ? c.column : c.row
+              // c.grid({
+              //   templateColumns: !vertical && ["fit-content(600px)", "1fr"],
+              //   templateRows: vertical && ["1fr"],
+              //   rowGap: responsive.switch(12, [BP.lg, 24], [BP.xl, 48]),
+              //   columnGap: responsive.switch(12, [BP.lg, 24], [BP.xl, 48]),
+              // })
+            )}
+          >
+            <View
+              style={s(
+                c.column,
+                c.grow,
+                vertical ? c.width("min(400px, 100%)") : c.maxWidth(600),
+                vertical ? c.selfCenter : c.selfStretch
               )}
+            >
+              <View style={s()}>
+                <ChessboardView state={chessboardState} />
+                <Spacer height={12} />
+                <BackControls
+                  height={responsive.switch(42, [BP.lg, 42], [BP.xl, 60])}
+                  includeAnalyze
+                />
+              </View>
+              <Spacer height={12} />
             </View>
+            {vertical ? (
+              <>
+                <Spacer height={12} />
+                <EditingTabPicker />
+              </>
+            ) : (
+              <>
+                <Spacer width={48} />
+                <View style={s(c.column, c.flexGrow(10), c.maxWidth(700))}>
+                  <PositionOverview />
+                  <Spacer height={24} />
+                  <Responses />
+                </View>
+              </>
+            )}
           </View>
         </View>
       </RepertoirePageLayout>
@@ -335,8 +364,9 @@ const Responses = React.memo(function Responses() {
       });
     };
   }, []);
+  const responsive = useResponsive();
   return (
-    <View style={s(c.column, c.width(600), c.constrainWidth)}>
+    <View style={s(c.column, c.constrainWidth)}>
       {!isEmpty(youCanPlay) && (
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
@@ -589,12 +619,20 @@ let PLAYRATE_WEIGHTS = {
 };
 
 const EditingTabPicker = () => {
+  const responsive = useResponsive();
   const [selectedTab, quick] = useRepertoireState((s) => [
     s.editingState.selectedTab,
     s.quick,
   ]);
+  const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
   return (
-    <View style={s(c.column)}>
+    <View
+      style={s(
+        c.column,
+        vertical && s(c.selfCenter),
+        c.maxWidth(responsive.switch(600, [BP.xl, 700]))
+      )}
+    >
       <SelectOneOf
         tabStyle
         containerStyles={s(c.fullWidth, c.justifyBetween)}
@@ -780,6 +818,11 @@ const PositionOverview = () => {
               >
                 {formatStockfishEval(positionReport.stockfish)}
               </CMText>
+              {debugUi && (
+                <CMText style={s(c.fg(c.colors.debugColor))}>
+                  ({formatLargeNumber(positionReport.stockfish.nodesK * 1000)})
+                </CMText>
+              )}
             </View>
           )}
         </View>
