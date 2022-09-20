@@ -449,6 +449,14 @@ const containerStyles = (breakpoint: BP) =>
     selfCenter
   );
 
+export const noUserSelect = {
+  WebkitTouchCallout: "none",
+  WebkitUserSelect: "none",
+  KhtmlUserSelect: "none",
+  MozUserSelect: "none",
+  MsUserSelect: "none",
+  UserSelect: "none",
+};
 export const rotate = (x) => transform(`rotate(${x}deg)`);
 
 const grid = ({
@@ -635,4 +643,5 @@ export const c = {
   minmax,
   min,
   max,
+  noUserSelect,
 };

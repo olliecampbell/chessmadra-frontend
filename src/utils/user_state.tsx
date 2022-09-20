@@ -2,7 +2,7 @@ import { User } from "app/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { setUserId } from "@amplitude/analytics-browser";
+import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import { formatEloRange } from "./elo_range";
 import client from "app/client";
@@ -71,11 +71,18 @@ export const getInitialUserState = (
             ratingSystem: s.user.ratingSystem,
             ratingRange: s.user.ratingRange,
           })
-          .then(({ data }: { data: any }) => {
+          .then(({ data }: { data: User }) => {
             set(([s, appState]) => {
+              s.setUser(data);
               appState.repertoireState.positionReports = {};
               appState.repertoireState.fetchNeededPositionReports();
               appState.repertoireState.fetchRepertoire();
+
+              const identifyObj = new Identify();
+              identifyObj.set("rating_range", s.user.ratingRange);
+              identifyObj.set("rating_system", s.user.ratingSystem);
+              identifyObj.set("computed_rating", s.user.eloRange);
+              identify(identifyObj);
             });
           })
           .finally(() => {

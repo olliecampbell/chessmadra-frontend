@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { useIsMobile } from "app/utils/isMobile";
@@ -152,6 +152,15 @@ export const RepertoirePageLayout = ({
 export const NavDropdown = ({ children, title }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: isOpen ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isOpen]);
   useOutsideClick(ref, (e) => {
     if (isOpen) {
       setIsOpen(false);
@@ -163,7 +172,7 @@ export const NavDropdown = ({ children, title }) => {
   return (
     <Pressable
       ref={ref}
-      style={s(c.row, c.alignCenter)}
+      style={s(c.row, c.alignCenter, c.noUserSelect)}
       onPress={() => {
         setIsOpen(!isOpen);
       }}
@@ -174,10 +183,11 @@ export const NavDropdown = ({ children, title }) => {
         className="fas fa-angle-down"
         style={s(c.fontSize(14), c.fg(c.grays[60]))}
       />
-      <View
+      <Animated.View
         style={s(
           c.absolute,
-          !isOpen && s(c.opacity(0), c.noPointerEvents),
+          c.opacity(fadeAnim),
+          !isOpen && c.noPointerEvents,
           c.zIndex(4),
           c.top("calc(100% + 8px)"),
           c.right(0),
@@ -190,7 +200,7 @@ export const NavDropdown = ({ children, title }) => {
         )}
       >
         {children}
-      </View>
+      </Animated.View>
     </Pressable>
   );
 };
