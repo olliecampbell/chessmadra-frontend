@@ -11,12 +11,14 @@ export default function SharedRepertoireView() {
   const [searchParams] = useSearchParams();
   let shareId = searchParams.get("id");
   useEffect(() => {
-    fetchSharedRepertoire(shareId as string);
+    if (shareId) {
+      fetchSharedRepertoire(shareId as string);
+    }
   }, []);
   return (
     <>
       <PageContainer hideNavBar hideIcons>
-        <RepertoireBrowsingView />
+        <RepertoireBrowsingView shared />
       </PageContainer>
       <HeadSiteMeta
         siteMeta={{

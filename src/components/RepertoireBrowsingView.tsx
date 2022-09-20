@@ -38,7 +38,7 @@ import { BP, useResponsive } from "app/utils/useResponsive";
 
 const VERTICAL_BREAKPOINT = BP.md;
 
-export const RepertoireBrowsingView = ({}: {}) => {
+export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   const [
     activeSide,
     isBrowsing,
@@ -60,9 +60,13 @@ export const RepertoireBrowsingView = ({}: {}) => {
   ]);
   let { side: paramSide } = useParams();
   useEffect(() => {
-    if ((paramSide !== activeSide || !isBrowsing) && !repertoireLoading) {
+    if (
+      (paramSide !== activeSide || !isBrowsing) &&
+      !repertoireLoading &&
+      !shared
+    ) {
       quick((s) => {
-        s.startBrowsing(paramSide as Side);
+        s.startBrowsing((paramSide as Side) ?? "white");
       });
     }
   }, [repertoireLoading]);
@@ -169,7 +173,7 @@ export const SwitchSideButton = () => {
   return (
     <Button
       style={s(
-        c.buttons.extraDark,
+        c.buttons.darkFloater,
         // isMobile && c.bg(c.grays[70]),
         c.selfStretch,
         !isMobile && c.py(16),
@@ -185,7 +189,7 @@ export const SwitchSideButton = () => {
     >
       <CMText
         style={s(
-          c.buttons.extraDark.textStyles,
+          c.buttons.darkFloater.textStyles,
           c.fontSize(isMobile ? 14 : 16)
         )}
       >
@@ -196,7 +200,7 @@ export const SwitchSideButton = () => {
           <Spacer width={8} />
           <CMText
             style={s(
-              c.buttons.extraDark.textStyles,
+              c.buttons.darkFloater.textStyles,
               c.fontSize(isMobile ? 16 : 18),
               c.weightSemiBold
             )}
@@ -364,10 +368,10 @@ export const BrowsingMissesView = React.memo(() => {
 });
 
 export const BrowsingSectionsView = React.memo(() => {
-  const [sections, quick] = useRepertoireState((s) => [
-    s.browsingState.sections,
-    s.quick,
-  ]);
+  const [sections, quick, readOnly] = useRepertoireState(
+    (s) => [s.browsingState.sections, s.quick, s.browsingState.readOnly],
+    true
+  );
   const isMobile = useIsMobile();
   return (
     <View style={s(c.column)}>
@@ -625,9 +629,14 @@ const LineView = ({ line }: { line: BrowserLine }) => {
       ref={ref}
       onPress={() => {
         quick((s) => {
-          s.startEditing(activeSide);
-          s.chessboardState.playPgn(line.pgn);
-          trackEvent(`browsing.line_tapped`);
+          if (s.browsingState.readOnly) {
+            trackEvent(`shared_repertoire.line_tapped`);
+            s.analyzeLineOnLichess(line.line);
+          } else {
+            s.startEditing(activeSide);
+            s.chessboardState.playPgn(line.pgn);
+            trackEvent(`browsing.line_tapped`);
+          }
         });
       }}
       style={s(

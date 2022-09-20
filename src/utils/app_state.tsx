@@ -202,6 +202,12 @@ const customEqualityCheck = (
     return arrayEqual;
   }
   if (isObject(a) && isObject(b)) {
+    if (Object.keys(a).length !== Object.keys(b).length) {
+      if (debug) {
+        logUnequal(a, b, path, stackTrace);
+      }
+      return false;
+    }
     let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
     if (allKeys.size > 100) {
       logExpensive(a, b, path, allKeys.size, stackTrace);

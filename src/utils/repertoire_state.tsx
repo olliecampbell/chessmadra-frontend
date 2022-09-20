@@ -134,7 +134,7 @@ export interface RepertoireState {
     text: string;
   }) => void;
   startEditing: (side: Side) => void;
-  startBrowsing: (side: Side) => void;
+  startBrowsing: (side: Side, skipNavigation?: boolean) => void;
   showImportView?: boolean;
   startImporting: () => void;
   updateRepertoireStructures: () => void;
@@ -304,7 +304,7 @@ export const getInitialRepertoireState = (
         text: "Home",
         onPress: () => {
           set(([s, appState]) => {
-            appState.navigationState.push("/");
+            appState.navigationState.push("/", { removeParams: true });
             s.backToOverview();
           });
         },
@@ -956,6 +956,7 @@ export const getInitialRepertoireState = (
           s.updateQueue(false);
         }
         s.showImportView = false;
+        s.browsingState.readOnly = false;
         s.backToStartPosition();
         s.reviewSide = null;
         s.isReviewing = false;
@@ -985,9 +986,14 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         s.showImportView = true;
       }, "startImporting"),
-    startBrowsing: (side: Side) =>
+    startBrowsing: (side: Side, skipNavigation: boolean) =>
       set(([s, gs]) => {
-        gs.navigationState.push(`/openings/${side}/browse`);
+        console.log("Starting to browse", side);
+        console.log({ skipNavigation });
+        console.trace();
+        if (!skipNavigation) {
+          gs.navigationState.push(`/openings/${side}/browse`);
+        }
         let breadcrumbs = [
           {
             text: `${capitalize(side)}`,
@@ -1200,9 +1206,10 @@ export const getInitialRepertoireState = (
               });
             }),
         ]).then(() => {
-          set(([s]) => {
+          set(([s, appState]) => {
             s.browsingState.readOnly = true;
-            s.startBrowsing("white");
+            // window.location.search = "";
+            s.startBrowsing("white", true);
           });
         });
       }),

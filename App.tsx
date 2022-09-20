@@ -113,7 +113,7 @@ export default function App() {
                 <Route path="/openings" element={<RepertoireBuilder />} />
                 <Route
                   path="/openings/:side/browse"
-                  element={<RepertoireBrowsingView />}
+                  element={<RepertoireBrowsingView shared={false} />}
                 />
                 <Route path="/openings/review" element={<RepertoireReview />} />
                 <Route
