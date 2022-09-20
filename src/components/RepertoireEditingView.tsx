@@ -630,6 +630,7 @@ const EditingTabPicker = () => {
       style={s(
         c.column,
         vertical && s(c.selfCenter),
+        c.fullWidth,
         c.maxWidth(responsive.switch(600, [BP.xl, 700]))
       )}
     >
