@@ -224,7 +224,6 @@ export const RepertoireEditingView = () => {
 
   const responsive = useResponsive();
   const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
-  console.log("WHAT?", c.minmax(400, "100%"));
   return (
     <>
       <DeleteMoveConfirmationModal />

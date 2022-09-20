@@ -10,6 +10,7 @@ import {
   isEmpty,
   filter,
   isNil,
+  last,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -288,6 +289,8 @@ const Response = ({
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoveringProps } = useHovering();
+  const { hovering: hoveringCheckbox, hoveringProps: hoveringCheckboxProps } =
+    useHovering();
   const { suggestedMove, repertoireMove, incidence } = tableResponse;
   const [
     playSan,
@@ -452,13 +455,20 @@ const Response = ({
     );
   }
   let newOpeningName = null;
-  let [currentOpeningName] = currentEcoCode
+  let [currentOpeningName, currentVariations] = currentEcoCode
     ? getAppropriateEcoName(currentEcoCode.fullName)
     : [];
   if (nextEcoCode) {
-    let [name] = getAppropriateEcoName(nextEcoCode.fullName);
+    let [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
     if (name != currentOpeningName) {
       newOpeningName = name;
+    }
+    let lastVariation = last(variations);
+    if (
+      name === currentOpeningName &&
+      lastVariation != last(currentVariations)
+    ) {
+      newOpeningName = last(variations);
     }
   }
   let annotationOrOpeningName = suggestedMove?.annotation ?? newOpeningName;
@@ -486,10 +496,27 @@ const Response = ({
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
           <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            <View style={s(c.px(12), c.center)}>
+            <Pressable
+              style={s(
+                c.px(12),
+                c.center,
+                !repertoireMove?.mine && c.noPointerEvents
+              )}
+              {...hoveringCheckboxProps}
+              onPress={() => {
+                console.log("tapped on checkbox");
+                quick((s) => {
+                  s.deleteMoveState.modalOpen = true;
+                  s.deleteMoveState.response = repertoireMove;
+                  trackEvent(`editor.delete_move`);
+                });
+              }}
+            >
               <i
                 style={s(
-                  !repertoireMove && anyMine && !hoveringRow
+                  repertoireMove?.mine && hoveringCheckbox
+                    ? c.duotone(c.grays[90], c.reds[55])
+                    : !repertoireMove && anyMine && !hoveringRow
                     ? s(c.fg("transparent"))
                     : repertoireMove
                     ? c.duotone(c.grays[90], c.purples[55])
@@ -500,12 +527,14 @@ const Response = ({
                   c.fontSize(22)
                 )}
                 className={
-                  repertoireMove || hoveringRow
+                  repertoireMove?.mine && hoveringCheckbox
+                    ? `fa-duotone fa-square-xmark`
+                    : repertoireMove || hoveringRow
                     ? `fa-duotone fa-square-check`
                     : `fa-thin fa-square`
                 }
               ></i>
-            </View>
+            </Pressable>
             <View
               style={s(
                 c.fullHeight,

@@ -51,16 +51,13 @@ export const useResponsive = () => {
   // }, []);
   // console.log({ windowWidth });
   const breakpoint = getBreakpoint(windowWidth);
-  console.log("Breakpoint is ", breakpoint);
   return {
     isMobile: breakpoint <= ResponsiveBreakpoint.md,
     bp: breakpoint,
     switch: <T,>(def: T, ...xs: [ResponsiveBreakpoint, T][]): T => {
-      console.log({ xs });
       let result = def;
       xs.forEach(([bp, val]) => {
         if (breakpoint >= bp) {
-          console.log("ASsigning!", bp);
           result = val;
         }
       });
