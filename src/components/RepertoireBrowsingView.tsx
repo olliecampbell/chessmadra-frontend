@@ -525,6 +525,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
   const ref = useRef();
   const entry = useIntersectionObserver(ref, { freezeOnceVisible: true });
 
+  const responsive = useResponsive();
   const isVisible = !!entry?.isIntersecting;
 
   const chessboardSize = isMobile ? 120 : 120;
@@ -559,18 +560,20 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
       >
         <View style={s(c.row)}>
           <CMText
-            style={s(c.fontSize(14), c.weightBold, c.fg(c.colors.textPrimary))}
+            style={s(c.fontSize(16), c.weightBold, c.fg(c.colors.textPrimary))}
           >
             {miss.ecoCodeName ? miss.ecoCodeName : "Overall"}
           </CMText>
         </View>
-        <Spacer height={isMobile ? 6 : 4} />
+        <Spacer height={responsive.switch(12, [BP.md, 12])} />
         <CMText
           style={s(
             c.fontSize(isMobile ? 12 : 14),
             c.weightRegular,
             c.flexible,
-            c.overflowHidden
+            c.overflowHidden,
+            c.fg(c.grays[70]),
+            c.lineHeight("1.3rem")
           )}
         >
           {miss.lines[0]}
@@ -684,13 +687,15 @@ const LineView = ({ line }: { line: BrowserLine }) => {
             ></i>
           </Pressable>
         </View>
-        <Spacer height={responsive.switch(12, [BP.md, 18])} />
+        <Spacer height={responsive.switch(12, [BP.md, 12])} />
         <CMText
           style={s(
             c.fontSize(isMobile ? 12 : 14),
             c.weightRegular,
+            c.fg(c.grays[70]),
             c.flexible,
-            c.overflowHidden
+            c.overflowHidden,
+            c.lineHeight("1.3rem")
           )}
         >
           {debugUi
