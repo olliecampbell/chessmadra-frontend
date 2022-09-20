@@ -27,6 +27,7 @@ import {
   useAppState,
   useDebugState,
   useRepertoireState,
+  useUserState,
 } from "app/utils/app_state";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
@@ -79,9 +80,7 @@ export const RepertoireMovesTable = ({
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
-  let [currentThreshold] = useRepertoireState((s) => [
-    s.getCurrentThreshold(activeSide),
-  ]);
+  let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
   let sections = getSections({

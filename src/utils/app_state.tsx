@@ -366,3 +366,7 @@ export const useAppState = <T,>(fn: (_: AppState) => T, debug?: boolean) => {
 export const getAppState = () => {
   return useAppStateInternal.getState();
 };
+
+export const quick = (fn: (_: AppState) => any) => {
+  getAppState().quick(fn);
+};

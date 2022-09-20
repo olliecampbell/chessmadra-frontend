@@ -15,7 +15,7 @@ import { formatStockfishEval } from "app/utils/stockfish";
 import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { useRepertoireState } from "app/utils/app_state";
+import { quick, useRepertoireState } from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const AddedLineModal = () => {
@@ -23,7 +23,14 @@ export const AddedLineModal = () => {
 
   const isMobile = useIsMobile();
   return (
-    <Modal onClose={() => {}} visible={!isNil(stage)}>
+    <Modal
+      onClose={() => {
+        quick((s) => {
+          s.repertoireState.addedLineState = null;
+        });
+      }}
+      visible={!isNil(stage)}
+    >
       <View
         style={s(
           c.column,
@@ -224,7 +231,7 @@ const AddedLineOverview = () => {
           style={s(
             c.column,
             c.pl(isMobile ? 0 : 12),
-            c.py(isMobile ? 0 : 18),
+            c.py(isMobile ? 0 : 8),
             c.flexShrink(1),
             c.constrainWidth
           )}

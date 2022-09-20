@@ -25,14 +25,14 @@ import { createStaticChessState } from "app/utils/chessboard_state";
 import { CMText } from "./CMText";
 import { RepertoireEditingView } from "./RepertoireEditingView";
 import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
-import { useEloRangeWarning } from "./useEloRangeWarning";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
-import { useRepertoireState, useDebugState } from "app/utils/app_state";
+import { useRepertoireState, useDebugState, quick } from "app/utils/app_state";
 import { RepertoireReview } from "./RepertoireReview";
 import { SideSettingsModal } from "./SideSettingsModal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
+import { ProfileModal } from "./ProfileModal";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
@@ -74,6 +74,7 @@ export const RepertoireBuilder = () => {
           description: OPENINGS_DESCRIPTION,
         }}
       />
+      <ProfileModal />
       <DeleteMoveConfirmationModal />
     </>
   );
@@ -154,6 +155,7 @@ export const RepertoireBuilder = () => {
         hideNavBar: isEditing || isBrowsing,
       }}
     >
+      {etcChildren}
       {inner}
     </PageContainer>
   );
@@ -597,7 +599,6 @@ const BiggestMissBoards = ({ side }: { side: Side }) => {
 
 const RepertoireOverview = ({}: {}) => {
   const isMobile = useIsMobile();
-  const { eloWarning } = useEloRangeWarning({});
   return (
     <View style={s(c.column, c.constrainWidth)}>
       <View style={s(c.column, c.constrainWidth, c.alignCenter)}>
@@ -605,12 +606,6 @@ const RepertoireOverview = ({}: {}) => {
           <>
             <Spacer height={24} />
             <ReviewMovesView {...{ isMobile, side: null }} />
-            {eloWarning && (
-              <>
-                <Spacer height={24} />
-                {eloWarning}
-              </>
-            )}
             <Spacer height={36} />
           </>
         )}
@@ -743,22 +738,8 @@ const ImportButton = () => {
 };
 
 const SettingsButton = () => {
-  const [quick] = useRepertoireState((s) => [s.quick]);
-
-  const { eloWarning, isEloModalOpen, setIsEloModalOpen, eloModal } =
-    useEloRangeWarning({
-      separate: true,
-    });
-  useEffect(() => {
-    setOpen(false);
-  }, [isEloModalOpen]);
-  const { open, setOpen, modal } = useModal({
-    content: <>eloWarning</>,
-    isOpen: false,
-  });
   return (
     <>
-      {eloModal}
       <Button
         style={s(
           c.buttons.basicSecondary,
@@ -768,7 +749,9 @@ const SettingsButton = () => {
           c.selfStretch
         )}
         onPress={() => {
-          setIsEloModalOpen(true);
+          quick((s) => {
+            s.userState.profileModalOpen = true;
+          });
         }}
       >
         <CMText style={s(c.buttons.basicSecondary.textStyles, c.fontSize(20))}>
@@ -830,7 +813,6 @@ const ShareRepertoireButton = () => {
 };
 
 const ExtraActions = () => {
-  const { eloWarning } = useEloRangeWarning({});
   let [getMyResponsesLength] = useRepertoireState((s) => [
     s.getMyResponsesLength,
   ]);
@@ -838,12 +820,6 @@ const ExtraActions = () => {
   // let hasNoMovesAtAll = failOnAny(true);
   return (
     <View style={s(c.width(280))}>
-      {eloWarning && (
-        <>
-          {eloWarning}
-          <Spacer height={12} />
-        </>
-      )}
       <ReviewMovesView {...{ side: null }} />
       {!hasNoMovesAtAll && <Spacer height={12} />}
       <ShareRepertoireButton />

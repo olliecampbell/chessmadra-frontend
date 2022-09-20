@@ -158,8 +158,10 @@ export const ChessboardView = ({
   disableDrag,
   onSquarePress: customOnSquarePress,
   styles,
+  shadow,
 }: {
   state?: ChessboardState;
+  shadow?: boolean;
   disableDrag?: boolean;
   onSquarePress?: any;
   styles?: any;
@@ -336,7 +338,7 @@ export const ChessboardView = ({
           c.height(0),
           c.width("100%"),
           styles,
-          c.cardShadow,
+          shadow && c.cardShadow,
           {
             WebkitTouchCallout: "none",
             WebkitUserSelect: "none",

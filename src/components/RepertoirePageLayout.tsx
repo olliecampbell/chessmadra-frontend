@@ -9,6 +9,7 @@ import {
   getAppState,
   useAppState,
   useRepertoireState,
+  quick,
 } from "app/utils/app_state";
 import React, { useEffect, useRef, useState } from "react";
 import { HeadSiteMeta } from "./PageContainer";
@@ -18,9 +19,10 @@ import { Spacer } from "app/Space";
 import { Helmet } from "react-helmet";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
-import { useResponsive } from "app/utils/useResponsive";
+import { BP, useResponsive } from "app/utils/useResponsive";
 import { SelectOneOf } from "./SelectOneOf";
 import { useOutsideClick } from "app/components/useOutsideClick";
+import { ProfileModal } from "./ProfileModal";
 
 export const RepertoirePageLayout = ({
   children,
@@ -47,6 +49,7 @@ export const RepertoirePageLayout = ({
   ]);
   const navColor = c.colors.cardBackground;
   const responsive = useResponsive();
+  const shortUserUI = responsive.bp < BP.md;
   return (
     <View
       style={s(
@@ -66,6 +69,7 @@ export const RepertoirePageLayout = ({
         <meta name="theme-color" content={backgroundColor} />
       </Helmet>
       <DeleteMoveConfirmationModal />
+      <ProfileModal />
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",
@@ -91,39 +95,56 @@ export const RepertoirePageLayout = ({
               c.justifyBetween,
               c.row,
               c.fullHeight,
-              c.pb(16)
+              c.alignCenter,
+              c.pt(4)
             )}
           >
             <RepertoireNavBreadcrumbs />
-            <Spacer width={12} />
-            <NavDropdown title={ratingDescription}>
-              <View style={s(c.row)}>
-                <NavDropdownSelector
-                  options={["Lichess", "Chess.com", "FIDE", "USCF"]}
-                  title={"Rating system"}
-                  onSelect={(x: string) => {
-                    getAppState().userState.setRatingSystem(x);
-                  }}
-                  selected={user?.ratingSystem || "Lichess"}
-                />
-                <Spacer width={24} />
-                <NavDropdownSelector
-                  options={[
-                    "0-1100",
-                    "1100-1300",
-                    "1300-1500",
-                    "1500-1700",
-                    "1700-1900",
-                    "1900+",
-                  ]}
-                  title={"Rating range"}
-                  onSelect={(x: string) => {
-                    getAppState().userState.setRatingRange(x);
-                  }}
-                  selected={user?.ratingRange || "Lichess"}
-                />
-              </View>
-            </NavDropdown>
+            <Spacer width={12} grow />
+            <Pressable
+              style={s(c.row, c.alignEnd)}
+              onPress={() => {
+                quick((s) => {
+                  s.userState.profileModalOpen = true;
+                });
+              }}
+            >
+              {!shortUserUI && (
+                <>
+                  <CMText
+                    style={s(
+                      c.weightSemiBold,
+                      c.fg(c.grays[80]),
+                      c.fontSize(14)
+                    )}
+                  >
+                    {ratingDescription}
+                  </CMText>
+                  <Spacer width={12} />
+                </>
+              )}
+
+              <span
+                style={s(c.fontSize(shortUserUI ? 14 : 18))}
+                className={shortUserUI ? `fa-stack` : ""}
+              >
+                {shortUserUI && (
+                  <i
+                    style={s(c.fg(c.grays[80]))}
+                    className="fa fa-circle fa-stack-2x"
+                  />
+                )}
+                <i
+                  style={s(
+                    c.fg(c.grays[shortUserUI ? 20 : 80]),
+                    c.fontSize(shortUserUI ? 14 : 18)
+                  )}
+                  className={`fa-sharp fa-user ${
+                    shortUserUI ? "fa-stack-1x" : ""
+                  }`}
+                ></i>
+              </span>
+            </Pressable>
           </View>
         </View>
         <View
@@ -188,9 +209,10 @@ export const NavDropdown = ({ children, title }) => {
           c.absolute,
           c.opacity(fadeAnim),
           !isOpen && c.noPointerEvents,
+          // c.right(c.min(c.calc("100vw - 24px"), 20)),
           c.zIndex(4),
-          c.top("calc(100% + 8px)"),
           c.right(0),
+          c.top("calc(100% + 8px)"),
           c.bg(c.grays[90]),
           c.br(4),
           c.cardShadow,
@@ -205,75 +227,9 @@ export const NavDropdown = ({ children, title }) => {
   );
 };
 
-export const NavDropdownSelector = ({
-  options,
-  onSelect,
-  title,
-  selected,
-}: {
-  options: string[];
-  title: string;
-  onSelect: (x: string) => void;
-  selected: string;
-}) => {
-  return (
-    <View style={s(c.column, c.alignStart)}>
-      <CMText
-        style={s(c.fontSize(18), c.weightHeavy, c.fg(c.colors.textInverse))}
-      >
-        {title}
-      </CMText>
-      <Spacer height={12} />
-      <SelectOneOf
-        containerStyles={s(c.fullWidth)}
-        choices={options}
-        // cellStyles={s(c.bg(c.grays[15]))}
-        // horizontal={true}
-        activeChoice={selected}
-        onSelect={onSelect}
-        separator={() => {
-          return <Spacer height={0} />;
-        }}
-        renderChoice={(r: string, active: boolean, i: number) => {
-          return (
-            <Pressable
-              key={i}
-              style={s(c.selfStretch)}
-              onPress={() => {
-                onSelect(r);
-              }}
-            >
-              <View
-                style={s(
-                  c.py(6),
-                  c.px(8),
-                  c.column,
-                  active && c.bg(c.grays[80])
-                )}
-              >
-                <CMText
-                  style={s(
-                    c.fg(
-                      active
-                        ? c.colors.textInverse
-                        : c.colors.textInverseSecondary
-                    ),
-                    !active ? c.weightSemiBold : c.weightHeavy
-                  )}
-                >
-                  {r}
-                </CMText>
-              </View>
-            </Pressable>
-          );
-        }}
-      />
-    </View>
-  );
-};
-
 export const RepertoireNavBreadcrumbs = () => {
   const [breadcrumbs] = useRepertoireState((s) => [s.breadcrumbs]);
+  const responsive = useResponsive();
   return (
     <View style={s(c.row, c.alignCenter, c.scrollX, c.constrainWidth)}>
       {intersperse(
@@ -301,9 +257,9 @@ export const RepertoireNavBreadcrumbs = () => {
         }),
         (i) => {
           return (
-            <View key={i} style={s(c.mx(12))}>
-              <CMText style={s(c.fg(c.colors.textSecondary))}>
-                <i className="fa-sharp fa-angle-right" />
+            <View key={i} style={s(c.mx(responsive.switch(6, [BP.lg, 8])))}>
+              <CMText style={s(c.fg(c.grays[70]))}>
+                <i className="fa-light fa-angle-right" />
               </CMText>
             </View>
           );

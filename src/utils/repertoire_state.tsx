@@ -78,7 +78,6 @@ export enum AddLineFromOption {
 }
 
 export interface RepertoireState {
-  getCurrentThreshold(side: Side): number;
   quick: (fn: (_: RepertoireState) => void) => void;
   chessboardState: ChessboardState;
   repertoire: Repertoire;
@@ -1257,14 +1256,6 @@ export const getInitialRepertoireState = (
     getCurrentPositionReport: () =>
       get(([s]) => {
         return s.positionReports[s.getCurrentEpd()];
-      }),
-    getCurrentThreshold: (side: Side) =>
-      get(([s]) => {
-        // TODO: use user miss threshold
-        return Math.min(
-          0.03,
-          s.repertoireGrades[side]?.biggestMiss?.incidence ?? 1.0
-        );
       }),
     getCurrentEpd: () =>
       get(([s]) => {

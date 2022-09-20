@@ -604,7 +604,7 @@ const scoreTableResponses = (
 
 let EFFECTIVENESS_WEIGHTS = {
   startScore: 0.0,
-  eval: 0.2,
+  eval: 1.2,
   winrate: 4.0,
   playrate: 0.0,
   masterPlayrate: 8.0,

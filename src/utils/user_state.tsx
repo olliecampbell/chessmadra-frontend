@@ -6,15 +6,20 @@ import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import { formatEloRange } from "./elo_range";
 import client from "app/client";
+import { Side } from "./repertoire";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
   token?: string;
   user?: User;
+  profileModalOpen?: boolean;
   setUser: (user: User) => void;
   setRatingSystem: (system: string) => void;
   setRatingRange: (range: string) => void;
+  setTargetDepth: (t: number) => void;
   getUserRatingDescription: () => string;
+  getCurrentThreshold: () => number;
   authStatus: AuthStatus;
   tempUserUuid?: string;
   updateUserRatingSettings: () => void;
@@ -56,6 +61,14 @@ export const getInitialUserState = (
         }
       });
     },
+    getCurrentThreshold: () => {
+      return get(([s, appState]) => {
+        // let biggestMissIncidence =
+        //   (appState.repertoireState.repertoireGrades[side]?.biggestMiss
+        //     ?.incidence ?? 1.0) * 100;
+        return s.user.missThreshold ?? DEFAULT_THRESHOLD;
+      });
+    },
     getUserRatingDescription: () => {
       return get(([s]) => {
         return `${s.user?.ratingRange || DEFAULT_ELO_RANGE.join("-")} ${
@@ -70,6 +83,7 @@ export const getInitialUserState = (
           .post("/api/v1/user/elo_range", {
             ratingSystem: s.user.ratingSystem,
             ratingRange: s.user.ratingRange,
+            missThreshold: s.user.missThreshold,
           })
           .then(({ data }: { data: User }) => {
             set(([s, appState]) => {
@@ -82,6 +96,7 @@ export const getInitialUserState = (
               identifyObj.set("rating_range", s.user.ratingRange);
               identifyObj.set("rating_system", s.user.ratingSystem);
               identifyObj.set("computed_rating", s.user.eloRange);
+              identifyObj.set("target_depth", s.user.missThreshold);
               identify(identifyObj);
             });
           })
@@ -91,15 +106,23 @@ export const getInitialUserState = (
             });
           });
       }),
+    setTargetDepth: (t: number) => {
+      set(([s]) => {
+        s.user.missThreshold = t;
+        trackEvent(`user.update_miss_threshold`, { miss_threshold: t });
+        s.updateUserRatingSettings();
+      });
+    },
     setRatingSystem: (system: string) => {
       set(([s]) => {
-        console.log("Setting rating system to ", system);
+        trackEvent(`user.update_rating_system`, { rating_system: system });
         s.user.ratingSystem = system;
         s.updateUserRatingSettings();
       });
     },
     setRatingRange: (range: string) => {
       set(([s]) => {
+        trackEvent(`user.update_rating_range`, { rating_range: range });
         s.user.ratingRange = range;
         s.updateUserRatingSettings();
       });
@@ -112,3 +135,26 @@ export const getInitialUserState = (
 
   return initialState;
 };
+
+export const getRecommendedMissThreshold = (range: string) => {
+  if (range == "0-1100") {
+    return 4.0;
+  }
+  if (range == "1100-1300") {
+    return 2;
+  }
+  if (range == "1300-1500") {
+    return 2;
+  }
+  if (range == "1500-1700") {
+    return 1;
+  }
+  if (range == "1700-1900") {
+    return 0.5;
+  }
+  if (range == "1900-2800") {
+    return 0.25;
+  }
+};
+
+export const DEFAULT_THRESHOLD = 3.0;

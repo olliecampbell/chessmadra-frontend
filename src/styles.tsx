@@ -492,6 +492,9 @@ const min = (min, max) => {
 const max = (min, max) => {
   return `max(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
 };
+const calc = (c) => {
+  return `calc(${c})`;
+};
 
 export const c = {
   keyedProp,
@@ -643,5 +646,6 @@ export const c = {
   minmax,
   min,
   max,
+  calc,
   noUserSelect,
 };
