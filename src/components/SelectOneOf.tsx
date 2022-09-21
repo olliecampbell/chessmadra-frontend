@@ -55,18 +55,18 @@ export const SelectOneOf = <T,>({
                 key={i}
                 style={s(
                   active &&
-                  tabStyle &&
-                  c.borderBottom(`2px solid ${c.grays[90]}`),
+                    tabStyle &&
+                    c.borderBottom(`2px solid ${c.grays[90]}`),
                   c.row,
                   !tabStyle && c.bg(active ? c.grays[80] : c.grays[25]),
                   !tabStyle && c.py(8),
                   tabStyle && c.pb(4),
                   c.px(12),
                   !isLast &&
-                  !tabStyle &&
-                  (horizontal ? c.borderRight : c.borderBottom)(
-                    `1px solid ${c.grays[15]}`
-                  ),
+                    !tabStyle &&
+                    (horizontal ? c.borderRight : c.borderBottom)(
+                      `1px solid ${c.grays[15]}`
+                    ),
                   cellStyles
                 )}
               >
@@ -75,8 +75,8 @@ export const SelectOneOf = <T,>({
                     tabStyle
                       ? c.fg(active ? c.colors.textPrimary : c.grays[80])
                       : c.fg(
-                        active ? c.colors.textInverse : c.colors.textSecondary
-                      ),
+                          active ? c.colors.textInverse : c.colors.textSecondary
+                        ),
                     c.weightBold,
                     textStyles
                   )}
@@ -86,7 +86,9 @@ export const SelectOneOf = <T,>({
               </Pressable>
             );
           } else {
-            return rendered;
+            return (
+              <React.Fragment key={`space-${i}`}>{rendered}</React.Fragment>
+            );
           }
         }),
         (i) => {
