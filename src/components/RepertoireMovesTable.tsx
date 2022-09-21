@@ -89,9 +89,7 @@ export const RepertoireMovesTable = ({
   });
   let [expanded, setExpanded] = useState(false);
   const isMobile = useIsMobile();
-  let MAX_TRUNCATED = isMobile ? 4 : 6;
   let MIN_TRUNCATED = isMobile ? 2 : 3;
-  let truncated = responses.length > MAX_TRUNCATED && !expanded;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
@@ -102,13 +100,11 @@ export const RepertoireMovesTable = ({
       if (r.repertoireMove) {
         return true;
       }
-      if (i > MAX_TRUNCATED) {
-        return false;
-      }
       return i < MIN_TRUNCATED || r.repertoireMove || r.score > 0;
     }) as TableResponse[];
   }
   let numTruncated = responses.length - trimmedResponses.length;
+  let truncated = numTruncated > 0;
   return (
     <View style={s(c.column)}>
       {!isMobile && <RepertoireEditingHeader>{header}</RepertoireEditingHeader>}
