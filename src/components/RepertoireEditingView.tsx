@@ -501,7 +501,11 @@ const scoreTableResponses = (
         }
         if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
           let eval_loss = Math.abs(
-            Math.max(report.stockfish.eval - stockfish.eval, 0)
+            Math.max(
+              (report.stockfish.eval - stockfish.eval) *
+                (side === "black" ? -1 : 1),
+              0
+            )
           );
           scoreTable.factors.push({
             source: TableResponseScoreSource.Eval,
