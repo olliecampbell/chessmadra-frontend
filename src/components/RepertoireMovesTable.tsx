@@ -11,6 +11,7 @@ import {
   filter,
   isNil,
   last,
+  every,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -23,6 +24,7 @@ import { GameResultsBar } from "./GameResultsBar";
 import {
   formatPlayPercentage,
   getPlayRate,
+  getTotalGames,
 } from "app/utils/results_distribution";
 import {
   useAppState,
@@ -41,11 +43,14 @@ import {
   getMoveRating,
   getMoveRatingIcon,
   getWinPercentage,
+  MoveRating,
 } from "app/utils/move_inaccuracy";
 
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  bestMove?: boolean;
+  moveRating?: MoveRating;
   repertoireMove?: RepertoireMove;
   suggestedMove?: SuggestedMove;
   incidence?: number;
@@ -84,12 +89,13 @@ export const RepertoireMovesTable = ({
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
+  const isMobile = useIsMobile();
   let sections = getSections({
     myTurn,
+    isMobile,
   });
   let [expanded, setExpanded] = useState(false);
-  const isMobile = useIsMobile();
-  let MIN_TRUNCATED = isMobile ? 2 : 3;
+  let MIN_TRUNCATED = isMobile ? 4 : 4;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
@@ -178,9 +184,22 @@ export const RepertoireMovesTable = ({
   );
 };
 
-let getSections = ({ myTurn }: { myTurn: boolean }) => {
+let getSections = ({
+  myTurn,
+  isMobile,
+}: {
+  myTurn: boolean;
+  isMobile: boolean;
+}) => {
   let [activeSide] = useRepertoireState((s) => [s.activeSide]);
   let sections = [];
+
+  let na = <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
+  let notEnoughGames = (
+    <CMText style={s(c.fg(c.grays[50]))}>
+      {isMobile ? "N/A" : "Not enough games"}
+    </CMText>
+  );
   if (!myTurn) {
     sections.push({
       width: 40,
@@ -194,7 +213,7 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
           isNaN(playRate) ||
           formatPlayPercentage(playRate) === "0%"
         ) {
-          return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
+          return na;
         }
         return (
           <>{<CMText style={s()}>{formatPlayPercentage(playRate)}</CMText>}</>
@@ -252,20 +271,25 @@ let getSections = ({ myTurn }: { myTurn: boolean }) => {
     header: "Eval",
   });
   sections.push({
-    width: 120,
-    content: ({ suggestedMove, positionReport, side }) => (
-      <>
-        {suggestedMove && (
-          <View style={s(c.width(100))}>
-            <GameResultsBar
-              activeSide={activeSide}
-              gameResults={suggestedMove.results}
-            />
-          </View>
-        )}
-      </>
-    ),
-    header: "Results at your level",
+    width: isMobile ? 100 : 140,
+    content: ({ suggestedMove, positionReport, side }) => {
+      if (getTotalGames(suggestedMove?.results) < 5) {
+        return notEnoughGames;
+      }
+      return (
+        <>
+          {suggestedMove && (
+            <View style={s(c.width(100))}>
+              <GameResultsBar
+                activeSide={activeSide}
+                gameResults={suggestedMove.results}
+              />
+            </View>
+          )}
+        </>
+      );
+    },
+    header: isMobile ? "Peer results" : "Results at your level",
   });
   return sections;
 };
@@ -287,7 +311,8 @@ const Response = ({
   const { hovering, hoveringProps } = useHovering();
   const { hovering: hoveringCheckbox, hoveringProps: hoveringCheckboxProps } =
     useHovering();
-  const { suggestedMove, repertoireMove, incidence } = tableResponse;
+  const { suggestedMove, repertoireMove, incidence, moveRating } =
+    tableResponse;
   const [
     playSan,
     currentLine,
@@ -321,11 +346,6 @@ const Response = ({
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
   let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
-  let moveRating = getMoveRating(
-    positionReport?.stockfish,
-    suggestedMove?.stockfish,
-    side
-  );
 
   let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
@@ -375,7 +395,7 @@ const Response = ({
           )}
         >
           <View
-            style={s(c.width(80), c.selfStretch, c.row, c.px(12), c.py(12))}
+            style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
           >
             <CMText
               style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(18))}
@@ -468,6 +488,24 @@ const Response = ({
     }
   }
   let annotationOrOpeningName = suggestedMove?.annotation ?? newOpeningName;
+  let bestMoveTag = tableResponse.bestMove && (
+    <CMText
+      style={s(
+        c.fg(c.grays[85]),
+        c.fontSize(12),
+        c.weightBold,
+        c.row,
+        c.alignCenter
+      )}
+    >
+      <i
+        className="fa-duotone fa-trophy"
+        style={s(c.fg(c.yellows[60]), c.fontSize(18))}
+      />
+      <Spacer width={4} />
+      Clear best move
+    </CMText>
+  );
 
   return (
     <View style={s(c.row, c.alignStart)} {...responseHoverProps}>
@@ -479,6 +517,7 @@ const Response = ({
         style={s(
           c.grow,
           c.flexible,
+          // tableResponse.bestMove && c.border(`1px solid ${c.yellows[60]}`),
           c.br(2),
           c.pr(8),
           c.py(12),
@@ -603,13 +642,21 @@ const Response = ({
               )}
             </View>
           </View>
-          {isMobile && annotationOrOpeningName && (
-            <View style={s(c.grow, c.pt(12), c.px(12), c.minWidth(0))}>
-              <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
-                {annotationOrOpeningName}
-              </CMText>
-            </View>
-          )}
+          <View style={s(c.column, c.pl(48), c.pr(12))}>
+            {isMobile && annotationOrOpeningName && (
+              <View style={s(c.grow, c.pt(12), c.minWidth(0))}>
+                <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
+                  {annotationOrOpeningName}
+                </CMText>
+              </View>
+            )}
+            {bestMoveTag && (
+              // TODO: dumb way to line up things here
+              <View style={s(c.grow, c.pt(8), c.row, c.justifyStart)}>
+                {bestMoveTag}
+              </View>
+            )}
+          </View>
           {debugUi && (
             <View style={s(c.row)}>
               <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>

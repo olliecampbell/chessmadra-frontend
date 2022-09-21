@@ -27,7 +27,7 @@ const getUnsidedWinPercentage = (stockfish: StockfishReport): number => {
   return 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * stockfish.eval)) - 1);
 };
 
-enum MoveRating {
+export enum MoveRating {
   Inaccuracy,
   Mistake,
   Blunder,

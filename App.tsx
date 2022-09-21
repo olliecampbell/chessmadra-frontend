@@ -158,7 +158,9 @@ export const GlobalParamsReader = () => {
   let debugUi = searchParams.get("debug-ui");
   useEffect(() => {
     quick((s) => {
-      s.debugState.debugUi = !isNil(debugUi);
+      if (debugUi) {
+        s.debugState.debugUi = !isNil(debugUi);
+      }
     });
   }, [debugUi]);
   return null;

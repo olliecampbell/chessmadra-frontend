@@ -1231,10 +1231,32 @@ export const getInitialRepertoireState = (
               }
               s.onRepertoireUpdate();
               // s.blah();
-              // s.startEditing("black");
-              // s.chessboardState.playPgn(
-              //   "1.e4 c6 2.d4 d5 3.e5 Bf5 4.Nf3 e6 5.Be2"
-              // );
+              s.startEditing("black");
+              s.chessboardState.playPgn(
+                lineToPgn([
+                  "e4",
+                  "e5",
+                  "Nf3",
+                  "Nc6",
+                  "Bc4",
+                  "Bc5",
+                  "c3",
+                  "Nf6",
+                  "d4",
+                  "exd4",
+                  "cxd4",
+                  "Bb4+",
+                  "Nc3",
+                  "Nxe4",
+                  "O-O",
+                  "Bxc3",
+                  "d5",
+                  "Bf6",
+                  "Re1",
+                  "O-O",
+                  "Rxe4",
+                ])
+              );
             });
           });
       }),

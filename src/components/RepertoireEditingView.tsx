@@ -13,6 +13,7 @@ import {
   times,
   values,
   sumBy,
+  every,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -50,6 +51,7 @@ import { failOnAny } from "app/utils/test_settings";
 import { START_EPD } from "app/utils/chess";
 import { formatLargeNumber } from "app/utils/number_formatting";
 import { BP, useResponsive } from "app/utils/useResponsive";
+import { getMoveRating } from "app/utils/move_inaccuracy";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const MoveLog = () => {
@@ -334,6 +336,25 @@ const Responses = React.memo(function Responses() {
     }
     tr.incidence = currentLineIncidence * moveIncidence;
   });
+  tableResponses.forEach((tr) => {
+    let moveRating = getMoveRating(
+      positionReport?.stockfish,
+      tr.suggestedMove?.stockfish,
+      side
+    );
+    tr.moveRating = moveRating;
+  });
+  if (ownSide) {
+    tableResponses.forEach((tr, i) => {
+      let allOthersInaccurate = every(tableResponses, (tr, j) => {
+        return !isNil(tr.moveRating) || j === i;
+      });
+      console.log({ sm: tr.suggestedMove });
+      if (allOthersInaccurate) {
+        tr.bestMove = true;
+      }
+    });
+  }
   let youCanPlay = filter(tableResponses, (tr) => {
     return activeSide === side;
   });
