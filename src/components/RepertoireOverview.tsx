@@ -464,7 +464,6 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
   const inverse = side === "black";
   const [backgroundColor, foregroundColor, iconColor] =
     getButtonColors(inverse);
-  const buttonHeight = getButtonHeight(responsive);
   return (
     <Button
       style={s(
@@ -508,7 +507,7 @@ const UpdateCoverageGoalButton = ({ side }: { side: Side }) => {
   const inverse = side === "black";
   const [backgroundColor, foregroundColor, iconColor] =
     getButtonColors(inverse);
-  const buttonHeight = getButtonHeight(responsive);
+  const buttonHeight = 32;
   return (
     <Button
       style={s(
@@ -517,7 +516,7 @@ const UpdateCoverageGoalButton = ({ side }: { side: Side }) => {
         c.border("none"),
         c.selfStretch,
         c.px(24),
-        c.pt(4),
+        c.pt(0),
         c.height(buttonHeight),
         c.pr(0),
         c.pb(0)
@@ -892,7 +891,7 @@ const SummaryRow = ({ k, v, inverse, button }) => {
 };
 
 const getButtonHeight = (responsive: any) => {
-  return responsive.switch(36, [BP.lg, 36]);
+  return responsive.switch(36, [BP.lg, 48]);
 };
 
 function getRepertoireSideCardPadding(responsive) {
