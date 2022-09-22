@@ -157,4 +157,4 @@ export const getRecommendedMissThreshold = (range: string) => {
   }
 };
 
-export const DEFAULT_THRESHOLD = 3.0;
+export const DEFAULT_THRESHOLD = 4.0;

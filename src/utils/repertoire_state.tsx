@@ -286,10 +286,10 @@ export const getInitialRepertoireState = (
   };
 
   const overviewBreadcrumb = {
-    text: "Opening builder",
+    text: "Openings",
   };
   const clickableOverviewBreadcrumb = {
-    text: "Opening builder",
+    text: "Openings",
     onPress: () => {
       set(([s, appState]) => {
         appState.navigationState.push("/", { removeParams: true });
@@ -508,7 +508,6 @@ export const getInitialRepertoireState = (
             let cachedIncidence = s.epdIncidences[s.activeSide][position];
             if (cachedIncidence) {
               incidence = cachedIncidence;
-              console.log("Had a cached ");
               return;
             }
             if (!mine) {

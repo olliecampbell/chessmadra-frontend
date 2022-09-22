@@ -54,7 +54,8 @@ export const RepertoireOverview = ({}: {}) => {
           c.containerStyles(responsive.bp),
           c.py(24),
           vertical ? c.column : c.row,
-          c.justifyCenter
+          c.justifyCenter,
+          vertical ? c.alignCenter : c.alignStretch
         )}
       >
         {intersperse(
@@ -452,8 +453,9 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
     s.repertoireGrades[side]?.biggestMiss,
     s.quick,
   ]);
+  let height = 48;
   if (!biggestMiss) {
-    return null;
+    return <View style={s(c.height(height))}></View>;
   }
   const responsive = useResponsive();
   const { startBrowsing } = useRepertoireState((s) => ({
@@ -467,11 +469,12 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
     <Button
       style={s(
         c.buttons.basicSecondary,
-        c.bg(backgroundColor),
+        c.bg("none"),
         c.border("none"),
         c.selfStretch,
         c.px(24),
         c.pt(4),
+        c.height(height),
         c.pr(0),
         c.pb(0)
       )}
@@ -550,19 +553,22 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
   ]);
   let [queueLength] = useRepertoireState((s) => {
     return [s.getQueueLength(side)];
-  }, true);
+  });
   const inverse = side === "black";
   const [textColor, secondaryTextColor] = getTextColors(inverse);
   const padding = getRepertoireSideCardPadding(responsive);
+  const empty = numMoves === 0;
   const topPadding = responsive.switch(12, [BP.lg, 28], [BP.xl, 28]);
   // let biggestMissRow = createBiggestMissRow(state, side);
   return (
     <View
       style={s(
         c.column,
+        responsive.isMobile && c.fullWidth,
         c.maxWidth(600),
         c.shadow(0, 8, 16, 0, "rgba(0, 0, 0, 0.5)"),
         c.grow,
+        !isMobile && c.flexible,
         c.rounded,
         c.overflowHidden,
         c.bg(inverse ? c.grays[4] : c.grays[95]),
@@ -586,31 +592,85 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
       </CMText>
       <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} />
       <View style={s(c.row, c.selfCenter)}>
-        <SummaryRow
-          {...{
-            k: plural(numMoves, "Response"),
-            v: numMoves,
-            inverse,
-            button: <BrowseButton side={side} />,
-          }}
-        />
-        <Spacer
-          width={responsive.switch(32, [BP.xl, 48])}
-          height={24}
-          isMobile={responsive.isMobile}
-        />
-        <SummaryRow
-          {...{
-            k: "Due",
-            v: queueLength,
-            inverse,
-            button: <ReviewMovesView side={side} />,
-          }}
-        />
+        {empty ? (
+          <EmptyStatus side={side} />
+        ) : (
+          <>
+            <SummaryRow
+              {...{
+                k: plural(numMoves, "Response"),
+                v: numMoves,
+                inverse,
+                button: <BrowseButton side={side} />,
+              }}
+            />
+            <Spacer
+              width={responsive.switch(32, [BP.xl, 48])}
+              height={24}
+              isMobile={responsive.isMobile}
+            />
+            <SummaryRow
+              {...{
+                k: "Due",
+                v: queueLength,
+                inverse,
+                button: <ReviewMovesView side={side} />,
+              }}
+            />
+          </>
+        )}
       </View>
-      <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} />
-      <SideProgressReport side={side} />
+      <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} grow />
+      {numMoves > 0 && (
+        <>
+          <SideProgressReport side={side} />
+        </>
+      )}
     </View>
+  );
+};
+const EmptyStatus = ({ side }: { side: Side }) => {
+  const [biggestMiss] = useRepertoireState((s) => [
+    s.repertoireGrades[side]?.biggestMiss,
+  ]);
+  const responsive = useResponsive();
+  const inverse = side === "black";
+  const [backgroundColor, foregroundColor, iconColor] =
+    getButtonColors(inverse);
+  return (
+    <Pressable
+      style={s(c.column, c.maxWidth(200), c.alignEnd, c.clickable)}
+      onPress={() => {
+        quick((s) => {
+          s.repertoireState.startEditing(side as Side);
+          s.repertoireState.chessboardState.playPgn(biggestMiss.lines[0]);
+          trackEvent("overview.go_to_biggest_miss");
+        });
+      }}
+    >
+      <CMText style={s(c.weightSemiBold, c.fg(foregroundColor))}>
+        This repertoire is empty.{" "}
+        {side === "white"
+          ? "Let's start with your first move"
+          : "Let's start with what you're going to play against e4"}{" "}
+      </CMText>
+      <Spacer height={8} />
+      <View style={s(c.border("none"), c.pt(4), c.pr(0), c.pb(0), c.row)}>
+        <CMText
+          style={s(
+            c.fg(foregroundColor),
+            c.fontSize(responsive.switch(16)),
+            c.weightBold
+          )}
+        >
+          Take me there
+        </CMText>
+        <Spacer width={8} />
+        <CMText style={s(c.fg(iconColor), c.fontSize(18))}>
+          <i className="fa fa-arrow-right" />
+        </CMText>
+      </View>
+    </Pressable>
   );
 };
 
@@ -646,7 +706,6 @@ const SideProgressReport = ({ side }: { side: Side }) => {
       style={s(
         c.column,
         c.justifyStart,
-        c.grow,
         c.fullWidth,
         c.py(responsive.switch(18, [BP.lg, 24])),
         c.px(getRepertoireSideCardPadding(responsive)),
@@ -727,7 +786,7 @@ const SideProgressReport = ({ side }: { side: Side }) => {
           )}
         ></View>
       </View>
-      {!completed && (
+      {!completed && !(numMoves === 0) && (
         <>
           <Spacer height={8} />
           <View style={s(c.selfEnd)}>

@@ -69,12 +69,7 @@ export const RepertoirePageLayout = ({
         c.fullWidth,
         c.bg(backgroundColor),
         c.grow,
-        !isMobile &&
-          s(
-            c.height("100vh"),
-            c.keyedProp("minHeight")("-webkit-fill-available"),
-            c.keyedProp("maxHeight")("-webkit-fill-available")
-          )
+        s(c.minHeight("100vh"))
       )}
     >
       <Helmet>
@@ -192,7 +187,9 @@ export const RepertoirePageLayout = ({
           )}
         >
           {!repertoireLoading ? (
-            <View style={s(c.pb(isMobile ? 92 : 128))}>{children}</View>
+            <View style={s(c.pb(isMobile ? 92 : 128), c.center)}>
+              {children}
+            </View>
           ) : (
             <BeatLoader color={c.grays[100]} size={20} />
           )}

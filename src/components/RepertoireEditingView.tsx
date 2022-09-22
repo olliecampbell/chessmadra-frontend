@@ -390,9 +390,7 @@ const Responses = React.memo(function Responses() {
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
             {...{
-              header: `Choose your ${
-                isEmpty(currentLine) ? "first" : "next"
-              } move`,
+              header: getResponsesHeader(currentLine),
               activeSide,
               side,
               responses: youCanPlay,
@@ -643,8 +641,9 @@ let PLAYRATE_WEIGHTS = {
 
 const EditingTabPicker = () => {
   const responsive = useResponsive();
-  const [selectedTab, quick] = useRepertoireState((s) => [
+  const [selectedTab, currentLine, quick] = useRepertoireState((s) => [
     s.editingState.selectedTab,
+    s.currentLine,
     s.quick,
   ]);
   const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
@@ -690,7 +689,9 @@ const EditingTabPicker = () => {
                   c.weightBold
                 )}
               >
-                {tab}
+                {tab === EditingTab.Responses
+                  ? getResponsesHeader(currentLine)
+                  : tab}
               </CMText>
             </Pressable>
           );
@@ -854,3 +855,7 @@ const PositionOverview = () => {
     </>
   );
 };
+
+function getResponsesHeader(currentLine: string[]): string {
+  return `Choose your ${isEmpty(currentLine) ? "first" : "next"} move`;
+}

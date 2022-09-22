@@ -34,6 +34,7 @@ import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { ProfileModal } from "./ProfileModal";
 import { RepertoireOverview } from "./RepertoireOverview";
+import { RepertoirePageLayout } from "./RepertoirePageLayout";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -87,7 +88,11 @@ export const RepertoireBuilder = () => {
     inner = <GridLoader color={c.primaries[40]} size={20} />;
     centered = true;
   } else if (showImportView) {
-    inner = <RepertoireWizard />;
+    return (
+      <RepertoirePageLayout>
+        <RepertoireWizard />
+      </RepertoirePageLayout>
+    );
   } else {
     if (isEditing) {
       return (

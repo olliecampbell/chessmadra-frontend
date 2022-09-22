@@ -1,6 +1,6 @@
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { first, isEmpty, isEqual, last, mapValues } from "lodash-es";
+import { cloneDeep, first, isEmpty, isEqual, last, mapValues } from "lodash-es";
 import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
@@ -277,7 +277,9 @@ export const createChessState = (
             toValue: 0.4,
             duration: duration ?? 100,
             useNativeDriver: true,
-          }).start();
+          }).start(({ finished }) => {
+            console.log("Finished with animating it in?", finished);
+          });
         });
       }),
     reversePreviewMove: () => {
@@ -434,25 +436,24 @@ export const createChessState = (
     },
     clearHighlightedSquares: () => {
       set((s) => {
-        // console.log("___CLEAR HIGHLIGHTED___");
-        // console.log(
-        //   "squares to clear",
-        //   logProxy(Array.from(s.currentHighlightedSquares))
-        // );
-        if (s.currentHighlightedSquares) {
-          s.currentHighlightedSquares.forEach((sq) => {
+        console.log("___CLEAR HIGHLIGHTED___");
+        console.log(
+          "squares to clear",
+          logProxy(Array.from(s.currentHighlightedSquares))
+        );
+        let squares = Array.from(s.currentHighlightedSquares);
+        if (squares) {
+          squares.forEach((sq) => {
+            s.currentHighlightedSquares.delete(sq);
             Animated.timing(s.squareHighlightAnims[sq], {
               toValue: 0.0,
               duration: 150,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }).start(({ finished }) => {
               set((s) => {
-                if (finished) {
-                  s.currentHighlightedSquares = new Set();
-                } else {
-                  s.currentHighlightedSquares.forEach((sq) => {
-                    s.squareHighlightAnims[sq].setValue(0.0);
-                  });
+                console.log({ sq, finished });
+                if (!finished && !s.currentHighlightedSquares.has(sq)) {
+                  s.squareHighlightAnims[sq].setValue(0.0);
                 }
               });
             });

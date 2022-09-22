@@ -102,6 +102,7 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
       s.userState.setTargetDepth(t);
     });
   };
+  const responsive = useResponsive();
   const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
   return (
     <View style={s(c.column, c.alignStart)}>
@@ -110,7 +111,7 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
       >
         Cover positions which occur in
       </CMText>
-      <Spacer height={4} />
+      <Spacer height={responsive.switch(4, [BP.lg, 12])} />
       <SelectOneOf
         containerStyles={s(c.fullWidth)}
         choices={options}
@@ -185,6 +186,7 @@ export const ProfileOptionDropdownSelector = ({
   onSelect: (x: string) => void;
   selected: string;
 }) => {
+  const responsive = useResponsive();
   return (
     <View style={s(c.column, c.alignStart, c.grow)}>
       <CMText
@@ -192,7 +194,7 @@ export const ProfileOptionDropdownSelector = ({
       >
         {title}
       </CMText>
-      <Spacer height={4} />
+      <Spacer height={responsive.switch(4, [BP.lg, 12])} />
       <SelectOneOf
         containerStyles={s(c.fullWidth)}
         choices={options}
@@ -214,6 +216,7 @@ export const ProfileOptionDropdownSelector = ({
             >
               <View
                 style={s(
+                  responsive.bp >= BP.lg && c.height(34),
                   c.py(6),
                   c.px(8),
                   c.column,

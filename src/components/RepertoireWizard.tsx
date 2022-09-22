@@ -437,6 +437,7 @@ const ImportOptions = ({
           const selected = openingSource === x.source;
           return (
             <Pressable
+              key={i}
               onPress={() => {
                 setOpeningSource(x.source);
               }}

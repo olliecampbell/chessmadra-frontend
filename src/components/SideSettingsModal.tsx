@@ -74,6 +74,51 @@ export const SideSettingsModal = () => {
         <View
           style={s(
             c.column,
+            c.alignStretch,
+            c.px(isMobile ? 12 : 24),
+            c.py(isMobile ? 12 : 24)
+          )}
+        >
+          <View style={s(c.row, c.alignStart)}>
+            <i
+              style={s(c.fontSize(24), c.fg(c.grays[30]), c.mt(4))}
+              className="fa-sharp fa-plus"
+            ></i>
+            <Spacer width={16} />
+            <View style={s(c.column, c.alignStart, c.flexible, c.grow)}>
+              <CMText
+                style={s(
+                  c.fg(c.colors.textPrimary),
+                  c.fontSize(18),
+                  c.flexShrink(0)
+                )}
+              >
+                Import
+              </CMText>
+              <Spacer height={4} />
+              <CMText style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
+                Go back to the import step, to import from a PGN, use pre-built
+                templates, or import from your Lichess games
+              </CMText>
+              <Spacer height={12} />
+              <Button
+                style={s(c.buttons.primary, c.height(36), c.selfEnd)}
+                onPress={() => {
+                  quick((s) => {
+                    s.startImporting();
+                    trackEvent("overview.import_to_repertoire");
+                    s.repertoireSettingsModalSide = null;
+                  });
+                }}
+              >
+                <CMText style={s(c.buttons.primary.textStyles)}>Import</CMText>
+              </Button>
+            </View>
+          </View>
+        </View>
+        <View
+          style={s(
+            c.column,
             c.px(isMobile ? 12 : 24),
             c.py(isMobile ? 12 : 24)
           )}
