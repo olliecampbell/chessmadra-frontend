@@ -82,7 +82,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
               </CMText>
             </View>
             <Spacer width={24} grow />
-            {hasPendingLineToAdd && <AddPendingLineButton />}
+            {<AddPendingLineButton />}
           </View>
         </View>
       </Animated.View>
@@ -96,15 +96,42 @@ const AddPendingLineButton = () => {
     addPendingLine,
     hasPendingLineToAdd,
     pendingLineHasConflictingMoves,
+    currentLineIncidence,
     quick,
   ] = useRepertoireState((s) => [
     s.isAddingPendingLine,
     s.addPendingLine,
     s.hasPendingLineToAdd,
     s.pendingLineHasConflictingMoves,
+    s.getIncidenceOfCurrentLine(),
     s.quick,
   ]);
   const isMobile = useIsMobile();
+  if (!hasPendingLineToAdd) {
+    return (
+      <View style={s(c.column, c.alignStart)}>
+        <CMText
+          style={s(
+            c.fontSize(16),
+            c.fg(c.colors.textPrimary),
+            c.weightSemiBold
+          )}
+        >
+          Expected in
+        </CMText>
+        <Spacer height={12} />
+        <CMText
+          style={s(
+            c.fontSize(14),
+            c.fg(c.colors.textSecondary),
+            c.minHeight(16)
+          )}
+        >
+          {(currentLineIncidence * 100).toFixed(1)}% of games
+        </CMText>
+      </View>
+    );
+  }
   return (
     <Button
       style={s(
@@ -144,11 +171,7 @@ const AddPendingLineButton = () => {
             c.fontSize(14)
           )}
         >
-          {hasPendingLineToAdd ? (
-            <>Save{!isMobile && " to repertoire"}</>
-          ) : (
-            "In repertoire"
-          )}
+          <>Save{!isMobile && " to repertoire"}</>
         </CMText>
       </CMText>
     </Button>

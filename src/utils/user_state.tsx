@@ -153,7 +153,7 @@ export const getRecommendedMissThreshold = (range: string) => {
     return 0.5;
   }
   if (range == "1900-2800") {
-    return 0.25;
+    return 0.5;
   }
 };
 

@@ -111,7 +111,7 @@ export const NavBar = (props: {}) => {
           onPress={() => {
             quick((s) => {
               s.repertoireState.backToOverview();
-              s.navigationState.push("/");
+              s.navigationState.push("/directory");
             });
           }}
         >

@@ -184,6 +184,7 @@ export interface RepertoireState {
   ecoCodeLookup: Record<string, EcoCode>;
   pawnStructureLookup: Record<string, PawnStructureDetails>;
   browsingState: BrowsingState;
+  epdIncidences: BySide<Record<string, number>>;
   editingState: {
     lastEcoCode?: EcoCode;
     selectedTab: EditingTab;
@@ -275,6 +276,27 @@ export const getInitialRepertoireState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
+  const homeBreadcrumb = {
+    text: "Home",
+    onPress: () => {
+      set(([s, appState]) => {
+        appState.navigationState.push("/directory", { removeParams: true });
+      });
+    },
+  };
+
+  const overviewBreadcrumb = {
+    text: "Opening builder",
+  };
+  const clickableOverviewBreadcrumb = {
+    text: "Opening builder",
+    onPress: () => {
+      set(([s, appState]) => {
+        appState.navigationState.push("/", { removeParams: true });
+        s.backToOverview();
+      });
+    },
+  };
   let initialState = {
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
@@ -299,22 +321,18 @@ export const getInitialRepertoireState = (
       etcModalOpen: false,
       addConflictingMoveModalOpen: false,
     },
-    breadcrumbs: [
-      {
-        text: "Home",
-        onPress: () => {
-          set(([s, appState]) => {
-            appState.navigationState.push("/", { removeParams: true });
-            s.backToOverview();
-          });
-        },
-      },
-    ],
+    breadcrumbs: [homeBreadcrumb, overviewBreadcrumb],
     setBreadcrumbs: (breadcrumbs: NavBreadcrumb[]) =>
       set(([s]) => {
-        s.breadcrumbs = [s.breadcrumbs[0], ...breadcrumbs];
+        let atRoot = isEmpty(breadcrumbs);
+        if (atRoot) {
+          s.breadcrumbs = [homeBreadcrumb, overviewBreadcrumb];
+        } else {
+          s.breadcrumbs = [clickableOverviewBreadcrumb, ...breadcrumbs];
+        }
       }),
     repertoireGrades: { white: null, black: null },
+    epdIncidences: { white: {}, black: {} },
     activeSide: "white",
     ecoCodeLookup: {},
     pawnStructureLookup: {},
@@ -487,6 +505,12 @@ export const getInitialRepertoireState = (
           ),
           ([position, san], i) => {
             let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
+            let cachedIncidence = s.epdIncidences[s.activeSide][position];
+            if (cachedIncidence) {
+              incidence = cachedIncidence;
+              console.log("Had a cached ");
+              return;
+            }
             if (!mine) {
               let positionReport = s.positionReports[position];
               if (positionReport) {
@@ -693,6 +717,18 @@ export const getInitialRepertoireState = (
       }),
     updateRepertoireStructures: () =>
       set(([s]) => {
+        console.log({ grades: s.repertoireGrades });
+        s.epdIncidences = mapSides(
+          s.repertoireGrades,
+          (repertoireSide: RepertoireGrade) => {
+            let incidences = {};
+            repertoireSide.biggestMisses.forEach((miss: RepertoireMiss) => {
+              incidences[miss.epd] = miss.incidence;
+            });
+            console.log({ incidences });
+            return incidences;
+          }
+        );
         s.myResponsesLookup = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
@@ -955,6 +991,7 @@ export const getInitialRepertoireState = (
           s.isReviewingWithCustomQueue = false;
           s.updateQueue(false);
         }
+        s.setBreadcrumbs([]);
         s.showImportView = false;
         s.browsingState.readOnly = false;
         s.backToStartPosition();
@@ -964,8 +1001,7 @@ export const getInitialRepertoireState = (
           s.queues[s.currentMove.moves[0].side].unshift(s.currentMove);
         }
         if (s.isCramming) {
-          console.log("Is cramming?");
-          s.queues = EMPTY_QUEUES;
+          s.updateQueue(false);
         }
         s.isCramming = false;
         s.currentMove = null;
@@ -1231,32 +1267,12 @@ export const getInitialRepertoireState = (
               }
               s.onRepertoireUpdate();
               // s.blah();
-              s.startEditing("black");
-              s.chessboardState.playPgn(
-                lineToPgn([
-                  "e4",
-                  "e5",
-                  "Nf3",
-                  "Nc6",
-                  "Bc4",
-                  "Bc5",
-                  "c3",
-                  "Nf6",
-                  "d4",
-                  "exd4",
-                  "cxd4",
-                  "Bb4+",
-                  "Nc3",
-                  "Nxe4",
-                  "O-O",
-                  "Bxc3",
-                  "d5",
-                  "Bf6",
-                  "Re1",
-                  "O-O",
-                  "Rxe4",
-                ])
-              );
+              // s.startEditing("black");
+              // s.chessboardState.playPgn(
+              //   lineToPgn([
+              //     "e4", "e5", "Nf3", "Nc6", "Bc4", "Bc5", "c3", "Nf6", "d4", "exd4", "cxd4", "Bb4+", "Nc3", "Nxe4", "O-O", "Bxc3", "d5", "Bf6", "Re1", "O-O", "Rxe4",
+              //   ])
+              // );
             });
           });
       }),

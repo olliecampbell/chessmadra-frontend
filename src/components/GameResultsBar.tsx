@@ -22,7 +22,6 @@ export const GameResultsBar = ({
   let total = getTotalGames(gameResults);
   let threshold = 0.2;
   let fontSize = smallNumbers ? 10 : 12;
-  console.log({ total });
   let whiteResults = (
     <View
       style={s(

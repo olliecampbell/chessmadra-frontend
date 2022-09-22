@@ -23,13 +23,21 @@ import { BP, useResponsive } from "app/utils/useResponsive";
 import { SelectOneOf } from "./SelectOneOf";
 import { useOutsideClick } from "app/components/useOutsideClick";
 import { ProfileModal } from "./ProfileModal";
+import { ShareRepertoireModal } from "./ShareRepertoireModal";
+import { SideSettingsModal } from "./SideSettingsModal";
+import { Link } from "react-router-dom";
+import { AuthStatus } from "app/utils/user_state";
 
 export const RepertoirePageLayout = ({
   children,
   bottom,
+  centered,
+  lighterBackground,
 }: {
   children: any;
   bottom?: any;
+  lighterBackground?: boolean;
+  centered?: boolean;
 }) => {
   const isMobile = useIsMobile();
   const [repertoireLoading, initState] = useRepertoireState((s) => [
@@ -42,12 +50,16 @@ export const RepertoirePageLayout = ({
       initState();
     }
   }, []);
-  const backgroundColor = c.grays[12];
-  const [user, ratingDescription] = useAppState((s) => [
+  const backgroundColor = lighterBackground ? c.grays[18] : c.grays[12];
+  const [user, ratingDescription, authStatus] = useAppState((s) => [
     s.userState.user,
     s.userState.getUserRatingDescription(),
+    s.userState.authStatus,
   ]);
-  const navColor = c.colors.cardBackground;
+  const needsLogin =
+    authStatus === AuthStatus.Unauthenticated ||
+    (authStatus === AuthStatus.Authenticated && user?.temporary);
+  const navColor = lighterBackground ? c.grays[8] : c.colors.cardBackground;
   const responsive = useResponsive();
   const shortUserUI = responsive.bp < BP.md;
   return (
@@ -70,13 +82,17 @@ export const RepertoirePageLayout = ({
       </Helmet>
       <DeleteMoveConfirmationModal />
       <ProfileModal />
+      <ShareRepertoireModal />
+      <SideSettingsModal />
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",
           description: OPENINGS_DESCRIPTION,
         }}
       />
-      <View style={s(isMobile ? s(c.grow) : c.flexShrink(1))}>
+      <View
+        style={s(isMobile ? s(c.grow) : c.flexShrink(1), centered && c.grow)}
+      >
         <View
           style={s(
             c.fullWidth,
@@ -102,26 +118,43 @@ export const RepertoirePageLayout = ({
             <RepertoireNavBreadcrumbs />
             <Spacer width={12} grow />
             <Pressable
-              style={s(c.row, c.alignEnd)}
+              style={s(c.row, c.alignCenter)}
               onPress={() => {
                 quick((s) => {
                   s.userState.profileModalOpen = true;
                 });
               }}
             >
-              {!shortUserUI && (
-                <>
+              {needsLogin ? (
+                <Link to="/login">
                   <CMText
                     style={s(
-                      c.weightSemiBold,
-                      c.fg(c.grays[80]),
-                      c.fontSize(14)
+                      c.mr(8),
+                      c.clickable,
+                      c.br(4),
+                      // c.fg(c.primaries[70]),
+                      c.weightBold,
+                      c.fontSize(isMobile ? 14 : 16)
                     )}
                   >
-                    {ratingDescription}
+                    Log in
                   </CMText>
-                  <Spacer width={12} />
-                </>
+                </Link>
+              ) : (
+                !shortUserUI && (
+                  <>
+                    <CMText
+                      style={s(
+                        c.weightSemiBold,
+                        c.fg(c.grays[80]),
+                        c.fontSize(14)
+                      )}
+                    >
+                      {ratingDescription}
+                    </CMText>
+                    <Spacer width={12} />
+                  </>
+                )
               )}
 
               <span
@@ -154,7 +187,8 @@ export const RepertoirePageLayout = ({
             c.center,
             c.justifyStart,
             c.flexShrink(1),
-            c.pt(isMobile ? 24 : 48)
+            c.pt(isMobile ? 24 : 48),
+            centered && s(c.grow, c.justifyCenter)
           )}
         >
           {!repertoireLoading ? (

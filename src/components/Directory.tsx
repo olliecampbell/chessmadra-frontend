@@ -67,21 +67,22 @@ export const Directory = () => {
             .filter((n) => !n.beta || hasBetaAccess)
             .map(({ path, title, description, beta, isNew }, i) => {
               return (
-                <Link to={path}>
-                  <View
-                    style={s(
-                      c.clickable,
-                      c.relative,
-                      c.column,
-                      c.flexible,
-                      c.px(isMobile ? 10 : 12),
-                      c.py(isMobile ? 8 : 16),
-                      c.br(4),
-                      c.overflowHidden,
-                      c.bg(c.grays[80])
-                      // c.shadow(0, 5, 25, 1, "rgba(255,255,255,0.5)")
-                    )}
-                  >
+                <Link
+                  style={s(
+                    c.clickable,
+                    c.relative,
+                    c.column,
+                    c.flexible,
+                    c.px(isMobile ? 10 : 12),
+                    c.py(isMobile ? 8 : 16),
+                    c.br(4),
+                    c.overflowHidden,
+                    c.bg(c.grays[80])
+                    // c.shadow(0, 5, 25, 1, "rgba(255,255,255,0.5)")
+                  )}
+                  to={path}
+                >
+                  <View>
                     {isNew && (
                       <View
                         style={s(

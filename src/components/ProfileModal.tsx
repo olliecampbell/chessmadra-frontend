@@ -96,7 +96,7 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
     s.getCurrentThreshold(),
   ]);
   const selected = missThreshold;
-  const options = [4, 2, 1, 0.5, 0.25];
+  const options = [10, 4, 2, 1, 0.5];
   const onSelect = (t: number) => {
     quick((s) => {
       s.userState.setTargetDepth(t);

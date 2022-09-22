@@ -445,9 +445,18 @@ export const createChessState = (
               toValue: 0.0,
               duration: 150,
               useNativeDriver: true,
-            }).start();
+            }).start(({ finished }) => {
+              set((s) => {
+                if (finished) {
+                  s.currentHighlightedSquares = new Set();
+                } else {
+                  s.currentHighlightedSquares.forEach((sq) => {
+                    s.squareHighlightAnims[sq].setValue(0.0);
+                  });
+                }
+              });
+            });
           });
-          s.currentHighlightedSquares = new Set();
         }
       });
     },

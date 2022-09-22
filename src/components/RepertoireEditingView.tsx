@@ -349,7 +349,6 @@ const Responses = React.memo(function Responses() {
       let allOthersInaccurate = every(tableResponses, (tr, j) => {
         return !isNil(tr.moveRating) || j === i;
       });
-      console.log({ sm: tr.suggestedMove });
       if (allOthersInaccurate) {
         tr.bestMove = true;
       }
