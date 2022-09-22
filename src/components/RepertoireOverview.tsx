@@ -568,7 +568,6 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         c.maxWidth(600),
         c.shadow(0, 8, 16, 0, "rgba(0, 0, 0, 0.5)"),
         c.grow,
-        !isMobile && c.flexible,
         c.rounded,
         c.overflowHidden,
         c.bg(inverse ? c.grays[4] : c.grays[95]),
@@ -591,7 +590,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         {capitalize(side)}
       </CMText>
       <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} />
-      <View style={s(c.row, c.selfCenter)}>
+      <View style={s(c.row, c.selfCenter, c.px(24))}>
         {empty ? (
           <EmptyStatus side={side} />
         ) : (
@@ -607,6 +606,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
             <Spacer
               width={responsive.switch(32, [BP.xl, 48])}
               height={24}
+              style={s(c.flexShrink)}
               isMobile={responsive.isMobile}
             />
             <SummaryRow
@@ -807,7 +807,7 @@ const SummaryRow = ({ k, v, inverse, button }) => {
       style={s(
         c.column,
         c.alignCenter,
-        !responsive.isMobile && c.width(responsive.switch(220))
+        !responsive.isMobile && c.width(responsive.switch(180, [BP.xl, 220]))
       )}
     >
       <View style={s(c.row, c.alignEnd)}>
