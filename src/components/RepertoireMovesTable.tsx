@@ -273,7 +273,10 @@ let getSections = ({
   sections.push({
     width: isMobile ? 100 : 140,
     content: ({ suggestedMove, positionReport, side }) => {
-      if (getTotalGames(suggestedMove?.results) < 5) {
+      if (
+        !suggestedMove?.results ||
+        getTotalGames(suggestedMove?.results) < 5
+      ) {
         return notEnoughGames;
       }
       return (
