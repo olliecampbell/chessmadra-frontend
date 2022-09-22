@@ -503,6 +503,49 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
   );
 };
 
+const UpdateCoverageGoalButton = ({ side }: { side: Side }) => {
+  const responsive = useResponsive();
+  const inverse = side === "black";
+  const [backgroundColor, foregroundColor, iconColor] =
+    getButtonColors(inverse);
+  const buttonHeight = getButtonHeight(responsive);
+  return (
+    <Button
+      style={s(
+        c.buttons.basicSecondary,
+        c.bg("none"),
+        c.border("none"),
+        c.selfStretch,
+        c.px(24),
+        c.pt(4),
+        c.height(buttonHeight),
+        c.pr(0),
+        c.pb(0)
+      )}
+      onPress={() => {
+        quick((s) => {
+          s.userState.profileModalOpen = true;
+          trackEvent("overview.update_coverage_goal");
+        });
+      }}
+    >
+      <CMText
+        style={s(
+          c.fg(foregroundColor),
+          c.fontSize(responsive.switch(16)),
+          c.weightBold
+        )}
+      >
+        Update coverage goal
+      </CMText>
+      <Spacer width={8} />
+      <CMText style={s(c.fg(iconColor), c.fontSize(18))}>
+        <i className="fa fa-arrow-right" />
+      </CMText>
+    </Button>
+  );
+};
+
 export const BrowseButton = ({ side }: { side: Side }) => {
   const responsive = useResponsive();
   const { startBrowsing } = useRepertoireState((s) => ({
@@ -681,10 +724,13 @@ const SideProgressReport = ({ side }: { side: Side }) => {
   const [backgroundColor, inProgressColor, completedColor] = inverse
     ? [c.grays[14], c.yellows[45], c.greens[50]]
     : [c.grays[80], c.yellows[65], c.greens[50]];
-  let [biggestMissIncidence, numMoves] = useRepertoireState((s) => [
-    s.repertoireGrades[side]?.biggestMiss?.incidence * 100,
-    s.myResponsesLookup?.[side]?.length,
-  ]);
+  let [biggestMissIncidence, numMoves, biggestMiss] = useRepertoireState(
+    (s) => [
+      s.repertoireGrades[side]?.biggestMiss?.incidence * 100,
+      s.myResponsesLookup?.[side]?.length,
+      s.repertoireGrades[side]?.biggestMiss,
+    ]
+  );
 
   const [textColor, secondaryTextColor] = getTextColors(inverse);
   const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(threshold);
@@ -786,11 +832,18 @@ const SideProgressReport = ({ side }: { side: Side }) => {
           )}
         ></View>
       </View>
-      {!completed && !(numMoves === 0) && (
+      {!completed ? (
         <>
           <Spacer height={8} />
           <View style={s(c.selfEnd)}>
             <SeeBiggestMissButton side={side} />
+          </View>
+        </>
+      ) : (
+        <>
+          <Spacer height={8} />
+          <View style={s(c.selfEnd)}>
+            <UpdateCoverageGoalButton side={side} />
           </View>
         </>
       )}
@@ -839,7 +892,7 @@ const SummaryRow = ({ k, v, inverse, button }) => {
 };
 
 const getButtonHeight = (responsive: any) => {
-  return responsive.switch(36, [BP.lg, 48]);
+  return responsive.switch(36, [BP.lg, 36]);
 };
 
 function getRepertoireSideCardPadding(responsive) {
