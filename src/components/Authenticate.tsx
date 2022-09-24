@@ -38,7 +38,11 @@ const Authenticate = (props) => {
             token: t,
           })
           .then(({ data }) => {
-            let { token, user } = data as any;
+            let { token, user, firstAuthentication } = data as any;
+
+            if (firstAuthentication) {
+              track("login.first_login");
+            }
             quick((s) => {
               s.token = token;
               s.setUser(user);
