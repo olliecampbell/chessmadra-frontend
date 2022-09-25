@@ -18,6 +18,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   positionHistory: string[];
   moveHistory: Move[];
   position?: Chess;
+  previewPosition?: Chess;
   futurePosition?: Chess;
   indicatorColor?: string;
   squareHighlightAnims: Record<Square, Animated.Value>;
@@ -181,6 +182,7 @@ export const createChessState = (
           // TODO: do this better
           s.positionHistory.pop();
           s.moveHistory.pop();
+          s.previewPosition = null;
           s.highlightLastMove();
           s.position.undo();
           s.updateMoveLogPgn();
@@ -193,6 +195,7 @@ export const createChessState = (
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
         s.position = new Chess();
+        s.previewPosition = null;
         s.clearHighlightedSquares();
         s.updateMoveLogPgn();
         s.getDelegate()?.onPositionUpdated?.();
@@ -284,6 +287,7 @@ export const createChessState = (
       }),
     reversePreviewMove: () => {
       set((s: ChessboardState) => {
+        s.previewPosition = null;
         s.isReversingPreviewMove = true;
         // @ts-ignore
         let [start, end]: { x: number; y: number }[] = [
@@ -335,6 +339,8 @@ export const createChessState = (
     animatePreviewMove: () => {
       set((s: ChessboardState) => {
         let move = s.nextPreviewMove;
+        s.previewPosition = s.position.clone();
+        s.previewPosition.move(s.nextPreviewMove);
         // s.nextPreviewMove = null;
         s.previewedMove = s.nextPreviewMove;
         s.isAnimatingPreviewMove = true;
@@ -469,6 +475,7 @@ export const createChessState = (
     makeMove: (m: Move | string) => {
       set((s) => {
         s.availableMoves = [];
+        s.previewPosition = null;
         s.activeFromSquare = null;
         s.clearHighlightedSquares();
         s.nextPreviewMove = null;

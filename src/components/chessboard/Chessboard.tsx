@@ -403,7 +403,7 @@ export const ChessboardView = ({
             pointerEvents="none"
           ></Animated.View>
           {Object.keys(SQUARES).map((square) => {
-            let pos = position;
+            let pos = state.previewPosition ?? position;
             let piece: Piece = null;
             if (pos) {
               piece = pos.get(square);
@@ -420,8 +420,9 @@ export const ChessboardView = ({
             } else {
             }
             if (
-              state.previewedMove?.from &&
-              square == state.previewedMove?.from
+              state.previewMove &&
+              (square == state.previewedMove?.from ||
+                (state.previewedMove?.to && square == state.previewedMove?.to))
             ) {
               animated = true;
               posStyles = animatedXYToPercentage(state.previewPieceMoveAnim);
