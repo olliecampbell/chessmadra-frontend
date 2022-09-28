@@ -467,7 +467,7 @@ const Response = ({
   let bestMoveTag = tableResponse.bestMove && (
     <CMText
       style={s(
-        c.fg(c.grays[85]),
+        c.fg(c.grays[20]),
         c.fontSize(12),
         c.weightBold,
         c.row,
