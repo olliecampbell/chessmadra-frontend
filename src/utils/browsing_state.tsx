@@ -44,8 +44,9 @@ import client from "app/client";
 import { createQuick } from "./quick";
 
 export enum BrowsingTab {
+  Position = "Position",
   Responses = "Responses",
-  Lines = "Saved lines",
+  Lines = "My lines",
   InstructiveGames = "Instructive games",
   Misses = "Biggest gaps",
 }

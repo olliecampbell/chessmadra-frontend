@@ -172,8 +172,10 @@ export const UserPropsSetter = () => {
     const identifyObj = new Identify();
     if (responsive.bp <= BP.md) {
       identifyObj.setOnce("mobile", "true");
+      identifyObj.set("last_device_family", "mobile");
     } else {
       identifyObj.setOnce("desktop", "true");
+      identifyObj.set("last_device_family", "desktop");
     }
     identify(identifyObj);
   }, [responsive.bp]);

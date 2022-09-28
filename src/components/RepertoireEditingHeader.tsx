@@ -8,7 +8,7 @@ export const RepertoireEditingHeader = ({ children }: { children: any }) => {
   return (
     <CMText
       style={s(
-        c.fg(c.colors.textPrimary),
+        c.fg(c.colors.textInverse),
         c.fontSize(18),
         c.weightBold,
         c.mb(-18)

@@ -107,7 +107,11 @@ const AddPendingLineButton = () => {
     s.quick,
   ]);
   const isMobile = useIsMobile();
-  if (!hasPendingLineToAdd) {
+  if (
+    !hasPendingLineToAdd &&
+    currentLineIncidence &&
+    currentLineIncidence < 1
+  ) {
     return (
       <View style={s(c.column, c.alignStart)}>
         <CMText
@@ -132,48 +136,51 @@ const AddPendingLineButton = () => {
       </View>
     );
   }
-  return (
-    <Button
-      style={s(
-        c.buttons.primary,
-        c.height(isMobile ? 36 : 54),
-        c.selfStretch,
-        hasPendingLineToAdd
-          ? c.bg(c.purples[45])
-          : s(c.border(`2px solid ${c.purples[45]}`), c.bg("transparent"))
-      )}
-      isLoading={isAddingPendingLine}
-      loaderProps={{ color: c.grays[75] }}
-      onPress={() => {
-        if (pendingLineHasConflictingMoves) {
-          quick((s) => {
-            s.editingState.addConflictingMoveModalOpen = true;
-          });
-        } else {
-          trackEvent("repertoire.add_pending_line");
-          addPendingLine();
-        }
-      }}
-    >
-      <CMText style={s(c.buttons.primary.textStyles, c.row, c.alignCenter)}>
-        <i
-          className="fa-sharp fa-check"
-          style={s(
-            c.fg(hasPendingLineToAdd ? c.grays[90] : c.purples[45]),
-            c.fontSize(20)
-          )}
-        />
-        <Spacer width={8} />
-        <CMText
-          style={s(
-            c.weightBold,
-            c.fg(hasPendingLineToAdd ? c.colors.textPrimary : c.purples[45]),
-            c.fontSize(14)
-          )}
-        >
-          <>Save{!isMobile && " to repertoire"}</>
+  if (hasPendingLineToAdd) {
+    return (
+      <Button
+        style={s(
+          c.buttons.primary,
+          c.height(isMobile ? 36 : 54),
+          c.selfStretch,
+          hasPendingLineToAdd
+            ? c.bg(c.purples[45])
+            : s(c.border(`2px solid ${c.purples[45]}`), c.bg("transparent"))
+        )}
+        isLoading={isAddingPendingLine}
+        loaderProps={{ color: c.grays[75] }}
+        onPress={() => {
+          if (pendingLineHasConflictingMoves) {
+            quick((s) => {
+              s.editingState.addConflictingMoveModalOpen = true;
+            });
+          } else {
+            trackEvent("repertoire.add_pending_line");
+            addPendingLine();
+          }
+        }}
+      >
+        <CMText style={s(c.buttons.primary.textStyles, c.row, c.alignCenter)}>
+          <i
+            className="fa-sharp fa-check"
+            style={s(
+              c.fg(hasPendingLineToAdd ? c.grays[90] : c.purples[45]),
+              c.fontSize(20)
+            )}
+          />
+          <Spacer width={8} />
+          <CMText
+            style={s(
+              c.weightBold,
+              c.fg(hasPendingLineToAdd ? c.colors.textPrimary : c.purples[45]),
+              c.fontSize(14)
+            )}
+          >
+            <>Save{!isMobile && " to repertoire"}</>
+          </CMText>
         </CMText>
-      </CMText>
-    </Button>
-  );
+      </Button>
+    );
+  }
+  return null;
 };

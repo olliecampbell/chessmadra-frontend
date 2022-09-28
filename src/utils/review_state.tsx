@@ -43,13 +43,6 @@ export interface QuizMove {
   line: string;
 }
 
-export enum BrowsingTab {
-  Responses = "Responses",
-  Lines = "Saved lines",
-  InstructiveGames = "Instructive games",
-  Misses = "Biggest gaps",
-}
-
 export interface ReviewPositionResults {
   correct: boolean;
   epd: string;

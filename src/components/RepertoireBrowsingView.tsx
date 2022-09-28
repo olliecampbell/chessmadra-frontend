@@ -123,7 +123,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                   // )
                 )}
               >
-                <PositionOverview />
+                <PositionOverview card={true} />
                 <Spacer height={responsive.switch(24)} />
                 <ResultsView />
               </View>
@@ -202,8 +202,9 @@ export const ResultsView = React.memo(function () {
             containerStyles={s(c.fullWidth, c.justifyBetween)}
             choices={[
               BrowsingTab.Responses,
+              ...(isMobile ? [BrowsingTab.Position] : []),
               BrowsingTab.Lines,
-              BrowsingTab.Misses,
+              ...(!isMobile ? [BrowsingTab.Misses] : []),
               // BrowsingTab.InstructiveGames,
             ]}
             activeChoice={selectedTab}
@@ -228,9 +229,12 @@ export const ResultsView = React.memo(function () {
                     c.column,
                     c.grow,
                     c.alignCenter,
-                    c.borderBottom(
-                      `3px solid ${active ? c.primaries[50] : c.grays[20]}`
-                    ),
+                    c.py(12),
+                    c.bg(active ? c.grays[95] : "transparent"),
+                    c.brt(2),
+                    // c.borderBottom(
+                    //   `6px solid ${active ? c.grays[95] : "transparent"}`
+                    // ),
                     c.zIndex(5),
                     c.px(isMobile ? 0 : 48),
                     c.pb(isMobile ? 8 : 8)
@@ -238,7 +242,7 @@ export const ResultsView = React.memo(function () {
                 >
                   <CMText
                     style={s(
-                      c.fg(active ? c.primaries[60] : c.grays[70]),
+                      c.fg(active ? c.grays[10] : c.grays[70]),
                       c.fontSize(16),
                       c.weightBold
                     )}
@@ -249,13 +253,17 @@ export const ResultsView = React.memo(function () {
               );
             }}
           />
-          <Spacer height={isMobile ? 36 : 24} />
         </>
       )}
-      {selectedTab === BrowsingTab.Responses && <Responses />}
-      {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}
-      {selectedTab === BrowsingTab.Misses && <BrowsingMissesView />}
-      {selectedTab === BrowsingTab.InstructiveGames && <InstructiveGamesView />}
+      <View style={s(c.bg(c.grays[95]), c.px(12), c.py(12), c.brb(2))}>
+        {selectedTab === BrowsingTab.Responses && <Responses />}
+        {selectedTab === BrowsingTab.Position && <PositionOverview />}
+        {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}
+        {selectedTab === BrowsingTab.Misses && <BrowsingMissesView />}
+        {selectedTab === BrowsingTab.InstructiveGames && (
+          <InstructiveGamesView />
+        )}
+      </View>
     </View>
   );
 });
@@ -311,7 +319,7 @@ export const BrowsingSectionsView = React.memo(() => {
             c.px(12),
             c.py(12),
             c.maxWidth(400),
-            c.selfCenter,
+            c.selfStretch,
             // c.bg(c.grays[10]),
             // c.border(`1px solid ${c.grays[10]}`),
             c.br(2)
@@ -322,14 +330,20 @@ export const BrowsingSectionsView = React.memo(() => {
               <CMText
                 style={s(
                   c.fontSize(22),
-                  c.fg(c.colors.textPrimary),
+                  c.fg(c.colors.textInverse),
                   c.weightBold
                 )}
               >
                 No lines found
               </CMText>
               <Spacer height={12} />
-              <CMText style={s(c.fontSize(14), c.lineHeight("1.3rem"))}>
+              <CMText
+                style={s(
+                  c.fontSize(14),
+                  c.lineHeight("1.3rem"),
+                  c.fg(c.colors.textInverse)
+                )}
+              >
                 You don't have any saved lines from this position.
               </CMText>
             </View>
@@ -367,8 +381,8 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
       <View style={s(c.row, c.alignCenter)}>
         <CMText
           style={s(
-            c.fg(c.colors.textPrimary),
-            c.fontSize(isMobile ? 18 : 22),
+            c.fg(c.colors.textInverse),
+            c.fontSize(isMobile ? 16 : 18),
             c.weightBold
           )}
         >
@@ -379,15 +393,15 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
         <Spacer width={8} />
         <CMText
           style={s(
-            c.fg(c.colors.textSecondary),
-            c.fontSize(isMobile ? 16 : 20),
+            c.fg(c.colors.textInverseSecondary),
+            c.fontSize(isMobile ? 16 : 18),
             c.weightThin
           )}
         >
           ({section.lines.length})
         </CMText>
       </View>
-      <Spacer height={isMobile ? 12 : 24} />
+      <Spacer height={isMobile ? 12 : 18} />
       <View
         style={s({
           display: "grid",
@@ -403,7 +417,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
           );
         })}
       </View>
-      <Spacer height={isMobile ? 12 : 18} />
+      <Spacer height={isMobile ? 12 : 12} />
       {truncated && (
         <Pressable
           style={s(
@@ -448,9 +462,9 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
         });
       }}
       style={s(
-        c.bg(c.colors.cardBackground),
+        c.bg(c.grays[97]),
         c.height(chessboardSize),
-        c.cardShadow,
+        c.lightCardShadow,
         c.br(2),
         c.overflowHidden,
         c.row,
@@ -468,7 +482,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
       >
         <View style={s(c.row)}>
           <CMText
-            style={s(c.fontSize(16), c.weightBold, c.fg(c.colors.textPrimary))}
+            style={s(c.fontSize(16), c.weightBold, c.fg(c.colors.textInverse))}
           >
             {miss.ecoCodeName ? miss.ecoCodeName : "Overall"}
           </CMText>
@@ -480,7 +494,7 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
             c.weightRegular,
             c.flexible,
             c.overflowHidden,
-            c.fg(c.grays[70]),
+            c.fg(c.grays[40]),
             c.lineHeight("1.3rem")
           )}
         >
@@ -494,16 +508,16 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
         <Spacer height={4} />
         <CMText
           style={s(
-            c.fontSize(isMobile ? 16 : 16),
+            c.fontSize(isMobile ? 14 : 14),
             c.weightBold,
-            c.fg(c.grays[85]),
+            c.fg(c.grays[30]),
             c.selfEnd
           )}
         >
           {formatIncidence(miss.incidence)} of games
         </CMText>
       </View>
-      <View style={s(c.size(chessboardSize - 2))}>
+      <View style={s(c.size(chessboardSize))}>
         {isVisible && (
           <ChessboardView
             onSquarePress={() => {
@@ -551,9 +565,10 @@ const LineView = ({ line }: { line: BrowserLine }) => {
         });
       }}
       style={s(
-        c.bg(c.colors.cardBackground),
+        c.bg(c.grays[97]),
         c.height(chessboardSize),
         c.cardShadow,
+        c.lightCardShadow,
         c.br(2),
         c.overflowHidden,
         c.row,
@@ -570,7 +585,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
       >
         <View style={s(c.row)}>
           <CMText
-            style={s(c.fontSize(16), c.weightBold, c.fg(c.colors.textPrimary))}
+            style={s(c.fontSize(16), c.weightBold, c.fg(c.colors.textInverse))}
           >
             {line.ecoCode?.fullName
               ? getAppropriateEcoName(line.ecoCode?.fullName)[1].join(", ")
@@ -590,7 +605,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
             }}
           >
             <i
-              style={s(c.fontSize(16), c.fg(c.failureShades[50]))}
+              style={s(c.fontSize(16), c.fg(c.failureShades[60]))}
               className="fa-sharp fa-trash"
             ></i>
           </Pressable>
@@ -600,7 +615,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
           style={s(
             c.fontSize(isMobile ? 12 : 14),
             c.weightRegular,
-            c.fg(c.grays[70]),
+            c.fg(c.grays[40]),
             c.flexible,
             c.overflowHidden,
             c.lineHeight("1.3rem")
@@ -614,7 +629,7 @@ const LineView = ({ line }: { line: BrowserLine }) => {
             : line.pgn}
         </CMText>
       </View>
-      <View style={s(c.size(chessboardSize - 2))}>
+      <View style={s(c.size(chessboardSize))}>
         {isVisible && (
           <ChessboardView
             onSquarePress={() => {

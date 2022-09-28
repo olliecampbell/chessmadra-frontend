@@ -190,7 +190,7 @@ const shadow = (x, y, blur, spread, color) => {
   };
 };
 const cardShadow = shadow(0, 0, 4, 0, "rgba(0, 0, 0, 0.5)");
-const lightCardShadow = shadow(0, 0, 4, 0, "rgba(0, 0, 0, 0.3)");
+const lightCardShadow = shadow(0, 2, 4, 0, "rgba(0, 0, 0, 0.06)");
 
 const white = (opacity: number) => {
   return `hsla(0, 0%, 100%, ${opacity}%)`;

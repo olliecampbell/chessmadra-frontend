@@ -152,14 +152,14 @@ export const RepertoireMovesTable = ({
         {truncated && (
           <>
             <Pressable
-              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
+              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[80]}`))}
               onPress={() => {
                 setExpanded(true);
                 trackEvent("repertoire.moves_table.show_more");
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[60]), c.weightSemiBold)}
+                style={s(c.fontSize(12), c.fg(c.grays[35]), c.weightSemiBold)}
               >
                 Show more moves <>({numTruncated})</>
               </CMText>
@@ -170,14 +170,14 @@ export const RepertoireMovesTable = ({
         {
           <>
             <Pressable
-              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
+              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[80]}`))}
               onPress={() => {
                 trackEvent("repertoire.moves_table.edit_annotations");
                 setEditingAnnotations(!editingAnnotations);
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[60]), c.weightSemiBold)}
+                style={s(c.fontSize(12), c.fg(c.grays[35]), c.weightSemiBold)}
               >
                 {editingAnnotations
                   ? "Stop editing annotations"
@@ -201,8 +201,9 @@ let getSections = ({
 }) => {
   let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
   let sections = [];
+  let textStyles = s(c.fg(c.grays[20]), c.weightSemiBold);
 
-  let na = <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
+  let na = <CMText style={s(textStyles)}>N/A</CMText>;
   let notEnoughGames = (
     <CMText style={s(c.fg(c.grays[50]))}>
       {isMobile ? "N/A" : "Not enough games"}
@@ -224,7 +225,13 @@ let getSections = ({
           return na;
         }
         return (
-          <>{<CMText style={s()}>{formatPlayPercentage(playRate)}</CMText>}</>
+          <>
+            {
+              <CMText style={s(textStyles)}>
+                {formatPlayPercentage(playRate)}
+              </CMText>
+            }
+          </>
         );
       },
       header: "Peers",
@@ -252,7 +259,13 @@ let getSections = ({
           return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
         }
         return (
-          <>{<CMText style={s()}>{formatPlayPercentage(playRate)}</CMText>}</>
+          <>
+            {
+              <CMText style={s(textStyles)}>
+                {formatPlayPercentage(playRate)}
+              </CMText>
+            }
+          </>
         );
       },
       header: "Masters",
@@ -266,9 +279,7 @@ let getSections = ({
           <>
             <Spacer width={0} grow />
             <View style={s(c.row, c.alignEnd)}>
-              <CMText
-                style={s(c.weightSemiBold, c.fontSize(14), c.fg(c.grays[75]))}
-              >
+              <CMText style={s(c.weightSemiBold, c.fontSize(14), textStyles)}>
                 {formatStockfishEval(suggestedMove?.stockfish)}
               </CMText>
             </View>
@@ -292,6 +303,7 @@ let getSections = ({
           {suggestedMove && (
             <View style={s(c.width(80))}>
               <GameResultsBar
+                onLightUi={true}
                 activeSide={activeSide}
                 gameResults={suggestedMove.results}
               />
@@ -378,20 +390,31 @@ const Response = ({
           style={s(
             c.grow,
             c.height(128),
+            c.lightCardShadow,
             c.br(2),
             // c.py(8),
             // c.pl(14),
             // c.pr(8),
-            c.bg(c.grays[10]),
             c.clickable,
             c.row
           )}
         >
           <View
-            style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
+            style={s(
+              c.width(120),
+              c.selfStretch,
+              c.row,
+              c.px(12),
+              c.py(12),
+              c.bg(c.grays[95])
+            )}
           >
             <CMText
-              style={s(c.fg(c.grays[60]), c.weightSemiBold, c.fontSize(18))}
+              style={s(
+                c.fg(c.colors.textInverse),
+                c.weightSemiBold,
+                c.fontSize(18)
+              )}
             >
               {moveNumber}
               {side === "black" ? "... " : "."}
@@ -400,7 +423,7 @@ const Response = ({
             <CMText
               key={sanPlus}
               style={s(
-                c.fg(c.grays[90]),
+                c.fg(c.colors.textInverse),
                 c.fontSize(18),
                 c.weightSemiBold,
                 c.keyedProp("letterSpacing")("0.04rem")
@@ -470,14 +493,14 @@ const Response = ({
         style={s(
           c.grow,
           c.flexible,
+          c.lightCardShadow,
           // tableResponse.bestMove && c.border(`1px solid ${c.yellows[60]}`),
           c.br(2),
           c.pr(8),
           c.py(12),
-          c.bg(hoveringRow ? c.grays[22] : c.colors.cardBackground),
+          c.bg(hoveringRow ? c.grays[100] : c.grays[97]),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
-          c.cardShadow,
           c.clickable,
           c.row
         )}
@@ -510,7 +533,7 @@ const Response = ({
                     ? c.duotone(c.grays[90], c.purples[55])
                     : hoveringRow
                     ? c.duotone(c.grays[90], c.purples[55])
-                    : c.fg(c.grays[40]),
+                    : c.fg(c.grays[80]),
                   hoveringRow && !repertoireMove && c.opacity(40),
                   c.fontSize(22)
                 )}
@@ -536,7 +559,7 @@ const Response = ({
                 <CMText
                   key={sanPlus}
                   style={s(
-                    c.fg(c.grays[90]),
+                    c.fg(c.grays[10]),
                     c.fontSize(18),
                     c.weightSemiBold,
                     c.keyedProp("letterSpacing")("0.04rem")
@@ -557,7 +580,7 @@ const Response = ({
               <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
                 <CMText
                   style={s(
-                    c.fg(c.grays[85]),
+                    c.fg(c.grays[15]),
                     c.fontSize(14),
                     c.lineHeight("1.3rem")
                   )}
@@ -598,7 +621,7 @@ const Response = ({
           <View style={s(c.column, c.pl(48), c.pr(12))}>
             {isMobile && annotationOrOpeningName && (
               <View style={s(c.grow, c.pt(12), c.minWidth(0))}>
-                <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
+                <CMText style={s(c.fg(c.grays[25]), c.fontSize(14))}>
                   {annotationOrOpeningName}
                 </CMText>
               </View>
@@ -654,36 +677,6 @@ const Response = ({
           )}
         </View>
       </Pressable>
-      {anyMine && false && (
-        <>
-          <Pressable
-            onPress={() => {
-              quick((s) => {
-                if (repertoireMove?.mine) {
-                  s.repertoireState.deleteMoveState.modalOpen = true;
-                  s.repertoireState.deleteMoveState.response = repertoireMove;
-                }
-              });
-            }}
-            style={s(
-              c.width(DELETE_WIDTH),
-              c.row,
-              c.selfStretch,
-              c.alignCenter
-            )}
-          >
-            {repertoireMove?.mine && (
-              <>
-                <Spacer width={12} />
-                <i
-                  style={s(c.fontSize(16), c.fg(c.grays[60]))}
-                  className="fa-sharp fa-trash"
-                ></i>
-              </>
-            )}
-          </Pressable>
-        </>
-      )}
     </View>
   );
 };
@@ -712,7 +705,7 @@ const TableHeader = ({
                 )}
                 key={i}
               >
-                <CMText style={s(c.fg(c.colors.textSecondary), c.fontSize(12))}>
+                <CMText style={s(c.fg(c.grays[40]), c.fontSize(12))}>
                   {section.header}
                 </CMText>
               </View>

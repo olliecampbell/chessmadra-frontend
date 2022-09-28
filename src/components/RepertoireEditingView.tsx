@@ -706,13 +706,13 @@ const EditingTabPicker = () => {
       />
       <Spacer height={24} />
 
-      {selectedTab === EditingTab.Position && <PositionOverview />}
+      {selectedTab === EditingTab.Position && <PositionOverview card={false} />}
       {selectedTab === EditingTab.Responses && <Responses />}
     </View>
   );
 };
 
-export const PositionOverview = () => {
+export const PositionOverview = ({ card }: { card: boolean }) => {
   const pawnStructure = null;
   const pawnStructureReversed = false;
   const [
@@ -730,7 +730,7 @@ export const PositionOverview = () => {
       // s.getPawnStructure(s.getCurrentEpd()),
     ];
   });
-  let fontColor = c.grays[80];
+  let fontColor = card ? c.grays[80] : c.grays[20];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
     : [];
@@ -741,10 +741,8 @@ export const PositionOverview = () => {
     <>
       <View
         style={s(
-          c.px(12),
-          c.py(12),
-          c.bg(c.colors.cardBackground),
-          c.cardShadow
+          card &&
+            s(c.bg(c.colors.cardBackground), c.cardShadow, c.px(12), c.py(12))
         )}
       >
         <View style={s(c.row, c.alignStart)}>
@@ -752,7 +750,11 @@ export const PositionOverview = () => {
             {(ecoCode || isStartPosition) && (
               <View style={s(c.mb(12))}>
                 <CMText
-                  style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(16))}
+                  style={s(
+                    c.fg(card ? c.grays[80] : c.colors.textInverse),
+                    c.weightBold,
+                    c.fontSize(16)
+                  )}
                 >
                   {openingName || "Starting position"}
                 </CMText>
@@ -761,7 +763,7 @@ export const PositionOverview = () => {
                     <Spacer height={4} />
                     <CMText
                       style={s(
-                        c.fg(c.grays[60]),
+                        c.fg(card ? c.grays[60] : c.grays[30]),
                         c.weightRegular,
                         c.fontSize(14)
                       )}
@@ -786,7 +788,7 @@ export const PositionOverview = () => {
                         <Spacer width={4} />
                         <CMText
                           style={s(
-                            c.fg(debugUi ? c.colors.debugColor : c.grays[80])
+                            c.fg(debugUi ? c.colors.debugColor : fontColor)
                           )}
                         >
                           –{" "}
@@ -852,9 +854,7 @@ export const PositionOverview = () => {
           <Spacer width={12} grow />
           {positionReport?.stockfish && (
             <View style={s(c.mb(12), c.row, c.alignEnd)}>
-              <CMText
-                style={s(c.fg(c.grays[80]), c.weightBold, c.fontSize(18))}
-              >
+              <CMText style={s(c.fg(fontColor), c.weightBold, c.fontSize(18))}>
                 {formatStockfishEval(positionReport.stockfish)}
               </CMText>
               {debugUi && (

@@ -72,8 +72,10 @@ export const getInitialAdminState = (
               s.moveAnnotationReviewQueue.forEach((r) => {
                 r.annotations.forEach((ann) => {
                   if (
-                    (r.epd === epd && r.san === san && ann.userId === userId) ||
-                    ann.userId === gs.userState.user?.id
+                    r.epd === epd &&
+                    r.san === san &&
+                    (ann.userId === userId ||
+                      ann.userId === gs.userState.user?.id)
                   ) {
                     ann.text = text;
                     ann.userId = gs.userState.user?.id;
