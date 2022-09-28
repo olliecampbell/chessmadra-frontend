@@ -58,12 +58,13 @@ const AuthHandler = ({ children }) => {
           })
           .catch((e) => {
             let status = e?.response?.status || 0;
-            if (status === 401) {
+            if (status === 401 || status === 500) {
               quick((s) => {
                 s.token = undefined;
                 s.user = undefined;
                 s.authStatus = AuthStatus.Unauthenticated;
                 Cookies.remove(JWT_COOKIE_KEY);
+                Cookies.remove(TEMP_USER_UUID);
               });
             }
           });
