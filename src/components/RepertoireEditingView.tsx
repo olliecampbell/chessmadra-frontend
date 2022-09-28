@@ -712,7 +712,7 @@ const EditingTabPicker = () => {
   );
 };
 
-export const PositionOverview = ({ card }: { card: boolean }) => {
+export const PositionOverview = ({ card }: { card?: boolean }) => {
   const pawnStructure = null;
   const pawnStructureReversed = false;
   const [
