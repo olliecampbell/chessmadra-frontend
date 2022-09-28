@@ -283,51 +283,6 @@ export const SideSectionHeader = ({
   );
 };
 
-type EditButtonProps = {
-  side: Side;
-};
-
-export const EditButton: React.FC<EditButtonProps> = ({ side }) => {
-  const isMobile = useIsMobile();
-  const track = useTrack();
-  const [startEditing] = useRepertoireState((s) => [s.startEditing]);
-  return (
-    <Button
-      style={s(
-        c.buttons.basic,
-        // isMobile && c.bg(c.grays[70]),
-        isMobile ? c.selfCenter : c.selfStretch,
-        c.py(isMobile ? 12 : 16),
-        c.px(24)
-      )}
-      onPress={() => {
-        trackEvent("overview.edit_repertoire");
-        startEditing(side);
-      }}
-    >
-      <CMText
-        style={s(c.buttons.basic.textStyles, c.fontSize(isMobile ? 16 : 18))}
-      >
-        <i className="fa-sharp fa-solid fa-compass-drafting" />
-      </CMText>
-      {!isMobile && (
-        <>
-          <Spacer width={8} />
-          <CMText
-            style={s(
-              c.buttons.basic.textStyles,
-              c.fontSize(isMobile ? 16 : 18),
-              c.weightSemiBold
-            )}
-          >
-            Edit
-          </CMText>
-        </>
-      )}
-    </Button>
-  );
-};
-
 const SideEtcButton = ({ side }: { side: Side }) => {
   const responsive = useResponsive();
   const inverse = side === "black";
@@ -483,7 +438,7 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
       )}
       onPress={() => {
         quick((s) => {
-          // s.repertoireState.startEditing(side as Side);
+          s.repertoireState.startBrowsing(side as Side);
           s.repertoireState.browsingState.chessboardState.playPgn(
             biggestMiss.lines[0]
           );
@@ -687,7 +642,7 @@ const EmptyStatus = ({ side }: { side: Side }) => {
       style={s(c.column, c.maxWidth(200), c.alignEnd, c.clickable)}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startEditing(side as Side);
+          s.repertoireState.startBrowsing(side as Side);
           s.repertoireState.browsingState.chessboardState.playPgn(
             biggestMiss.lines[0]
           );

@@ -27,6 +27,8 @@ import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { SideSettingsModal } from "./SideSettingsModal";
 import { Link } from "react-router-dom";
 import { AuthStatus } from "app/utils/user_state";
+import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
+import { AddedLineModal } from "./AddedLineModal";
 
 export const RepertoirePageLayout = ({
   children,
@@ -79,6 +81,8 @@ export const RepertoirePageLayout = ({
       <ProfileModal />
       <ShareRepertoireModal />
       <SideSettingsModal />
+      <ConfirmMoveConflictModal />
+      <AddedLineModal />
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",

@@ -103,7 +103,6 @@ export interface RepertoireState {
     san: string;
     text: string;
   }) => void;
-  startEditing: (side: Side) => void;
   startBrowsing: (side: Side, skipNavigation?: boolean) => void;
   showImportView?: boolean;
   startImporting: () => void;
@@ -648,33 +647,33 @@ export const getInitialRepertoireState = (
           }
         }
       }, "startBrowsing"),
-    startEditing: (side: Side) =>
-      set(([s, gs]) => {
-        gs.navigationState.push(`/openings/${side}/edit`);
-        s.setBreadcrumbs([
-          {
-            text: `${capitalize(side)}`,
-            onPress: () => {
-              set(([s]) => {
-                s.startBrowsing(side);
-              });
-            },
-          },
-          {
-            text: `Add new line`,
-            onPress: null,
-          },
-        ]);
-        s.browsingState.activeSide = side;
-        s.isBrowsing = false;
-        s.isEditing = true;
-        // s.isAddingPendingLine = failOnAny(true);
-        s.browsingState.editingState = {
-          ...s.browsingState.editingState,
-          selectedTab: EditingTab.Responses,
-          etcModalOpen: false,
-        };
-      }),
+    // startEditing: (side: Side) =>
+    //   set(([s, gs]) => {
+    //     gs.navigationState.push(`/openings/${side}/edit`);
+    //     s.setBreadcrumbs([
+    //       {
+    //         text: `${capitalize(side)}`,
+    //         onPress: () => {
+    //           set(([s]) => {
+    //             s.startBrowsing(side);
+    //           });
+    //         },
+    //       },
+    //       {
+    //         text: `Add new line`,
+    //         onPress: null,
+    //       },
+    //     ]);
+    //     s.browsingState.activeSide = side;
+    //     s.isBrowsing = false;
+    //     s.isEditing = true;
+    //     // s.isAddingPendingLine = failOnAny(true);
+    //     s.browsingState.editingState = {
+    //       ...s.browsingState.editingState,
+    //       selectedTab: EditingTab.Responses,
+    //       etcModalOpen: false,
+    //     };
+    //   }),
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();

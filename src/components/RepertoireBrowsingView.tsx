@@ -442,7 +442,6 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
       ref={ref}
       onPress={() => {
         quick((s) => {
-          s.startEditing(activeSide);
           s.browsingState.selectedTab = BrowsingTab.Responses;
           s.browsingState.chessboardState.playPgn(miss.lines[0]);
           trackEvent(`browsing.miss_tapped`);

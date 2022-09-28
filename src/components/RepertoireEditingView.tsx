@@ -218,7 +218,7 @@ export const RepertoireEditingView = () => {
   useEffect(() => {
     if (paramSide !== activeSide || !isEditing) {
       quick((s) => {
-        s.startEditing(paramSide as Side);
+        // s.startEditing(paramSide as Side);
       });
     }
   }, []);
