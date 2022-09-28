@@ -15,6 +15,7 @@ import { createStaticChessState } from "app/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
+import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 
 export const ReviewMoveAnnotationsView = ({}) => {
   const isMobile = useIsMobile();
@@ -59,6 +60,28 @@ export const ReviewMoveAnnotationsView = ({}) => {
                   epd: review.epd,
                 })}
               />
+              <Button
+                style={s(c.buttons.darkFloater)}
+                onPress={() => {
+                  var windowReference = window.open("about:blank", "_blank");
+                  windowReference.location = `https://lichess.org/analysis/${review.epd}`;
+                }}
+              >
+                <View style={s(c.size(isMobile ? 20 : 22))}>
+                  <LichessLogoIcon color={"white"} />
+                </View>
+                <Spacer width={8} />
+                <CMText
+                  style={s(
+                    c.buttons.darkFloater.textStyles,
+                    c.fg("white"),
+                    c.weightRegular,
+                    c.fontSize(14)
+                  )}
+                >
+                  Analyze on Lichess
+                </CMText>
+              </Button>
             </View>
             <Spacer width={24} />
             <View style={s(c.column, c.flexShrink(1))}>
