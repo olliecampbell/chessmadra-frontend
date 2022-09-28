@@ -104,6 +104,7 @@ export const ReviewMoveAnnotationsView = ({}) => {
                     >
                       <View style={s(c.height(120))}>
                         <AnnotationEditor
+                          key={`${review.san}-${review.epd}`}
                           annotation={x.text}
                           onUpdate={(v) => {
                             quick((s) => {
