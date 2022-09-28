@@ -28,6 +28,7 @@ import {
 } from "app/utils/results_distribution";
 import {
   useAppState,
+  useBrowsingState,
   useDebugState,
   useRepertoireState,
   useUserState,
@@ -45,6 +46,8 @@ import {
   getWinPercentage,
   MoveRating,
 } from "app/utils/move_inaccuracy";
+import { quick } from "app/utils/app_state";
+import { AnnotationEditor, MAX_ANNOTATION_LENGTH } from "./AnnotationEditor";
 
 const DELETE_WIDTH = 30;
 
@@ -87,6 +90,9 @@ export const RepertoireMovesTable = ({
 }) => {
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  let [currentIncidence] = useBrowsingState((s) => [
+    s.getIncidenceOfCurrentLine() * 100,
+  ]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
   const isMobile = useIsMobile();
@@ -96,6 +102,8 @@ export const RepertoireMovesTable = ({
   });
   let [expanded, setExpanded] = useState(false);
   let MIN_TRUNCATED = isMobile ? 4 : 4;
+  let completed = currentIncidence < currentThreshold;
+  console.log({ currentIncidence, currentThreshold, completed });
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
@@ -191,7 +199,7 @@ let getSections = ({
   myTurn: boolean;
   isMobile: boolean;
 }) => {
-  let [activeSide] = useRepertoireState((s) => [s.activeSide]);
+  let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
   let sections = [];
 
   let na = <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
@@ -271,7 +279,7 @@ let getSections = ({
     header: "Eval",
   });
   sections.push({
-    width: isMobile ? 100 : 140,
+    width: isMobile ? 80 : 80,
     content: ({ suggestedMove, positionReport, side }) => {
       if (
         !suggestedMove?.results ||
@@ -282,7 +290,7 @@ let getSections = ({
       return (
         <>
           {suggestedMove && (
-            <View style={s(c.width(100))}>
+            <View style={s(c.width(80))}>
               <GameResultsBar
                 activeSide={activeSide}
                 gameResults={suggestedMove.results}
@@ -292,12 +300,10 @@ let getSections = ({
         </>
       );
     },
-    header: isMobile ? "Peer results" : "Results at your level",
+    header: "Peer results",
   });
   return sections;
 };
-
-const MAX_ANNOTATION_LENGTH = 300;
 
 const Response = ({
   tableResponse,
@@ -320,26 +326,25 @@ const Response = ({
     playSan,
     currentLine,
     positionReport,
-    quick,
-    position,
-    uploadMoveAnnotation,
+    turn,
+    // uploadMoveAnnotation,
     currentEpd,
     nextEcoCode,
     currentEcoCode,
     previewMove,
-  ] = useRepertoireState((s) => [
-    s.playSan,
-    s.currentLine,
+    uploadMoveAnnotation,
+  ] = useBrowsingState((s, rs) => [
+    s.chessboardState.makeMove,
+    s.chessboardState.moveLog,
     s.getCurrentPositionReport(),
-    s.quick,
-    s.chessboardState.position,
-    s.uploadMoveAnnotation,
-    s.getCurrentEpd(),
-    s.ecoCodeLookup[suggestedMove?.epdAfter],
+    s.chessboardState.position.turn(),
+    s.chessboardState.getCurrentEpd(),
+    rs.ecoCodeLookup[suggestedMove?.epdAfter],
     s.editingState.lastEcoCode,
     s.chessboardState.previewMove,
+    rs.uploadMoveAnnotation,
   ]);
-  let side: Side = position?.turn() === "b" ? "black" : "white";
+  let side: Side = turn === "b" ? "black" : "white";
   const isMobile = useIsMobile();
   let tags = [];
   if (suggestedMove) {
@@ -364,21 +369,6 @@ const Response = ({
       setAnnotation(suggestedMove?.annotation);
     }
   }, [suggestedMove?.annotation]);
-  const [focus, setFocus] = useState(false);
-  const updateAnnotation = useCallback(
-    debounce(
-      (annotation: string) => {
-        uploadMoveAnnotation({
-          epd: currentEpd,
-          san: sanPlus,
-          text: annotation,
-        });
-      },
-      400,
-      { leading: true }
-    ),
-    []
-  );
 
   if (editing) {
     return (
@@ -419,56 +409,16 @@ const Response = ({
               {sanPlus}
             </CMText>
           </View>
-          <View style={s(c.grow, c.relative)}>
-            <textarea
-              value={annotation ?? ""}
-              style={s(
-                {
-                  fontFamily: "Roboto Flex",
-                  fontVariationSettings: '"wdth" 110',
-                },
-                c.grow,
-                c.border("none"),
-                c.br(0),
-                c.px(12),
-                c.py(12),
-                c.pb(24),
-                c.keyedProp("resize")("none")
-              )}
-              placeholder={'ex. "Intending Bg5 after d4"'}
-              onFocus={() => {
-                setFocus(true);
-              }}
-              onBlur={() => {
-                setFocus(false);
-              }}
-              onChange={(e) => {
-                setAnnotation(e.target.value);
-                updateAnnotation(e.target.value);
-              }}
-            />
-            <View
-              style={s(
-                c.absolute,
-                c.bottom(12),
-                c.right(12),
-                c.opacity(focus ? 100 : 0)
-              )}
-            >
-              <CMText
-                style={s(
-                  annotation?.length > MAX_ANNOTATION_LENGTH && c.weightBold,
-                  c.fg(
-                    annotation?.length > MAX_ANNOTATION_LENGTH
-                      ? c.reds[60]
-                      : c.grays[50]
-                  )
-                )}
-              >
-                {annotation?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
-              </CMText>
-            </View>
-          </View>
+          <AnnotationEditor
+            annotation={annotation}
+            onUpdate={(annotation) => {
+              uploadMoveAnnotation({
+                epd: currentEpd,
+                san: sanPlus,
+                text: annotation,
+              });
+            }}
+          />
         </Pressable>
       </View>
     );
@@ -544,8 +494,8 @@ const Response = ({
               onPress={() => {
                 console.log("tapped on checkbox");
                 quick((s) => {
-                  s.deleteMoveState.modalOpen = true;
-                  s.deleteMoveState.response = repertoireMove;
+                  s.repertoireState.deleteMoveState.modalOpen = true;
+                  s.repertoireState.deleteMoveState.response = repertoireMove;
                   trackEvent(`editor.delete_move`);
                 });
               }}
@@ -648,7 +598,7 @@ const Response = ({
           <View style={s(c.column, c.pl(48), c.pr(12))}>
             {isMobile && annotationOrOpeningName && (
               <View style={s(c.grow, c.pt(12), c.minWidth(0))}>
-                <CMText style={s(c.fg(c.grays[85]), c.fontSize(14))}>
+                <CMText style={s(c.fg(c.grays[75]), c.fontSize(14))}>
                   {annotationOrOpeningName}
                 </CMText>
               </View>
@@ -710,8 +660,8 @@ const Response = ({
             onPress={() => {
               quick((s) => {
                 if (repertoireMove?.mine) {
-                  s.deleteMoveState.modalOpen = true;
-                  s.deleteMoveState.response = repertoireMove;
+                  s.repertoireState.deleteMoveState.modalOpen = true;
+                  s.repertoireState.deleteMoveState.response = repertoireMove;
                 }
               });
             }}

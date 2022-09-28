@@ -34,7 +34,11 @@ import useKeypress from "react-use-keypress";
 import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
-import { useDebugState, useRepertoireState } from "app/utils/app_state";
+import {
+  useDebugState,
+  useRepertoireState,
+  useBrowsingState,
+} from "app/utils/app_state";
 import React, { useEffect, useState } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
@@ -58,7 +62,7 @@ export const MoveLog = () => {
   let pairs = [];
   let currentPair = [];
   const [hasPendingLineToAdd, position, differentMoveIndices] =
-    useRepertoireState((s) => [
+    useBrowsingState((s) => [
       s.hasPendingLineToAdd,
       s.chessboardState.position,
       s.differentMoveIndices,
@@ -204,9 +208,9 @@ export const RepertoireEditingView = () => {
   const isMobile = useIsMobile();
   const [chessboardState, backOne, activeSide, isEditing, quick] =
     useRepertoireState((s) => [
-      s.chessboardState,
+      s.browsingState.chessboardState,
       s.backOne,
-      s.activeSide,
+      s.browsingState.activeSide,
       s.isEditing,
       s.quick,
     ]);
@@ -285,25 +289,28 @@ export const RepertoireEditingView = () => {
   );
 };
 
-const Responses = React.memo(function Responses() {
+export const Responses = React.memo(function Responses() {
   let [
     positionReport,
     position,
     activeSide,
     currentEpd,
     currentLine,
-    existingMoves,
     currentLineIncidence,
     hasPendingLine,
-  ] = useRepertoireState((s) => [
+  ] = useBrowsingState((s) => [
     s.getCurrentPositionReport(),
     s.chessboardState.position,
     s.activeSide,
-    s.getCurrentEpd(),
-    s.currentLine,
-    s.repertoire[s.activeSide].positionResponses[s.getCurrentEpd()],
+    s.chessboardState.getCurrentEpd(),
+    s.chessboardState.moveLog,
     s.getIncidenceOfCurrentLine(),
     s.hasPendingLineToAdd,
+  ]);
+  const [existingMoves] = useRepertoireState((s) => [
+    s.repertoire[s.browsingState.activeSide].positionResponses[
+      s.browsingState.chessboardState.getCurrentEpd()
+    ],
   ]);
   let side: Side = position.turn() === "b" ? "black" : "white";
   let ownSide = side === activeSide;
@@ -344,7 +351,7 @@ const Responses = React.memo(function Responses() {
     );
     tr.moveRating = moveRating;
   });
-  if (ownSide) {
+  if (ownSide && tableResponses.length >= 3) {
     tableResponses.forEach((tr, i) => {
       let allOthersInaccurate = every(tableResponses, (tr, j) => {
         return !isNil(tr.moveRating) || j === i;
@@ -642,8 +649,8 @@ let PLAYRATE_WEIGHTS = {
 const EditingTabPicker = () => {
   const responsive = useResponsive();
   const [selectedTab, currentLine, quick] = useRepertoireState((s) => [
-    s.editingState.selectedTab,
-    s.currentLine,
+    s.browsingState.editingState.selectedTab,
+    s.browsingState.chessboardState.moveLog,
     s.quick,
   ]);
   const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
@@ -668,7 +675,7 @@ const EditingTabPicker = () => {
             <Pressable
               onPress={() => {
                 quick((s) => {
-                  s.editingState.selectedTab = tab;
+                  s.browsingState.editingState.selectedTab = tab;
                 });
               }}
               style={s(
@@ -705,7 +712,7 @@ const EditingTabPicker = () => {
   );
 };
 
-const PositionOverview = () => {
+export const PositionOverview = () => {
   const pawnStructure = null;
   const pawnStructureReversed = false;
   const [
@@ -716,10 +723,10 @@ const PositionOverview = () => {
     // { pawnStructure, reversed: pawnStructureReversed },
   ] = useRepertoireState((s) => {
     return [
-      s.getCurrentPositionReport(),
-      s.editingState.lastEcoCode,
-      s.activeSide,
-      s.getCurrentEpd() === START_EPD,
+      s.browsingState.getCurrentPositionReport(),
+      s.browsingState.editingState.lastEcoCode,
+      s.browsingState.activeSide,
+      s.browsingState.chessboardState.getCurrentEpd() === START_EPD,
       // s.getPawnStructure(s.getCurrentEpd()),
     ];
   });
@@ -732,7 +739,14 @@ const PositionOverview = () => {
   const isMobile = useIsMobile();
   return (
     <>
-      <View style={s(c.px(12), c.py(12), c.border(`1px solid ${c.grays[24]}`))}>
+      <View
+        style={s(
+          c.px(12),
+          c.py(12),
+          c.bg(c.colors.cardBackground),
+          c.cardShadow
+        )}
+      >
         <View style={s(c.row, c.alignStart)}>
           <View style={s(c.column)}>
             {(ecoCode || isStartPosition) && (

@@ -7,14 +7,14 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { useRepertoireState } from "app/utils/app_state";
+import { useBrowsingState, useRepertoireState } from "app/utils/app_state";
 import React from "react";
 import { Animated } from "react-native";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { useResponsive } from "app/utils/useResponsive";
 
 export const RepertoireEditingBottomNav = ({}: {}) => {
-  const [moveLogPgn, hasPendingLineToAdd] = useRepertoireState((s) => [
+  const [moveLogPgn, hasPendingLineToAdd] = useBrowsingState((s) => [
     s.chessboardState.moveLogPgn,
     s.hasPendingLineToAdd,
   ]);
@@ -98,7 +98,7 @@ const AddPendingLineButton = () => {
     pendingLineHasConflictingMoves,
     currentLineIncidence,
     quick,
-  ] = useRepertoireState((s) => [
+  ] = useBrowsingState((s) => [
     s.isAddingPendingLine,
     s.addPendingLine,
     s.hasPendingLineToAdd,

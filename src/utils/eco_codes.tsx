@@ -1,19 +1,11 @@
 import { some, map, last, isNil } from "lodash-es";
-import { BrowserDrilldownState } from "app/utils/browsing_state";
 
-export const getAppropriateEcoName = (
-  fullName: string,
-  browserStates?: BrowserDrilldownState[]
-): [string, string[]] => {
+export const getAppropriateEcoName = (fullName: string): [string, string[]] => {
   if (!fullName) {
     return null;
   }
   let name = fullName.split(":")[0];
-  let isFirstTimeSeeing =
-    isNil(browserStates) ||
-    !some(browserStates, (s) => {
-      return s.ecoCode?.fullName.split(":")[0] == name;
-    });
+  let isFirstTimeSeeing = true;
 
   let variations = map(fullName.split(":")?.[1]?.split(","), (s) => s.trim());
   if (isFirstTimeSeeing) {

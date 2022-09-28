@@ -5,18 +5,19 @@ import { CMText } from "./CMText";
 import { Spacer } from "app/Space";
 import { Button } from "./Button";
 import { useIsMobile } from "app/utils/isMobile";
-import { useRepertoireState } from "app/utils/app_state";
+import {
+  useBrowsingState,
+  useRepertoireState,
+  quick,
+} from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const ConfirmMoveConflictModal = () => {
-  let [open, isAddingPendingLine, addPendingLine, quick] = useRepertoireState(
-    (s) => [
-      s.editingState.addConflictingMoveModalOpen,
-      s.isAddingPendingLine,
-      s.addPendingLine,
-      s.quick,
-    ]
-  );
+  let [open, isAddingPendingLine, addPendingLine] = useBrowsingState((s) => [
+    s.editingState.addConflictingMoveModalOpen,
+    s.isAddingPendingLine,
+    s.addPendingLine,
+  ]);
 
   const isMobile = useIsMobile();
   return (
@@ -67,7 +68,8 @@ export const ConfirmMoveConflictModal = () => {
                 )}
                 onPress={() => {
                   quick((s) => {
-                    s.editingState.addConflictingMoveModalOpen = false;
+                    s.repertoireState.browsingState.editingState.addConflictingMoveModalOpen =
+                      false;
                   });
                 }}
               >

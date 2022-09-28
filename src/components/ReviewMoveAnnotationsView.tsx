@@ -9,14 +9,16 @@ import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { useAdminState } from "app/utils/app_state";
+import { quick, useAdminState, useUserState } from "app/utils/app_state";
 import React, { useEffect } from "react";
 import { createStaticChessState } from "app/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
+import { AnnotationEditor } from "./AnnotationEditor";
 
 export const ReviewMoveAnnotationsView = ({}) => {
   const isMobile = useIsMobile();
+  const user = useUserState((s) => s.user);
   const [
     moveAnnotationReviewQueue,
     fetchMoveAnnotationReviewQueue,
@@ -71,18 +73,41 @@ export const ReviewMoveAnnotationsView = ({}) => {
                     <View
                       key={i}
                       style={s(
-                        c.px(12),
-                        c.py(12),
+                        c.pb(12),
                         c.fullWidth,
+                        c.width(300),
                         c.bg(c.grays[80])
                       )}
                     >
-                      <CMText style={s(c.fg(c.grays[10]))}>{x.text}</CMText>
+                      <View style={s(c.height(120))}>
+                        <AnnotationEditor
+                          annotation={x.text}
+                          onUpdate={(v) => {
+                            quick((s) => {
+                              s.adminState.editMoveAnnotation({
+                                epd: review.epd,
+                                san: review.san,
+                                userId: x.userId,
+                                text: v,
+                              });
+                            });
+                          }}
+                        />
+                      </View>
                       <Spacer height={12} />
+                      {x.userId === user.id && (
+                        <>
+                          <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
+                            mine
+                          </CMText>
+                          <Spacer height={12} />
+                        </>
+                      )}
                       <Button
                         style={s(
                           c.buttons.basicSecondary,
                           c.py(8),
+                          c.mr(12),
                           c.px(16),
                           {
                             textStyles: s(

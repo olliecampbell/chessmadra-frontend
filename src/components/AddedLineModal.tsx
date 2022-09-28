@@ -15,18 +15,24 @@ import { formatStockfishEval } from "app/utils/stockfish";
 import { getTotalGames } from "app/utils/results_distribution";
 import { GameResultsBar } from "./GameResultsBar";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { quick, useRepertoireState } from "app/utils/app_state";
+import {
+  quick,
+  useBrowsingState,
+  useRepertoireState,
+} from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const AddedLineModal = () => {
-  let [stage] = useRepertoireState((s) => [s.addedLineState?.stage]);
+  let [stage] = useRepertoireState((s) => [
+    s.browsingState.addedLineState?.stage,
+  ]);
 
   const isMobile = useIsMobile();
   return (
     <Modal
       onClose={() => {
         quick((s) => {
-          s.repertoireState.addedLineState = null;
+          s.repertoireState.browsingState.addedLineState = null;
         });
       }}
       visible={!isNil(stage)}
@@ -86,16 +92,18 @@ let ModalHeader = ({ title, closeModal, icon }) => {
 };
 
 const AddedLineAddMore = () => {
-  let [addedLineState, quick, repertoireGrades, side] = useRepertoireState(
-    (s) => [s.addedLineState, s.quick, s.repertoireGrades, s.activeSide]
-  );
+  let [addedLineState, repertoireGrades, side] = useBrowsingState((s, rs) => [
+    s.addedLineState,
+    rs.repertoireGrades,
+    s.activeSide,
+  ]);
   const isMobile = useIsMobile();
   const buttonStyles = s(c.buttons.basicInverse, c.py(12), c.px(16), {
     textStyles: s(c.fontSize(14), c.fg(c.colors.textPrimary), c.weightHeavy),
   });
   const closeModal = () => {
     quick((s) => {
-      s.addedLineState = null;
+      s.repertoireState.browsingState.addedLineState = null;
     });
   };
   // let biggestMiss = repertoireGrades[side].biggestMiss;
@@ -132,7 +140,8 @@ const AddedLineAddMore = () => {
                 key={i}
                 onPress={() => {
                   quick((s) => {
-                    s.addedLineState.addNewLineSelectedIndex = i;
+                    s.repertoireState.browsingState.addedLineState.addNewLineSelectedIndex =
+                      i;
                   });
                 }}
               >
@@ -170,9 +179,12 @@ const AddedLineAddMore = () => {
         <Button
           onPress={() => {
             quick((s) => {
-              s.addedLineState.stage = AddedLineStage.AddAnother;
-              s.chessboardState.playPgn(boardLine);
-              s.addedLineState = null;
+              s.repertoireState.browsingState.addedLineState.stage =
+                AddedLineStage.AddAnother;
+              s.repertoireState.browsingState.chessboardState.playPgn(
+                boardLine
+              );
+              s.repertoireState.browsingState.addedLineState = null;
             });
           }}
           style={s(buttonStyles)}
@@ -185,14 +197,11 @@ const AddedLineAddMore = () => {
 };
 
 const AddedLineOverview = () => {
-  let [addedLineState, quick, repertoireGrades, side, reviewLine] =
-    useRepertoireState((s) => [
-      s.addedLineState,
-      s.quick,
-      s.repertoireGrades,
-      s.activeSide,
-      s.reviewLine,
-    ]);
+  let [addedLineState, side, reviewLine] = useBrowsingState((s, rs) => [
+    s.addedLineState,
+    s.activeSide,
+    rs.reviewState.reviewLine,
+  ]);
   const isMobile = useIsMobile();
   console.log({ isMobile });
   const reportHeaderStyles = s(c.fg(c.grays[35]), c.mb(4));
@@ -207,7 +216,7 @@ const AddedLineOverview = () => {
   );
   const closeModal = () => {
     quick((s) => {
-      s.addedLineState = null;
+      s.repertoireState.browsingState.addedLineState = null;
     });
   };
   let [name, variations] = getAppropriateEcoName(
@@ -309,7 +318,8 @@ const AddedLineOverview = () => {
         <Button
           onPress={() => {
             quick((s) => {
-              s.addedLineState.stage = AddedLineStage.AddAnother;
+              s.repertoireState.browsingState.addedLineState.stage =
+                AddedLineStage.AddAnother;
             });
             trackEvent("added_line.add_another");
           }}

@@ -140,3 +140,10 @@ export interface MoveAnnotationReview {
     text: string;
   }[];
 }
+
+export interface MoveAnnotation {
+  epd: string;
+  san: string;
+  text: string;
+  userId: string;
+}

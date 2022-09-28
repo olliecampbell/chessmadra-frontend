@@ -47,6 +47,7 @@ import { c } from "app/styles";
 import { isDevelopment } from "./env";
 import { Ref, RefObject, useEffect, useRef } from "react";
 import { enableMapSet } from "immer";
+import { BrowsingState } from "./browsing_state";
 
 enableMapSet();
 
@@ -261,6 +262,20 @@ export const useRepertoireState = <T,>(
   }
   return useAppStateInternal(
     (s) => fn(s.repertoireState),
+    (a, b) => equality(a, b, debug, stackTrace)
+  );
+};
+
+export const useBrowsingState = <T,>(
+  fn: (_: BrowsingState, _2: RepertoireState) => T,
+  debug?: boolean
+) => {
+  let stackTrace = useRef(null);
+  if (isDevelopment && stackTrace.current === null) {
+    stackTrace.current = getStackTrace();
+  }
+  return useAppStateInternal(
+    (s) => fn(s.repertoireState.browsingState, s.repertoireState),
     (a, b) => equality(a, b, debug, stackTrace)
   );
 };

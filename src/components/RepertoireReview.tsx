@@ -10,7 +10,7 @@ import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { useRepertoireState } from "app/utils/app_state";
+import { useRepertoireState, quick } from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
@@ -24,29 +24,27 @@ export const RepertoireReview = (props: {}) => {
     showNext,
     setupNextMove,
     giveUp,
-    quick,
     completedReviewPositionMoves,
     remainingReviewPositionMoves,
     currentMove,
     isReviewing,
     repertoireLoading,
   ] = useRepertoireState((s) => [
-    s.chessboardState,
+    s.reviewState.chessboardState,
     s.backToOverview,
-    s.showNext,
-    s.setupNextMove,
-    s.giveUp,
-    s.quick,
-    s.completedReviewPositionMoves,
-    s.getRemainingReviewPositionMoves(),
-    s.currentMove,
+    s.reviewState.showNext,
+    s.reviewState.setupNextMove,
+    s.reviewState.giveUp,
+    s.reviewState.completedReviewPositionMoves,
+    s.reviewState.getRemainingReviewPositionMoves(),
+    s.reviewState.currentMove,
     s.isReviewing,
     s.repertoire === undefined,
   ]);
   useEffect(() => {
     if (!isReviewing && !repertoireLoading) {
       quick((s) => {
-        s.startReview();
+        s.repertoireState.reviewState.startReview();
       });
     }
   }, [repertoireLoading]);
@@ -127,10 +125,12 @@ export const RepertoireReview = (props: {}) => {
             onPress={() => {
               quick((s) => {
                 trackEvent(`reviewing.inspect_line`);
-                let qm = s.currentMove;
-                s.backToOverview();
-                s.startEditing(qm.moves[0].side);
-                s.chessboardState.playPgn(qm.line);
+                let qm = s.repertoireState.reviewState.currentMove;
+                s.repertoireState.backToOverview();
+                s.repertoireState.startBrowsing(qm.moves[0].side);
+                s.repertoireState.browsingState.chessboardState.playPgn(
+                  qm.line
+                );
               });
             }}
           >

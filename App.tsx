@@ -118,7 +118,7 @@ export default function App() {
                 <Route path="/openings/review" element={<RepertoireReview />} />
                 <Route
                   path="/openings/:side/edit"
-                  element={<RepertoireEditingView />}
+                  element={<RepertoireBrowsingView />}
                 />
                 <Route path="/login" element={<Login />} />
                 <Route path="/blindfold" element={<BlindfoldTrainer />} />

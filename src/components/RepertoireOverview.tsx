@@ -82,7 +82,11 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
   const responsive = useResponsive();
   let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
     (s) => {
-      return [s.getMyResponsesLength, s.getQueueLength(side), s.startReview];
+      return [
+        s.getMyResponsesLength,
+        s.reviewState.getQueueLength(side),
+        s.reviewState.startReview,
+      ];
     },
     true
   );
@@ -479,8 +483,10 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
       )}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startEditing(side as Side);
-          s.repertoireState.chessboardState.playPgn(biggestMiss.lines[0]);
+          // s.repertoireState.startEditing(side as Side);
+          s.repertoireState.browsingState.chessboardState.playPgn(
+            biggestMiss.lines[0]
+          );
           trackEvent("overview.go_to_biggest_miss");
         });
       }}
@@ -551,12 +557,9 @@ export const BrowseButton = ({ side }: { side: Side }) => {
     startBrowsing: s.startBrowsing,
   }));
   const inverse = side === "black";
-  let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
-    (s) => {
-      return [s.getMyResponsesLength, s.getQueueLength(side), s.startReview];
-    },
-    true
-  );
+  let [getMyResponsesLength] = useRepertoireState((s) => {
+    return [s.getMyResponsesLength];
+  }, true);
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
   if (hasNoMovesThisSide) {
     return <View style={s(c.height(getButtonHeight(responsive)))}></View>;
@@ -594,7 +597,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
     s.myResponsesLookup?.[side]?.length,
   ]);
   let [queueLength] = useRepertoireState((s) => {
-    return [s.getQueueLength(side)];
+    return [s.reviewState.getQueueLength(side)];
   });
   const inverse = side === "black";
   const [textColor, secondaryTextColor] = getTextColors(inverse);
@@ -685,7 +688,9 @@ const EmptyStatus = ({ side }: { side: Side }) => {
       onPress={() => {
         quick((s) => {
           s.repertoireState.startEditing(side as Side);
-          s.repertoireState.chessboardState.playPgn(biggestMiss.lines[0]);
+          s.repertoireState.browsingState.chessboardState.playPgn(
+            biggestMiss.lines[0]
+          );
           trackEvent("overview.go_to_biggest_miss");
         });
       }}

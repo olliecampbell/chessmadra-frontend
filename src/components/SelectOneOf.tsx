@@ -33,7 +33,6 @@ export const SelectOneOf = <T,>({
   return (
     <View
       style={s(
-        c.br(2),
         c.overflowHidden,
         horizontal ? c.row : c.column,
         containerStyles

@@ -1,5 +1,5 @@
 import client from "app/client";
-import { MoveAnnotationReview } from "app/models";
+import { MoveAnnotation, MoveAnnotationReview } from "app/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -8,6 +8,12 @@ export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
   fetchMoveAnnotationReviewQueue: () => void;
   acceptMoveAnnotation: (epd: string, san: string, userId: string) => void;
+  editMoveAnnotation: (_: {
+    epd: string;
+    san: string;
+    userId: string;
+    text: string;
+  }) => void;
   rejectMoveAnnotations: (epd: string, san: string) => void;
   becomeAdmin: (password: string) => void;
   quick: (fn: (_: AdminState) => void) => void;
@@ -39,6 +45,41 @@ export const getInitialAdminState = (
           .then(({ data }) => {
             set(([s]) => {
               s.moveAnnotationReviewQueue = data;
+            });
+          });
+      }),
+    editMoveAnnotation: ({
+      epd,
+      san,
+      userId,
+      text,
+    }: {
+      epd: string;
+      san: string;
+      userId: string;
+      text: string;
+    }) =>
+      get(([s, gs]) => {
+        client
+          .post("/api/v1/admin/edit-move-annotation", {
+            text: text,
+            epd: epd,
+            userId: userId,
+            san,
+          })
+          .then(({ data }: { data: MoveAnnotation }) => {
+            set(([s, gs]) => {
+              s.moveAnnotationReviewQueue.forEach((r) => {
+                r.annotations.forEach((ann) => {
+                  if (
+                    (r.epd === epd && r.san === san && ann.userId === userId) ||
+                    ann.userId === gs.userState.user?.id
+                  ) {
+                    ann.text = text;
+                    ann.userId = gs.userState.user?.id;
+                  }
+                });
+              });
             });
           });
       }),

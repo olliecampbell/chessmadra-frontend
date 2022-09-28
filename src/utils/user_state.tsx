@@ -89,7 +89,7 @@ export const getInitialUserState = (
             set(([s, appState]) => {
               s.setUser(data);
               appState.repertoireState.positionReports = {};
-              appState.repertoireState.fetchNeededPositionReports();
+              appState.repertoireState.browsingState.fetchNeededPositionReports();
               appState.repertoireState.fetchRepertoire();
 
               const identifyObj = new Identify();

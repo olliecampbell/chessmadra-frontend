@@ -10,6 +10,7 @@ import { useRepertoireState } from "app/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { useResponsive, BP } from "app/utils/useResponsive";
+import { useRef } from "react";
 
 type BackControlsProps = {
   includeAnalyze?: boolean;
@@ -23,15 +24,17 @@ export const BackControls: React.FC<BackControlsProps> = ({
   extraButton,
 }) => {
   const bp = useResponsive();
+  const layout = useRef(null);
+  console.log({ layout });
   let [
-    searchOnChessable,
+    // searchOnChessable,
     analyzeLineOnLichess,
     quick,
     currentLine,
     backToStartPosition,
     backOne,
   ] = useRepertoireState((s) => [
-    s.searchOnChessable,
+    // s.searchOnChessable,
     s.analyzeLineOnLichess,
     s.quick,
     s.currentLine,
@@ -43,7 +46,12 @@ export const BackControls: React.FC<BackControlsProps> = ({
   let foreground = c.grays[90];
   let textColor = c.fg(foreground);
   return (
-    <View style={s(c.row, c.height(height ?? 48), c.selfStretch)}>
+    <View
+      style={s(c.row, c.height(height ?? 48), c.selfStretch)}
+      onLayout={({ nativeEvent: { layout: l } }) => {
+        layout.current = l;
+      }}
+    >
       <Button
         style={s(c.buttons.darkFloater, c.width(48), c.constrainHeight)}
         onPress={() => {
@@ -86,17 +94,21 @@ export const BackControls: React.FC<BackControlsProps> = ({
             <View style={s(c.size(isMobile ? 20 : 22))}>
               <LichessLogoIcon color={foreground} />
             </View>
-            <Spacer width={8} />
-            <CMText
-              style={s(
-                c.buttons.darkFloater.textStyles,
-                textColor,
-                c.weightRegular,
-                c.fontSize(14)
-              )}
-            >
-              Analyze on Lichess
-            </CMText>
+            {layout.current?.width > 400 && (
+              <>
+                <Spacer width={8} />
+                <CMText
+                  style={s(
+                    c.buttons.darkFloater.textStyles,
+                    textColor,
+                    c.weightRegular,
+                    c.fontSize(14)
+                  )}
+                >
+                  Analyze on Lichess
+                </CMText>
+              </>
+            )}
           </Button>
         </>
       )}

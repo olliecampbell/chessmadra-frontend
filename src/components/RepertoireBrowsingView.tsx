@@ -35,6 +35,8 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, useResponsive } from "app/utils/useResponsive";
+import { PositionOverview, Responses } from "./RepertoireEditingView";
+import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 
 const VERTICAL_BREAKPOINT = BP.md;
 
@@ -49,7 +51,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
     chessboardState,
     repertoireLoading,
   ] = useRepertoireState((s) => [
-    s.activeSide,
+    s.browsingState.activeSide,
     s.isBrowsing,
     s.quick,
     s.browsingState.readOnly,
@@ -74,64 +76,33 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   const responsive = useResponsive();
   const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
   return (
-    <RepertoirePageLayout>
+    <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
       <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
         <View
           style={s(
-            vertical ? c.column : c.row,
-            vertical ? c.alignCenter : c.alignStart,
-            c.constrainWidth,
-            c.fullWidth
+            vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
+            vertical ? c.column : c.row
           )}
         >
           <View
             style={s(
               c.column,
-              !vertical && c.grow,
-              c.constrainWidth,
-              !vertical && s(c.minWidth(340), c.grow)
+              !vertical && s(c.grow, c.noBasis, c.flexShrink),
+              vertical ? c.width("min(480px, 100%)") : c.maxWidth(600),
+              vertical ? c.selfCenter : c.selfStretch
             )}
           >
-            {!responsive.isMobile && (
+            <View style={s(c.fullWidth)}>
+              <ChessboardView state={chessboardState} />
+            </View>
+            <Spacer height={12} />
+            <BackControls includeAnalyze />
+            {readOnly && (
               <>
-                <CMText
-                  style={s(
-                    c.fg(c.colors.textPrimary),
-                    c.fontSize(20),
-                    c.weightBold
-                  )}
-                >
-                  Filter
-                </CMText>
                 <Spacer height={12} />
+                <SwitchSideButton />
               </>
             )}
-            <View
-              style={s(
-                c.column,
-                c.center,
-                vertical ? c.selfCenter : c.selfStretch,
-                c.width("min(400px, 100%)")
-              )}
-            >
-              <View style={s(c.fullWidth)}>
-                <ChessboardView state={chessboardState} />
-              </View>
-              <Spacer height={12} />
-              <BackControls
-                extraButton={
-                  responsive.isMobile &&
-                  (readOnly ? <SwitchSideButton /> : <EditButton />)
-                }
-              />
-              {!responsive.isMobile && (
-                <>
-                  <Spacer height={12} />
-                  {readOnly && <SwitchSideButton />}
-                  {!readOnly && <EditButton />}
-                </>
-              )}
-            </View>
             {responsive.isMobile && (
               <>
                 <Spacer height={24} />
@@ -145,13 +116,15 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               <View
                 style={s(
                   c.column,
-                  c.flexShrink(1),
-                  c.flexGrow(10)
+                  !vertical && s(c.flexGrow(2), c.flexShrink, c.noBasis),
+                  c.maxWidth(700)
                   // c.width(
                   //   `min(${responsive.bp >= BP.xxl ? 1000 : 800}px, 100%)`
                   // )
                 )}
               >
+                <PositionOverview />
+                <Spacer height={responsive.switch(24)} />
                 <ResultsView />
               </View>
             </>
@@ -213,51 +186,6 @@ export const SwitchSideButton = () => {
   );
 };
 
-export const EditButton = () => {
-  const isMobile = useIsMobile();
-  const [side] = useRepertoireState((s) => [s.browsingState.activeSide]);
-  const [q] = useAppState((s) => [s.quick]);
-  return (
-    <Button
-      style={s(
-        c.buttons.darkFloater,
-        // isMobile && c.bg(c.grays[70]),
-        c.selfStretch,
-        !isMobile && c.py(16),
-        c.px(24)
-      )}
-      onPress={() => {
-        q((s) => {
-          trackEvent(`browsing.to_editor`);
-          s.repertoireState.startEditing(side);
-          s.repertoireState.chessboardState.playPgn(
-            s.repertoireState.browsingState.chessboardState.moveLogPgn
-          );
-        });
-      }}
-    >
-      <CMText
-        style={s(
-          c.buttons.darkFloater.textStyles,
-          c.fontSize(isMobile ? 14 : 16)
-        )}
-      >
-        <i className="fa-sharp fa-solid fa-compass-drafting" />
-      </CMText>
-      <Spacer width={8} />
-      <CMText
-        style={s(
-          c.buttons.darkFloater.textStyles,
-          c.fontSize(isMobile ? 16 : 18),
-          c.weightSemiBold
-        )}
-      >
-        Edit
-      </CMText>
-    </Button>
-  );
-};
-
 export const ResultsView = React.memo(function () {
   const [selectedTab, quick, readOnly] = useRepertoireState((s) => [
     s.browsingState.selectedTab,
@@ -273,9 +201,10 @@ export const ResultsView = React.memo(function () {
             tabStyle
             containerStyles={s(c.fullWidth, c.justifyBetween)}
             choices={[
+              BrowsingTab.Responses,
               BrowsingTab.Lines,
               BrowsingTab.Misses,
-              BrowsingTab.InstructiveGames,
+              // BrowsingTab.InstructiveGames,
             ]}
             activeChoice={selectedTab}
             separator={() => {
@@ -300,7 +229,7 @@ export const ResultsView = React.memo(function () {
                     c.grow,
                     c.alignCenter,
                     c.borderBottom(
-                      `2px solid ${active ? c.grays[90] : c.grays[20]}`
+                      `3px solid ${active ? c.primaries[50] : c.grays[20]}`
                     ),
                     c.zIndex(5),
                     c.px(isMobile ? 0 : 48),
@@ -309,9 +238,9 @@ export const ResultsView = React.memo(function () {
                 >
                   <CMText
                     style={s(
-                      c.fg(active ? c.colors.textPrimary : c.grays[70]),
+                      c.fg(active ? c.primaries[60] : c.grays[70]),
                       c.fontSize(16),
-                      c.weightSemiBold
+                      c.weightBold
                     )}
                   >
                     {tab}
@@ -320,9 +249,10 @@ export const ResultsView = React.memo(function () {
               );
             }}
           />
-          <Spacer height={isMobile ? 36 : 36} />
+          <Spacer height={isMobile ? 36 : 24} />
         </>
       )}
+      {selectedTab === BrowsingTab.Responses && <Responses />}
       {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}
       {selectedTab === BrowsingTab.Misses && <BrowsingMissesView />}
       {selectedTab === BrowsingTab.InstructiveGames && <InstructiveGamesView />}
@@ -382,7 +312,7 @@ export const BrowsingSectionsView = React.memo(() => {
             c.py(12),
             c.maxWidth(400),
             c.selfCenter,
-            c.bg(c.grays[10]),
+            // c.bg(c.grays[10]),
             // c.border(`1px solid ${c.grays[10]}`),
             c.br(2)
           )}
@@ -399,33 +329,11 @@ export const BrowsingSectionsView = React.memo(() => {
                 No lines found
               </CMText>
               <Spacer height={12} />
-              <CMText style={s(c.fontSize(14), c.lineHeight("1.5rem"))}>
-                You don't have any saved lines from this position. Open the
-                editor to add or edit this line.
+              <CMText style={s(c.fontSize(14), c.lineHeight("1.3rem"))}>
+                You don't have any saved lines from this position.
               </CMText>
             </View>
           </View>
-          <Spacer height={12} />
-          <Button
-            style={s(
-              c.buttons.primary,
-              c.selfEnd,
-              c.px(16),
-              c.py(8),
-              c.bg(c.purples[50])
-            )}
-            onPress={() => {
-              quick((s) => {
-                trackEvent(`browsing.empty_lines.to_editor`);
-                s.startEditing(s.browsingState.activeSide);
-                s.chessboardState.playPgn(
-                  s.browsingState.chessboardState.position.pgn()
-                );
-              });
-            }}
-          >
-            <CMText style={s(c.buttons.primary.textStyles)}>Open editor</CMText>
-          </Button>
         </View>
       )}
       {sections &&
@@ -447,7 +355,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
   let [expanded, setExpanded] = useState(false);
   const responsive = useResponsive();
   const isMobile = useIsMobile();
-  let MAX_TRUNCATED = responsive.bp >= BP.xxl ? 4 : 2;
+  let MAX_TRUNCATED = 2;
   let truncated = section.lines.length > MAX_TRUNCATED && !expanded;
   let numTruncated = section.lines.length - MAX_TRUNCATED;
   let lines = section.lines;
@@ -483,7 +391,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
       <View
         style={s({
           display: "grid",
-          gridTemplateColumns: responsive.bp >= BP.xxl ? "1fr 1fr" : "1fr",
+          gridTemplateColumns: "1fr",
           gap: "24px 24px",
         })}
       >
@@ -535,7 +443,8 @@ const MissView = ({ miss }: { miss: RepertoireMiss }) => {
       onPress={() => {
         quick((s) => {
           s.startEditing(activeSide);
-          s.chessboardState.playPgn(miss.lines[0]);
+          s.browsingState.selectedTab = BrowsingTab.Responses;
+          s.browsingState.chessboardState.playPgn(miss.lines[0]);
           trackEvent(`browsing.miss_tapped`);
         });
       }}
@@ -636,8 +545,8 @@ const LineView = ({ line }: { line: BrowserLine }) => {
             trackEvent(`shared_repertoire.line_tapped`);
             s.analyzeLineOnLichess(line.line);
           } else {
-            s.startEditing(activeSide);
-            s.chessboardState.playPgn(line.pgn);
+            s.browsingState.selectedTab = BrowsingTab.Responses;
+            s.browsingState.chessboardState.playPgn(line.pgn);
             trackEvent(`browsing.line_tapped`);
           }
         });

@@ -8,11 +8,11 @@ export const useHovering = (
   const startTime = useRef(performance.now());
   let hoveringProps = {
     onMouseEnter: () => {
-      let timeSince = performance.now() - startTime.current;
-      if (timeSince > 300) {
-        setHovering(true);
-        onHover?.();
-      }
+      // let timeSince = performance.now() - startTime.current;
+      // if (timeSince > 300) {
+      setHovering(true);
+      onHover?.();
+      // }
     },
     onMouseLeave: () => {
       setHovering(false);

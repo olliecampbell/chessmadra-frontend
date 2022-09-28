@@ -54,21 +54,8 @@ import { BrowsingState, getInitialBrowsingState } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getPlayRate } from "./results_distribution";
 import { trackEvent } from "app/hooks/useTrackEvent";
-// let COURSE = "99306";
-let COURSE = null;
-// let ASSUME = "1.c4";
-let ASSUME = null;
+import { getInitialReviewState, ReviewState } from "./review_state";
 let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
-export interface QuizMove {
-  moves: RepertoireMove[];
-  line: string;
-}
-
-export interface ReviewPositionResults {
-  correct: boolean;
-  epd: string;
-  sanPlus: string;
-}
 
 export enum AddLineFromOption {
   Initial = "Start Position",
@@ -79,7 +66,6 @@ export enum AddLineFromOption {
 
 export interface RepertoireState {
   quick: (fn: (_: RepertoireState) => void) => void;
-  chessboardState: ChessboardState;
   repertoire: Repertoire;
   repertoireNumMoves: BySide<
     Record<
@@ -88,17 +74,10 @@ export interface RepertoireState {
       { withTranspositions: number; withoutTranspositions: number }
     >
   >;
-  queues: BySide<QuizMove[]>;
   positionReports: Record<string, PositionReport>;
   failedToFetchSharedRepertoire?: boolean;
-  currentMove?: QuizMove;
-  reviewSide?: Side;
   repertoireGrades: BySide<RepertoireGrade>;
   repertoireShareId?: string;
-  activeSide: Side;
-  failedReviewPositionMoves?: Record<string, RepertoireMove>;
-  completedReviewPositionMoves?: Record<string, RepertoireMove>;
-  reviewLine: (line: string[], side: Side) => void;
   fetchSharedRepertoire: (id: string) => void;
   fetchRepertoire: () => void;
   fetchEcoCodes: () => void;
@@ -112,17 +91,8 @@ export interface RepertoireState {
     state?: RepertoireState;
   }) => void;
   initState: () => void;
-  playSan: (pgn: string) => void;
-  addPendingLine: (_?: { replace: boolean }) => void;
-  isAddingPendingLine: boolean;
   // TODO: move review state stuff to its own module
-  showNext?: boolean;
-  giveUp: () => void;
   usePlayerTemplate: (id: string) => void;
-  setupNextMove: () => void;
-  startReview: (side?: Side) => void;
-  reviewWithQueue: (queues: BySide<QuizMove[]>) => void;
-  isReviewingWithCustomQueue?: boolean;
   backToOverview: () => void;
   uploadMoveAnnotation: ({
     epd,
@@ -140,22 +110,15 @@ export interface RepertoireState {
   updateRepertoireStructures: () => void;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
-  getQueueLength: (side?: Side) => number;
   getIsRepertoireEmpty: () => boolean;
-  getCurrentPositionReport: () => PositionReport;
-  getCurrentEpd: () => string;
-  onEditingPositionUpdate: () => void;
   analyzeLineOnLichess: (line: string[]) => void;
-  searchOnChessable: (side: Side) => void;
   backOne: () => void;
   backToStartPosition: () => void;
   deleteRepertoire: (side: Side) => void;
   deleteMoveConfirmed: () => void;
   exportPgn: (side: Side) => void;
   addTemplates: () => void;
-  updateQueue: (cram: boolean) => void;
   onRepertoireUpdate: () => void;
-  markMovesReviewed: (results: ReviewPositionResults[]) => void;
   isEditing?: boolean;
   isBrowsing?: boolean;
   isReviewing?: boolean;
@@ -165,8 +128,6 @@ export interface RepertoireState {
   currentLine?: string[];
   pendingMoves?: RepertoireMove[];
   hasCompletedRepertoireInitialization?: boolean;
-  hasPendingLineToAdd?: boolean;
-  pendingLineHasConflictingMoves?: boolean;
   repertoireTemplates?: RepertoireTemplate[];
   playerTemplates?: PlayerTemplate[];
   selectedTemplates: Record<string, string>;
@@ -174,44 +135,24 @@ export interface RepertoireState {
   // The first position where the user does not have a response for
   divergencePosition?: string;
   divergenceIndex?: number;
-  differentMoveIndices?: number[];
-  isCramming?: boolean;
-  pendingResponses?: Record<string, RepertoireMove[]>;
   inProgressUsingPlayerTemplate?: boolean;
-  fetchNeededPositionReports: () => void;
   ecoCodes: EcoCode[];
   pawnStructures: PawnStructureDetails[];
   ecoCodeLookup: Record<string, EcoCode>;
   pawnStructureLookup: Record<string, PawnStructureDetails>;
   browsingState: BrowsingState;
+  reviewState: ReviewState;
   epdIncidences: BySide<Record<string, number>>;
-  editingState: {
-    lastEcoCode?: EcoCode;
-    selectedTab: EditingTab;
-    etcModalOpen: boolean;
-    addConflictingMoveModalOpen: boolean;
-  };
   deleteMoveState: {
     modalOpen: boolean;
     response?: RepertoireMove;
     isDeletingMove: boolean;
-  };
-  addedLineState: {
-    line: string[];
-    addNewLineChoices?: AddNewLineChoice[];
-    addNewLineSelectedIndex?: number;
-    ecoCode: EcoCode;
-    stage: AddedLineStage;
-    positionReport: PositionReport;
   };
   updateShareLink: () => void;
   //
   overviewState: {
     isShowingShareModal: boolean;
   };
-  getRemainingReviewPositionMoves: () => RepertoireMove[];
-  getNextReviewPositionMove(): RepertoireMove;
-  getIncidenceOfCurrentLine(): number;
 
   repertoireSettingsModalSide?: Side;
   // Nav bar stuff
@@ -247,7 +188,7 @@ export enum AddedLineStage {
   AddAnother,
 }
 
-interface FetchRepertoireResponse {
+export interface FetchRepertoireResponse {
   repertoire: Repertoire;
   grades: BySide<RepertoireGrade>;
   shareId: string;
@@ -258,7 +199,6 @@ interface GetSharedRepertoireResponse {
 }
 
 export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
-const EMPTY_QUEUES = { white: [], black: [] };
 
 type Stack = [RepertoireState, AppState];
 const selector = (s: AppState): Stack => [s.repertoireState, s];
@@ -313,13 +253,9 @@ export const getInitialRepertoireState = (
     isUpdatingEloRange: false,
     repertoire: undefined,
     browsingState: getInitialBrowsingState(_set, _get),
+    reviewState: getInitialReviewState(_set, _get),
     overviewState: {
       isShowingShareModal: false,
-    },
-    editingState: {
-      selectedTab: EditingTab.Position,
-      etcModalOpen: false,
-      addConflictingMoveModalOpen: false,
     },
     breadcrumbs: [homeBreadcrumb, overviewBreadcrumb],
     setBreadcrumbs: (breadcrumbs: NavBreadcrumb[]) =>
@@ -333,46 +269,18 @@ export const getInitialRepertoireState = (
       }),
     repertoireGrades: { white: null, black: null },
     epdIncidences: { white: {}, black: {} },
-    activeSide: "white",
     ecoCodeLookup: {},
     pawnStructureLookup: {},
     inProgressUsingPlayerTemplate: false,
     pendingResponses: {},
     positionReports: {},
     currentLine: [],
-    queues: EMPTY_QUEUES,
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
       set(([s]) => {
         s.fetchRepertoire();
         s.fetchSupplementary();
       }, "initState"),
-    giveUp: () =>
-      set(([s]) => {
-        let move = s.getNextReviewPositionMove();
-        let moveObj = s.chessboardState.position.validateMoves([
-          move.sanPlus,
-        ])?.[0];
-        s.chessboardState.frozen = true;
-        s.completedReviewPositionMoves[move.sanPlus] = move;
-        s.getRemainingReviewPositionMoves().forEach((move) => {
-          s.failedReviewPositionMoves[move.sanPlus] = move;
-        });
-        s.showNext = true;
-        s.chessboardState.animatePieceMove(
-          moveObj,
-          PlaybackSpeed.Normal,
-          (completed) => {
-            set(([s]) => {
-              s.showNext = true;
-            });
-          }
-        );
-      }, "giveUp"),
-    playSan: (san: string) =>
-      set(([s]) => {
-        s.chessboardState.makeMove(san);
-      }),
     usePlayerTemplate: (id: string) =>
       set(async ([s]) => {
         s.inProgressUsingPlayerTemplate = true;
@@ -444,29 +352,6 @@ export const getInitialRepertoireState = (
           s.backToOverview();
         }, "initializeRepertoire");
       }),
-    searchOnChessable: (side: Side) =>
-      set(([s]) => {
-        let fen = s.chessboardState.position.fen();
-        if (COURSE) {
-          window
-            .open(
-              `https://www.chessable.com/course/${COURSE}/fen/${fen
-                .replaceAll("/", ";")
-                .replaceAll(" ", "%20")}/`,
-              "_blank"
-            )
-            .focus();
-          return;
-        }
-        window
-          .open(
-            `https://www.chessable.com/courses/fen/${fen
-              .replaceAll("/", "U")
-              .replaceAll(" ", "%20")}/`,
-            "_blank"
-          )
-          .focus();
-      }, "searchOnChessable"),
     updateShareLink: () =>
       set(([s]) => {
         client.post(`/api/v1/openings/update-share-link`).then(({ data }) => {
@@ -485,7 +370,7 @@ export const getInitialRepertoireState = (
           return;
         }
         var windowReference = window.open("about:blank", "_blank");
-        let side = s.activeSide;
+        let side = s.browsingState.activeSide;
         client
           .post(`https://lichess.org/api/import`, bodyFormData)
           .then(({ data }) => {
@@ -493,227 +378,12 @@ export const getInitialRepertoireState = (
             windowReference.location = `${url}/${side}#999`;
           });
       }),
-    getIncidenceOfCurrentLine: () =>
-      get(([s]) => {
-        let startPosition = START_EPD;
-
-        let incidence = 1.0;
-        map(
-          zip(
-            s.chessboardState.positionHistory,
-            s.chessboardState.position.history()
-          ),
-          ([position, san], i) => {
-            let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-            let cachedIncidence = s.epdIncidences[s.activeSide][position];
-            if (cachedIncidence) {
-              incidence = cachedIncidence;
-              return;
-            }
-            if (!mine) {
-              let positionReport = s.positionReports[position];
-              if (positionReport) {
-                let suggestedMove = find(
-                  positionReport.suggestedMoves,
-                  (sm) => sm.sanPlus === san
-                );
-                if (suggestedMove) {
-                  let moveIncidence = getPlayRate(
-                    suggestedMove,
-                    positionReport
-                  );
-                  incidence *= moveIncidence;
-                }
-              }
-            }
-          }
-        );
-        return incidence;
-      }),
-    getNextReviewPositionMove: () =>
-      get(([s]) => {
-        return first(s.getRemainingReviewPositionMoves());
-      }),
-    getRemainingReviewPositionMoves: () =>
-      get(([s]) => {
-        return filter(s.currentMove?.moves, (m) => {
-          return isNil(s.completedReviewPositionMoves[m.sanPlus]);
-        });
-      }),
-    onEditingPositionUpdate: () =>
-      set(([s]) => {
-        let line = s.chessboardState.position.history();
-        s.currentLine = line;
-        s.pendingResponses = {};
-        s.differentMoveIndices = [];
-        if (s.ecoCodeLookup && s.editingState) {
-          s.editingState.lastEcoCode = last(
-            filter(
-              map(s.chessboardState.positionHistory, (p) => {
-                return s.ecoCodeLookup[p];
-              })
-            )
-          );
-        }
-        s.pendingLineHasConflictingMoves = false;
-        map(
-          zip(s.chessboardState.positionHistory, line),
-          ([position, san], i) => {
-            if (!san) {
-              return;
-            }
-            let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-            let existingResponses =
-              s.repertoire[s.activeSide].positionResponses[position];
-            if (
-              !isEmpty(existingResponses) &&
-              mine &&
-              !some(existingResponses, (m) => {
-                return m.sanPlus === san;
-              })
-            ) {
-              s.pendingLineHasConflictingMoves = true;
-            }
-            if (
-              !some(
-                s.repertoire[s.activeSide].positionResponses[position],
-                (m) => {
-                  return m.sanPlus === san;
-                }
-              )
-            ) {
-              s.differentMoveIndices.push(i);
-              s.pendingResponses[position] = [
-                {
-                  epd: position,
-                  epdAfter: s.chessboardState.positionHistory[i + 1],
-                  sanPlus: san,
-                  side: s.activeSide,
-                  pending: true,
-                  mine: mine,
-                  srs: {
-                    needsReview: false,
-                    firstReview: false,
-                  },
-                },
-              ] as RepertoireMove[];
-            }
-          }
-        );
-
-        s.hasPendingLineToAdd = some(
-          flatten(values(s.pendingResponses)),
-          (m) => m.mine
-        );
-        s.fetchNeededPositionReports();
-      }, "onEditingPositionUpdate"),
-    fetchNeededPositionReports: () =>
-      set(([s]) => {
-        let side = s.activeSide;
-        let neededPositions = [START_EPD];
-        if (!isNil(side)) {
-          s.chessboardState.positionHistory.forEach((epd) => {
-            if (!s.positionReports[epd]) {
-              neededPositions.push(epd);
-            }
-          });
-          let currentReport = s.positionReports[s.getCurrentEpd()];
-          if (currentReport) {
-            currentReport.suggestedMoves.forEach((sm) => {
-              let epd = sm.epdAfter;
-              if (!s.positionReports[epd]) {
-                neededPositions.push(epd);
-              }
-            });
-          }
-        }
-        neededPositions = filter(
-          neededPositions,
-          (epd) => !s.positionReports[epd]
-        );
-        if (isEmpty(neededPositions)) {
-          return;
-        }
-        client
-          .post("/api/v1/openings/position_reports", {
-            epds: neededPositions,
-          })
-          .then(({ data: reports }: { data: PositionReport[] }) => {
-            set(([s]) => {
-              reports.forEach((report) => {
-                s.positionReports[report.epd] = report;
-              });
-              s.fetchNeededPositionReports();
-            });
-          })
-          .finally(() => {
-            // set(([s]) => {});
-          });
-      }),
     onMove: () =>
       set(([s]) => {
         if (s.debugPawnStructuresState) {
           // s.fetchDebugPawnStructureForPosition();
         }
-        if (s.isEditing) {
-          s.onEditingPositionUpdate();
-        }
       }, "onMove"),
-    reviewLine: (line: string[], side: Side) =>
-      set(([s]) => {
-        s.backToOverview();
-        let queues = cloneDeep(EMPTY_QUEUES);
-        let sideQueue = [];
-        let epd = START_EPD;
-        let lineSoFar = [];
-        line.map((move) => {
-          let response = find(
-            s.repertoire[side].positionResponses[epd],
-            (m) => m.sanPlus === move
-          );
-          epd = response?.epdAfter;
-          if (response && response.mine && response.epd !== START_EPD) {
-            sideQueue.push({
-              moves: [response],
-              line: lineToPgn(lineSoFar),
-            });
-          } else {
-            console.log("Couldn't find a move for ", epd);
-          }
-          lineSoFar.push(move);
-        });
-        queues[side] = sideQueue;
-        s.reviewWithQueue(queues);
-      }, "reviewLine"),
-    updateQueue: (cram: boolean) =>
-      set(([s]) => {
-        let seen_epds = new Set();
-        s.queues = {
-          white: [],
-          black: [],
-        };
-        const recurse = (epd, line, side: Side) => {
-          let responses = s.repertoire[side].positionResponses[epd];
-          if (responses?.[0]?.mine) {
-            let needsToReviewAny =
-              some(responses, (r) => r.srs.needsReview) || cram;
-            if (needsToReviewAny) {
-              s.queues[side].push({ moves: responses, line: lineToPgn(line) });
-            }
-          }
-
-          map(shuffle(responses), (m) => {
-            if (!seen_epds.has(m.epdAfter)) {
-              seen_epds.add(m.epdAfter);
-              recurse(m.epdAfter, [...line, m.sanPlus], side);
-            }
-          });
-        };
-        for (const side of SIDES) {
-          recurse(START_EPD, [], side);
-          seen_epds = new Set();
-        }
-      }),
     updateRepertoireStructures: () =>
       set(([s]) => {
         console.log({ grades: s.repertoireGrades });
@@ -773,71 +443,6 @@ export const getInitialRepertoireState = (
           }
         );
       }, "updateRepertoireStructures"),
-
-    markMovesReviewed: (results: ReviewPositionResults[]) =>
-      set(([s, gs]) => {
-        trackEvent(`reviewing.reviewed_move`);
-        client
-          .post("/api/v1/openings/moves_reviewed", { results })
-          .then(({ data }) => {});
-      }),
-    setupNextMove: () =>
-      set(([s]) => {
-        s.chessboardState.frozen = false;
-        s.showNext = false;
-        if (s.currentMove) {
-          let failedMoves = values(s.failedReviewPositionMoves);
-          if (!isEmpty(failedMoves)) {
-            let side = failedMoves[0].side;
-            s.queues[side].push({
-              moves: failedMoves,
-              line: s.currentMove.line,
-            });
-          }
-          s.markMovesReviewed(
-            s.currentMove.moves.map((m) => {
-              let failed = s.failedReviewPositionMoves[m.sanPlus];
-              return {
-                epd: m.epd,
-                sanPlus: m.sanPlus,
-                correct: !failed,
-              };
-            })
-          );
-        }
-        s.currentMove = s.queues[s.reviewSide].shift();
-        if (!s.currentMove) {
-          s.reviewSide = otherSide(s.reviewSide);
-          s.currentMove = s.queues[s.reviewSide].shift();
-          if (!s.currentMove) {
-            s.backToOverview();
-            return;
-          }
-        }
-        s.failedReviewPositionMoves = {};
-        s.completedReviewPositionMoves = {};
-        s.chessboardState.flipped = s.currentMove.moves[0].side === "black";
-        s.chessboardState.resetPosition();
-        s.chessboardState.playPgn(s.currentMove.line);
-        let lastOpponentMove = last(
-          s.chessboardState.position.history({ verbose: true })
-        );
-        s.chessboardState.backOne();
-
-        if (lastOpponentMove) {
-          window.setTimeout(() => {
-            set(([s]) => {
-              if (s.isReviewing) {
-                s.chessboardState.animatePieceMove(
-                  lastOpponentMove,
-                  PlaybackSpeed.Normal,
-                  (completed) => {}
-                );
-              }
-            });
-          }, 300);
-        }
-      }, "setupNextMove"),
 
     deleteMoveConfirmed: () =>
       set(([s]) => {
@@ -986,36 +591,21 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s]) => {
-        if (s.isReviewingWithCustomQueue) {
-          s.isReviewingWithCustomQueue = false;
-          s.updateQueue(false);
+        if (s.isReviewing) {
+          s.reviewState.stopReviewing();
         }
         s.setBreadcrumbs([]);
         s.showImportView = false;
         s.browsingState.readOnly = false;
         s.backToStartPosition();
-        s.reviewSide = null;
-        s.isReviewing = false;
-        if (s.currentMove) {
-          s.queues[s.currentMove.moves[0].side].unshift(s.currentMove);
-        }
-        if (s.isCramming) {
-          s.updateQueue(false);
-        }
-        s.isCramming = false;
-        s.currentMove = null;
-        s.activeSide = "white";
+        s.browsingState.activeSide = null;
         s.isEditing = false;
         s.isBrowsing = false;
-        s.chessboardState.resetPosition();
-        s.chessboardState.frozen = true;
-        s.chessboardState.flipped = false;
         s.divergencePosition = null;
         s.divergenceIndex = null;
-        s.hasPendingLineToAdd = false;
-        s.pendingResponses = {};
-        s.chessboardState.showMoveLog = false;
-        s.addedLineState = null;
+        s.browsingState.hasPendingLineToAdd = false;
+        s.browsingState.pendingResponses = {};
+        s.browsingState.addedLineState = null;
       }),
     startImporting: () =>
       set(([s]) => {
@@ -1075,52 +665,20 @@ export const getInitialRepertoireState = (
             onPress: null,
           },
         ]);
-        s.activeSide = side;
+        s.browsingState.activeSide = side;
         s.isBrowsing = false;
         s.isEditing = true;
-        s.chessboardState.frozen = false;
-        s.chessboardState.flipped = side === "black";
         // s.isAddingPendingLine = failOnAny(true);
-        s.editingState = {
-          ...s.editingState,
+        s.browsingState.editingState = {
+          ...s.browsingState.editingState,
           selectedTab: EditingTab.Responses,
           etcModalOpen: false,
         };
-        s.onEditingPositionUpdate();
-      }),
-    reviewWithQueue: (queues: BySide<QuizMove[]>) =>
-      set(([s]) => {
-        let side = shuffle(SIDES)[0];
-        s.isReviewingWithCustomQueue = true;
-        s.queues = queues;
-        s.reviewSide = side;
-        s.chessboardState.showMoveLog = true;
-        s.isReviewing = true;
-        s.setupNextMove();
-      }),
-    startReview: (_side?: Side) =>
-      set(([s, gs]) => {
-        gs.navigationState.push("/openings/review");
-        s.setBreadcrumbs([
-          {
-            text: `Review`,
-            onPress: null,
-          },
-        ]);
-        let side = _side ?? shuffle(SIDES)[0];
-        s.reviewSide = side;
-        if (!isNil(_side) && s.getQueueLength(side) === 0) {
-          s.updateQueue(true);
-          s.isCramming = true;
-        }
-        s.chessboardState.showMoveLog = true;
-        s.isReviewing = true;
-        s.setupNextMove();
       }),
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();
-        s.updateQueue(false);
+        s.reviewState.updateQueue(false);
       }),
     fetchRepertoireTemplates: () =>
       set(([s]) => {
@@ -1180,7 +738,6 @@ export const getInitialRepertoireState = (
       }),
     fetchDebugGames: () =>
       set(([s]) => {
-        s.chessboardState.frozen = false;
         s.debugPawnStructuresState = {
           games: [],
           loadingGames: true,
@@ -1218,9 +775,9 @@ export const getInitialRepertoireState = (
           }
         );
         // s.debugPawnStructuresState.r
-        s.chessboardState.playPgn(
-          lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
-        );
+        // s.chessboardState.playPgn(
+        //   lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
+        // );
       }),
     fetchSharedRepertoire: (id: string) =>
       set(([s]) => {
@@ -1285,25 +842,9 @@ export const getInitialRepertoireState = (
           return getAllRepertoireMoves(s.repertoire).length;
         }
       }),
-    getQueueLength: (side?: Side) =>
-      get(([s]) => {
-        if (side) {
-          return s.queues[side].length;
-        } else {
-          return s.queues["white"].length + s.queues["black"].length;
-        }
-      }),
     getIsRepertoireEmpty: () =>
       get(([s]) => {
         return isEmpty(getAllRepertoireMoves(s.repertoire));
-      }),
-    getCurrentPositionReport: () =>
-      get(([s]) => {
-        return s.positionReports[s.getCurrentEpd()];
-      }),
-    getCurrentEpd: () =>
-      get(([s]) => {
-        return last(s.chessboardState.positionHistory);
       }),
     backOne: () =>
       set(([s]) => {
@@ -1311,14 +852,6 @@ export const getInitialRepertoireState = (
           s.browsingState.chessboardState.backOne();
           return;
         }
-        s.chessboardState.backOne();
-        if (s.debugPawnStructuresState) {
-          // s.fetchDebugPawnStructureForPosition();
-        }
-        if (s.isEditing) {
-          s.onEditingPositionUpdate();
-        }
-        // s.onEditingPositionUpdate(s);
       }),
     backToStartPosition: () =>
       set(([s]) => {
@@ -1326,174 +859,10 @@ export const getInitialRepertoireState = (
           s.browsingState.chessboardState.resetPosition();
           return;
         }
-        s.chessboardState.resetPosition();
-        s.onEditingPositionUpdate();
-      }),
-    addPendingLine: (cfg) =>
-      set(([s, gs]) => {
-        let { replace } = cfg ?? { replace: false };
-        s.isAddingPendingLine = true;
-        client
-          .post("/api/v1/openings/add_moves", {
-            moves: flatten(cloneDeep(values(s.pendingResponses))),
-            side: s.activeSide,
-            replace: replace,
-          })
-          .then(({ data }: { data: FetchRepertoireResponse }) => {
-            set(([s]) => {
-              // s.backToStartPosition(s);
-              s.repertoire = data.repertoire;
-              s.repertoireGrades = data.grades;
-              s.onRepertoireUpdate();
-              s.onEditingPositionUpdate();
-              s.editingState.addConflictingMoveModalOpen = false;
-
-              s.addedLineState = {
-                line: s.currentLine,
-                stage: AddedLineStage.Initial,
-                addNewLineSelectedIndex: 0,
-                positionReport: s.positionReports[s.getCurrentEpd()],
-                ecoCode: findLast(
-                  map(
-                    s.chessboardState.positionHistory,
-                    (p) => s.ecoCodeLookup[p]
-                  )
-                ),
-              };
-              let choices = [];
-              let seenMisses = new Set();
-              let addMiss = (miss: RepertoireMiss, title) => {
-                if (!miss || seenMisses.has(miss.epd)) {
-                  return;
-                }
-                seenMisses.add(miss.epd);
-                choices.push({
-                  line: miss.lines[0],
-                  title: title,
-                  incidence: miss.incidence,
-                });
-              };
-              let biggestMiss = s.repertoireGrades[s.activeSide].biggestMiss;
-              if (biggestMiss) {
-                addMiss(biggestMiss, `Biggest miss overall`);
-              }
-
-              let ecoCode = s.addedLineState.ecoCode;
-              if (ecoCode) {
-                let ecoName = getNameEcoCodeIdentifier(ecoCode.fullName);
-                let miss = find(
-                  s.repertoireGrades[s.activeSide].biggestMisses,
-                  (m) => m.ecoCodeName == ecoName
-                );
-                addMiss(miss, `Biggest miss in ${ecoName}`);
-                let fullEcoName = ecoCode.fullName;
-                miss = find(
-                  s.repertoireGrades[s.activeSide].biggestMisses,
-                  (m) => m.ecoCodeName == fullEcoName
-                );
-                addMiss(miss, `Biggest miss in ${fullEcoName}`);
-              }
-
-              choices.push({
-                line: "",
-                title: "Start position",
-              });
-              choices.push({
-                line: lineToPgn(s.addedLineState.line),
-                title: "Current position",
-              });
-              choices = take(choices, 3);
-              s.addedLineState.addNewLineChoices = choices;
-            });
-          })
-          .finally(() => {
-            set(([s]) => {
-              s.isAddingPendingLine = false;
-              s.editingState.addConflictingMoveModalOpen = false;
-            });
-          });
       }),
     selectedTemplates: {},
   } as RepertoireState;
 
-  const setChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _set((s) => fn(s.repertoireState.chessboardState));
-  };
-  const getChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _get((s) => fn(s.repertoireState.chessboardState));
-  };
-  initialState.chessboardState = createChessState(
-    setChess,
-    getChess,
-    (c: ChessboardState) => {
-      c.frozen = true;
-      c.delegate = {
-        completedMoveAnimation: () => {},
-        onPositionUpdated: () =>
-          set(([s]) => {
-            if (s.isEditing) {
-              s.onMove();
-            }
-          }),
-
-        shouldMakeMove: (move: Move) =>
-          set(([s]) => {
-            if (s.debugPawnStructuresState) {
-              return true;
-            }
-            if (s.isEditing) {
-              return true;
-            } else if (s.isReviewing) {
-              let matchingResponse = find(
-                s.currentMove.moves,
-                (m) => move.san == m.sanPlus
-              );
-              if (matchingResponse) {
-                s.chessboardState.flashRing(true);
-
-                s.completedReviewPositionMoves[matchingResponse.sanPlus] =
-                  matchingResponse;
-                // TODO: this is really dirty
-                const willUndo = !isEmpty(s.getRemainingReviewPositionMoves());
-                window.setTimeout(
-                  () => {
-                    set(([s]) => {
-                      if (!s.isReviewing) {
-                        return;
-                      }
-                      if (isEmpty(s.getRemainingReviewPositionMoves())) {
-                        if (s.currentMove?.moves.length > 1) {
-                          s.showNext = true;
-                        } else {
-                          console.log("Should setup next?");
-                          if (isEmpty(s.failedReviewPositionMoves)) {
-                            console.log("Yup?");
-                            s.setupNextMove();
-                          } else {
-                            s.showNext = true;
-                          }
-                        }
-                      } else {
-                        s.chessboardState.backOne();
-                      }
-                    });
-                  },
-                  willUndo ? 500 : 100
-                );
-                return true;
-              } else {
-                s.chessboardState.flashRing(false);
-                // TODO: reduce repetition
-                s.getRemainingReviewPositionMoves().forEach((move) => {
-                  s.failedReviewPositionMoves[move.sanPlus] = move;
-                });
-                return false;
-              }
-            }
-          }),
-      };
-    }
-  );
   return initialState;
 };
 

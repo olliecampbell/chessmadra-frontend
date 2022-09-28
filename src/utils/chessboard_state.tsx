@@ -61,6 +61,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
     callback: (completed: boolean) => void
   ) => void;
   flashRing: (success: boolean) => void;
+  moveLog?: string[];
   moveLogPgn?: string;
   showMoveLog?: boolean;
   availableMovesFrom: (square: Square) => Move[];
@@ -128,6 +129,7 @@ export const createChessState = (
   let initialState = {
     isColorTraining: false,
     notifyingDelegates: true,
+    moveLog: [],
     currentHighlightedSquares: new Set(),
     getDelegate: () => {
       return get((s) => {
@@ -172,6 +174,7 @@ export const createChessState = (
     ...createQuick(set),
     updateMoveLogPgn: () => {
       set((s) => {
+        s.moveLog = s.position.history();
         s.moveLogPgn = lineToPgn(s.position.history());
       });
     },
@@ -280,9 +283,7 @@ export const createChessState = (
             toValue: 0.4,
             duration: duration ?? 100,
             useNativeDriver: true,
-          }).start(({ finished }) => {
-            console.log("Finished with animating it in?", finished);
-          });
+          }).start(({ finished }) => {});
         });
       }),
     reversePreviewMove: () => {
@@ -442,11 +443,6 @@ export const createChessState = (
     },
     clearHighlightedSquares: () => {
       set((s) => {
-        console.log("___CLEAR HIGHLIGHTED___");
-        console.log(
-          "squares to clear",
-          logProxy(Array.from(s.currentHighlightedSquares))
-        );
         let squares = Array.from(s.currentHighlightedSquares);
         if (squares) {
           squares.forEach((sq) => {
@@ -457,7 +453,6 @@ export const createChessState = (
               useNativeDriver: false,
             }).start(({ finished }) => {
               set((s) => {
-                console.log({ sq, finished });
                 if (!finished && !s.currentHighlightedSquares.has(sq)) {
                   s.squareHighlightAnims[sq].setValue(0.0);
                 }
