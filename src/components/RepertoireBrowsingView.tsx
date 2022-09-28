@@ -236,8 +236,7 @@ export const ResultsView = React.memo(function () {
                     //   `6px solid ${active ? c.grays[95] : "transparent"}`
                     // ),
                     c.zIndex(5),
-                    c.px(isMobile ? 0 : 48),
-                    c.pb(isMobile ? 8 : 8)
+                    c.px(isMobile ? 0 : 48)
                   )}
                 >
                   <CMText

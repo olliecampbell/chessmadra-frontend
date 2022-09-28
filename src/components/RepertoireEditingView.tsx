@@ -444,7 +444,7 @@ export const Responses = React.memo(function Responses() {
                     />
                   </CMText>
                   <Spacer width={18} />
-                  <CMText style={s(c.fg(c.grays[75]))}>
+                  <CMText style={s(c.fg(c.grays[35]))}>
                     No moves available for this position. You can still add a
                     move by playing it on the board.
                   </CMText>
