@@ -90,9 +90,11 @@ export interface RepertoireGrade {
   // moveIncidence: Record<MoveIdentifier, number>;
   expectedDepth: number;
   instructiveGames: LichessGame[];
+  coverage: Record<string, number>;
   // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
   biggestMisses: RepertoireMiss[];
+  epdIncidences: Record<string, number>;
 }
 
 export type OpeningIdentifier = string;

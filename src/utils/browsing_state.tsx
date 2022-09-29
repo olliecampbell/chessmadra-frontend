@@ -251,10 +251,7 @@ export const getInitialBrowsingState = (
 
         let incidence = 1.0;
         map(
-          zip(
-            s.chessboardState.positionHistory,
-            s.chessboardState.position.history()
-          ),
+          zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
           ([position, san], i) => {
             let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
             let cachedIncidence = rs.epdIncidences[s.activeSide][position];

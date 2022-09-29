@@ -12,6 +12,7 @@ import {
   isNil,
   last,
   every,
+  clamp,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -48,10 +49,13 @@ import {
 } from "app/utils/move_inaccuracy";
 import { quick } from "app/utils/app_state";
 import { AnnotationEditor, MAX_ANNOTATION_LENGTH } from "./AnnotationEditor";
+import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
 
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  incidenceUpperBound?: number;
+  coverage?: number;
   bestMove?: boolean;
   moveRating?: MoveRating;
   repertoireMove?: RepertoireMove;
@@ -90,13 +94,13 @@ export const RepertoireMovesTable = ({
 }) => {
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let [currentIncidence] = useBrowsingState((s) => [
+  let [currentIncidence] = useBrowsingState(([s]) => [
     s.getIncidenceOfCurrentLine() * 100,
   ]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
   const isMobile = useIsMobile();
-  let sections = getSections({
+  let sections = useSections({
     myTurn,
     isMobile,
   });
@@ -132,6 +136,7 @@ export const RepertoireMovesTable = ({
         trimmedResponses.map((tableResponse, i) => {
           return (
             <Response
+              myTurn={myTurn}
               anyMine={anyMine}
               sections={sections}
               editing={editingAnnotations}
@@ -192,7 +197,18 @@ export const RepertoireMovesTable = ({
   );
 };
 
-let getSections = ({
+interface Section {
+  width: number;
+  header: string;
+  content: (_: {
+    suggestedMove: SuggestedMove;
+    positionReport: PositionReport;
+    tableResponse: TableResponse;
+    side: Side;
+  }) => any;
+}
+
+let useSections = ({
   myTurn,
   isMobile,
 }: {
@@ -200,7 +216,9 @@ let getSections = ({
   isMobile: boolean;
 }) => {
   let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
-  let sections = [];
+  const debugUi = useDebugState((s) => s.debugUi);
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  let sections: Section[] = [];
   let textStyles = s(c.fg(c.grays[20]), c.weightSemiBold);
 
   let na = <CMText style={s(textStyles)}>N/A</CMText>;
@@ -211,30 +229,53 @@ let getSections = ({
   );
   if (!myTurn) {
     sections.push({
-      width: 40,
+      width: 60,
       content: ({ suggestedMove, positionReport }) => {
         let playRate =
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
-        if (
-          !playRate ||
-          isNaN(playRate) ||
-          formatPlayPercentage(playRate) === "0%"
-        ) {
-          return na;
+        let icon = "fa-signal-bars-weak";
+        if (playRate > 0.3) {
+          icon = "fa-signal-bars";
+        } else if (playRate > 0.2) {
+          icon = "fa-signal-bars-good";
+        } else if (playRate > 0.05) {
+          icon = "fa-signal-bars-fair";
         }
         return (
           <>
             {
-              <CMText style={s(textStyles)}>
-                {formatPlayPercentage(playRate)}
-              </CMText>
+              <View style={s(c.column)}>
+                <CMText style={s(textStyles)}>
+                  <i
+                    className={`fa fa-duotone ${icon}`}
+                    style={s(
+                      c.fontSize(16),
+                      c.duotone(c.grays[15], c.grays[75])
+                    )}
+                  />
+                </CMText>
+                {debugUi && (
+                  <CMText style={s(c.fg(c.colors.debugColorDark))}>
+                    {(playRate * 100).toFixed(2)}
+                  </CMText>
+                )}
+              </View>
             }
           </>
         );
       },
-      header: "Peers",
+      header: "Popularity",
+    });
+  }
+  if (!myTurn) {
+    sections.push({
+      width: 80,
+      content: ({ suggestedMove, positionReport, tableResponse }) => {
+        return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
+      },
+      header: "Your coverage",
     });
   }
   if (myTurn) {
@@ -271,49 +312,53 @@ let getSections = ({
       header: "Masters",
     });
   }
-  sections.push({
-    width: 40,
-    content: ({ suggestedMove, positionReport }) => (
-      <>
-        {suggestedMove?.stockfish && (
-          <>
-            <Spacer width={0} grow />
-            <View style={s(c.row, c.alignEnd)}>
-              <CMText style={s(c.weightSemiBold, c.fontSize(14), textStyles)}>
-                {formatStockfishEval(suggestedMove?.stockfish)}
-              </CMText>
-            </View>
-          </>
-        )}
-      </>
-    ),
-    header: "Eval",
-  });
-  sections.push({
-    width: isMobile ? 80 : 80,
-    content: ({ suggestedMove, positionReport, side }) => {
-      if (
-        !suggestedMove?.results ||
-        getTotalGames(suggestedMove?.results) < 5
-      ) {
-        return notEnoughGames;
-      }
-      return (
+  if (myTurn) {
+    sections.push({
+      width: 40,
+      content: ({ suggestedMove, positionReport }) => (
         <>
-          {suggestedMove && (
-            <View style={s(c.width(80))}>
-              <GameResultsBar
-                onLightUi={true}
-                activeSide={activeSide}
-                gameResults={suggestedMove.results}
-              />
-            </View>
+          {suggestedMove?.stockfish && (
+            <>
+              <Spacer width={0} grow />
+              <View style={s(c.row, c.alignEnd)}>
+                <CMText style={s(c.weightSemiBold, c.fontSize(14), textStyles)}>
+                  {formatStockfishEval(suggestedMove?.stockfish)}
+                </CMText>
+              </View>
+            </>
           )}
         </>
-      );
-    },
-    header: "Peer results",
-  });
+      ),
+      header: "Eval",
+    });
+  }
+  if (myTurn) {
+    sections.push({
+      width: isMobile ? 120 : 120,
+      content: ({ suggestedMove, positionReport, side }) => {
+        if (
+          !suggestedMove?.results ||
+          getTotalGames(suggestedMove?.results) < 5
+        ) {
+          return notEnoughGames;
+        }
+        return (
+          <>
+            {suggestedMove && (
+              <View style={s(c.width(80))}>
+                <GameResultsBar
+                  onLightUi={true}
+                  activeSide={activeSide}
+                  gameResults={suggestedMove.results}
+                />
+              </View>
+            )}
+          </>
+        );
+      },
+      header: "Peer results",
+    });
+  }
   return sections;
 };
 
@@ -321,11 +366,13 @@ const Response = ({
   tableResponse,
   sections,
   anyMine,
+  myTurn,
   editing,
 }: {
   tableResponse: TableResponse;
   anyMine: boolean;
   sections: any[];
+  myTurn: boolean;
   editing;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
@@ -345,7 +392,7 @@ const Response = ({
     currentEcoCode,
     previewMove,
     uploadMoveAnnotation,
-  ] = useBrowsingState((s, rs) => [
+  ] = useBrowsingState(([s, rs]) => [
     s.chessboardState.makeMove,
     s.chessboardState.moveLog,
     s.getCurrentPositionReport(),
@@ -507,53 +554,48 @@ const Response = ({
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
           <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            <Pressable
-              style={s(
-                c.px(12),
-                c.center,
-                !repertoireMove?.mine && c.noPointerEvents
-              )}
-              {...hoveringCheckboxProps}
-              onPress={() => {
-                console.log("tapped on checkbox");
-                quick((s) => {
-                  s.repertoireState.deleteMoveState.modalOpen = true;
-                  s.repertoireState.deleteMoveState.response = repertoireMove;
-                  trackEvent(`editor.delete_move`);
-                });
-              }}
-            >
-              <i
+            {true && (
+              <Pressable
                 style={s(
-                  repertoireMove?.mine && hoveringCheckbox
-                    ? c.duotone(c.grays[90], c.reds[55])
-                    : !repertoireMove && anyMine && !hoveringRow
-                    ? s(c.fg("transparent"))
-                    : repertoireMove
-                    ? c.duotone(c.grays[90], c.purples[55])
-                    : hoveringRow
-                    ? c.duotone(c.grays[90], c.purples[55])
-                    : c.fg(c.grays[80]),
-                  hoveringRow && !repertoireMove && c.opacity(40),
-                  c.fontSize(22)
+                  c.px(12),
+                  c.center,
+                  !repertoireMove?.mine && c.noPointerEvents
                 )}
-                className={
-                  repertoireMove?.mine && hoveringCheckbox
-                    ? `fa-duotone fa-square-xmark`
-                    : repertoireMove || hoveringRow
-                    ? `fa-duotone fa-square-check`
-                    : `fa-thin fa-square`
-                }
-              ></i>
-            </Pressable>
-            <View
-              style={s(
-                c.fullHeight,
-                c.width(1),
-                c.bg(c.grays[100]),
-                c.opacity(0)
-              )}
-            ></View>
+                {...hoveringCheckboxProps}
+                onPress={() => {
+                  console.log("tapped on checkbox");
+                  quick((s) => {
+                    s.repertoireState.deleteMoveState.modalOpen = true;
+                    s.repertoireState.deleteMoveState.response = repertoireMove;
+                    trackEvent(`editor.delete_move`);
+                  });
+                }}
+              >
+                <i
+                  style={s(
+                    repertoireMove?.mine && hoveringCheckbox
+                      ? c.duotone(c.grays[90], c.reds[55])
+                      : !repertoireMove && anyMine && !hoveringRow
+                      ? s(c.fg("transparent"))
+                      : repertoireMove
+                      ? c.duotone(c.grays[90], c.purples[55])
+                      : hoveringRow
+                      ? c.duotone(c.grays[90], c.purples[55])
+                      : c.fg(c.grays[80]),
+                    hoveringRow && !repertoireMove && c.opacity(40),
+                    c.fontSize(22)
+                  )}
+                  className={
+                    repertoireMove?.mine && hoveringCheckbox
+                      ? `fa-duotone fa-square-xmark`
+                      : repertoireMove || hoveringRow
+                      ? `fa-duotone fa-square-check`
+                      : `fa-thin fa-square`
+                  }
+                ></i>
+              </Pressable>
+            )}
+            {!myTurn && <Spacer width={8} />}
             <View style={s(c.row, c.alignCenter, c.pl(4))}>
               <View style={s(c.row, c.alignCenter, c.minWidth(60))}>
                 <CMText
@@ -602,6 +644,7 @@ const Response = ({
                       {section.content({
                         suggestedMove,
                         positionReport,
+                        tableResponse,
                         side,
                       })}
                     </View>
@@ -633,7 +676,7 @@ const Response = ({
               </View>
             )}
           </View>
-          {debugUi && (
+          {debugUi && suggestedMove?.stockfish && (
             <View style={s(c.row)}>
               <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
                 <CMText style={s(c.fg(c.colors.debugColor), c.fontSize(14))}>
@@ -643,12 +686,14 @@ const Response = ({
               <Spacer width={4} />
               <CMText style={s(c.fg(c.colors.debugColor))}>
                 Win before:{" "}
-                {getWinPercentage(positionReport?.stockfish, side).toFixed(1)}
+                {positionReport?.stockfish &&
+                  getWinPercentage(positionReport?.stockfish, side).toFixed(1)}
               </CMText>
               <Spacer width={4} />
               <CMText style={s(c.fg(c.colors.debugColor))}>
                 Win after:{" "}
-                {getWinPercentage(suggestedMove?.stockfish, side).toFixed(1)}
+                {positionReport?.stockfish &&
+                  getWinPercentage(suggestedMove?.stockfish, side).toFixed(1)}
               </CMText>
             </View>
           )}
@@ -774,4 +819,74 @@ export const DebugScoreView = ({
 
 const getSpaceBetweenStats = (isMobile: boolean) => {
   return isMobile ? 12 : 24;
+};
+
+const CoverageProgressBar = ({
+  tableResponse,
+}: {
+  tableResponse: TableResponse;
+}) => {
+  const debugUi = useDebugState((s) => s.debugUi);
+  const threshold = useUserState((s) => s.getCurrentThreshold()) / 100;
+
+  const backgroundColor = c.grays[90];
+  const completedColor = c.greens[55];
+  let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
+  let coverage = tableResponse?.coverage ?? incidence;
+  let debugElements = debugUi && (
+    <View style={s(c.column)}>
+      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
+        incidence: {(tableResponse?.incidence * 100).toFixed(2)}
+      </CMText>
+      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
+        incidence UB: {(tableResponse?.incidenceUpperBound * 100).toFixed(2)}
+      </CMText>
+      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
+        coverage: {(tableResponse?.coverage * 100).toFixed(2)}
+      </CMText>
+    </View>
+  );
+  if (incidence && incidence < threshold) {
+    return (
+      <View style={s(c.column)}>
+        <CMText style={s(c.fg(c.grays[60]))}>Not needed</CMText>
+        {debugElements}
+      </View>
+    );
+  }
+  const completed = coverage < threshold;
+  const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(
+    threshold * 100
+  );
+  const numMovesNeededForCurrentMissIncidence =
+    getExpectedNumberOfMovesForTarget(coverage * 100);
+  let progress = clamp(
+    (numMovesNeededForCurrentMissIncidence / expectedNumMovesNeeded) * 100,
+    12,
+    90
+  );
+  const inProgressColor = progress < 20 ? c.reds[65] : c.yellows[65];
+  return (
+    <View style={s(c.column, c.fullWidth)}>
+      <View
+        style={s(
+          c.fullWidth,
+          c.bg(backgroundColor),
+          c.round,
+          c.overflowHidden,
+          c.height(6)
+        )}
+      >
+        <View
+          style={s(
+            c.width(completed ? "100%" : `${progress}%`),
+            c.bg(completed ? completedColor : inProgressColor),
+            c.fullHeight
+          )}
+        ></View>
+      </View>
+
+      {debugElements}
+    </View>
+  );
 };

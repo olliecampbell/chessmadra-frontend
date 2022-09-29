@@ -92,7 +92,7 @@ let ModalHeader = ({ title, closeModal, icon }) => {
 };
 
 const AddedLineAddMore = () => {
-  let [addedLineState, repertoireGrades, side] = useBrowsingState((s, rs) => [
+  let [addedLineState, repertoireGrades, side] = useBrowsingState(([s, rs]) => [
     s.addedLineState,
     rs.repertoireGrades,
     s.activeSide,
@@ -197,7 +197,7 @@ const AddedLineAddMore = () => {
 };
 
 const AddedLineOverview = () => {
-  let [addedLineState, side, reviewLine] = useBrowsingState((s, rs) => [
+  let [addedLineState, side, reviewLine] = useBrowsingState(([s, rs]) => [
     s.addedLineState,
     s.activeSide,
     rs.reviewState.reviewLine,

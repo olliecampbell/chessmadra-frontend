@@ -14,7 +14,7 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import { useResponsive } from "app/utils/useResponsive";
 
 export const RepertoireEditingBottomNav = ({}: {}) => {
-  const [moveLogPgn, hasPendingLineToAdd] = useBrowsingState((s) => [
+  const [moveLogPgn, hasPendingLineToAdd] = useBrowsingState(([s]) => [
     s.chessboardState.moveLogPgn,
     s.hasPendingLineToAdd,
   ]);
@@ -34,7 +34,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
   return (
     <View
       style={s(
-        isMobile ? c.fixed : c.absolute,
+        c.fixed,
         c.left(0),
         c.right(0),
         c.bottom(0),
@@ -45,7 +45,7 @@ export const RepertoireEditingBottomNav = ({}: {}) => {
         style={s(
           c.fullWidth,
           c.bg(c.colors.cardBackground),
-          c.lightCardShadow,
+          c.shadow(0, 0, 24, 0, "rgba(0, 0, 0, 0.8)"),
           c.opacity(fadeAnim)
         )}
       >
@@ -98,7 +98,7 @@ const AddPendingLineButton = () => {
     pendingLineHasConflictingMoves,
     currentLineIncidence,
     quick,
-  ] = useBrowsingState((s) => [
+  ] = useBrowsingState(([s]) => [
     s.isAddingPendingLine,
     s.addPendingLine,
     s.hasPendingLineToAdd,

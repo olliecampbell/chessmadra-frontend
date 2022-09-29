@@ -25,7 +25,6 @@ export const BackControls: React.FC<BackControlsProps> = ({
 }) => {
   const bp = useResponsive();
   const layout = useRef(null);
-  console.log({ layout });
   let [
     // searchOnChessable,
     analyzeLineOnLichess,
@@ -37,7 +36,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
     // s.searchOnChessable,
     s.analyzeLineOnLichess,
     s.quick,
-    s.currentLine,
+    s.browsingState.chessboardState.moveLog,
     s.backToStartPosition,
     s.backOne,
   ]);

@@ -13,7 +13,7 @@ import {
 import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const ConfirmMoveConflictModal = () => {
-  let [open, isAddingPendingLine, addPendingLine] = useBrowsingState((s) => [
+  let [open, isAddingPendingLine, addPendingLine] = useBrowsingState(([s]) => [
     s.editingState.addConflictingMoveModalOpen,
     s.isAddingPendingLine,
     s.addPendingLine,

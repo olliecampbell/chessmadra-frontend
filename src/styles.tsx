@@ -230,10 +230,14 @@ const chessboardGrays = genGrays(182, 5);
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
-const genShades = (hue: number) => {
+const genShades = (
+  hue: number,
+  _minSaturation?: number,
+  _maxSaturation?: number
+) => {
   const shades = {};
-  let minSaturation = 20;
-  let maxSaturation = 80;
+  let minSaturation = _minSaturation ?? 20;
+  let maxSaturation = _maxSaturation ?? 80;
   let minLightness = 4;
   let maxLightness = 80;
   for (let i = 0; i <= 100; i = i + 5) {
@@ -259,7 +263,7 @@ const genShades = (hue: number) => {
 const blues = genShades(186);
 const teals = genShades(150);
 const primaries = blues;
-const yellows = genShades(45);
+const yellows = genShades(41, 70, 70);
 const pinks = genShades(308);
 const purples = genShades(271);
 const reds = genShades(340);
@@ -285,6 +289,7 @@ const colors = {
   lightTile: hsl(180, 12, 70),
   darkTile: hsl(180, 12, 40),
   debugColor: hsl(71, 100, 42),
+  debugColorDark: hsl(71, 100, 28),
 };
 const extraDarkBorder = border(`1px solid ${grays[7]}`);
 

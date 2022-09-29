@@ -38,6 +38,7 @@ import {
   useDebugState,
   useRepertoireState,
   useBrowsingState,
+  useUserState,
 } from "app/utils/app_state";
 import React, { useEffect, useState } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
@@ -62,7 +63,7 @@ export const MoveLog = () => {
   let pairs = [];
   let currentPair = [];
   const [hasPendingLineToAdd, position, differentMoveIndices] =
-    useBrowsingState((s) => [
+    useBrowsingState(([s]) => [
       s.hasPendingLineToAdd,
       s.chessboardState.position,
       s.differentMoveIndices,
@@ -298,7 +299,7 @@ export const Responses = React.memo(function Responses() {
     currentLine,
     currentLineIncidence,
     hasPendingLine,
-  ] = useBrowsingState((s) => [
+  ] = useBrowsingState(([s, rs]) => [
     s.getCurrentPositionReport(),
     s.chessboardState.position,
     s.activeSide,
@@ -307,6 +308,15 @@ export const Responses = React.memo(function Responses() {
     s.getIncidenceOfCurrentLine(),
     s.hasPendingLineToAdd,
   ]);
+  let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  let coverage = useBrowsingState(
+    ([s, rs]) => rs.repertoireGrades[s.activeSide].coverage,
+    { referenceEquality: true }
+  );
+  let epdIncidences = useBrowsingState(
+    ([s, rs]) => rs.repertoireGrades[s.activeSide].epdIncidences,
+    { referenceEquality: true }
+  );
   const [existingMoves] = useRepertoireState((s) => [
     s.repertoire[s.browsingState.activeSide].positionResponses[
       s.browsingState.chessboardState.getCurrentEpd()
@@ -335,13 +345,41 @@ export const Responses = React.memo(function Responses() {
     ownSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
   );
   tableResponses.forEach((tr) => {
+    let epd = tr.suggestedMove?.epdAfter ?? tr.repertoireMove?.epdAfter;
+    if (epdIncidences[epd]) {
+      tr.incidence = epdIncidences[epd];
+      return;
+    }
     let moveIncidence = 0.0;
+    tr.incidence = currentLineIncidence * moveIncidence;
+    tr.incidenceUpperBound = tr.incidence;
     if (ownSide) {
       moveIncidence = 1.0;
+      tr.incidence = currentLineIncidence;
+      tr.incidenceUpperBound = tr.incidence;
     } else if (tr.suggestedMove) {
       moveIncidence = getPlayRate(tr.suggestedMove, positionReport);
+      tr.incidence = currentLineIncidence * moveIncidence;
+      tr.incidenceUpperBound =
+        currentLineIncidence * Math.min(1, moveIncidence + 0.03);
     }
-    tr.incidence = currentLineIncidence * moveIncidence;
+    if (tr.suggestedMove?.sanPlus === "Be7") {
+      console.log({
+        playRate: getPlayRate(tr.suggestedMove, positionReport),
+        positionReport,
+        suggestedMove: tr.suggestedMove,
+        tr,
+      });
+    }
+  });
+  tableResponses.forEach((tr) => {
+    let epd = tr.suggestedMove?.epdAfter;
+    if (coverage[epd]) {
+      console.log("HAD COVERAGE FOR THIS ONE", coverage[epd]);
+      tr.coverage = coverage[epd];
+    } else {
+      // tr.coverage = tr.incidence;
+    }
   });
   tableResponses.forEach((tr) => {
     let moveRating = getMoveRating(
@@ -374,6 +412,7 @@ export const Responses = React.memo(function Responses() {
   const isMobile = false;
   console.log({ currentLine });
   const [showOtherMoves, setShowOtherMoves] = useState(false);
+  const debugUi = useDebugState((s) => s.debugUi);
   useEffect(() => {
     const beforeUnloadListener = (event) => {
       if (hasPendingLine) {
@@ -393,6 +432,41 @@ export const Responses = React.memo(function Responses() {
   const responsive = useResponsive();
   return (
     <View style={s(c.column, c.constrainWidth)}>
+      <Spacer height={12} />
+      {debugUi && (
+        <CMText style={s(c.fg(c.colors.debugColorDark))}>
+          Current line incidence: {(currentLineIncidence * 100).toFixed(2)}%
+        </CMText>
+      )}
+      {currentLineIncidence * 100 < currentThreshold && !ownSide && (
+        <View
+          style={s(
+            c.row,
+            c.alignCenter,
+            c.maxWidth(400),
+            c.selfCenter,
+            c.py(responsive.switch(12, [BP.lg, 24]))
+          )}
+        >
+          <i
+            className="fa fa-check"
+            style={s(c.fg(c.purples[55]), c.fontSize(24))}
+          />
+          <Spacer width={12} />
+          <CMText
+            style={s(
+              c.fg(c.colors.textInverse),
+              c.lineHeight("1.3rem"),
+              c.weightSemiBold
+            )}
+          >
+            This line exceeds your coverage target.{" "}
+            {hasPendingLine
+              ? "You can save this line, then go to your next biggest miss"
+              : "You can keep adding responses, but you may be better off addressing other gaps in your repertoire."}
+          </CMText>
+        </View>
+      )}
       {!isEmpty(youCanPlay) && (
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable

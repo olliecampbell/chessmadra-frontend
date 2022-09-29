@@ -389,12 +389,11 @@ export const getInitialRepertoireState = (
         s.epdIncidences = mapSides(
           s.repertoireGrades,
           (repertoireSide: RepertoireGrade) => {
-            let incidences = {};
-            repertoireSide.biggestMisses.forEach((miss: RepertoireMiss) => {
-              incidences[miss.epd] = miss.incidence;
-            });
-            console.log({ incidences });
-            return incidences;
+            // .forEach((miss: RepertoireMiss) => {
+            //   incidences[miss.epd] = miss.incidence;
+            // });
+            // console.log({ incidences });
+            return repertoireSide.epdIncidences;
           }
         );
         s.myResponsesLookup = mapSides(
@@ -822,12 +821,10 @@ export const getInitialRepertoireState = (
               }
               s.onRepertoireUpdate();
               // s.blah();
-              // s.startEditing("black");
-              // s.chessboardState.playPgn(
-              //   lineToPgn([
-              //     "e4", "e5", "Nf3", "Nc6", "Bc4", "Bc5", "c3", "Nf6", "d4", "exd4", "cxd4", "Bb4+", "Nc3", "Nxe4", "O-O", "Bxc3", "d5", "Bf6", "Re1", "O-O", "Rxe4",
-              //   ])
-              // );
+              s.startBrowsing("white");
+              s.browsingState.chessboardState.playPgn(
+                "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O b5"
+              );
             });
           });
       }),

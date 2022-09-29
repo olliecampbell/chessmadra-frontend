@@ -858,7 +858,7 @@ function getRepertoireSideCardPadding(responsive) {
   return responsive.switch(12, [BP.lg, 28], [BP.xl, 42]);
 }
 
-const getExpectedNumberOfMovesForTarget = (target: number) => {
+export const getExpectedNumberOfMovesForTarget = (target: number) => {
   let [a, b] = [67.12355793, -0.27985595];
 
   return a * Math.exp(b * target);

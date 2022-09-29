@@ -102,12 +102,12 @@ export const useAppStateInternal = create<AppState>()(
         }
       };
       let initialState = {
-        // toJSON: () => {
-        //   return get((s) => {
-        //     // Redux devtools slows down with big states, undo this for debugging
-        //     return {};
-        //   });
-        // },
+        toJSON: () => {
+          return get((s) => {
+            // Redux devtools slows down with big states, undo this for debugging
+            return {};
+          });
+        },
         repertoireState: getInitialRepertoireState(set, get),
         adminState: getInitialAdminState(set, get),
         visualizationState: getInitialVisualizationState(set, get, false),
@@ -136,7 +136,7 @@ export const useAppStateInternal = create<AppState>()(
     { name: "AppState" }
   )
 );
-const logUnequal = (a, b, path, stackTrace: RefObject<any>) => {
+const logUnequal = (a, b, path, config: RefObject<EqualityConfig>) => {
   console.log(
     `%c \n  Re-rendering, %c${path}%c used to be`,
     `padding: 12px; padding-top: 24px; padding-right: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}`,
@@ -147,7 +147,7 @@ const logUnequal = (a, b, path, stackTrace: RefObject<any>) => {
     "\n\nBut is now:\n\n",
     b,
     "\n\nStack trace:\n\n",
-    (take(stackTrace?.current, 5) ?? []).join("\n")
+    (take(config.current?.stackTrace, 5) ?? []).join("\n")
   );
 };
 
@@ -170,13 +170,21 @@ const logExpensive = (
   );
 };
 
-const customEqualityCheck = (
-  a,
-  b,
-  path,
-  debug,
-  stackTrace?: RefObject<any>
-) => {
+interface EqualityConfig {
+  debug: boolean;
+  stackTrace?: any;
+  referenceEquality: boolean;
+}
+
+let DEFAULT_EQUALITY_CONFIG = {
+  debug: false,
+  referenceEquality: false,
+} as EqualityConfig;
+
+const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
+  if (config.current.referenceEquality) {
+    return a === b;
+  }
   if (a instanceof Chess && b instanceof Chess) {
     return a.fen() === b.fen();
   }
@@ -188,45 +196,45 @@ const customEqualityCheck = (
   }
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) {
-      if (debug) {
-        logUnequal(a, b, path, stackTrace);
+      if (config.current.debug) {
+        logUnequal(a, b, path, config);
       }
       return false;
     }
     if (a.length > 100 || b.length > 100) {
-      logExpensive(a, b, path, Math.max(a.length, b.length), stackTrace);
+      logExpensive(a, b, path, Math.max(a.length, b.length), config);
     }
     let arrayEqual = every(
       zip(a, b).map(([a, b], i) => {
         let newPath = path;
         newPath = newPath + `[${i}]`;
-        return customEqualityCheck(a, b, newPath, debug, stackTrace);
+        return customEqualityCheck(a, b, newPath, config);
       })
     );
     return arrayEqual;
   }
   if (isObject(a) && isObject(b)) {
     if (Object.keys(a).length !== Object.keys(b).length) {
-      if (debug) {
-        logUnequal(a, b, path, stackTrace);
+      if (config.current.debug) {
+        logUnequal(a, b, path, config);
       }
       return false;
     }
     let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
     if (allKeys.size > 100) {
-      logExpensive(a, b, path, allKeys.size, stackTrace);
+      logExpensive(a, b, path, allKeys.size, config);
     }
     return every([...allKeys], (k) => {
       let newPath = path;
       let a1 = a[k];
       let b1 = b[k];
       newPath = newPath + `.${k}`;
-      return customEqualityCheck(a1, b1, newPath, debug, stackTrace);
+      return customEqualityCheck(a1, b1, newPath, config);
     });
   }
   let plainEquality = a == b;
-  if (!plainEquality && debug) {
-    logUnequal(a, b, path, stackTrace);
+  if (!plainEquality && config.current.debug) {
+    logUnequal(a, b, path, config);
   }
   return plainEquality;
 };
@@ -234,10 +242,9 @@ const customEqualityCheck = (
 export function equality(
   a: any,
   b: any,
-  debug?: boolean,
-  stackTrace?: RefObject<any>
+  config: RefObject<EqualityConfig>
 ): boolean {
-  return customEqualityCheck(a, b, "", debug, stackTrace);
+  return customEqualityCheck(a, b, "", config);
 }
 
 // Hooks for slices
@@ -255,136 +262,114 @@ function getStackTrace() {
   return stack.splice(stack[0] == "Error" ? 2 : 1);
 }
 
-export const useRepertoireState = <T,>(
-  fn: (_: RepertoireState) => T,
-  debug?: boolean
+export const useStateSlice = <Y, T>(
+  selector: (_: Y) => T,
+  sliceSelector: (_: AppState) => Y,
+  _config?: Partial<EqualityConfig>
 ) => {
-  let stackTrace = useRef(null);
-  if (isDevelopment && stackTrace.current === null) {
-    stackTrace.current = getStackTrace();
+  let config = useRef({ ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) });
+  if (isDevelopment && config.current.stackTrace === null) {
+    config.current.stackTrace = getStackTrace();
   }
   return useAppStateInternal(
-    (s) => fn(s.repertoireState),
-    (a, b) => equality(a, b, debug, stackTrace)
+    (s) => selector(sliceSelector(s)),
+    (a, b) => equality(a, b, config)
   );
 };
 
-export const useBrowsingState = <T,>(
-  fn: (_: BrowsingState, _2: RepertoireState) => T,
-  debug?: boolean
+export const useRepertoireState = <T,>(
+  fn: (_: RepertoireState) => T,
+  config?: Partial<EqualityConfig>
 ) => {
-  let stackTrace = useRef(null);
-  if (isDevelopment && stackTrace.current === null) {
-    stackTrace.current = getStackTrace();
-  }
-  return useAppStateInternal(
-    (s) => fn(s.repertoireState.browsingState, s.repertoireState),
-    (a, b) => equality(a, b, debug, stackTrace)
+  return useStateSlice(fn, (s) => s.repertoireState, config);
+};
+
+export const useBrowsingState = <T,>(
+  fn: (_: [BrowsingState, RepertoireState]) => T,
+  config?: Partial<EqualityConfig>
+) => {
+  return useStateSlice(
+    fn,
+    (s) => [s.repertoireState.browsingState, s.repertoireState],
+    config
   );
 };
 
 export const useVisualizationState = <T,>(
   fn: (_: VisualizationState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.visualizationState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.visualizationState, config);
 };
 
 export const useClimbState = <T,>(
   fn: (_: VisualizationState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.climbState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.climbState, config);
 };
 
 export const useBlunderRecognitionState = <T,>(
   fn: (_: BlunderRecognitionState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.blunderState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.blunderState, config);
 };
 
 export const useBlindfoldState = <T,>(
   fn: (_: BlindfoldTrainingState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.blindfoldState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.blindfoldState, config);
 };
 
 export const useColorTrainingState = <T,>(
   fn: (_: ColorTrainingState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.colorTrainingState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.colorTrainingState, config);
 };
 
 export const useGameMemorizationState = <T,>(
   fn: (_: GameMemorizationState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.gameMemorizationState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.gameMemorizationState, config);
 };
 
 export const useGameSearchState = <T,>(
   fn: (_: GameSearchState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.gameSearchState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.gameSearchState, config);
 };
 
 export const useDebugState = <T,>(
   fn: (_: DebugState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.debugState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.debugState, config);
 };
 
-export const useUserState = <T,>(fn: (_: UserState) => T, user?: boolean) => {
-  return useAppStateInternal(
-    (s) => fn(s.userState),
-    user ? (a, b) => equality(a, b, true) : equality
-  );
+export const useUserState = <T,>(
+  fn: (_: UserState) => T,
+  config?: Partial<EqualityConfig>
+) => {
+  return useStateSlice(fn, (s) => s.userState, config);
 };
 
 export const useAdminState = <T,>(
   fn: (_: AdminState) => T,
-  debug?: boolean
+  config?: Partial<EqualityConfig>
 ) => {
-  return useAppStateInternal(
-    (s) => fn(s.adminState),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+  return useStateSlice(fn, (s) => s.adminState, config);
 };
 
-export const useAppState = <T,>(fn: (_: AppState) => T, debug?: boolean) => {
-  return useAppStateInternal(
-    (s) => fn(s),
-    debug ? (a, b) => equality(a, b, true) : equality
-  );
+export const useAppState = <T,>(
+  fn: (_: AppState) => T,
+  config?: Partial<EqualityConfig>
+) => {
+  return useStateSlice(fn, (s) => s, config);
 };
 
 export const getAppState = () => {
