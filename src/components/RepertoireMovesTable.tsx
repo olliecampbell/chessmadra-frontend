@@ -105,14 +105,18 @@ export const RepertoireMovesTable = ({
     isMobile,
   });
   let [expanded, setExpanded] = useState(false);
-  let MIN_TRUNCATED = isMobile ? 4 : 4;
+  let MIN_TRUNCATED = isMobile ? 3 : 3;
   let completed = currentIncidence < currentThreshold;
   console.log({ currentIncidence, currentThreshold, completed });
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
     trimmedResponses = filter(responses, (r, i) => {
-      if (r.incidence > currentThreshold && !myTurn) {
+      if (
+        (r.incidence > currentThreshold ||
+          r.incidenceUpperBound > currentThreshold) &&
+        !myTurn
+      ) {
         return true;
       }
       if (r.repertoireMove) {
