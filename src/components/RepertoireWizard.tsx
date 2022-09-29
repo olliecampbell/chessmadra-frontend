@@ -45,6 +45,7 @@ export const RepertoireWizard = () => {
   useEffect(() => {
     state.fetchRepertoireTemplates();
     state.fetchPlayerTemplates();
+    trackEvent("repertoire_onboarding.viewed");
   }, []);
   // const [uploadModalOpen, setUploadModalOpen] = useState(false);
   // const [rating, setRating] = useState(RatingRange.Rating1500To1800);

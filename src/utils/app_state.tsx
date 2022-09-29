@@ -123,7 +123,10 @@ export const useAppStateInternal = create<AppState>()(
         trackEvent: (name: string, props?: Object) => {
           get((s) => {
             console.log(`---- ${name} ----`);
-            amplitude.track(name);
+            if (props) {
+              console.log({ props });
+            }
+            amplitude.track(name, props);
           });
         },
         ...createQuick<AppState>(set),

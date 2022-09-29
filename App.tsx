@@ -39,6 +39,7 @@ import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
 import { RepertoireReview } from "app/components/RepertoireReview";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { isDevelopment } from "app/utils/env";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -106,6 +107,7 @@ export default function App() {
             <RouteProvider>
               <GlobalParamsReader />
               <UserPropsSetter />
+              <LocationChangeReader />
               <Routes>
                 <Route path="/" element={<RepertoireBuilder />} />
                 <Route path="/authenticate" element={<Authenticate />} />
@@ -163,6 +165,14 @@ export const GlobalParamsReader = () => {
       }
     });
   }, [debugUi]);
+  return null;
+};
+
+export const LocationChangeReader = () => {
+  const location = useLocation();
+  useEffect(() => {
+    trackEvent(`page_view`, { path: location.pathname });
+  }, [location]);
   return null;
 };
 
