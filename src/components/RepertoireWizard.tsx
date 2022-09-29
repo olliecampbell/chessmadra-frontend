@@ -45,7 +45,7 @@ export const RepertoireWizard = () => {
   useEffect(() => {
     state.fetchRepertoireTemplates();
     state.fetchPlayerTemplates();
-    trackEvent("repertoire_onboarding.viewed");
+    trackEvent("repertoire_onboarding.started");
   }, []);
   // const [uploadModalOpen, setUploadModalOpen] = useState(false);
   // const [rating, setRating] = useState(RatingRange.Rating1500To1800);
@@ -66,6 +66,7 @@ export const RepertoireWizard = () => {
   const importFromLichessUsername = () => {
     state.initializeRepertoire({ lichessUsername: username });
     trackEvent("import.from_lichess_username");
+    trackEvent("repertoire_onboarding.done");
   };
 
   const introText = (
@@ -185,6 +186,7 @@ export const RepertoireWizard = () => {
                   setActiveOpeningSource(openingSource);
                   if (openingSource === OpeningSource.Manual) {
                     trackEvent("import.skip_import");
+                    trackEvent("repertoire_onboarding.done");
                     state.quick((s) => {
                       s.hasCompletedRepertoireInitialization = true;
                       s.backToOverview();
@@ -251,6 +253,7 @@ export const RepertoireWizard = () => {
                       whitePgn,
                     });
                     trackEvent("import.from_pgns");
+                    trackEvent("repertoire_onboarding.done");
                   }}
                 >
                   <View style={s(c.row)}>
