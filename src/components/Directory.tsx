@@ -13,9 +13,11 @@ import { CMText } from "./CMText";
 import { Link } from "react-router-dom";
 import React from "react";
 import { HeadSiteMeta } from "app/components/PageContainer";
+import { BP, useResponsive } from "app/utils/useResponsive";
 
 export const Directory = () => {
   const isMobile = useIsMobile();
+  const responsive = useResponsive();
   const hasBetaAccess = useHasBetaAccess();
   return (
     <PageContainer hideNavBar>
@@ -62,8 +64,14 @@ export const Directory = () => {
           if you have any feedback, or just to say hi :)
         </CMText>
         <Spacer height={44} />
-        {chunked(
-          navItems
+        <View
+          style={s({
+            display: "grid",
+            gridTemplateColumns: responsive.switch("1fr", [BP.md, "1fr 1fr"]),
+            gap: "24px 24px",
+          })}
+        >
+          {navItems
             .filter((n) => !n.beta || hasBetaAccess)
             .map(({ path, title, description, beta, isNew }, i) => {
               return (
@@ -164,18 +172,8 @@ export const Directory = () => {
                   </View>
                 </Link>
               );
-            }),
-          (i) => {
-            return <Spacer width={24} key={i} />;
-          },
-          isMobile ? 1 : 2,
-          (i) => {
-            return <Spacer height={24} key={i} />;
-          },
-          (children) => {
-            return <View style={s(c.row, c.fullWidth)}>{children}</View>;
-          }
-        )}
+            })}
+        </View>
       </View>
     </PageContainer>
   );
