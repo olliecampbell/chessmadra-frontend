@@ -254,7 +254,7 @@ export const getInitialBrowsingState = (
           zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
           ([position, san], i) => {
             let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-            let cachedIncidence = rs.epdIncidences[s.activeSide][position];
+            let cachedIncidence = rs.epdIncidences[s.activeSide]?.[position];
             if (cachedIncidence) {
               incidence = cachedIncidence;
               return;
