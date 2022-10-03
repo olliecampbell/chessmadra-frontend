@@ -3,6 +3,7 @@ import {
   PositionReport,
   SuggestedMove,
 } from "app/models";
+import { isNil } from "lodash-es";
 
 export function getTotalGames(results: GameResultsDistribution) {
   if (!results) {
@@ -29,5 +30,10 @@ export const getPlayRate = (
   masters?: boolean
 ): number => {
   let k = masters ? "masterResults" : "results";
-  return getTotalGames(m[k]) / getTotalGames(report[k]);
+  let total = getTotalGames(report[k]);
+  let divisor = getTotalGames(m[k]);
+  if (isNil(total) || isNil(divisor) || total === 0) {
+    return null;
+  }
+  return divisor / total;
 };
