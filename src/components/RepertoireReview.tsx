@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isNil, sortBy } from "lodash-es";
+import { curry, isNil, sortBy } from "lodash-es";
 import { TrainerLayout } from "app/components/TrainerLayout";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
@@ -15,6 +15,8 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
+import { LichessLogoIcon } from "./icons/LichessLogoIcon";
+import { pgnToLine } from "app/utils/repertoire";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -29,6 +31,7 @@ export const RepertoireReview = (props: {}) => {
     currentMove,
     isReviewing,
     repertoireLoading,
+    analyzeLineOnLichess,
   ] = useRepertoireState((s) => [
     s.reviewState.chessboardState,
     s.backToOverview,
@@ -40,6 +43,7 @@ export const RepertoireReview = (props: {}) => {
     s.reviewState.currentMove,
     s.isReviewing,
     s.repertoire === undefined,
+    s.analyzeLineOnLichess,
   ]);
   useEffect(() => {
     if (!isReviewing) {
@@ -135,8 +139,25 @@ export const RepertoireReview = (props: {}) => {
             }}
           >
             <CMText style={s(c.buttons.basicInverse.textStyles)}>
-              <i className="fa-sharp fa-search" />
+              <i className="fa-thin fa-pen-nib" />
             </CMText>
+          </Button>
+          <Spacer width={8} />
+          <Button
+            style={s(
+              c.buttons.squareBasicButtons,
+              c.buttons.basicInverse,
+              c.height("unset"),
+              c.selfStretch
+            )}
+            onPress={() => {
+              quick((s) => {
+                trackEvent(`reviewing.analyze_on_lichess`);
+                analyzeLineOnLichess(pgnToLine(currentMove.line));
+              });
+            }}
+          >
+            <LichessLogoIcon color={c.grays[80]} />
           </Button>
           <Spacer width={8} />
           <Button
