@@ -478,7 +478,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
       {truncated && (
         <Pressable
           style={s(
-            c.borderBottom(`1px solid ${c.grays[40]}`),
+            c.borderBottom(`1px solid ${c.grays[70]}`),
             c.pb(1),
             c.selfCenter
           )}
@@ -487,7 +487,7 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
             setExpanded(true);
           }}
         >
-          <CMText style={s(c.fontSize(12))}>Show more ({numTruncated})</CMText>
+          <CMText style={s(c.fontSize(12), c.fg(c.grays[40]))}>Show more ({numTruncated})</CMText>
         </Pressable>
       )}
     </View>
