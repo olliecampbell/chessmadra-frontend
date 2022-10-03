@@ -131,7 +131,7 @@ const AddPendingLineButton = () => {
             c.minHeight(16)
           )}
         >
-          {(currentLineIncidence * 100).toFixed(1)}% of games
+          1 in {(1 / currentLineIncidence).toFixed(0)} games
         </CMText>
       </View>
     );

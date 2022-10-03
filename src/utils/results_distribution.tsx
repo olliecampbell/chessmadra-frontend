@@ -5,6 +5,9 @@ import {
 } from "app/models";
 
 export function getTotalGames(results: GameResultsDistribution) {
+  if (!results) {
+    return null;
+  }
   return results.draw + results.black + results.white;
 }
 

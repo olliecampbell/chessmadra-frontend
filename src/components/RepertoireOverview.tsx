@@ -80,26 +80,24 @@ export const RepertoireOverview = ({}: {}) => {
 
 const ReviewMovesView = ({ side }: { side?: Side }) => {
   const responsive = useResponsive();
-  let [getMyResponsesLength, queueLength, startReview] = useRepertoireState(
-    (s) => {
-      return [
-        s.getMyResponsesLength,
-        s.reviewState.getQueueLength(side),
-        s.reviewState.startReview,
-      ];
-    },
-    true
+  let [getMyResponsesLength, startReview] = useRepertoireState((s) => {
+    return [s.getMyResponsesLength, s.reviewState.startReview];
+  });
+  let queue = useRepertoireState(
+    (s) => s.reviewState.buildQueue({ side: side }),
+    { referenceEquality: true }
   );
   if (getMyResponsesLength(side) === 0) {
     return <View style={s(c.height(getButtonHeight(responsive)))}></View>;
   }
+  let cram = queue.length === 0;
   return (
     <SideSummaryButton
       side={side}
-      text={queueLength === 0 ? "Cram" : "Review"}
+      text={cram ? "Cram" : "Review"}
       icon={"fa-duotone fa-cards-blank"}
       onPress={() => {
-        startReview(side);
+        startReview(side, { side, cram });
         trackEvent("overview.review_moves");
       }}
     />
@@ -514,7 +512,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
   const inverse = side === "black";
   let [getMyResponsesLength] = useRepertoireState((s) => {
     return [s.getMyResponsesLength];
-  }, true);
+  }, );
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
   if (hasNoMovesThisSide) {
     return <View style={s(c.height(getButtonHeight(responsive)))}></View>;
@@ -551,9 +549,13 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
     s.repertoireGrades[side]?.biggestMiss,
     s.myResponsesLookup?.[side]?.length,
   ]);
-  let [queueLength] = useRepertoireState((s) => {
-    return [s.reviewState.getQueueLength(side)];
-  });
+  let queue = useRepertoireState(
+    (s) => s.reviewState.buildQueue({ side: side }),
+    { referenceEquality: true }
+  );
+  // let [queueLength] = useRepertoireState((s) => {
+  //   return [s.reviewState.getQueueLength(side)];
+  // });
   const inverse = side === "black";
   const [textColor, secondaryTextColor] = getTextColors(inverse);
   const padding = getRepertoireSideCardPadding(responsive);
@@ -612,7 +614,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
             <SummaryRow
               {...{
                 k: "Due",
-                v: queueLength,
+                v: queue?.length ?? 0,
                 inverse,
                 button: <ReviewMovesView side={side} />,
               }}

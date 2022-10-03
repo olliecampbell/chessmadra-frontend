@@ -4,7 +4,7 @@ import { Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, take, sortBy } from "lodash-es";
+import { isEmpty, take, sortBy, size } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -22,7 +22,7 @@ import {
   getNameEcoCodeIdentifier,
 } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
-import { useDebugState, useRepertoireState } from "app/utils/app_state";
+import { quick, useDebugState, useRepertoireState } from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,
@@ -60,6 +60,10 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
     s.browsingState.chessboardState,
     s.repertoire === undefined,
   ]);
+  let reviewQueueFromHere = useRepertoireState(
+    (s) => s.reviewState.buildQueue({ cram: true, side: s.browsingState.activeSide, startPosition: s.browsingState.chessboardState.getCurrentEpd(), startLine: s.browsingState.chessboardState.moveLog }),
+    { referenceEquality: true }
+  );
   let { side: paramSide } = useParams();
   useEffect(() => {
     if (
@@ -97,6 +101,12 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
             </View>
             <Spacer height={12} />
             <BackControls includeAnalyze />
+            {!readOnly && reviewQueueFromHere?.length > 0 && (
+              <>
+                <Spacer height={12} />
+                <ReviewFromHereButton />
+              </>
+            )}
             {readOnly && (
               <>
                 <Spacer height={12} />
@@ -132,6 +142,53 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
         </View>
       </View>
     </RepertoirePageLayout>
+  );
+};
+
+export const ReviewFromHereButton = () => {
+  const responsive = useResponsive();
+  const buttonStyles = s(
+    c.buttons.darkFloater,
+    c.selfStretch,
+    // c.height(buttonHeight),
+    { textStyles: s(c.fg(c.colors.textPrimary)) },
+    c.px(8),
+    c.py(12)
+  );
+  const [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
+  return (
+    <Button
+      style={s(buttonStyles)}
+      onPress={() => {
+        quick((s) => {
+          s.repertoireState.reviewState.startReview(
+            s.repertoireState.browsingState.activeSide,
+            {
+              side: activeSide,
+              cram: true,
+              startLine:
+                s.repertoireState.browsingState.chessboardState.moveLog,
+              startPosition:
+                s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
+            }
+          );
+        });
+      }}
+    >
+      <CMText style={s(c.fg(c.grays[80]), c.fontSize(18))}>
+        <i className={"fa-duotone fa-cards-blank"} />
+      </CMText>
+      <Spacer width={8} />
+      <CMText
+        style={s(
+          c.fg(c.colors.textPrimary),
+          c.fontSize(responsive.switch(16)),
+          c.weightBold
+        )}
+      >
+        Review all from here
+      </CMText>
+    </Button>
   );
 };
 
@@ -305,10 +362,11 @@ export const BrowsingMissesView = React.memo(() => {
 });
 
 export const BrowsingSectionsView = React.memo(() => {
-  const [sections, quick, readOnly] = useRepertoireState(
-    (s) => [s.browsingState.sections, s.quick, s.browsingState.readOnly],
-    true
-  );
+  const [sections, quick, readOnly] = useRepertoireState((s) => [
+    s.browsingState.sections,
+    s.quick,
+    s.browsingState.readOnly,
+  ]);
   const isMobile = useIsMobile();
   return (
     <View style={s(c.column)}>

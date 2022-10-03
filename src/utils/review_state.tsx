@@ -41,6 +41,7 @@ import { START_EPD } from "./chess";
 export interface QuizMove {
   moves: RepertoireMove[];
   line: string;
+  side: Side;
 }
 
 export interface ReviewPositionResults {
@@ -50,30 +51,37 @@ export interface ReviewPositionResults {
 }
 
 export interface ReviewState {
+  buildQueue: (options: ReviewOptions) => QuizMove[];
   stopReviewing: () => void;
   chessboardState?: ChessboardState;
-  getQueueLength: (side?: Side) => number;
+  // getQueueLength: (side?: Side) => number;
   showNext?: boolean;
   failedReviewPositionMoves?: Record<string, RepertoireMove>;
-  queues: BySide<QuizMove[]>;
+  activeQueue: QuizMove[];
   currentMove?: QuizMove;
   reviewSide?: Side;
   completedReviewPositionMoves?: Record<string, RepertoireMove>;
   reviewLine: (line: string[], side: Side) => void;
   giveUp: () => void;
   setupNextMove: () => void;
-  startReview: (side?: Side) => void;
-  reviewWithQueue: (queues: BySide<QuizMove[]>) => void;
-  isReviewingWithCustomQueue?: boolean;
+  startReview: (_side: Side, options: ReviewOptions) => void;
+  reviewWithQueue: (queue: QuizMove[]) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
-  isCramming?: boolean;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
   getNextReviewPositionMove(): RepertoireMove;
-  updateQueue: (cram: boolean) => void;
+  updateQueue: (options: ReviewOptions) => void;
 }
 
 type Stack = [ReviewState, RepertoireState, AppState];
 const EMPTY_QUEUES = { white: [], black: [] };
+
+interface ReviewOptions {
+  side: Side;
+  startPosition?: string;
+  startLine?: string[];
+  cram?: boolean;
+  customQueue?: QuizMove[];
+}
 
 export const getInitialReviewState = (
   _set: StateSetter<AppState, any>,
@@ -95,7 +103,8 @@ export const getInitialReviewState = (
   let initialState = {
     chessboardState: null,
     showNext: false,
-    queues: EMPTY_QUEUES,
+    // queues: EMPTY_QUEUES,
+    activeQueue: null,
     markMovesReviewed: (results: ReviewPositionResults[]) =>
       set(([s, gs]) => {
         trackEvent(`reviewing.reviewed_move`);
@@ -103,8 +112,13 @@ export const getInitialReviewState = (
           .post("/api/v1/openings/moves_reviewed", { results })
           .then(({ data }) => {});
       }),
-    startReview: (_side?: Side) =>
+    startReview: (side: Side, options: ReviewOptions) =>
       set(([s, rs, gs]) => {
+        if (options.customQueue) {
+          s.activeQueue = options.customQueue;
+        } else {
+          s.updateQueue(options);
+        }
         gs.navigationState.push("/openings/review");
         rs.setBreadcrumbs([
           {
@@ -113,12 +127,7 @@ export const getInitialReviewState = (
           },
         ]);
         rs.isReviewing = true;
-        let side = _side ?? shuffle(SIDES)[0];
         s.reviewSide = side;
-        if (!isNil(_side) && s.getQueueLength(side) === 0) {
-          s.updateQueue(true);
-          s.isCramming = true;
-        }
         s.chessboardState.showMoveLog = true;
         s.setupNextMove();
       }),
@@ -129,10 +138,11 @@ export const getInitialReviewState = (
         if (s.currentMove) {
           let failedMoves = values(s.failedReviewPositionMoves);
           if (!isEmpty(failedMoves)) {
-            let side = failedMoves[0].side;
-            s.queues[side].push({
+            // let side = failedMoves[0].side;
+            s.activeQueue.push({
               moves: failedMoves,
               line: s.currentMove.line,
+              side: s.currentMove.side,
             });
           }
           s.markMovesReviewed(
@@ -146,15 +156,12 @@ export const getInitialReviewState = (
             })
           );
         }
-        s.currentMove = s.queues[s.reviewSide].shift();
+        s.currentMove = s.activeQueue.shift();
         if (!s.currentMove) {
-          s.reviewSide = otherSide(s.reviewSide);
-          s.currentMove = s.queues[s.reviewSide].shift();
-          if (!s.currentMove) {
-            rs.backToOverview();
-            return;
-          }
+          rs.backToOverview();
+          return;
         }
+        s.reviewSide = s.currentMove.side;
         s.failedReviewPositionMoves = {};
         s.completedReviewPositionMoves = {};
         s.chessboardState.flipped = s.currentMove.moves[0].side === "black";
@@ -200,67 +207,56 @@ export const getInitialReviewState = (
           }
         );
       }, "giveUp"),
-    reviewWithQueue: (queues: BySide<QuizMove[]>) =>
-      set(([s, rs]) => {
-        let side = shuffle(SIDES)[0];
-        s.isReviewingWithCustomQueue = true;
-        s.queues = queues;
-        s.reviewSide = side;
-        s.chessboardState.showMoveLog = true;
-        rs.isReviewing = true;
-        s.setupNextMove();
-      }),
     stopReviewing: () =>
       set(([s, rs]) => {
-        if (s.isReviewingWithCustomQueue) {
-          s.isReviewingWithCustomQueue = false;
-          s.updateQueue(false);
-        }
         rs.isReviewing = false;
         s.reviewSide = null;
         if (s.currentMove) {
-          s.queues[s.currentMove.moves[0].side].unshift(s.currentMove);
+          s.activeQueue = null;
         }
-        if (s.isCramming) {
-          s.updateQueue(false);
-        }
-        s.isCramming = false;
         s.currentMove = null;
       }),
-    updateQueue: (cram: boolean) =>
-      set(([s, rs]) => {
+    buildQueue: (options: ReviewOptions) =>
+      get(([s, rs]) => {
+        if (isNil(rs.repertoire)) {
+          return null;
+        }
+        console.log({ options });
         let seen_epds = new Set();
-        s.queues = {
-          white: [],
-          black: [],
-        };
-        const recurse = (epd, line, side: Side) => {
-          let responses = rs.repertoire[side].positionResponses[epd];
+        let queue: QuizMove[] = [];
+        const recurse = (epd, line) => {
+          let responses = rs.repertoire[options.side].positionResponses[epd];
           if (responses?.[0]?.mine) {
             let needsToReviewAny =
-              some(responses, (r) => r.srs.needsReview) || cram;
+              some(responses, (r) => r.srs.needsReview) || options.cram;
             if (needsToReviewAny) {
-              s.queues[side].push({ moves: responses, line: lineToPgn(line) });
+              queue.push({
+                moves: responses,
+                line: lineToPgn(line),
+                side: options.side,
+              } as QuizMove);
             }
           }
 
           map(shuffle(responses), (m) => {
             if (!seen_epds.has(m.epdAfter)) {
               seen_epds.add(m.epdAfter);
-              recurse(m.epdAfter, [...line, m.sanPlus], side);
+              recurse(m.epdAfter, [...line, m.sanPlus]);
             }
           });
         };
-        for (const side of SIDES) {
-          recurse(START_EPD, [], side);
-          seen_epds = new Set();
-        }
+        recurse(options.startPosition ?? START_EPD, options.startLine ?? []);
+        seen_epds = new Set();
+        return queue;
+      }),
+    updateQueue: (options: ReviewOptions) =>
+      set(([s, rs]) => {
+        s.activeQueue = s.buildQueue(options);
       }),
     reviewLine: (line: string[], side: Side) =>
       set(([s, rs]) => {
         rs.backToOverview();
-        let queues = cloneDeep(EMPTY_QUEUES);
-        let sideQueue = [];
+        let queue = [];
         let epd = START_EPD;
         let lineSoFar = [];
         line.map((move) => {
@@ -270,7 +266,7 @@ export const getInitialReviewState = (
           );
           epd = response?.epdAfter;
           if (response && response.mine && response.epd !== START_EPD) {
-            sideQueue.push({
+            queue.push({
               moves: [response],
               line: lineToPgn(lineSoFar),
             });
@@ -279,8 +275,8 @@ export const getInitialReviewState = (
           }
           lineSoFar.push(move);
         });
-        queues[side] = sideQueue;
-        s.reviewWithQueue(queues);
+
+        s.startReview(side, { side: side, customQueue: queue });
       }, "reviewLine"),
     getNextReviewPositionMove: () =>
       get(([s]) => {
@@ -291,14 +287,6 @@ export const getInitialReviewState = (
         return filter(s.currentMove?.moves, (m) => {
           return isNil(s.completedReviewPositionMoves[m.sanPlus]);
         });
-      }),
-    getQueueLength: (side?: Side) =>
-      get(([s]) => {
-        if (side) {
-          return s.queues[side].length;
-        } else {
-          return s.queues["white"].length + s.queues["black"].length;
-        }
       }),
   } as ReviewState;
 

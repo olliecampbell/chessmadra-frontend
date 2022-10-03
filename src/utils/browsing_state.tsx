@@ -78,6 +78,7 @@ export interface BrowsingState {
   pendingLineHasConflictingMoves?: boolean;
   fetchNeededPositionReports: () => void;
   getCurrentPositionReport: () => PositionReport;
+  reviewFromCurrentLine: () => void;
   editingState: {
     lastEcoCode?: EcoCode;
     selectedTab: EditingTab;
@@ -131,6 +132,10 @@ export const getInitialBrowsingState = (
       addConflictingMoveModalOpen: false,
     },
     activeSide: "white",
+    reviewFromCurrentLine: () =>
+      set(([s, rs]) => {
+        return rs.positionReports[s.chessboardState.getCurrentEpd()];
+      }),
     getCurrentPositionReport: () =>
       get(([s, rs]) => {
         return rs.positionReports[s.chessboardState.getCurrentEpd()];

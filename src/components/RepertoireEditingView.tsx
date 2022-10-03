@@ -14,6 +14,7 @@ import {
   values,
   sumBy,
   every,
+  cloneDeep,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -327,7 +328,7 @@ export const Responses = React.memo(function Responses() {
   let _tableResponses: Record<string, TableResponse> = {};
   positionReport?.suggestedMoves.map((sm) => {
     _tableResponses[sm.sanPlus] = {
-      suggestedMove: sm,
+      suggestedMove: cloneDeep(sm),
     };
   });
   existingMoves?.map((r) => {
@@ -337,12 +338,13 @@ export const Responses = React.memo(function Responses() {
       _tableResponses[r.sanPlus] = { repertoireMove: r };
     }
   });
+  let usePeerRates = getTotalGames(positionReport?.masterResults) < 10
   let tableResponses = scoreTableResponses(
     values(_tableResponses),
     positionReport,
     side,
     currentEpd,
-    ownSide ? EFFECTIVENESS_WEIGHTS : PLAYRATE_WEIGHTS
+    ownSide ? (usePeerRates ? EFFECTIVENESS_WEIGHTS_PEERS : EFFECTIVENESS_WEIGHTS_MASTERS) : PLAYRATE_WEIGHTS
   );
   tableResponses.forEach((tr) => {
     let epd = tr.suggestedMove?.epdAfter ?? tr.repertoireMove?.epdAfter;
@@ -472,6 +474,7 @@ export const Responses = React.memo(function Responses() {
           <RepertoireMovesTable
             {...{
               header: getResponsesHeader(currentLine),
+              usePeerRates,
               activeSide,
               side,
               responses: youCanPlay,
@@ -625,8 +628,7 @@ const scoreTableResponses = (
         );
         let playRate = getPlayRate(tableResponse.suggestedMove, report);
         if (
-          !Number.isNaN(playRate) &&
-          getTotalGames(suggestedMove.results) > 10
+          !isNil(playRate)
         ) {
           let scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
           scoreTable.factors.push({
@@ -663,8 +665,7 @@ const scoreTableResponses = (
           true
         );
         if (
-          !Number.isNaN(masterPlayRate) &&
-          getTotalGames(tableResponse.suggestedMove?.masterResults) > 10
+          !isNil(masterPlayRate)
         ) {
           let scoreForMasterPlayrate =
             masterPlayRate * 100 * masterRateAdditionalWeight;
@@ -704,12 +705,17 @@ const scoreTableResponses = (
   );
 };
 
-let EFFECTIVENESS_WEIGHTS = {
+let EFFECTIVENESS_WEIGHTS_MASTERS = {
   startScore: 0.0,
   eval: 1.2,
   winrate: 4.0,
   playrate: 0.0,
   masterPlayrate: 8.0,
+};
+
+let EFFECTIVENESS_WEIGHTS_PEERS = {...EFFECTIVENESS_WEIGHTS_MASTERS, 
+  playrate: 8.0,
+  masterPlayrate: 0.0,
 };
 
 let PLAYRATE_WEIGHTS = {

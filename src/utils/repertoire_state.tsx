@@ -588,7 +588,8 @@ export const getInitialRepertoireState = (
           });
       }),
     backToOverview: () =>
-      set(([s]) => {
+      set(([s, gs]) => {
+        gs.navigationState.push("/");
         if (s.isReviewing) {
           s.reviewState.stopReviewing();
         }
@@ -676,7 +677,6 @@ export const getInitialRepertoireState = (
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();
-        s.reviewState.updateQueue(false);
       }),
     fetchRepertoireTemplates: () =>
       set(([s]) => {
@@ -822,9 +822,7 @@ export const getInitialRepertoireState = (
               s.onRepertoireUpdate();
               // s.blah();
               // s.startBrowsing("white");
-              // s.browsingState.chessboardState.playPgn(
-              //   "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O b5"
-              // );
+              // s.browsingState.chessboardState.playPgn("1.e4 c5 2.d4 cxd4");
             });
           });
       }),

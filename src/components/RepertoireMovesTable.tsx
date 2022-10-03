@@ -82,12 +82,14 @@ export const RepertoireMovesTable = ({
   activeSide,
   side,
   responses,
+  usePeerRates,
   setShouldShowOtherMoves,
   showOtherMoves,
 }: {
   header: string;
   activeSide: Side;
   showOtherMoves?: boolean;
+  usePeerRates?: boolean;
   side: Side;
   responses: TableResponse[];
   setShouldShowOtherMoves?: (show: boolean) => void;
@@ -102,6 +104,7 @@ export const RepertoireMovesTable = ({
   const isMobile = useIsMobile();
   let sections = useSections({
     myTurn,
+    usePeerRates,
     isMobile,
   });
   let [expanded, setExpanded] = useState(false);
@@ -214,9 +217,11 @@ interface Section {
 
 let useSections = ({
   myTurn,
+  usePeerRates,
   isMobile,
 }: {
   myTurn: boolean;
+  usePeerRates?: boolean;
   isMobile: boolean;
 }) => {
   let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
@@ -228,7 +233,7 @@ let useSections = ({
   let na = <CMText style={s(textStyles)}>N/A</CMText>;
   let notEnoughGames = (
     <CMText style={s(c.fg(c.grays[50]))}>
-      {isMobile ? "N/A" : "Not enough games"}
+      {isMobile ? "N/A" : "N/A"}
     </CMText>
   );
   if (!myTurn) {
@@ -295,7 +300,7 @@ let useSections = ({
         let playRate =
           suggestedMove &&
           positionReport &&
-          getPlayRate(suggestedMove, positionReport, true);
+          getPlayRate(suggestedMove, positionReport, usePeerRates ? false : true);
         if (
           !playRate ||
           isNaN(playRate) ||
@@ -313,7 +318,7 @@ let useSections = ({
           </>
         );
       },
-      header: "Masters",
+      header: usePeerRates ? "Peers": "Masters",
     });
   }
   if (myTurn) {
@@ -558,7 +563,7 @@ const Response = ({
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
           <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            {true && (
+            {myTurn && (
               <Pressable
                 style={s(
                   c.px(12),
@@ -601,13 +606,28 @@ const Response = ({
             )}
             {!myTurn && <Spacer width={8} />}
             <View style={s(c.row, c.alignCenter, c.pl(4))}>
-              <View style={s(c.row, c.alignCenter, c.minWidth(60))}>
+              <View style={s(c.row, c.alignCenter, c.minWidth(myTurn ? 60 : 100))}>
+              {!myTurn && (
+              <>
+                <CMText
+                  style={s(
+                    c.fg(c.grays[60]),
+                    c.fontSize(18),
+                    c.weightSemiBold,
+                    c.keyedProp("letterSpacing")("0.04rem")
+                  )}
+                >
+                  {moveNumber}{side === "black" ? "…" : "."}
+                </CMText>
+                <Spacer width={4}/>
+                </>
+                )}
                 <CMText
                   key={sanPlus}
                   style={s(
                     c.fg(c.grays[10]),
                     c.fontSize(18),
-                    c.weightSemiBold,
+                    c.weightBold,
                     c.keyedProp("letterSpacing")("0.04rem")
                   )}
                 >
@@ -850,7 +870,8 @@ const CoverageProgressBar = ({
       </CMText>
     </View>
   );
-  if (incidence && incidence < threshold) {
+  // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
+  if (incidence && incidence < threshold && !tableResponse.repertoireMove) {
     return (
       <View style={s(c.column)}>
         <CMText style={s(c.fg(c.grays[60]))}>Not needed</CMText>
@@ -858,17 +879,21 @@ const CoverageProgressBar = ({
       </View>
     );
   }
-  const completed = coverage < threshold;
+  let completed = coverage < threshold;
   const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(
     threshold * 100
   );
   const numMovesNeededForCurrentMissIncidence =
     getExpectedNumberOfMovesForTarget(coverage * 100);
+    let minProgress = 12
   let progress = clamp(
     (numMovesNeededForCurrentMissIncidence / expectedNumMovesNeeded) * 100,
-    12,
+    minProgress,
     90
   );
+  if (!tableResponse.repertoireMove) {
+      progress = minProgress
+    }
   const inProgressColor = progress < 20 ? c.reds[65] : c.yellows[65];
   return (
     <View style={s(c.column, c.fullWidth)}>

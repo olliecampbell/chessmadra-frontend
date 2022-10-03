@@ -42,9 +42,9 @@ export const RepertoireReview = (props: {}) => {
     s.repertoire === undefined,
   ]);
   useEffect(() => {
-    if (!isReviewing && !repertoireLoading) {
+    if (!isReviewing) {
       quick((s) => {
-        s.repertoireState.reviewState.startReview();
+        s.repertoireState.backToOverview();
       });
     }
   }, [repertoireLoading]);

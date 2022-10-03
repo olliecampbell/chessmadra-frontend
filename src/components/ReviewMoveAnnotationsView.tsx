@@ -53,7 +53,7 @@ export const ReviewMoveAnnotationsView = ({}) => {
         let position = new Chess(fen);
         return (
           <View style={s(isMobile ? c.column : c.row, c.constrainWidth)}>
-            <View style={s(c.size(400), c.constrainWidth)}>
+            <View style={s(c.width(400), c.constrainWidth)}>
               <ChessboardView
                 onSquarePress={() => {}}
                 state={createStaticChessState({
@@ -119,7 +119,7 @@ export const ReviewMoveAnnotationsView = ({}) => {
                         />
                       </View>
                       <Spacer height={12} />
-                      {x.userId === user.id && (
+                      {x?.userId === user?.id && (
                         <>
                           <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
                             mine
