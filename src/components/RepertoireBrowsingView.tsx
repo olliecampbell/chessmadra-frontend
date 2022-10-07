@@ -61,7 +61,13 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
     s.repertoire === undefined,
   ]);
   let reviewQueueFromHere = useRepertoireState(
-    (s) => s.reviewState.buildQueue({ cram: true, side: s.browsingState.activeSide, startPosition: s.browsingState.chessboardState.getCurrentEpd(), startLine: s.browsingState.chessboardState.moveLog }),
+    (s) =>
+      s.reviewState.buildQueue({
+        cram: true,
+        side: s.browsingState.activeSide,
+        startPosition: s.browsingState.chessboardState.getCurrentEpd(),
+        startLine: s.browsingState.chessboardState.moveLog,
+      }),
     { referenceEquality: true }
   );
   let { side: paramSide } = useParams();
@@ -96,17 +102,29 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               vertical ? c.selfCenter : c.selfStretch
             )}
           >
-            <View style={s(c.fullWidth)}>
+            <View
+              style={s(
+                c.fullWidth,
+                vertical && s(c.selfCenter, c.maxWidth(320))
+              )}
+            >
               <ChessboardView state={chessboardState} />
             </View>
             <Spacer height={12} />
-            <BackControls includeAnalyze />
-            {!readOnly && reviewQueueFromHere?.length > 0 && (
-              <>
-                <Spacer height={12} />
-                <ReviewFromHereButton />
-              </>
-            )}
+            <BackControls
+              includeAnalyze
+              includeReview={
+                responsive.isMobile && reviewQueueFromHere?.length > 0
+              }
+            />
+            {!readOnly &&
+              reviewQueueFromHere?.length > 0 &&
+              !responsive.isMobile && (
+                <>
+                  <Spacer height={12} />
+                  <ReviewFromHereButton />
+                </>
+              )}
             {readOnly && (
               <>
                 <Spacer height={12} />
@@ -115,7 +133,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
             )}
             {responsive.isMobile && (
               <>
-                <Spacer height={24} />
+                <Spacer height={12} />
                 <ResultsView />
               </>
             )}
@@ -249,7 +267,16 @@ export const ResultsView = React.memo(function () {
     s.quick,
     s.browsingState.readOnly,
   ]);
-  const isMobile = useIsMobile();
+  // const isMobile = useIsMobile();
+  const responsive = useResponsive();
+  const isMobile = responsive.isMobile;
+  let tabs = [
+    BrowsingTab.Responses,
+    ...(isMobile ? [BrowsingTab.Position] : []),
+    // BrowsingTab.Lines,
+    // ...(!isMobile ? [BrowsingTab.Misses] : []),
+    // BrowsingTab.InstructiveGames,
+  ];
   return (
     <View style={s(c.column)}>
       {!readOnly && (
@@ -257,13 +284,7 @@ export const ResultsView = React.memo(function () {
           <SelectOneOf
             tabStyle
             containerStyles={s(c.fullWidth, c.justifyBetween)}
-            choices={[
-              BrowsingTab.Responses,
-              ...(isMobile ? [BrowsingTab.Position] : []),
-              BrowsingTab.Lines,
-              ...(!isMobile ? [BrowsingTab.Misses] : []),
-              // BrowsingTab.InstructiveGames,
-            ]}
+            choices={tabs}
             activeChoice={selectedTab}
             separator={() => {
               // if (isMobile) {
@@ -286,7 +307,7 @@ export const ResultsView = React.memo(function () {
                     c.column,
                     c.grow,
                     c.alignCenter,
-                    c.py(12),
+                    c.py(responsive.switch(8, [BP.lg, 12])),
                     c.bg(active ? c.grays[95] : "transparent"),
                     c.brt(2),
                     // c.borderBottom(
@@ -311,7 +332,15 @@ export const ResultsView = React.memo(function () {
           />
         </>
       )}
-      <View style={s(c.bg(c.grays[95]), c.px(12), c.py(12), c.brb(2))}>
+      <View
+        style={s(
+          c.bg(c.grays[95]),
+          c.br(tabs.length === 1 ? 2 : 0),
+          c.px(12),
+          c.py(12),
+          c.brb(2)
+        )}
+      >
         {selectedTab === BrowsingTab.Responses && <Responses />}
         {selectedTab === BrowsingTab.Position && <PositionOverview />}
         {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}
@@ -487,7 +516,9 @@ const SectionView = ({ section }: { section: BrowserSection }) => {
             setExpanded(true);
           }}
         >
-          <CMText style={s(c.fontSize(12), c.fg(c.grays[40]))}>Show more ({numTruncated})</CMText>
+          <CMText style={s(c.fontSize(12), c.fg(c.grays[40]))}>
+            Show more ({numTruncated})
+          </CMText>
         </Pressable>
       )}
     </View>

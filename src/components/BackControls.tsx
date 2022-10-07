@@ -6,7 +6,7 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { useRepertoireState } from "app/utils/app_state";
+import { useRepertoireState, quick } from "app/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { useResponsive, BP } from "app/utils/useResponsive";
@@ -14,12 +14,14 @@ import { useRef } from "react";
 
 type BackControlsProps = {
   includeAnalyze?: boolean;
+  includeReview?: boolean;
   extraButton?: any;
   height?: number;
 };
 
 export const BackControls: React.FC<BackControlsProps> = ({
   includeAnalyze,
+  includeReview,
   height,
   extraButton,
 }) => {
@@ -28,14 +30,12 @@ export const BackControls: React.FC<BackControlsProps> = ({
   let [
     // searchOnChessable,
     analyzeLineOnLichess,
-    quick,
     currentLine,
     backToStartPosition,
     backOne,
   ] = useRepertoireState((s) => [
     // s.searchOnChessable,
     s.analyzeLineOnLichess,
-    s.quick,
     s.browsingState.chessboardState.moveLog,
     s.backToStartPosition,
     s.backOne,
@@ -46,7 +46,11 @@ export const BackControls: React.FC<BackControlsProps> = ({
   let textColor = c.fg(foreground);
   return (
     <View
-      style={s(c.row, c.height(height ?? 48), c.selfStretch)}
+      style={s(
+        c.row,
+        c.height(height ?? bp.switch(40, [BP.lg, 48])),
+        c.selfStretch
+      )}
       onLayout={({ nativeEvent: { layout: l } }) => {
         layout.current = l;
       }}
@@ -108,6 +112,33 @@ export const BackControls: React.FC<BackControlsProps> = ({
                 </CMText>
               </>
             )}
+          </Button>
+        </>
+      )}
+      {includeReview && (
+        <>
+          <Spacer width={gap} />
+          <Button
+            style={s(c.buttons.darkFloater)}
+            onPress={() => {
+              quick((s) => {
+                s.repertoireState.reviewState.startReview(
+                  s.repertoireState.browsingState.activeSide,
+                  {
+                    side: s.repertoireState.browsingState.activeSide,
+                    cram: true,
+                    startLine:
+                      s.repertoireState.browsingState.chessboardState.moveLog,
+                    startPosition:
+                      s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
+                  }
+                );
+              });
+            }}
+          >
+            <CMText style={s(c.buttons.darkFloater.textStyles)}>
+              <i className={"fa-duotone fa-cards-blank"} />
+            </CMText>
           </Button>
         </>
       )}

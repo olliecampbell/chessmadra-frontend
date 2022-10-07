@@ -369,7 +369,7 @@ export const getInitialRepertoireState = (
           return;
         }
         var windowReference = window.open("about:blank", "_blank");
-        let side = s.browsingState.activeSide;
+        let side = sideOfLastmove(line);
         client
           .post(`https://lichess.org/api/import`, bodyFormData)
           .then(({ data }) => {
@@ -822,7 +822,9 @@ export const getInitialRepertoireState = (
               s.onRepertoireUpdate();
               // s.blah();
               // s.startBrowsing("white");
-              // s.browsingState.chessboardState.playPgn("1.e4 c5 2.d4 cxd4");
+              // s.browsingState.chessboardState.playPgn(
+              //   "1.e4 e5 2.f4 exf4 3.Nf3 Bc5"
+              // );
             });
           });
       }),

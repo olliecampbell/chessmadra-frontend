@@ -3,6 +3,7 @@ import { MoveAnnotation, MoveAnnotationReview } from "app/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
+import { Repertoire } from "./repertoire";
 
 export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
@@ -16,11 +17,35 @@ export interface AdminState {
   }) => void;
   rejectMoveAnnotations: (epd: string, san: string) => void;
   becomeAdmin: (password: string) => void;
+  auditResponse?: AuditResponse;
   quick: (fn: (_: AdminState) => void) => void;
 }
 
 type Stack = [AdminState, AppState];
 const selector = (s: AppState): Stack => [s.adminState, s];
+
+export interface AuditResponse {
+  eloAudits: RepertoireAudit[];
+  repertoire: Repertoire;
+}
+
+export interface RepertoireAudit {
+  eloRange: string;
+  missedLines: AuditMissedLine[];
+  excessiveLines: AuditExcessiveLine[];
+}
+
+export interface AuditMissedLine {
+  lines: string[];
+  incidence: number;
+  epd: string;
+}
+
+export interface AuditExcessiveLine {
+  lines: string[];
+  incidence: number;
+  epd: string;
+}
 
 export const getInitialAdminState = (
   _set: StateSetter<AppState, any>,
@@ -82,6 +107,16 @@ export const getInitialAdminState = (
                   }
                 });
               });
+            });
+          });
+      }),
+    fetchAudit: () =>
+      set(([s]) => {
+        client
+          .get(`/api/v1/audit`)
+          .then(({ data }: { data: AuditResponse }) => {
+            set(([s]) => {
+              s.auditResponse = data;
             });
           });
       }),

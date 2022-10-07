@@ -622,6 +622,7 @@ export const c = {
   aircamBlue,
   hsl,
   fontFamily,
+  block: display("block"),
   inlineBlock: display("inline-block"),
   whitespace: keyedProp("whiteSpace"),
   shadow,

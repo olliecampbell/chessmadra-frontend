@@ -40,6 +40,7 @@ import { RepertoireReview } from "app/components/RepertoireReview";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { isDevelopment } from "app/utils/env";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { AuditView } from "app/components/AuditView";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -141,6 +142,7 @@ export default function App() {
                   element={<VisualizationTraining />}
                 />
                 <Route path="/admin" element={<AdminView />} />
+                <Route path="/admin/audit" element={<AuditView />} />
                 <Route
                   path="/admin/move-annotations"
                   element={<ReviewMoveAnnotationsView />}

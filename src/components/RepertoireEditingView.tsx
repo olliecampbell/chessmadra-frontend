@@ -338,13 +338,17 @@ export const Responses = React.memo(function Responses() {
       _tableResponses[r.sanPlus] = { repertoireMove: r };
     }
   });
-  let usePeerRates = getTotalGames(positionReport?.masterResults) < 10
+  let usePeerRates = getTotalGames(positionReport?.masterResults) < 10;
   let tableResponses = scoreTableResponses(
     values(_tableResponses),
     positionReport,
     side,
     currentEpd,
-    ownSide ? (usePeerRates ? EFFECTIVENESS_WEIGHTS_PEERS : EFFECTIVENESS_WEIGHTS_MASTERS) : PLAYRATE_WEIGHTS
+    ownSide
+      ? usePeerRates
+        ? EFFECTIVENESS_WEIGHTS_PEERS
+        : EFFECTIVENESS_WEIGHTS_MASTERS
+      : PLAYRATE_WEIGHTS
   );
   tableResponses.forEach((tr) => {
     let epd = tr.suggestedMove?.epdAfter ?? tr.repertoireMove?.epdAfter;
@@ -434,7 +438,6 @@ export const Responses = React.memo(function Responses() {
   const responsive = useResponsive();
   return (
     <View style={s(c.column, c.constrainWidth)}>
-      <Spacer height={12} />
       {debugUi && (
         <CMText style={s(c.fg(c.colors.debugColorDark))}>
           Current line incidence: {(currentLineIncidence * 100).toFixed(2)}%
@@ -627,9 +630,7 @@ const scoreTableResponses = (
           1
         );
         let playRate = getPlayRate(tableResponse.suggestedMove, report);
-        if (
-          !isNil(playRate)
-        ) {
+        if (!isNil(playRate)) {
           let scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
           scoreTable.factors.push({
             source: TableResponseScoreSource.Playrate,
@@ -664,9 +665,7 @@ const scoreTableResponses = (
           report,
           true
         );
-        if (
-          !isNil(masterPlayRate)
-        ) {
+        if (!isNil(masterPlayRate)) {
           let scoreForMasterPlayrate =
             masterPlayRate * 100 * masterRateAdditionalWeight;
           scoreTable.factors.push({
@@ -713,7 +712,8 @@ let EFFECTIVENESS_WEIGHTS_MASTERS = {
   masterPlayrate: 8.0,
 };
 
-let EFFECTIVENESS_WEIGHTS_PEERS = {...EFFECTIVENESS_WEIGHTS_MASTERS, 
+let EFFECTIVENESS_WEIGHTS_PEERS = {
+  ...EFFECTIVENESS_WEIGHTS_MASTERS,
   playrate: 8.0,
   masterPlayrate: 0.0,
 };
@@ -822,11 +822,12 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
       <View
         style={s(
           card &&
-            s(c.bg(c.colors.cardBackground), c.cardShadow, c.px(12), c.py(12))
+            s(c.bg(c.colors.cardBackground), c.cardShadow, c.px(12), c.py(12)),
+          c.minHeight(120)
         )}
       >
-        <View style={s(c.row, c.alignStart)}>
-          <View style={s(c.column)}>
+        <View style={s(c.row, c.alignStart, c.fullHeight)}>
+          <View style={s(c.column, c.fullHeight)}>
             {(ecoCode || isStartPosition) && (
               <View style={s(c.mb(12))}>
                 <CMText
@@ -854,7 +855,7 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
                 )}
               </View>
             )}
-            <Spacer height={4} />
+            <Spacer height={4} grow />
             <View style={s(c.row)}>
               {positionReport?.results && (
                 <View style={s(c.grow, c.fullWidth, c.maxWidth(300))}>
