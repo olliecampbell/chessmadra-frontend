@@ -66,7 +66,7 @@ export const getInitialUserState = (
         // let biggestMissIncidence =
         //   (appState.repertoireState.repertoireGrades[side]?.biggestMiss
         //     ?.incidence ?? 1.0) * 100;
-        return s.user.missThreshold ?? DEFAULT_THRESHOLD;
+        return s.user?.missThreshold ?? DEFAULT_THRESHOLD;
       });
     },
     getUserRatingDescription: () => {

@@ -55,6 +55,7 @@ import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getPlayRate } from "./results_distribution";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getInitialReviewState, ReviewState } from "./review_state";
+import { getExpectedNumberOfMovesForTarget } from "app/components/RepertoireOverview";
 let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 
 export enum AddLineFromOption {
@@ -65,15 +66,10 @@ export enum AddLineFromOption {
 }
 
 export interface RepertoireState {
+  expectedNumMoves: BySide<number>;
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
-  repertoireNumMoves: BySide<
-    Record<
-      // TODO) change this to Side
-      string,
-      { withTranspositions: number; withoutTranspositions: number }
-    >
-  >;
+  numResponsesAboveThreshold: BySide<number>;
   positionReports: Record<string, PositionReport>;
   failedToFetchSharedRepertoire?: boolean;
   repertoireGrades: BySide<RepertoireGrade>;
@@ -125,7 +121,6 @@ export interface RepertoireState {
   myResponsesLookup?: BySide<RepertoireMove[]>;
   moveLookup?: BySide<Record<string, RepertoireMove>>;
   currentLine?: string[];
-  pendingMoves?: RepertoireMove[];
   hasCompletedRepertoireInitialization?: boolean;
   repertoireTemplates?: RepertoireTemplate[];
   playerTemplates?: PlayerTemplate[];
@@ -141,7 +136,6 @@ export interface RepertoireState {
   pawnStructureLookup: Record<string, PawnStructureDetails>;
   browsingState: BrowsingState;
   reviewState: ReviewState;
-  epdIncidences: BySide<Record<string, number>>;
   deleteMoveState: {
     modalOpen: boolean;
     response?: RepertoireMove;
@@ -239,6 +233,7 @@ export const getInitialRepertoireState = (
   let initialState = {
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
+    expectedNumMoves: { white: 0, black: 0 },
     deleteMoveState: {
       modalOpen: false,
       isDeletingMove: false,
@@ -247,7 +242,7 @@ export const getInitialRepertoireState = (
     debugPawnStructuresState: null,
     addedLineState: null,
     isAddingPendingLine: false,
-    repertoireNumMoves: null,
+    numResponsesAboveThreshold: null,
     pawnStructures: [],
     isUpdatingEloRange: false,
     repertoire: undefined,
@@ -267,7 +262,6 @@ export const getInitialRepertoireState = (
         }
       }),
     repertoireGrades: { white: null, black: null },
-    epdIncidences: { white: {}, black: {} },
     ecoCodeLookup: {},
     pawnStructureLookup: {},
     inProgressUsingPlayerTemplate: false,
@@ -384,16 +378,43 @@ export const getInitialRepertoireState = (
         }
       }, "onMove"),
     updateRepertoireStructures: () =>
-      set(([s]) => {
+      set(([s, gs]) => {
+        let threshold = gs.userState.getCurrentThreshold();
         console.log({ grades: s.repertoireGrades });
-        s.epdIncidences = mapSides(
-          s.repertoireGrades,
-          (repertoireSide: RepertoireGrade) => {
-            // .forEach((miss: RepertoireMiss) => {
-            //   incidences[miss.epd] = miss.incidence;
-            // });
-            // console.log({ incidences });
-            return repertoireSide.epdIncidences;
+        s.expectedNumMoves = mapSides(
+          s.repertoire,
+          (repertoireSide: RepertoireSide) => {
+            let seenEpds = new Set();
+            let numMovesExpected = getExpectedNumberOfMovesForTarget(threshold);
+            let recurse = (epd: string) => {
+              if (seenEpds.has(epd)) {
+                return;
+              }
+              seenEpds.add(epd);
+              let allMoves = filter(
+                repertoireSide.positionResponses[epd] ?? [],
+                (m) => m.incidence * 100 > threshold
+              );
+              let [mainMove, ...others] = allMoves;
+              if (mainMove?.mine && !isEmpty(others)) {
+                others.forEach((m) => {
+                  console.log({
+                    threshold,
+                    inc: m.incidence,
+                    numMovesExpected,
+                  });
+                  numMovesExpected +=
+                    getExpectedNumberOfMovesForTarget(threshold) -
+                    getExpectedNumberOfMovesForTarget(m.incidence * 100);
+                  console.log({ numMovesExpected });
+                });
+              }
+              allMoves.forEach((m) => {
+                recurse(m.epdAfter);
+              });
+            };
+            recurse(START_EPD);
+            return numMovesExpected;
           }
         );
         s.myResponsesLookup = mapSides(
@@ -404,40 +425,13 @@ export const getInitialRepertoireState = (
             ).filter((m: RepertoireMove) => m.mine);
           }
         );
-        s.repertoireNumMoves = mapSides(
+        s.numResponsesAboveThreshold = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
-            let epdToNumMoves = {};
-            let seen_epds = new Set();
-            const recurse = (epd, line, mine) => {
-              let sum = 0;
-              let sumTranspositions = 0;
-              map(repertoireSide.positionResponses[epd], (m) => {
-                let inc = m.mine ? 1 : 0;
-                if (!seen_epds.has(m.epdAfter)) {
-                  seen_epds.add(m.epdAfter);
-                  let x = recurse(m.epdAfter, [...line, m.sanPlus], m.mine);
-                  sum += x.withoutTranspositions + inc;
-                  sumTranspositions +=
-                    x.withTranspositions - x.withoutTranspositions;
-                } else {
-                  if (epdToNumMoves[m.epdAfter]) {
-                    sumTranspositions +=
-                      epdToNumMoves[m.epdAfter].withTranspositions + inc;
-                  }
-                }
-              });
-              epdToNumMoves[epd] = {
-                withTranspositions: sum + sumTranspositions,
-                withoutTranspositions: sum,
-              };
-              return {
-                withTranspositions: sum + sumTranspositions,
-                withoutTranspositions: sum,
-              };
-            };
-            recurse(START_EPD, [], false);
-            return epdToNumMoves;
+            return flatten(
+              Object.values(repertoireSide.positionResponses)
+            ).filter((m) => m.incidence && m.incidence > threshold / 100)
+              .length;
           }
         );
       }, "updateRepertoireStructures"),
@@ -603,6 +597,7 @@ export const getInitialRepertoireState = (
         s.divergencePosition = null;
         s.divergenceIndex = null;
         s.browsingState.hasPendingLineToAdd = false;
+        s.browsingState.hasAnyPendingResponses = false;
         s.browsingState.pendingResponses = {};
         s.browsingState.addedLineState = null;
       }),
@@ -612,9 +607,6 @@ export const getInitialRepertoireState = (
       }, "startImporting"),
     startBrowsing: (side: Side, skipNavigation: boolean) =>
       set(([s, gs]) => {
-        console.log("Starting to browse", side);
-        console.log({ skipNavigation });
-        console.trace();
         if (!skipNavigation) {
           gs.navigationState.push(`/openings/${side}/browse`);
         }
@@ -677,6 +669,7 @@ export const getInitialRepertoireState = (
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();
+        s.browsingState.updateRepertoireProgress();
       }),
     fetchRepertoireTemplates: () =>
       set(([s]) => {
@@ -823,7 +816,7 @@ export const getInitialRepertoireState = (
               // s.blah();
               // s.startBrowsing("white");
               // s.browsingState.chessboardState.playPgn(
-              //   "1.e4 e5 2.f4 exf4 3.Nf3 Bc5"
+              //   "1.e4 d5 2.exd5 Qxd5 3.Nc3"
               // );
             });
           });

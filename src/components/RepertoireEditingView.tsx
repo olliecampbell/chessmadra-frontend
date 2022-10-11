@@ -314,10 +314,6 @@ export const Responses = React.memo(function Responses() {
     ([s, rs]) => rs.repertoireGrades[s.activeSide].coverage,
     { referenceEquality: true }
   );
-  let epdIncidences = useBrowsingState(
-    ([s, rs]) => rs.repertoireGrades[s.activeSide].epdIncidences,
-    { referenceEquality: true }
-  );
   const [existingMoves] = useRepertoireState((s) => [
     s.repertoire[s.browsingState.activeSide].positionResponses[
       s.browsingState.chessboardState.getCurrentEpd()
@@ -351,9 +347,8 @@ export const Responses = React.memo(function Responses() {
       : PLAYRATE_WEIGHTS
   );
   tableResponses.forEach((tr) => {
-    let epd = tr.suggestedMove?.epdAfter ?? tr.repertoireMove?.epdAfter;
-    if (epdIncidences[epd]) {
-      tr.incidence = epdIncidences[epd];
+    if (tr.repertoireMove?.incidence) {
+      tr.incidence = tr.repertoireMove?.incidence;
       return;
     }
     let moveIncidence = 0.0;
@@ -416,7 +411,6 @@ export const Responses = React.memo(function Responses() {
     return activeSide !== side;
   });
   const isMobile = false;
-  console.log({ currentLine });
   const [showOtherMoves, setShowOtherMoves] = useState(false);
   const debugUi = useDebugState((s) => s.debugUi);
   useEffect(() => {
@@ -450,7 +444,7 @@ export const Responses = React.memo(function Responses() {
             c.alignCenter,
             c.maxWidth(400),
             c.selfCenter,
-            c.py(responsive.switch(12, [BP.lg, 24]))
+            c.pb(responsive.switch(8, [BP.lg, 24]))
           )}
         >
           <i

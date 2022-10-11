@@ -110,7 +110,6 @@ export const RepertoireMovesTable = ({
   let [expanded, setExpanded] = useState(false);
   let MIN_TRUNCATED = isMobile ? 3 : 3;
   let completed = currentIncidence < currentThreshold;
-  console.log({ currentIncidence, currentThreshold, completed });
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
   if (!expanded) {
@@ -884,14 +883,14 @@ const CoverageProgressBar = ({
     </View>
   );
   // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
-  // if (incidence && incidence < threshold && !hasResponse) {
-  //   return (
-  //     <View style={s(c.column)}>
-  //       <CMText style={s(c.fg(c.grays[60]))}>Not needed</CMText>
-  //       {debugElements}
-  //     </View>
-  //   );
-  // }
+  if (incidence && incidence < threshold && !hasResponse) {
+    return (
+      <View style={s(c.column)}>
+        <CMText style={s(c.fg(c.grays[60]))}>Not needed</CMText>
+        {debugElements}
+      </View>
+    );
+  }
   let completed = coverage < threshold;
   const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(
     threshold * 100

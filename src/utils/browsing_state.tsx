@@ -17,6 +17,7 @@ import {
   some,
   take,
   findLast,
+  keys,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -24,6 +25,8 @@ import {
   RepertoireMove,
   RepertoireMiss,
   Side,
+  SIDES,
+  BySide,
 } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
@@ -42,6 +45,12 @@ import { START_EPD } from "./chess";
 import { getPlayRate } from "./results_distribution";
 import client from "app/client";
 import { createQuick } from "./quick";
+import { Animated } from "react-native";
+import { getExpectedNumberOfMovesForTarget } from "app/components/RepertoireOverview";
+
+export interface GetIncidenceOptions {
+  // onlyCovered?: boolean;
+}
 
 export enum BrowsingTab {
   Position = "Position",
@@ -52,6 +61,7 @@ export enum BrowsingTab {
 }
 
 export interface BrowsingState {
+  hasAnyPendingResponses?: boolean;
   quick: (fn: (_: BrowsingState) => void) => void;
   readOnly: boolean;
   selectedTab: BrowsingTab;
@@ -71,20 +81,35 @@ export interface BrowsingState {
   // TODO: merge w/ onPositionUpdate
   onEditingPositionUpdate: () => void;
   addPendingLine: (_?: { replace: boolean }) => void;
-  pendingResponses?: Record<string, RepertoireMove[]>;
+  pendingResponses?: Record<string, RepertoireMove>;
   isAddingPendingLine: boolean;
   getIncidenceOfCurrentLine: () => number;
+  getLineIncidences: (_: GetIncidenceOptions) => number[];
   hasPendingLineToAdd: boolean;
   pendingLineHasConflictingMoves?: boolean;
   fetchNeededPositionReports: () => void;
+  updateRepertoireProgress: () => void;
   getCurrentPositionReport: () => PositionReport;
   reviewFromCurrentLine: () => void;
+  repertoireProgressState: BySide<RepertoireProgressState>;
   editingState: {
     lastEcoCode?: EcoCode;
     selectedTab: EditingTab;
     etcModalOpen: boolean;
     addConflictingMoveModalOpen: boolean;
   };
+}
+
+interface RepertoireProgressState {
+  showPending?: boolean;
+  completed: boolean;
+  showPopover: boolean;
+  pendingMoves: number;
+  headerOpacityAnim: Animated.Value;
+  popoverOpacityAnim: Animated.Value;
+  savedProgressAnim: Animated.Value;
+  newProgressAnim: Animated.Value;
+  newProgressLeftAnim: Animated.Value;
 }
 
 export interface BrowserLine {
@@ -132,6 +157,80 @@ export const getInitialBrowsingState = (
       addConflictingMoveModalOpen: false,
     },
     activeSide: "white",
+    repertoireProgressState: {
+      white: createEmptyRepertoireProgressState(),
+      black: createEmptyRepertoireProgressState(),
+    },
+    updateRepertoireProgress: () =>
+      set(([s, rs, gs]) => {
+        SIDES.forEach((side) => {
+          let progressState = s.repertoireProgressState[side];
+          let threshold = gs.userState.getCurrentThreshold();
+          let biggestMissIncidence =
+            rs.repertoireGrades[side]?.biggestMiss?.incidence * 100;
+          let numMoves = rs.numResponsesAboveThreshold[side];
+          let completed = biggestMissIncidence < threshold;
+          progressState.completed = completed;
+          let expectedNumMoves = rs.expectedNumMoves[side];
+          // let magic = 12.7; // Arctan(12.7) = 0.95
+          let getProgress = (x: number): number => {
+            let k = 0 - (1 / expectedNumMoves) * 3;
+            let y = (1 / (1 + Math.exp(k * x)) - 0.5) * 2;
+            return y * 100;
+            // return (
+            //   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
+            // );
+          };
+          let savedProgress = completed ? 100 : getProgress(numMoves);
+          let numNew = values(s.pendingResponses).length;
+          let numNewAboveThreshold = values(s.pendingResponses).filter(
+            (m) => m.incidence > threshold / 100
+          ).length;
+          progressState.showPopover = numNew > 0;
+          progressState.pendingMoves = numNew;
+          let newProgress =
+            getProgress(numMoves + numNewAboveThreshold) - savedProgress;
+          console.log({
+            side,
+            biggestMissIncidence,
+            threshold,
+            completed,
+            numNew,
+            numNewAboveThreshold,
+            pm: logProxy(s.pendingResponses),
+            savedProgress,
+            newProgress,
+            expectedNumMoves,
+            numMoves,
+          });
+          progressState.showPending = newProgress > 0;
+          Animated.timing(progressState.headerOpacityAnim, {
+            toValue: progressState.showPopover ? 0 : 1,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+          Animated.timing(progressState.popoverOpacityAnim, {
+            toValue: progressState.showPopover ? 1 : 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+          Animated.timing(progressState.newProgressLeftAnim, {
+            toValue: savedProgress,
+            duration: 1000,
+            useNativeDriver: true,
+          }).start();
+          Animated.timing(progressState.newProgressAnim, {
+            toValue: newProgress,
+            duration: 1000,
+            useNativeDriver: true,
+          }).start();
+          Animated.timing(progressState.savedProgressAnim, {
+            toValue: savedProgress,
+            duration: 1000,
+            useNativeDriver: true,
+          }).start();
+        });
+      }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
         return rs.positionReports[s.chessboardState.getCurrentEpd()];
@@ -199,9 +298,10 @@ export const getInitialBrowsingState = (
           );
         }
         s.pendingLineHasConflictingMoves = false;
+        let incidences = s.getLineIncidences({});
         map(
-          zip(s.chessboardState.positionHistory, line),
-          ([position, san], i) => {
+          zip(s.chessboardState.positionHistory, line, incidences),
+          ([position, san, incidence], i) => {
             if (!san) {
               return;
             }
@@ -226,44 +326,47 @@ export const getInitialBrowsingState = (
               )
             ) {
               s.differentMoveIndices.push(i);
-              s.pendingResponses[position] = [
-                {
-                  epd: position,
-                  epdAfter: s.chessboardState.positionHistory[i + 1],
-                  sanPlus: san,
-                  side: s.activeSide,
-                  pending: true,
-                  mine: mine,
-                  srs: {
-                    needsReview: false,
-                    firstReview: false,
-                  },
+              s.pendingResponses[position] = {
+                epd: position,
+                epdAfter: s.chessboardState.positionHistory[i + 1],
+                sanPlus: san,
+                side: s.activeSide,
+                pending: true,
+                mine: mine,
+                incidence: incidence,
+                srs: {
+                  needsReview: false,
+                  firstReview: false,
                 },
-              ] as RepertoireMove[];
+              } as RepertoireMove;
             }
           }
         );
 
+        s.hasAnyPendingResponses = !isEmpty(
+          flatten(values(s.pendingResponses))
+        );
         s.hasPendingLineToAdd = some(
           flatten(values(s.pendingResponses)),
           (m) => m.mine
         );
         s.fetchNeededPositionReports();
+        s.updateRepertoireProgress();
       }, "onEditingPositionUpdate"),
-    getIncidenceOfCurrentLine: () =>
+    getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
         let startPosition = START_EPD;
 
         let incidence = 1.0;
-        map(
+        let skip = false;
+        return map(
           zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
           ([position, san], i) => {
-            let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-            let cachedIncidence = rs.epdIncidences[s.activeSide]?.[position];
-            if (cachedIncidence) {
-              incidence = cachedIncidence;
-              return;
-            }
+            let moveSide = i % 2 === 0 ? "white" : "black";
+            let covered = !isEmpty(
+              rs.repertoire?.[s.activeSide]?.positionResponses[position]
+            );
+            let mine = moveSide === s.activeSide;
             if (!mine) {
               let positionReport = rs.positionReports[position];
               if (positionReport) {
@@ -280,9 +383,13 @@ export const getInitialBrowsingState = (
                 }
               }
             }
+            return incidence;
           }
         );
-        return incidence;
+      }),
+    getIncidenceOfCurrentLine: (options: GetIncidenceOptions = {}) =>
+      get(([s, rs]) => {
+        return last(s.getLineIncidences(options));
       }),
     onPositionUpdate: () =>
       set(([s, repertoireState]) => {
@@ -297,7 +404,6 @@ export const getInitialBrowsingState = (
         let uniqueLines = [] as BrowserLine[];
         let currentLine = pgnToLine(s.chessboardState.position.pgn());
         let startEpd = last(s.chessboardState.positionHistory);
-        console.log("Pawn only epd: ", getPawnOnlyEpd(startEpd));
         let recurse = (
           path: string,
           epd: string,
@@ -318,10 +424,6 @@ export const getInitialBrowsingState = (
             return;
           }
           if (moves?.length === 1 && isNil(lastOnlyMove)) {
-            console.log(
-              "last only move is nil, seting to ",
-              logProxy(moves[0])
-            );
             lastOnlyMove = moves[0];
           } else if (moves?.length !== 1) {
             lastOnlyMove = null;
@@ -358,7 +460,6 @@ export const getInitialBrowsingState = (
           responses[nth(s.chessboardState.positionHistory, -2)],
           (r) => r.sanPlus === last(currentLine)
         );
-        console.log("Last response was", lastResponse);
         recurse(
           lineToPgn(currentLine),
           startEpd,
@@ -410,64 +511,6 @@ export const getInitialBrowsingState = (
               rs.onRepertoireUpdate();
               s.onEditingPositionUpdate();
               s.editingState.addConflictingMoveModalOpen = false;
-
-              s.addedLineState = {
-                line: s.chessboardState.moveLog,
-                stage: AddedLineStage.Initial,
-                addNewLineSelectedIndex: 0,
-                positionReport:
-                  rs.positionReports[s.chessboardState.getCurrentEpd()],
-                ecoCode: findLast(
-                  map(
-                    s.chessboardState.positionHistory,
-                    (p) => rs.ecoCodeLookup[p]
-                  )
-                ),
-              };
-              let choices = [];
-              let seenMisses = new Set();
-              let addMiss = (miss: RepertoireMiss, title) => {
-                if (!miss || seenMisses.has(miss.epd)) {
-                  return;
-                }
-                seenMisses.add(miss.epd);
-                choices.push({
-                  line: miss.lines[0],
-                  title: title,
-                  incidence: miss.incidence,
-                });
-              };
-              let biggestMiss = rs.repertoireGrades[s.activeSide].biggestMiss;
-              if (biggestMiss) {
-                addMiss(biggestMiss, `Biggest miss overall`);
-              }
-
-              let ecoCode = s.addedLineState.ecoCode;
-              if (ecoCode) {
-                let ecoName = getNameEcoCodeIdentifier(ecoCode.fullName);
-                let miss = find(
-                  rs.repertoireGrades[s.activeSide].biggestMisses,
-                  (m) => m.ecoCodeName == ecoName
-                );
-                addMiss(miss, `Biggest miss in ${ecoName}`);
-                let fullEcoName = ecoCode.fullName;
-                miss = find(
-                  rs.repertoireGrades[s.activeSide].biggestMisses,
-                  (m) => m.ecoCodeName == fullEcoName
-                );
-                addMiss(miss, `Biggest miss in ${fullEcoName}`);
-              }
-
-              choices.push({
-                line: "",
-                title: "Start position",
-              });
-              choices.push({
-                line: lineToPgn(s.addedLineState.line),
-                title: "Current position",
-              });
-              choices = take(choices, 3);
-              s.addedLineState.addNewLineChoices = choices;
             });
           })
           .finally(() => {
@@ -508,3 +551,16 @@ export const getInitialBrowsingState = (
   );
   return initialState;
 };
+
+function createEmptyRepertoireProgressState(): RepertoireProgressState {
+  return {
+    newProgressAnim: new Animated.Value(0.0),
+    newProgressLeftAnim: new Animated.Value(0.0),
+    savedProgressAnim: new Animated.Value(0.0),
+    popoverOpacityAnim: new Animated.Value(0.0),
+    headerOpacityAnim: new Animated.Value(0.0),
+    pendingMoves: 0,
+    completed: false,
+    showPopover: false,
+  };
+}

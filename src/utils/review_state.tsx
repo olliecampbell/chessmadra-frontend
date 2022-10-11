@@ -221,7 +221,6 @@ export const getInitialReviewState = (
         if (isNil(rs.repertoire)) {
           return null;
         }
-        console.log({ options });
         let seen_epds = new Set();
         let queue: QuizMove[] = [];
         const recurse = (epd, line) => {

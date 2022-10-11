@@ -317,19 +317,6 @@ const AddedLineOverview = () => {
       <View style={s(c.row, c.justifyEnd, c.fullWidth)}>
         <Button
           onPress={() => {
-            quick((s) => {
-              s.repertoireState.browsingState.addedLineState.stage =
-                AddedLineStage.AddAnother;
-            });
-            trackEvent("added_line.add_another");
-          }}
-          style={s(buttonStyles)}
-        >
-          Add another line
-        </Button>
-        <Spacer width={isMobile ? 4 : 12} />
-        <Button
-          onPress={() => {
             reviewLine(addedLineState.line, side);
             trackEvent("added_line.review_line");
           }}

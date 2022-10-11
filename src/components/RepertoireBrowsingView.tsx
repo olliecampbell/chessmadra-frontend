@@ -84,7 +84,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   }, [repertoireLoading]);
   // const router = useRouter();
   const responsive = useResponsive();
-  const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
     <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
       <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
@@ -131,14 +131,14 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                 <SwitchSideButton />
               </>
             )}
-            {responsive.isMobile && (
+            {vertical && (
               <>
                 <Spacer height={12} />
                 <ResultsView />
               </>
             )}
           </View>
-          {!responsive.isMobile && (
+          {!vertical && (
             <>
               <Spacer width={responsive.switch(24, [BP.xl, 48])} />
               <View
@@ -279,7 +279,7 @@ export const ResultsView = React.memo(function () {
   ];
   return (
     <View style={s(c.column)}>
-      {!readOnly && (
+      {!readOnly && tabs.length > 1 && (
         <>
           <SelectOneOf
             tabStyle

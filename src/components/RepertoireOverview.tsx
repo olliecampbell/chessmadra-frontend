@@ -40,6 +40,7 @@ import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { ProfileModal } from "./ProfileModal";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
+import { CoverageBar } from "./CoverageBar";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
@@ -512,7 +513,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
   const inverse = side === "black";
   let [getMyResponsesLength] = useRepertoireState((s) => {
     return [s.getMyResponsesLength];
-  }, );
+  });
   let hasNoMovesThisSide = getMyResponsesLength(side) === 0;
   if (hasNoMovesThisSide) {
     return <View style={s(c.height(getButtonHeight(responsive)))}></View>;
@@ -685,29 +686,17 @@ const SideProgressReport = ({ side }: { side: Side }) => {
   const [backgroundColor, inProgressColor, completedColor] = inverse
     ? [c.grays[14], c.yellows[45], c.greens[50]]
     : [c.grays[80], c.yellows[65], c.greens[50]];
-  let [biggestMissIncidence, numMoves, biggestMiss] = useRepertoireState(
+  let [biggestMissIncidence, numMoves, numAboveThreshold] = useRepertoireState(
     (s) => [
       s.repertoireGrades[side]?.biggestMiss?.incidence * 100,
       s.myResponsesLookup?.[side]?.length,
-      s.repertoireGrades[side]?.biggestMiss,
+      s.numResponsesAboveThreshold?.[side],
     ]
   );
+  const debugUi = useDebugState((s) => s.debugUi);
 
   const [textColor, secondaryTextColor] = getTextColors(inverse);
-  const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(threshold);
-  const numMovesNeededForCurrentMissIncidence =
-    numMoves < 5
-      ? numMoves
-      : getExpectedNumberOfMovesForTarget(biggestMissIncidence);
-  getExpectedNumberOfMovesForTarget(biggestMissIncidence);
   const completed = biggestMissIncidence < threshold;
-  console.log({
-    side,
-    threshold,
-    biggestMissIncidence: biggestMissIncidence * 100,
-    numMovesNeededForCurrentMissIncidence,
-    expectedNumMovesNeeded,
-  });
   return (
     <View
       style={s(
@@ -775,24 +764,15 @@ const SideProgressReport = ({ side }: { side: Side }) => {
           c.height(6)
         )}
       >
-        <View
-          style={s(
-            c.width(
-              completed
-                ? "100%"
-                : `${clamp(
-                    (numMovesNeededForCurrentMissIncidence /
-                      expectedNumMovesNeeded) *
-                      100,
-                    0,
-                    96
-                  )}%`
-            ),
-            c.bg(completed ? completedColor : inProgressColor),
-            c.fullHeight
-          )}
-        ></View>
+        <CoverageBar side={side} inverse={inverse} />
       </View>
+      {debugUi && (
+        <View style={s()}>
+          <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
+            # above threshold {numAboveThreshold}
+          </CMText>
+        </View>
+      )}
       {!completed ? (
         <>
           <Spacer height={8} />
@@ -861,9 +841,12 @@ function getRepertoireSideCardPadding(responsive) {
 }
 
 export const getExpectedNumberOfMovesForTarget = (target: number) => {
+  if (target === 4) {
+    return 32;
+  }
   let [a, b] = [67.12355793, -0.27985595];
 
-  return a * Math.exp(b * target);
+  return a * Math.exp(b * target) * 2;
   // return 10.8396 + 159.7416 * Math.exp(-0.9198313 * target);
   // return 134.471 * Math.exp(-0.596455 * target);
 };

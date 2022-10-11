@@ -75,6 +75,7 @@ export interface RepertoireMove {
   pending?: boolean;
   side: Side;
   srs: SpacedRepetitionStatus;
+  incidence?: number;
 }
 
 export interface SpacedRepetitionStatus {
@@ -94,7 +95,6 @@ export interface RepertoireGrade {
   // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
   biggestMisses: RepertoireMiss[];
-  epdIncidences: Record<string, number>;
 }
 
 export type OpeningIdentifier = string;
