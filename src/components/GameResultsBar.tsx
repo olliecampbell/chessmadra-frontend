@@ -151,7 +151,6 @@ export const MovementIndicator = ({
   let threshold = 0.02;
   let oldWr = getWinRate(previous, side);
   let newWr = getWinRate(results, side);
-  console.log({ oldWr, newWr });
   if (newWr < oldWr - threshold) {
     icon = "fa-sharp fa-arrow-down-right";
     color = side === "white" ? c.reds[45] : c.reds[55];
