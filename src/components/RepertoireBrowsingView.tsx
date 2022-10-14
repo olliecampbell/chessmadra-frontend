@@ -308,21 +308,17 @@ export const ResultsView = React.memo(function () {
                     c.grow,
                     c.alignCenter,
                     c.py(responsive.switch(8, [BP.lg, 12])),
-                    c.bg(active ? c.grays[95] : "transparent"),
-                    c.brt(2),
-                    // c.borderBottom(
-                    //   `6px solid ${active ? c.grays[95] : "transparent"}`
-                    // ),
+                    // c.bg(active ? c.grays[95] : "transparent"),
+                    c.br(0),
+                    c.borderBottom(
+                      `2px solid ${active ? c.grays[95] : "transparent"}`
+                    ),
                     c.zIndex(5),
                     c.px(isMobile ? 0 : 48)
                   )}
                 >
                   <CMText
-                    style={s(
-                      c.fg(active ? c.grays[10] : c.grays[70]),
-                      c.fontSize(16),
-                      c.weightBold
-                    )}
+                    style={s(c.fg(c.grays[85]), c.fontSize(16), c.weightBold)}
                   >
                     {tab}
                   </CMText>
@@ -332,15 +328,7 @@ export const ResultsView = React.memo(function () {
           />
         </>
       )}
-      <View
-        style={s(
-          c.bg(c.grays[95]),
-          c.br(tabs.length === 1 ? 2 : 0),
-          c.px(12),
-          c.py(12),
-          c.brb(2)
-        )}
-      >
+      <View style={s(c.br(tabs.length === 1 ? 2 : 0), c.brb(2), c.pt(24))}>
         {selectedTab === BrowsingTab.Responses && <Responses />}
         {selectedTab === BrowsingTab.Position && <PositionOverview />}
         {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}

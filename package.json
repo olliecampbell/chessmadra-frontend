@@ -13,6 +13,7 @@
     "@expo/webpack-config": "^0.17.2",
     "@lubert/chess.ts": "^0.16.1",
     "@react-navigation/web": "^1.0.0-alpha.9",
+    "@reactivers/hooks": "^1.0.14",
     "@sentry/react": "^7.12.1",
     "@sentry/tracing": "^7.12.1",
     "@types/lodash-es": "^4.17.6",

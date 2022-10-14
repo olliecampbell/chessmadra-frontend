@@ -56,7 +56,7 @@ export const CoverageBar = ({
     return [progressState];
   });
   const [backgroundColor, inProgressColor, completedColor] = bottomNav
-    ? [c.grays[14], c.grays[75], c.greens[50]]
+    ? [c.grays[14], c.grays[75], c.grays[75]]
     : inverse
     ? [c.grays[14], c.yellows[45], c.greens[50]]
     : [c.grays[80], c.yellows[65], c.greens[50]];
@@ -88,22 +88,22 @@ export const CoverageBar = ({
             })
           ),
           c.width(
-                progressState.newProgressAnim.interpolate({
-                  inputRange: [0, 100],
-                  outputRange: [
-                    `max(0%, calc(0% + ${overlap}px))`,
-                    `max(0%, calc(100% + ${overlap}px))`,
-                  ],
-                })
-              ),
-              !progressState.showPending && c.opacity(0),
-          
+            progressState.newProgressAnim.interpolate({
+              inputRange: [0, 100],
+              outputRange: [
+                `max(0%, calc(0% + ${overlap}px))`,
+                `max(0%, calc(100% + ${overlap}px))`,
+              ],
+            })
+          ),
+
           c.bg(c.purples[55]),
           c.fullHeight
         )}
       >
         <View
           style={s(
+            !progressState.showPending && c.opacity(0),
             c.transform("translateX(-50%)"),
             c.absolute,
             c.bottom(28),

@@ -101,6 +101,7 @@ export interface BrowsingState {
 }
 
 interface RepertoireProgressState {
+  showNewProgressBar?: boolean;
   showPending?: boolean;
   completed: boolean;
   showPopover: boolean;
@@ -203,7 +204,11 @@ export const getInitialBrowsingState = (
             expectedNumMoves,
             numMoves,
           });
-          progressState.showPending = newProgress > 0;
+          progressState.showNewProgressBar = newProgress > 0;
+          progressState.showPending = some(
+            flatten(values(s.pendingResponses)),
+            (m) => m.mine
+          );
           Animated.timing(progressState.headerOpacityAnim, {
             toValue: progressState.showPopover ? 0 : 1,
             duration: 300,

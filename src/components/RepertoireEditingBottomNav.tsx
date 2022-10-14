@@ -151,7 +151,7 @@ const CurrentLineProgression = () => {
   const showPopover =
     (hasPendingLineToAdd || hasPendingLineToAdd) && !responsive.isMobile;
   return (
-    <View style={s(c.column, c.grow)}>
+    <View style={s(c.column, c.grow, c.zIndex(10))}>
       <Animated.View
         style={s(
           c.row,

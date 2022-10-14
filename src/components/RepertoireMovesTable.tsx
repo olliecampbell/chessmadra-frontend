@@ -114,6 +114,9 @@ export const RepertoireMovesTable = ({
   let trimmedResponses = [...responses];
   if (!expanded) {
     trimmedResponses = filter(responses, (r, i) => {
+      if (anyMine && !r.repertoireMove) {
+        return false;
+      }
       if (
         (r.incidence > currentThreshold ||
           r.incidenceUpperBound > currentThreshold) &&
@@ -163,14 +166,14 @@ export const RepertoireMovesTable = ({
         {truncated && (
           <>
             <Pressable
-              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[80]}`))}
+              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
               onPress={() => {
                 setExpanded(true);
                 trackEvent("repertoire.moves_table.show_more");
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[35]), c.weightSemiBold)}
+                style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
               >
                 Show more moves <>({numTruncated})</>
               </CMText>
@@ -181,14 +184,14 @@ export const RepertoireMovesTable = ({
         {
           <>
             <Pressable
-              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[80]}`))}
+              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
               onPress={() => {
                 trackEvent("repertoire.moves_table.edit_annotations");
                 setEditingAnnotations(!editingAnnotations);
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[35]), c.weightSemiBold)}
+                style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
               >
                 {editingAnnotations
                   ? "Stop editing annotations"
@@ -227,7 +230,7 @@ let useSections = ({
   const debugUi = useDebugState((s) => s.debugUi);
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let sections: Section[] = [];
-  let textStyles = s(c.fg(c.grays[20]), c.weightSemiBold);
+  let textStyles = s(c.fg(c.grays[80]), c.weightSemiBold);
 
   let na = <CMText style={s(textStyles)}>N/A</CMText>;
   let notEnoughGames = (
@@ -258,7 +261,7 @@ let useSections = ({
                     className={`fa fa-duotone ${icon}`}
                     style={s(
                       c.fontSize(16),
-                      c.duotone(c.grays[15], c.grays[75])
+                      c.duotone(c.grays[85], c.grays[30])
                     )}
                   />
                 </CMText>
@@ -357,7 +360,8 @@ let useSections = ({
             {suggestedMove && (
               <View style={s(c.fullWidth)}>
                 <GameResultsBar
-                  onLightUi={true}
+                  previousResults={positionReport?.results}
+                  onLightUi={false}
                   activeSide={activeSide}
                   gameResults={suggestedMove.results}
                 />
@@ -366,7 +370,7 @@ let useSections = ({
           </>
         );
       },
-      header: "Peer results",
+      header: isMobile ? "Peer results" : "Results at your level",
     });
   }
   return sections;
@@ -524,7 +528,7 @@ const Response = ({
   let bestMoveTag = tableResponse.bestMove && (
     <CMText
       style={s(
-        c.fg(c.grays[20]),
+        c.fg(c.grays[80]),
         c.fontSize(12),
         c.weightBold,
         c.row,
@@ -539,6 +543,9 @@ const Response = ({
       Clear best move
     </CMText>
   );
+
+  const maxItemWidth = 0;
+  const editingMyMoves = true;
 
   return (
     <View style={s(c.row, c.alignStart)} {...responseHoverProps}>
@@ -555,7 +562,7 @@ const Response = ({
           c.br(2),
           c.pr(8),
           c.py(12),
-          c.bg(hoveringRow ? c.grays[100] : c.grays[97]),
+          c.bg(hoveringRow ? c.grays[16] : c.grays[18]),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
           c.clickable,
@@ -564,7 +571,7 @@ const Response = ({
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
           <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            {myTurn && (
+            {editingMyMoves && (
               <Pressable
                 style={s(
                   c.px(12),
@@ -591,8 +598,8 @@ const Response = ({
                       ? c.duotone(c.grays[90], c.purples[55])
                       : hoveringRow
                       ? c.duotone(c.grays[90], c.purples[55])
-                      : c.fg(c.grays[80]),
-                    hoveringRow && !repertoireMove && c.opacity(40),
+                      : c.fg(c.grays[40]),
+                    hoveringRow && !repertoireMove && c.opacity(60),
                     c.fontSize(22)
                   )}
                   className={
@@ -605,12 +612,10 @@ const Response = ({
                 ></i>
               </Pressable>
             )}
-            {!myTurn && <Spacer width={8} />}
+            {!editingMyMoves && <Spacer width={8} />}
             <View style={s(c.row, c.alignCenter, c.pl(4))}>
-              <View
-                style={s(c.row, c.alignCenter, c.minWidth(myTurn ? 60 : 100))}
-              >
-                {!myTurn && (
+              <View style={s(c.row, c.alignCenter, c.minWidth(40))}>
+                {true && (
                   <>
                     <CMText
                       style={s(
@@ -629,7 +634,7 @@ const Response = ({
                 <CMText
                   key={sanPlus}
                   style={s(
-                    c.fg(c.grays[10]),
+                    c.fg(c.grays[85]),
                     c.fontSize(18),
                     c.weightBold,
                     c.keyedProp("letterSpacing")("0.04rem")
@@ -650,7 +655,7 @@ const Response = ({
               <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
                 <CMText
                   style={s(
-                    c.fg(c.grays[15]),
+                    c.fg(c.grays[80]),
                     c.fontSize(14),
                     c.lineHeight("1.3rem")
                   )}
@@ -692,7 +697,7 @@ const Response = ({
           <View style={s(c.column, c.pl(48), c.pr(12))}>
             {isMobile && annotationOrOpeningName && (
               <View style={s(c.grow, c.pt(12), c.minWidth(0))}>
-                <CMText style={s(c.fg(c.grays[25]), c.fontSize(14))}>
+                <CMText style={s(c.fg(c.grays[80]), c.fontSize(14))}>
                   {annotationOrOpeningName}
                 </CMText>
               </View>
@@ -778,7 +783,7 @@ const TableHeader = ({
                 )}
                 key={i}
               >
-                <CMText style={s(c.fg(c.grays[40]), c.fontSize(12))}>
+                <CMText style={s(c.fg(c.grays[90]), c.fontSize(12))}>
                   {section.header}
                 </CMText>
               </View>
@@ -865,7 +870,7 @@ const CoverageProgressBar = ({
         ?.length > 0
   );
 
-  const backgroundColor = c.grays[90];
+  const backgroundColor = c.grays[28];
   const completedColor = c.greens[55];
   let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
   let coverage = tableResponse?.coverage ?? incidence;

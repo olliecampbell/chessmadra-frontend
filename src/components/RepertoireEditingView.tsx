@@ -58,6 +58,7 @@ import { START_EPD } from "app/utils/chess";
 import { formatLargeNumber } from "app/utils/number_formatting";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { getMoveRating } from "app/utils/move_inaccuracy";
+import { plural, pluralize } from "app/utils/pluralize";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const MoveLog = () => {
@@ -400,13 +401,15 @@ export const Responses = React.memo(function Responses() {
       }
     });
   }
-  let youCanPlay = filter(tableResponses, (tr) => {
-    return activeSide === side;
+  let yourMoves = filter(tableResponses, (tr) => {
+    return !isNil(tr.repertoireMove) && activeSide === side;
   });
-  // let myMoves =
   // let otherMoves = filter(tableResponses, (tr) => {
   //   return isNil(tr.repertoireMove) && activeSide === side;
   // });
+  let youCanPlay = filter(tableResponses, (tr) => {
+    return activeSide === side;
+  });
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== side;
   });
@@ -454,7 +457,7 @@ export const Responses = React.memo(function Responses() {
           <Spacer width={12} />
           <CMText
             style={s(
-              c.fg(c.colors.textInverse),
+              c.fg(c.colors.textPrimary),
               c.lineHeight("1.3rem"),
               c.weightSemiBold
             )}
@@ -470,7 +473,7 @@ export const Responses = React.memo(function Responses() {
         <View style={s()} key={`you-can-play-${currentEpd}`}>
           <RepertoireMovesTable
             {...{
-              header: getResponsesHeader(currentLine),
+              header: getResponsesHeader(currentLine, isEmpty(yourMoves)),
               usePeerRates,
               activeSide,
               side,
@@ -585,39 +588,62 @@ const scoreTableResponses = (
       }
       let suggestedMove = tableResponse.suggestedMove;
       if (suggestedMove) {
-        let stockfish = tableResponse.suggestedMove?.stockfish;
-        if (stockfish?.mate < 0 && side === "black") {
-          scoreTable.factors.push({
-            source: TableResponseScoreSource.Eval,
-            value: 10000,
-          });
-        }
-        if (stockfish?.mate > 0 && side === "white") {
-          scoreTable.factors.push({
-            source: TableResponseScoreSource.Eval,
-            value: 10000,
-          });
-        }
-        if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
-          let eval_loss = Math.abs(
-            Math.max(
-              (report.stockfish.eval - stockfish.eval) *
-                (side === "black" ? -1 : 1),
-              0
-            )
+        let evalOverride = false;
+        let masterPlayRate = getPlayRate(
+          tableResponse?.suggestedMove,
+          report,
+          true
+        );
+        if (!isNil(masterPlayRate)) {
+          let masterRateAdditionalWeight = Math.min(
+            getTotalGames(tableResponse.suggestedMove?.masterResults) / 100,
+            1
           );
+          let scoreForMasterPlayrate =
+            masterPlayRate * 100 * masterRateAdditionalWeight;
           scoreTable.factors.push({
-            source: TableResponseScoreSource.Eval,
-            value: -eval_loss,
+            source: TableResponseScoreSource.MasterPlayrate,
+            value: scoreForMasterPlayrate,
           });
-          // if (m.sanPlus === DEBUG_MOVE) {
-          //   console.log(
-          //     `For ${m.sanPlus}, the eval_loss is ${eval_loss}, Score change is ${scoreChangeEval}`
-          //   );
-          // }
-        } else {
-          // Punish for not having stockfish eval, so good stockfish evals get bumped up if compared against no stockfish eval
-          // score -= 400 * weights.eval;
+          if (weights.masterPlayrate > 0 && masterPlayRate > 0.03) {
+            evalOverride = true;
+          }
+        }
+        let stockfish = tableResponse.suggestedMove?.stockfish;
+        if (stockfish && !evalOverride) {
+          if (stockfish?.mate < 0 && side === "black") {
+            scoreTable.factors.push({
+              source: TableResponseScoreSource.Eval,
+              value: 10000,
+            });
+          }
+          if (stockfish?.mate > 0 && side === "white") {
+            scoreTable.factors.push({
+              source: TableResponseScoreSource.Eval,
+              value: 10000,
+            });
+          }
+          if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
+            let eval_loss = Math.abs(
+              Math.max(
+                (report.stockfish.eval - stockfish.eval) *
+                  (side === "black" ? -1 : 1),
+                0
+              )
+            );
+            scoreTable.factors.push({
+              source: TableResponseScoreSource.Eval,
+              value: -eval_loss,
+            });
+            // if (m.sanPlus === DEBUG_MOVE) {
+            //   console.log(
+            //     `For ${m.sanPlus}, the eval_loss is ${eval_loss}, Score change is ${scoreChangeEval}`
+            //   );
+            // }
+          } else {
+            // Punish for not having stockfish eval, so good stockfish evals get bumped up if compared against no stockfish eval
+            // score -= 400 * weights.eval;
+          }
         }
         let rateAdditionalWeight = Math.min(
           getTotalGames(tableResponse?.suggestedMove.results) / 100,
@@ -649,28 +675,6 @@ const scoreTableResponses = (
             source: TableResponseScoreSource.Winrate,
             value: scoreForWinrate,
           });
-        }
-        let masterRateAdditionalWeight = Math.min(
-          getTotalGames(tableResponse.suggestedMove?.masterResults) / 100,
-          1
-        );
-        let masterPlayRate = getPlayRate(
-          tableResponse?.suggestedMove,
-          report,
-          true
-        );
-        if (!isNil(masterPlayRate)) {
-          let scoreForMasterPlayrate =
-            masterPlayRate * 100 * masterRateAdditionalWeight;
-          scoreTable.factors.push({
-            source: TableResponseScoreSource.MasterPlayrate,
-            value: scoreForMasterPlayrate,
-          });
-          // if (m.sanPlus === DEBUG_MOVE) {
-          //   console.log(
-          //     `For ${m.sanPlus}, the masters playrate is ${masterPlayRate}, Score change is ${scoreForMasterPlayrate}`
-          //   );
-          // }
         }
       }
       scoreTable.factors.forEach((f) => {
@@ -804,7 +808,7 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
       // s.getPawnStructure(s.getCurrentEpd()),
     ];
   });
-  let fontColor = card ? c.grays[80] : c.grays[20];
+  let fontColor = card ? c.grays[80] : c.grays[80];
   let [openingName, variations] = ecoCode
     ? getAppropriateEcoName(ecoCode.fullName)
     : [];
@@ -826,7 +830,7 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
               <View style={s(c.mb(12))}>
                 <CMText
                   style={s(
-                    c.fg(card ? c.grays[80] : c.colors.textInverse),
+                    c.fg(card ? c.grays[80] : c.grays[80]),
                     c.weightBold,
                     c.fontSize(16)
                   )}
@@ -838,7 +842,7 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
                     <Spacer height={4} />
                     <CMText
                       style={s(
-                        c.fg(card ? c.grays[60] : c.grays[30]),
+                        c.fg(card ? c.grays[60] : c.grays[60]),
                         c.weightRegular,
                         c.fontSize(14)
                       )}
@@ -945,6 +949,8 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
   );
 };
 
-function getResponsesHeader(currentLine: string[]): string {
-  return `Choose your ${isEmpty(currentLine) ? "first" : "next"} move`;
+function getResponsesHeader(currentLine: string[], hasMove: boolean): string {
+  return `${hasMove ? "Choose your" : "Your"} ${
+    isEmpty(currentLine) ? "first" : "next"
+  } move`;
 }
