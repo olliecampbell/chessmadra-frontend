@@ -94,23 +94,7 @@ export const RepertoireBuilder = () => {
       </RepertoirePageLayout>
     );
   } else {
-    if (isEditing) {
-      return (
-        <>
-          <RepertoireEditingView />
-        </>
-      );
-    } else if (isBrowsing) {
-      return (
-        <>
-          <RepertoireBrowsingView />
-        </>
-      );
-    } else if (isReviewing) {
-      return <RepertoireReview />;
-    } else {
-      return <RepertoireOverview />;
-    }
+    return <RepertoireOverview />;
   }
 };
 
