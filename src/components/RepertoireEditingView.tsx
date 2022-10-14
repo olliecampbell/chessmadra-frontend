@@ -401,6 +401,13 @@ export const Responses = React.memo(function Responses() {
       }
     });
   }
+  if (!ownSide) {
+    tableResponses.forEach((tr) => {
+      let incidence = tr.incidenceUpperBound ?? tr.incidence;
+      console.log({ incidence, currentThreshold });
+      tr.needed = incidence * 100 > currentThreshold;
+    });
+  }
   let yourMoves = filter(tableResponses, (tr) => {
     return !isNil(tr.repertoireMove) && activeSide === side;
   });

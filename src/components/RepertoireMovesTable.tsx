@@ -54,6 +54,7 @@ import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  needed?: boolean;
   incidenceUpperBound?: number;
   coverage?: number;
   bestMove?: boolean;
@@ -95,6 +96,8 @@ export const RepertoireMovesTable = ({
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
+  let anyNeeded = some(responses, (m) => m.needed);
+  console.log({ anyNeeded });
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let [currentIncidence] = useBrowsingState(([s]) => [
     s.getIncidenceOfCurrentLine() * 100,
@@ -114,7 +117,13 @@ export const RepertoireMovesTable = ({
   let trimmedResponses = [...responses];
   if (!expanded) {
     trimmedResponses = filter(responses, (r, i) => {
-      if (anyMine && !r.repertoireMove) {
+      if (r.repertoireMove) {
+        return true;
+      }
+      if (anyNeeded && !r.needed) {
+        return false;
+      }
+      if (anyMine) {
         return false;
       }
       if (
@@ -122,9 +131,6 @@ export const RepertoireMovesTable = ({
           r.incidenceUpperBound > currentThreshold) &&
         !myTurn
       ) {
-        return true;
-      }
-      if (r.repertoireMove) {
         return true;
       }
       return i < MIN_TRUNCATED || r.repertoireMove || r.score > 0;
@@ -524,7 +530,8 @@ const Response = ({
       newOpeningName = last(variations);
     }
   }
-  let annotationOrOpeningName = suggestedMove?.annotation ?? newOpeningName;
+  let annotationOrOpeningName =
+    renderAnnotation(suggestedMove?.annotation) ?? newOpeningName;
   let bestMoveTag = tableResponse.bestMove && (
     <CMText
       style={s(
@@ -871,7 +878,7 @@ const CoverageProgressBar = ({
   );
 
   const backgroundColor = c.grays[28];
-  const completedColor = c.greens[55];
+  const completedColor = c.greens[50];
   let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
   let coverage = tableResponse?.coverage ?? incidence;
   let debugElements = debugUi && (
@@ -937,3 +944,13 @@ const CoverageProgressBar = ({
     </View>
   );
 };
+
+function renderAnnotation(annotation: string) {
+  if (annotation) {
+    if (annotation.endsWith(".")) {
+      return annotation;
+    } else {
+      return `${annotation}.`;
+    }
+  }
+}
