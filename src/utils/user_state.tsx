@@ -1,5 +1,5 @@
 import { User } from "app/models";
-import { AppState } from "./app_state";
+import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
@@ -158,3 +158,8 @@ export const getRecommendedMissThreshold = (range: string) => {
 };
 
 export const DEFAULT_THRESHOLD = 4.0;
+export const trackModule = (module: string) => {
+  const identifyObj = new Identify();
+  identifyObj.set("last_module", module);
+  identify(identifyObj);
+};

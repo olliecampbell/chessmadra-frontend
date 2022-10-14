@@ -28,6 +28,8 @@ import {
 import { HeadSiteMeta } from "app/components/PageContainer";
 import { GAME_SEARCH_DESCRIPTION } from "./NavBar";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { trackModule } from "app/utils/user_state";
+import { useEffect } from "react";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -43,6 +45,9 @@ export const GamesSearch = () => {
   const isMobile = useIsMobile();
   const state = useGameSearchState((s) => s);
   const hasBetaAccess = useHasBetaAccess();
+  useEffect(() => {
+    trackModule("game_search");
+  }, []);
   console.log("state whiteRating", state.whiteRating);
   // const pieces = state.chessState.position
   //   .board()

@@ -14,10 +14,14 @@ import { CMText } from "./CMText";
 import { useClimbState } from "app/utils/app_state";
 import { CLIMB_DESCRIPTION } from "./NavBar";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { trackModule } from "app/utils/user_state";
 
 export const TheClimb = () => {
   const isMobile = useIsMobile();
   const state = useClimbState((s) => s);
+  useEffect(() => {
+    trackModule("climb");
+  }, []);
   useEffect(() => {
     state.initState();
   }, []);

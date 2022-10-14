@@ -12,6 +12,7 @@ import { CMText } from "./CMText";
 import { useColorTrainingState } from "app/utils/app_state";
 import { COLOR_TRAINER_DESCRIPTION } from "./NavBar";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { trackModule } from "app/utils/user_state";
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -38,6 +39,9 @@ export const ColorTraining = () => {
   const isMobile = useIsMobile();
   const state = useColorTrainingState((s) => s);
   console.log("Color training state!", s);
+  useEffect(() => {
+    trackModule("color_training");
+  }, []);
   useEffect(() => {
     if (state.isPlaying) {
       document.onkeydown = function (e) {
@@ -143,7 +147,7 @@ export const ColorTraining = () => {
               <Button
                 onPress={() => {
                   state.startPlaying();
-                    trackEvent("color_training.start");
+                  trackEvent("color_training.start");
                 }}
                 style={s(c.buttons.primary)}
               >

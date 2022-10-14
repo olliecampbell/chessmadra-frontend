@@ -41,6 +41,7 @@ import { ProfileModal } from "./ProfileModal";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { CoverageBar } from "./CoverageBar";
+import { trackModule } from "app/utils/user_state";
 
 let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
 let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
@@ -48,6 +49,9 @@ let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
 export const RepertoireOverview = ({}: {}) => {
   const responsive = useResponsive();
   const vertical = responsive.isMobile;
+  useEffect(() => {
+    trackModule("openings");
+  }, []);
   return (
     <RepertoirePageLayout centered lighterBackground>
       <View

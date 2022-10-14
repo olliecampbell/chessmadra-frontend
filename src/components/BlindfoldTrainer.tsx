@@ -26,6 +26,7 @@ import {
 } from "app/utils/blindfold_state";
 import { BLINDFOLD_DESCRIPTION } from "./NavBar";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { trackModule } from "app/utils/user_state";
 
 const pieceToKey = (piece: Piece) => {
   return `${piece.type}-${piece.color}`;
@@ -39,6 +40,9 @@ const COLORS = ["w", "b"];
 export const BlindfoldTrainer = () => {
   const isMobile = useIsMobile();
   const state = useBlindfoldState((s) => s);
+  useEffect(() => {
+    trackModule("blindfold");
+  }, []);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (
@@ -113,7 +117,7 @@ export const BlindfoldTrainer = () => {
             <NewPuzzleButton
               onPress={() => {
                 state.refreshPuzzle();
-                trackEvent("blindfold_trainer.new_puzzle")
+                trackEvent("blindfold_trainer.new_puzzle");
               }}
             />
           </>
@@ -147,7 +151,7 @@ export const BlindfoldTrainer = () => {
             style={s(c.buttons.squareBasicButtons)}
             onPress={() => {
               setHelpOpen(true);
-                trackEvent("blindfold_trainer.open_help")
+              trackEvent("blindfold_trainer.open_help");
             }}
           >
             <CMText style={s(c.buttons.basic.textStyles)}>
@@ -161,7 +165,7 @@ export const BlindfoldTrainer = () => {
             style={s(c.buttons.squareBasicButtons)}
             onPress={() => {
               setSettingsOpen(true);
-                trackEvent("blindfold_trainer.open_settings")
+              trackEvent("blindfold_trainer.open_settings");
             }}
           >
             <i
