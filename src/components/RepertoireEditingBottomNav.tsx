@@ -22,6 +22,7 @@ import { BP, useResponsive } from "app/utils/useResponsive";
 import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
 import { pluralize } from "app/utils/pluralize";
 import { CoverageBar } from "./CoverageBar";
+import { CoverageGoal } from "./CoverageGoal";
 
 export const RepertoireEditingBottomNav = ({}: {}) => {
   const [moveLogPgn, hasPendingLineToAdd] = useBrowsingState(([s]) => [
@@ -182,30 +183,7 @@ const CurrentLineProgression = () => {
             </>
           )*/}
         </CMText>
-        {responsive.bp >= BP.md && (
-          <View style={s(c.column, c.alignEnd)}>
-            <CMText
-              style={s(
-                c.fg(c.colors.textSecondary),
-                c.fontSize(12),
-                c.weightSemiBold
-              )}
-            >
-              Goal
-            </CMText>
-            <Spacer height={0} />
-            <CMText
-              style={s(
-                c.weightBold,
-                c.fg(c.colors.textSecondary),
-                c.weightBold,
-                c.fontSize(14)
-              )}
-            >
-              1 in {Math.round(100 / threshold)} games
-            </CMText>
-          </View>
-        )}
+        {responsive.bp >= BP.md && <CoverageGoal textColor={c.grays[90]} fromTop/>}
       </Animated.View>
       <Spacer height={8} />
       <View style={s(c.fullWidth, c.height(height))}>

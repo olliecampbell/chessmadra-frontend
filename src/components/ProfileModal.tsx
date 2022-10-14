@@ -90,13 +90,14 @@ export const ProfileModal = () => {
   );
 };
 
+export const THRESHOLD_OPTIONS = [4, 2, 1, 0.8, 0.4];
+
 export const ProfileTargetDepthSelector = ({}: {}) => {
   const [user, missThreshold] = useUserState((s) => [
     s.user,
     s.getCurrentThreshold(),
   ]);
   const selected = missThreshold;
-  const options = [4, 2, 1, 0.8, 0.4];
   const onSelect = (t: number) => {
     quick((s) => {
       s.userState.setTargetDepth(t);
@@ -114,7 +115,7 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
       <Spacer height={responsive.switch(4, [BP.lg, 12])} />
       <SelectOneOf
         containerStyles={s(c.fullWidth)}
-        choices={options}
+        choices={THRESHOLD_OPTIONS}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
         activeChoice={selected}

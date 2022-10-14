@@ -215,7 +215,7 @@ export const getInitialBrowsingState = (
             useNativeDriver: true,
           }).start();
           Animated.timing(progressState.popoverOpacityAnim, {
-            toValue: progressState.showPopover ? 1 : 0,
+            toValue: progressState.showPopover ? 100 : 0,
             duration: 300,
             useNativeDriver: true,
           }).start();

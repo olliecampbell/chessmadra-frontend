@@ -103,7 +103,6 @@ export const CoverageBar = ({
       >
         <View
           style={s(
-            !progressState.showPending && c.opacity(0),
             c.transform("translateX(-50%)"),
             c.absolute,
             c.bottom(28),

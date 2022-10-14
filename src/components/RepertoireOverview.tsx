@@ -42,9 +42,7 @@ import { BP, useResponsive } from "app/utils/useResponsive";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { CoverageBar } from "./CoverageBar";
 import { trackModule } from "app/utils/user_state";
-
-let sectionSpacing = (isMobile) => (isMobile ? 8 : 8);
-let cardStyles = s(c.bg(c.grays[12]), c.overflowHidden, c.br(2), c.relative);
+import { CoverageGoal } from "./CoverageGoal";
 
 export const RepertoireOverview = ({}: {}) => {
   const responsive = useResponsive();
@@ -466,49 +464,6 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
   );
 };
 
-const UpdateCoverageGoalButton = ({ side }: { side: Side }) => {
-  const responsive = useResponsive();
-  const inverse = side === "black";
-  const [backgroundColor, foregroundColor, iconColor] =
-    getButtonColors(inverse);
-  const buttonHeight = 32;
-  return (
-    <Button
-      style={s(
-        c.buttons.basicSecondary,
-        c.bg("none"),
-        c.border("none"),
-        c.selfStretch,
-        c.px(24),
-        c.pt(0),
-        c.height(buttonHeight),
-        c.pr(0),
-        c.pb(0)
-      )}
-      onPress={() => {
-        quick((s) => {
-          s.userState.profileModalOpen = true;
-          trackEvent("overview.update_coverage_goal");
-        });
-      }}
-    >
-      <CMText
-        style={s(
-          c.fg(foregroundColor),
-          c.fontSize(responsive.switch(16)),
-          c.weightBold
-        )}
-      >
-        Update coverage goal
-      </CMText>
-      <Spacer width={8} />
-      <CMText style={s(c.fg(iconColor), c.fontSize(18))}>
-        <i className="fa fa-arrow-right" />
-      </CMText>
-    </Button>
-  );
-};
-
 export const BrowseButton = ({ side }: { side: Side }) => {
   const responsive = useResponsive();
   const { startBrowsing } = useRepertoireState((s) => ({
@@ -576,11 +531,11 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         c.shadow(0, 8, 16, 0, "rgba(0, 0, 0, 0.5)"),
         c.grow,
         c.rounded,
-        c.overflowHidden,
         c.bg(inverse ? c.grays[4] : c.grays[95]),
         // c.px(12),
         c.pt(topPadding),
-        c.relative
+        c.relative,
+        c.zIndex(side === "white" ? 20 : 10)
       )}
     >
       <View style={s(c.absolute, c.top(topPadding), c.right(padding))}>
@@ -713,7 +668,9 @@ const SideProgressReport = ({ side }: { side: Side }) => {
         // c.borderTop(`1px solid ${inverse ? c.grays[15] : c.grays[80]}`)
       )}
     >
-      <View style={s(c.row, c.justifyBetween, c.alignEnd)}>
+      <View
+        style={s(c.row, c.justifyBetween, c.alignEnd, c.zIndex(12), c.relative)}
+      >
         <CMText
           style={s(
             c.fg(secondaryTextColor),
@@ -735,30 +692,9 @@ const SideProgressReport = ({ side }: { side: Side }) => {
             </>
           )*/}
         </CMText>
-        <View style={s(c.column, c.alignEnd, c.mb(-4))}>
-          <CMText
-            style={s(
-              c.fg(secondaryTextColor),
-              c.fontSize(12),
-              c.weightSemiBold
-            )}
-          >
-            Goal
-          </CMText>
-          <Spacer height={0} />
-          <CMText
-            style={s(
-              c.weightBold,
-              c.fg(secondaryTextColor),
-              c.weightBold,
-              c.fontSize(14)
-            )}
-          >
-            1 in {Math.round(1 / (threshold / 100))} games
-          </CMText>
-        </View>
+        <CoverageGoal textColor={secondaryTextColor} />
       </View>
-      <Spacer height={12} />
+      <Spacer height={8} />
       <View
         style={s(
           c.fullWidth,
@@ -777,18 +713,11 @@ const SideProgressReport = ({ side }: { side: Side }) => {
           </CMText>
         </View>
       )}
-      {!completed ? (
+      {!completed && (
         <>
           <Spacer height={8} />
           <View style={s(c.selfEnd)}>
             <SeeBiggestMissButton side={side} />
-          </View>
-        </>
-      ) : (
-        <>
-          <Spacer height={8} />
-          <View style={s(c.selfEnd)}>
-            <UpdateCoverageGoalButton side={side} />
           </View>
         </>
       )}
