@@ -39,23 +39,25 @@ export const GameResultsBar = ({
       )}
     >
       {gameResults.white / total > threshold && !hideNumbers && (
-        <CMText
-          style={s(
-            c.fg(c.grays[10]),
-            c.weightBold,
-            c.fontSize(fontSize),
-            c.pr(2)
+        <>
+          <CMText
+            style={s(
+              c.fg(c.grays[10]),
+              c.weightBold,
+              c.fontSize(fontSize),
+              c.pr(2)
+            )}
+          >
+            {formatWinPercentage(gameResults.white / total)}
+          </CMText>
+          {activeSide === "white" && (
+            <MovementIndicator
+              side={"white"}
+              results={gameResults}
+              previous={previousResults}
+            />
           )}
-        >
-          {formatWinPercentage(gameResults.white / total)}
-        </CMText>
-      )}
-      {activeSide === "white" && (
-        <MovementIndicator
-          side={"white"}
-          results={gameResults}
-          previous={previousResults}
-        />
+        </>
       )}
     </View>
   );
@@ -71,11 +73,25 @@ export const GameResultsBar = ({
       )}
     >
       {gameResults.black / total > threshold && !hideNumbers && (
-        <CMText
-          style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(fontSize))}
-        >
-          {formatWinPercentage(gameResults.black / total)}
-        </CMText>
+        <>
+          <CMText
+            style={s(
+              c.fg(c.grays[90]),
+              c.weightBold,
+              c.fontSize(fontSize),
+              c.pr(2)
+            )}
+          >
+            {formatWinPercentage(gameResults.black / total)}
+          </CMText>
+          {activeSide === "black" && (
+            <MovementIndicator
+              side={"black"}
+              results={gameResults}
+              previous={previousResults}
+            />
+          )}
+        </>
       )}
     </View>
   );
@@ -133,18 +149,15 @@ export const MovementIndicator = ({
   let icon = null;
   let color = null;
   let threshold = 0.02;
-  if (
-    getWinRate(results, side) <
-    getWinRate(results, otherSide(side)) - threshold
-  ) {
+  let oldWr = getWinRate(previous, side);
+  let newWr = getWinRate(results, side);
+  console.log({ oldWr, newWr });
+  if (newWr < oldWr - threshold) {
     icon = "fa-sharp fa-arrow-down-right";
-    color = c.reds[45];
-  } else if (
-    getWinRate(results, side) >
-    getWinRate(results, otherSide(side)) + threshold
-  ) {
+    color = side === "white" ? c.reds[45] : c.reds[55];
+  } else if (newWr > oldWr + threshold) {
     icon = "fa-sharp fa-arrow-up-right";
-    color = c.greens[40];
+    color = side === "white" ? c.greens[40] : c.greens[55];
   }
   if (!icon) {
     return null;
