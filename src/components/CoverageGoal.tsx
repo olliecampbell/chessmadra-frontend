@@ -86,7 +86,7 @@ export const CoverageGoal = ({
       style={s(c.column, c.alignEnd, c.relative)}
       ref={ref}
       onPress={() => {
-        setIsOpen(true);
+        setIsOpen(!isOpen);
       }}
     >
       <CMText style={s(c.fg(textColor), c.fontSize(12), c.weightSemiBold)}>
@@ -114,7 +114,7 @@ export const CoverageGoal = ({
           c.zIndex(4),
           c.right(0),
           fromTop ? c.bottom("calc(100% + 12px)") : c.top("calc(100% + 8px)"),
-          c.bg(c.grays[90]),
+          c.bg(c.grays[100]),
           c.br(4),
           c.cardShadow,
           c.px(12),
