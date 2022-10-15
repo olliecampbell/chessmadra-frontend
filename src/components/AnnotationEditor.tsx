@@ -35,11 +35,9 @@ import {
 } from "app/utils/app_state";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
-import { TableResponseScoreSource } from "./RepertoireEditingView";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { css } from "@emotion/react";
 import {
   getMoveRating,
   getMoveRatingIcon,

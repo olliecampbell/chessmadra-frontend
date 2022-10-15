@@ -37,7 +37,7 @@ import { SideSettingsModal } from "./SideSettingsModal";
 import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
-import { ProfileModal } from "./ProfileModal";
+import { ProfileModal, THRESHOLD_OPTIONS } from "./ProfileModal";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { CoverageBar } from "./CoverageBar";
@@ -777,9 +777,14 @@ export const getExpectedNumberOfMovesForTarget = (target: number) => {
   if (target === 4) {
     return 32;
   }
-  let [a, b] = [67.12355793, -0.27985595];
+  if (target === 2) {
+    return 72;
+  }
+  let [a, b] = [546, -1.26];
 
-  return a * Math.exp(b * target) * 2;
-  // return 10.8396 + 159.7416 * Math.exp(-0.9198313 * target);
-  // return 134.471 * Math.exp(-0.596455 * target);
+  return a * Math.exp(b * target);
 };
+// THRESHOLD_OPTIONS.forEach((o) => {
+//   console.log("_____THRESHOLDS______");
+//   console.log(o, getExpectedNumberOfMovesForTarget(o));
+// });

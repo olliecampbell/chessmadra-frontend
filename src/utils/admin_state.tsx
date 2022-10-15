@@ -7,6 +7,7 @@ import { Repertoire } from "./repertoire";
 
 export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
+  fetchAudit: () => void;
   fetchMoveAnnotationReviewQueue: () => void;
   acceptMoveAnnotation: (epd: string, san: string, userId: string) => void;
   editMoveAnnotation: (_: {

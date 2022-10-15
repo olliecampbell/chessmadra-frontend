@@ -17,6 +17,7 @@ import {
   some,
   take,
   findLast,
+  every,
   keys,
 } from "lodash-es";
 import {
@@ -47,6 +48,15 @@ import client from "app/client";
 import { createQuick } from "./quick";
 import { Animated } from "react-native";
 import { getExpectedNumberOfMovesForTarget } from "app/components/RepertoireOverview";
+import { TableResponse } from "app/components/RepertoireMovesTable";
+import {
+  EFFECTIVENESS_WEIGHTS_MASTERS,
+  EFFECTIVENESS_WEIGHTS_PEERS,
+  PLAYRATE_WEIGHTS,
+  scoreTableResponses,
+  shouldUsePeerRates,
+} from "./table_scoring";
+import { getMoveRating } from "./move_inaccuracy";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -61,6 +71,7 @@ export enum BrowsingTab {
 }
 
 export interface BrowsingState {
+  getTableResponses: () => TableResponse[];
   hasAnyPendingResponses?: boolean;
   quick: (fn: (_: BrowsingState) => void) => void;
   readOnly: boolean;
@@ -235,6 +246,106 @@ export const getInitialBrowsingState = (
             useNativeDriver: true,
           }).start();
         });
+      }),
+    getTableResponses: () =>
+      get(([s, rs, gs]) => {
+        let threshold = gs.userState.getCurrentThreshold();
+        let currentSide: Side =
+          s.chessboardState.position.turn() === "b" ? "black" : "white";
+        let currentEpd = s.chessboardState.getCurrentEpd();
+        let positionReport = s.getCurrentPositionReport();
+        let _tableResponses: Record<string, TableResponse> = {};
+        positionReport?.suggestedMoves.map((sm) => {
+          _tableResponses[sm.sanPlus] = {
+            suggestedMove: cloneDeep(sm),
+          };
+        });
+        let existingMoves =
+          rs.repertoire[s.activeSide].positionResponses[
+            s.chessboardState.getCurrentEpd()
+          ];
+        existingMoves?.map((r) => {
+          if (_tableResponses[r.sanPlus]) {
+            _tableResponses[r.sanPlus].repertoireMove = r;
+          } else {
+            _tableResponses[r.sanPlus] = { repertoireMove: r };
+          }
+        });
+        let ownSide = currentSide === s.activeSide;
+        const usePeerRates = shouldUsePeerRates(positionReport);
+        let tableResponses = scoreTableResponses(
+          values(_tableResponses),
+          positionReport,
+          currentSide,
+          currentEpd,
+          ownSide
+            ? usePeerRates
+              ? EFFECTIVENESS_WEIGHTS_PEERS
+              : EFFECTIVENESS_WEIGHTS_MASTERS
+            : PLAYRATE_WEIGHTS
+        );
+        let currentLineIncidence = s.getIncidenceOfCurrentLine();
+        tableResponses.forEach((tr) => {
+          if (tr.repertoireMove?.incidence) {
+            tr.incidence = tr.repertoireMove?.incidence;
+            return;
+          }
+          let moveIncidence = 0.0;
+          tr.incidence = currentLineIncidence * moveIncidence;
+          tr.incidenceUpperBound = tr.incidence;
+          if (ownSide) {
+            moveIncidence = 1.0;
+            tr.incidence = currentLineIncidence;
+            tr.incidenceUpperBound = tr.incidence;
+          } else if (tr.suggestedMove) {
+            moveIncidence = getPlayRate(tr.suggestedMove, positionReport);
+            tr.incidence = currentLineIncidence * moveIncidence;
+            tr.incidenceUpperBound =
+              currentLineIncidence * Math.min(1, moveIncidence + 0.03);
+          }
+          if (tr.suggestedMove?.sanPlus === "Be7") {
+            console.log({
+              playRate: getPlayRate(tr.suggestedMove, positionReport),
+              positionReport,
+              suggestedMove: tr.suggestedMove,
+              tr,
+            });
+          }
+        });
+        let coverage = rs.repertoireGrades[s.activeSide].coverage;
+        tableResponses.forEach((tr) => {
+          let epd = tr.suggestedMove?.epdAfter;
+          if (coverage[epd]) {
+            tr.coverage = coverage[epd];
+          } else {
+            // tr.coverage = tr.incidence;
+          }
+        });
+        tableResponses.forEach((tr) => {
+          let moveRating = getMoveRating(
+            positionReport?.stockfish,
+            tr.suggestedMove?.stockfish,
+            currentSide
+          );
+          tr.moveRating = moveRating;
+        });
+        if (ownSide && tableResponses.length >= 3) {
+          tableResponses.forEach((tr, i) => {
+            let allOthersInaccurate = every(tableResponses, (tr, j) => {
+              return !isNil(tr.moveRating) || j === i;
+            });
+            if (allOthersInaccurate && isNil(tr.moveRating)) {
+              tr.bestMove = true;
+            }
+          });
+        }
+        if (!ownSide) {
+          tableResponses.forEach((tr) => {
+            let incidence = tr.incidenceUpperBound ?? tr.incidence;
+            tr.needed = incidence * 100 > threshold;
+          });
+        }
+        return tableResponses;
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {

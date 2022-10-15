@@ -36,11 +36,9 @@ import {
 } from "app/utils/app_state";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
-import { TableResponseScoreSource } from "./RepertoireEditingView";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { css } from "@emotion/react";
 import {
   getMoveRating,
   getMoveRatingIcon,
@@ -50,6 +48,7 @@ import {
 import { quick } from "app/utils/app_state";
 import { AnnotationEditor, MAX_ANNOTATION_LENGTH } from "./AnnotationEditor";
 import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
+import { TableResponseScoreSource } from "app/utils/table_scoring";
 
 const DELETE_WIDTH = 30;
 
