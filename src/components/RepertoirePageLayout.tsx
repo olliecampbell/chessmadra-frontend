@@ -191,7 +191,7 @@ export const RepertoirePageLayout = ({
           )}
         >
           {!repertoireLoading ? (
-            <View style={s(c.pb(isMobile ? 92 : 128), c.center)}>
+            <View style={s(c.pb(isMobile ? 92 : 180), c.center)}>
               {children}
             </View>
           ) : (

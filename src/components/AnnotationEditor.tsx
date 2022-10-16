@@ -12,6 +12,7 @@ import {
   isNil,
   last,
   every,
+  throttle,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -33,7 +34,7 @@ import {
   useRepertoireState,
   useUserState,
 } from "app/utils/app_state";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
@@ -45,6 +46,7 @@ import {
   MoveRating,
 } from "app/utils/move_inaccuracy";
 import { quick } from "app/utils/app_state";
+import { useFadeAnimation } from "app/hooks/useFadeAnimation";
 
 export const MAX_ANNOTATION_LENGTH = 300;
 
@@ -56,11 +58,22 @@ export const AnnotationEditor = ({
   onUpdate: (annotation: string) => void;
 }) => {
   const [focus, setFocus] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [annotation, setAnnotation] = useState(_annotation);
+  const { fadeStyling } = useFadeAnimation(loading, { duration: 300 });
+  let lastTimer = useRef(null);
   const updateDebounced = useCallback(
-    debounce(
+    throttle(
       (annotation: string) => {
+        setLoading(true);
         onUpdate(annotation);
+        if (lastTimer.current) {
+          window.clearTimeout(lastTimer.current);
+          lastTimer.current = null;
+        }
+        lastTimer.current = window.setTimeout(() => {
+          setLoading(false);
+        }, 400);
       },
       400,
       { leading: true }
@@ -74,9 +87,15 @@ export const AnnotationEditor = ({
           c.absolute,
           c.bottom(12),
           c.right(12),
+          c.left(12),
+          c.row,
+          c.justifyBetween,
           c.opacity(focus ? 100 : 0)
         )}
       >
+        <CMText style={s(c.fg(c.grays[50]), c.opacity(fadeStyling))}>
+          <i className="fas fa-circle-notch fa-spin"></i>
+        </CMText>
         <CMText
           style={s(
             annotation?.length > MAX_ANNOTATION_LENGTH && c.weightBold,

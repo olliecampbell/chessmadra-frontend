@@ -1,11 +1,11 @@
 import { c, s } from "app/styles";
 import React from "react";
-import { Text } from "react-native";
+import { Animated, Text } from "react-native";
 
 export const CMText = (props) => {
   let { children } = props;
   return (
-    <Text
+    <Animated.Text
       {...{
         props,
         style: s(
@@ -19,6 +19,6 @@ export const CMText = (props) => {
       }}
     >
       {children}
-    </Text>
+    </Animated.Text>
   );
 };
