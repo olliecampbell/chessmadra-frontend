@@ -867,10 +867,13 @@ function getLastMoveWithNumber(id: string) {
   return `${n}. ${m}`;
 }
 
-function mapSides<T, Y>(bySide: BySide<T>, fn: (x: T) => Y): BySide<Y> {
+function mapSides<T, Y>(
+  bySide: BySide<T>,
+  fn: (x: T, side: Side) => Y
+): BySide<Y> {
   return {
-    white: fn(bySide["white"]),
-    black: fn(bySide["black"]),
+    white: fn(bySide["white"], "white"),
+    black: fn(bySide["black"], "black"),
   };
 }
 function getMoveNumber(id: string) {

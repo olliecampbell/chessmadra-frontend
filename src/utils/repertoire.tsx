@@ -53,7 +53,6 @@ export function otherSide(side: Side) {
 
 export interface RepertoireSide {
   positionResponses: Record<string, RepertoireMove[]>;
-  side: Side;
 }
 
 export function getAllRepertoireMoves(r: Repertoire): RepertoireMove[] {
