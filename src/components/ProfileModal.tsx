@@ -90,7 +90,7 @@ export const ProfileModal = () => {
   );
 };
 
-export const THRESHOLD_OPTIONS = [4, 2, 1, 0.8, 0.4].map((x) => x / 100);
+export const THRESHOLD_OPTIONS = [4, 2, 1, 0.8, 0.5].map((x) => x / 100);
 
 export const ProfileTargetDepthSelector = ({}: {}) => {
   const [user, missThreshold] = useUserState((s) => [
