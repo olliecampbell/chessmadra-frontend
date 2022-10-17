@@ -376,6 +376,9 @@ export const getAppState = () => {
   return useAppStateInternal.getState();
 };
 
+// @ts-ignore
+window.getAppState = getAppState;
+
 export const quick = (fn: (_: AppState) => any) => {
   getAppState().quick(fn);
 };

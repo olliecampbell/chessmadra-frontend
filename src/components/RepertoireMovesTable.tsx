@@ -109,7 +109,7 @@ export const RepertoireMovesTable = ({
     isMobile,
   });
   let [expanded, setExpanded] = useState(false);
-  let MIN_TRUNCATED = isMobile ? 3 : 3;
+  let MIN_TRUNCATED = isMobile ? 1 : 1;
   let completed = currentIncidence < currentThreshold;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = [...responses];
@@ -131,7 +131,7 @@ export const RepertoireMovesTable = ({
       ) {
         return true;
       }
-      return i < MIN_TRUNCATED || r.repertoireMove || r.score > 0;
+      return i < MIN_TRUNCATED || r.repertoireMove || (myTurn && r.score > 0);
     }) as TableResponse[];
   }
   let numTruncated = responses.length - trimmedResponses.length;
@@ -893,7 +893,7 @@ const CoverageProgressBar = ({
     </View>
   );
   // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
-  if (incidence && incidence < threshold && !hasResponse) {
+  if (incidence < threshold && !hasResponse) {
     return (
       <View style={s(c.column)}>
         <CMText style={s(c.fg(c.grays[60]))}>Not needed</CMText>
