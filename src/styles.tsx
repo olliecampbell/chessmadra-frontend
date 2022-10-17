@@ -240,7 +240,7 @@ const genShades = (
   let maxSaturation = _maxSaturation ?? 80;
   let minLightness = 4;
   let maxLightness = 80;
-  for (let i = 0; i <= 100; i = i + 5) {
+  for (let i = 0; i <= 100; i = i + 1) {
     let lightness_y = easeInOutSine(i / 100);
     let saturation =
       minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;

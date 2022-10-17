@@ -425,6 +425,7 @@ export const Responses = React.memo(function Responses() {
                   Add more
                 </CMText>
               </Button>
+              {/*
               <Spacer width={12} />
               <Button
                 style={s(
@@ -443,6 +444,7 @@ export const Responses = React.memo(function Responses() {
                   Save to repertoire
                 </CMText>
               </Button>
+              */}
             </View>
           </View>
         </View>

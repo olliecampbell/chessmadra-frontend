@@ -15,7 +15,7 @@ import {
   useRepertoireState,
   quick,
 } from "app/utils/app_state";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Animated } from "react-native";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { BP, useResponsive } from "app/utils/useResponsive";
@@ -203,12 +203,14 @@ const AddPendingLineButton = () => {
     hasAnyPendingResponses,
     pendingLineHasConflictingMoves,
     currentLineIncidence,
+    showingPastGoalOverlay,
   ] = useBrowsingState(([s]) => [
     s.isAddingPendingLine,
     s.hasPendingLineToAdd,
     s.hasAnyPendingResponses,
     s.pendingLineHasConflictingMoves,
     s.getIncidenceOfCurrentLine(),
+    s.getShouldShowPastGoalOverlay(),
   ]);
   let [biggestMiss] = useRepertoireState((s) => [
     s.repertoireGrades[s.browsingState.activeSide]?.biggestMiss,
@@ -216,6 +218,29 @@ const AddPendingLineButton = () => {
   const isMobile = useIsMobile();
   let responsive = useResponsive();
   let minWidth = responsive.switch(100, [BP.lg, 160]);
+  console.log("____", c.purples[45]);
+  const buttonColorAnim = useRef(new Animated.Value(0.0)).current;
+  useEffect(() => {
+    const duration = 800;
+    if (showingPastGoalOverlay) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(buttonColorAnim, {
+            duration: duration,
+            useNativeDriver: false,
+            toValue: 1.0,
+          }),
+          Animated.timing(buttonColorAnim, {
+            duration: duration,
+            useNativeDriver: false,
+            toValue: 0.0,
+          }),
+        ])
+      ).start();
+    } else {
+      buttonColorAnim.setValue(0.0);
+    }
+  }, [showingPastGoalOverlay]);
   if (hasPendingLineToAdd || hasAnyPendingResponses) {
     return (
       <Button
@@ -224,7 +249,14 @@ const AddPendingLineButton = () => {
           c.buttons.primary,
           c.height(isMobile ? 36 : 54),
           c.selfStretch,
-          hasPendingLineToAdd ? c.bg(c.purples[45]) : c.bg(c.grays[45])
+          hasPendingLineToAdd
+            ? c.bg(
+                buttonColorAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [c.purples[45], c.purples[53]],
+                })
+              )
+            : c.bg(c.grays[45])
         )}
         isLoading={isAddingPendingLine}
         loaderProps={{ color: c.grays[75] }}
