@@ -97,7 +97,7 @@ export const CoverageGoal = ({
         <CMText
           style={s(c.weightBold, c.fg(textColor), c.weightBold, c.fontSize(14))}
         >
-          1 in {Math.round(1 / (threshold / 100))} games
+          1 in {Math.round(1 / threshold)} games
         </CMText>
         <Spacer width={4} />
         <i
@@ -160,7 +160,7 @@ export const CoverageGoal = ({
                       !active ? c.weightSemiBold : c.weightHeavy
                     )}
                   >
-                    1 in {Math.round(1 / (r / 100))} games
+                    1 in {Math.round(1 / r)} games
                   </CMText>
                   <Spacer width={12} grow />
                   {recommendedDepth == r && (

@@ -66,7 +66,7 @@ export const getInitialUserState = (
         // let biggestMissIncidence =
         //   (appState.repertoireState.repertoireGrades[side]?.biggestMiss
         //     ?.incidence ?? 1.0) * 100;
-        return s.user?.missThreshold ?? DEFAULT_THRESHOLD;
+        return (s.user?.missThreshold ?? DEFAULT_THRESHOLD) / 100;
       });
     },
     getUserRatingDescription: () => {
@@ -108,7 +108,7 @@ export const getInitialUserState = (
       }),
     setTargetDepth: (t: number) => {
       set(([s]) => {
-        s.user.missThreshold = t;
+        s.user.missThreshold = t * 100;
         trackEvent(`user.update_miss_threshold`, { miss_threshold: t });
         s.updateUserRatingSettings();
       });

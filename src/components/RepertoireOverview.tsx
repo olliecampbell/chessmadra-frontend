@@ -774,15 +774,15 @@ function getRepertoireSideCardPadding(responsive) {
 }
 
 export const getExpectedNumberOfMovesForTarget = (target: number) => {
-  if (target === 4) {
+  if (target === 0.04) {
     return 32;
   }
-  if (target === 2) {
+  if (target === 0.02) {
     return 72;
   }
   let [a, b] = [546, -1.26];
 
-  return a * Math.exp(b * target);
+  return a * Math.exp(b * target * 100);
 };
 // THRESHOLD_OPTIONS.forEach((o) => {
 //   console.log("_____THRESHOLDS______");

@@ -183,7 +183,9 @@ const CurrentLineProgression = () => {
             </>
           )*/}
         </CMText>
-        {responsive.bp >= BP.md && <CoverageGoal textColor={c.grays[90]} fromTop/>}
+        {responsive.bp >= BP.md && (
+          <CoverageGoal textColor={c.grays[90]} fromTop />
+        )}
       </Animated.View>
       <Spacer height={8} />
       <View style={s(c.fullWidth, c.height(height))}>
@@ -197,14 +199,12 @@ const CurrentLineProgression = () => {
 const AddPendingLineButton = () => {
   const [
     isAddingPendingLine,
-    addPendingLine,
     hasPendingLineToAdd,
     hasAnyPendingResponses,
     pendingLineHasConflictingMoves,
     currentLineIncidence,
   ] = useBrowsingState(([s]) => [
     s.isAddingPendingLine,
-    s.addPendingLine,
     s.hasPendingLineToAdd,
     s.hasAnyPendingResponses,
     s.pendingLineHasConflictingMoves,
@@ -229,17 +229,9 @@ const AddPendingLineButton = () => {
         isLoading={isAddingPendingLine}
         loaderProps={{ color: c.grays[75] }}
         onPress={() => {
-          if (hasPendingLineToAdd) {
-            if (pendingLineHasConflictingMoves) {
-              quick((s) => {
-                s.repertoireState.browsingState.editingState.addConflictingMoveModalOpen =
-                  true;
-              });
-            } else {
-              trackEvent("repertoire.add_pending_line");
-              addPendingLine();
-            }
-          }
+          quick((s) => {
+            s.repertoireState.browsingState.requestToAddCurrentLine();
+          });
         }}
       >
         <CMText style={s(c.buttons.primary.textStyles, c.row, c.alignCenter)}>

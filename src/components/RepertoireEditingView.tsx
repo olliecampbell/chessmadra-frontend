@@ -40,6 +40,7 @@ import {
   useRepertoireState,
   useBrowsingState,
   useUserState,
+  quick,
 } from "app/utils/app_state";
 import React, { useEffect, useState } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
@@ -60,6 +61,8 @@ import { BP, useResponsive } from "app/utils/useResponsive";
 import { getMoveRating } from "app/utils/move_inaccuracy";
 import { plural, pluralize } from "app/utils/pluralize";
 import { shouldUsePeerRates } from "app/utils/table_scoring";
+import { Button } from "./Button";
+import { AnimatedCheckmark } from "./AnimatedCheckmark";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const MoveLog = () => {
@@ -303,6 +306,7 @@ export const Responses = React.memo(function Responses() {
     currentLineIncidence,
     hasPendingLine,
     tableResponses,
+    showingPastCoverageGoal,
   ] = useBrowsingState(([s, rs]) => [
     s.getCurrentPositionReport(),
     s.chessboardState.position,
@@ -311,7 +315,8 @@ export const Responses = React.memo(function Responses() {
     s.chessboardState.moveLog,
     s.getIncidenceOfCurrentLine(),
     s.hasPendingLineToAdd,
-    s.getTableResponses(),
+    s.tableResponses,
+    s.getShouldShowPastGoalOverlay(),
   ]);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let usePeerRates = shouldUsePeerRates(positionReport);
@@ -347,8 +352,9 @@ export const Responses = React.memo(function Responses() {
         capture: true,
       });
     };
-  }, []);
+  }, [hasPendingLine]);
   const responsive = useResponsive();
+  const checkmarkSize = 30;
   return (
     <View style={s(c.column, c.constrainWidth)}>
       {debugUi && (
@@ -356,58 +362,118 @@ export const Responses = React.memo(function Responses() {
           Current line incidence: {(currentLineIncidence * 100).toFixed(2)}%
         </CMText>
       )}
-      {currentLineIncidence * 100 < currentThreshold && !ownSide && (
+      {showingPastCoverageGoal && (
         <View
           style={s(
             c.row,
-            c.alignCenter,
+            c.alignStart,
+            c.bg(c.colors.cardBackground),
+            c.br(2),
+            c.px(16),
+            c.py(16),
             c.maxWidth(400),
-            c.selfCenter,
-            c.pb(responsive.switch(8, [BP.lg, 24]))
+            c.selfCenter
           )}
         >
-          <i
-            className="fa fa-check"
-            style={s(c.fg(c.purples[55]), c.fontSize(24))}
-          />
+          <View style={s(c.size(checkmarkSize))}>
+            <AnimatedCheckmark />
+          </View>
           <Spacer width={12} />
-          <CMText
-            style={s(
-              c.fg(c.colors.textPrimary),
-              c.lineHeight("1.3rem"),
-              c.weightSemiBold
-            )}
-          >
-            This line exceeds your coverage target.{" "}
-            {hasPendingLine
-              ? "You can save this line, then go to your next biggest miss"
-              : "You can keep adding responses, but you may be better off addressing other gaps in your repertoire."}
-          </CMText>
+          <View style={s(c.column, c.flexShrink(1))}>
+            <CMText
+              style={s(
+                c.fg(c.colors.textPrimary),
+                c.fontSize(18),
+                c.lineHeight("1.3rem"),
+                c.weightBold,
+                c.height(checkmarkSize),
+                c.column,
+                c.justifyCenter
+              )}
+            >
+              Looks good!
+            </CMText>
+            <Spacer height={4} />
+            <CMText
+              style={s(
+                c.fg(c.colors.textSecondary),
+                c.lineHeight("1.3rem"),
+                c.weightRegular
+              )}
+            >
+              This line has reached your coverage goal. You don't need to add
+              any more moves to this line.
+            </CMText>
+            <Spacer height={12} />
+            <View style={s(c.row, c.justifyEnd, c.alignCenter)}>
+              <Button
+                style={s(
+                  c.buttons.basic,
+                  // c.border(`1px solid ${c.grays[40]}`),
+                  c.bg(c.grays[30]),
+                  c.px(16),
+                  c.py(12)
+                )}
+                onPress={() => {
+                  quick((s) => {
+                    s.repertoireState.browsingState.dismissedPastCoverageGoalNotification =
+                      true;
+                  });
+                }}
+              >
+                <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
+                  Add more
+                </CMText>
+              </Button>
+              <Spacer width={12} />
+              <Button
+                style={s(
+                  c.buttons.basic,
+                  c.bg(c.purples[50]),
+                  c.px(16),
+                  c.py(12)
+                )}
+                onPress={() => {
+                  quick((s) => {
+                    s.repertoireState.browsingState.requestToAddCurrentLine();
+                  });
+                }}
+              >
+                <CMText style={s(c.fg(c.grays[100]), c.weightBold)}>
+                  Save to repertoire
+                </CMText>
+              </Button>
+            </View>
+          </View>
         </View>
       )}
-      {!isEmpty(youCanPlay) && (
-        <View style={s()} key={`you-can-play-${currentEpd}`}>
-          <RepertoireMovesTable
-            {...{
-              header: getResponsesHeader(currentLine, isEmpty(yourMoves)),
-              usePeerRates,
-              activeSide,
-              side,
-              responses: youCanPlay,
-            }}
-          />
-        </View>
-      )}
-      {!isEmpty(prepareFor) && (
-        <RepertoireMovesTable
-          {...{
-            header: "Prepare for...",
-            activeSide,
-            side,
-            responses: prepareFor,
-            myMoves: false,
-          }}
-        />
+      {!showingPastCoverageGoal && (
+        <>
+          {!isEmpty(youCanPlay) && (
+            <View style={s()} key={`you-can-play-${currentEpd}`}>
+              <RepertoireMovesTable
+                {...{
+                  header: getResponsesHeader(currentLine, isEmpty(yourMoves)),
+                  usePeerRates,
+                  activeSide,
+                  side,
+                  responses: youCanPlay,
+                }}
+              />
+            </View>
+          )}
+          {!isEmpty(prepareFor) && (
+            <RepertoireMovesTable
+              {...{
+                header: "Prepare for...",
+                activeSide,
+                side,
+                responses: prepareFor,
+                myMoves: false,
+              }}
+            />
+          )}
+        </>
       )}
       {!ownSide &&
         (() => {

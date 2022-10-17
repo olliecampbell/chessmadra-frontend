@@ -90,7 +90,7 @@ export const ProfileModal = () => {
   );
 };
 
-export const THRESHOLD_OPTIONS = [4, 2, 1, 0.8, 0.4];
+export const THRESHOLD_OPTIONS = [4, 2, 1, 0.8, 0.4].map((x) => x / 100);
 
 export const ProfileTargetDepthSelector = ({}: {}) => {
   const [user, missThreshold] = useUserState((s) => [
@@ -151,7 +151,7 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
                     !active ? c.weightSemiBold : c.weightHeavy
                   )}
                 >
-                  1 in {Math.round(1 / (r / 100))} games
+                  1 in {Math.round(1 / r)} games
                 </CMText>
                 <Spacer width={12} grow />
                 {recommendedDepth == r && (

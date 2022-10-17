@@ -57,6 +57,7 @@ import {
   shouldUsePeerRates,
 } from "./table_scoring";
 import { getMoveRating } from "./move_inaccuracy";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -71,7 +72,12 @@ export enum BrowsingTab {
 }
 
 export interface BrowsingState {
-  getTableResponses: () => TableResponse[];
+  showMetGoal?: boolean;
+  dismissedPastCoverageGoalNotification: boolean;
+  isPastCoverageGoal?: boolean;
+  updateTableResponses: () => void;
+  tableResponses: TableResponse[];
+  requestToAddCurrentLine: () => void;
   hasAnyPendingResponses?: boolean;
   quick: (fn: (_: BrowsingState) => void) => void;
   readOnly: boolean;
@@ -96,6 +102,7 @@ export interface BrowsingState {
   isAddingPendingLine: boolean;
   getIncidenceOfCurrentLine: () => number;
   getLineIncidences: (_: GetIncidenceOptions) => number[];
+  getShouldShowPastGoalOverlay: () => boolean;
   hasPendingLineToAdd: boolean;
   pendingLineHasConflictingMoves?: boolean;
   fetchNeededPositionReports: () => void;
@@ -159,6 +166,7 @@ export const getInitialBrowsingState = (
   let initialState = {
     ...createQuick(setOnly),
     readOnly: false,
+    dismissedPastCoverageGoalNotification: false,
     hasPendingLineToAdd: false,
     selectedTab: BrowsingTab.Responses,
     isAddingPendingLine: false,
@@ -169,6 +177,7 @@ export const getInitialBrowsingState = (
       addConflictingMoveModalOpen: false,
     },
     activeSide: "white",
+    tableResponses: [],
     repertoireProgressState: {
       white: createEmptyRepertoireProgressState(),
       black: createEmptyRepertoireProgressState(),
@@ -179,7 +188,7 @@ export const getInitialBrowsingState = (
           let progressState = s.repertoireProgressState[side];
           let threshold = gs.userState.getCurrentThreshold();
           let biggestMissIncidence =
-            rs.repertoireGrades[side]?.biggestMiss?.incidence * 100;
+            rs.repertoireGrades[side]?.biggestMiss?.incidence;
           let numMoves = rs.numResponsesAboveThreshold[side];
           let completed = biggestMissIncidence < threshold;
           progressState.completed = completed;
@@ -196,9 +205,9 @@ export const getInitialBrowsingState = (
           let savedProgress = completed ? 100 : getProgress(numMoves);
           let numNew = values(s.pendingResponses).length;
           let numNewAboveThreshold = values(s.pendingResponses).filter(
-            (m) => m.incidence > threshold / 100
+            (m) => m.incidence > threshold
           ).length;
-          progressState.showPopover = numNew > 0;
+          progressState.showPopover = numNew > 0 && !completed;
           progressState.pendingMoves = numNew;
           let newProgress =
             getProgress(numMoves + numNewAboveThreshold) - savedProgress;
@@ -247,9 +256,14 @@ export const getInitialBrowsingState = (
           }).start();
         });
       }),
-    getTableResponses: () =>
+    updateTableResponses: () =>
       get(([s, rs, gs]) => {
+        if (!s.activeSide) {
+          s.tableResponses = [];
+          return;
+        }
         let threshold = gs.userState.getCurrentThreshold();
+        console.log({ threshold });
         let currentSide: Side =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         let currentEpd = s.chessboardState.getCurrentEpd();
@@ -300,8 +314,8 @@ export const getInitialBrowsingState = (
           } else if (tr.suggestedMove) {
             moveIncidence = getPlayRate(tr.suggestedMove, positionReport);
             tr.incidence = currentLineIncidence * moveIncidence;
-            tr.incidenceUpperBound =
-              currentLineIncidence * Math.min(1, moveIncidence + 0.03);
+            // TODO: better check here
+            tr.incidenceUpperBound = currentLineIncidence * moveIncidence;
           }
           if (tr.suggestedMove?.sanPlus === "Be7") {
             console.log({
@@ -342,10 +356,33 @@ export const getInitialBrowsingState = (
         if (!ownSide) {
           tableResponses.forEach((tr) => {
             let incidence = tr.incidenceUpperBound ?? tr.incidence;
-            tr.needed = incidence * 100 > threshold;
+            console.log({ incidence, threshold });
+            tr.needed = incidence > threshold;
           });
         }
-        return tableResponses;
+        s.tableResponses = tableResponses;
+        let noneNeeded = every(tableResponses, (tr) => !tr.needed);
+        s.isPastCoverageGoal =
+          s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
+        if (s.isPastCoverageGoal) {
+          console.log("This got past the coverage goal check");
+          console.log({
+            threshold,
+            currentLineIncidence: s.getIncidenceOfCurrentLine(),
+            noneNeeded,
+          });
+        }
+        if (!s.isPastCoverageGoal) {
+          s.dismissedPastCoverageGoalNotification = false;
+        }
+      }),
+    getShouldShowPastGoalOverlay: () =>
+      set(([s, rs]) => {
+        return (
+          s.isPastCoverageGoal &&
+          !s.dismissedPastCoverageGoalNotification &&
+          s.hasPendingLineToAdd
+        );
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
@@ -392,12 +429,24 @@ export const getInitialBrowsingState = (
               reports.forEach((report) => {
                 rs.positionReports[report.epd] = report;
               });
+              s.updateTableResponses();
               s.fetchNeededPositionReports();
             });
           })
           .finally(() => {
             // set(([s]) => {});
           });
+      }),
+    requestToAddCurrentLine: () =>
+      set(([s, rs]) => {
+        if (s.hasPendingLineToAdd) {
+          if (s.pendingLineHasConflictingMoves) {
+            s.editingState.addConflictingMoveModalOpen = true;
+          } else {
+            trackEvent("repertoire.add_pending_line");
+            s.addPendingLine();
+          }
+        }
       }),
     onEditingPositionUpdate: () =>
       set(([s, rs]) => {
@@ -468,6 +517,7 @@ export const getInitialBrowsingState = (
         );
         s.fetchNeededPositionReports();
         s.updateRepertoireProgress();
+        s.updateTableResponses();
       }, "onEditingPositionUpdate"),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {

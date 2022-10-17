@@ -96,10 +96,9 @@ export const RepertoireMovesTable = ({
 }) => {
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let anyNeeded = some(responses, (m) => m.needed);
-  console.log({ anyNeeded });
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let [currentIncidence] = useBrowsingState(([s]) => [
-    s.getIncidenceOfCurrentLine() * 100,
+    s.getIncidenceOfCurrentLine(),
   ]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
@@ -866,7 +865,7 @@ const CoverageProgressBar = ({
   tableResponse: TableResponse;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
-  const threshold = useUserState((s) => s.getCurrentThreshold()) / 100;
+  const threshold = useUserState((s) => s.getCurrentThreshold());
   let epdAfter =
     tableResponse.suggestedMove?.epdAfter ??
     tableResponse.repertoireMove?.epdAfter;
@@ -903,11 +902,9 @@ const CoverageProgressBar = ({
     );
   }
   let completed = coverage < threshold;
-  const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(
-    threshold * 100
-  );
+  const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(threshold);
   const numMovesNeededForCurrentMissIncidence =
-    getExpectedNumberOfMovesForTarget(coverage * 100);
+    getExpectedNumberOfMovesForTarget(coverage);
   let minProgress = 12;
   let progress = clamp(
     (numMovesNeededForCurrentMissIncidence / expectedNumMovesNeeded) * 100,
