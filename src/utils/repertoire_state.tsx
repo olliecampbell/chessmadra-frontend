@@ -813,10 +813,11 @@ export const getInitialRepertoireState = (
                 }
               }
               s.onRepertoireUpdate();
-              // s.blah();
               // s.startBrowsing("white");
               // s.browsingState.chessboardState.playPgn(
-              //   "1.e4 d5 2.exd5 Qxd5 3.Nc3"
+              //   lineToPgn([
+              //
+              //   ])
               // );
             });
           });

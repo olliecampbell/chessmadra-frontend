@@ -78,6 +78,7 @@ export const CoverageBar = ({
           c.top(0),
           c.round,
           c.bottom(0),
+          c.opacity(progressState.pendingMoves > 0 ? 100 : 0),
           c.left(
             progressState.newProgressLeftAnim.interpolate({
               inputRange: [0, 100],

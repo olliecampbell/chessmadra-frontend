@@ -356,7 +356,6 @@ export const getInitialBrowsingState = (
         if (!ownSide) {
           tableResponses.forEach((tr) => {
             let incidence = tr.incidenceUpperBound ?? tr.incidence;
-            console.log({ incidence, threshold });
             tr.needed = incidence > threshold;
           });
         }
