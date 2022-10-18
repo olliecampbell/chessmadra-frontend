@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { HeadSiteMeta } from "./PageContainer";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
-import { BeatLoader } from "react-spinners";
+import { BeatLoader, GridLoader } from "react-spinners";
 import { Spacer } from "app/Space";
 import { Helmet } from "react-helmet";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
@@ -42,7 +42,7 @@ export const RepertoirePageLayout = ({
   centered?: boolean;
 }) => {
   const isMobile = useIsMobile();
-  const [repertoireLoading, initState] = useRepertoireState((s) => [
+  let [repertoireLoading, initState] = useRepertoireState((s) => [
     s.repertoire === undefined,
     s.initState,
   ]);
@@ -90,7 +90,11 @@ export const RepertoirePageLayout = ({
         }}
       />
       <View
-        style={s(isMobile ? s(c.grow) : c.flexShrink(1), centered && c.grow)}
+        style={s(
+          isMobile ? s(c.grow) : c.flexShrink(1),
+          centered && c.grow,
+          repertoireLoading && c.grow
+        )}
       >
         <View
           style={s(
@@ -179,28 +183,30 @@ export const RepertoirePageLayout = ({
             </Pressable>
           </View>
         </View>
-        <View
-          style={s(
-            !isMobile && s(c.scrollY),
-            isMobile && s(c.grow),
-            c.center,
-            c.justifyStart,
-            c.flexShrink(1),
-            c.pt(isMobile ? 24 : 48),
-            centered && s(c.grow, c.justifyCenter)
-          )}
-        >
-          {!repertoireLoading ? (
+        {repertoireLoading ? (
+          <View style={s(c.grow, c.center)}>
+            <GridLoader color={c.purples[55]} size={20} />
+          </View>
+        ) : (
+          <View
+            style={s(
+              !isMobile && s(c.scrollY),
+              isMobile && s(c.grow),
+              c.center,
+              c.justifyStart,
+              c.flexShrink(1),
+              c.pt(isMobile ? 24 : 48),
+              centered && s(c.grow, c.justifyCenter)
+            )}
+          >
             <View style={s(c.pb(isMobile ? 92 : 180), c.center)}>
               {children}
             </View>
-          ) : (
-            <BeatLoader color={c.grays[100]} size={20} />
-          )}
-          {isMobile && <Spacer height={100} />}
-        </View>
+            {isMobile && <Spacer height={100} />}
+          </View>
+        )}
       </View>
-      {bottom}
+      {repertoireLoading ? null : bottom}
     </View>
   );
 };
