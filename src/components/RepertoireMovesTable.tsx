@@ -430,7 +430,6 @@ const Response = ({
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
-  let [annotation, setAnnotation] = useState(suggestedMove?.annotation);
 
   let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
@@ -441,11 +440,6 @@ const Response = ({
         previewMove(null);
       }
     );
-  useEffect(() => {
-    if (isEmpty(annotation)) {
-      setAnnotation(suggestedMove?.annotation);
-    }
-  }, [suggestedMove?.annotation]);
 
   if (editing) {
     return (
@@ -498,7 +492,7 @@ const Response = ({
             </CMText>
           </View>
           <AnnotationEditor
-            annotation={annotation}
+            annotation={suggestedMove?.annotation}
             onUpdate={(annotation) => {
               uploadMoveAnnotation({
                 epd: currentEpd,
@@ -528,8 +522,7 @@ const Response = ({
       newOpeningName = last(variations);
     }
   }
-  let annotationOrOpeningName =
-    renderAnnotation(suggestedMove?.annotation) ?? newOpeningName;
+  let annotation = renderAnnotation(suggestedMove?.annotation);
   let bestMoveTag = tableResponse.bestMove && (
     <CMText
       style={s(
@@ -576,7 +569,7 @@ const Response = ({
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
           <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            {editingMyMoves && (
+            {myTurn && (
               <Pressable
                 style={s(
                   c.px(12),
@@ -617,7 +610,7 @@ const Response = ({
                 ></i>
               </Pressable>
             )}
-            {!editingMyMoves && <Spacer width={8} />}
+            {!myTurn && <Spacer width={8} />}
             <View style={s(c.row, c.alignCenter, c.pl(4))}>
               <View style={s(c.row, c.alignCenter, c.minWidth(40))}>
                 {true && (
@@ -656,7 +649,7 @@ const Response = ({
               </View>
             </View>
             <Spacer width={12} />
-            {!isMobile ? (
+            {
               <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
                 <CMText
                   style={s(
@@ -665,12 +658,16 @@ const Response = ({
                     c.lineHeight("1.3rem")
                   )}
                 >
-                  {annotationOrOpeningName}
+                  {newOpeningName && (
+                    <>
+                      <b>{newOpeningName}</b>
+                      {!isMobile && <br />}
+                    </>
+                  )}
+                  {!isMobile && annotation}
                 </CMText>
               </View>
-            ) : (
-              <Spacer width={0} grow />
-            )}
+            }
             <View style={s(c.row, c.alignCenter)}>
               {intersperse(
                 sections.map((section, i) => {
@@ -700,10 +697,10 @@ const Response = ({
             </View>
           </View>
           <View style={s(c.column, c.pl(48), c.pr(12))}>
-            {isMobile && annotationOrOpeningName && (
+            {isMobile && annotation && (
               <View style={s(c.grow, c.pt(12), c.minWidth(0))}>
                 <CMText style={s(c.fg(c.grays[80]), c.fontSize(14))}>
-                  {annotationOrOpeningName}
+                  {annotation}
                 </CMText>
               </View>
             )}

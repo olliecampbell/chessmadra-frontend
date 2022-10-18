@@ -218,7 +218,6 @@ const AddPendingLineButton = () => {
   const isMobile = useIsMobile();
   let responsive = useResponsive();
   let minWidth = responsive.switch(100, [BP.lg, 160]);
-  console.log("____", c.purples[45]);
   const buttonColorAnim = useRef(new Animated.Value(0.0)).current;
   useEffect(() => {
     const duration = 800;
