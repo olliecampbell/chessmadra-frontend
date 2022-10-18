@@ -578,6 +578,7 @@ export const getInitialRepertoireState = (
                   sm.annotation = text;
                 }
               });
+              s.browsingState.onPositionUpdate();
             });
           });
       }),
