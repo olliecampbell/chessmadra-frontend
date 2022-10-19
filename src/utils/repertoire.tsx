@@ -93,7 +93,7 @@ export interface RepertoireGrade {
   coverage: Record<string, number>;
   // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
-  biggestMisses: RepertoireMiss[];
+  biggestMisses: Record<string, RepertoireMiss>;
 }
 
 export type OpeningIdentifier = string;

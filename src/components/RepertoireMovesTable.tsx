@@ -16,7 +16,12 @@ import {
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { formatIncidence, RepertoireMove, Side } from "app/utils/repertoire";
+import {
+  formatIncidence,
+  RepertoireMiss,
+  RepertoireMove,
+  Side,
+} from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { PositionReport, SuggestedMove } from "app/models";
@@ -49,10 +54,12 @@ import { quick } from "app/utils/app_state";
 import { AnnotationEditor, MAX_ANNOTATION_LENGTH } from "./AnnotationEditor";
 import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
 import { TableResponseScoreSource } from "app/utils/table_scoring";
+import { getCoverageProgress } from "app/utils/browsing_state";
 
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  biggestMiss?: RepertoireMiss;
   needed?: boolean;
   incidenceUpperBound?: number;
   coverage?: number;
@@ -292,7 +299,7 @@ let useSections = ({
           </>
         );
       },
-      header: "Popularity",
+      header: "Expected in",
     });
   }
   if (!myTurn) {
@@ -899,20 +906,28 @@ const CoverageProgressBar = ({
   let epdAfter =
     tableResponse.suggestedMove?.epdAfter ??
     tableResponse.repertoireMove?.epdAfter;
-  const hasResponse = useRepertoireState(
-    (s) =>
+  const [hasResponse, numMovesFromHere, expectedNumMovesNeeded] =
+    useRepertoireState((s) => [
       s.repertoire[s.browsingState.activeSide]?.positionResponses[epdAfter]
-        ?.length > 0
-  );
+        ?.length > 0,
+      s.numMovesFromEpd[s.browsingState.activeSide][epdAfter],
+      s.expectedNumMovesFromEpd[s.browsingState.activeSide][epdAfter],
+    ]);
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
   let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
-  let coverage = tableResponse?.coverage ?? incidence;
+  let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
   let debugElements = debugUi && (
     <View style={s(c.column)}>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
         incidence: {(tableResponse?.incidence * 100).toFixed(2)}
+      </CMText>
+      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
+        Moves from here: {numMovesFromHere}
+      </CMText>
+      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
+        Expected # from here: {expectedNumMovesNeeded}
       </CMText>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
         incidence UB: {(tableResponse?.incidenceUpperBound * 100).toFixed(2)}
@@ -932,15 +947,10 @@ const CoverageProgressBar = ({
     );
   }
   let completed = coverage < threshold;
-  const expectedNumMovesNeeded = getExpectedNumberOfMovesForTarget(threshold);
   const numMovesNeededForCurrentMissIncidence =
     getExpectedNumberOfMovesForTarget(coverage);
   let minProgress = 12;
-  let progress = clamp(
-    (numMovesNeededForCurrentMissIncidence / expectedNumMovesNeeded) * 100,
-    minProgress,
-    90
-  );
+  let progress = getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded);
   if (!hasResponse) {
     progress = 0;
     completed = false;

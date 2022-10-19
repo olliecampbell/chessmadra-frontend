@@ -56,6 +56,7 @@ import { getPlayRate } from "./results_distribution";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getInitialReviewState, ReviewState } from "./review_state";
 import { getExpectedNumberOfMovesForTarget } from "app/components/RepertoireOverview";
+import { logProxy } from "./state";
 let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 
 export enum AddLineFromOption {
@@ -66,7 +67,8 @@ export enum AddLineFromOption {
 }
 
 export interface RepertoireState {
-  expectedNumMoves: BySide<number>;
+  numMovesFromEpd: BySide<Record<string, number>>;
+  expectedNumMovesFromEpd: BySide<Record<string, number>>;
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
   numResponsesAboveThreshold: BySide<number>;
@@ -235,6 +237,8 @@ export const getInitialRepertoireState = (
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
     expectedNumMoves: { white: 0, black: 0 },
+    numMovesFromEpd: { white: {}, black: {} },
+    expectedNumMovesFromEpd: { white: {}, black: {} },
     // All epds that are covered or arrived at (epd + epd after)
     epdNodes: { white: {}, black: {} },
     deleteMoveState: {
@@ -383,43 +387,65 @@ export const getInitialRepertoireState = (
     updateRepertoireStructures: () =>
       set(([s, gs]) => {
         let threshold = gs.userState.getCurrentThreshold();
-        console.log({ grades: s.repertoireGrades });
-        s.expectedNumMoves = mapSides(
-          s.repertoire,
-          (repertoireSide: RepertoireSide) => {
-            let seenEpds = new Set();
-            let numMovesExpected = getExpectedNumberOfMovesForTarget(threshold);
-            let recurse = (epd: string) => {
-              if (seenEpds.has(epd)) {
-                return;
-              }
-              seenEpds.add(epd);
-              let allMoves = filter(
-                repertoireSide.positionResponses[epd] ?? [],
-                (m) => m.incidence > threshold
-              );
-              let [mainMove, ...others] = allMoves;
-              if (mainMove?.mine && !isEmpty(others)) {
-                others.forEach((m) => {
-                  console.log({
-                    threshold,
-                    inc: m.incidence,
-                    numMovesExpected,
-                  });
-                  numMovesExpected +=
-                    getExpectedNumberOfMovesForTarget(threshold) -
-                    getExpectedNumberOfMovesForTarget(m.incidence * 100);
-                  console.log({ numMovesExpected });
-                });
-              }
-              allMoves.forEach((m) => {
-                recurse(m.epdAfter);
+        mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
+          let seenEpds: Set<string> = new Set();
+          let numMovesByEpd = {};
+          let recurse = (
+            epd: string,
+            seenEpds: Set<string>,
+            incidence: number,
+            // Debugging
+            lastMoveSan: string
+          ) => {
+            if (seenEpds.has(epd)) {
+              return { numMoves: 0, additionalExpectedNumMoves: 0 };
+            }
+            let totalNumMovesFromHere = 0;
+            let newSeenEpds = new Set(seenEpds);
+            newSeenEpds.add(epd);
+            let allMoves = filter(
+              repertoireSide.positionResponses[epd] ?? [],
+              (m) => m.incidence > threshold
+            );
+            let [mainMove, ...others] = allMoves;
+            let additionalExpectedNumMoves = 0;
+            if (mainMove?.mine && !isEmpty(others)) {
+              others.forEach((m) => {
+                additionalExpectedNumMoves +=
+                  getExpectedNumberOfMovesForTarget(threshold) -
+                  getExpectedNumberOfMovesForTarget(m.incidence);
               });
+            }
+            let numMovesExpected =
+              getExpectedNumberOfMovesForTarget(threshold) -
+              getExpectedNumberOfMovesForTarget(incidence);
+            console.log({
+              lastMoveSan,
+              numMovesExpected,
+              threshold,
+              incidence,
+              subtract: getExpectedNumberOfMovesForTarget(incidence),
+            });
+            allMoves.forEach((m) => {
+              let { numMoves, additionalExpectedNumMoves } = recurse(
+                m.epdAfter,
+                newSeenEpds,
+                m.incidence ?? 0,
+                m.sanPlus
+              );
+              numMovesExpected += additionalExpectedNumMoves;
+              totalNumMovesFromHere += numMoves;
+            });
+            numMovesByEpd[epd] = totalNumMovesFromHere;
+            s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
+            s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
+            return {
+              numMoves: totalNumMovesFromHere + 1,
+              additionalExpectedNumMoves: additionalExpectedNumMoves,
             };
-            recurse(START_EPD);
-            return numMovesExpected;
-          }
-        );
+          };
+          recurse(START_EPD, seenEpds, 1.0, "");
+        });
         s.myResponsesLookup = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
@@ -446,8 +472,7 @@ export const getInitialRepertoireState = (
           (repertoireSide: RepertoireSide) => {
             return flatten(
               Object.values(repertoireSide.positionResponses)
-            ).filter((m) => m.incidence && m.incidence > threshold / 100)
-              .length;
+            ).filter((m) => m.incidence && m.incidence > threshold).length;
           }
         );
       }, "updateRepertoireStructures"),
@@ -564,7 +589,6 @@ export const getInitialRepertoireState = (
           return { reversed: false, pawnStructure };
         }
         let reversed = reversePawnEpd(pawnEpd);
-        console.log({ reversed });
         pawnStructure = s.pawnStructureLookup[reversed];
         if (pawnStructure) {
           return { reversed: true, pawnStructure };

@@ -192,19 +192,14 @@ export const getInitialBrowsingState = (
           let biggestMissIncidence =
             rs.repertoireGrades[side]?.biggestMiss?.incidence;
           let numMoves = rs.numResponsesAboveThreshold[side];
-          let completed = biggestMissIncidence < threshold;
+          let completed =
+            isNil(biggestMissIncidence) || biggestMissIncidence < threshold;
           progressState.completed = completed;
-          let expectedNumMoves = rs.expectedNumMoves[side];
+          let expectedNumMoves = rs.expectedNumMovesFromEpd[side][START_EPD];
           // let magic = 12.7; // Arctan(12.7) = 0.95
-          let getProgress = (x: number): number => {
-            let k = 0 - (1 / expectedNumMoves) * 3;
-            let y = (1 / (1 + Math.exp(k * x)) - 0.5) * 2;
-            return y * 100;
-            // return (
-            //   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
-            // );
-          };
-          let savedProgress = completed ? 100 : getProgress(numMoves);
+          let savedProgress = completed
+            ? 100
+            : getCoverageProgress(numMoves, expectedNumMoves);
           let numNew = values(s.pendingResponses).length;
           let numNewAboveThreshold = values(s.pendingResponses).filter(
             (m) => m.incidence > threshold
@@ -212,20 +207,23 @@ export const getInitialBrowsingState = (
           progressState.showPopover = numNew > 0 && !completed;
           progressState.pendingMoves = numNew;
           let newProgress =
-            getProgress(numMoves + numNewAboveThreshold) - savedProgress;
-          console.log({
-            side,
-            biggestMissIncidence,
-            threshold,
-            completed,
-            numNew,
-            numNewAboveThreshold,
-            pm: logProxy(s.pendingResponses),
-            savedProgress,
-            newProgress,
-            expectedNumMoves,
-            numMoves,
-          });
+            getCoverageProgress(
+              numMoves + numNewAboveThreshold,
+              expectedNumMoves
+            ) - savedProgress;
+          // console.log({
+          //   side,
+          //   biggestMissIncidence,
+          //   threshold,
+          //   completed,
+          //   numNew,
+          //   numNewAboveThreshold,
+          //   pm: logProxy(s.pendingResponses),
+          //   savedProgress,
+          //   newProgress,
+          //   expectedNumMoves,
+          //   numMoves,
+          // });
           progressState.showNewProgressBar = newProgress > 0;
           progressState.showPending = some(
             flatten(values(s.pendingResponses)),
@@ -265,7 +263,6 @@ export const getInitialBrowsingState = (
           return;
         }
         let threshold = gs.userState.getCurrentThreshold();
-        console.log({ threshold });
         let currentSide: Side =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         let currentEpd = s.chessboardState.getCurrentEpd();
@@ -323,20 +320,13 @@ export const getInitialBrowsingState = (
             // TODO: better check here
             tr.incidenceUpperBound = currentLineIncidence * moveIncidence;
           }
-          if (tr.suggestedMove?.sanPlus === "Be7") {
-            console.log({
-              playRate: getPlayRate(tr.suggestedMove, positionReport),
-              positionReport,
-              suggestedMove: tr.suggestedMove,
-              tr,
-            });
-          }
         });
-        let coverage = rs.repertoireGrades[s.activeSide].coverage;
+        let biggestMisses =
+          rs.repertoireGrades[s.activeSide].biggestMisses ?? {};
         tableResponses.forEach((tr) => {
           let epd = tr.suggestedMove?.epdAfter;
-          if (coverage[epd]) {
-            tr.coverage = coverage[epd];
+          if (biggestMisses[epd]) {
+            tr.biggestMiss = biggestMisses[epd];
           }
         });
         tableResponses.forEach((tr) => {
@@ -680,4 +670,16 @@ const isCommonMistake = (
     return false;
   }
   return true;
+};
+
+export const getCoverageProgress = (
+  numMoves: number,
+  expectedNumMoves: number
+): number => {
+  let k = 0 - (1 / expectedNumMoves) * 3;
+  let y = (1 / (1 + Math.exp(k * numMoves)) - 0.5) * 2;
+  return y * 100;
+  // return (
+  //   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
+  // );
 };

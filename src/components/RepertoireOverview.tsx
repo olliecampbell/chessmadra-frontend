@@ -605,6 +605,7 @@ const EmptyStatus = ({ side }: { side: Side }) => {
       onPress={() => {
         quick((s) => {
           s.repertoireState.startBrowsing(side as Side);
+          console.log("Biggest miss is ", biggestMiss);
           s.repertoireState.browsingState.chessboardState.playPgn(
             biggestMiss.lines[0]
           );
@@ -774,15 +775,18 @@ function getRepertoireSideCardPadding(responsive) {
 }
 
 export const getExpectedNumberOfMovesForTarget = (target: number) => {
-  if (target === 0.04) {
-    return 32;
-  }
-  if (target === 0.02) {
-    return 72;
-  }
-  let [a, b] = [546, -1.26];
+  // if (target === 0.04) {
+  //   return 32;
+  // }
+  // if (target === 0.02) {
+  //   return 72;
+  // }
+  // let [a, b] = [536, -1.22];
+  //
+  // return a * Math.exp(b * target);
+  let [a, b] = [98.76334927, 137.34870497];
 
-  return a * Math.exp(b * target * 100);
+  return (1 / (target * a)) * b;
 };
 // THRESHOLD_OPTIONS.forEach((o) => {
 //   console.log("_____THRESHOLDS______");
