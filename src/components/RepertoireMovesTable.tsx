@@ -688,8 +688,12 @@ const Response = ({
                 >
                   {newOpeningName && (
                     <>
-                      <b>{newOpeningName}.</b>
-                      {!isMobile && <Spacer width={8} />}
+                      <b>{newOpeningName}</b>
+                      {!isMobile && annotation && (
+                        <>
+                          <Spacer width={8} />
+                        </>
+                      )}
                     </>
                   )}
                   {!isMobile && annotation}
