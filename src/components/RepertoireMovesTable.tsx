@@ -53,18 +53,21 @@ import { TableResponseScoreSource } from "app/utils/table_scoring";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
-  theoryHeavy?: boolean;
-  transposes?: boolean;
   needed?: boolean;
   incidenceUpperBound?: number;
   coverage?: number;
-  bestMove?: boolean;
   moveRating?: MoveRating;
   repertoireMove?: RepertoireMove;
   suggestedMove?: SuggestedMove;
   incidence?: number;
   score?: number;
   scoreTable?: ScoreTable;
+  side: Side;
+  // Tags
+  commonMistake?: boolean;
+  theoryHeavy?: boolean;
+  transposes?: boolean;
+  bestMove?: boolean;
 }
 
 export interface ScoreTable {
@@ -244,12 +247,13 @@ let useSections = ({
   );
   if (!myTurn) {
     sections.push({
-      width: 60,
+      width: 100,
       content: ({ suggestedMove, positionReport }) => {
         let playRate =
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
+        let useIcons = false;
         let icon = "fa-signal-bars-weak";
         if (playRate > 0.3) {
           icon = "fa-signal-bars";
@@ -263,13 +267,19 @@ let useSections = ({
             {
               <View style={s(c.column)}>
                 <CMText style={s(textStyles)}>
-                  <i
-                    className={`fa fa-duotone ${icon}`}
-                    style={s(
-                      c.fontSize(16),
-                      c.duotone(c.grays[85], c.grays[30])
-                    )}
-                  />
+                  {useIcons ? (
+                    <i
+                      className={`fa fa-duotone ${icon}`}
+                      style={s(
+                        c.fontSize(16),
+                        c.duotone(c.grays[85], c.grays[30])
+                      )}
+                    />
+                  ) : (
+                    <>
+                      <b>1</b> in <b>{Math.round(1 / playRate)}</b> games
+                    </>
+                  )}
                 </CMText>
                 {debugUi && (
                   <CMText style={s(c.fg(c.colors.debugColorDark))}>
@@ -548,6 +558,14 @@ const Response = ({
         text="Warning: heavy theory"
         icon="fa-solid fa-triangle-exclamation"
         style={s(c.fg(c.reds[55]), c.fontSize(18))}
+      />
+    );
+  } else if (tableResponse.commonMistake) {
+    moveTag = (
+      <MoveTag
+        text="Common mistake"
+        icon="fa-duotone fa-bomb"
+        style={s(c.fg(c.grays[75]), c.fontSize(18))}
       />
     );
   }

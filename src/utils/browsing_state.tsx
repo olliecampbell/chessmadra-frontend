@@ -28,6 +28,7 @@ import {
   Side,
   SIDES,
   BySide,
+  otherSide,
 } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { getNameEcoCodeIdentifier } from "./eco_codes";
@@ -43,7 +44,7 @@ import {
 import { getPawnOnlyEpd } from "./pawn_structures";
 import { logProxy } from "./state";
 import { START_EPD } from "./chess";
-import { getPlayRate } from "./results_distribution";
+import { getPlayRate, getTotalGames, getWinRate } from "./results_distribution";
 import client from "app/client";
 import { createQuick } from "./quick";
 import { Animated } from "react-native";
@@ -56,7 +57,7 @@ import {
   scoreTableResponses,
   shouldUsePeerRates,
 } from "./table_scoring";
-import { getMoveRating } from "./move_inaccuracy";
+import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 
@@ -273,6 +274,7 @@ export const getInitialBrowsingState = (
         positionReport?.suggestedMoves.map((sm) => {
           _tableResponses[sm.sanPlus] = {
             suggestedMove: cloneDeep(sm),
+            side: s.activeSide,
           };
         });
         let existingMoves =
@@ -283,7 +285,10 @@ export const getInitialBrowsingState = (
           if (_tableResponses[r.sanPlus]) {
             _tableResponses[r.sanPlus].repertoireMove = r;
           } else {
-            _tableResponses[r.sanPlus] = { repertoireMove: r };
+            _tableResponses[r.sanPlus] = {
+              repertoireMove: r,
+              side: s.activeSide,
+            };
           }
         });
         let ownSide = currentSide === s.activeSide;
@@ -335,9 +340,15 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
+          if (!ownSide) {
+            if (isCommonMistake(tr, positionReport)) {
+              tr.commonMistake = true;
+            }
+          }
+        });
+        tableResponses.forEach((tr) => {
           let epdAfter = tr.suggestedMove?.epdAfter;
           if (!ownSide || tr.repertoireMove) {
-            // Don't add these tags when it's your own
             return;
           }
           if (
@@ -345,7 +356,6 @@ export const getInitialBrowsingState = (
             !tr.repertoireMove &&
             rs.epdNodes[s.activeSide][epdAfter]
           ) {
-            console.log("has position responses");
             tr.transposes = true;
           }
           if (isTheoryHeavy(tr, currentEpd)) {
@@ -640,3 +650,34 @@ function createEmptyRepertoireProgressState(): RepertoireProgressState {
     showPopover: false,
   };
 }
+const isCommonMistake = (
+  tr: TableResponse,
+  positionReport: PositionReport
+): boolean => {
+  if (!tr.suggestedMove || !positionReport) {
+    return false;
+  }
+  let threshold = 100;
+  if (getTotalGames(tr.suggestedMove.results) < threshold) {
+    return false;
+  }
+  if (getPlayRate(tr.suggestedMove, positionReport) < 0.01) {
+    return false;
+  }
+  if (
+    getWinRate(tr.suggestedMove.results, otherSide(tr.side)) >
+    getWinRate(positionReport.results, otherSide(tr.side)) - 0.05
+  ) {
+    return false;
+  }
+  if (
+    getMoveRating(
+      tr.suggestedMove.stockfish,
+      positionReport.stockfish,
+      tr.side
+    ) < MoveRating.Mistake
+  ) {
+    return false;
+  }
+  return true;
+};
