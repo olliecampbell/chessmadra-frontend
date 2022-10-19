@@ -37,6 +37,7 @@ import { useParams } from "react-router-dom";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { PositionOverview, Responses } from "./RepertoireEditingView";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
+import useKeypress from "react-use-keypress";
 
 const VERTICAL_BREAKPOINT = BP.md;
 
@@ -60,6 +61,12 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
     s.browsingState.chessboardState,
     s.repertoire === undefined,
   ]);
+
+  useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
+    if (event.key === "ArrowLeft") {
+      quick((s) => s.backOne());
+    }
+  });
   let reviewQueueFromHere = useRepertoireState(
     (s) =>
       s.reviewState.buildQueue({

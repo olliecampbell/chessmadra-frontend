@@ -58,6 +58,7 @@ import {
 } from "./table_scoring";
 import { getMoveRating } from "./move_inaccuracy";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { isTheoryHeavy } from "./theory_heavy";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -331,8 +332,24 @@ export const getInitialBrowsingState = (
           let epd = tr.suggestedMove?.epdAfter;
           if (coverage[epd]) {
             tr.coverage = coverage[epd];
-          } else {
-            // tr.coverage = tr.incidence;
+          }
+        });
+        tableResponses.forEach((tr) => {
+          let epdAfter = tr.suggestedMove?.epdAfter;
+          if (!ownSide || tr.repertoireMove) {
+            // Don't add these tags when it's your own
+            return;
+          }
+          if (
+            ownSide &&
+            !tr.repertoireMove &&
+            rs.epdNodes[s.activeSide][epdAfter]
+          ) {
+            console.log("has position responses");
+            tr.transposes = true;
+          }
+          if (isTheoryHeavy(tr, currentEpd)) {
+            tr.theoryHeavy = true;
           }
         });
         tableResponses.forEach((tr) => {
@@ -363,14 +380,6 @@ export const getInitialBrowsingState = (
         let noneNeeded = every(tableResponses, (tr) => !tr.needed);
         s.isPastCoverageGoal =
           s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
-        if (s.isPastCoverageGoal) {
-          console.log("This got past the coverage goal check");
-          console.log({
-            threshold,
-            currentLineIncidence: s.getIncidenceOfCurrentLine(),
-            noneNeeded,
-          });
-        }
         if (!s.isPastCoverageGoal) {
           s.dismissedPastCoverageGoalNotification = false;
         }

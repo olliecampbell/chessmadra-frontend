@@ -53,6 +53,8 @@ import { TableResponseScoreSource } from "app/utils/table_scoring";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  theoryHeavy?: boolean;
+  transposes?: boolean;
   needed?: boolean;
   incidenceUpperBound?: number;
   coverage?: number;
@@ -523,24 +525,32 @@ const Response = ({
     }
   }
   let annotation = renderAnnotation(suggestedMove?.annotation);
-  let bestMoveTag = tableResponse.bestMove && (
-    <CMText
-      style={s(
-        c.fg(c.grays[80]),
-        c.fontSize(12),
-        c.weightBold,
-        c.row,
-        c.alignCenter
-      )}
-    >
-      <i
-        className="fa-duotone fa-trophy"
+  let moveTag = null;
+  if (tableResponse.bestMove) {
+    moveTag = (
+      <MoveTag
+        text="Clear best move"
+        icon="fa-duotone fa-trophy"
         style={s(c.fg(c.yellows[60]), c.fontSize(18))}
       />
-      <Spacer width={4} />
-      Clear best move
-    </CMText>
-  );
+    );
+  } else if (tableResponse.transposes) {
+    moveTag = (
+      <MoveTag
+        text="Transposition"
+        icon="fa-solid fa-merge"
+        style={s(c.fg(c.teals[45]), c.fontSize(18), c.rotate(-90))}
+      />
+    );
+  } else if (tableResponse.theoryHeavy) {
+    moveTag = (
+      <MoveTag
+        text="Warning: heavy theory"
+        icon="fa-solid fa-triangle-exclamation"
+        style={s(c.fg(c.reds[55]), c.fontSize(18))}
+      />
+    );
+  }
 
   const maxItemWidth = 0;
   const editingMyMoves = true;
@@ -704,10 +714,10 @@ const Response = ({
                 </CMText>
               </View>
             )}
-            {bestMoveTag && (
+            {moveTag && (
               // TODO: dumb way to line up things here
               <View style={s(c.grow, c.pt(8), c.row, c.justifyStart)}>
-                {bestMoveTag}
+                {moveTag}
               </View>
             )}
           </View>
@@ -947,3 +957,21 @@ function renderAnnotation(annotation: string) {
     }
   }
 }
+
+const MoveTag = ({ text, icon, style }: { icon; text; style }) => {
+  return (
+    <CMText
+      style={s(
+        c.fg(c.grays[80]),
+        c.fontSize(12),
+        c.weightSemiBold,
+        c.row,
+        c.alignCenter
+      )}
+    >
+      <i className={icon} style={s(style)} />
+      <Spacer width={4} />
+      {text}
+    </CMText>
+  );
+};

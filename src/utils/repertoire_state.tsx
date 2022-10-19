@@ -103,6 +103,7 @@ export interface RepertoireState {
   showImportView?: boolean;
   startImporting: () => void;
   updateRepertoireStructures: () => void;
+  epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
   getIsRepertoireEmpty: () => boolean;
@@ -234,6 +235,8 @@ export const getInitialRepertoireState = (
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
     expectedNumMoves: { white: 0, black: 0 },
+    // All epds that are covered or arrived at (epd + epd after)
+    epdNodes: { white: {}, black: {} },
     deleteMoveState: {
       modalOpen: false,
       isDeletingMove: false,
@@ -423,6 +426,19 @@ export const getInitialRepertoireState = (
             return flatten(
               Object.values(repertoireSide.positionResponses)
             ).filter((m: RepertoireMove) => m.mine);
+          }
+        );
+        s.epdNodes = mapSides(
+          s.repertoire,
+          (repertoireSide: RepertoireSide) => {
+            let nodeEpds = {};
+            let allEpds = flatten(
+              Object.values(repertoireSide.positionResponses)
+            ).flatMap((m) => [m.epd, m.epdAfter]);
+            allEpds.forEach((epd) => {
+              nodeEpds[epd] = true;
+            });
+            return nodeEpds;
           }
         );
         s.numResponsesAboveThreshold = mapSides(
