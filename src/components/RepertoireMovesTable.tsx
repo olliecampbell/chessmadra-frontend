@@ -248,7 +248,7 @@ let useSections = ({
   if (!myTurn) {
     sections.push({
       width: 100,
-      content: ({ suggestedMove, positionReport }) => {
+      content: ({ suggestedMove, positionReport, tableResponse }) => {
         let playRate =
           suggestedMove &&
           positionReport &&
@@ -277,7 +277,8 @@ let useSections = ({
                     />
                   ) : (
                     <>
-                      <b>1</b> in <b>{Math.round(1 / playRate)}</b> games
+                      <b>1</b> in{" "}
+                      <b>{Math.round(1 / tableResponse.incidence)}</b> games
                     </>
                   )}
                 </CMText>
