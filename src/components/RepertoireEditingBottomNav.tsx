@@ -204,6 +204,7 @@ const AddPendingLineButton = () => {
     pendingLineHasConflictingMoves,
     currentLineIncidence,
     showingPastGoalOverlay,
+    nearestMiss,
   ] = useBrowsingState(([s]) => [
     s.isAddingPendingLine,
     s.hasPendingLineToAdd,
@@ -211,6 +212,7 @@ const AddPendingLineButton = () => {
     s.pendingLineHasConflictingMoves,
     s.getIncidenceOfCurrentLine(),
     s.getShouldShowPastGoalOverlay(),
+    s.getNearestMiss(),
   ]);
   let [biggestMiss] = useRepertoireState((s) => [
     s.repertoireGrades[s.browsingState.activeSide]?.biggestMiss,
@@ -287,19 +289,19 @@ const AddPendingLineButton = () => {
       </Button>
     );
   }
-  if (biggestMiss && !responsive.isMobile) {
+  if (nearestMiss && !responsive.isMobile) {
     return (
       <Button
         style={s(c.buttons.basic)}
         onPress={() => {
           quick((s) => {
             s.repertoireState.browsingState.chessboardState.playPgn(
-              biggestMiss.lines[0]
+              nearestMiss.lines[0]
             );
           });
         }}
       >
-        Go to biggest miss
+        Next miss
       </Button>
     );
   }

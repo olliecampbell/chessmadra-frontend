@@ -105,6 +105,7 @@ export interface BrowsingState {
   getIncidenceOfCurrentLine: () => number;
   getLineIncidences: (_: GetIncidenceOptions) => number[];
   getShouldShowPastGoalOverlay: () => boolean;
+  getNearestMiss: () => RepertoireMiss;
   hasPendingLineToAdd: boolean;
   pendingLineHasConflictingMoves?: boolean;
   fetchNeededPositionReports: () => void;
@@ -385,6 +386,20 @@ export const getInitialBrowsingState = (
         if (!s.isPastCoverageGoal) {
           s.dismissedPastCoverageGoalNotification = false;
         }
+      }),
+    getNearestMiss: () =>
+      get(([s, rs]) => {
+        console.log(
+          "Biggest misses",
+          rs.repertoireGrades[s.activeSide]?.biggestMisses
+        );
+        return findLast(
+          map(s.chessboardState.positionHistory, (epd) => {
+            let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
+            console.log("Miss", miss, "epd", epd);
+            return miss;
+          })
+        );
       }),
     getShouldShowPastGoalOverlay: () =>
       set(([s, rs]) => {
