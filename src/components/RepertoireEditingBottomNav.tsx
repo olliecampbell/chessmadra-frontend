@@ -219,7 +219,7 @@ const AddPendingLineButton = () => {
   ]);
   const isMobile = useIsMobile();
   let responsive = useResponsive();
-  let minWidth = responsive.switch(100, [BP.lg, 160]);
+  let minWidth = responsive.switch(100, [BP.lg, 170]);
   const buttonColorAnim = useRef(new Animated.Value(0.0)).current;
   useEffect(() => {
     const duration = 800;
@@ -292,7 +292,7 @@ const AddPendingLineButton = () => {
   if (nearestMiss && !responsive.isMobile) {
     return (
       <Button
-        style={s(c.buttons.basic)}
+        style={s(c.buttons.basic, c.minWidth(minWidth))}
         onPress={() => {
           quick((s) => {
             s.repertoireState.browsingState.chessboardState.playPgn(

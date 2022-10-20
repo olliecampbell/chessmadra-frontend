@@ -388,16 +388,19 @@ export const getInitialBrowsingState = (
         }
       }),
     getNearestMiss: () =>
-      get(([s, rs]) => {
+      get(([s, rs, gs]) => {
         console.log(
           "Biggest misses",
           rs.repertoireGrades[s.activeSide]?.biggestMisses
         );
+        let threshold = gs.userState.getCurrentThreshold();
         return findLast(
           map(s.chessboardState.positionHistory, (epd) => {
             let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
             console.log("Miss", miss, "epd", epd);
-            return miss;
+            if (miss?.incidence > threshold) {
+              return miss;
+            }
           })
         );
       }),
