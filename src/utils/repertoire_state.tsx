@@ -109,7 +109,7 @@ export interface RepertoireState {
   epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
-  getIsRepertoireEmpty: () => boolean;
+  getIsRepertoireEmpty: (side?: Side) => boolean;
   analyzeLineOnLichess: (line: string[]) => void;
   backOne: () => void;
   backToStartPosition: () => void;
@@ -854,12 +854,12 @@ export const getInitialRepertoireState = (
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.repertoireShareId = data.shareId;
+              s.hasCompletedRepertoireInitialization = true;
               if (getAllRepertoireMoves(s.repertoire).length > 0) {
-                s.hasCompletedRepertoireInitialization = true;
               } else {
-                if (!s.hasCompletedRepertoireInitialization) {
-                  s.showImportView = true;
-                }
+                // if (!s.hasCompletedRepertoireInitialization) {
+                //   s.showImportView = false;
+                // }
               }
               s.onRepertoireUpdate();
               // s.startBrowsing("white");
@@ -893,8 +893,11 @@ export const getInitialRepertoireState = (
           return getAllRepertoireMoves(s.repertoire).length;
         }
       }),
-    getIsRepertoireEmpty: () =>
+    getIsRepertoireEmpty: (side?: Side) =>
       get(([s]) => {
+        if (side) {
+          return isEmpty(s.repertoire[side].positionResponses);
+        }
         return isEmpty(getAllRepertoireMoves(s.repertoire));
       }),
     backOne: () =>

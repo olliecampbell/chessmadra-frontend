@@ -288,8 +288,12 @@ const SideEtcButton = ({ side }: { side: Side }) => {
   const responsive = useResponsive();
   const inverse = side === "black";
   const [backgroundColor, _fg, iconColor] = getButtonColors(inverse);
+  const [repertoireEmpty] = useRepertoireState((s) => [
+    s.getIsRepertoireEmpty(side),
+  ]);
   const buttonHeight = getButtonHeight(responsive);
   const foregroundColor = inverse ? c.grays[60] : c.grays[60];
+  const contrastForegroundColor = inverse ? c.grays[80] : c.grays[40];
   return (
     <Button
       style={s(
@@ -299,16 +303,40 @@ const SideEtcButton = ({ side }: { side: Side }) => {
         c.selfStretch,
         c.relative,
         c.px(14),
-        c.py(6)
+        c.py(8)
       )}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.repertoireSettingsModalSide = side;
+          if (repertoireEmpty) {
+            quick((s) => {
+              s.repertoireState.startImporting();
+            });
+          } else {
+            s.repertoireState.repertoireSettingsModalSide = side;
+          }
         });
       }}
     >
-      <CMText style={s(c.fg(foregroundColor), c.fontSize(18))}>
-        <i className={"fa-sharp fa-ellipsis"} />
+      <CMText
+        style={s(c.fg(foregroundColor), c.fontSize(18), c.row, c.alignCenter)}
+      >
+        {repertoireEmpty ? (
+          <>
+            <i className={"fa-duotone fa-file-import"} />
+            <Spacer width={8} />
+            <CMText
+              style={s(
+                c.fg(contrastForegroundColor),
+                c.fontSize(14),
+                c.weightSemiBold
+              )}
+            >
+              Import
+            </CMText>
+          </>
+        ) : (
+          <i className={"fa-sharp fa-ellipsis"} />
+        )}
       </CMText>
     </Button>
   );
