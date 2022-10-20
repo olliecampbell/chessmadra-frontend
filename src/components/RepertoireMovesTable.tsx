@@ -261,6 +261,11 @@ let useSections = ({
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
         let useIcons = false;
+        let denominator = Math.round(1 / tableResponse.incidence);
+        let veryRare = false;
+        if (denominator >= 10000) {
+          veryRare = true;
+        }
         let icon = "fa-signal-bars-weak";
         if (playRate > 0.3) {
           icon = "fa-signal-bars";
@@ -282,10 +287,11 @@ let useSections = ({
                         c.duotone(c.grays[85], c.grays[30])
                       )}
                     />
+                  ) : veryRare ? (
+                    <>Very rare</>
                   ) : (
                     <>
-                      <b>1</b> in{" "}
-                      <b>{Math.round(1 / tableResponse.incidence)}</b> games
+                      <b>1</b> in <b>{denominator.toLocaleString()}</b> games
                     </>
                   )}
                 </CMText>
