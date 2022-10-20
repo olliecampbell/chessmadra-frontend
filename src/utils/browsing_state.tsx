@@ -303,8 +303,10 @@ export const getInitialBrowsingState = (
         );
         let currentLineIncidence = s.getIncidenceOfCurrentLine();
         tableResponses.forEach((tr) => {
-          if (tr.repertoireMove?.incidence) {
-            tr.incidence = tr.repertoireMove?.incidence;
+          let epd = tr.suggestedMove?.epdAfter;
+          let knownIncidence = rs.knownEpdIncidences[s.activeSide][epd];
+          if (knownIncidence) {
+            tr.incidence = knownIncidence;
             return;
           }
           let moveIncidence = 0.0;
@@ -540,6 +542,17 @@ export const getInitialBrowsingState = (
             let covered = !isEmpty(
               rs.repertoire?.[s.activeSide]?.positionResponses[position]
             );
+            let repertoireMove = find(
+              rs.repertoire?.[s.activeSide]?.positionResponses[position],
+              (m) => {
+                return m.sanPlus === san;
+              }
+            );
+            let knownIncidence = rs.knownEpdIncidences[s.activeSide][position];
+            if (knownIncidence) {
+              incidence = knownIncidence;
+              return incidence;
+            }
             let mine = moveSide === s.activeSide;
             if (!mine) {
               let positionReport = rs.positionReports[position];

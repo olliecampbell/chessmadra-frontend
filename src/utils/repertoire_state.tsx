@@ -105,6 +105,7 @@ export interface RepertoireState {
   showImportView?: boolean;
   startImporting: () => void;
   updateRepertoireStructures: () => void;
+  knownEpdIncidences: BySide<Record<string, number>>;
   epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
@@ -241,6 +242,7 @@ export const getInitialRepertoireState = (
     expectedNumMovesFromEpd: { white: {}, black: {} },
     // All epds that are covered or arrived at (epd + epd after)
     epdNodes: { white: {}, black: {} },
+    knownEpdIncidences: { white: {}, black: {} },
     deleteMoveState: {
       modalOpen: false,
       isDeletingMove: false,
@@ -393,13 +395,12 @@ export const getInitialRepertoireState = (
           let recurse = (
             epd: string,
             seenEpds: Set<string>,
-            incidence: number,
-            // Debugging
-            lastMoveSan: string
+            lastMove: RepertoireMove
           ) => {
             if (seenEpds.has(epd)) {
               return { numMoves: 0, additionalExpectedNumMoves: 0 };
             }
+            let incidence = lastMove?.incidence ?? 1;
             let totalNumMovesFromHere = 0;
             let newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
@@ -427,8 +428,7 @@ export const getInitialRepertoireState = (
               let { numMoves, additionalExpectedNumMoves } = recurse(
                 m.epdAfter,
                 newSeenEpds,
-                m.incidence ?? 0,
-                m.sanPlus
+                m
               );
               numMovesExpected += additionalExpectedNumMoves;
               childAdditionalMovesExpected += additionalExpectedNumMoves;
@@ -437,14 +437,23 @@ export const getInitialRepertoireState = (
             numMovesByEpd[epd] = totalNumMovesFromHere;
             s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
             s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
+            s.knownEpdIncidences[side][epd] = lastMove?.incidence;
             return {
               numMoves: totalNumMovesFromHere + (incidence > threshold ? 1 : 0),
               additionalExpectedNumMoves:
                 additionalExpectedNumMoves + childAdditionalMovesExpected,
             };
           };
-          recurse(START_EPD, seenEpds, 1.0, "");
+          recurse(START_EPD, seenEpds, null);
         });
+        mapSides(
+          s.repertoireGrades,
+          (repertoireGrade: RepertoireGrade, side) => {
+            forEach(repertoireGrade.biggestMisses, (miss) => {
+              s.knownEpdIncidences[side][miss.epd] = miss.incidence;
+            });
+          }
+        );
         s.myResponsesLookup = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
