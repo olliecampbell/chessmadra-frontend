@@ -411,21 +411,18 @@ export const getInitialRepertoireState = (
             let additionalExpectedNumMoves = 0;
             if (mainMove?.mine && !isEmpty(others)) {
               others.forEach((m) => {
-                additionalExpectedNumMoves +=
-                  getExpectedNumberOfMovesForTarget(threshold) -
-                  getExpectedNumberOfMovesForTarget(m.incidence);
+                let additional = getExpectedNumMovesBetween(
+                  m.incidence,
+                  threshold
+                );
+                additionalExpectedNumMoves += additional;
               });
             }
-            let numMovesExpected =
-              getExpectedNumberOfMovesForTarget(threshold) -
-              getExpectedNumberOfMovesForTarget(incidence);
-            console.log({
-              lastMoveSan,
-              numMovesExpected,
-              threshold,
+            let numMovesExpected = getExpectedNumMovesBetween(
               incidence,
-              subtract: getExpectedNumberOfMovesForTarget(incidence),
-            });
+              threshold
+            );
+            let childAdditionalMovesExpected = 0;
             allMoves.forEach((m) => {
               let { numMoves, additionalExpectedNumMoves } = recurse(
                 m.epdAfter,
@@ -434,14 +431,16 @@ export const getInitialRepertoireState = (
                 m.sanPlus
               );
               numMovesExpected += additionalExpectedNumMoves;
+              childAdditionalMovesExpected += additionalExpectedNumMoves;
               totalNumMovesFromHere += numMoves;
             });
             numMovesByEpd[epd] = totalNumMovesFromHere;
             s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
             s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
             return {
-              numMoves: totalNumMovesFromHere + 1,
-              additionalExpectedNumMoves: additionalExpectedNumMoves,
+              numMoves: totalNumMovesFromHere + (incidence > threshold ? 1 : 0),
+              additionalExpectedNumMoves:
+                additionalExpectedNumMoves + childAdditionalMovesExpected,
             };
           };
           recurse(START_EPD, seenEpds, 1.0, "");
@@ -857,7 +856,19 @@ export const getInitialRepertoireState = (
               // s.startBrowsing("white");
               // s.browsingState.chessboardState.playPgn(
               //   lineToPgn([
-              //
+              //     "e4",
+              //     "e6",
+              //     "d4",
+              //     "d5",
+              //     "Nd2",
+              //     "Nf6",
+              //     "e5",
+              //     "Nfd7",
+              //     "Bd3",
+              //     "c5",
+              //     "c3",
+              //     "Nc6",
+              //     "Ne2",
               //   ])
               // );
             });
@@ -921,3 +932,15 @@ function mapSides<T, Y>(
 function getMoveNumber(id: string) {
   return Math.floor(id.split(" ").length / 2 + 1);
 }
+export const getExpectedNumMovesBetween = (
+  current: number,
+  destination: number
+): number => {
+  const get_distance = (x, y) => {
+    let distance = 1 / y / (1 / x);
+    return Math.pow(distance, 1.2);
+  };
+  let distance = Math.max(0, get_distance(current, destination));
+  current = Math.max(current, 0.45);
+  return 1.17262165 * distance;
+};

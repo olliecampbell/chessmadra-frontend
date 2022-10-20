@@ -918,6 +918,15 @@ const CoverageProgressBar = ({
   const completedColor = c.greens[50];
   let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
   let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
+  let completed = coverage < threshold;
+  // if (!completed) {
+  //   console.log({
+  //     numMovesFromHere,
+  //     expectedNumMovesNeeded,
+  //     san: tableResponse.suggestedMove?.sanPlus,
+  //     incidence: tableResponse.repertoireMove?.incidence,
+  //   });
+  // }
   let debugElements = debugUi && (
     <View style={s(c.column)}>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
@@ -946,11 +955,11 @@ const CoverageProgressBar = ({
       </View>
     );
   }
-  let completed = coverage < threshold;
-  const numMovesNeededForCurrentMissIncidence =
-    getExpectedNumberOfMovesForTarget(coverage);
-  let minProgress = 12;
-  let progress = getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded);
+  let progress = clamp(
+    getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded),
+    5,
+    95
+  );
   if (!hasResponse) {
     progress = 0;
     completed = false;
