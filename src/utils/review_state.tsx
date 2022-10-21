@@ -113,7 +113,9 @@ export const getInitialReviewState = (
           rs.repertoire[r.side].positionResponses[r.epd].forEach(
             (m: RepertoireMove) => {
               if (m.sanPlus === r.sanPlus) {
-                m.srs.needsReview = m.srs.needsReview || !r.correct;
+                if (r.correct) {
+                  m.srs.needsReview = false;
+                }
               }
             }
           );
