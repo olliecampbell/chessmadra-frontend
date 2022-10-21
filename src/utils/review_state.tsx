@@ -45,6 +45,7 @@ export interface QuizMove {
 }
 
 export interface ReviewPositionResults {
+  side: Side;
   correct: boolean;
   epd: string;
   sanPlus: string;
@@ -106,8 +107,17 @@ export const getInitialReviewState = (
     // queues: EMPTY_QUEUES,
     activeQueue: null,
     markMovesReviewed: (results: ReviewPositionResults[]) =>
-      set(([s, gs]) => {
+      set(([s, rs]) => {
         trackEvent(`reviewing.reviewed_move`);
+        results.forEach((r) => {
+          rs.repertoire[r.side].positionResponses[r.epd].forEach(
+            (m: RepertoireMove) => {
+              if (m.sanPlus === r.sanPlus) {
+                m.srs.needsReview = m.srs.needsReview || !r.correct;
+              }
+            }
+          );
+        });
         client
           .post("/api/v1/openings/moves_reviewed", { results })
           .then(({ data }) => {});
@@ -149,6 +159,7 @@ export const getInitialReviewState = (
             s.currentMove.moves.map((m) => {
               let failed = s.failedReviewPositionMoves[m.sanPlus];
               return {
+                side: m.side,
                 epd: m.epd,
                 sanPlus: m.sanPlus,
                 correct: !failed,

@@ -50,7 +50,7 @@ export const RepertoireBuilder = () => {
     isReviewing,
     initState,
   ] = useRepertoireState((s) => [
-    s.repertoire === undefined,
+    isNil(s.repertoire),
     s.showImportView,
     s.isBrowsing,
     s.isEditing,
@@ -84,9 +84,6 @@ export const RepertoireBuilder = () => {
         </CMText>
       </View>
     );
-  } else if (repertoireLoading) {
-    inner = <GridLoader color={c.primaries[40]} size={20} />;
-    centered = true;
   } else if (showImportView) {
     return (
       <RepertoirePageLayout>
