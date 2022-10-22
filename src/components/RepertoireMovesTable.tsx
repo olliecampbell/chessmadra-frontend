@@ -39,7 +39,7 @@ import {
   useRepertoireState,
   useUserState,
 } from "app/utils/app_state";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
@@ -148,6 +148,20 @@ export const RepertoireMovesTable = ({
   }
   let numTruncated = responses.length - trimmedResponses.length;
   let truncated = numTruncated > 0;
+  let widths = useRef({});
+  const [moveMaxWidth, setMoveMaxWidth] = useState(40);
+  const onMoveRender = (sanPlus, e) => {
+    if (isNil(e)) {
+      // TODO: better deletion, decrease widths
+      widths.current[sanPlus] = null;
+      return;
+    }
+    let width = e.getBoundingClientRect().width;
+    widths.current[sanPlus] = width;
+    if (width > moveMaxWidth) {
+      setMoveMaxWidth(width);
+    }
+  };
   return (
     <View style={s(c.column)}>
       {!isMobile && <RepertoireEditingHeader>{header}</RepertoireEditingHeader>}
@@ -170,6 +184,14 @@ export const RepertoireMovesTable = ({
                 tableResponse.suggestedMove?.sanPlus
               }
               tableResponse={tableResponse}
+              moveMinWidth={moveMaxWidth}
+              moveRef={(e) => {
+                onMoveRender(
+                  tableResponse.suggestedMove?.sanPlus ||
+                    tableResponse.repertoireMove?.sanPlus,
+                  e
+                );
+              }}
             />
           );
         }),
@@ -412,11 +434,15 @@ const Response = ({
   anyMine,
   myTurn,
   editing,
+  moveMinWidth,
+  moveRef,
 }: {
   tableResponse: TableResponse;
   anyMine: boolean;
   sections: any[];
   myTurn: boolean;
+  moveMinWidth: number;
+  moveRef: any;
   editing;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
@@ -584,7 +610,6 @@ const Response = ({
     );
   }
 
-  const maxItemWidth = 0;
   const editingMyMoves = true;
 
   return (
@@ -654,40 +679,47 @@ const Response = ({
             )}
             {!myTurn && <Spacer width={8} />}
             <View style={s(c.row, c.alignCenter, c.pl(4))}>
-              <View style={s(c.row, c.alignCenter, c.minWidth(40))}>
-                {true && (
-                  <>
-                    <CMText
-                      style={s(
-                        c.fg(c.grays[60]),
-                        c.fontSize(18),
-                        c.weightSemiBold,
-                        c.keyedProp("letterSpacing")("0.04rem")
-                      )}
-                    >
-                      {moveNumber}
-                      {side === "black" ? "…" : "."}
-                    </CMText>
-                    <Spacer width={4} />
-                  </>
-                )}
-                <CMText
-                  key={sanPlus}
-                  style={s(
-                    c.fg(c.grays[85]),
-                    c.fontSize(18),
-                    c.weightBold,
-                    c.keyedProp("letterSpacing")("0.04rem")
-                  )}
+              <View style={s(c.minWidth(moveMinWidth))}>
+                <View
+                  style={s(c.row, c.alignCenter)}
+                  ref={(e) => {
+                    moveRef(e);
+                  }}
                 >
-                  {sanPlus}
-                </CMText>
-                {!isNil(moveRating) && (
-                  <>
-                    <Spacer width={4} />
-                    {getMoveRatingIcon(moveRating)}
-                  </>
-                )}
+                  {true && (
+                    <>
+                      <CMText
+                        style={s(
+                          c.fg(c.grays[60]),
+                          c.fontSize(18),
+                          c.weightSemiBold,
+                          c.keyedProp("letterSpacing")("0.04rem")
+                        )}
+                      >
+                        {moveNumber}
+                        {side === "black" ? "…" : "."}
+                      </CMText>
+                      <Spacer width={4} />
+                    </>
+                  )}
+                  <CMText
+                    key={sanPlus}
+                    style={s(
+                      c.fg(c.grays[85]),
+                      c.fontSize(18),
+                      c.weightBold,
+                      c.keyedProp("letterSpacing")("0.04rem")
+                    )}
+                  >
+                    {sanPlus}
+                  </CMText>
+                  {!isNil(moveRating) && (
+                    <>
+                      <Spacer width={4} />
+                      {getMoveRatingIcon(moveRating)}
+                    </>
+                  )}
+                </View>
               </View>
             </View>
             <Spacer width={12} />
