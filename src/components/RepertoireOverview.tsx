@@ -97,7 +97,7 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
   return (
     <SideSummaryButton
       side={side}
-      text={cram ? "Cram" : "Review"}
+      text={cram ? "Cram" : "Learn"}
       icon={"fa-duotone fa-cards-blank"}
       onPress={() => {
         startReview(side, { side, cram });
@@ -508,7 +508,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
   return (
     <SideSummaryButton
       side={side}
-      text={"Browse"}
+      text={"Build"}
       icon={"fa-sharp fa-solid fa-compass"}
       onPress={() => {
         trackEvent("overview.browse_repertoire");
