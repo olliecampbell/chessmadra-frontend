@@ -1,5 +1,5 @@
 import { Move } from "@lubert/chess.ts/dist/types";
-import { EcoCode, PositionReport } from "app/models";
+import { EcoCode, MoveTag, PositionReport } from "app/models";
 import {
   isEmpty,
   last,
@@ -272,6 +272,7 @@ export const getInitialBrowsingState = (
         positionReport?.suggestedMoves.map((sm) => {
           _tableResponses[sm.sanPlus] = {
             suggestedMove: cloneDeep(sm),
+            tags: [],
             side: s.activeSide,
           };
         });
@@ -285,6 +286,7 @@ export const getInitialBrowsingState = (
           } else {
             _tableResponses[r.sanPlus] = {
               repertoireMove: r,
+              tags: [],
               side: s.activeSide,
             };
           }
@@ -334,8 +336,11 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           if (!ownSide) {
-            if (isCommonMistake(tr, positionReport)) {
-              tr.commonMistake = true;
+            if (isCommonMistake(tr, positionReport, threshold)) {
+              tr.tags.push(MoveTag.CommonMistake);
+            }
+            if (isDangerousMove(tr, positionReport, threshold)) {
+              tr.tags.push(MoveTag.Dangerous);
             }
           }
         });
@@ -344,15 +349,14 @@ export const getInitialBrowsingState = (
           if (!ownSide || tr.repertoireMove) {
             return;
           }
-          if (
-            ownSide &&
-            !tr.repertoireMove &&
-            rs.epdNodes[s.activeSide][epdAfter]
-          ) {
-            tr.transposes = true;
+          if (!tr.repertoireMove && rs.epdNodes[s.activeSide][epdAfter]) {
+            tr.tags.push(MoveTag.Transposes);
+            if (!ownSide) {
+              tr.disableBadgePriority = true;
+            }
           }
           if (isTheoryHeavy(tr, currentEpd)) {
-            tr.theoryHeavy = true;
+            tr.tags.push(MoveTag.TheoryHeavy);
           }
         });
         tableResponses.forEach((tr) => {
@@ -369,7 +373,7 @@ export const getInitialBrowsingState = (
               return !isNil(tr.moveRating) || j === i;
             });
             if (allOthersInaccurate && isNil(tr.moveRating)) {
-              tr.bestMove = true;
+              tr.tags.push(MoveTag.BestMove);
             }
           });
         }
@@ -642,7 +646,9 @@ export const getInitialBrowsingState = (
             s.onPositionUpdate();
           });
         },
-        madeMove: () => {},
+        madeMove: () => {
+          trackEvent("builder.chessboard.played_move");
+        },
 
         shouldMakeMove: (move: Move) =>
           set(([s]) => {
@@ -668,34 +674,56 @@ function createEmptyRepertoireProgressState(): RepertoireProgressState {
 }
 const isCommonMistake = (
   tr: TableResponse,
-  positionReport: PositionReport
+  positionReport: PositionReport,
+  threshold: number
 ): boolean => {
   if (!tr.suggestedMove || !positionReport) {
     return false;
   }
-  let threshold = 100;
-  if (getTotalGames(tr.suggestedMove.results) < threshold) {
+  if (getTotalGames(tr.suggestedMove.results) < 100) {
     return false;
   }
-  if (getPlayRate(tr.suggestedMove, positionReport) < 0.01) {
+  if (tr.incidence < threshold) {
     return false;
   }
   if (
     getWinRate(tr.suggestedMove.results, otherSide(tr.side)) >
-    getWinRate(positionReport.results, otherSide(tr.side)) - 0.05
+    getWinRate(positionReport.results, otherSide(tr.side)) + 0.02
   ) {
     return false;
   }
-  if (
-    getMoveRating(
-      tr.suggestedMove.stockfish,
-      positionReport.stockfish,
-      tr.side
-    ) < MoveRating.Mistake
-  ) {
+  let moveRating = getMoveRating(
+    positionReport.stockfish,
+    tr.suggestedMove.stockfish,
+    otherSide(tr.side)
+  );
+  if (isNil(moveRating) || moveRating < MoveRating.Mistake) {
     return false;
   }
   return true;
+};
+
+const isDangerousMove = (
+  tr: TableResponse,
+  positionReport: PositionReport,
+  threshold: number
+): boolean => {
+  if (!tr.suggestedMove || !positionReport) {
+    return false;
+  }
+  if (getTotalGames(tr.suggestedMove.results) < 100) {
+    return false;
+  }
+  if (tr.incidence < threshold / 2) {
+    return false;
+  }
+  if (
+    getWinRate(tr.suggestedMove.results, otherSide(tr.side)) >
+    getWinRate(positionReport.results, otherSide(tr.side)) + 0.05
+  ) {
+    return true;
+  }
+  return false;
 };
 
 export const getCoverageProgress = (

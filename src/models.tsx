@@ -147,3 +147,11 @@ export interface MoveAnnotation {
   text: string;
   userId: string;
 }
+
+export enum MoveTag {
+  Dangerous,
+  CommonMistake,
+  TheoryHeavy,
+  BestMove,
+  Transposes,
+}

@@ -13,6 +13,7 @@ import {
   last,
   every,
   clamp,
+  includes,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -24,7 +25,7 @@ import {
 } from "app/utils/repertoire";
 const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { PositionReport, SuggestedMove } from "app/models";
+import { MoveTag, PositionReport, SuggestedMove } from "app/models";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { GameResultsBar } from "./GameResultsBar";
 import {
@@ -59,6 +60,7 @@ import { getCoverageProgress } from "app/utils/browsing_state";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  disableBadgePriority?: boolean;
   biggestMiss?: RepertoireMiss;
   needed?: boolean;
   incidenceUpperBound?: number;
@@ -70,11 +72,7 @@ export interface TableResponse {
   score?: number;
   scoreTable?: ScoreTable;
   side: Side;
-  // Tags
-  commonMistake?: boolean;
-  theoryHeavy?: boolean;
-  transposes?: boolean;
-  bestMove?: boolean;
+  tags: MoveTag[];
 }
 
 export interface ScoreTable {
@@ -143,7 +141,13 @@ export const RepertoireMovesTable = ({
       ) {
         return true;
       }
-      return i < MIN_TRUNCATED || r.repertoireMove || (myTurn && r.score > 0);
+      return (
+        i < MIN_TRUNCATED ||
+        r.repertoireMove ||
+        (myTurn && r.score > 0) ||
+        moveHasTag(r, MoveTag.Dangerous) ||
+        (myTurn && moveHasTag(r, MoveTag.Transposes))
+      );
     }) as TableResponse[];
   }
   let numTruncated = responses.length - trimmedResponses.length;
@@ -475,10 +479,6 @@ const Response = ({
   ]);
   let side: Side = turn === "b" ? "black" : "white";
   const isMobile = useIsMobile();
-  let tags = [];
-  if (suggestedMove) {
-    let tags = [];
-  }
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
@@ -575,37 +575,49 @@ const Response = ({
     }
   }
   let annotation = renderAnnotation(suggestedMove?.annotation);
-  let moveTag = null;
-  if (tableResponse.bestMove) {
-    moveTag = (
-      <MoveTag
+  let tags = [];
+  if (moveHasTag(tableResponse, MoveTag.BestMove)) {
+    tags.push(
+      <MoveTagView
         text="Clear best move"
         icon="fa-duotone fa-trophy"
-        style={s(c.fg(c.yellows[60]), c.fontSize(18))}
+        style={s(c.fg(c.yellows[60]), c.fontSize(16))}
       />
     );
-  } else if (tableResponse.transposes) {
-    moveTag = (
-      <MoveTag
-        text="Transposition"
+  }
+  if (moveHasTag(tableResponse, MoveTag.Transposes)) {
+    tags.push(
+      <MoveTagView
+        text="Transposes to your repertoire"
         icon="fa-solid fa-merge"
-        style={s(c.fg(c.teals[45]), c.fontSize(18), c.rotate(-90))}
+        style={s(c.fg(c.grays[75]), c.fontSize(18), c.rotate(-90))}
       />
     );
-  } else if (tableResponse.theoryHeavy) {
-    moveTag = (
-      <MoveTag
+  }
+  if (moveHasTag(tableResponse, MoveTag.TheoryHeavy)) {
+    tags.push(
+      <MoveTagView
         text="Warning: heavy theory"
         icon="fa-solid fa-triangle-exclamation"
-        style={s(c.fg(c.reds[55]), c.fontSize(18))}
+        style={s(c.fg(c.reds[60]), c.fontSize(16))}
       />
     );
-  } else if (tableResponse.commonMistake) {
-    moveTag = (
-      <MoveTag
+  }
+  if (moveHasTag(tableResponse, MoveTag.Dangerous)) {
+    tags.push(
+      <MoveTagView
+        text="Dangerous move"
+        icon="fa fa-radiation"
+        style={s(c.fg(c.reds[65]), c.fontSize(18))}
+      />
+    );
+  }
+  if (moveHasTag(tableResponse, MoveTag.CommonMistake)) {
+    tags.push(
+      <MoveTagView
         text="Common mistake"
-        icon="fa-duotone fa-bomb"
-        style={s(c.fg(c.grays[75]), c.fontSize(18))}
+        icon="fa fa-person-falling"
+        style={s(c.fg(c.grays[80]), c.fontSize(16))}
       />
     );
   }
@@ -782,10 +794,23 @@ const Response = ({
                 </CMText>
               </View>
             )}
-            {moveTag && (
+          </View>
+          <View style={s(c.column, c.px(12))}>
+            {!isEmpty(tags) && (
               // TODO: dumb way to line up things here
-              <View style={s(c.grow, c.pt(8), c.row, c.justifyStart)}>
-                {moveTag}
+              <View
+                style={s(
+                  c.grow,
+                  c.pt(8),
+                  c.row,
+                  c.flexWrap,
+                  c.justifyStart,
+                  c.gap(4)
+                )}
+              >
+                {tags.map((tag, i) => {
+                  return tag;
+                })}
               </View>
             )}
           </View>
@@ -1038,20 +1063,27 @@ function renderAnnotation(annotation: string) {
   }
 }
 
-const MoveTag = ({ text, icon, style }: { icon; text; style }) => {
+const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
   return (
     <CMText
       style={s(
         c.fg(c.grays[80]),
+        c.bg(c.grays[25]),
+        c.px(8),
+        c.py(6),
         c.fontSize(12),
-        c.weightSemiBold,
+        c.weightBold,
         c.row,
         c.alignCenter
       )}
     >
       <i className={icon} style={s(style)} />
-      <Spacer width={4} />
+      <Spacer width={8} />
       {text}
     </CMText>
   );
+};
+
+const moveHasTag = (m: TableResponse, tag: MoveTag): boolean => {
+  return includes(m.tags, tag);
 };
