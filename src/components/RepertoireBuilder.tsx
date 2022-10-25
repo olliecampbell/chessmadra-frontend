@@ -57,16 +57,10 @@ export const RepertoireBuilder = () => {
     s.isReviewing,
     s.initState,
   ]);
-  useEffect(() => {
-    if (repertoireLoading) {
-      initState();
-    }
-  }, []);
 
   let inner = null;
-  let centered = false;
   if (underConstruction && !debugUi) {
-    inner = (
+    return (
       <View style={s(c.column, c.center)}>
         {!isMobile && <Spacer height={48} />}
         <i

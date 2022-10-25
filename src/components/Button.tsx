@@ -34,10 +34,9 @@ export const Button = ({
     >
       {isLoading && (
         <View style={s(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
-          <BarLoader
-            {...loaderProps}
-            css={s(c.maxWidth("calc(100% - 18px)"))}
-          />
+          <View style={s(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
+            <BarLoader {...loaderProps} cssOverride={s(c.width("100%"))} />
+          </View>
         </View>
       )}
       <View

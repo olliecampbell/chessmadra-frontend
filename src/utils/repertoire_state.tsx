@@ -864,21 +864,7 @@ export const getInitialRepertoireState = (
               s.onRepertoireUpdate();
               // s.startBrowsing("white");
               // s.browsingState.chessboardState.playPgn(
-              //   lineToPgn([
-              //     "e4",
-              //     "e6",
-              //     "d4",
-              //     "d5",
-              //     "Nd2",
-              //     "Nf6",
-              //     "e5",
-              //     "Nfd7",
-              //     "Bd3",
-              //     "c5",
-              //     "c3",
-              //     "Nc6",
-              //     "Ne2",
-              //   ])
+              //   "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Qxd4 Nc6 5.Bb5 Bd7 6.Bxc6 Bxc6 7.c4 Nf6 8.Nc3 g6 9.O-O Bg7 10.Qd3 O-O 11.Nd4 Bd7"
               // );
             });
           });
