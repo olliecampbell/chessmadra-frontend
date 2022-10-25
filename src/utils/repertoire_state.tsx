@@ -718,6 +718,7 @@ export const getInitialRepertoireState = (
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();
+        s.browsingState.fetchNeededPositionReports();
         s.browsingState.updateRepertoireProgress();
       }),
     fetchRepertoireTemplates: () =>

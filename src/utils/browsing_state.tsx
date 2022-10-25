@@ -179,7 +179,7 @@ export const getInitialBrowsingState = (
       etcModalOpen: false,
       addConflictingMoveModalOpen: false,
     },
-    activeSide: "white",
+    activeSide: null,
     tableResponses: [],
     repertoireProgressState: {
       white: createEmptyRepertoireProgressState(),
@@ -438,6 +438,13 @@ export const getInitialBrowsingState = (
                 neededPositions.push(epd);
               }
             });
+          }
+        }
+        if (isNil(side)) {
+          let startResponses =
+            rs.repertoire?.["white"]?.positionResponses[START_EPD];
+          if (startResponses?.length === 1) {
+            neededPositions.push(startResponses[0].epdAfter);
           }
         }
         neededPositions = filter(
