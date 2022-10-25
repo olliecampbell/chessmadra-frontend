@@ -113,8 +113,7 @@ export const AnnotationEditor = ({
         value={annotation ?? ""}
         style={s(
           {
-            fontFamily: "Roboto Flex",
-            fontVariationSettings: '"wdth" 110',
+            fontFamily: "Inter",
           },
           c.grow,
           c.border("none"),
