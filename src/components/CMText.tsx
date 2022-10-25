@@ -10,9 +10,10 @@ export const CMText = (props) => {
         props,
         style: s(
           {
-            fontFamily: "Roboto Flex",
-            fontVariationSettings: '"wdth" 110',
+            fontFamily: "Inter",
+            // fontVariationSettings: '"wdth" 112.5',
           },
+          c.weightRegular,
           c.fg(c.colors.textSecondary),
           props.style
         ),
