@@ -26,7 +26,7 @@ export const getInitialDebugState = (
   let initialState = {
     ...createQuick<DebugState>(setOnly),
     debugUi: false,
-    underConstruction: true,
+    underConstruction: false,
   } as DebugState;
 
   return initialState;
