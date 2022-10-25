@@ -69,7 +69,12 @@ export const RepertoireOverview = ({}: {}) => {
             return (
               <Spacer
                 height={32}
-                width={responsive.switch(32, [BP.lg, 48], [BP.xl, 128])}
+                width={responsive.switch(
+                  16,
+                  [BP.lg, 32],
+                  [BP.xl, 56],
+                  [BP.xxl, 128]
+                )}
                 key={i}
                 {...{ isMobile: vertical }}
               />
@@ -556,8 +561,11 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         c.column,
         responsive.isMobile && c.fullWidth,
         c.maxWidth(600),
+        responsive.isMobile && c.minHeight(300),
         c.shadow(0, 8, 16, 0, "rgba(0, 0, 0, 0.5)"),
         c.grow,
+        c.flexShrink,
+        !responsive.isMobile && c.flexible,
         c.rounded,
         c.bg(inverse ? c.grays[4] : c.grays[95]),
         // c.px(12),
@@ -571,13 +579,15 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
       </View>
       <CMText
         style={s(
-          c.fontSize(responsive.switch(32, [BP.lg, 32])),
+          c.fontSize(
+            responsive.switch(24, [BP.lg, 24], [BP.xl, 28], [BP.xxl, 32])
+          ),
           c.selfCenter,
           c.weightBold,
           c.fg(textColor)
         )}
       >
-        {capitalize(side)}
+        {capitalize(side) + " repertoire"}
       </CMText>
       <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} />
       <View style={s(c.row, c.selfCenter, c.px(24))}>
@@ -674,17 +684,17 @@ const SideProgressReport = ({ side }: { side: Side }) => {
   const [backgroundColor, inProgressColor, completedColor] = inverse
     ? [c.grays[14], c.yellows[45], c.greens[50]]
     : [c.grays[80], c.yellows[65], c.greens[50]];
-  let [biggestMissIncidence, numMoves, numAboveThreshold] = useRepertoireState(
-    (s) => [
+  let [biggestMissIncidence, numMoves, numAboveThreshold, progressState] =
+    useRepertoireState((s) => [
       s.repertoireGrades[side]?.biggestMiss?.incidence * 100,
       s.myResponsesLookup?.[side]?.length,
       s.numResponsesAboveThreshold?.[side],
-    ]
-  );
+      s.browsingState.repertoireProgressState[side],
+    ]);
   const debugUi = useDebugState((s) => s.debugUi);
 
   const [textColor, secondaryTextColor] = getTextColors(inverse);
-  const completed = biggestMissIncidence < threshold;
+  const percentComplete = progressState.percentComplete;
   return (
     <View
       style={s(
@@ -707,19 +717,11 @@ const SideProgressReport = ({ side }: { side: Side }) => {
             c.weightSemiBold
           )}
         >
-          Coverage
-          {/*completed ? (
-            <>
-              You have a response to every position that you will see every 200
-              games or more. This is a good repertoire for your level. You can
-              increase your target if you want to go deeper.
-            </>
+          {progressState.completed ? (
+            <>Completed</>
           ) : (
-            <>
-              Looks like you have to add a few more moves to hit your target,
-              why not start with the biggest gap in your repertoire?
-            </>
-          )*/}
+            <>{Math.round(percentComplete)}% complete</>
+          )}
         </CMText>
         <CoverageGoal textColor={secondaryTextColor} />
       </View>
@@ -742,7 +744,7 @@ const SideProgressReport = ({ side }: { side: Side }) => {
           </CMText>
         </View>
       )}
-      {!completed && (
+      {!progressState.completed && (
         <>
           <Spacer height={8} />
           <View style={s(c.selfEnd)}>
@@ -799,7 +801,7 @@ const getButtonHeight = (responsive: any) => {
 };
 
 function getRepertoireSideCardPadding(responsive) {
-  return responsive.switch(12, [BP.lg, 28], [BP.xl, 42]);
+  return responsive.switch(12, [BP.lg, 20], [BP.xl, 24]);
 }
 
 export const getExpectedNumberOfMovesForTarget = (target: number) => {

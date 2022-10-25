@@ -446,7 +446,7 @@ const oldContainerStyles = (isMobile, customMaxWidth?: number) =>
 const containerStyles = (breakpoint: BP) =>
   s(
     width(
-      `min(calc(100vw - ${breakpoint <= BP.md ? 24 : 96}px), ${
+      `min(calc(100vw - ${breakpoint <= BP.lg ? 24 : 96}px), ${
         breakpoint >= BP.xxl ? 1440 : 1280
       }px)`
     ),

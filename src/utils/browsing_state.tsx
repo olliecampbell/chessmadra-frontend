@@ -126,6 +126,7 @@ interface RepertoireProgressState {
   showPending?: boolean;
   completed: boolean;
   showPopover: boolean;
+  percentComplete: number;
   pendingMoves: number;
   headerOpacityAnim: Animated.Value;
   popoverOpacityAnim: Animated.Value;
@@ -207,6 +208,7 @@ export const getInitialBrowsingState = (
           ).length;
           progressState.showPopover = numNew > 0 && !completed;
           progressState.pendingMoves = numNew;
+          progressState.percentComplete = savedProgress;
           let newProgress =
             getCoverageProgress(
               numMoves + numNewAboveThreshold,
@@ -676,6 +678,7 @@ function createEmptyRepertoireProgressState(): RepertoireProgressState {
     headerOpacityAnim: new Animated.Value(0.0),
     pendingMoves: 0,
     completed: false,
+    percentComplete: 0,
     showPopover: false,
   };
 }
