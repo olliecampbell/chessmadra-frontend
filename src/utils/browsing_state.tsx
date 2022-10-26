@@ -558,22 +558,15 @@ export const getInitialBrowsingState = (
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
         let startPosition = START_EPD;
+        if (!s.activeSide) {
+          return [];
+        }
 
         let incidence = 1.0;
-        let skip = false;
         return map(
           zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
           ([position, san], i) => {
             let moveSide = i % 2 === 0 ? "white" : "black";
-            let covered = !isEmpty(
-              rs.repertoire?.[s.activeSide]?.positionResponses[position]
-            );
-            let repertoireMove = find(
-              rs.repertoire?.[s.activeSide]?.positionResponses[position],
-              (m) => {
-                return m.sanPlus === san;
-              }
-            );
             let knownIncidence = rs.knownEpdIncidences[s.activeSide][position];
             if (knownIncidence) {
               incidence = knownIncidence;

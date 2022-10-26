@@ -4,7 +4,7 @@ import { Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, take, sortBy, size } from "lodash-es";
+import { isEmpty, take, sortBy, size, isNil } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -67,24 +67,37 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
       quick((s) => s.backOne());
     }
   });
+  let { side: paramSide } = useParams();
   let reviewQueueFromHere = useRepertoireState(
     (s) =>
       s.reviewState.buildQueue({
         cram: true,
-        side: s.browsingState.activeSide,
+        side: paramSide as Side,
         startPosition: s.browsingState.chessboardState.getCurrentEpd(),
         startLine: s.browsingState.chessboardState.moveLog,
       }),
     { referenceEquality: true }
   );
-  let { side: paramSide } = useParams();
   useEffect(() => {
+    console.log(
+      "paramSide",
+      paramSide,
+      "isBrowsing",
+      isBrowsing,
+      "activeSide",
+      activeSide,
+      "loading",
+      repertoireLoading,
+      "shared",
+      shared
+    );
     if (
       (paramSide !== activeSide || !isBrowsing) &&
       !repertoireLoading &&
       !shared
     ) {
       quick((s) => {
+        console.log("starting browsing");
         s.startBrowsing((paramSide as Side) ?? "white");
       });
     }
@@ -92,80 +105,85 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   // const router = useRouter();
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const loading = repertoireLoading || isNil(activeSide);
   return (
-    <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
-      <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
-        <View
-          style={s(
-            vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
-            vertical ? c.column : c.row
-          )}
-        >
+    <RepertoirePageLayout
+      bottom={loading ? null : <RepertoireEditingBottomNav />}
+    >
+      {loading ? null : (
+        <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
           <View
             style={s(
-              c.column,
-              !vertical && s(c.grow, c.noBasis, c.flexShrink),
-              vertical ? c.width("min(480px, 100%)") : c.maxWidth(600),
-              vertical ? c.selfCenter : c.selfStretch
+              vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
+              vertical ? c.column : c.row
             )}
           >
             <View
               style={s(
-                c.fullWidth,
-                vertical && s(c.selfCenter, c.maxWidth(320))
+                c.column,
+                !vertical && s(c.grow, c.noBasis, c.flexShrink),
+                vertical ? c.width("min(480px, 100%)") : c.maxWidth(600),
+                vertical ? c.selfCenter : c.selfStretch
               )}
             >
-              <ChessboardView state={chessboardState} />
-            </View>
-            <Spacer height={12} />
-            <BackControls
-              includeAnalyze
-              includeReview={
-                responsive.isMobile && reviewQueueFromHere?.length > 0
-              }
-            />
-            {!readOnly &&
-              reviewQueueFromHere?.length > 0 &&
-              !responsive.isMobile && (
+              <View
+                style={s(
+                  c.fullWidth,
+                  vertical && s(c.selfCenter, c.maxWidth(320))
+                )}
+              >
+                <ChessboardView state={chessboardState} />
+              </View>
+              <Spacer height={12} />
+              <BackControls
+                includeAnalyze
+                includeReview={
+                  responsive.isMobile && reviewQueueFromHere?.length > 0
+                }
+              />
+              {!readOnly &&
+                reviewQueueFromHere?.length > 0 &&
+                !responsive.isMobile && (
+                  <>
+                    <Spacer height={12} />
+                    <ReviewFromHereButton />
+                  </>
+                )}
+              {readOnly && (
                 <>
                   <Spacer height={12} />
-                  <ReviewFromHereButton />
+                  <SwitchSideButton />
                 </>
               )}
-            {readOnly && (
+              {vertical && (
+                <>
+                  <Spacer height={12} />
+                  <ResultsView />
+                </>
+              )}
+            </View>
+            {!vertical && (
               <>
-                <Spacer height={12} />
-                <SwitchSideButton />
-              </>
-            )}
-            {vertical && (
-              <>
-                <Spacer height={12} />
-                <ResultsView />
+                <Spacer width={responsive.switch(24, [BP.xl, 48])} />
+                <View
+                  style={s(
+                    c.column,
+                    !vertical && s(c.flexGrow(2), c.flexShrink, c.noBasis),
+                    c.maxWidth(700)
+                    // c.width(
+                    //   `min(${responsive.bp >= BP.xxl ? 1000 : 800}px, 100%)`
+                    // )
+                  )}
+                >
+                  <PositionOverview card={true} />
+                  <Spacer height={responsive.switch(24)} />
+                  <ResultsView />
+                </View>
               </>
             )}
           </View>
-          {!vertical && (
-            <>
-              <Spacer width={responsive.switch(24, [BP.xl, 48])} />
-              <View
-                style={s(
-                  c.column,
-                  !vertical && s(c.flexGrow(2), c.flexShrink, c.noBasis),
-                  c.maxWidth(700)
-                  // c.width(
-                  //   `min(${responsive.bp >= BP.xxl ? 1000 : 800}px, 100%)`
-                  // )
-                )}
-              >
-                <PositionOverview card={true} />
-                <Spacer height={responsive.switch(24)} />
-                <ResultsView />
-              </View>
-            </>
-          )}
         </View>
-      </View>
+      )}
     </RepertoirePageLayout>
   );
 };

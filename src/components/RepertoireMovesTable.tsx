@@ -336,7 +336,7 @@ let useSections = ({
   }
   if (!myTurn) {
     sections.push({
-      width: 80,
+      width: 90,
       content: ({ suggestedMove, positionReport, tableResponse }) => {
         return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
       },
