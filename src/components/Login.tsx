@@ -119,7 +119,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                   <View>
                     <View style={s()}>
                       <TextInput
-                        onKeyPress={onEnter(signIn)}
+                        // onKeyPress={onEnter(signIn)}
                         onSubmitEditing={() => {
                           signIn();
                         }}
