@@ -12,7 +12,12 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
 import { pgnToLine } from "app/utils/repertoire";
 
+export interface MoveArrow {
+  move: Move;
+}
+
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
+  arrows: MoveArrow[];
   playPgn: (pgn: string) => void;
   frozen?: boolean;
   positionHistory: string[];
@@ -417,6 +422,7 @@ export const createChessState = (
         });
       });
     },
+    arrows: [],
     playPgn: (pgn: string) => {
       set((s) => {
         s.stopNotifyingDelegates();
@@ -601,25 +607,35 @@ export const createChessState = (
 export const createStaticChessState = ({
   line,
   epd,
+  nextMove,
   side,
 }: {
   line?: string;
+  nextMove?: string;
   epd?: string;
   side?: Side;
 }) => {
   return createChessState(null, null, (state: ChessboardState) => {
     state.position = new Chess();
     state.frozen = true;
-    state.highContrast = true;
+    state.highContrast = false;
     if (side) {
       state.flipped = side == "black";
     }
+    state.arrows = [];
     state.hideCoordinates = true;
     if (epd) {
       let fen = `${epd} 0 1`;
       state.position = new Chess(fen);
     } else if (line) {
       state.position.loadPgn(line);
+    }
+    if (nextMove) {
+      let [move] = state.position.validateMoves([nextMove]);
+      [move.from, move.to].map((sq) => {
+        state.squareHighlightAnims[sq].setValue(0.6);
+      });
+      state.position.move(move);
     }
   });
 };

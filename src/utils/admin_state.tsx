@@ -9,7 +9,11 @@ export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
   fetchAudit: () => void;
   fetchMoveAnnotationReviewQueue: () => void;
-  acceptMoveAnnotation: (epd: string, san: string, userId: string) => void;
+  acceptMoveAnnotation: (
+    epd: string,
+    san: string,
+    text: string
+  ) => Promise<void>;
   editMoveAnnotation: (_: {
     epd: string;
     san: string;
@@ -19,6 +23,8 @@ export interface AdminState {
   rejectMoveAnnotations: (epd: string, san: string) => void;
   becomeAdmin: (password: string) => void;
   auditResponse?: AuditResponse;
+  moveAnnotationsDashboard?: MoveAnnotationsDashboard;
+  fetchMoveAnnotationDashboard: () => void;
   quick: (fn: (_: AdminState) => void) => void;
 }
 
@@ -28,6 +34,19 @@ const selector = (s: AppState): Stack => [s.adminState, s];
 export interface AuditResponse {
   eloAudits: RepertoireAudit[];
   repertoire: Repertoire;
+}
+
+export interface MoveAnnotationsDashboard {
+  needed: AdminMoveAnnotation[];
+  completed: AdminMoveAnnotation[];
+}
+
+export interface AdminMoveAnnotation {
+  epd: string;
+  previousEpd: string;
+  sanPlus: string;
+  annotation?: MoveAnnotation;
+  reviewerEmail?: string;
 }
 
 export interface RepertoireAudit {
@@ -111,6 +130,16 @@ export const getInitialAdminState = (
             });
           });
       }),
+    fetchMoveAnnotationDashboard: () =>
+      set(([s]) => {
+        client
+          .get(`/api/v1/admin/move-annotations`)
+          .then(({ data }: { data: MoveAnnotationsDashboard }) => {
+            set(([s]) => {
+              s.moveAnnotationsDashboard = data;
+            });
+          });
+      }),
     fetchAudit: () =>
       set(([s]) => {
         client
@@ -121,12 +150,11 @@ export const getInitialAdminState = (
             });
           });
       }),
-    acceptMoveAnnotation: (epd: string, san: string, userId: string) =>
+    acceptMoveAnnotation: (epd: string, san: string, text: string) =>
       set(([s]) => {
-        client
-          .post(`/api/v1/admin/accept-move-annotation`, { epd, san, userId })
+        return client
+          .post(`/api/v1/admin/accept-move-annotation`, { epd, san, text })
           .then(({ data }) => {});
-        s.moveAnnotationReviewQueue.shift();
       }),
     becomeAdmin: (password: string) =>
       set(([s]) => {

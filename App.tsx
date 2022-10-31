@@ -32,7 +32,7 @@ import * as Sentry from "sentry-expo";
 import { isNil } from "lodash-es";
 import Authenticate from "app/components/Authenticate";
 import { AdminView } from "app/components/AdminView";
-import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
+import { MoveAnnotationsDashboard } from "app/components/MoveAnnotationsDashboard";
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
 import { RepertoireEditingView } from "app/components/RepertoireEditingView";
 import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
@@ -41,6 +41,7 @@ import { BP, useResponsive } from "app/utils/useResponsive";
 import { isDevelopment } from "app/utils/env";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { AuditView } from "app/components/AuditView";
+import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -145,6 +146,10 @@ export default function App() {
                 <Route path="/admin/audit" element={<AuditView />} />
                 <Route
                   path="/admin/move-annotations"
+                  element={<MoveAnnotationsDashboard />}
+                />
+                <Route
+                  path="/admin/move-annotations/community"
                   element={<ReviewMoveAnnotationsView />}
                 />
               </Routes>

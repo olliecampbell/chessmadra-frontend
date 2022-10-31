@@ -111,6 +111,7 @@ export interface RepertoireState {
   getMyResponsesLength: (side?: Side) => number;
   getIsRepertoireEmpty: (side?: Side) => boolean;
   analyzeLineOnLichess: (line: string[]) => void;
+  analyzeMoveOnLichess: (fen: string, move: string, turn: Side) => void;
   backOne: () => void;
   backToStartPosition: () => void;
   deleteRepertoire: (side: Side) => void;
@@ -361,6 +362,26 @@ export const getInitialRepertoireState = (
             s.repertoireShareId = data.id;
           });
         });
+      }),
+    analyzeMoveOnLichess: (fen: string, move: string, turn: Side) =>
+      set(([s]) => {
+        var bodyFormData = new FormData();
+        bodyFormData.append(
+          "pgn",
+          `
+          [Variant "From Position"]
+          [FEN "${fen}"]
+
+          ${turn === "white" ? "1." : "1..."} ${move}
+        `
+        );
+        var windowReference = window.open("about:blank", "_blank");
+        client
+          .post(`https://lichess.org/api/import`, bodyFormData)
+          .then(({ data }) => {
+            let url = data["url"];
+            windowReference.location = `${url}/${turn}#999`;
+          });
       }),
     analyzeLineOnLichess: (line: string[]) =>
       set(([s]) => {

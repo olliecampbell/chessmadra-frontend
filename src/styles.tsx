@@ -488,6 +488,16 @@ const grid = ({
   );
 };
 
+const gridColumn = ({ gap }: { gap: number }) => {
+  return s(
+    c.displayGrid,
+    c.keyedProp("gridTemplateColumns")("1fr"),
+    // c.keyedProp("gridTemplateRows")("1fr"),
+    c.keyedProp("rowGap")(gap)
+    // c.keyedProp("columnGap")(columnGap ?? 12)
+  );
+};
+
 const minmax = (min, max) => {
   return `minmax(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
 };
@@ -649,6 +659,7 @@ export const c = {
   duotone,
   rotate,
   grid,
+  gridColumn,
   minmax,
   min,
   max,

@@ -146,8 +146,12 @@ export const ReviewMoveAnnotationsView = ({}) => {
                           acceptMoveAnnotation(
                             review.epd,
                             review.san,
-                            x.userId
-                          );
+                            x.text
+                          ).then(() => {
+                            quick((s) => {
+                              s.adminState.moveAnnotationReviewQueue.shift();
+                            });
+                          });
                         }}
                       >
                         Accept

@@ -11,6 +11,8 @@ import { useAppState } from "app/utils/app_state";
 import React, { useState } from "react";
 import { AuthStatus } from "app/utils/user_state";
 import { CMTextInput } from "./TextInput";
+import { isNil } from "lodash-es";
+import { Link } from "react-router-dom";
 
 export const AdminPageLayout = ({ children }) => {
   const isMobile = useIsMobile();
@@ -27,7 +29,20 @@ export const AdminPageLayout = ({ children }) => {
   ) {
     inner = <BeatLoader color={c.grays[100]} size={20} />;
   }
-  if (user && !user?.isAdmin) {
+  console.log("user email", user);
+  if (user && isNil(user?.email)) {
+    inner = (
+      <View style={s()}>
+        <CMText style={s()}>
+          Looks like you're not logged in, go
+          <CMText style={s(c.fg(c.blues[55]), c.weightSemiBold, c.px(4))}>
+            <Link to="/login">log in</Link>
+          </CMText>
+          first and then come back here:{" "}
+        </CMText>
+      </View>
+    );
+  } else if (user && !user?.isAdmin) {
     inner = (
       <View style={s(c.oldContainerStyles(isMobile))}>
         <CMText style={s()}>
