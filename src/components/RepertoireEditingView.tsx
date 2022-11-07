@@ -23,7 +23,6 @@ import { Side } from "app/utils/repertoire";
 import { BeatLoader } from "react-spinners";
 import { CMText } from "./CMText";
 import { PositionReport, StockfishReport } from "app/models";
-import { AddedLineModal } from "./AddedLineModal";
 import { formatStockfishEval } from "app/utils/stockfish";
 import { GameResultsBar } from "./GameResultsBar";
 import {
@@ -63,6 +62,7 @@ import { plural, pluralize } from "app/utils/pluralize";
 import { shouldUsePeerRates } from "app/utils/table_scoring";
 import { Button } from "./Button";
 import { AnimatedCheckmark } from "./AnimatedCheckmark";
+import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const MoveLog = () => {
@@ -241,7 +241,6 @@ export const RepertoireEditingView = () => {
     <>
       <DeleteMoveConfirmationModal />
       <ConfirmMoveConflictModal />
-      <AddedLineModal />
       <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
         <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
           <View
@@ -283,8 +282,6 @@ export const RepertoireEditingView = () => {
               <>
                 <Spacer width={48} />
                 <View style={s(c.column, c.flexGrow(10), c.maxWidth(700))}>
-                  <PositionOverview />
-                  <Spacer height={24} />
                   <Responses />
                 </View>
               </>
@@ -325,12 +322,12 @@ export const Responses = React.memo(function Responses() {
   let yourMoves = filter(tableResponses, (tr) => {
     return !isNil(tr.repertoireMove) && activeSide === side;
   });
-  // let otherMoves = filter(tableResponses, (tr) => {
-  //   return isNil(tr.repertoireMove) && activeSide === side;
-  // });
-  let youCanPlay = filter(tableResponses, (tr) => {
-    return activeSide === side;
+  let otherMoves = filter(tableResponses, (tr) => {
+    return isNil(tr.repertoireMove) && activeSide === side;
   });
+  // let youCanPlay = filter(tableResponses, (tr) => {
+  //   return activeSide === side;
+  // });
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== side;
   });
@@ -362,121 +359,61 @@ export const Responses = React.memo(function Responses() {
           Current line incidence: {(currentLineIncidence * 100).toFixed(2)}%
         </CMText>
       )}
-      {showingPastCoverageGoal && (
-        <View
-          style={s(
-            c.row,
-            c.alignStart,
-            c.bg(c.colors.cardBackground),
-            c.br(2),
-            c.px(16),
-            c.py(16),
-            c.maxWidth(400),
-            c.selfCenter
-          )}
-        >
-          <View style={s(c.size(checkmarkSize))}>
-            <AnimatedCheckmark />
+      <>
+        {!isEmpty(yourMoves) && (
+          <View style={s()} key={`your-moves-play-${currentEpd}`}>
+            <RepertoireMovesTable
+              {...{
+                header: getResponsesHeader(currentLine, isEmpty(yourMoves)),
+                usePeerRates,
+                activeSide,
+                side,
+                responses: yourMoves,
+              }}
+            />
           </View>
-          <Spacer width={12} />
-          <View style={s(c.column, c.flexShrink(1))}>
-            <CMText
-              style={s(
-                c.fg(c.colors.textPrimary),
-                c.fontSize(18),
-                c.lineHeight("1.3rem"),
-                c.weightBold,
-                c.height(checkmarkSize),
-                c.column,
-                c.justifyCenter
-              )}
-            >
-              Looks good!
-            </CMText>
-            <Spacer height={4} />
-            <CMText
-              style={s(
-                c.fg(c.colors.textSecondary),
-                c.lineHeight("1.3rem"),
-                c.weightRegular
-              )}
-            >
-              This line has reached your coverage goal. You don't need to add
-              any more moves to this line.
-            </CMText>
-            <Spacer height={12} />
-            <View style={s(c.row, c.justifyEnd, c.alignCenter)}>
-              <Button
-                style={s(
-                  c.buttons.basic,
-                  // c.border(`1px solid ${c.grays[40]}`),
-                  c.bg(c.grays[30]),
-                  c.px(16),
-                  c.py(12)
-                )}
-                onPress={() => {
-                  quick((s) => {
-                    s.repertoireState.browsingState.dismissedPastCoverageGoalNotification =
-                      true;
-                  });
-                }}
-              >
-                <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
-                  Add more
-                </CMText>
-              </Button>
-              {/*
-              <Spacer width={12} />
-              <Button
-                style={s(
-                  c.buttons.basic,
-                  c.bg(c.purples[50]),
-                  c.px(16),
-                  c.py(12)
-                )}
-                onPress={() => {
-                  quick((s) => {
-                    s.repertoireState.browsingState.requestToAddCurrentLine();
-                  });
-                }}
-              >
-                <CMText style={s(c.fg(c.grays[100]), c.weightBold)}>
-                  Save to repertoire
-                </CMText>
-              </Button>
-              */}
-            </View>
+        )}
+        {isEmpty(yourMoves) && !isEmpty(otherMoves) && (
+          <View style={s()} key={`choose-next-move-${currentEpd}`}>
+            <RepertoireMovesTable
+              {...{
+                header: "Choose your next move",
+                usePeerRates,
+                activeSide,
+                side,
+                responses: otherMoves,
+              }}
+            />
           </View>
-        </View>
-      )}
-      {!showingPastCoverageGoal && (
-        <>
-          {!isEmpty(youCanPlay) && (
-            <View style={s()} key={`you-can-play-${currentEpd}`}>
+        )}
+        {!isEmpty(yourMoves) && !isEmpty(otherMoves) && (
+          <View style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
+            <CollapsibleSidebarSection header="Add an alternative move">
+              <Spacer height={12} />
               <RepertoireMovesTable
                 {...{
-                  header: getResponsesHeader(currentLine, isEmpty(yourMoves)),
+                  header: null,
                   usePeerRates,
                   activeSide,
                   side,
-                  responses: youCanPlay,
+                  responses: otherMoves,
                 }}
               />
-            </View>
-          )}
-          {!isEmpty(prepareFor) && (
-            <RepertoireMovesTable
-              {...{
-                header: "Prepare for...",
-                activeSide,
-                side,
-                responses: prepareFor,
-                myMoves: false,
-              }}
-            />
-          )}
-        </>
-      )}
+            </CollapsibleSidebarSection>
+          </View>
+        )}
+        {!isEmpty(prepareFor) && (
+          <RepertoireMovesTable
+            {...{
+              header: "What do you want to prepare for?",
+              activeSide,
+              side,
+              responses: prepareFor,
+              myMoves: false,
+            }}
+          />
+        )}
+      </>
       {!ownSide &&
         (() => {
           if (!positionReport) {
@@ -594,9 +531,6 @@ const EditingTabPicker = () => {
           );
         }}
       />
-      <Spacer height={24} />
-
-      {selectedTab === EditingTab.Position && <PositionOverview card={false} />}
       {selectedTab === EditingTab.Responses && <Responses />}
     </View>
   );

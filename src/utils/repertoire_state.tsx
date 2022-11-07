@@ -110,12 +110,12 @@ export interface RepertoireState {
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
   getIsRepertoireEmpty: (side?: Side) => boolean;
-  analyzeLineOnLichess: (line: string[]) => void;
+  analyzeLineOnLichess: (line: string[], side?: Side) => void;
   analyzeMoveOnLichess: (fen: string, move: string, turn: Side) => void;
   backOne: () => void;
   backToStartPosition: () => void;
   deleteRepertoire: (side: Side) => void;
-  deleteMoveConfirmed: () => void;
+  deleteMove: (response: RepertoireMove) => Promise<void>;
   exportPgn: (side: Side) => void;
   addTemplates: () => void;
   onRepertoireUpdate: () => void;
@@ -383,7 +383,7 @@ export const getInitialRepertoireState = (
             windowReference.location = `${url}/${turn}#999`;
           });
       }),
-    analyzeLineOnLichess: (line: string[]) =>
+    analyzeLineOnLichess: (line: string[], _side?: Side) =>
       set(([s]) => {
         var bodyFormData = new FormData();
         bodyFormData.append("pgn", lineToPgn(line));
@@ -393,12 +393,12 @@ export const getInitialRepertoireState = (
           return;
         }
         var windowReference = window.open("about:blank", "_blank");
-        let side = sideOfLastmove(line);
+        let side = _side ?? sideOfLastmove(line);
         client
           .post(`https://lichess.org/api/import`, bodyFormData)
           .then(({ data }) => {
             let url = data["url"];
-            windowReference.location = `${url}/${side}#999`;
+            windowReference.location = `${url}/${side}#${line.length}`;
           });
       }),
     onMove: () =>
@@ -506,11 +506,10 @@ export const getInitialRepertoireState = (
         );
       }, "updateRepertoireStructures"),
 
-    deleteMoveConfirmed: () =>
+    deleteMove: (response: RepertoireMove) =>
       set(([s]) => {
-        let response = s.deleteMoveState.response;
         s.deleteMoveState.isDeletingMove = true;
-        client
+        return client
           .post("/api/v1/openings/delete_move", {
             response: response,
           })
@@ -669,7 +668,7 @@ export const getInitialRepertoireState = (
         s.browsingState.hasPendingLineToAdd = false;
         s.browsingState.hasAnyPendingResponses = false;
         s.browsingState.pendingResponses = {};
-        s.browsingState.addedLineState = null;
+        s.browsingState.addedLineState = { visible: false };
       }),
     startImporting: () =>
       set(([s]) => {
@@ -911,6 +910,7 @@ export const getInitialRepertoireState = (
     backOne: () =>
       set(([s]) => {
         if (s.isBrowsing) {
+          s.browsingState.addedLineState.visible = false;
           s.browsingState.chessboardState.backOne();
           return;
         }

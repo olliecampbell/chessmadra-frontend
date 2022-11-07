@@ -1,6 +1,6 @@
 import { useWindowDimensions } from "react-native";
 
-enum ResponsiveBreakpoint {
+export enum ResponsiveBreakpoint {
   xsm = 0,
   sm = 1,
   md = 2,
@@ -43,7 +43,23 @@ let getBreakpoint = (x: number): ResponsiveBreakpoint => {
 //
 //   }
 
-export const useResponsive = () => {
+export interface Responsive {
+  isMobile: boolean;
+  bp: ResponsiveBreakpoint;
+  switch: <T>(def: T, ...xs: [ResponsiveBreakpoint, T][]) => T;
+  //     => {
+  //     let result = def;
+  //     xs.forEach(([bp, val]) => {
+  //       if (breakpoint >= bp) {
+  //         result = val;
+  //       }
+  //     });
+  //     return result;
+  //   },
+  // }
+}
+
+export const useResponsive = (): Responsive => {
   const { width: windowWidth } = useWindowDimensions();
   // const [isMobile, setIsMobile] = useState(true);
   // useEffect(() => {

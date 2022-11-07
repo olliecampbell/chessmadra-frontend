@@ -28,18 +28,21 @@ import { SideSettingsModal } from "./SideSettingsModal";
 import { Link } from "react-router-dom";
 import { AuthStatus } from "app/utils/user_state";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
-import { AddedLineModal } from "./AddedLineModal";
 
 export const RepertoirePageLayout = ({
   children,
   bottom,
   centered,
+  fullHeight,
+  flushTop,
   lighterBackground,
 }: {
   children: any;
   bottom?: any;
+  flushTop?: boolean;
   lighterBackground?: boolean;
   centered?: boolean;
+  fullHeight?: boolean;
 }) => {
   const isMobile = useIsMobile();
   let [repertoireLoading, initState] = useRepertoireState((s) => [
@@ -52,7 +55,6 @@ export const RepertoirePageLayout = ({
       initState();
     }
   }, []);
-  const backgroundColor = lighterBackground ? c.grays[18] : c.grays[12];
   const [user, ratingDescription, authStatus] = useAppState((s) => [
     s.userState.user,
     s.userState.getUserRatingDescription(),
@@ -61,7 +63,8 @@ export const RepertoirePageLayout = ({
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
-  const navColor = lighterBackground ? c.grays[8] : c.colors.cardBackground;
+  const navColor = c.grays[90];
+  const backgroundColor = c.grays[10];
   const responsive = useResponsive();
   const shortUserUI = responsive.bp < BP.md;
   return (
@@ -82,7 +85,6 @@ export const RepertoirePageLayout = ({
       <ShareRepertoireModal />
       <SideSettingsModal />
       <ConfirmMoveConflictModal />
-      <AddedLineModal />
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",
@@ -93,6 +95,7 @@ export const RepertoirePageLayout = ({
         style={s(
           isMobile ? s(c.grow) : c.flexShrink(1),
           centered && c.grow,
+          fullHeight && c.grow,
           repertoireLoading && c.grow
         )}
       >
@@ -100,7 +103,6 @@ export const RepertoirePageLayout = ({
           style={s(
             c.fullWidth,
             c.height(64),
-            // c.borderBottom(`2px solid ${c.grays[8]}`)
             c.bg(navColor),
             c.lightCardShadow,
             c.zIndex(10)
@@ -149,7 +151,7 @@ export const RepertoirePageLayout = ({
                     <CMText
                       style={s(
                         c.weightSemiBold,
-                        c.fg(c.grays[80]),
+                        c.fg(c.grays[20]),
                         c.fontSize(14)
                       )}
                     >
@@ -166,13 +168,13 @@ export const RepertoirePageLayout = ({
               >
                 {shortUserUI && (
                   <i
-                    style={s(c.fg(c.grays[80]))}
+                    style={s(c.fg(c.grays[20]))}
                     className="fa fa-circle fa-stack-2x"
                   />
                 )}
                 <i
                   style={s(
-                    c.fg(c.grays[shortUserUI ? 20 : 80]),
+                    c.fg(c.grays[shortUserUI ? 80 : 20]),
                     c.fontSize(shortUserUI ? 14 : 18)
                   )}
                   className={`fa-sharp fa-user ${
@@ -195,11 +197,18 @@ export const RepertoirePageLayout = ({
               c.center,
               c.justifyStart,
               c.flexShrink(1),
-              c.pt(isMobile ? 24 : 48),
+              fullHeight && s(c.grow),
+              !flushTop && c.pt(isMobile ? 24 : 48),
               centered && s(c.grow, c.justifyCenter)
             )}
           >
-            <View style={s(c.pb(isMobile ? 92 : 180), c.center)}>
+            <View
+              style={s(
+                !fullHeight && c.pb(isMobile ? 92 : 180),
+                c.center,
+                fullHeight && c.grow
+              )}
+            >
               {children}
             </View>
             {isMobile && <Spacer height={100} />}
@@ -243,7 +252,7 @@ export const NavDropdown = ({ children, title }) => {
       <Spacer width={4} />
       <i
         className="fas fa-angle-down"
-        style={s(c.fontSize(14), c.fg(c.grays[60]))}
+        style={s(c.fontSize(14), c.fg(c.grays[40]))}
       />
       <Animated.View
         style={s(
@@ -254,7 +263,7 @@ export const NavDropdown = ({ children, title }) => {
           c.zIndex(4),
           c.right(0),
           c.top("calc(100% + 8px)"),
-          c.bg(c.grays[90]),
+          c.bg(c.grays[10]),
           c.br(4),
           c.cardShadow,
           c.px(12),
@@ -286,8 +295,8 @@ export const RepertoireNavBreadcrumbs = () => {
               <View style={s()}>
                 <CMText
                   style={s(
-                    breadcrumb.onPress ? c.weightHeavy : c.weightThin,
-                    c.fg(c.colors.textPrimary)
+                    breadcrumb.onPress ? c.weightHeavy : c.weightSemiBold,
+                    c.fg(c.colors.textInverse)
                   )}
                 >
                   {breadcrumb.text}
@@ -299,7 +308,7 @@ export const RepertoireNavBreadcrumbs = () => {
         (i) => {
           return (
             <View key={i} style={s(c.mx(responsive.switch(6, [BP.lg, 8])))}>
-              <CMText style={s(c.fg(c.grays[70]))}>
+              <CMText style={s(c.fg(c.grays[30]))}>
                 <i className="fa-light fa-angle-right" />
               </CMText>
             </View>

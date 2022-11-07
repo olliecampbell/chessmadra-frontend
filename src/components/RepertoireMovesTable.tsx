@@ -56,6 +56,8 @@ import { AnnotationEditor, MAX_ANNOTATION_LENGTH } from "./AnnotationEditor";
 import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
 import { TableResponseScoreSource } from "app/utils/table_scoring";
 import { getCoverageProgress } from "app/utils/browsing_state";
+import { getSidebarPadding } from "./RepertoireBrowsingView";
+import { useResponsive } from "app/utils/useResponsive";
 
 const DELETE_WIDTH = 30;
 
@@ -104,7 +106,9 @@ export const RepertoireMovesTable = ({
   responses: TableResponse[];
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
+  const responsive = useResponsive();
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
+  let mine = filter(responses, (m) => m.repertoireMove?.mine);
   let anyNeeded = some(responses, (m) => m.needed);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let [currentIncidence] = useBrowsingState(([s]) => [
@@ -118,38 +122,38 @@ export const RepertoireMovesTable = ({
     usePeerRates,
     isMobile,
   });
-  let [expanded, setExpanded] = useState(false);
+  let [expandedLength, setExpandedLength] = useState(0);
   let MIN_TRUNCATED = isMobile ? 1 : 1;
   let completed = currentIncidence < currentThreshold;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
-  let trimmedResponses = [...responses];
-  if (!expanded) {
-    trimmedResponses = filter(responses, (r, i) => {
-      if (r.repertoireMove) {
-        return true;
-      }
-      if (anyNeeded && !r.needed) {
-        return false;
-      }
-      if (anyMine) {
-        return false;
-      }
-      if (
-        (r.incidence > currentThreshold ||
-          r.incidenceUpperBound > currentThreshold) &&
-        !myTurn
-      ) {
-        return true;
-      }
-      return (
-        i < MIN_TRUNCATED ||
-        r.repertoireMove ||
-        (myTurn && r.score > 0) ||
-        moveHasTag(r, MoveTag.Dangerous) ||
-        (myTurn && moveHasTag(r, MoveTag.Transposes))
-      );
-    }) as TableResponse[];
-  }
+  let trimmedResponses = filter(responses, (r, i) => {
+    if (i < expandedLength) {
+      return true;
+    }
+    if (r.repertoireMove) {
+      return true;
+    }
+    if (anyNeeded && !r.needed) {
+      return false;
+    }
+    if (anyMine) {
+      return false;
+    }
+    if (
+      (r.incidence > currentThreshold ||
+        r.incidenceUpperBound > currentThreshold) &&
+      !myTurn
+    ) {
+      return true;
+    }
+    return (
+      i < MIN_TRUNCATED ||
+      r.repertoireMove ||
+      (myTurn && r.score > 0) ||
+      moveHasTag(r, MoveTag.Dangerous) ||
+      (myTurn && moveHasTag(r, MoveTag.Transposes))
+    );
+  }) as TableResponse[];
   let numTruncated = responses.length - trimmedResponses.length;
   let truncated = numTruncated > 0;
   let widths = useRef({});
@@ -168,65 +172,79 @@ export const RepertoireMovesTable = ({
   };
   return (
     <View style={s(c.column)}>
-      {!isMobile && <RepertoireEditingHeader>{header}</RepertoireEditingHeader>}
+      {header && (
+        <>
+          <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
+          <Spacer height={24} />
+        </>
+      )}
       <View style={s(c.height(16))}>
         {!editingAnnotations && (
           <TableHeader anyMine={anyMine} sections={sections} />
         )}
       </View>
       <Spacer height={12} />
-      {intersperse(
-        trimmedResponses.map((tableResponse, i) => {
-          return (
-            <Response
-              myTurn={myTurn}
-              anyMine={anyMine}
-              sections={sections}
-              editing={editingAnnotations}
-              key={
-                tableResponse.repertoireMove?.sanPlus ||
-                tableResponse.suggestedMove?.sanPlus
-              }
-              tableResponse={tableResponse}
-              moveMinWidth={moveMaxWidth}
-              moveRef={(e) => {
-                onMoveRender(
-                  tableResponse.suggestedMove?.sanPlus ||
-                    tableResponse.repertoireMove?.sanPlus,
-                  e
-                );
-              }}
-            />
-          );
-        }),
-        (i) => {
-          return <Spacer height={12} key={i} />;
-        }
-      )}
+      <View
+        style={s(
+          c.column,
+          c.borderTop(`1px solid ${c.grays[30]}`),
+          c.borderBottom(`1px solid ${c.grays[30]}`)
+        )}
+      >
+        {intersperse(
+          trimmedResponses.map((tableResponse, i) => {
+            return (
+              <Response
+                myTurn={myTurn}
+                anyMine={anyMine}
+                sections={sections}
+                editing={editingAnnotations}
+                key={
+                  tableResponse.repertoireMove?.sanPlus ||
+                  tableResponse.suggestedMove?.sanPlus
+                }
+                tableResponse={tableResponse}
+                moveMinWidth={moveMaxWidth}
+                moveRef={(e) => {
+                  onMoveRender(
+                    tableResponse.suggestedMove?.sanPlus ||
+                      tableResponse.repertoireMove?.sanPlus,
+                    e
+                  );
+                }}
+              />
+            );
+          }),
+          (i) => {
+            return <View style={s(c.height(1), c.bg(c.grays[30]))}></View>;
+          }
+        )}
+      </View>
       <Spacer height={12} />
-      <View style={s(c.row)}>
+      <View style={s(c.row, c.px(getSidebarPadding(responsive)))}>
         {truncated && (
           <>
             <Pressable
-              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
+              style={s(c.pb(2))}
               onPress={() => {
-                setExpanded(true);
+                console.log({ expandedLength });
+                setExpandedLength(trimmedResponses.length + 5);
                 trackEvent("repertoire.moves_table.show_more");
               }}
             >
               <CMText
                 style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
               >
-                Show more moves <>({numTruncated})</>
+                Show {Math.min(5, numTruncated)} more moves
               </CMText>
             </Pressable>
-            <Spacer width={12} />
+            <Spacer width={16} />
           </>
         )}
         {
           <>
             <Pressable
-              style={s(c.pb(2), c.borderBottom(`1px solid ${c.grays[40]}`))}
+              style={s(c.pb(2))}
               onPress={() => {
                 trackEvent("repertoire.moves_table.edit_annotations");
                 setEditingAnnotations(!editingAnnotations);
@@ -237,12 +255,32 @@ export const RepertoireMovesTable = ({
               >
                 {editingAnnotations
                   ? "Stop editing annotations"
-                  : "Add/edit annotations"}
+                  : "Edit annotations"}
+              </CMText>
+            </Pressable>
+            <Spacer width={16} />
+          </>
+        }
+        {anyMine && (
+          <>
+            <Pressable
+              style={s(c.pb(2))}
+              onPress={() => {
+                trackEvent("repertoire.moves_table.edit_annotations");
+                quick(s => {
+                    s.repertoireState.browsingState.deleteLineState.visible = true;
+                  })
+              }}
+            >
+              <CMText
+                style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
+              >
+                {`Remove ${mine.length > 1 ? "a" : "this"} move`}
               </CMText>
             </Pressable>
             <Spacer width={12} />
           </>
-        }
+        )}
       </View>
     </View>
   );
@@ -483,6 +521,7 @@ const Response = ({
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
   let mine = repertoireMove?.mine;
 
+  const responsive = useResponsive();
   let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
       () => {
@@ -604,13 +643,13 @@ const Response = ({
     );
   }
   if (moveHasTag(tableResponse, MoveTag.Dangerous)) {
-    tags.push(
-      <MoveTagView
-        text="Dangerous move"
-        icon="fa fa-radiation"
-        style={s(c.fg(c.reds[65]), c.fontSize(18))}
-      />
-    );
+    // tags.push(
+    //   <MoveTagView
+    //     text="Dangerous move"
+    //     icon="fa fa-radiation"
+    //     style={s(c.fg(c.reds[65]), c.fontSize(18))}
+    //   />
+    // );
   }
   if (moveHasTag(tableResponse, MoveTag.CommonMistake)) {
     tags.push(
@@ -634,12 +673,12 @@ const Response = ({
         style={s(
           c.grow,
           c.flexible,
-          c.lightCardShadow,
           // tableResponse.bestMove && c.border(`1px solid ${c.yellows[60]}`),
           c.br(2),
-          c.pr(8),
+
+          c.px(getSidebarPadding(responsive)),
           c.py(12),
-          c.bg(hoveringRow ? c.grays[16] : c.grays[18]),
+          hoveringRow && c.bg(c.grays[16]),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
           c.clickable,
@@ -647,50 +686,8 @@ const Response = ({
         )}
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            {myTurn && (
-              <Pressable
-                style={s(
-                  c.px(12),
-                  c.center,
-                  !repertoireMove?.mine && c.noPointerEvents
-                )}
-                {...hoveringCheckboxProps}
-                onPress={() => {
-                  console.log("tapped on checkbox");
-                  quick((s) => {
-                    s.repertoireState.deleteMoveState.modalOpen = true;
-                    s.repertoireState.deleteMoveState.response = repertoireMove;
-                    trackEvent(`editor.delete_move`);
-                  });
-                }}
-              >
-                <i
-                  style={s(
-                    repertoireMove?.mine && hoveringCheckbox
-                      ? c.duotone(c.grays[90], c.reds[55])
-                      : !repertoireMove && anyMine && !hoveringRow
-                      ? s(c.fg("transparent"))
-                      : repertoireMove
-                      ? c.duotone(c.grays[90], c.purples[55])
-                      : hoveringRow
-                      ? c.duotone(c.grays[90], c.purples[55])
-                      : c.fg(c.grays[40]),
-                    hoveringRow && !repertoireMove && c.opacity(60),
-                    c.fontSize(22)
-                  )}
-                  className={
-                    repertoireMove?.mine && hoveringCheckbox
-                      ? `fa-duotone fa-square-xmark`
-                      : repertoireMove || hoveringRow
-                      ? `fa-duotone fa-square-check`
-                      : `fa-thin fa-square`
-                  }
-                ></i>
-              </Pressable>
-            )}
-            {!myTurn && <Spacer width={8} />}
-            <View style={s(c.row, c.alignCenter, c.pl(4))}>
+          <View style={s(c.row, c.fullWidth, c.alignEnd)}>
+            <View style={s(c.row, c.alignCenter)}>
               <View style={s(c.minWidth(moveMinWidth))}>
                 <View
                   style={s(c.row, c.alignCenter)}
@@ -703,7 +700,7 @@ const Response = ({
                       <CMText
                         style={s(
                           c.fg(c.grays[60]),
-                          c.fontSize(18),
+                          c.fontSize(16),
                           c.weightSemiBold,
                           c.keyedProp("letterSpacing")("0.04rem")
                         )}
@@ -718,7 +715,7 @@ const Response = ({
                     key={sanPlus}
                     style={s(
                       c.fg(c.grays[85]),
-                      c.fontSize(18),
+                      c.fontSize(16),
                       c.weightBold,
                       c.keyedProp("letterSpacing")("0.04rem")
                     )}
@@ -734,7 +731,7 @@ const Response = ({
                 </View>
               </View>
             </View>
-            <Spacer width={12} />
+            <Spacer width={18} />
             {
               <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
                 <CMText
@@ -747,14 +744,8 @@ const Response = ({
                   {newOpeningName && (
                     <>
                       <b>{newOpeningName}</b>
-                      {!isMobile && annotation && (
-                        <>
-                          <Spacer width={8} />
-                        </>
-                      )}
                     </>
                   )}
-                  {!isMobile && annotation}
                 </CMText>
               </View>
             }
@@ -786,16 +777,16 @@ const Response = ({
               )}
             </View>
           </View>
-          <View style={s(c.column, c.pl(48), c.pr(12))}>
-            {isMobile && annotation && (
-              <View style={s(c.grow, c.pt(12), c.minWidth(0))}>
-                <CMText style={s(c.fg(c.grays[80]), c.fontSize(14))}>
+          <View style={s(c.column, c.maxWidth(400))}>
+            {annotation && (
+              <View style={s(c.grow, c.pt(8), c.minWidth(0))}>
+                <CMText style={s(c.fg(c.grays[70]), c.fontSize(14))}>
                   {annotation}
                 </CMText>
               </View>
             )}
           </View>
-          <View style={s(c.column, c.px(12))}>
+          <View style={s(c.column, c.alignEnd)}>
             {!isEmpty(tags) && (
               // TODO: dumb way to line up things here
               <View
@@ -872,8 +863,16 @@ const TableHeader = ({
   anyMine: boolean;
 }) => {
   const isMobile = useIsMobile();
+  const responsive = useResponsive();
   return (
-    <View style={s(c.row, c.fullWidth, c.pl(14), c.pr(8))}>
+    <View
+      style={s(
+        c.row,
+        c.fullWidth,
+        c.pl(14),
+        c.px(getSidebarPadding(responsive))
+      )}
+    >
       <Spacer width={12} grow />
       <View style={s(c.row, c.alignCenter)}>
         {intersperse(
@@ -888,7 +887,7 @@ const TableHeader = ({
                 )}
                 key={i}
               >
-                <CMText style={s(c.fg(c.grays[90]), c.fontSize(12))}>
+                <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
                   {section.header}
                 </CMText>
               </View>
@@ -1068,7 +1067,7 @@ const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
     <CMText
       style={s(
         c.fg(c.grays[80]),
-        c.bg(c.grays[25]),
+        c.bg(c.grays[14]),
         c.px(8),
         c.py(6),
         c.fontSize(12),

@@ -89,13 +89,11 @@ export interface BrowsingState {
   differentMoveIndices?: number[];
   sections?: BrowserSection[];
   onPositionUpdate: () => void;
+  deleteLineState: {
+    visible: boolean;
+  };
   addedLineState: {
-    line: string[];
-    addNewLineChoices?: AddNewLineChoice[];
-    addNewLineSelectedIndex?: number;
-    ecoCode: EcoCode;
-    stage: AddedLineStage;
-    positionReport: PositionReport;
+    visible: boolean;
   };
   // TODO: merge w/ onPositionUpdate
   onEditingPositionUpdate: () => void;
@@ -174,7 +172,8 @@ export const getInitialBrowsingState = (
     hasPendingLineToAdd: false,
     selectedTab: BrowsingTab.Responses,
     isAddingPendingLine: false,
-    addedLineState: null,
+    deleteLineState: { visible: false },
+    addedLineState: { visible: false },
     editingState: {
       selectedTab: EditingTab.Position,
       etcModalOpen: false,
@@ -476,12 +475,12 @@ export const getInitialBrowsingState = (
     requestToAddCurrentLine: () =>
       set(([s, rs]) => {
         if (s.hasPendingLineToAdd) {
-          if (s.pendingLineHasConflictingMoves) {
-            s.editingState.addConflictingMoveModalOpen = true;
-          } else {
-            trackEvent("repertoire.add_pending_line");
-            s.addPendingLine();
-          }
+          // if (s.pendingLineHasConflictingMoves) {
+          //   s.editingState.addConflictingMoveModalOpen = true;
+          // } else {
+          trackEvent("repertoire.add_pending_line");
+          s.addPendingLine();
+          // }
         }
       }),
     onEditingPositionUpdate: () =>
@@ -619,6 +618,9 @@ export const getInitialBrowsingState = (
               rs.onRepertoireUpdate();
               s.onEditingPositionUpdate();
               s.editingState.addConflictingMoveModalOpen = false;
+              s.addedLineState = {
+                visible: true,
+              };
             });
           })
           .finally(() => {

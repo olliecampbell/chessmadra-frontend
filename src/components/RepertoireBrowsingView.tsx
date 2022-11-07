@@ -34,10 +34,12 @@ import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
-import { BP, useResponsive } from "app/utils/useResponsive";
+import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
 import { PositionOverview, Responses } from "./RepertoireEditingView";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
+import { SidebarActions } from "./SidebarActions";
+import { BrowserSidebar } from "./BrowsingSidebar";
 
 const VERTICAL_BREAKPOINT = BP.md;
 
@@ -79,18 +81,6 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
     { referenceEquality: true }
   );
   useEffect(() => {
-    console.log(
-      "paramSide",
-      paramSide,
-      "isBrowsing",
-      isBrowsing,
-      "activeSide",
-      activeSide,
-      "loading",
-      repertoireLoading,
-      "shared",
-      shared
-    );
     if (
       (paramSide !== activeSide || !isBrowsing) &&
       !repertoireLoading &&
@@ -106,49 +96,42 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   const loading = repertoireLoading || isNil(activeSide);
+  const paddingTop = 140;
   return (
-    <RepertoirePageLayout
-      bottom={loading ? null : <RepertoireEditingBottomNav />}
-    >
+    <RepertoirePageLayout flushTop bottom={null} fullHeight>
       {loading ? null : (
-        <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
+        <View
+          style={s(c.containerStyles(responsive.bp), c.alignCenter, c.grow)}
+        >
           <View
             style={s(
               vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
-              vertical ? c.column : c.row
+              vertical ? c.column : c.row,
+              c.grow,
+              c.selfStretch,
+              c.justifyCenter
             )}
           >
             <View
               style={s(
                 c.column,
                 !vertical && s(c.grow, c.noBasis, c.flexShrink),
-                vertical ? c.width("min(480px, 100%)") : c.maxWidth(600),
+                vertical ? c.width("min(480px, 100%)") : c.maxWidth(440),
                 vertical ? c.selfCenter : c.selfStretch
               )}
             >
               <View
                 style={s(
                   c.fullWidth,
-                  vertical && s(c.selfCenter, c.maxWidth(320))
+                  vertical && s(c.selfCenter, c.maxWidth(320)),
+                  !vertical && c.pt(paddingTop)
                 )}
               >
                 <ChessboardView state={chessboardState} />
               </View>
               <Spacer height={12} />
-              <BackControls
-                includeAnalyze
-                includeReview={
-                  responsive.isMobile && reviewQueueFromHere?.length > 0
-                }
-              />
-              {!readOnly &&
-                reviewQueueFromHere?.length > 0 &&
-                !responsive.isMobile && (
-                  <>
-                    <Spacer height={12} />
-                    <ReviewFromHereButton />
-                  </>
-                )}
+              <ExtraChessboardActions />
+              <Spacer height={60} />
               {readOnly && (
                 <>
                   <Spacer height={12} />
@@ -158,26 +141,59 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               {vertical && (
                 <>
                   <Spacer height={12} />
-                  <ResultsView />
+                  <BrowserSidebar />
                 </>
               )}
             </View>
             {!vertical && (
               <>
-                <Spacer width={responsive.switch(24, [BP.xl, 48])} />
+                <Spacer width={responsive.switch(24, [BP.lg, 48])} />
                 <View
+                  // @ts-ignore
+                  nativeID="sidebar"
                   style={s(
                     c.column,
                     !vertical && s(c.flexGrow(2), c.flexShrink, c.noBasis),
-                    c.maxWidth(700)
-                    // c.width(
-                    //   `min(${responsive.bp >= BP.xxl ? 1000 : 800}px, 100%)`
-                    // )
+                    c.bg(c.grays[20]),
+                    c.pb(20),
+                    c.maxWidth(600)
                   )}
                 >
-                  <PositionOverview card={true} />
-                  <Spacer height={responsive.switch(24)} />
-                  <ResultsView />
+                  <Pressable
+                    onPress={() => {
+                      quick((s) => {
+                        if (s.browsingState.addedLineState.visible) {
+                          s.browsingState.addedLineState.visible = false;
+                          return;
+                        } else if (s.browsingState.deleteLineState.visible) {
+                          s.browsingState.deleteLineState.visible = false;
+                          return;
+                        }
+                        if (isEmpty(s.browsingState.chessboardState.moveLog)) {
+                          s.backToOverview();
+                        } else {
+                          s.browsingState.chessboardState.backOne();
+                        }
+                      });
+                    }}
+                    style={s(
+                      c.height(paddingTop),
+                      c.unshrinkable,
+                      c.column,
+                      c.justifyEnd,
+                      c.px(getSidebarPadding(responsive))
+                    )}
+                  >
+                    <CMText style={s()}>
+                      <i className="fa fa-arrow-left"></i>
+                      <Spacer width={8} />
+                      Back
+                    </CMText>
+                    <Spacer height={44} />
+                  </Pressable>
+                  <BrowserSidebar />
+                  <Spacer height={44} />
+                  <SidebarActions />
                 </View>
               </>
             )}
@@ -185,6 +201,49 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
         </View>
       )}
     </RepertoirePageLayout>
+  );
+};
+
+export const getSidebarPadding = (responsive: Responsive) => {
+  return responsive.switch(8, [BP.lg, 18]);
+};
+
+export const ExtraChessboardActions = ({}: {}) => {
+  const textStyles = s(c.fontSize(14), c.fg(c.grays[50]), c.weightSemiBold);
+  const iconStyles = s(c.fontSize(14), c.fg(c.grays[50]));
+  const padding = 8;
+  let [currentLine, activeSide] = useRepertoireState((s) => [
+    s.browsingState.chessboardState.moveLog,
+    s.browsingState.activeSide,
+  ]);
+  return (
+    <View style={s(c.row, c.fullWidth, c.justifyCenter)}>
+      <Pressable
+        style={s(c.row, c.alignCenter)}
+        onPress={() => {
+          quick((s) => {
+            s.repertoireState.browsingState.chessboardState.resetPosition();
+          });
+        }}
+      >
+        <CMText style={s(textStyles)}>Reset board</CMText>
+        <Spacer width={padding} />
+        <i className="fa fa-arrows-rotate" style={s(iconStyles)}></i>
+      </Pressable>
+      <Spacer width={18} />
+      <Pressable
+        style={s(c.row, c.alignCenter)}
+        onPress={() => {
+          quick((s) => {
+            s.repertoireState.analyzeLineOnLichess(currentLine, activeSide);
+          });
+        }}
+      >
+        <CMText style={s(textStyles)}>Analyze on lichess</CMText>
+        <Spacer width={padding} />
+        <i className="fa fa-up-right-from-square" style={s(iconStyles)}></i>
+      </Pressable>
+    </View>
   );
 };
 
@@ -285,86 +344,6 @@ export const SwitchSideButton = () => {
     </Button>
   );
 };
-
-export const ResultsView = React.memo(function () {
-  const [selectedTab, quick, readOnly] = useRepertoireState((s) => [
-    s.browsingState.selectedTab,
-    s.quick,
-    s.browsingState.readOnly,
-  ]);
-  // const isMobile = useIsMobile();
-  const responsive = useResponsive();
-  const isMobile = responsive.isMobile;
-  let tabs = [
-    BrowsingTab.Responses,
-    ...(isMobile ? [BrowsingTab.Position] : []),
-    // BrowsingTab.Lines,
-    // ...(!isMobile ? [BrowsingTab.Misses] : []),
-    // BrowsingTab.InstructiveGames,
-  ];
-  return (
-    <View style={s(c.column)}>
-      {!readOnly && tabs.length > 1 && (
-        <>
-          <SelectOneOf
-            tabStyle
-            containerStyles={s(c.fullWidth, c.justifyBetween)}
-            choices={tabs}
-            activeChoice={selectedTab}
-            separator={() => {
-              // if (isMobile) {
-              //   return null;
-              // }
-              return null;
-            }}
-            horizontal
-            onSelect={(tab) => {}}
-            renderChoice={(tab, active, i) => {
-              return (
-                <Pressable
-                  key={i}
-                  onPress={() => {
-                    quick((s) => {
-                      s.browsingState.selectedTab = tab;
-                    });
-                  }}
-                  style={s(
-                    c.column,
-                    c.grow,
-                    c.alignCenter,
-                    c.py(responsive.switch(8, [BP.lg, 12])),
-                    // c.bg(active ? c.grays[95] : "transparent"),
-                    c.br(0),
-                    c.borderBottom(
-                      `2px solid ${active ? c.grays[95] : "transparent"}`
-                    ),
-                    c.zIndex(5),
-                    c.px(isMobile ? 0 : 48)
-                  )}
-                >
-                  <CMText
-                    style={s(c.fg(c.grays[85]), c.fontSize(16), c.weightBold)}
-                  >
-                    {tab}
-                  </CMText>
-                </Pressable>
-              );
-            }}
-          />
-        </>
-      )}
-      <View style={s(c.br(tabs.length === 1 ? 2 : 0), c.brb(2), c.pt(24))}>
-        {selectedTab === BrowsingTab.Responses && <Responses />}
-        {selectedTab === BrowsingTab.Position && <PositionOverview />}
-        {selectedTab === BrowsingTab.Lines && <BrowsingSectionsView />}
-        {selectedTab === BrowsingTab.Misses && <BrowsingMissesView />}
-        {selectedTab === BrowsingTab.InstructiveGames && (
-          <InstructiveGamesView />
-        )}
-      </View>
-    </View>
-  );
-});
 
 export const InstructiveGamesView = React.memo(() => {
   const isMobile = useIsMobile();

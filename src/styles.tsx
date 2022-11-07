@@ -1,5 +1,5 @@
 import { assign } from "lodash-es";
-import { BP } from "./utils/useResponsive";
+import { BP, Responsive } from "./utils/useResponsive";
 
 export const s = (...args) => assign({}, ...args);
 
@@ -510,6 +510,9 @@ const max = (min, max) => {
 const calc = (c) => {
   return `calc(${c})`;
 };
+const sidebarDescriptionStyles = (responsive: Responsive) => {
+  return s(c.fg(c.grays[70]));
+};
 
 export const c = {
   keyedProp,
@@ -665,4 +668,5 @@ export const c = {
   max,
   calc,
   noUserSelect,
+  sidebarDescriptionStyles,
 };
