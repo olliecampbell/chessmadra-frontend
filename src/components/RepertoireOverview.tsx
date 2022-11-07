@@ -307,8 +307,8 @@ const SideEtcButton = ({ side }: { side: Side }) => {
         c.border("none"),
         c.selfStretch,
         c.relative,
-        c.px(14),
-        c.py(8)
+        c.px(responsive.switch(8, [BP.lg, 14])),
+        c.py(responsive.switch(4, [BP.lg, 8]))
       )}
       onPress={() => {
         quick((s) => {
@@ -604,7 +604,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
               }}
             />
             <Spacer
-              width={responsive.switch(32, [BP.xl, 48])}
+              width={responsive.switch(16, [BP.md, 32], [BP.xl, 48])}
               height={24}
               style={s(c.flexShrink)}
               isMobile={responsive.isMobile}

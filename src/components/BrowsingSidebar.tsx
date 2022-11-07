@@ -44,7 +44,10 @@ import {
   formatWinPercentage,
   getWinRate,
 } from "app/utils/results_distribution";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
+import {
+  getSidebarPadding,
+  VERTICAL_BREAKPOINT,
+} from "./RepertoireBrowsingView";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
 
@@ -63,7 +66,49 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   } else {
     inner = <Responses />;
   }
-  return <View style={s(c.column)}>{inner}</View>;
+  const paddingTop = 140;
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  return (
+    <View style={s(c.column)}>
+      <Pressable
+        onPress={() => {
+          quick((s) => {
+            if (s.repertoireState.browsingState.addedLineState.visible) {
+              s.repertoireState.browsingState.addedLineState.visible = false;
+              return;
+            } else if (
+              s.repertoireState.browsingState.deleteLineState.visible
+            ) {
+              s.repertoireState.browsingState.deleteLineState.visible = false;
+              return;
+            }
+            if (
+              isEmpty(s.repertoireState.browsingState.chessboardState.moveLog)
+            ) {
+              s.repertoireState.backToOverview();
+            } else {
+              s.repertoireState.browsingState.chessboardState.backOne();
+            }
+          });
+        }}
+        style={s(
+          !vertical ? c.height(paddingTop) : c.pt(40),
+          c.unshrinkable,
+          c.column,
+          c.justifyEnd,
+          c.px(getSidebarPadding(responsive))
+        )}
+      >
+        <CMText style={s()}>
+          <i className="fa fa-arrow-left"></i>
+          <Spacer width={8} />
+          Back
+        </CMText>
+        <Spacer height={44} />
+      </Pressable>
+      {inner}
+    </View>
+  );
 });
 
 const SavedLineView = React.memo(function SavedLineView() {

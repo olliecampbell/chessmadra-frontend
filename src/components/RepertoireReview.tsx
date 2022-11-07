@@ -52,6 +52,7 @@ export const RepertoireReview = (props: {}) => {
       });
     }
   }, [repertoireLoading]);
+  const buttonStyles = s(c.width("unset"), c.py(8));
   return (
     <RepertoirePageLayout>
       <TrainerLayout
@@ -123,6 +124,8 @@ export const RepertoireReview = (props: {}) => {
             style={s(
               c.buttons.squareBasicButtons,
               c.buttons.basicInverse,
+              buttonStyles,
+              c.maxWidth(72),
               c.height("unset"),
               c.selfStretch
             )}
@@ -147,6 +150,8 @@ export const RepertoireReview = (props: {}) => {
             style={s(
               c.buttons.squareBasicButtons,
               c.buttons.basicInverse,
+              buttonStyles,
+              c.maxWidth(72),
               c.height("unset"),
               c.selfStretch
             )}
@@ -157,12 +162,15 @@ export const RepertoireReview = (props: {}) => {
               });
             }}
           >
-            <LichessLogoIcon color={c.grays[80]} />
+            <View style={s(c.size(18))}>
+              <LichessLogoIcon color={c.grays[80]} />
+            </View>
           </Button>
           <Spacer width={8} />
           <Button
             style={s(
               showNext ? c.buttons.primary : c.buttons.basicInverse,
+              buttonStyles,
               c.grow
             )}
             onPress={() => {

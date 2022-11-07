@@ -63,7 +63,12 @@ export const BackControls: React.FC<BackControlsProps> = ({
       >
         <i
           className="fa-sharp fa-angles-left"
-          style={s(c.buttons.darkFloater.textStyles, c.fontSize(18), textColor)}
+          style={s(
+            c.buttons.darkFloater.textStyles,
+            c.px(0),
+            c.fontSize(18),
+            textColor
+          )}
         />
       </Button>
       <Spacer width={gap} />

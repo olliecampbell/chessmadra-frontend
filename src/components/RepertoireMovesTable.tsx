@@ -267,9 +267,10 @@ export const RepertoireMovesTable = ({
               style={s(c.pb(2))}
               onPress={() => {
                 trackEvent("repertoire.moves_table.edit_annotations");
-                quick(s => {
-                    s.repertoireState.browsingState.deleteLineState.visible = true;
-                  })
+                quick((s) => {
+                  s.repertoireState.browsingState.deleteLineState.visible =
+                    true;
+                });
               }}
             >
               <CMText
@@ -741,7 +742,7 @@ const Response = ({
                     c.lineHeight("1.3rem")
                   )}
                 >
-                  {newOpeningName && (
+                  {newOpeningName && !isMobile && (
                     <>
                       <b>{newOpeningName}</b>
                     </>
@@ -779,11 +780,16 @@ const Response = ({
           </View>
           <View style={s(c.column, c.maxWidth(400))}>
             {annotation && (
-              <View style={s(c.grow, c.pt(8), c.minWidth(0))}>
+              <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
+                {newOpeningName && isMobile && (
+                  <CMText style={s(c.weightSemiBold, c.pr(8))}>
+                    {newOpeningName}
+                  </CMText>
+                )}
                 <CMText style={s(c.fg(c.grays[70]), c.fontSize(14))}>
                   {annotation}
                 </CMText>
-              </View>
+              </CMText>
             )}
           </View>
           <View style={s(c.column, c.alignEnd)}>

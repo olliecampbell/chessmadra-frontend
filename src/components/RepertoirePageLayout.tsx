@@ -137,7 +137,7 @@ export const RepertoirePageLayout = ({
                       c.mr(8),
                       c.clickable,
                       c.br(4),
-                      // c.fg(c.primaries[70]),
+                      c.fg(c.grays[30]),
                       c.weightBold,
                       c.fontSize(isMobile ? 14 : 16)
                     )}
@@ -206,12 +206,13 @@ export const RepertoirePageLayout = ({
               style={s(
                 !fullHeight && c.pb(isMobile ? 92 : 180),
                 c.center,
+                c.fullWidth,
                 fullHeight && c.grow
               )}
             >
               {children}
             </View>
-            {isMobile && <Spacer height={100} />}
+            {isMobile && !fullHeight && <Spacer height={100} />}
           </View>
         )}
       </View>

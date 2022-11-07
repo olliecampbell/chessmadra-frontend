@@ -41,7 +41,7 @@ import useKeypress from "react-use-keypress";
 import { SidebarActions } from "./SidebarActions";
 import { BrowserSidebar } from "./BrowsingSidebar";
 
-const VERTICAL_BREAKPOINT = BP.md;
+export const VERTICAL_BREAKPOINT = BP.md;
 
 export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   const [
@@ -96,12 +96,16 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   const loading = repertoireLoading || isNil(activeSide);
-  const paddingTop = 140;
   return (
     <RepertoirePageLayout flushTop bottom={null} fullHeight>
       {loading ? null : (
         <View
-          style={s(c.containerStyles(responsive.bp), c.alignCenter, c.grow)}
+          nativeID="BrowsingView"
+          style={s(
+            !vertical ? c.containerStyles(responsive.bp) : c.fullWidth,
+            c.alignCenter,
+            c.grow
+          )}
         >
           <View
             style={s(
@@ -109,7 +113,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               vertical ? c.column : c.row,
               c.grow,
               c.selfStretch,
-              c.justifyCenter
+              vertical ? c.justifyStart : c.justifyCenter
             )}
           >
             <View
@@ -117,32 +121,31 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                 c.column,
                 !vertical && s(c.grow, c.noBasis, c.flexShrink),
                 vertical ? c.width("min(480px, 100%)") : c.maxWidth(440),
+                vertical && c.grow,
                 vertical ? c.selfCenter : c.selfStretch
               )}
             >
               <View
                 style={s(
                   c.fullWidth,
-                  vertical && s(c.selfCenter, c.maxWidth(320)),
-                  !vertical && c.pt(paddingTop)
+                  vertical && s(c.selfCenter, c.maxWidth(320), c.pt(20)),
+                  !vertical && c.pt(140)
                 )}
               >
                 <ChessboardView state={chessboardState} />
               </View>
               <Spacer height={12} />
               <ExtraChessboardActions />
-              <Spacer height={60} />
-              {readOnly && (
+              {vertical ? (
                 <>
                   <Spacer height={12} />
-                  <SwitchSideButton />
+
+                  <View style={s(c.bg(c.grays[20]), c.grow, c.pb(24))}>
+                    <BrowserSidebar />
+                  </View>
                 </>
-              )}
-              {vertical && (
-                <>
-                  <Spacer height={12} />
-                  <BrowserSidebar />
-                </>
+              ) : (
+                <Spacer height={60} />
               )}
             </View>
             {!vertical && (
@@ -159,38 +162,6 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                     c.maxWidth(600)
                   )}
                 >
-                  <Pressable
-                    onPress={() => {
-                      quick((s) => {
-                        if (s.browsingState.addedLineState.visible) {
-                          s.browsingState.addedLineState.visible = false;
-                          return;
-                        } else if (s.browsingState.deleteLineState.visible) {
-                          s.browsingState.deleteLineState.visible = false;
-                          return;
-                        }
-                        if (isEmpty(s.browsingState.chessboardState.moveLog)) {
-                          s.backToOverview();
-                        } else {
-                          s.browsingState.chessboardState.backOne();
-                        }
-                      });
-                    }}
-                    style={s(
-                      c.height(paddingTop),
-                      c.unshrinkable,
-                      c.column,
-                      c.justifyEnd,
-                      c.px(getSidebarPadding(responsive))
-                    )}
-                  >
-                    <CMText style={s()}>
-                      <i className="fa fa-arrow-left"></i>
-                      <Spacer width={8} />
-                      Back
-                    </CMText>
-                    <Spacer height={44} />
-                  </Pressable>
                   <BrowserSidebar />
                   <Spacer height={44} />
                   <SidebarActions />
@@ -205,7 +176,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
 };
 
 export const getSidebarPadding = (responsive: Responsive) => {
-  return responsive.switch(8, [BP.lg, 18]);
+  return responsive.switch(12, [BP.lg, 18]);
 };
 
 export const ExtraChessboardActions = ({}: {}) => {
