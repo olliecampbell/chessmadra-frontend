@@ -235,7 +235,7 @@ export const RepertoireMovesTable = ({
               <CMText
                 style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
               >
-                Show {Math.min(5, numTruncated)} more moves
+                Show more moves
               </CMText>
             </Pressable>
             <Spacer width={16} />
@@ -311,7 +311,7 @@ let useSections = ({
   const debugUi = useDebugState((s) => s.debugUi);
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let sections: Section[] = [];
-  let textStyles = s(c.fg(c.grays[80]), c.weightSemiBold);
+  let textStyles = s(c.fg(c.grays[80]), c.weightSemiBold, c.fontSize(12));
 
   let na = <CMText style={s(textStyles)}>N/A</CMText>;
   let notEnoughGames = (
@@ -375,7 +375,7 @@ let useSections = ({
   }
   if (!myTurn) {
     sections.push({
-      width: 90,
+      width: 80,
       content: ({ suggestedMove, positionReport, tableResponse }) => {
         return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
       },
@@ -490,8 +490,6 @@ const Response = ({
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoveringProps } = useHovering();
-  const { hovering: hoveringCheckbox, hoveringProps: hoveringCheckboxProps } =
-    useHovering();
   const { suggestedMove, repertoireMove, incidence, moveRating } =
     tableResponse;
   const [
@@ -687,7 +685,7 @@ const Response = ({
         )}
       >
         <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.fullWidth, c.alignEnd)}>
+          <View style={s(c.row, c.fullWidth, c.alignStart)}>
             <View style={s(c.row, c.alignCenter)}>
               <View style={s(c.minWidth(moveMinWidth))}>
                 <View
@@ -732,7 +730,7 @@ const Response = ({
                 </View>
               </View>
             </View>
-            <Spacer width={18} />
+            <Spacer width={12} />
             {
               <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
                 <CMText
@@ -742,11 +740,17 @@ const Response = ({
                     c.lineHeight("1.3rem")
                   )}
                 >
-                  {newOpeningName && !isMobile && (
+                  {newOpeningName && (
                     <>
                       <b>{newOpeningName}</b>
+                      {!isMobile && annotation && (
+                        <>
+                          . <Spacer width={2} />
+                        </>
+                      )}
                     </>
                   )}
+                  {!isMobile && annotation}
                 </CMText>
               </View>
             }
@@ -779,7 +783,7 @@ const Response = ({
             </View>
           </View>
           <View style={s(c.column, c.maxWidth(400))}>
-            {annotation && (
+            {isMobile && annotation && (
               <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
                 {newOpeningName && isMobile && (
                   <CMText style={s(c.weightSemiBold, c.pr(8))}>
@@ -893,7 +897,13 @@ const TableHeader = ({
                 )}
                 key={i}
               >
-                <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                <CMText
+                  style={s(
+                    c.fg(c.grays[70]),
+                    c.fontSize(12),
+                    c.whitespace("nowrap")
+                  )}
+                >
                   {section.header}
                 </CMText>
               </View>
@@ -961,7 +971,7 @@ export const DebugScoreView = ({
 };
 
 const getSpaceBetweenStats = (isMobile: boolean) => {
-  return isMobile ? 12 : 24;
+  return isMobile ? 12 : 12;
 };
 
 const CoverageProgressBar = ({

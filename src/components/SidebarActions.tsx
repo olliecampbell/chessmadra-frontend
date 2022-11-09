@@ -44,6 +44,7 @@ import { PositionOverview, Responses } from "./RepertoireEditingView";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
+import { useHovering } from "app/hooks/useHovering";
 
 export interface SidebarAction {
   onPress: () => void;
@@ -63,6 +64,7 @@ export const SidebarActions = () => {
     addedLineState,
     deleteLineState,
     currentLine,
+    seenOnboarding,
   ] = useBrowsingState(([s]) => [
     s.hasPendingLineToAdd,
     s.getNearestMiss(),
@@ -72,6 +74,7 @@ export const SidebarActions = () => {
     s.addedLineState,
     s.deleteLineState,
     s.chessboardState.moveLog,
+    s.seenOnboarding.value,
   ]);
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
@@ -104,6 +107,7 @@ export const SidebarActions = () => {
   };
   if (deleteLineState.visible) {
     // This is taken care of by the delete line view, maybe bad though
+  } else if (!seenOnboarding) {
   } else if (addedLineState.visible) {
     buttons.push(goToBiggestMissAction);
     buttons.push(reviewCurrentLineAction);
@@ -140,26 +144,28 @@ export const SidebarFullWidthButton = ({
   action: SidebarAction;
 }) => {
   const responsive = useResponsive();
+  const { hovering, hoveringProps } = useHovering();
   return (
     <Pressable
       onPress={action.onPress}
+      {...hoveringProps}
       style={s(
         c.fullWidth,
-        c.bg(c.grays[30]),
+        c.bg(hovering ? c.grays[25] : c.grays[30]),
         c.row,
         c.justifyBetween,
         c.alignCenter,
-        c.py(16),
+        c.py(12),
         c.px(getSidebarPadding(responsive))
       )}
       key={action.text}
     >
-      <CMText style={s(c.fg(c.grays[90]), c.weightSemiBold, c.fontSize(16))}>
+      <CMText style={s(c.fg(c.grays[90]), c.weightSemiBold, c.fontSize(14))}>
         {action.text}
       </CMText>
       <i
         className="fa-regular fa-arrow-right-long"
-        style={s(c.fg(c.grays[90]))}
+        style={s(c.fg(c.grays[80]))}
       />
     </Pressable>
   );

@@ -187,6 +187,9 @@ export const ExtraChessboardActions = ({}: {}) => {
     s.browsingState.chessboardState.moveLog,
     s.browsingState.activeSide,
   ]);
+  if (isEmpty(currentLine)) {
+    return null;
+  }
   return (
     <View style={s(c.row, c.fullWidth, c.justifyCenter)}>
       <Pressable

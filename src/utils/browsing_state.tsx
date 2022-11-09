@@ -60,9 +60,23 @@ import {
 import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
+import { StorageItem } from "./storageItem";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
+}
+
+export enum SidebarOnboardingStage {
+  Initial,
+  ConnectAccount,
+  SetRating,
+  GoalSet,
+  // Probably skip this for now
+  Import,
+}
+
+export interface SidebarOnboardingState {
+  stage: SidebarOnboardingStage;
 }
 
 export enum BrowsingTab {
@@ -98,6 +112,7 @@ export interface BrowsingState {
   // TODO: merge w/ onPositionUpdate
   onEditingPositionUpdate: () => void;
   addPendingLine: (_?: { replace: boolean }) => void;
+  seenOnboarding: StorageItem<boolean>;
   pendingResponses?: Record<string, RepertoireMove>;
   isAddingPendingLine: boolean;
   getIncidenceOfCurrentLine: () => number;
@@ -105,6 +120,7 @@ export interface BrowsingState {
   getShouldShowPastGoalOverlay: () => boolean;
   getNearestMiss: () => RepertoireMiss;
   hasPendingLineToAdd: boolean;
+  sidebarOnboardingState: SidebarOnboardingState;
   pendingLineHasConflictingMoves?: boolean;
   fetchNeededPositionReports: () => void;
   updateRepertoireProgress: () => void;
@@ -168,8 +184,11 @@ export const getInitialBrowsingState = (
   let initialState = {
     ...createQuick(setOnly),
     readOnly: false,
+    seenOnboarding: new StorageItem("mock-seen-sidebar-onboarding-v1", true),
     dismissedPastCoverageGoalNotification: false,
     hasPendingLineToAdd: false,
+    sidebarOnboardingState: { stage: SidebarOnboardingStage.Initial },
+    sidebarOnboardingStage: null,
     selectedTab: BrowsingTab.Responses,
     isAddingPendingLine: false,
     deleteLineState: { visible: false },

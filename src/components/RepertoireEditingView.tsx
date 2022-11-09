@@ -364,7 +364,7 @@ export const Responses = React.memo(function Responses() {
           <View style={s()} key={`your-moves-play-${currentEpd}`}>
             <RepertoireMovesTable
               {...{
-                header: getResponsesHeader(currentLine, isEmpty(yourMoves)),
+                header: getResponsesHeader(currentLine, !isEmpty(yourMoves)),
                 usePeerRates,
                 activeSide,
                 side,
@@ -414,45 +414,47 @@ export const Responses = React.memo(function Responses() {
           />
         )}
       </>
-      {!ownSide &&
-        (() => {
-          if (!positionReport) {
-            return (
-              <View style={s(c.center, c.column, c.py(48))}>
-                <BeatLoader color={c.grays[100]} size={14} />
+      {(() => {
+        if (!positionReport) {
+          return (
+            <View style={s(c.center, c.column, c.py(48))}>
+              <BeatLoader color={c.grays[100]} size={14} />
+            </View>
+          );
+        } else if (
+          isEmpty(positionReport.suggestedMoves) &&
+          isEmpty(yourMoves)
+        ) {
+          return (
+            <>
+              <View
+                style={s(
+                  c.column,
+                  c.alignCenter,
+                  c.selfCenter,
+                  c.px(12),
+                  c.maxWidth(240),
+                  c.py(48)
+                )}
+              >
+                <CMText>
+                  <i
+                    className="fa-light fa-empty-set"
+                    style={s(c.fg(c.grays[50]), c.fontSize(24))}
+                  />
+                </CMText>
+                <Spacer height={18} />
+                <CMText style={s(c.fg(c.grays[75]))}>
+                  No moves available for this position. You can still add a move
+                  by playing it on the board.
+                </CMText>
               </View>
-            );
-          } else if (isEmpty(prepareFor)) {
-            return (
-              <>
-                <View
-                  style={s(
-                    c.row,
-                    c.alignCenter,
-                    c.selfCenter,
-                    c.px(12),
-                    c.maxWidth(240),
-                    c.py(48)
-                  )}
-                >
-                  <CMText>
-                    <i
-                      className="fa-light fa-empty-set"
-                      style={s(c.fg(c.grays[50]), c.fontSize(24))}
-                    />
-                  </CMText>
-                  <Spacer width={18} />
-                  <CMText style={s(c.fg(c.grays[35]))}>
-                    No moves available for this position. You can still add a
-                    move by playing it on the board.
-                  </CMText>
-                </View>
-              </>
-            );
-          } else {
-            return <></>;
-          }
-        })()}
+            </>
+          );
+        } else {
+          return <></>;
+        }
+      })()}
     </View>
   );
 });
@@ -696,6 +698,10 @@ export const PositionOverview = ({ card }: { card?: boolean }) => {
 };
 
 function getResponsesHeader(currentLine: string[], hasMove?: boolean): string {
+  // TODO: account for multiple moves, "These moves are"
+  if (hasMove && !isEmpty(currentLine)) {
+    return "This move is in your repertoire";
+  }
   return `${hasMove ? "Choose your" : "Your"} ${
     isEmpty(currentLine) ? "first" : "next"
   } move`;

@@ -50,16 +50,22 @@ import {
 } from "./RepertoireBrowsingView";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
+import { SidebarOnboarding } from "./SidebarOnboarding";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  const [addedLineState, deleteLineState] = useRepertoireState((s) => [
-    s.browsingState.addedLineState,
-    s.browsingState.deleteLineState,
-  ]);
+  const [addedLineState, deleteLineState, seenOnboarding] = useRepertoireState(
+    (s) => [
+      s.browsingState.addedLineState,
+      s.browsingState.deleteLineState,
+      s.browsingState.seenOnboarding,
+    ]
+  );
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
   let inner = null;
-  if (deleteLineState.visible) {
+  if (!seenOnboarding.value) {
+    inner = <SidebarOnboarding />;
+  } else if (deleteLineState.visible) {
     inner = <DeleteLineView />;
   } else if (addedLineState.visible) {
     inner = <SavedLineView />;
@@ -69,7 +75,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
-    <View style={s(c.column)}>
+    <View style={s(c.column, c.zIndex(4))}>
       <Pressable
         onPress={() => {
           quick((s) => {
