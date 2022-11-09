@@ -178,7 +178,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
 };
 
 export const getSidebarPadding = (responsive: Responsive) => {
-  return responsive.switch(12, [BP.lg, 18]);
+  return responsive.switch(8, [BP.md, 12], [BP.lg, 18]);
 };
 
 export const ExtraChessboardActions = ({}: {}) => {

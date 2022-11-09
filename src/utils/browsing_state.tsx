@@ -381,8 +381,8 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           let moveRating = getMoveRating(
-            positionReport?.stockfish,
-            tr.suggestedMove?.stockfish,
+            positionReport,
+            tr.suggestedMove,
             currentSide
           );
           tr.moveRating = moveRating;
@@ -717,8 +717,8 @@ const isCommonMistake = (
     return false;
   }
   let moveRating = getMoveRating(
-    positionReport.stockfish,
-    tr.suggestedMove.stockfish,
+    positionReport,
+    tr.suggestedMove,
     otherSide(tr.side)
   );
   if (isNil(moveRating) || moveRating < MoveRating.Mistake) {

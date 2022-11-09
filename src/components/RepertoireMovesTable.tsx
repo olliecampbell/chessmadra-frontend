@@ -318,7 +318,7 @@ let useSections = ({
     c.lineHeight("1.3rem")
   );
 
-  let na = <CMText style={s(textStyles)}>N/A</CMText>;
+  let na = <CMText style={s(textStyles, c.fg(c.grays[50]))}>N/A</CMText>;
   let notEnoughGames = (
     <CMText style={s(c.fg(c.grays[50]))}>{isMobile ? "N/A" : "N/A"}</CMText>
   );
@@ -389,7 +389,7 @@ let useSections = ({
   }
   if (myTurn) {
     sections.push({
-      width: 40,
+      width: 34,
       content: ({
         suggestedMove,
         positionReport,
@@ -410,7 +410,7 @@ let useSections = ({
           isNaN(playRate) ||
           formatPlayPercentage(playRate) === "0%"
         ) {
-          return <CMText style={s(c.fg(c.grays[50]))}>N/A</CMText>;
+          return na;
         }
         return (
           <>
@@ -447,13 +447,13 @@ let useSections = ({
   }
   if (myTurn) {
     sections.push({
-      width: isMobile ? 80 : 120,
+      width: isMobile ? 70 : 120,
       content: ({ suggestedMove, positionReport, side }) => {
         if (
           !suggestedMove?.results ||
           getTotalGames(suggestedMove?.results) < 5
         ) {
-          return notEnoughGames;
+          return na;
         }
         return (
           <>
@@ -790,7 +790,7 @@ const Response = ({
           <View style={s(c.column, c.maxWidth(400))}>
             {isMobile && annotation && (
               <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
-                {newOpeningName && isMobile && (
+                {false && newOpeningName && isMobile && (
                   <CMText style={s(c.weightSemiBold, c.pr(8), c.fontSize(12))}>
                     {newOpeningName}
                   </CMText>

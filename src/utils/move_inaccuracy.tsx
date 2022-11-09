@@ -1,4 +1,4 @@
-import { StockfishReport } from "app/models";
+import { PositionReport, StockfishReport, SuggestedMove } from "app/models";
 import { c, s } from "app/styles";
 import { isNil } from "lodash-es";
 import { CMText } from "app/components/CMText";
@@ -34,10 +34,28 @@ export enum MoveRating {
 }
 
 export const getMoveRating = (
-  before: StockfishReport,
-  after: StockfishReport,
+  positionReport: PositionReport,
+  suggestedMove: SuggestedMove,
   side: Side
 ) => {
+  let before = positionReport?.stockfish;
+  let after = suggestedMove?.stockfish;
+  // Scandi
+  if (
+    positionReport?.epd ===
+      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -" &&
+    suggestedMove?.sanPlus === "d5"
+  ) {
+    return null;
+  }
+  // Pirc
+  if (
+    positionReport?.epd ===
+      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -" &&
+    suggestedMove?.sanPlus === "d6"
+  ) {
+    return null;
+  }
   if (isNil(before) || isNil(after)) {
     return null;
   }
