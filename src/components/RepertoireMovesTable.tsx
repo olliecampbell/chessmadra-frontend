@@ -419,19 +419,40 @@ let useSections = ({
   if (myTurn) {
     sections.push({
       width: 40,
-      content: ({ suggestedMove, positionReport }) => (
-        <>
-          {suggestedMove?.stockfish && (
-            <>
-              <View style={s(c.row, c.alignEnd)}>
-                <CMText style={s(c.weightSemiBold, c.fontSize(14), textStyles)}>
-                  {formatStockfishEval(suggestedMove?.stockfish)}
-                </CMText>
-              </View>
-            </>
-          )}
-        </>
-      ),
+      content: ({ suggestedMove, positionReport }) => {
+        let whiteWinning =
+          suggestedMove?.stockfish?.eval >= 0 ||
+          suggestedMove?.stockfish.mate > 0;
+        return (
+          <>
+            {suggestedMove?.stockfish && (
+              <>
+                <View
+                  style={s(
+                    c.row,
+                    c.bg(whiteWinning ? c.grays[90] : c.grays[4]),
+                    c.px(4),
+                    c.minWidth(30),
+                    c.height(18),
+                    c.center,
+                    c.br(2)
+                  )}
+                >
+                  <CMText
+                    style={s(
+                      c.weightHeavy,
+                      c.fontSize(10),
+                      c.fg(whiteWinning ? c.grays[10] : c.grays[90])
+                    )}
+                  >
+                    {formatStockfishEval(suggestedMove?.stockfish)}
+                  </CMText>
+                </View>
+              </>
+            )}
+          </>
+        );
+      },
       header: "Eval",
     });
   }
@@ -451,7 +472,6 @@ let useSections = ({
               <View style={s(c.fullWidth)}>
                 <GameResultsBar
                   previousResults={positionReport?.results}
-                  onLightUi={false}
                   activeSide={activeSide}
                   gameResults={suggestedMove.results}
                 />
@@ -616,7 +636,7 @@ const Response = ({
       <MoveTagView
         text="Clear best move"
         icon="fa-duotone fa-trophy"
-        style={s(c.fg(c.yellows[60]), c.fontSize(16))}
+        style={s(c.fg(c.yellows[60]), c.fontSize(14))}
       />
     );
   }
@@ -625,7 +645,7 @@ const Response = ({
       <MoveTagView
         text="Transposes to your repertoire"
         icon="fa-solid fa-merge"
-        style={s(c.fg(c.grays[75]), c.fontSize(18), c.rotate(-90))}
+        style={s(c.fg(c.grays[75]), c.fontSize(14), c.rotate(-90))}
       />
     );
   }
@@ -634,7 +654,7 @@ const Response = ({
       <MoveTagView
         text="Warning: heavy theory"
         icon="fa-solid fa-triangle-exclamation"
-        style={s(c.fg(c.reds[60]), c.fontSize(16))}
+        style={s(c.fg(c.reds[60]), c.fontSize(14))}
       />
     );
   }
@@ -652,12 +672,23 @@ const Response = ({
       <MoveTagView
         text="Common mistake"
         icon="fa fa-person-falling"
-        style={s(c.fg(c.grays[80]), c.fontSize(16))}
+        style={s(c.fg(c.grays[80]), c.fontSize(14))}
       />
     );
   }
 
   const editingMyMoves = true;
+
+  let hasInlineAnnotationOrOpeningName =
+    newOpeningName || (!isMobile && annotation);
+
+  const tagsRow = !isEmpty(tags) && (
+    <View style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}>
+      {tags.map((tag, i) => {
+        return tag;
+      })}
+    </View>
+  );
 
   return (
     <View style={s(c.row, c.alignStart)} {...responseHoverProps}>
@@ -731,7 +762,16 @@ const Response = ({
             </View>
             <Spacer width={12} />
             {
-              <View style={s(c.width(0), c.grow, c.pr(8))}>
+              <View
+                style={s(
+                  c.width(0),
+                  c.grow,
+                  c.pr(8),
+                  c.column,
+
+                  !hasInlineAnnotationOrOpeningName && c.selfCenter
+                )}
+              >
                 <CMText
                   style={s(
                     c.fg(c.grays[80]),
@@ -751,6 +791,12 @@ const Response = ({
                   )}
                   {!isMobile && annotation}
                 </CMText>
+                {tagsRow && (
+                  <>
+                    {hasInlineAnnotationOrOpeningName && <Spacer height={12} />}
+                    {tagsRow}
+                  </>
+                )}
               </View>
             }
             <View style={s(c.row, c.alignCenter)}>
@@ -784,34 +830,10 @@ const Response = ({
           <View style={s(c.column, c.maxWidth(400))}>
             {isMobile && annotation && (
               <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
-                {false && newOpeningName && isMobile && (
-                  <CMText style={s(c.weightSemiBold, c.pr(8), c.fontSize(12))}>
-                    {newOpeningName}
-                  </CMText>
-                )}
                 <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
                   {annotation}
                 </CMText>
               </CMText>
-            )}
-          </View>
-          <View style={s(c.column, c.alignEnd)}>
-            {!isEmpty(tags) && (
-              // TODO: dumb way to line up things here
-              <View
-                style={s(
-                  c.grow,
-                  c.pt(8),
-                  c.row,
-                  c.flexWrap,
-                  c.justifyStart,
-                  c.gap(4)
-                )}
-              >
-                {tags.map((tag, i) => {
-                  return tag;
-                })}
-              </View>
             )}
           </View>
           {debugUi && suggestedMove?.stockfish && (
@@ -1082,10 +1104,7 @@ const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
     <CMText
       style={s(
         c.fg(c.grays[80]),
-        c.bg(c.grays[14]),
-        c.px(8),
-        c.py(6),
-        c.fontSize(12),
+        c.fontSize(10),
         c.weightBold,
         c.row,
         c.alignCenter

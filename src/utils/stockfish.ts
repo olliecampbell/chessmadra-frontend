@@ -6,10 +6,13 @@ export function formatStockfishEval(stockfish: StockfishReport) {
   let debug = false;
   let x = "";
   if (!isNil(stockfish.eval)) {
-    if (stockfish.eval >= 0) {
-      x = `+${(stockfish.eval / 100).toFixed(2)}`;
+    let rounded = (stockfish.eval / 100).toFixed(1);
+    if (rounded === "0.0") {
+      x = `=`;
+    } else if (stockfish.eval > 0) {
+      x = `+${rounded}`;
     } else {
-      x = `${(stockfish.eval / 100).toFixed(2)}`;
+      x = `${rounded}`;
     }
   } else if (stockfish.mate) {
     if (stockfish.mate < 0) {

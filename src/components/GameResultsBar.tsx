@@ -14,24 +14,20 @@ export const GameResultsBar = ({
   previousResults,
   hideNumbers,
   activeSide,
-  onLightUi,
-  smallNumbers,
 }: {
   gameResults: GameResultsDistribution;
   previousResults?: GameResultsDistribution;
   hideNumbers?: boolean;
   activeSide: Side;
-  onLightUi?: boolean;
-  smallNumbers?: boolean;
 }) => {
   let total = getTotalGames(gameResults);
   let threshold = 0.2;
-  let fontSize = smallNumbers ? 10 : 12;
+  let fontSize = 10;
   let whiteResults = (
     <View
       style={s(
         c.width(`${(gameResults.white / total) * 100}%`),
-        c.bg(onLightUi ? c.grays[90] : c.grays[80]),
+        c.bg(c.grays[90]),
         c.px(4),
         c.alignCenter,
         c.row,

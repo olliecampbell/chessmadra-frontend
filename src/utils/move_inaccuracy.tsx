@@ -40,6 +40,14 @@ export const getMoveRating = (
 ) => {
   let before = positionReport?.stockfish;
   let after = suggestedMove?.stockfish;
+  // Modern
+  if (
+    positionReport?.epd ===
+      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -" &&
+    suggestedMove?.sanPlus === "g6"
+  ) {
+    return null;
+  }
   // Scandi
   if (
     positionReport?.epd ===
