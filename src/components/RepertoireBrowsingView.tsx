@@ -140,8 +140,10 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                 <>
                   <Spacer height={12} />
 
-                  <View style={s(c.bg(c.grays[20]), c.grow, c.pb(24))}>
+                  <View style={s(c.bg(c.grays[15]), c.grow, c.pb(24))}>
                     <BrowserSidebar />
+                    <Spacer height={44} />
+                    <SidebarActions />
                   </View>
                 </>
               ) : (
