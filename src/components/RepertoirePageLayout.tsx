@@ -18,7 +18,6 @@ import { BeatLoader, GridLoader } from "react-spinners";
 import { Spacer } from "app/Space";
 import { Helmet } from "react-helmet";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
-import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { SelectOneOf } from "./SelectOneOf";
 import { useOutsideClick } from "app/components/useOutsideClick";
@@ -80,7 +79,6 @@ export const RepertoirePageLayout = ({
       <Helmet>
         <meta name="theme-color" content={backgroundColor} />
       </Helmet>
-      <DeleteMoveConfirmationModal />
       <ProfileModal />
       <ShareRepertoireModal />
       <SideSettingsModal />

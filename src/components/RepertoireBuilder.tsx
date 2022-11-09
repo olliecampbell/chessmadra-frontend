@@ -29,7 +29,6 @@ import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { useRepertoireState, useDebugState, quick } from "app/utils/app_state";
 import { RepertoireReview } from "./RepertoireReview";
 import { SideSettingsModal } from "./SideSettingsModal";
-import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { ProfileModal } from "./ProfileModal";

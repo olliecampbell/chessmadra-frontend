@@ -33,7 +33,6 @@ import {
 import useKeypress from "react-use-keypress";
 import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import {
   useDebugState,
   useRepertoireState,

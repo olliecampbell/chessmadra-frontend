@@ -33,7 +33,6 @@ import {
 import useKeypress from "react-use-keypress";
 import { SelectOneOf } from "./SelectOneOf";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
-import { DeleteMoveConfirmationModal } from "./DeleteMoveConfirmationModal";
 import {
   useDebugState,
   useRepertoireState,
@@ -239,7 +238,6 @@ export const RepertoireEditingView = () => {
   const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
   return (
     <>
-      <DeleteMoveConfirmationModal />
       <ConfirmMoveConflictModal />
       <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
         <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
