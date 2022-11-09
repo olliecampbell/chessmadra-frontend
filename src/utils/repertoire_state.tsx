@@ -176,11 +176,6 @@ export interface AddNewLineChoice {
   incidence?: number;
 }
 
-export enum EditingTab {
-  Position = "Position",
-  Responses = "Responses",
-}
-
 export enum AddedLineStage {
   Initial,
   AddAnother,
@@ -708,33 +703,6 @@ export const getInitialRepertoireState = (
           }
         }
       }, "startBrowsing"),
-    // startEditing: (side: Side) =>
-    //   set(([s, gs]) => {
-    //     gs.navigationState.push(`/openings/${side}/edit`);
-    //     s.setBreadcrumbs([
-    //       {
-    //         text: `${capitalize(side)}`,
-    //         onPress: () => {
-    //           set(([s]) => {
-    //             s.startBrowsing(side);
-    //           });
-    //         },
-    //       },
-    //       {
-    //         text: `Add new line`,
-    //         onPress: null,
-    //       },
-    //     ]);
-    //     s.browsingState.activeSide = side;
-    //     s.isBrowsing = false;
-    //     s.isEditing = true;
-    //     // s.isAddingPendingLine = failOnAny(true);
-    //     s.browsingState.editingState = {
-    //       ...s.browsingState.editingState,
-    //       selectedTab: EditingTab.Responses,
-    //       etcModalOpen: false,
-    //     };
-    //   }),
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();
@@ -883,9 +851,9 @@ export const getInitialRepertoireState = (
                 // }
               }
               s.onRepertoireUpdate();
-              // s.startBrowsing("white");
+              // s.startBrowsing("black");
               // s.browsingState.chessboardState.playPgn(
-              //   "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Qxd4 Nc6 5.Bb5 Bd7 6.Bxc6 Bxc6 7.c4 Nf6 8.Nc3 g6 9.O-O Bg7 10.Qd3 O-O 11.Nd4 Bd7"
+              //   "1. e4 c6 2. d4 d5 3. e5 Bf5 4. Nf3 e6 5. Be2 Ne7 6. O-O"
               // );
             });
           });

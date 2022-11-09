@@ -210,90 +210,12 @@ let desktopHeaderStyles = s(
 
 const VERTICAL_BREAKPOINT = BP.md;
 
-export const RepertoireEditingView = () => {
-  const isMobile = useIsMobile();
-  const [chessboardState, backOne, activeSide, isEditing, quick] =
-    useRepertoireState((s) => [
-      s.browsingState.chessboardState,
-      s.backOne,
-      s.browsingState.activeSide,
-      s.isEditing,
-      s.quick,
-    ]);
-  let { side: paramSide } = useParams();
-  useEffect(() => {
-    if (paramSide !== activeSide || !isEditing) {
-      quick((s) => {
-        // s.startEditing(paramSide as Side);
-      });
-    }
-  }, []);
-  useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
-    if (event.key === "ArrowLeft") {
-      backOne();
-    }
-  });
-
-  const responsive = useResponsive();
-  const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
-  return (
-    <>
-      <ConfirmMoveConflictModal />
-      <RepertoirePageLayout bottom={<RepertoireEditingBottomNav />}>
-        <View style={s(c.containerStyles(responsive.bp), c.alignCenter)}>
-          <View
-            style={s(
-              vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
-              vertical ? c.column : c.row
-              // c.grid({
-              //   templateColumns: !vertical && ["fit-content(600px)", "1fr"],
-              //   templateRows: vertical && ["1fr"],
-              //   rowGap: responsive.switch(12, [BP.lg, 24], [BP.xl, 48]),
-              //   columnGap: responsive.switch(12, [BP.lg, 24], [BP.xl, 48]),
-              // })
-            )}
-          >
-            <View
-              style={s(
-                c.column,
-                c.grow,
-                vertical ? c.width("min(400px, 100%)") : c.maxWidth(600),
-                vertical ? c.selfCenter : c.selfStretch
-              )}
-            >
-              <View style={s()}>
-                <ChessboardView state={chessboardState} />
-                <Spacer height={12} />
-                <BackControls
-                  height={responsive.switch(42, [BP.lg, 42], [BP.xl, 60])}
-                  includeAnalyze
-                />
-              </View>
-              <Spacer height={12} />
-            </View>
-            {vertical ? (
-              <>
-                <Spacer height={12} />
-                <EditingTabPicker />
-              </>
-            ) : (
-              <>
-                <Spacer width={48} />
-                <View style={s(c.column, c.flexGrow(10), c.maxWidth(700))}>
-                  <Responses />
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </RepertoirePageLayout>
-    </>
-  );
-};
-
 export const Responses = React.memo(function Responses() {
+  const [positionReport] = useBrowsingState(
+    ([s, rs]) => [s.getCurrentPositionReport()],
+    { referenceEquality: true }
+  );
   let [
-    positionReport,
     position,
     activeSide,
     currentEpd,
@@ -303,7 +225,6 @@ export const Responses = React.memo(function Responses() {
     tableResponses,
     showingPastCoverageGoal,
   ] = useBrowsingState(([s, rs]) => [
-    s.getCurrentPositionReport(),
     s.chessboardState.position,
     s.activeSide,
     s.chessboardState.getCurrentEpd(),
@@ -349,7 +270,6 @@ export const Responses = React.memo(function Responses() {
     };
   }, [hasPendingLine]);
   const responsive = useResponsive();
-  const checkmarkSize = 30;
   return (
     <View style={s(c.column, c.constrainWidth)}>
       {debugUi && (
@@ -375,7 +295,7 @@ export const Responses = React.memo(function Responses() {
           <View style={s()} key={`choose-next-move-${currentEpd}`}>
             <RepertoireMovesTable
               {...{
-                header: "Choose your next move",
+                header: getResponsesHeader(currentLine, !isEmpty(yourMoves)),
                 usePeerRates,
                 activeSide,
                 side,
@@ -403,7 +323,7 @@ export const Responses = React.memo(function Responses() {
         {!isEmpty(prepareFor) && (
           <RepertoireMovesTable
             {...{
-              header: "What do you want to prepare for?",
+              header: "You need to prepare for these moves",
               activeSide,
               side,
               responses: prepareFor,
@@ -471,69 +391,6 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
     return true;
   }
   return false;
-};
-
-const EditingTabPicker = () => {
-  const responsive = useResponsive();
-  const [selectedTab, currentLine, quick] = useRepertoireState((s) => [
-    s.browsingState.editingState.selectedTab,
-    s.browsingState.chessboardState.moveLog,
-    s.quick,
-  ]);
-  const vertical = responsive.bp <= VERTICAL_BREAKPOINT;
-  return (
-    <View
-      style={s(
-        c.column,
-        vertical && s(c.selfCenter),
-        c.fullWidth,
-        c.maxWidth(responsive.switch(600, [BP.xl, 700]))
-      )}
-    >
-      <SelectOneOf
-        tabStyle
-        containerStyles={s(c.fullWidth, c.justifyBetween)}
-        choices={[EditingTab.Position, EditingTab.Responses]}
-        activeChoice={selectedTab}
-        horizontal
-        onSelect={(tab) => {}}
-        renderChoice={(tab, active) => {
-          return (
-            <Pressable
-              onPress={() => {
-                quick((s) => {
-                  s.browsingState.editingState.selectedTab = tab;
-                });
-              }}
-              style={s(
-                c.column,
-                c.grow,
-                c.alignCenter,
-                c.borderBottom(
-                  `2px solid ${active ? c.grays[90] : c.grays[20]}`
-                ),
-                c.zIndex(5),
-                c.pb(8)
-              )}
-            >
-              <CMText
-                style={s(
-                  c.fg(active ? c.colors.textPrimary : c.colors.textSecondary),
-                  c.fontSize(16),
-                  c.weightBold
-                )}
-              >
-                {tab === EditingTab.Responses
-                  ? getResponsesHeader(currentLine)
-                  : tab}
-              </CMText>
-            </Pressable>
-          );
-        }}
-      />
-      {selectedTab === EditingTab.Responses && <Responses />}
-    </View>
-  );
 };
 
 export const PositionOverview = ({ card }: { card?: boolean }) => {
@@ -700,7 +557,10 @@ function getResponsesHeader(currentLine: string[], hasMove?: boolean): string {
   if (hasMove && !isEmpty(currentLine)) {
     return "This move is in your repertoire";
   }
-  return `${hasMove ? "Choose your" : "Your"} ${
+  if (!hasMove && isEmpty(currentLine)) {
+    return "Which first move do you play as white?";
+  }
+  return `${hasMove ? "Your" : "Choose your"} ${
     isEmpty(currentLine) ? "first" : "next"
   } move`;
 }

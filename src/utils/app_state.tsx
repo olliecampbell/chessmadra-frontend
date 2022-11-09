@@ -30,6 +30,7 @@ import {
   clone,
   cloneDeep,
   every,
+  isNil,
   isObject,
   keysIn,
   take,
@@ -156,7 +157,7 @@ const logExpensive = (
   b,
   path,
   keys: number,
-  stackTrace?: RefObject<any>
+  config?: RefObject<EqualityConfig>
 ) => {
   console.log(
     `%c ${path}%c is expensive, ${keys} keys`,
@@ -166,7 +167,8 @@ const logExpensive = (
     a,
     "\n\nBut is now:\n\n",
     b,
-    stackTrace?.current
+    config.current,
+    (take(config.current?.stackTrace, 5) ?? []).join("\n")
   );
 };
 
@@ -268,7 +270,7 @@ export const useStateSlice = <Y, T>(
   _config?: Partial<EqualityConfig>
 ) => {
   let config = useRef({ ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) });
-  if (isDevelopment && config.current.stackTrace === null) {
+  if (isDevelopment && isNil(config.current.stackTrace)) {
     config.current.stackTrace = getStackTrace();
   }
   return useAppStateInternal(

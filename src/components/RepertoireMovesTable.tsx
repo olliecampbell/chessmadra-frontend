@@ -330,38 +330,29 @@ let useSections = ({
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
-        let useIcons = false;
         let denominator = Math.round(1 / tableResponse.incidence);
+        let belowCoverageGoal = tableResponse.incidence < threshold;
         let veryRare = false;
+        let hideGamesText = false;
+        if (denominator >= 1000) {
+          hideGamesText = true;
+        }
         if (denominator >= 10000) {
           veryRare = true;
-        }
-        let icon = "fa-signal-bars-weak";
-        if (playRate > 0.3) {
-          icon = "fa-signal-bars";
-        } else if (playRate > 0.2) {
-          icon = "fa-signal-bars-good";
-        } else if (playRate > 0.05) {
-          icon = "fa-signal-bars-fair";
         }
         return (
           <>
             {
               <View style={s(c.column)}>
-                <CMText style={s(textStyles)}>
-                  {useIcons ? (
-                    <i
-                      className={`fa fa-duotone ${icon}`}
-                      style={s(
-                        c.fontSize(16),
-                        c.duotone(c.grays[85], c.grays[30])
-                      )}
-                    />
-                  ) : veryRare ? (
+                <CMText
+                  style={s(textStyles, belowCoverageGoal && c.fg(c.reds[67]))}
+                >
+                  {veryRare ? (
                     <>Very rare</>
                   ) : (
                     <>
-                      <b>1</b> in <b>{denominator.toLocaleString()}</b> games
+                      <b>1</b> in <b>{denominator.toLocaleString()}</b>{" "}
+                      {hideGamesText ? "" : "games"}
                     </>
                   )}
                 </CMText>
@@ -432,7 +423,6 @@ let useSections = ({
         <>
           {suggestedMove?.stockfish && (
             <>
-              <Spacer width={0} grow />
               <View style={s(c.row, c.alignEnd)}>
                 <CMText style={s(c.weightSemiBold, c.fontSize(14), textStyles)}>
                   {formatStockfishEval(suggestedMove?.stockfish)}
@@ -447,7 +437,7 @@ let useSections = ({
   }
   if (myTurn) {
     sections.push({
-      width: isMobile ? 70 : 120,
+      width: isMobile ? 70 : 80,
       content: ({ suggestedMove, positionReport, side }) => {
         if (
           !suggestedMove?.results ||
@@ -470,7 +460,7 @@ let useSections = ({
           </>
         );
       },
-      header: isMobile ? "Peer results" : "Results at your level",
+      header: isMobile ? "Peer results" : "Peer results",
     });
   }
   return sections;
@@ -497,10 +487,13 @@ const Response = ({
   const { hovering, hoveringProps } = useHovering();
   const { suggestedMove, repertoireMove, incidence, moveRating } =
     tableResponse;
+  const [positionReport] = useBrowsingState(
+    ([s, rs]) => [s.getCurrentPositionReport()],
+    { referenceEquality: true }
+  );
   const [
     playSan,
     currentLine,
-    positionReport,
     turn,
     // uploadMoveAnnotation,
     currentEpd,
@@ -511,7 +504,6 @@ const Response = ({
   ] = useBrowsingState(([s, rs]) => [
     s.chessboardState.makeMove,
     s.chessboardState.moveLog,
-    s.getCurrentPositionReport(),
     s.chessboardState.position.turn(),
     s.chessboardState.getCurrentEpd(),
     rs.ecoCodeLookup[suggestedMove?.epdAfter],
@@ -704,8 +696,9 @@ const Response = ({
                       <CMText
                         style={s(
                           c.fg(c.grays[60]),
-                          c.fontSize(16),
+                          c.fontSize(14),
                           c.weightSemiBold,
+                          c.lineHeight("1.3rem"),
                           c.keyedProp("letterSpacing")("0.04rem")
                         )}
                       >
@@ -719,7 +712,8 @@ const Response = ({
                     key={sanPlus}
                     style={s(
                       c.fg(c.grays[85]),
-                      c.fontSize(16),
+                      c.fontSize(14),
+                      c.lineHeight("1.3rem"),
                       c.weightBold,
                       c.keyedProp("letterSpacing")("0.04rem")
                     )}
@@ -976,7 +970,7 @@ export const DebugScoreView = ({
 };
 
 const getSpaceBetweenStats = (isMobile: boolean) => {
-  return isMobile ? 12 : 12;
+  return isMobile ? 16 : 16;
 };
 
 const CoverageProgressBar = ({
@@ -1030,14 +1024,14 @@ const CoverageProgressBar = ({
     </View>
   );
   // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
-  if (incidence < threshold && !hasResponse) {
-    return (
-      <View style={s(c.column)}>
-        <CMText style={s(c.fontSize(12), c.fg(c.grays[60]))}>Not needed</CMText>
-        {debugElements}
-      </View>
-    );
-  }
+  // if (incidence < threshold && !hasResponse) {
+  //   return (
+  //     <View style={s(c.column)}>
+  //       <CMText style={s(c.fontSize(12), c.fg(c.grays[60]))}>Not needed</CMText>
+  //       {debugElements}
+  //     </View>
+  //   );
+  // }
   let progress = clamp(
     getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded),
     5,

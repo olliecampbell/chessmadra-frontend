@@ -14,7 +14,7 @@ export const RepertoireEditingHeader = ({ children }: { children: any }) => {
         c.px(getSidebarPadding(responsive)),
         c.fg(c.colors.textPrimary),
         c.fontSize(responsive.switch(18, [BP.lg, 24])),
-        c.mt(responsive.switch(0, [BP.lg, -10])),
+        c.mt(responsive.switch(0, [BP.lg, -6])),
         c.weightBold
       )}
     >

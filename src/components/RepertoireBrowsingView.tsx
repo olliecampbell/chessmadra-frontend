@@ -104,7 +104,8 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
           style={s(
             !vertical ? c.containerStyles(responsive.bp) : c.fullWidth,
             c.alignCenter,
-            c.grow
+            c.grow,
+            c.noUserSelect
           )}
         >
           <View
@@ -198,6 +199,7 @@ export const ExtraChessboardActions = ({}: {}) => {
         style={s(c.row, c.alignCenter)}
         onPress={() => {
           quick((s) => {
+            s.repertoireState.browsingState.dismissTransientSidebarState();
             s.repertoireState.browsingState.chessboardState.resetPosition();
           });
         }}

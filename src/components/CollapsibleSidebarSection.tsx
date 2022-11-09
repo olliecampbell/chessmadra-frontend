@@ -90,7 +90,7 @@ export const CollapsibleSidebarSection = ({
       >
         <CMText
           style={s(
-            c.fontSize(responsive.switch(18, [BP.lg, 18])),
+            c.fontSize(responsive.switch(14, [BP.lg, 14])),
             c.fg(c.colors.textPrimary)
           )}
         >
@@ -101,7 +101,7 @@ export const CollapsibleSidebarSection = ({
             className={
               !collapsed ? "fa fa-chevron-down" : "fa fa-chevron-right"
             }
-            style={s(c.fg(c.colors.textPrimary), c.fontSize(18))}
+            style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
           ></i>
         </View>
       </Pressable>

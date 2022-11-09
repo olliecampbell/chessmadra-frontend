@@ -97,6 +97,7 @@ export const SidebarActions = () => {
   let goToBiggestMissAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
+        s.repertoireState.browsingState.dismissTransientSidebarState();
         s.repertoireState.browsingState.chessboardState.playPgn(
           nearestMiss.lines[0]
         );
@@ -114,7 +115,7 @@ export const SidebarActions = () => {
     buttons.push(continueAddingToThisLineAction);
   } else if (!hasPendingLineToAdd) {
     buttons.push(goToBiggestMissAction);
-  } else if (hasPendingLineToAdd && currentSide !== activeSide) {
+  } else if (hasPendingLineToAdd) {
     buttons.push({
       onPress: () => {
         quick((s) => {

@@ -37,7 +37,6 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
   AddedLineStage,
   AddNewLineChoice,
-  EditingTab,
   FetchRepertoireResponse,
   RepertoireState,
 } from "./repertoire_state";
@@ -118,6 +117,7 @@ export interface BrowsingState {
   getIncidenceOfCurrentLine: () => number;
   getLineIncidences: (_: GetIncidenceOptions) => number[];
   getShouldShowPastGoalOverlay: () => boolean;
+  dismissTransientSidebarState: () => boolean;
   getNearestMiss: () => RepertoireMiss;
   hasPendingLineToAdd: boolean;
   sidebarOnboardingState: SidebarOnboardingState;
@@ -129,7 +129,6 @@ export interface BrowsingState {
   repertoireProgressState: BySide<RepertoireProgressState>;
   editingState: {
     lastEcoCode?: EcoCode;
-    selectedTab: EditingTab;
     etcModalOpen: boolean;
     addConflictingMoveModalOpen: boolean;
   };
@@ -194,7 +193,6 @@ export const getInitialBrowsingState = (
     deleteLineState: { visible: false },
     addedLineState: { visible: false },
     editingState: {
-      selectedTab: EditingTab.Position,
       etcModalOpen: false,
       addConflictingMoveModalOpen: false,
     },
@@ -422,6 +420,17 @@ export const getInitialBrowsingState = (
             }
           })
         );
+      }),
+    dismissTransientSidebarState: () =>
+      set(([s, rs]) => {
+        if (s.addedLineState.visible) {
+          s.addedLineState.visible = false;
+          return true;
+        } else if (s.deleteLineState.visible) {
+          s.deleteLineState.visible = false;
+          return true;
+        }
+        return false;
       }),
     getShouldShowPastGoalOverlay: () =>
       set(([s, rs]) => {

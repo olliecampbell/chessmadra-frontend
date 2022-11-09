@@ -53,13 +53,13 @@ import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  const [addedLineState, deleteLineState, seenOnboarding] = useRepertoireState(
-    (s) => [
+  const [addedLineState, deleteLineState, seenOnboarding, moveLog] =
+    useRepertoireState((s) => [
       s.browsingState.addedLineState,
       s.browsingState.deleteLineState,
       s.browsingState.seenOnboarding,
-    ]
-  );
+      s.browsingState.chessboardState.moveLog,
+    ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
   let inner = null;
@@ -72,6 +72,10 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   } else {
     inner = <Responses />;
   }
+  let hidden = false;
+  if (isEmpty(moveLog)) {
+    hidden = true;
+  }
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
@@ -79,27 +83,18 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
       <Pressable
         onPress={() => {
           quick((s) => {
-            if (s.repertoireState.browsingState.addedLineState.visible) {
-              s.repertoireState.browsingState.addedLineState.visible = false;
-              return;
-            } else if (
-              s.repertoireState.browsingState.deleteLineState.visible
-            ) {
-              s.repertoireState.browsingState.deleteLineState.visible = false;
-              return;
-            }
             if (
-              isEmpty(s.repertoireState.browsingState.chessboardState.moveLog)
+              s.repertoireState.browsingState.dismissTransientSidebarState()
             ) {
-              s.repertoireState.backToOverview();
-            } else {
-              s.repertoireState.browsingState.chessboardState.backOne();
+              return;
             }
+            s.repertoireState.browsingState.chessboardState.backOne();
           });
         }}
         style={s(
           !vertical ? c.height(paddingTop) : c.pt(40),
           c.unshrinkable,
+          hidden && s(c.opacity(0), c.noPointerEvents),
           c.column,
           c.justifyEnd,
           c.px(getSidebarPadding(responsive))
