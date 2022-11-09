@@ -40,13 +40,7 @@ export const Button = ({
         </View>
       )}
       <View
-        style={s(
-          c.opacity(isLoading ? 0 : 100),
-          c.row,
-          c.center,
-          c.fullWidth,
-          style
-        )}
+        style={s(c.opacity(isLoading ? 0 : 100), c.row, c.center, c.fullWidth)}
       >
         {inner}
       </View>
