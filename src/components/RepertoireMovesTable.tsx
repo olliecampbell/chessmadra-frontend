@@ -732,11 +732,11 @@ const Response = ({
             </View>
             <Spacer width={12} />
             {
-              <View style={s(c.width(0), c.grow, c.mt(2), c.pr(8))}>
+              <View style={s(c.width(0), c.grow, c.pr(8))}>
                 <CMText
                   style={s(
                     c.fg(c.grays[80]),
-                    c.fontSize(14),
+                    c.fontSize(12),
                     c.lineHeight("1.3rem")
                   )}
                 >
@@ -786,11 +786,11 @@ const Response = ({
             {isMobile && annotation && (
               <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
                 {newOpeningName && isMobile && (
-                  <CMText style={s(c.weightSemiBold, c.pr(8))}>
+                  <CMText style={s(c.weightSemiBold, c.pr(8), c.fontSize(12))}>
                     {newOpeningName}
                   </CMText>
                 )}
-                <CMText style={s(c.fg(c.grays[70]), c.fontSize(14))}>
+                <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
                   {annotation}
                 </CMText>
               </CMText>
@@ -1028,7 +1028,7 @@ const CoverageProgressBar = ({
   if (incidence < threshold && !hasResponse) {
     return (
       <View style={s(c.column)}>
-        <CMText style={s(c.fg(c.grays[60]))}>Not needed</CMText>
+        <CMText style={s(c.fontSize(12), c.fg(c.grays[60]))}>Not needed</CMText>
         {debugElements}
       </View>
     );
