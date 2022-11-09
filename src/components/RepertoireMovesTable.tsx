@@ -311,7 +311,12 @@ let useSections = ({
   const debugUi = useDebugState((s) => s.debugUi);
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let sections: Section[] = [];
-  let textStyles = s(c.fg(c.grays[80]), c.weightSemiBold, c.fontSize(12));
+  let textStyles = s(
+    c.fg(c.grays[80]),
+    c.weightSemiBold,
+    c.fontSize(12),
+    c.lineHeight("1.3rem")
+  );
 
   let na = <CMText style={s(textStyles)}>N/A</CMText>;
   let notEnoughGames = (
@@ -375,7 +380,7 @@ let useSections = ({
   }
   if (!myTurn) {
     sections.push({
-      width: 80,
+      width: 70,
       content: ({ suggestedMove, positionReport, tableResponse }) => {
         return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
       },
@@ -677,7 +682,7 @@ const Response = ({
 
           c.px(getSidebarPadding(responsive)),
           c.py(12),
-          hoveringRow && c.bg(c.grays[16]),
+          hoveringRow && c.bg(c.grays[18]),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
           c.clickable,
@@ -1042,7 +1047,7 @@ const CoverageProgressBar = ({
     progress = 0;
     completed = false;
   }
-  const inProgressColor = progress < 20 ? c.reds[65] : c.yellows[65];
+  const inProgressColor = progress < 20 ? c.reds[65] : c.oranges[65];
   return (
     <View style={s(c.column, c.fullWidth)}>
       <View
@@ -1051,7 +1056,7 @@ const CoverageProgressBar = ({
           c.bg(backgroundColor),
           c.round,
           c.overflowHidden,
-          c.height(6)
+          c.height(4)
         )}
       >
         <View

@@ -264,6 +264,7 @@ const blues = genShades(186);
 const teals = genShades(150);
 const primaries = blues;
 const yellows = genShades(41, 70, 70);
+const oranges = genShades(24, 70, 70);
 const pinks = genShades(308);
 const purples = genShades(271);
 const reds = genShades(340);
@@ -548,6 +549,7 @@ export const c = {
   pinks,
   teals,
   yellows,
+  oranges,
   failureShades,
   reds,
   greens,

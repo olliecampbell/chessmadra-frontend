@@ -157,7 +157,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                   style={s(
                     c.column,
                     !vertical && s(c.flexGrow(2), c.flexShrink, c.noBasis),
-                    c.bg(c.grays[20]),
+                    c.bg(c.grays[15]),
                     c.pb(20),
                     c.maxWidth(600)
                   )}

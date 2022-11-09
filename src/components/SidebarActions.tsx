@@ -151,7 +151,7 @@ export const SidebarFullWidthButton = ({
       {...hoveringProps}
       style={s(
         c.fullWidth,
-        c.bg(hovering ? c.grays[25] : c.grays[30]),
+        c.bg(hovering ? c.grays[26] : c.grays[22]),
         c.row,
         c.justifyBetween,
         c.alignCenter,
