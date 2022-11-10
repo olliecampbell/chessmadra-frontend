@@ -81,7 +81,7 @@ export const CoverageGoal = ({
   const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
   return (
     <Pressable
-      style={s(c.column, c.alignEnd, c.relative,)}
+      style={s(c.column, c.alignEnd, c.relative)}
       ref={ref}
       onPress={() => {
         setIsOpen(!isOpen);
@@ -158,6 +158,7 @@ export const CoverageGoal = ({
                   >
                     1 in {Math.round(1 / r)} games
                   </CMText>
+                  <Spacer width={12} grow />
                   {recommendedDepth == r && (
                     <CMText
                       style={s(

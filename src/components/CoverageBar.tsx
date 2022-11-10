@@ -43,21 +43,21 @@ import { RepertoirePageLayout } from "./RepertoirePageLayout";
 export const CoverageBar = ({
   side,
   inverse,
-  bottomNav,
+  isSavedView,
 }: {
   side: Side;
-  bottomNav?: boolean;
+  isSavedView?: boolean;
   inverse?: boolean;
 }) => {
   const [progressState] = useBrowsingState(([s]) => {
     let progressState = s.repertoireProgressState[side];
     return [progressState];
   });
-  const [backgroundColor, inProgressColor, completedColor] = [
-    c.grays[30],
-    c.greens[40],
-    c.greens[40],
-  ];
+  const [backgroundColor, inProgressColor, completedColor] = isSavedView
+    ? [c.grays[30], c.greens[40], c.greens[40]]
+    : inverse
+    ? [c.grays[14], c.yellows[45], c.greens[50]]
+    : [c.grays[80], c.yellows[65], c.greens[50]];
   let overlap = 8;
   return (
     <View

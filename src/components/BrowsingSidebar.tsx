@@ -74,13 +74,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
     inner = <Responses />;
   }
   let backButtonAction = null;
-  if (!isEmpty(moveLog)) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.chessboardState.backOne();
-      });
-    };
-  } else if (addedLineState.visible || deleteLineState.visible) {
+  if (addedLineState.visible || deleteLineState.visible) {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.dismissTransientSidebarState();
@@ -94,6 +88,12 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
             s.repertoireState.browsingState.sidebarOnboardingState.stageStack,
             1
           );
+      });
+    };
+  } else if (!isEmpty(moveLog)) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.chessboardState.backOne();
       });
     };
   }
@@ -182,7 +182,7 @@ const SavedLineView = React.memo(function SavedLineView() {
           </Animated.View>
           <Spacer height={4} />
           <View style={s(c.height(12))}>
-            <CoverageBar side={activeSide} />
+            <CoverageBar isSavedView side={activeSide} />
           </View>
         </View>
         <Spacer height={12} />
