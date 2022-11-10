@@ -108,7 +108,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           });
         }}
         style={s(
-          !vertical ? c.height(paddingTop) : c.pt(0),
+          !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
           c.unshrinkable,
           isNil(backButtonAction) && s(c.opacity(0), c.noPointerEvents),
           c.column,
@@ -121,7 +121,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           <Spacer width={8} />
           Back
         </CMText>
-        <Spacer height={backButtonAction || !vertical ? 44 : 0} />
+        <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
       </Pressable>
       {inner}
     </View>

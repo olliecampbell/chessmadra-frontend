@@ -582,7 +582,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
           c.fg(textColor)
         )}
       >
-        {capitalize(side) + " repertoire"}
+        {capitalize(side) + responsive.switch("", [BP.md, " repertoire"])}
       </CMText>
       <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} />
       <View style={s(c.row, c.selfCenter, c.px(24))}>
