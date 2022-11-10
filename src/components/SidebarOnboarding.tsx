@@ -398,7 +398,10 @@ const SetRatingOnboarding = () => {
         <SidebarFullWidthButton
           action={{
             onPress: () => {
-              quick((s) => {});
+              quick((s) => {
+                s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+                  [SidebarOnboardingStage.AskAboutExistingRepertoire];
+              });
             },
             style: "primary",
             text: "I don't know, skip this step",
