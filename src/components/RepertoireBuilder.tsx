@@ -16,7 +16,6 @@ import {
   formatIncidence,
 } from "app/utils/repertoire";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
 import { plural, pluralize } from "app/utils/pluralize";
@@ -87,79 +86,3 @@ export const RepertoireBuilder = () => {
     return <RepertoireOverview />;
   }
 };
-
-// const BiggestMissBoards = ({ side }: { side: Side }) => {
-//   const [biggestMiss, quick] = useRepertoireState((s) => [
-//     s.repertoireGrades[side]?.biggestMiss,
-//     s.quick,
-//   ]);
-//   const isMobile = useIsMobile();
-//   if (!biggestMiss) {
-//     return null;
-//   }
-//   return (
-//     <View
-//       style={s(c.column, c.alignCenter, cardStyles, c.brt(0), c.selfStretch)}
-//     >
-//       <SideSectionHeader header="" icon={null} />
-//       <View
-//         style={s(
-//           c.row,
-//           c.selfStretch,
-//           c.alignCenter,
-//           c.justifyCenter,
-//           c.px(32),
-//           c.py(isMobile ? 12 : 24)
-//         )}
-//       >
-//         {intersperse(
-//           [biggestMiss].map((x, i) => {
-//             let onClick = () =>
-//               quick((s) => {
-//                 s.startEditing(side as Side);
-//                 s.chessboardState.playPgn(x.lines[0]);
-//                 trackEvent("overview.go_to_biggest_miss");
-//               });
-//             return (
-//               <View style={s(c.column, c.center)} key={`miss-${i}`}>
-//                 <View style={s(c.size(isMobile ? 120 : 160))}>
-//                   <Pressable
-//                     onPress={() => {
-//                       onClick();
-//                     }}
-//                   >
-//                     <ChessboardView
-//                       onSquarePress={() => {
-//                         onClick();
-//                       }}
-//                       state={createStaticChessState({
-//                         line: biggestMiss.lines[0],
-//                         side: side as Side,
-//                       })}
-//                     />
-//                   </Pressable>
-//                 </View>
-//                 <Spacer height={12} />
-//                 <View style={s(c.row, c.alignCenter)}>
-//                   <CMText
-//                     style={s(
-//                       c.fg(c.grays[70]),
-//                       c.weightSemiBold,
-//                       isMobile ? c.fontSize(14) : c.fontSize(16)
-//                     )}
-//                   >
-//                     Biggest gap – {formatIncidence(biggestMiss.incidence)} of
-//                     games{" "}
-//                   </CMText>
-//                 </View>
-//               </View>
-//             );
-//           }),
-//           (i) => {
-//             return <Spacer width={24} key={i} />;
-//           }
-//         )}
-//       </View>
-//     </View>
-//   );
-// };

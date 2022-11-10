@@ -9,18 +9,16 @@ export const DragAndDropInput = ({
   humanName,
   onUpload,
   accept,
+  style,
 }: {
   humanName: string;
   accept: string;
+  style?: any;
   onUpload: (_: React.ChangeEvent<HTMLInputElement>) => Promise<boolean>;
 }) => {
-  let copy = `Drag your ${humanName} in here, or click to select a file.`;
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
-  if (isMobile) {
-    copy = `Tap here to select your ${humanName}.`;
-  }
   return (
     <View
       style={s(
@@ -30,7 +28,8 @@ export const DragAndDropInput = ({
         c.alignCenter,
         c.clickable,
         c.py(8),
-        c.px(8)
+        c.px(8),
+        style
       )}
     >
       <input

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, take, sortBy, size, isNil } from "lodash-es";
+import { isEmpty, take, sortBy, size, isNil, dropRight } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -35,7 +35,7 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { PositionOverview, Responses } from "./RepertoireEditingView";
+import { Responses } from "./RepertoireEditingView";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { SidebarActions } from "./SidebarActions";
@@ -51,19 +51,20 @@ import {
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
+import { CoverageGoal } from "./CoverageGoal";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  const [addedLineState, deleteLineState, seenOnboarding, moveLog] =
+  const [addedLineState, deleteLineState, stageStack, moveLog] =
     useRepertoireState((s) => [
       s.browsingState.addedLineState,
       s.browsingState.deleteLineState,
-      s.browsingState.seenOnboarding,
+      s.browsingState.sidebarOnboardingState.stageStack,
       s.browsingState.chessboardState.moveLog,
     ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
   let inner = null;
-  if (!seenOnboarding.value) {
+  if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
   } else if (deleteLineState.visible) {
     inner = <DeleteLineView />;
@@ -72,9 +73,29 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   } else {
     inner = <Responses />;
   }
-  let hidden = false;
-  if (isEmpty(moveLog)) {
-    hidden = true;
+  let backButtonAction = null;
+  if (!isEmpty(moveLog)) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.chessboardState.backOne();
+      });
+    };
+  } else if (addedLineState.visible || deleteLineState.visible) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.dismissTransientSidebarState();
+      });
+    };
+  } else if (stageStack.length > 1) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+          dropRight(
+            s.repertoireState.browsingState.sidebarOnboardingState.stageStack,
+            1
+          );
+      });
+    };
   }
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
@@ -83,18 +104,13 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
       <Pressable
         onPress={() => {
           quick((s) => {
-            if (
-              s.repertoireState.browsingState.dismissTransientSidebarState()
-            ) {
-              return;
-            }
-            s.repertoireState.browsingState.chessboardState.backOne();
+            backButtonAction();
           });
         }}
         style={s(
-          !vertical ? c.height(paddingTop) : c.pt(40),
+          !vertical ? c.height(paddingTop) : c.pt(0),
           c.unshrinkable,
-          hidden && s(c.opacity(0), c.noPointerEvents),
+          isNil(backButtonAction) && s(c.opacity(0), c.noPointerEvents),
           c.column,
           c.justifyEnd,
           c.px(getSidebarPadding(responsive))
@@ -105,7 +121,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           <Spacer width={8} />
           Back
         </CMText>
-        <Spacer height={44} />
+        <Spacer height={backButtonAction || !vertical ? 44 : 0} />
       </Pressable>
       {inner}
     </View>
@@ -147,8 +163,27 @@ const SavedLineView = React.memo(function SavedLineView() {
           complete.
         </CMText>
         <Spacer height={12} />
-        <View style={s(c.fullWidth, c.height(12))}>
-          <CoverageBar side={activeSide} />
+        <View style={s(c.fullWidth)}>
+          <Animated.View
+            style={s(
+              c.row,
+              c.alignEnd,
+              c.justifyBetween,
+              c.fullWidth,
+              c.opacity(progressState.headerOpacityAnim),
+              c.relative,
+              c.zIndex(2)
+            )}
+          >
+            <Spacer width={0} grow />
+            {responsive.bp >= BP.md && (
+              <CoverageGoal textColor={c.grays[90]} fromTop />
+            )}
+          </Animated.View>
+          <Spacer height={4} />
+          <View style={s(c.height(12))}>
+            <CoverageBar side={activeSide} />
+          </View>
         </View>
         <Spacer height={12} />
       </View>

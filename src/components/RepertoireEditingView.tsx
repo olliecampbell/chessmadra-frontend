@@ -223,7 +223,7 @@ export const Responses = React.memo(function Responses() {
     currentLineIncidence,
     hasPendingLine,
     tableResponses,
-    showingPastCoverageGoal,
+    isPastCoverageGoal,
   ] = useBrowsingState(([s, rs]) => [
     s.chessboardState.position,
     s.activeSide,
@@ -232,7 +232,7 @@ export const Responses = React.memo(function Responses() {
     s.getIncidenceOfCurrentLine(),
     s.hasPendingLineToAdd,
     s.tableResponses,
-    s.getShouldShowPastGoalOverlay(),
+    s.isPastCoverageGoal,
   ]);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let usePeerRates = shouldUsePeerRates(positionReport);
@@ -252,6 +252,7 @@ export const Responses = React.memo(function Responses() {
   });
   const isMobile = false;
   const [showOtherMoves, setShowOtherMoves] = useState(false);
+  let prepareForHeader = "You need to prepare for these moves";
   const debugUi = useDebugState((s) => s.debugUi);
   useEffect(() => {
     const beforeUnloadListener = (event) => {
@@ -270,6 +271,18 @@ export const Responses = React.memo(function Responses() {
     };
   }, [hasPendingLine]);
   const responsive = useResponsive();
+  let body = null;
+  if (isPastCoverageGoal) {
+    if (hasPendingLine) {
+      prepareForHeader = "This line looks good!";
+      body =
+        "This line is ready to be added to your repertoire. You can continue adding moves if you want.";
+    } else {
+      prepareForHeader = "You can prepare for these moves";
+      body =
+        "This line is past your coverage goal, but you can add more moves if you want.";
+    }
+  }
   return (
     <View style={s(c.column, c.constrainWidth)}>
       {debugUi && (
@@ -323,7 +336,8 @@ export const Responses = React.memo(function Responses() {
         {!isEmpty(prepareFor) && (
           <RepertoireMovesTable
             {...{
-              header: "You need to prepare for these moves",
+              header: prepareForHeader,
+              body: body,
               activeSide,
               side,
               responses: prepareFor,

@@ -97,8 +97,10 @@ export const RepertoireMovesTable = ({
   usePeerRates,
   setShouldShowOtherMoves,
   showOtherMoves,
+  body,
 }: {
   header: string;
+  body?: string;
   activeSide: Side;
   showOtherMoves?: boolean;
   usePeerRates?: boolean;
@@ -175,6 +177,12 @@ export const RepertoireMovesTable = ({
       {header && (
         <>
           <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
+          <Spacer height={24} />
+        </>
+      )}
+      {body && (
+        <>
+          <CMText style={s(c.px(getSidebarPadding(responsive)))}>{body}</CMText>
           <Spacer height={24} />
         </>
       )}
@@ -345,7 +353,10 @@ let useSections = ({
             {
               <View style={s(c.column)}>
                 <CMText
-                  style={s(textStyles, belowCoverageGoal && c.fg(c.reds[67]))}
+                  style={s(
+                    textStyles,
+                    belowCoverageGoal && s(c.fg(c.grays[44]))
+                  )}
                 >
                   {veryRare ? (
                     <>Very rare</>

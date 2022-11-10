@@ -34,7 +34,7 @@ const client = applyCaseMiddleware(
 
 client.interceptors.request.use(function (config) {
   // console.log({ url: config.url });
-  if (config.url?.includes("lichess")) {
+  if (config.url?.includes("lichess") && !config.url?.includes("oauth")) {
     return config;
   }
   const { token, tempUserUuid } = useAppStateInternal.getState().userState;

@@ -16,7 +16,6 @@ import {
   formatIncidence,
 } from "app/utils/repertoire";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
 import { plural, pluralize } from "app/utils/pluralize";
@@ -54,11 +53,11 @@ export const CoverageBar = ({
     let progressState = s.repertoireProgressState[side];
     return [progressState];
   });
-  const [backgroundColor, inProgressColor, completedColor] = bottomNav
-    ? [c.grays[14], c.grays[75], c.grays[75]]
-    : inverse
-    ? [c.grays[14], c.yellows[45], c.greens[50]]
-    : [c.grays[80], c.yellows[65], c.greens[50]];
+  const [backgroundColor, inProgressColor, completedColor] = [
+    c.grays[30],
+    c.greens[40],
+    c.greens[40],
+  ];
   let overlap = 8;
   return (
     <View
@@ -67,14 +66,14 @@ export const CoverageBar = ({
         c.fullHeight,
         c.fullWidth,
         c.bg(backgroundColor),
-        c.round,
+        c.br(2),
         c.relative
       )}
     >
       <Animated.View
         style={s(
           c.absolute,
-          c.round,
+          c.br(2),
           c.top(0),
           c.bottom(0),
           c.left(0),

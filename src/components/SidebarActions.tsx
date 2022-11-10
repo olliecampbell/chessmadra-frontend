@@ -40,8 +40,6 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { PositionOverview, Responses } from "./RepertoireEditingView";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { useHovering } from "app/hooks/useHovering";
@@ -49,7 +47,7 @@ import { useHovering } from "app/hooks/useHovering";
 export interface SidebarAction {
   onPress: () => void;
   text: string;
-  style: "primary" | "secondary";
+  style: "primary" | "focus";
 }
 
 export const SidebarActions = () => {
@@ -65,6 +63,8 @@ export const SidebarActions = () => {
     deleteLineState,
     currentLine,
     seenOnboarding,
+    stageStack,
+    currentEpd,
   ] = useBrowsingState(([s]) => [
     s.hasPendingLineToAdd,
     s.getNearestMiss(),
@@ -75,7 +75,10 @@ export const SidebarActions = () => {
     s.deleteLineState,
     s.chessboardState.moveLog,
     s.seenOnboarding.value,
+    s.sidebarOnboardingState.stageStack,
+    s.chessboardState.getCurrentEpd(),
   ]);
+  let ownSide = currentSide === activeSide;
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
@@ -94,6 +97,11 @@ export const SidebarActions = () => {
     text: "Continue adding to this line",
     style: "primary",
   };
+  let addBiggestMissAction = () => {
+    if (nearestMiss && nearestMiss.epd !== currentEpd) {
+      buttons.push(goToBiggestMissAction);
+    }
+  };
   let goToBiggestMissAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
@@ -108,13 +116,14 @@ export const SidebarActions = () => {
   };
   if (deleteLineState.visible) {
     // This is taken care of by the delete line view, maybe bad though
-  } else if (!seenOnboarding) {
+  } else if (!isEmpty(stageStack)) {
+    // Taken care of by onboarding
   } else if (addedLineState.visible) {
-    buttons.push(goToBiggestMissAction);
+    addBiggestMissAction();
     buttons.push(reviewCurrentLineAction);
     buttons.push(continueAddingToThisLineAction);
   } else if (!hasPendingLineToAdd) {
-    buttons.push(goToBiggestMissAction);
+    addBiggestMissAction();
   } else if (hasPendingLineToAdd) {
     buttons.push({
       onPress: () => {
@@ -125,7 +134,7 @@ export const SidebarActions = () => {
       text: isPastCoverageGoal
         ? "Save this line to my repertoire"
         : "I'll finish this later, save my progress",
-      style: "primary",
+      style: isPastCoverageGoal ? "focus" : "primary",
     });
   }
   return (
@@ -146,13 +155,31 @@ export const SidebarFullWidthButton = ({
 }) => {
   const responsive = useResponsive();
   const { hovering, hoveringProps } = useHovering();
+  let backgroundColor,
+    foregroundColor = null;
+  if (action.style === "focus") {
+    foregroundColor = c.grays[10];
+    if (hovering) {
+      backgroundColor = c.grays[86];
+    } else {
+      backgroundColor = c.grays[82];
+    }
+  }
+  if (action.style === "primary") {
+    foregroundColor = c.grays[90];
+    if (hovering) {
+      backgroundColor = c.grays[26];
+    } else {
+      backgroundColor = c.grays[22];
+    }
+  }
   return (
     <Pressable
       onPress={action.onPress}
       {...hoveringProps}
       style={s(
         c.fullWidth,
-        c.bg(hovering ? c.grays[26] : c.grays[22]),
+        c.bg(backgroundColor),
         c.row,
         c.justifyBetween,
         c.alignCenter,
@@ -161,12 +188,18 @@ export const SidebarFullWidthButton = ({
       )}
       key={action.text}
     >
-      <CMText style={s(c.fg(c.grays[90]), c.weightSemiBold, c.fontSize(14))}>
+      <CMText
+        style={s(
+          c.fg(foregroundColor),
+          action.style === "focus" ? c.weightBold : c.weightSemiBold,
+          c.fontSize(14)
+        )}
+      >
         {action.text}
       </CMText>
       <i
         className="fa-regular fa-arrow-right-long"
-        style={s(c.fg(c.grays[80]))}
+        style={s(c.fg(foregroundColor))}
       />
     </Pressable>
   );

@@ -97,15 +97,15 @@ export const SideSettingsModal = () => {
               </CMText>
               <Spacer height={4} />
               <CMText style={s(c.fg(c.colors.textSecondary), c.flexShrink(1))}>
-                Go back to the import step, to import from a PGN, use pre-built
-                templates, or import from your Lichess games
+                Import from a PGN, pre-built templates, or from your Lichess
+                games
               </CMText>
               <Spacer height={12} />
               <Button
                 style={s(c.buttons.primary, c.height(36), c.selfEnd)}
                 onPress={() => {
                   quick((s) => {
-                    s.startImporting();
+                    s.startImporting(side);
                     trackEvent("overview.import_to_repertoire");
                     s.repertoireSettingsModalSide = null;
                   });

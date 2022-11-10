@@ -42,6 +42,7 @@ import { isDevelopment } from "app/utils/env";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { AuditView } from "app/components/AuditView";
 import { ReviewMoveAnnotationsView } from "app/components/ReviewMoveAnnotationsView";
+import { OauthCallback } from "app/components/OauthCallback";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -126,6 +127,10 @@ export default function App() {
                 />
                 <Route path="/login" element={<Login />} />
                 <Route path="/blindfold" element={<BlindfoldTrainer />} />
+                <Route
+                  path="/oauth/lichess/callback"
+                  element={<OauthCallback type="lichess" />}
+                />
                 <Route
                   path="/blunder_recognition"
                   element={<BlunderRecognition />}

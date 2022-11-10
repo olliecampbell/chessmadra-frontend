@@ -26,6 +26,7 @@
     "expo-status-bar": "~1.4.0",
     "js-cookie": "^3.0.1",
     "lodash-es": "^4.17.21",
+    "pkce-challenge": "^3.0.0",
     "pullstate": "^1.24.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",

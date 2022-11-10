@@ -19,6 +19,7 @@ import {
   findLast,
   every,
   keys,
+  uniq,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -72,10 +73,19 @@ export enum SidebarOnboardingStage {
   GoalSet,
   // Probably skip this for now
   Import,
+  AskAboutExistingRepertoire,
+  ChooseImportSource,
 }
 
 export interface SidebarOnboardingState {
-  stage: SidebarOnboardingStage;
+  stageStack: SidebarOnboardingStage[];
+  importType: SidebarOnboardingImportType;
+}
+
+export enum SidebarOnboardingImportType {
+  LichessUsername,
+  PGN,
+  PlayerTemplates,
 }
 
 export enum BrowsingTab {
@@ -126,6 +136,7 @@ export interface BrowsingState {
   updateRepertoireProgress: () => void;
   getCurrentPositionReport: () => PositionReport;
   reviewFromCurrentLine: () => void;
+  finishSidebarOnboarding: () => void;
   repertoireProgressState: BySide<RepertoireProgressState>;
   editingState: {
     lastEcoCode?: EcoCode;
@@ -183,10 +194,13 @@ export const getInitialBrowsingState = (
   let initialState = {
     ...createQuick(setOnly),
     readOnly: false,
-    seenOnboarding: new StorageItem("mock-seen-sidebar-onboarding-v1", true),
+    seenOnboarding: new StorageItem("seen-sidebar-onboarding-v1", false),
     dismissedPastCoverageGoalNotification: false,
     hasPendingLineToAdd: false,
-    sidebarOnboardingState: { stage: SidebarOnboardingStage.Initial },
+    sidebarOnboardingState: {
+      stageStack: [SidebarOnboardingStage.Initial],
+      importType: null,
+    },
     sidebarOnboardingStage: null,
     selectedTab: BrowsingTab.Responses,
     isAddingPendingLine: false,
@@ -402,7 +416,8 @@ export const getInitialBrowsingState = (
           });
         }
         s.tableResponses = tableResponses;
-        let noneNeeded = every(tableResponses, (tr) => !tr.needed);
+        let noneNeeded =
+          every(tableResponses, (tr) => !tr.needed) && !isEmpty(tableResponses);
         s.isPastCoverageGoal =
           s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
         if (!s.isPastCoverageGoal) {
@@ -439,6 +454,10 @@ export const getInitialBrowsingState = (
           !s.dismissedPastCoverageGoalNotification &&
           s.hasPendingLineToAdd
         );
+      }),
+    finishSidebarOnboarding: () =>
+      set(([s, rs]) => {
+        s.sidebarOnboardingState.stageStack = [];
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
@@ -480,6 +499,7 @@ export const getInitialBrowsingState = (
           neededPositions,
           (epd) => !rs.positionReports[epd]
         );
+        neededPositions = uniq(neededPositions);
         if (isEmpty(neededPositions)) {
           return;
         }

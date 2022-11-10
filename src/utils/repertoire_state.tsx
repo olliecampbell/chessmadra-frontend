@@ -50,7 +50,11 @@ import { getNameEcoCodeIdentifier } from "./eco_codes";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { BrowsingState, getInitialBrowsingState } from "./browsing_state";
+import {
+  BrowsingState,
+  getInitialBrowsingState,
+  SidebarOnboardingStage,
+} from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getPlayRate } from "./results_distribution";
 import { trackEvent } from "app/hooks/useTrackEvent";
@@ -58,6 +62,14 @@ import { getInitialReviewState, ReviewState } from "./review_state";
 import { getExpectedNumberOfMovesForTarget } from "app/components/RepertoireOverview";
 import { logProxy } from "./state";
 let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
+import pkceChallenge from "pkce-challenge";
+
+export interface LichessOauthData {
+  codeVerifier: string;
+  redirectUri: string;
+  clientId: string;
+  codeChallenge: string;
+}
 
 export enum AddLineFromOption {
   Initial = "Start Position",
@@ -77,7 +89,8 @@ export interface RepertoireState {
   repertoireGrades: BySide<RepertoireGrade>;
   repertoireShareId?: string;
   fetchSharedRepertoire: (id: string) => void;
-  fetchRepertoire: () => void;
+  fetchRepertoire: (initial?: boolean) => void;
+  startLichessOauthFlow: () => void;
   fetchEcoCodes: () => void;
   fetchSupplementary: () => Promise<void>;
   fetchRepertoireTemplates: () => void;
@@ -101,9 +114,9 @@ export interface RepertoireState {
     san: string;
     text: string;
   }) => void;
-  startBrowsing: (side: Side, skipNavigation?: boolean) => void;
+  startBrowsing: (side: Side, pgnToPlay?: string) => void;
   showImportView?: boolean;
-  startImporting: () => void;
+  startImporting: (side: Side) => void;
   updateRepertoireStructures: () => void;
   knownEpdIncidences: BySide<Record<string, number>>;
   epdNodes: BySide<Record<string, boolean>>;
@@ -134,7 +147,6 @@ export interface RepertoireState {
   // The first position where the user does not have a response for
   divergencePosition?: string;
   divergenceIndex?: number;
-  inProgressUsingPlayerTemplate?: boolean;
   ecoCodes: EcoCode[];
   pawnStructures: PawnStructureDetails[];
   ecoCodeLookup: Record<string, EcoCode>;
@@ -269,19 +281,17 @@ export const getInitialRepertoireState = (
     repertoireGrades: { white: null, black: null },
     ecoCodeLookup: {},
     pawnStructureLookup: {},
-    inProgressUsingPlayerTemplate: false,
     pendingResponses: {},
     positionReports: {},
     currentLine: [],
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
       set(([s]) => {
-        s.fetchRepertoire();
+        s.fetchRepertoire(true);
         s.fetchSupplementary();
       }, "initState"),
     usePlayerTemplate: (id: string) =>
       set(async ([s]) => {
-        s.inProgressUsingPlayerTemplate = true;
         let { data }: { data: FetchRepertoireResponse } = await client.post(
           "/api/v1/openings/use_player_template",
           {
@@ -289,12 +299,10 @@ export const getInitialRepertoireState = (
           }
         );
         set(([s]) => {
-          s.inProgressUsingPlayerTemplate = false;
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
-          s.backToOverview();
-          s.hasCompletedRepertoireInitialization = true;
+          s.browsingState.finishSidebarOnboarding();
         });
       }, "usePlayerTemplate"),
     addTemplates: () =>
@@ -346,8 +354,7 @@ export const getInitialRepertoireState = (
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
-          s.hasCompletedRepertoireInitialization = true;
-          s.backToOverview();
+          s.browsingState.finishSidebarOnboarding();
         }, "initializeRepertoire");
       }),
     updateShareLink: () =>
@@ -665,25 +672,22 @@ export const getInitialRepertoireState = (
         s.browsingState.pendingResponses = {};
         s.browsingState.addedLineState = { visible: false };
       }),
-    startImporting: () =>
+    startImporting: (side: Side) =>
       set(([s]) => {
-        s.showImportView = true;
+        s.startBrowsing(side);
+        s.browsingState.chessboardState.resetPosition();
+        s.browsingState.sidebarOnboardingState.stageStack = [
+          SidebarOnboardingStage.ChooseImportSource,
+        ];
       }, "startImporting"),
-    startBrowsing: (side: Side, skipNavigation: boolean) =>
+    startBrowsing: (side: Side, pgnToPlay: string) =>
       set(([s, gs]) => {
-        if (!skipNavigation) {
-          gs.navigationState.push(`/openings/${side}/browse`);
-        }
+        gs.navigationState.push(`/openings/${side}/browse`);
         let breadcrumbs = [
           {
             text: `${capitalize(side)}`,
           },
         ];
-        if (s.browsingState.readOnly) {
-          breadcrumbs.unshift({
-            text: "Shared repertoire",
-          });
-        }
 
         s.setBreadcrumbs(breadcrumbs);
         s.isBrowsing = true;
@@ -692,6 +696,7 @@ export const getInitialRepertoireState = (
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
           s.browsingState.activeSide === "black";
+        s.browsingState.sidebarOnboardingState.stageStack = [];
 
         if (s.browsingState.activeSide === "white") {
           let startResponses =
@@ -702,12 +707,21 @@ export const getInitialRepertoireState = (
             s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
           }
         }
+        if (pgnToPlay) {
+          s.browsingState.chessboardState.playPgn(pgnToPlay);
+        } else if (s.getIsRepertoireEmpty(side)) {
+          s.browsingState.sidebarOnboardingState.stageStack = [
+            SidebarOnboardingStage.AskAboutExistingRepertoire,
+          ];
+        } else {
+        }
       }, "startBrowsing"),
     onRepertoireUpdate: () =>
       set(([s]) => {
         s.updateRepertoireStructures();
         s.browsingState.fetchNeededPositionReports();
         s.browsingState.updateRepertoireProgress();
+        s.browsingState.updateTableResponses();
       }),
     fetchRepertoireTemplates: () =>
       set(([s]) => {
@@ -830,11 +844,32 @@ export const getInitialRepertoireState = (
           set(([s, appState]) => {
             s.browsingState.readOnly = true;
             // window.location.search = "";
-            s.startBrowsing("white", true);
+            s.startBrowsing("white");
           });
         });
       }),
-    fetchRepertoire: () =>
+    startLichessOauthFlow: () =>
+      set(([s]) => {
+        let pkce = pkceChallenge();
+        let redirectUri = window.location.origin + "/oauth/lichess/callback";
+        let lichessOauthData = {
+          codeVerifier: pkce.code_verifier,
+          redirectUri: redirectUri,
+          clientId: "chess-madra",
+          codeChallenge: pkce.code_challenge,
+        } as LichessOauthData;
+        let url = `https://lichess.org/oauth/authorize?response_type=code&client_id=chess-madra&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&scope=email:read&state=&code_challenge=${
+          pkce.code_challenge
+        }&code_challenge_method=S256`;
+        window.sessionStorage.setItem(
+          "lichess-oauth-data",
+          JSON.stringify(lichessOauthData)
+        );
+        window.location.href = url;
+      }),
+    fetchRepertoire: (initial?: boolean) =>
       set(([s]) => {
         client
           .get("/api/v1/openings")
@@ -851,8 +886,14 @@ export const getInitialRepertoireState = (
                 // }
               }
               s.onRepertoireUpdate();
-              // s.startBrowsing("black");
-              // s.browsingState.chessboardState.playPgn(
+              if (initial && s.getIsRepertoireEmpty()) {
+                s.startBrowsing("white");
+                s.browsingState.sidebarOnboardingState.stageStack = [
+                  SidebarOnboardingStage.Initial,
+                ];
+              }
+              // s.startBrowsing(
+              //   "black",
               //   "1. e4 c6 2. d4 d5 3. e5 Bf5 4. Nf3 e6 5. Be2 Ne7 6. O-O"
               // );
             });

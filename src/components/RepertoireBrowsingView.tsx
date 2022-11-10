@@ -35,7 +35,6 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { PositionOverview, Responses } from "./RepertoireEditingView";
 import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { SidebarActions } from "./SidebarActions";
@@ -268,57 +267,6 @@ export const ReviewFromHereButton = () => {
       >
         Review all from here
       </CMText>
-    </Button>
-  );
-};
-
-export const SwitchSideButton = () => {
-  const responsive = useResponsive();
-  const isMobile = responsive.isMobile;
-  const track = useTrack();
-  const [side, q] = useRepertoireState((s) => [
-    s.browsingState.activeSide,
-    s.quick,
-  ]);
-  return (
-    <Button
-      style={s(
-        c.buttons.darkFloater,
-        // isMobile && c.bg(c.grays[70]),
-        c.selfStretch,
-        !isMobile && c.py(16),
-        c.px(24)
-      )}
-      onPress={() => {
-        q((s) => {
-          track("browsing.switched_side");
-          s.startBrowsing(otherSide(side));
-          s.browsingState.chessboardState.resetPosition();
-        });
-      }}
-    >
-      <CMText
-        style={s(
-          c.buttons.darkFloater.textStyles,
-          c.fontSize(isMobile ? 14 : 16)
-        )}
-      >
-        <i className="fa-sharp fa-solid fa-arrows-rotate" />
-      </CMText>
-      {!isMobile && (
-        <>
-          <Spacer width={8} />
-          <CMText
-            style={s(
-              c.buttons.darkFloater.textStyles,
-              c.fontSize(isMobile ? 16 : 18),
-              c.weightSemiBold
-            )}
-          >
-            Switch side
-          </CMText>
-        </>
-      )}
     </Button>
   );
 };

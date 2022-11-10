@@ -16,7 +16,6 @@ import {
   formatIncidence,
 } from "app/utils/repertoire";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
 import { plural, pluralize } from "app/utils/pluralize";
@@ -82,7 +81,7 @@ export const CoverageGoal = ({
   const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
   return (
     <Pressable
-      style={s(c.column, c.alignEnd, c.relative)}
+      style={s(c.column, c.alignEnd, c.relative,)}
       ref={ref}
       onPress={() => {
         setIsOpen(!isOpen);
@@ -94,14 +93,14 @@ export const CoverageGoal = ({
       <Spacer height={0} />
       <View style={s(c.row, c.alignCenter)}>
         <CMText
-          style={s(c.weightBold, c.fg(textColor), c.weightBold, c.fontSize(14))}
+          style={s(c.weightBold, c.fg(textColor), c.weightBold, c.fontSize(12))}
         >
           1 in {Math.round(1 / threshold)} games
         </CMText>
         <Spacer width={4} />
         <i
           className="fa fa-caret-down"
-          style={s(c.fontSize(16), c.fg(textColor), c.opacity(60))}
+          style={s(c.fontSize(14), c.fg(textColor), c.opacity(60))}
         />
       </View>
       <Animated.View
@@ -109,16 +108,14 @@ export const CoverageGoal = ({
           c.absolute,
           c.opacity(fadeAnim),
           !isOpen && c.noPointerEvents,
-          // c.right(c.min(c.calc("100vw - 24px"), 20)),
           c.zIndex(4),
           c.right(0),
-          fromTop ? c.bottom("calc(100% + 12px)") : c.top("calc(100% + 8px)"),
+          c.top("calc(100% + 8px)"),
           c.bg(c.grays[100]),
           c.br(4),
           c.cardShadow,
           c.px(12),
           c.py(12),
-          fromTop && s({ transform: [{ translateX: "-50%" }] }, c.left("50%")),
           c.minWidth(300)
         )}
       >
@@ -161,7 +158,6 @@ export const CoverageGoal = ({
                   >
                     1 in {Math.round(1 / r)} games
                   </CMText>
-                  <Spacer width={12} grow />
                   {recommendedDepth == r && (
                     <CMText
                       style={s(

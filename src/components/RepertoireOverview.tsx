@@ -16,7 +16,6 @@ import {
   formatIncidence,
 } from "app/utils/repertoire";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
-import { RepertoireWizard } from "./RepertoireWizard";
 import { GridLoader } from "react-spinners";
 const DEPTH_CUTOFF = 4;
 import { plural, pluralize } from "app/utils/pluralize";
@@ -313,7 +312,7 @@ const SideEtcButton = ({ side }: { side: Side }) => {
         quick((s) => {
           if (repertoireEmpty) {
             quick((s) => {
-              s.repertoireState.startImporting();
+              s.repertoireState.startImporting(side);
             });
           } else {
             s.repertoireState.repertoireSettingsModalSide = side;
@@ -471,10 +470,7 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
       )}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side);
-          s.repertoireState.browsingState.chessboardState.playPgn(
-            biggestMiss.lines[0]
-          );
+          s.repertoireState.startBrowsing(side as Side, biggestMiss.lines[0]);
           trackEvent("overview.go_to_biggest_miss");
         });
       }}
@@ -641,11 +637,7 @@ const EmptyStatus = ({ side }: { side: Side }) => {
       style={s(c.column, c.maxWidth(200), c.alignEnd, c.clickable)}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side);
-          console.log("Biggest miss is ", biggestMiss);
-          s.repertoireState.browsingState.chessboardState.playPgn(
-            biggestMiss.lines[0]
-          );
+          s.repertoireState.startBrowsing(side as Side, biggestMiss.lines[0]);
           trackEvent("overview.go_to_biggest_miss");
         });
       }}
