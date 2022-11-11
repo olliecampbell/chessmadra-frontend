@@ -433,7 +433,7 @@ let useSections = ({
       content: ({ suggestedMove, positionReport }) => {
         let whiteWinning =
           suggestedMove?.stockfish?.eval >= 0 ||
-          suggestedMove?.stockfish.mate > 0;
+          suggestedMove?.stockfish?.mate > 0;
         return (
           <>
             {suggestedMove?.stockfish && (
