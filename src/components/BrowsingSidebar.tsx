@@ -60,6 +60,9 @@ import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
+  return <InnerSidebar />;
+});
+export const InnerSidebar = React.memo(function InnerSidebar() {
   const [
     addedLineState,
     deleteLineState,

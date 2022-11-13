@@ -138,7 +138,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               <ExtraChessboardActions />
               {vertical ? (
                 <>
-                  <Spacer height={12} />
+                  <Spacer height={24} />
 
                   <View style={s(c.grow)}>
                     <BrowserSidebar />
@@ -173,12 +173,20 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
 };
 
 export const getSidebarPadding = (responsive: Responsive) => {
-  return responsive.switch(8, [BP.md, 12], [BP.lg, 18]);
+  return responsive.switch(12, [BP.md, 12], [BP.lg, 18]);
 };
 
 export const ExtraChessboardActions = ({}: {}) => {
-  const textStyles = s(c.fontSize(14), c.fg(c.grays[50]), c.weightSemiBold);
-  const iconStyles = s(c.fontSize(14), c.fg(c.grays[50]));
+  const responsive = useResponsive();
+  const textStyles = s(
+    c.fontSize(responsive.switch(12, [BP.md, 14])),
+    c.fg(c.grays[50]),
+    c.weightSemiBold
+  );
+  const iconStyles = s(
+    c.fontSize(responsive.switch(12, [BP.md, 14])),
+    c.fg(c.grays[50])
+  );
   const padding = 8;
   let [currentLine, activeSide] = useRepertoireState((s) => [
     s.browsingState.chessboardState.moveLog,
