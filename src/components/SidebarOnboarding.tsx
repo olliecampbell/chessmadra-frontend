@@ -70,6 +70,7 @@ import { DragAndDropInput } from "./DragAndDropInput";
 import { BeatLoader, GridLoader } from "react-spinners";
 import { PlayerTemplate } from "app/models";
 import { PlayerTemplates } from "./PlayerTemplates";
+import { SidebarTemplate } from "./SidebarTemplate";
 
 export const SidebarOnboarding = React.memo(function SidebarOnboarding() {
   const [onboardingState] = useRepertoireState((s) => [
@@ -190,42 +191,6 @@ const ConnectAccountOnboarding = () => {
             text: "Skip this step for now",
           }}
         />
-      </View>
-    </View>
-  );
-};
-
-const SidebarOnboardingTemplate = ({
-  header,
-  children,
-  bodyPadding,
-  actions,
-}: {
-  header: string;
-  children?: any;
-  bodyPadding: boolean;
-  actions: SidebarAction[];
-}) => {
-  const responsive = useResponsive();
-  return (
-    <View style={s(c.column)}>
-      <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
-      <Spacer height={12} />
-      <View
-        style={s(
-          c.column,
-          bodyPadding && c.px(getSidebarPadding(responsive)),
-          c.zIndex(2),
-          c.relative
-        )}
-      >
-        {children}
-      </View>
-      <Spacer height={36} />
-      <View style={s(c.gridColumn({ gap: 12 }))}>
-        {actions.map((action, i) => {
-          return <SidebarFullWidthButton key={i} action={action} />;
-        })}
       </View>
     </View>
   );
@@ -497,7 +462,7 @@ export const Dropdown = <T,>({
 const AskAboutExistingRepertoireOnboarding = () => {
   const responsive = useResponsive();
   return (
-    <SidebarOnboardingTemplate
+    <SidebarTemplate
       bodyPadding={true}
       header="Do you want to import an existing repertoire?"
       actions={[
@@ -521,14 +486,14 @@ const AskAboutExistingRepertoireOnboarding = () => {
           style: "primary",
         },
       ]}
-    ></SidebarOnboardingTemplate>
+    ></SidebarTemplate>
   );
 };
 
 const ChooseImportSourceOnboarding = () => {
   const responsive = useResponsive();
   return (
-    <SidebarOnboardingTemplate
+    <SidebarTemplate
       header="How do you want to import your repertoire? "
       actions={[
         {
@@ -580,7 +545,7 @@ const ChooseImportSourceOnboarding = () => {
           style: "primary",
         },
       ]}
-    ></SidebarOnboardingTemplate>
+    ></SidebarTemplate>
   );
 };
 
@@ -690,24 +655,13 @@ const ImportOnboarding = () => {
     actions = [];
   }
   return (
-    <SidebarOnboardingTemplate
+    <SidebarTemplate
       bodyPadding={bodyPadding}
       header={header}
       actions={actions}
+      loading={loading}
     >
-      {loading ? (
-        <View style={s(c.selfCenter, c.pt(48), c.center)}>
-          <CMText
-            style={s(c.fontSize(14), c.weightSemiBold, c.fg(c.grays[75]))}
-          >
-            {loading}
-          </CMText>
-          <Spacer height={8} />
-          <BeatLoader color={c.grays[80]} size={24} />
-        </View>
-      ) : (
-        body
-      )}
-    </SidebarOnboardingTemplate>
+        {body}
+    </SidebarTemplate>
   );
 };

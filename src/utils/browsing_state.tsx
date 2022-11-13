@@ -115,6 +115,9 @@ export interface BrowsingState {
   deleteLineState: {
     visible: boolean;
   };
+  submitFeedbackState: {
+    visible: boolean;
+  };
   addedLineState: {
     visible: boolean;
   };
@@ -205,6 +208,7 @@ export const getInitialBrowsingState = (
     selectedTab: BrowsingTab.Responses,
     isAddingPendingLine: false,
     deleteLineState: { visible: false },
+    submitFeedbackState: { visible: false },
     addedLineState: { visible: false },
     editingState: {
       etcModalOpen: false,
@@ -438,7 +442,10 @@ export const getInitialBrowsingState = (
       }),
     dismissTransientSidebarState: () =>
       set(([s, rs]) => {
-        if (s.addedLineState.visible) {
+        if (s.submitFeedbackState.visible) {
+          s.submitFeedbackState.visible = false;
+          return true;
+        } else if (s.addedLineState.visible) {
           s.addedLineState.visible = false;
           return true;
         } else if (s.deleteLineState.visible) {

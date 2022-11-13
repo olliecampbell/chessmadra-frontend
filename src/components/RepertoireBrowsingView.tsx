@@ -140,10 +140,8 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                 <>
                   <Spacer height={12} />
 
-                  <View style={s(c.bg(c.grays[15]), c.grow, c.pb(24))}>
+                  <View style={s(c.grow)}>
                     <BrowserSidebar />
-                    <Spacer height={44} />
-                    <SidebarActions />
                   </View>
                 </>
               ) : (
@@ -157,16 +155,13 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                   // @ts-ignore
                   nativeID="sidebar"
                   style={s(
-                    c.column,
-                    !vertical && s(c.flexGrow(2), c.flexShrink, c.noBasis),
-                    c.bg(c.grays[15]),
-                    c.pb(20),
+                    c.flexGrow(2),
+                    c.flexShrink,
+                    c.noBasis,
                     c.maxWidth(600)
                   )}
                 >
                   <BrowserSidebar />
-                  <Spacer height={44} />
-                  <SidebarActions />
                 </View>
               </>
             )}

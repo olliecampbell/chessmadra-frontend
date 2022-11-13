@@ -22,7 +22,6 @@ import { plural, pluralize } from "app/utils/pluralize";
 import { useModal } from "./useModal";
 import { createStaticChessState } from "app/utils/chessboard_state";
 import { CMText } from "./CMText";
-import { RepertoireEditingView } from "./RepertoireEditingView";
 import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { useRepertoireState, useDebugState, quick } from "app/utils/app_state";
@@ -75,12 +74,6 @@ export const RepertoireBuilder = () => {
           much snappier when we're back!
         </CMText>
       </View>
-    );
-  } else if (showImportView) {
-    return (
-      <RepertoirePageLayout>
-        <RepertoireWizard />
-      </RepertoirePageLayout>
     );
   } else {
     return <RepertoireOverview />;

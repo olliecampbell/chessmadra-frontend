@@ -189,7 +189,7 @@ const CurrentLineProgression = () => {
       </Animated.View>
       <Spacer height={8} />
       <View style={s(c.fullWidth, c.height(height))}>
-        <CoverageBar bottomNav side={side} />
+        <CoverageBar side={side} />
       </View>
       {debugUi && debugElements}
     </View>

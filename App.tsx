@@ -34,7 +34,6 @@ import Authenticate from "app/components/Authenticate";
 import { AdminView } from "app/components/AdminView";
 import { MoveAnnotationsDashboard } from "app/components/MoveAnnotationsDashboard";
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
-import { RepertoireEditingView } from "app/components/RepertoireEditingView";
 import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
 import { RepertoireReview } from "app/components/RepertoireReview";
 import { BP, useResponsive } from "app/utils/useResponsive";

@@ -42,28 +42,21 @@ kind: Ingress
 metadata:
   name: chess-madra-fe
   annotations:
-    kubernetes.io/tls-acme: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     cert-manager.io/cluster-issuer: letsencrypt
-    konghq.com/protocols: "https"
-    konghq.com/https-redirect-status-code: "301"
-    linkerd.io/inject: enabled
 spec:
-  ingressClassName: kong
-  tls:
-    - secretName: chess-madra-fe-tls-v5
-      hosts:
-        - chessmadra.mbuffett.com
-        - chessmadra.com
   rules:
-    - host: chessmadra.mbuffett.com
-      http: &http_rules
+    - host: chessmadra.com
+      http:
         paths:
           - path: "/"
-            pathType: ImplementationSpecific
+            pathType: Prefix
             backend:
               service:
                 name: chess-madra-fe
                 port:
                   number: 80
-    - host: chessmadra.com
-      http: *http_rules
+  tls:
+    - hosts:
+        - chessmadra.com
+      secretName: chess-madra-cert-prod

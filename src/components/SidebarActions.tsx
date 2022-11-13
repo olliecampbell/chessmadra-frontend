@@ -60,6 +60,7 @@ export const SidebarActions = () => {
     currentSide,
     activeSide,
     addedLineState,
+    submitFeedbackState,
     deleteLineState,
     currentLine,
     seenOnboarding,
@@ -72,6 +73,7 @@ export const SidebarActions = () => {
     s.chessboardState.position.turn() === "b" ? "black" : "white",
     s.activeSide,
     s.addedLineState,
+    s.submitFeedbackState,
     s.deleteLineState,
     s.chessboardState.moveLog,
     s.seenOnboarding.value,
@@ -114,7 +116,9 @@ export const SidebarActions = () => {
     text: "Go to the biggest gap in your repertoire",
     style: "primary",
   };
-  if (deleteLineState.visible) {
+  if (submitFeedbackState.visible) {
+    // This is taken care of by the delete line view, maybe bad though
+  } else if (deleteLineState.visible) {
     // This is taken care of by the delete line view, maybe bad though
   } else if (!isEmpty(stageStack)) {
     // Taken care of by onboarding

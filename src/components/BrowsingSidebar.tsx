@@ -22,7 +22,12 @@ import {
   getNameEcoCodeIdentifier,
 } from "app/utils/eco_codes";
 import { SelectOneOf } from "./SelectOneOf";
-import { quick, useDebugState, useRepertoireState } from "app/utils/app_state";
+import {
+  quick,
+  useBrowsingState,
+  useDebugState,
+  useRepertoireState,
+} from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,
@@ -52,20 +57,29 @@ import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
 import { CoverageGoal } from "./CoverageGoal";
+import { FeedbackView } from "./FeedbackView";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  const [addedLineState, deleteLineState, stageStack, moveLog] =
-    useRepertoireState((s) => [
-      s.browsingState.addedLineState,
-      s.browsingState.deleteLineState,
-      s.browsingState.sidebarOnboardingState.stageStack,
-      s.browsingState.chessboardState.moveLog,
-    ]);
+  const [
+    addedLineState,
+    deleteLineState,
+    stageStack,
+    moveLog,
+    submitFeedbackState,
+  ] = useRepertoireState((s) => [
+    s.browsingState.addedLineState,
+    s.browsingState.deleteLineState,
+    s.browsingState.sidebarOnboardingState.stageStack,
+    s.browsingState.chessboardState.moveLog,
+    s.browsingState.submitFeedbackState,
+  ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
   let inner = null;
   if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
+  } else if (submitFeedbackState.visible) {
+    inner = <FeedbackView />;
   } else if (deleteLineState.visible) {
     inner = <DeleteLineView />;
   } else if (addedLineState.visible) {
@@ -74,7 +88,11 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
     inner = <Responses />;
   }
   let backButtonAction = null;
-  if (addedLineState.visible || deleteLineState.visible) {
+  if (
+    addedLineState.visible ||
+    deleteLineState.visible ||
+    submitFeedbackState.visible
+  ) {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.dismissTransientSidebarState();
@@ -100,7 +118,15 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
-    <View style={s(c.column, c.zIndex(4))}>
+    <View
+      style={s(
+        c.column,
+        c.zIndex(4),
+        c.bg(c.grays[15]),
+        c.pb(20),
+        c.fullHeight
+      )}
+    >
       <Pressable
         onPress={() => {
           quick((s) => {
@@ -124,9 +150,36 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
         <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
       </Pressable>
       {inner}
+      <Spacer height={44} />
+      <SidebarActions />
+      <Spacer height={44} grow />
+      <FeedbackPrompt />
     </View>
   );
 });
+
+const FeedbackPrompt = () => {
+  const responsive = useResponsive();
+  const [submitFeedbackState] = useBrowsingState(([s]) => [
+    s.submitFeedbackState,
+  ]);
+
+  if (submitFeedbackState.visible) {
+    return null;
+  }
+  return (
+    <Pressable
+      style={s(c.selfEnd, c.clickable, c.px(getSidebarPadding(responsive)))}
+      onPress={() => {
+        quick((s) => {
+          s.repertoireState.browsingState.submitFeedbackState.visible = true;
+        });
+      }}
+    >
+      <CMText style={s(c.fg(c.grays[60]), c.fontSize(12))}>Feedback?</CMText>
+    </Pressable>
+  );
+};
 
 const SavedLineView = React.memo(function SavedLineView() {
   const [positionReport, activeSide] = useRepertoireState((s) => [

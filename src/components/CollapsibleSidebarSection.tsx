@@ -18,7 +18,6 @@ import {
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { EditingTab } from "app/utils/repertoire_state";
 import { Side } from "app/utils/repertoire";
 import { BeatLoader } from "react-spinners";
 import { CMText } from "./CMText";
