@@ -34,7 +34,7 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Save DigitalOcean kubeconfig with short-lived credentials
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 smorgas-cluster
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 cluster-new
       - name: Update deploy.yml
         run: kubectl apply -f ${{ github.workspace }}/deploy.yml
       - name: Rollout deployment
