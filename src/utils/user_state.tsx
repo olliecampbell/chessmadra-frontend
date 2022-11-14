@@ -1,12 +1,10 @@
 import { User } from "app/models";
-import { AppState, quick } from "./app_state";
+import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
-import { formatEloRange } from "./elo_range";
 import client from "app/client";
-import { Side } from "./repertoire";
 import { trackEvent } from "app/hooks/useTrackEvent";
 
 export interface UserState {

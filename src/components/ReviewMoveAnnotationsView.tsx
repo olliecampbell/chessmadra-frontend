@@ -7,7 +7,6 @@ import { isEmpty, isNil, capitalize } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { quick, useAdminState, useUserState } from "app/utils/app_state";
 import React, { useEffect } from "react";

@@ -2,31 +2,16 @@ import { Modal } from "./Modal";
 import { View, Pressable } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
-import { AddedLineStage, AddNewLineChoice } from "app/utils/repertoire_state";
-import { isNil } from "lodash-es";
 import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "app/Space";
-import { Button } from "./Button";
-import { lineToPgn } from "app/utils/repertoire";
-import { ChessboardView } from "./chessboard/Chessboard";
-import { createStaticChessState } from "app/utils/chessboard_state";
-import { useIsMobile } from "app/utils/isMobile";
-import { formatStockfishEval } from "app/utils/stockfish";
-import { getTotalGames } from "app/utils/results_distribution";
-import { GameResultsBar } from "./GameResultsBar";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
 import {
-  DEFAULT_THRESHOLD,
   getRecommendedMissThreshold,
 } from "app/utils/user_state";
 import {
   getAppState,
-  useRepertoireState,
-  useAppState,
   useUserState,
   quick,
 } from "app/utils/app_state";
-import { trackEvent } from "app/hooks/useTrackEvent";
 import { BP, useResponsive } from "app/utils/useResponsive";
 
 export const ProfileModal = () => {

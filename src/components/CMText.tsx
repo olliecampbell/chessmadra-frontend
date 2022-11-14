@@ -1,6 +1,6 @@
 import { c, s } from "app/styles";
 import React from "react";
-import { Animated, Text } from "react-native";
+import { Animated } from "react-native";
 
 export const CMText = (props) => {
   let { children } = props;

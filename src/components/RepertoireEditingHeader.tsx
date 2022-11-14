@@ -1,8 +1,6 @@
 import { s, c } from "app/styles";
-import { useIsMobile } from "app/utils/isMobile";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import React from "react";
-import { View } from "react-native";
 import { CMText } from "./CMText";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 

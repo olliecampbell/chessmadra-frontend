@@ -5,13 +5,10 @@ import { Spacer } from "app/Space";
 import {
   some,
   isNaN,
-  takeWhile,
-  debounce,
   isEmpty,
   filter,
   isNil,
   last,
-  every,
   clamp,
   includes,
 } from "lodash-es";
@@ -23,7 +20,6 @@ import {
   RepertoireMove,
   Side,
 } from "app/utils/repertoire";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { MoveTag, PositionReport, SuggestedMove } from "app/models";
 import { formatStockfishEval } from "app/utils/stockfish";
@@ -41,20 +37,18 @@ import {
   useRepertoireState,
   useUserState,
 } from "app/utils/app_state";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useHovering } from "app/hooks/useHovering";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { getAppropriateEcoName } from "app/utils/eco_codes";
 import {
-  getMoveRating,
   getMoveRatingIcon,
   getWinPercentage,
   MoveRating,
 } from "app/utils/move_inaccuracy";
 import { quick } from "app/utils/app_state";
-import { AnnotationEditor, MAX_ANNOTATION_LENGTH } from "./AnnotationEditor";
-import { getExpectedNumberOfMovesForTarget } from "./RepertoireOverview";
+import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "app/utils/table_scoring";
 import { getCoverageProgress } from "app/utils/browsing_state";
 import { getSidebarPadding } from "./RepertoireBrowsingView";

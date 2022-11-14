@@ -4,7 +4,6 @@ import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useRepertoireState, quick } from "app/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";

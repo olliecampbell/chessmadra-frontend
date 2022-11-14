@@ -27,8 +27,6 @@ import {
   getInitialGameSearchState,
 } from "./game_search_state";
 import {
-  clone,
-  cloneDeep,
   every,
   isNil,
   isObject,
@@ -46,7 +44,7 @@ import { getInitialUserState, UserState } from "./user_state";
 import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "app/styles";
 import { isDevelopment } from "./env";
-import { Ref, RefObject, useContext, useEffect, useRef } from "react";
+import { RefObject, useContext, useRef } from "react";
 import { enableMapSet } from "immer";
 import {
   BrowsingState,

@@ -5,7 +5,6 @@ import { Spacer } from "app/Space";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { BeatLoader } from "react-spinners";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { useAppState } from "app/utils/app_state";
 import React, { useState } from "react";

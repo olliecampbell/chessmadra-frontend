@@ -1,48 +1,19 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, take, sortBy, size, isNil, dropRight } from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import {
-  formatIncidence,
-  otherSide,
-  RepertoireMiss,
-  Side,
-} from "app/utils/repertoire";
-const DEPTH_CUTOFF = 4;
-import { createStaticChessState } from "app/utils/chessboard_state";
+import { isEmpty, isNil, dropRight } from "lodash-es";
 import { CMText } from "./CMText";
-import {
-  getAppropriateEcoName,
-  getNameEcoCodeIdentifier,
-} from "app/utils/eco_codes";
-import { SelectOneOf } from "./SelectOneOf";
 import {
   quick,
   useBrowsingState,
-  useDebugState,
   useRepertoireState,
   useSidebarState,
 } from "app/utils/app_state";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import {
-  BrowserLine,
-  BrowserSection,
-  SidebarStateContext,
-} from "app/utils/browsing_state";
-import { BackControls } from "./BackControls";
-import useIntersectionObserver from "app/utils/useIntersectionObserver";
-import { useAppState } from "app/utils/app_state";
-import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
-import { useParams } from "react-router-dom";
-import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
+import { SidebarStateContext } from "app/utils/browsing_state";
+import { BP, useResponsive } from "app/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
-import useKeypress from "react-use-keypress";
 import { SidebarActions } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import {
@@ -58,7 +29,6 @@ import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
 import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
-import { usePrevious } from "@reactivers/hooks";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let body = <InnerSidebar />;

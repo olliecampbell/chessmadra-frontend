@@ -10,7 +10,6 @@ import { Pressable, View } from "react-native";
 import { CMText } from "./CMText";
 import { Spacer } from "app/Space";
 import { useResponsive } from "app/utils/useResponsive";
-import { formatIncidence } from "app/utils/repertoire";
 import { ChessboardView } from "./chessboard/Chessboard";
 import { createStaticChessState } from "app/utils/chessboard_state";
 import { intersection, sortBy, uniq } from "lodash-es";

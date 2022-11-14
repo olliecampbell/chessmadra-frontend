@@ -1,10 +1,9 @@
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { cloneDeep, first, isEmpty, isEqual, last, mapValues } from "lodash-es";
+import { first, isEmpty, isEqual, last, mapValues } from "lodash-es";
 import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
-import { logProxy } from "./state";
 import { c } from "app/styles";
 import { genEpd, getSquareOffset, START_EPD } from "./chess";
 import { lineToPgn, Side } from "./repertoire";

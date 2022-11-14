@@ -1,44 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, isNil, capitalize, clamp } from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import { RepertoireState } from "app/utils/repertoire_state";
-import {
-  SIDES,
-  Side,
-  RepertoireMiss,
-  formatIncidence,
-} from "app/utils/repertoire";
-import { HeadSiteMeta, PageContainer } from "./PageContainer";
-import { GridLoader } from "react-spinners";
-const DEPTH_CUTOFF = 4;
-import { plural, pluralize } from "app/utils/pluralize";
-import { useModal } from "./useModal";
-import { createStaticChessState } from "app/utils/chessboard_state";
 import { CMText } from "./CMText";
-import { RepertoireBrowsingView } from "./RepertoireBrowsingView";
-import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import {
-  useRepertoireState,
-  useDebugState,
   quick,
   useUserState,
 } from "app/utils/app_state";
-import { RepertoireReview } from "./RepertoireReview";
-import { SideSettingsModal } from "./SideSettingsModal";
-import { OPENINGS_DESCRIPTION } from "./NavBar";
-import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
-import { ProfileModal, THRESHOLD_OPTIONS } from "./ProfileModal";
-import { BP, useResponsive } from "app/utils/useResponsive";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { CoverageBar } from "./CoverageBar";
-import { getRecommendedMissThreshold, trackModule } from "app/utils/user_state";
+import { THRESHOLD_OPTIONS } from "./ProfileModal";
+import { useResponsive } from "app/utils/useResponsive";
+import { getRecommendedMissThreshold } from "app/utils/user_state";
 import { useOutsideClick } from "app/components/useOutsideClick";
 import { SelectOneOf } from "./SelectOneOf";
 

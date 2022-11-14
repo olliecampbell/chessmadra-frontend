@@ -5,7 +5,6 @@ import { Spacer } from "app/Space";
 import { times } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { navItems, OPENINGS_DESCRIPTION } from "./NavBar";
-import { chunked } from "app/utils/intersperse";
 import { PageContainer } from "./PageContainer";
 import { failOnTrue } from "app/utils/test_settings";
 import { useHasBetaAccess } from "app/utils/useHasBetaAccess";

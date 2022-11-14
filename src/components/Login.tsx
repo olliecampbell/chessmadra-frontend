@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, TextInput } from "react-native";
 import { Fragment } from "react";
 import client from "app/client";
-import { onEnter } from "app/utils/onEnter";
 import { BeatLoader } from "react-spinners";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
 import { c, s } from "app/styles";

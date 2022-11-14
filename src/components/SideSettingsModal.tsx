@@ -5,7 +5,6 @@ import { Spacer } from "app/Space";
 import { isNil } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { Modal } from "./Modal";
 import { useRepertoireState } from "app/utils/app_state";

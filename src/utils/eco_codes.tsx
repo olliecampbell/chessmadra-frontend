@@ -1,4 +1,4 @@
-import { some, map, last, isNil } from "lodash-es";
+import { map, last } from "lodash-es";
 
 export const getAppropriateEcoName = (fullName: string): [string, string[]] => {
   if (!fullName) {

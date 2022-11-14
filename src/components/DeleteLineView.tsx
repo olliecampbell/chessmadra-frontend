@@ -1,49 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isEmpty, take, sortBy, size, isNil } from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import {
-  formatIncidence,
-  otherSide,
-  RepertoireMiss,
-  Side,
-} from "app/utils/repertoire";
-const DEPTH_CUTOFF = 4;
-import { createStaticChessState } from "app/utils/chessboard_state";
+import { isNil } from "lodash-es";
 import { CMText } from "./CMText";
-import {
-  getAppropriateEcoName,
-  getNameEcoCodeIdentifier,
-} from "app/utils/eco_codes";
-import { SelectOneOf } from "./SelectOneOf";
-import { quick, useDebugState, useRepertoireState } from "app/utils/app_state";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import {
-  BrowserLine,
-  BrowserSection,
-  BrowsingTab,
-} from "app/utils/browsing_state";
-import { BackControls } from "./BackControls";
-import useIntersectionObserver from "app/utils/useIntersectionObserver";
-import { useAppState } from "app/utils/app_state";
-import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
-import { useParams } from "react-router-dom";
-import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import useKeypress from "react-use-keypress";
-import { SidebarActions, SidebarFullWidthButton } from "./SidebarActions";
+import { quick, useRepertoireState } from "app/utils/app_state";
+import { useResponsive } from "app/utils/useResponsive";
+import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import {
-  formatWinPercentage,
-  getWinRate,
-} from "app/utils/results_distribution";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
-import { CoverageBar } from "./CoverageBar";
+import React from "react";
 
 export const DeleteLineView = React.memo(function DeleteLineView() {
   const responsive = useResponsive();

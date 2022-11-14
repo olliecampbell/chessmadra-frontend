@@ -1,12 +1,10 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+
+import { View } from "react-native";
 import { RepertoireBuilder } from "./src/components/RepertoireBuilder";
 import { s, c } from "app/styles";
 import { Helmet } from "react-helmet";
 import { HeadSiteMeta } from "app/components/PageContainer";
 import { Identify, identify } from "@amplitude/analytics-browser";
-
-import { BrowserTracing } from "@sentry/tracing";
 import AuthHandler from "app/components/AuthHandler";
 import React, { useEffect } from "react";
 import {
@@ -26,7 +24,7 @@ import { GameMemorization } from "app/components/GameMemorization";
 import { GamesSearch } from "app/components/GamesSearch";
 import { TheClimb } from "app/components/TheClimb";
 import { VisualizationTraining } from "app/components/VisualizationTraining";
-import { useAppState, useDebugState } from "app/utils/app_state";
+import { useAppState } from "app/utils/app_state";
 import SharedRepertoireView from "app/components/SharedRepertoire";
 import * as Sentry from "sentry-expo";
 import { isNil } from "lodash-es";

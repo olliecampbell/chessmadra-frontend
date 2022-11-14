@@ -7,7 +7,7 @@ import {
 import { View } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
-import { otherSide, Side } from "app/utils/repertoire";
+import { Side } from "app/utils/repertoire";
 
 export const GameResultsBar = ({
   gameResults,

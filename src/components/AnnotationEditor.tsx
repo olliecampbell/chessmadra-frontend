@@ -1,51 +1,11 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
 import {
-  some,
-  isNaN,
-  takeWhile,
-  debounce,
-  isEmpty,
-  filter,
-  isNil,
-  last,
-  every,
   throttle,
 } from "lodash-es";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import { formatIncidence, RepertoireMove, Side } from "app/utils/repertoire";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
-import { PositionReport, SuggestedMove } from "app/models";
-import { formatStockfishEval } from "app/utils/stockfish";
-import { GameResultsBar } from "./GameResultsBar";
-import {
-  formatPlayPercentage,
-  getPlayRate,
-  getTotalGames,
-} from "app/utils/results_distribution";
-import {
-  useAppState,
-  useBrowsingState,
-  useDebugState,
-  useRepertoireState,
-  useUserState,
-} from "app/utils/app_state";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useHovering } from "app/hooks/useHovering";
-import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
-import {
-  getMoveRating,
-  getMoveRatingIcon,
-  getWinPercentage,
-  MoveRating,
-} from "app/utils/move_inaccuracy";
-import { quick } from "app/utils/app_state";
+import React, { useCallback, useRef, useState } from "react";
 import { useFadeAnimation } from "app/hooks/useFadeAnimation";
 
 export const MAX_ANNOTATION_LENGTH = 300;

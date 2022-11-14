@@ -2,7 +2,6 @@
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { useIsMobile } from "app/utils/isMobile";
-const DEPTH_CUTOFF = 4;
 import { CMText } from "./CMText";
 import { Link } from "react-router-dom";
 import { AdminPageLayout } from "./AdminPageLayout";
