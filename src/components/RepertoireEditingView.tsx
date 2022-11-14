@@ -28,14 +28,12 @@ let desktopHeaderStyles = s(
 
 export const Responses = React.memo(function Responses() {
   console.log("Rendering Responses");
-  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {
-    debug: true,
-  });
+  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
   const positionReport = useBrowsingState(
     ([s, rs]) => rs.positionReports[currentEpd],
-    { referenceEquality: true, debug: true }
+    { referenceEquality: true }
   );
-  let [activeSide] = useBrowsingState(([s]) => [s.activeSide], { debug: true });
+  let [activeSide] = useBrowsingState(([s]) => [s.activeSide], {});
   let [
     currentSide,
     currentLine,
@@ -50,7 +48,7 @@ export const Responses = React.memo(function Responses() {
       s.tableResponses,
       s.isPastCoverageGoal,
     ],
-    { debug: true }
+    {}
   );
   let usePeerRates = shouldUsePeerRates(positionReport);
   let yourMoves = filter(tableResponses, (tr) => {

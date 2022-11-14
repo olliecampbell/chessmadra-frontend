@@ -9,6 +9,7 @@ import { quick, useBrowsingState, useSidebarState } from "app/utils/app_state";
 import { useResponsive } from "app/utils/useResponsive";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { useHovering } from "app/hooks/useHovering";
+import { RepertoireMiss } from "app/utils/repertoire";
 
 export interface SidebarAction {
   onPress: () => void;
@@ -30,6 +31,7 @@ export const SidebarActions = () => {
     stageStack,
     currentEpd,
     nearestMiss,
+    lineMiss,
   ] = useSidebarState(([s, bs]) => [
     s.hasPendingLineToAdd,
     s.isPastCoverageGoal,
@@ -41,6 +43,7 @@ export const SidebarActions = () => {
     s.sidebarOnboardingState.stageStack,
     s.currentEpd,
     bs.getNearestMiss(s),
+    bs.getMissInThisLine(s),
   ]);
   const [activeSide] = useBrowsingState(([s]) => [s.activeSide]);
   let reviewCurrentLineAction: SidebarAction = {
@@ -63,23 +66,22 @@ export const SidebarActions = () => {
     text: "Continue adding to this line",
     style: "primary",
   };
-  let addBiggestMissAction = () => {
-    if (nearestMiss && nearestMiss.epd !== currentEpd) {
-      buttons.push(goToBiggestMissAction);
-    }
-  };
-  let goToBiggestMissAction: SidebarAction = {
-    onPress: () => {
-      quick((s) => {
-        s.repertoireState.browsingState.moveSidebarState("right");
-        s.repertoireState.browsingState.dismissTransientSidebarState();
-        s.repertoireState.browsingState.chessboardState.playPgn(
-          nearestMiss.lines[0]
-        );
+  let addBiggestMissAction = (miss: RepertoireMiss) => {
+    if (miss && miss.epd !== currentEpd) {
+      buttons.push({
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.browsingState.moveSidebarState("right");
+            s.repertoireState.browsingState.dismissTransientSidebarState();
+            s.repertoireState.browsingState.chessboardState.playPgn(
+              miss.lines[0]
+            );
+          });
+        },
+        text: "Go to the next gap in your repertoire",
+        style: "primary",
       });
-    },
-    text: "Go to the biggest gap in your repertoire",
-    style: "primary",
+    }
   };
   if (submitFeedbackState.visible) {
     // This is taken care of by the delete line view, maybe bad though
@@ -88,15 +90,16 @@ export const SidebarActions = () => {
   } else if (!isEmpty(stageStack)) {
     // Taken care of by onboarding
   } else if (addedLineState.visible) {
-    addBiggestMissAction();
+    addBiggestMissAction(nearestMiss);
     buttons.push(reviewCurrentLineAction);
     buttons.push(continueAddingToThisLineAction);
   } else if (!hasPendingLineToAdd) {
-    addBiggestMissAction();
+    addBiggestMissAction(lineMiss);
   } else if (hasPendingLineToAdd) {
     buttons.push({
       onPress: () => {
         quick((s) => {
+          s.repertoireState.browsingState.moveSidebarState("right");
           s.repertoireState.browsingState.requestToAddCurrentLine();
         });
       },

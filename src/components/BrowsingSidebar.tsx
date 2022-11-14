@@ -190,7 +190,6 @@ const BackSection = () => {
   } else if (stageStack.length > 1) {
     backButtonAction = () => {
       quick((s) => {
-        s.repertoireState.browsingState.moveSidebarState("left");
         s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
           dropRight(
             s.repertoireState.browsingState.sidebarState.sidebarOnboardingState
@@ -202,7 +201,6 @@ const BackSection = () => {
   } else if (!isEmpty(moveLog)) {
     backButtonAction = () => {
       quick((s) => {
-        s.repertoireState.browsingState.moveSidebarState("left");
         s.repertoireState.browsingState.chessboardState.backOne();
       });
     };
@@ -211,6 +209,7 @@ const BackSection = () => {
     <Pressable
       onPress={() => {
         quick((s) => {
+          s.repertoireState.browsingState.moveSidebarState("left");
           backButtonAction();
         });
       }}

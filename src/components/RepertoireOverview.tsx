@@ -7,10 +7,7 @@ import { isEmpty, capitalize } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import {
-  SIDES,
-  Side,
-} from "app/utils/repertoire";
+import { SIDES, Side } from "app/utils/repertoire";
 import { plural } from "app/utils/pluralize";
 import { CMText } from "./CMText";
 import {

@@ -107,6 +107,7 @@ export interface BrowsingState {
   getLineIncidences: (_: GetIncidenceOptions) => number[];
   dismissTransientSidebarState: () => boolean;
   getNearestMiss: (sidebarState: SidebarState) => RepertoireMiss;
+  getMissInThisLine: (sidebarState: SidebarState) => RepertoireMiss;
   onPositionUpdate: () => void;
   updateTableResponses: () => void;
   requestToAddCurrentLine: () => void;
@@ -379,7 +380,7 @@ export const getInitialBrowsingState = (
         s.sidebarState.isPastCoverageGoal =
           s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
       }),
-    getNearestMiss: (sidebarState: SidebarState) =>
+    getMissInThisLine: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
         let threshold = gs.userState.getCurrentThreshold();
         let miss =
@@ -389,6 +390,18 @@ export const getInitialBrowsingState = (
         if (miss?.incidence > threshold) {
           return miss;
         }
+      }),
+    getNearestMiss: (sidebarState: SidebarState) =>
+      get(([s, rs, gs]) => {
+        let threshold = gs.userState.getCurrentThreshold();
+        return findLast(
+          map(sidebarState.positionHistory, (epd) => {
+            let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
+            if (miss?.incidence > threshold) {
+              return miss;
+            }
+          })
+        );
       }),
     dismissTransientSidebarState: () =>
       set(([s, rs]) => {
@@ -539,14 +552,6 @@ export const getInitialBrowsingState = (
         s.fetchNeededPositionReports();
         s.updateRepertoireProgress();
         s.updateTableResponses();
-        console.log(
-          "After position update, old sidebar state",
-          s.previousSidebarState
-        );
-        console.log(
-          "After position update, new sidebar state",
-          logProxy(s.sidebarState)
-        );
       }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
@@ -595,6 +600,8 @@ export const getInitialBrowsingState = (
         s.previousSidebarState = cloneDeep(s.sidebarState);
         s.sidebarDirection = direction;
         const duration = 300;
+        s.previousSidebarAnim.setValue(0.0);
+        s.currentSidebarAnim.setValue(0.0);
         Animated.parallel([
           Animated.timing(s.previousSidebarAnim, {
             toValue: 1.0,
@@ -609,15 +616,15 @@ export const getInitialBrowsingState = (
             delay: duration * 1.0,
             useNativeDriver: true,
           }),
-        ]).start(() => {
-          quick((s) => {
-            s.repertoireState.browsingState.previousSidebarAnim.setValue(0.0);
-            s.repertoireState.browsingState.currentSidebarAnim.setValue(0.0);
-            s.repertoireState.browsingState.sidebarDirection = null;
-          });
+        ]).start(({ finished }) => {
+          if (finished) {
+            quick((s) => {
+              s.repertoireState.browsingState.previousSidebarAnim.setValue(0.0);
+              s.repertoireState.browsingState.currentSidebarAnim.setValue(0.0);
+              s.repertoireState.browsingState.sidebarDirection = null;
+            });
+          }
         });
-        console.log(`Moving sidebar state! ${direction}`);
-        // Do sliding stuff
       }),
     addPendingLine: (cfg) =>
       set(([s, gs]) => {
@@ -673,6 +680,7 @@ export const getInitialBrowsingState = (
 
         shouldMakeMove: (move: Move) =>
           set(([s]) => {
+            s.moveSidebarState("right");
             return true;
           }),
       };
