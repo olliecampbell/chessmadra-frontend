@@ -83,6 +83,7 @@ const OnboardingIntro = () => {
         action={{
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                 [SidebarOnboardingStage.SetRating];
             });
@@ -305,6 +306,7 @@ const SetRatingOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
+                s.repertoireState.browsingState.moveSidebarState("right");
                 s.userState.setRatingRange(ratingRange);
                 s.userState.setRatingSystem(ratingSource);
                 s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
@@ -319,6 +321,7 @@ const SetRatingOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
+                s.repertoireState.browsingState.moveSidebarState("right");
                 s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.AskAboutExistingRepertoire];
               });
@@ -424,6 +427,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                 [SidebarOnboardingStage.ChooseImportSource];
             });
@@ -434,6 +438,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.finishSidebarOnboarding();
             });
           },
@@ -454,6 +459,7 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
@@ -467,6 +473,7 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
@@ -480,6 +487,7 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
@@ -493,6 +501,7 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.finishSidebarOnboarding();
             });
           },

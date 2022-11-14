@@ -382,14 +382,13 @@ export const getInitialBrowsingState = (
     getNearestMiss: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
         let threshold = gs.userState.getCurrentThreshold();
-        return findLast(
-          map(sidebarState.positionHistory, (epd) => {
-            let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
-            if (miss?.incidence > threshold) {
-              return miss;
-            }
-          })
-        );
+        let miss =
+          rs.repertoireGrades[s.activeSide].biggestMisses?.[
+            sidebarState.currentEpd
+          ];
+        if (miss?.incidence > threshold) {
+          return miss;
+        }
       }),
     dismissTransientSidebarState: () =>
       set(([s, rs]) => {
@@ -407,6 +406,7 @@ export const getInitialBrowsingState = (
       }),
     finishSidebarOnboarding: () =>
       set(([s, rs]) => {
+        s.moveSidebarState("right");
         s.sidebarState.sidebarOnboardingState.stageStack = [];
       }),
     reviewFromCurrentLine: () =>
