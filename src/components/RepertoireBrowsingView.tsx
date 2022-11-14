@@ -6,11 +6,13 @@ import { Spacer } from "app/Space";
 import { ChessboardView } from "app/components/chessboard/Chessboard";
 import { isEmpty, isNil } from "lodash-es";
 import { Button } from "app/components/Button";
-import {
-  Side,
-} from "app/utils/repertoire";
+import { Side } from "app/utils/repertoire";
 import { CMText } from "./CMText";
-import { quick, useRepertoireState } from "app/utils/app_state";
+import {
+  quick,
+  useBrowsingState,
+  useRepertoireState,
+} from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
@@ -20,23 +22,14 @@ import { BrowserSidebar } from "./BrowsingSidebar";
 export const VERTICAL_BREAKPOINT = BP.md;
 
 export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
-  const [
-    activeSide,
-    isBrowsing,
-    quick,
-    failedToFetch,
-    backToOverview,
-    chessboardState,
-    repertoireLoading,
-  ] = useRepertoireState((s) => [
-    s.browsingState.activeSide,
-    s.isBrowsing,
-    s.quick,
-    s.failedToFetchSharedRepertoire,
-    s.backToOverview,
-    s.browsingState.chessboardState,
-    s.repertoire === undefined,
-  ]);
+  const [activeSide, isBrowsing, quick, repertoireLoading] = useRepertoireState(
+    (s) => [
+      s.browsingState.activeSide,
+      s.isBrowsing,
+      s.quick,
+      s.repertoire === undefined,
+    ]
+  );
 
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
     if (event.key === "ArrowLeft") {
@@ -44,16 +37,6 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
     }
   });
   let { side: paramSide } = useParams();
-  let reviewQueueFromHere = useRepertoireState(
-    (s) =>
-      s.reviewState.buildQueue({
-        cram: true,
-        side: paramSide as Side,
-        startPosition: s.browsingState.chessboardState.getCurrentEpd(),
-        startLine: s.browsingState.chessboardState.moveLog,
-      }),
-    { referenceEquality: true }
-  );
   useEffect(() => {
     if (
       (paramSide !== activeSide || !isBrowsing) &&
@@ -107,7 +90,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                   !vertical && c.pt(140)
                 )}
               >
-                <ChessboardView state={chessboardState} />
+                <BrowsingChessboardView />
               </View>
               <Spacer height={12} />
               <ExtraChessboardActions />
@@ -248,3 +231,8 @@ export const ReviewFromHereButton = () => {
     </Button>
   );
 };
+
+const BrowsingChessboardView = React.memo(function BrowsingChessboardView() {
+  const [chessboardState] = useBrowsingState(([s]) => [s.chessboardState]);
+  return <ChessboardView state={chessboardState} />;
+});

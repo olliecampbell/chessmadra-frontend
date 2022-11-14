@@ -31,44 +31,24 @@ import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  let body = <InnerSidebar />;
-  // let _previousBody = usePrevious(body);
-  let previousBody = useRef(null);
-  // useEffect(() => {
-  //   let t1 = null;
-  //   let toggle = () => {
-  //     t1 = window.setTimeout(() => {
-  //       quick((s) => {
-  //         s.repertoireState.browsingState.chessboardState.makeMove("e4");
-  //         t1 = window.setTimeout(() => {
-  //           quick((s) => {
-  //             s.repertoireState.browsingState.chessboardState.backOne();
-  //             toggle();
-  //           });
-  //         }, 1000);
-  //       });
-  //     }, 1000);
-  //   };
-  //   toggle();
-  //   return () => {
-  //     window.clearTimeout(t1);
-  //   };
-  // }, []);
-  // if (previousSlideNumber !== sidebarSlideNumber) {
-  //   previousBody.current = _previousBody;
-  //   console.log("slide number changed!");
-  // }
+  let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
+    ([s]) => [s.previousSidebarAnim, s.currentSidebarAnim, s.sidebarDirection]
+  );
+  const responsive = useResponsive();
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
     <View
       style={s(
         c.column,
         c.zIndex(4),
         c.relative,
+        c.overflowHidden,
         c.bg(c.grays[15]),
         c.pb(20),
         c.minHeight("100%")
       )}
     >
+      {!vertical && <BackSection />}
       <View
         nativeID="body"
         key="body"
@@ -76,45 +56,86 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           c.column,
           // c.top(200),
           c.fullWidth,
-          c.right(0),
-          c.transform("translate(0%, 0%)")
+          c.displayGrid,
+          c.fullHeight,
+          c.right(0)
         )}
       >
-        <SidebarStateContext.Provider value={false}>
-          <InnerSidebar />
-        </SidebarStateContext.Provider>
+        <Animated.View
+          nativeID="previous-sidebar"
+          style={s(
+            c.keyedProp("gridArea")("1/1"),
+            c.noPointerEvents,
+            c.opacity(
+              previousSidebarAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              })
+            ),
+            isNil(direction) && s(c.opacity(0)),
+            {
+              transform: [
+                {
+                  translateX: previousSidebarAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [
+                      "0px",
+                      direction === "left" ? "50px" : "-50px",
+                    ],
+                  }),
+                },
+              ],
+            }
+          )}
+        >
+          <SidebarStateContext.Provider value={true}>
+            <InnerSidebar />
+          </SidebarStateContext.Provider>
+        </Animated.View>
+        <Animated.View
+          style={s(
+            c.keyedProp("gridArea")("1/1"),
+            !isNil(direction) &&
+              s(
+                c.opacity(
+                  currentSidebarAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  })
+                ),
+                {
+                  transform: [
+                    {
+                      translateX: currentSidebarAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [
+                          direction === "left" ? "-50px" : "50px",
+                          "0px",
+                        ],
+                      }),
+                    },
+                  ],
+                }
+              )
+          )}
+        >
+          <SidebarStateContext.Provider value={false}>
+            <InnerSidebar />
+          </SidebarStateContext.Provider>
+        </Animated.View>
       </View>
     </View>
   );
 });
 
-export const OldSidebar = function OldSidebar({
-  previousBody,
-}: {
-  previousBody: any;
-}) {
-  let previousBodyContainer = useRef(null);
-  useLayoutEffect(() => {
-    console.log("previousBody", previousBody.current);
-    console.log("previousBodyContainer", previousBodyContainer.current);
-    if (previousBodyContainer.current && previousBody.current) {
-      previousBodyContainer.current.appendChild(previousBody.current);
-    }
-  });
-  return <View style={s()} ref={previousBodyContainer} />;
-};
-
 export const InnerSidebar = React.memo(function InnerSidebar() {
   const [addedLineState, deleteLineState, stageStack, submitFeedbackState] =
-    useSidebarState((s) => [
+    useSidebarState(([s]) => [
       s.addedLineState,
       s.deleteLineState,
       s.sidebarOnboardingState.stageStack,
       s.submitFeedbackState,
     ]);
-  const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
-  // const isMobile = useIsMobile();
-  const responsive = useResponsive();
   let inner = null;
   if (!isEmpty(stageStack)) {
     console.log("Inner is rendering onboarding");
@@ -129,6 +150,32 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     console.log("Inner is rendering responses");
     inner = <Responses />;
   }
+  const responsive = useResponsive();
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  return (
+    <>
+      {vertical && <BackSection />}
+      {inner}
+      <Spacer height={44} />
+      <SidebarActions />
+      <Spacer height={44} grow />
+      <FeedbackPrompt />
+    </>
+  );
+});
+
+const BackSection = () => {
+  const [addedLineState, deleteLineState, stageStack, submitFeedbackState] =
+    useSidebarState(([s]) => [
+      s.addedLineState,
+      s.deleteLineState,
+      s.sidebarOnboardingState.stageStack,
+      s.submitFeedbackState,
+    ]);
+  const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
+  const responsive = useResponsive();
+  const paddingTop = 140;
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   let backButtonAction = null;
   if (
     addedLineState.visible ||
@@ -155,48 +202,42 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   } else if (!isEmpty(moveLog)) {
     backButtonAction = () => {
       quick((s) => {
+        s.repertoireState.browsingState.moveSidebarState("left");
         s.repertoireState.browsingState.chessboardState.backOne();
       });
     };
   }
-  const paddingTop = 140;
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
-    <>
-      <Pressable
-        onPress={() => {
-          quick((s) => {
-            backButtonAction();
-          });
-        }}
-        style={s(
-          !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
-          c.unshrinkable,
-          isNil(backButtonAction) && s(c.opacity(0), c.noPointerEvents),
-          c.column,
-          c.justifyEnd,
-          c.px(getSidebarPadding(responsive))
-        )}
-      >
-        <CMText style={s()}>
-          <i className="fa fa-arrow-left"></i>
-          <Spacer width={8} />
-          Back
-        </CMText>
-        <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
-      </Pressable>
-      {inner}
-      <Spacer height={44} />
-      <SidebarActions />
-      <Spacer height={44} grow />
-      <FeedbackPrompt />
-    </>
+    <Pressable
+      onPress={() => {
+        quick((s) => {
+          backButtonAction();
+        });
+      }}
+      style={s(
+        !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
+        c.unshrinkable,
+        isNil(backButtonAction) && s(c.opacity(0), c.noPointerEvents),
+        c.column,
+        c.justifyEnd,
+        c.px(getSidebarPadding(responsive))
+      )}
+    >
+      <CMText style={s()}>
+        <i className="fa fa-arrow-left"></i>
+        <Spacer width={8} />
+        Back
+      </CMText>
+      <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
+    </Pressable>
   );
-});
+};
 
 const FeedbackPrompt = () => {
   const responsive = useResponsive();
-  const [submitFeedbackState] = useSidebarState((s) => [s.submitFeedbackState]);
+  const [submitFeedbackState] = useSidebarState(([s]) => [
+    s.submitFeedbackState,
+  ]);
 
   if (submitFeedbackState.visible) {
     return null;
@@ -218,7 +259,7 @@ const FeedbackPrompt = () => {
 };
 
 const SavedLineView = React.memo(function SavedLineView() {
-  const [currentEpd] = useSidebarState((s) => [s.currentEpd]);
+  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
   const [positionReport, activeSide] = useRepertoireState(
     (s) => [s.positionReports[currentEpd], s.browsingState.activeSide],
     { referenceEquality: true }

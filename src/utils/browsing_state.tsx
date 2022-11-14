@@ -25,17 +25,14 @@ import {
   otherSide,
 } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
-import { AppState } from "./app_state";
+import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import {
-  FetchRepertoireResponse,
-  RepertoireState,
-} from "./repertoire_state";
+import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";
 import { START_EPD } from "./chess";
 import { getPlayRate, getTotalGames, getWinRate } from "./results_distribution";
 import client from "app/client";
 import { createQuick } from "./quick";
-import { Animated } from "react-native";
+import { Animated, Easing } from "react-native";
 import { TableResponse } from "app/components/RepertoireMovesTable";
 import {
   EFFECTIVENESS_WEIGHTS_MASTERS,
@@ -48,6 +45,7 @@ import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { createContext } from "react";
+import { logProxy } from "./state";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -121,6 +119,8 @@ export interface BrowsingState {
   sidebarState: SidebarState;
   previousSidebarState: SidebarState;
   sidebarDirection: "left" | "right";
+  previousSidebarAnim: Animated.Value;
+  currentSidebarAnim: Animated.Value;
   activeSide?: Side;
   repertoireProgressState: BySide<RepertoireProgressState>;
 }
@@ -205,6 +205,8 @@ export const getInitialBrowsingState = (
     ...createQuick(setOnly),
     previousSidebarState: null,
     sidebarDirection: null,
+    previousSidebarAnim: new Animated.Value(0),
+    currentSidebarAnim: new Animated.Value(0),
     sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
     activeSide: null,
@@ -537,6 +539,14 @@ export const getInitialBrowsingState = (
         s.fetchNeededPositionReports();
         s.updateRepertoireProgress();
         s.updateTableResponses();
+        console.log(
+          "After position update, old sidebar state",
+          s.previousSidebarState
+        );
+        console.log(
+          "After position update, new sidebar state",
+          logProxy(s.sidebarState)
+        );
       }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
@@ -580,8 +590,33 @@ export const getInitialBrowsingState = (
       get(([s, rs]) => {
         return last(s.getLineIncidences(options));
       }),
-    moveSidebarState: (cfg) =>
+    moveSidebarState: (direction: "left" | "right") =>
       set(([s, gs]) => {
+        s.previousSidebarState = cloneDeep(s.sidebarState);
+        s.sidebarDirection = direction;
+        const duration = 300;
+        Animated.parallel([
+          Animated.timing(s.previousSidebarAnim, {
+            toValue: 1.0,
+            duration: duration,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(s.currentSidebarAnim, {
+            toValue: 1.0,
+            easing: Easing.inOut(Easing.ease),
+            duration: duration,
+            delay: duration * 1.0,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          quick((s) => {
+            s.repertoireState.browsingState.previousSidebarAnim.setValue(0.0);
+            s.repertoireState.browsingState.currentSidebarAnim.setValue(0.0);
+            s.repertoireState.browsingState.sidebarDirection = null;
+          });
+        });
+        console.log(`Moving sidebar state! ${direction}`);
         // Do sliding stuff
       }),
     addPendingLine: (cfg) =>

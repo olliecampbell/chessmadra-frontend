@@ -2,11 +2,7 @@ import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  isEmpty,
-  isNil,
-  filter,
-} from "lodash-es";
+import { isEmpty, isNil, filter } from "lodash-es";
 import { Side } from "app/utils/repertoire";
 import { BeatLoader } from "react-spinners";
 import { CMText } from "./CMText";
@@ -17,9 +13,7 @@ import {
   useSidebarState,
 } from "app/utils/app_state";
 import React, { useEffect, useState } from "react";
-import {
-  RepertoireMovesTable,
-} from "./RepertoireMovesTable";
+import { RepertoireMovesTable } from "./RepertoireMovesTable";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { shouldUsePeerRates } from "app/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
@@ -32,31 +26,32 @@ let desktopHeaderStyles = s(
   c.weightBold
 );
 
-const VERTICAL_BREAKPOINT = BP.md;
-
 export const Responses = React.memo(function Responses() {
-  const [currentEpd] = useSidebarState((s) => [s.currentEpd]);
-  console.log("currentEpd", currentEpd);
-  const [positionReport] = useBrowsingState(
-    ([s, rs]) => [rs.positionReports[currentEpd]],
-    { referenceEquality: true }
+  console.log("Rendering Responses");
+  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {
+    debug: true,
+  });
+  const positionReport = useBrowsingState(
+    ([s, rs]) => rs.positionReports[currentEpd],
+    { referenceEquality: true, debug: true }
   );
-  console.log("positionReport", positionReport);
+  let [activeSide] = useBrowsingState(([s]) => [s.activeSide], { debug: true });
   let [
-    activeSide,
     currentSide,
     currentLine,
     hasPendingLine,
     tableResponses,
     isPastCoverageGoal,
-  ] = useBrowsingState(([s, rs]) => [
-    s.activeSide,
-    s.sidebarState.currentSide,
-    s.sidebarState.moveLog,
-    s.sidebarState.hasPendingLineToAdd,
-    s.sidebarState.tableResponses,
-    s.sidebarState.isPastCoverageGoal,
-  ]);
+  ] = useSidebarState(
+    ([s]) => [
+      s.currentSide,
+      s.moveLog,
+      s.hasPendingLineToAdd,
+      s.tableResponses,
+      s.isPastCoverageGoal,
+    ],
+    { debug: true }
+  );
   let usePeerRates = shouldUsePeerRates(positionReport);
   let yourMoves = filter(tableResponses, (tr) => {
     return !isNil(tr.repertoireMove) && activeSide === currentSide;
@@ -64,17 +59,15 @@ export const Responses = React.memo(function Responses() {
   let otherMoves = filter(tableResponses, (tr) => {
     return isNil(tr.repertoireMove) && activeSide === currentSide;
   });
+  console.log("Rendered responses");
   // let youCanPlay = filter(tableResponses, (tr) => {
   //   return activeSide === side;
   // });
-  console.log("tableResponses", tableResponses);
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== currentSide;
   });
   const isMobile = false;
-  const [showOtherMoves, setShowOtherMoves] = useState(false);
   let prepareForHeader = "You need to prepare for these moves";
-  const debugUi = useDebugState((s) => s.debugUi);
   useEffect(() => {
     const beforeUnloadListener = (event) => {
       if (hasPendingLine) {
@@ -91,7 +84,6 @@ export const Responses = React.memo(function Responses() {
       });
     };
   }, [hasPendingLine]);
-  const responsive = useResponsive();
   let body = null;
   if (isPastCoverageGoal) {
     if (hasPendingLine) {

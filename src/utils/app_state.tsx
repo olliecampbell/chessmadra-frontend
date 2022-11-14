@@ -26,14 +26,7 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import {
-  every,
-  isNil,
-  isObject,
-  keysIn,
-  take,
-  zip,
-} from "lodash-es";
+import { every, isNil, isObject, keysIn, take, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { immerable } from "immer";
 import { Animated } from "react-native";
@@ -187,16 +180,32 @@ let DEFAULT_EQUALITY_CONFIG = {
 
 const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
   if (config.current.referenceEquality) {
-    return a === b;
+    let equal = a === b;
+    if (!equal) {
+      logUnequal(a, b, path, config);
+    }
+    return equal;
   }
   if (a instanceof Chess && b instanceof Chess) {
-    return a.fen() === b.fen();
+    let equal = a.fen() === b.fen();
+    if (!equal) {
+      logUnequal(a, b, path, config);
+    }
+    return equal;
   }
   if (a instanceof Animated.Value || b instanceof Animated.Value) {
-    return a === b;
+    let equal = a === b;
+    if (!equal) {
+      logUnequal(a, b, path, config);
+    }
+    return equal;
   }
   if (a instanceof Animated.ValueXY || b instanceof Animated.ValueXY) {
-    return a === b;
+    let equal = a === b;
+    if (!equal) {
+      logUnequal(a, b, path, config);
+    }
+    return equal;
   }
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) {
@@ -300,7 +309,7 @@ export const useBrowsingState = <T,>(
 };
 
 export const useSidebarState = <T,>(
-  fn: (_: SidebarState) => T,
+  fn: (_: [SidebarState, BrowsingState]) => T,
   config?: Partial<EqualityConfig>
 ) => {
   const usePrevious = useContext(SidebarStateContext);
@@ -308,12 +317,16 @@ export const useSidebarState = <T,>(
     fn,
     (s) => {
       if (usePrevious) {
-        return (
+        return [
           s.repertoireState.browsingState.previousSidebarState ||
-          s.repertoireState.browsingState.sidebarState
-        );
+            s.repertoireState.browsingState.sidebarState,
+          s.repertoireState.browsingState,
+        ];
       } else {
-        return s.repertoireState.browsingState.sidebarState;
+        return [
+          s.repertoireState.browsingState.sidebarState,
+          s.repertoireState.browsingState,
+        ];
       }
     },
     config

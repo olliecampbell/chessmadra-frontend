@@ -3,25 +3,22 @@ import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import {
-  capitalize,
-  last,
-} from "lodash-es";
+import { capitalize, last } from "lodash-es";
 import { CMText } from "./CMText";
-import { quick, useRepertoireState } from "app/utils/app_state";
+import {
+  quick,
+  useRepertoireState,
+  useSidebarState,
+} from "app/utils/app_state";
 import {
   SidebarOnboardingImportType,
   SidebarOnboardingStage,
 } from "app/utils/browsing_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { useResponsive } from "app/utils/useResponsive";
-import {
-  SidebarFullWidthButton,
-} from "./SidebarActions";
+import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import {
-  getSidebarPadding,
-} from "./RepertoireBrowsingView";
+import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { CMTextInput } from "./TextInput";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { useOutsideClick } from "./useOutsideClick";
@@ -31,8 +28,8 @@ import { PlayerTemplates } from "./PlayerTemplates";
 import { SidebarTemplate } from "./SidebarTemplate";
 
 export const SidebarOnboarding = React.memo(function SidebarOnboarding() {
-  const [onboardingState] = useRepertoireState((s) => [
-    s.browsingState.sidebarState.sidebarOnboardingState,
+  const [onboardingState] = useSidebarState(([s]) => [
+    s.sidebarOnboardingState,
   ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();

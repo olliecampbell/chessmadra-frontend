@@ -510,29 +510,22 @@ const Response = ({
   const { hovering, hoveringProps } = useHovering();
   const { suggestedMove, repertoireMove, incidence, moveRating } =
     tableResponse;
-  const [currentEpd] = useSidebarState((s) => [s.currentEpd]);
-  const [positionReport] = useBrowsingState(
-    ([s, rs]) => [rs.positionReports?.[currentEpd]],
+  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
+  const positionReport = useBrowsingState(
+    ([s, rs]) => rs.positionReports?.[currentEpd],
     { referenceEquality: true }
   );
-  console.log("positionReport in reesponse", positionReport);
-  const [
-    playSan,
-    currentLine,
-    currentSide,
-    nextEcoCode,
-    currentEcoCode,
-    previewMove,
-    uploadMoveAnnotation,
-  ] = useBrowsingState(([s, rs]) => [
-    s.chessboardState.makeMove,
-    s.sidebarState.moveLog,
-    s.sidebarState.currentSide,
-    rs.ecoCodeLookup[suggestedMove?.epdAfter],
-    s.sidebarState.lastEcoCode,
-    s.chessboardState.previewMove,
-    rs.uploadMoveAnnotation,
-  ]);
+
+  const [playSan, nextEcoCode, previewMove, uploadMoveAnnotation] =
+    useBrowsingState(([s, rs]) => [
+      s.chessboardState.makeMove,
+      rs.ecoCodeLookup[suggestedMove?.epdAfter],
+      s.chessboardState.previewMove,
+      rs.uploadMoveAnnotation,
+    ]);
+  const [currentLine, currentSide, currentEcoCode] = useSidebarState(
+    ([s, rs]) => [s.moveLog, s.currentSide, s.lastEcoCode]
+  );
   const isMobile = useIsMobile();
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
@@ -695,7 +688,10 @@ const Response = ({
     <View style={s(c.row, c.alignStart)} {...responseHoverProps}>
       <Pressable
         onPress={() => {
-          playSan(sanPlus);
+          quick((s) => {
+            s.repertoireState.browsingState.moveSidebarState("right");
+            playSan(sanPlus);
+          });
           trackEvent("repertoire.moves_table.select_move");
         }}
         style={s(

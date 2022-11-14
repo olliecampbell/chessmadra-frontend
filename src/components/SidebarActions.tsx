@@ -1,4 +1,3 @@
-
 import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -6,10 +5,7 @@ import { Spacer } from "app/Space";
 import { isEmpty } from "lodash-es";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
-import {
-  quick,
-  useBrowsingState,
-} from "app/utils/app_state";
+import { quick, useBrowsingState, useSidebarState } from "app/utils/app_state";
 import { useResponsive } from "app/utils/useResponsive";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { useHovering } from "app/hooks/useHovering";
@@ -27,7 +23,6 @@ export const SidebarActions = () => {
     hasPendingLineToAdd,
     isPastCoverageGoal,
     currentSide,
-    activeSide,
     addedLineState,
     submitFeedbackState,
     deleteLineState,
@@ -35,19 +30,19 @@ export const SidebarActions = () => {
     stageStack,
     currentEpd,
     nearestMiss,
-  ] = useBrowsingState(([s]) => [
-    s.sidebarState.hasPendingLineToAdd,
-    s.sidebarState.isPastCoverageGoal,
-    s.sidebarState.currentSide,
-    s.activeSide,
-    s.sidebarState.addedLineState,
-    s.sidebarState.submitFeedbackState,
-    s.sidebarState.deleteLineState,
-    s.sidebarState.moveLog,
-    s.sidebarState.sidebarOnboardingState.stageStack,
-    s.sidebarState.currentEpd,
-    s.getNearestMiss(s.sidebarState),
+  ] = useSidebarState(([s, bs]) => [
+    s.hasPendingLineToAdd,
+    s.isPastCoverageGoal,
+    s.currentSide,
+    s.addedLineState,
+    s.submitFeedbackState,
+    s.deleteLineState,
+    s.moveLog,
+    s.sidebarOnboardingState.stageStack,
+    s.currentEpd,
+    bs.getNearestMiss(s),
   ]);
+  const [activeSide] = useBrowsingState(([s]) => [s.activeSide]);
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
@@ -76,6 +71,7 @@ export const SidebarActions = () => {
   let goToBiggestMissAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
+        s.repertoireState.browsingState.moveSidebarState("right");
         s.repertoireState.browsingState.dismissTransientSidebarState();
         s.repertoireState.browsingState.chessboardState.playPgn(
           nearestMiss.lines[0]
