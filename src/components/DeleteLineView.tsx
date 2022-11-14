@@ -35,7 +35,6 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { SidebarActions, SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
@@ -84,7 +83,8 @@ export const DeleteLineView = React.memo(function DeleteLineView() {
                 quick((s) => {
                   s.repertoireState.deleteMove(response).then(() => {
                     quick((s) => {
-                      s.repertoireState.browsingState.deleteLineState.visible =
+                      s.repertoireState.browsingState.moveSidebarState("left");
+                      s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
                         false;
                     });
                   });
@@ -101,7 +101,9 @@ export const DeleteLineView = React.memo(function DeleteLineView() {
           action={{
             onPress: () => {
               quick((s) => {
-                s.repertoireState.browsingState.deleteLineState.visible = false;
+                s.repertoireState.browsingState.moveSidebarState("left");
+                s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
+                  false;
               });
             },
             style: "primary",

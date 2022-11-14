@@ -27,7 +27,6 @@ import { SimplePageLayout } from "./SimplePageLayout";
 import {
   BrowserLine,
   BrowserSection,
-  BrowsingTab,
   SidebarOnboardingStage,
 } from "app/utils/browsing_state";
 import { BackControls } from "./BackControls";
@@ -36,7 +35,6 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { SidebarActions, SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";

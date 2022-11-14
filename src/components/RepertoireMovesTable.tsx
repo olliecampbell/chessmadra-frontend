@@ -36,6 +36,7 @@ import {
 import {
   useAppState,
   useBrowsingState,
+  useSidebarState,
   useDebugState,
   useRepertoireState,
   useUserState,
@@ -113,9 +114,6 @@ export const RepertoireMovesTable = ({
   let mine = filter(responses, (m) => m.repertoireMove?.mine);
   let anyNeeded = some(responses, (m) => m.needed);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let [currentIncidence] = useBrowsingState(([s]) => [
-    s.getIncidenceOfCurrentLine(),
-  ]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
   const isMobile = useIsMobile();
@@ -126,7 +124,6 @@ export const RepertoireMovesTable = ({
   });
   let [expandedLength, setExpandedLength] = useState(0);
   let MIN_TRUNCATED = isMobile ? 1 : 1;
-  let completed = currentIncidence < currentThreshold;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = filter(responses, (r, i) => {
     if (i < expandedLength) {
@@ -276,7 +273,8 @@ export const RepertoireMovesTable = ({
               onPress={() => {
                 trackEvent("repertoire.moves_table.edit_annotations");
                 quick((s) => {
-                  s.repertoireState.browsingState.deleteLineState.visible =
+                  s.repertoireState.browsingState.moveSidebarState("right");
+                  s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
                     true;
                 });
               }}
@@ -518,31 +516,29 @@ const Response = ({
   const { hovering, hoveringProps } = useHovering();
   const { suggestedMove, repertoireMove, incidence, moveRating } =
     tableResponse;
+  const [currentEpd] = useSidebarState((s) => [s.currentEpd]);
   const [positionReport] = useBrowsingState(
-    ([s, rs]) => [s.getCurrentPositionReport()],
+    ([s, rs]) => [rs.positionReports?.[currentEpd]],
     { referenceEquality: true }
   );
+  console.log("positionReport in reesponse", positionReport);
   const [
     playSan,
     currentLine,
-    turn,
-    // uploadMoveAnnotation,
-    currentEpd,
+    currentSide,
     nextEcoCode,
     currentEcoCode,
     previewMove,
     uploadMoveAnnotation,
   ] = useBrowsingState(([s, rs]) => [
     s.chessboardState.makeMove,
-    s.chessboardState.moveLog,
-    s.chessboardState.position.turn(),
-    s.chessboardState.getCurrentEpd(),
+    s.sidebarState.moveLog,
+    s.sidebarState.currentSide,
     rs.ecoCodeLookup[suggestedMove?.epdAfter],
-    s.editingState.lastEcoCode,
+    s.sidebarState.lastEcoCode,
     s.chessboardState.previewMove,
     rs.uploadMoveAnnotation,
   ]);
-  let side: Side = turn === "b" ? "black" : "white";
   const isMobile = useIsMobile();
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
@@ -594,7 +590,7 @@ const Response = ({
               )}
             >
               {moveNumber}
-              {side === "black" ? "... " : "."}
+              {currentSide === "black" ? "... " : "."}
             </CMText>
             <Spacer width={2} />
             <CMText
@@ -745,7 +741,7 @@ const Response = ({
                         )}
                       >
                         {moveNumber}
-                        {side === "black" ? "…" : "."}
+                        {currentSide === "black" ? "…" : "."}
                       </CMText>
                       <Spacer width={4} />
                     </>
@@ -822,7 +818,7 @@ const Response = ({
                         suggestedMove,
                         positionReport,
                         tableResponse,
-                        side,
+                        side: currentSide,
                       })}
                     </View>
                   );
@@ -858,13 +854,19 @@ const Response = ({
               <CMText style={s(c.fg(c.colors.debugColor))}>
                 Win before:{" "}
                 {positionReport?.stockfish &&
-                  getWinPercentage(positionReport?.stockfish, side).toFixed(1)}
+                  getWinPercentage(
+                    positionReport?.stockfish,
+                    currentSide
+                  ).toFixed(1)}
               </CMText>
               <Spacer width={4} />
               <CMText style={s(c.fg(c.colors.debugColor))}>
                 Win after:{" "}
                 {positionReport?.stockfish &&
-                  getWinPercentage(suggestedMove?.stockfish, side).toFixed(1)}
+                  getWinPercentage(
+                    suggestedMove?.stockfish,
+                    currentSide
+                  ).toFixed(1)}
               </CMText>
             </View>
           )}

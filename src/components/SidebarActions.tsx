@@ -29,11 +29,7 @@ import {
   useRepertoireState,
 } from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import {
-  BrowserLine,
-  BrowserSection,
-  BrowsingTab,
-} from "app/utils/browsing_state";
+import { BrowserLine, BrowserSection } from "app/utils/browsing_state";
 import { BackControls } from "./BackControls";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
 import { useAppState } from "app/utils/app_state";
@@ -55,7 +51,6 @@ export const SidebarActions = () => {
   const buttons = [] as SidebarAction[];
   const [
     hasPendingLineToAdd,
-    nearestMiss,
     isPastCoverageGoal,
     currentSide,
     activeSide,
@@ -63,24 +58,22 @@ export const SidebarActions = () => {
     submitFeedbackState,
     deleteLineState,
     currentLine,
-    seenOnboarding,
     stageStack,
     currentEpd,
+    nearestMiss,
   ] = useBrowsingState(([s]) => [
-    s.hasPendingLineToAdd,
-    s.getNearestMiss(),
-    s.isPastCoverageGoal,
-    s.chessboardState.position.turn() === "b" ? "black" : "white",
+    s.sidebarState.hasPendingLineToAdd,
+    s.sidebarState.isPastCoverageGoal,
+    s.sidebarState.currentSide,
     s.activeSide,
-    s.addedLineState,
-    s.submitFeedbackState,
-    s.deleteLineState,
-    s.chessboardState.moveLog,
-    s.seenOnboarding.value,
-    s.sidebarOnboardingState.stageStack,
-    s.chessboardState.getCurrentEpd(),
+    s.sidebarState.addedLineState,
+    s.sidebarState.submitFeedbackState,
+    s.sidebarState.deleteLineState,
+    s.sidebarState.moveLog,
+    s.sidebarState.sidebarOnboardingState.stageStack,
+    s.sidebarState.currentEpd,
+    s.getNearestMiss(s.sidebarState),
   ]);
-  let ownSide = currentSide === activeSide;
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
@@ -93,7 +86,9 @@ export const SidebarActions = () => {
   let continueAddingToThisLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
-        s.repertoireState.browsingState.addedLineState.visible = false;
+        s.repertoireState.browsingState.moveSidebarState("right");
+        s.repertoireState.browsingState.sidebarState.addedLineState.visible =
+          false;
       });
     },
     text: "Continue adding to this line",

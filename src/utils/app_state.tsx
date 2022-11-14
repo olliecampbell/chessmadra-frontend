@@ -46,9 +46,13 @@ import { getInitialUserState, UserState } from "./user_state";
 import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "app/styles";
 import { isDevelopment } from "./env";
-import { Ref, RefObject, useEffect, useRef } from "react";
+import { Ref, RefObject, useContext, useEffect, useRef } from "react";
 import { enableMapSet } from "immer";
-import { BrowsingState } from "./browsing_state";
+import {
+  BrowsingState,
+  SidebarState,
+  SidebarStateContext,
+} from "./browsing_state";
 
 enableMapSet();
 
@@ -293,6 +297,27 @@ export const useBrowsingState = <T,>(
   return useStateSlice(
     fn,
     (s) => [s.repertoireState.browsingState, s.repertoireState],
+    config
+  );
+};
+
+export const useSidebarState = <T,>(
+  fn: (_: SidebarState) => T,
+  config?: Partial<EqualityConfig>
+) => {
+  const usePrevious = useContext(SidebarStateContext);
+  return useStateSlice(
+    fn,
+    (s) => {
+      if (usePrevious) {
+        return (
+          s.repertoireState.browsingState.previousSidebarState ||
+          s.repertoireState.browsingState.sidebarState
+        );
+      } else {
+        return s.repertoireState.browsingState.sidebarState;
+      }
+    },
     config
   );
 };

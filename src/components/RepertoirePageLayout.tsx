@@ -82,7 +82,6 @@ export const RepertoirePageLayout = ({
       <ProfileModal />
       <ShareRepertoireModal />
       <SideSettingsModal />
-      <ConfirmMoveConflictModal />
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",

@@ -43,7 +43,7 @@ metadata:
   name: chess-madra-fe
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
     - host: chessmadra.com

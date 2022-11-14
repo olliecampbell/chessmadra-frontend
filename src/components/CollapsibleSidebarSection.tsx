@@ -46,7 +46,6 @@ import {
   ScoreTable,
   TableResponse,
 } from "./RepertoireMovesTable";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";

@@ -35,7 +35,6 @@ import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,
   BrowserSection,
-  BrowsingTab,
   SidebarOnboardingImportType,
   SidebarOnboardingStage,
 } from "app/utils/browsing_state";
@@ -45,7 +44,6 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import {
   SidebarAction,

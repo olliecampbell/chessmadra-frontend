@@ -53,6 +53,7 @@ import { createQuick } from "./quick";
 import {
   BrowsingState,
   getInitialBrowsingState,
+  makeDefaultSidebarState,
   SidebarOnboardingStage,
 } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
@@ -660,23 +661,19 @@ export const getInitialRepertoireState = (
         }
         s.setBreadcrumbs([]);
         s.showImportView = false;
-        s.browsingState.readOnly = false;
         s.backToStartPosition();
         s.browsingState.activeSide = null;
         s.isEditing = false;
         s.isBrowsing = false;
         s.divergencePosition = null;
         s.divergenceIndex = null;
-        s.browsingState.hasPendingLineToAdd = false;
-        s.browsingState.hasAnyPendingResponses = false;
-        s.browsingState.pendingResponses = {};
-        s.browsingState.addedLineState = { visible: false };
+        s.browsingState.sidebarState = makeDefaultSidebarState();
       }),
     startImporting: (side: Side) =>
       set(([s]) => {
         s.startBrowsing(side);
         s.browsingState.chessboardState.resetPosition();
-        s.browsingState.sidebarOnboardingState.stageStack = [
+        s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
           SidebarOnboardingStage.ChooseImportSource,
         ];
       }, "startImporting"),
@@ -696,7 +693,7 @@ export const getInitialRepertoireState = (
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
           s.browsingState.activeSide === "black";
-        s.browsingState.sidebarOnboardingState.stageStack = [];
+        s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
 
         if (s.browsingState.activeSide === "white") {
           let startResponses =
@@ -710,7 +707,7 @@ export const getInitialRepertoireState = (
         if (pgnToPlay) {
           s.browsingState.chessboardState.playPgn(pgnToPlay);
         } else if (s.getIsRepertoireEmpty(side)) {
-          s.browsingState.sidebarOnboardingState.stageStack = [
+          s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
             SidebarOnboardingStage.AskAboutExistingRepertoire,
           ];
         } else {
@@ -842,7 +839,6 @@ export const getInitialRepertoireState = (
             }),
         ]).then(() => {
           set(([s, appState]) => {
-            s.browsingState.readOnly = true;
             // window.location.search = "";
             s.startBrowsing("white");
           });
@@ -888,9 +884,8 @@ export const getInitialRepertoireState = (
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
                 s.startBrowsing("white");
-                s.browsingState.sidebarOnboardingState.stageStack = [
-                  SidebarOnboardingStage.Initial,
-                ];
+                s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+                  [SidebarOnboardingStage.Initial];
               }
               // s.startBrowsing(
               //   "black",
@@ -919,7 +914,7 @@ export const getInitialRepertoireState = (
     backOne: () =>
       set(([s]) => {
         if (s.isBrowsing) {
-          s.browsingState.addedLineState.visible = false;
+          s.browsingState.sidebarState.addedLineState.visible = false;
           s.browsingState.chessboardState.backOne();
           return;
         }

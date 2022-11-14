@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -27,12 +27,13 @@ import {
   useBrowsingState,
   useDebugState,
   useRepertoireState,
+  useSidebarState,
 } from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,
   BrowserSection,
-  BrowsingTab,
+  SidebarStateContext,
 } from "app/utils/browsing_state";
 import { BackControls } from "./BackControls";
 import useIntersectionObserver from "app/utils/useIntersectionObserver";
@@ -41,7 +42,6 @@ import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import { SidebarActions } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
@@ -58,28 +58,96 @@ import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
 import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
+import { usePrevious } from "@reactivers/hooks";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  return <InnerSidebar />;
+  let body = <InnerSidebar />;
+  // let _previousBody = usePrevious(body);
+  let previousBody = useRef(null);
+  // useEffect(() => {
+  //   let t1 = null;
+  //   let toggle = () => {
+  //     t1 = window.setTimeout(() => {
+  //       quick((s) => {
+  //         s.repertoireState.browsingState.chessboardState.makeMove("e4");
+  //         t1 = window.setTimeout(() => {
+  //           quick((s) => {
+  //             s.repertoireState.browsingState.chessboardState.backOne();
+  //             toggle();
+  //           });
+  //         }, 1000);
+  //       });
+  //     }, 1000);
+  //   };
+  //   toggle();
+  //   return () => {
+  //     window.clearTimeout(t1);
+  //   };
+  // }, []);
+  // if (previousSlideNumber !== sidebarSlideNumber) {
+  //   previousBody.current = _previousBody;
+  //   console.log("slide number changed!");
+  // }
+  return (
+    <View
+      style={s(
+        c.column,
+        c.zIndex(4),
+        c.relative,
+        c.bg(c.grays[15]),
+        c.pb(20),
+        c.minHeight("100%")
+      )}
+    >
+      <View
+        nativeID="body"
+        key="body"
+        style={s(
+          c.column,
+          // c.top(200),
+          c.fullWidth,
+          c.right(0),
+          c.transform("translate(0%, 0%)")
+        )}
+      >
+        <SidebarStateContext.Provider value={false}>
+          <InnerSidebar />
+        </SidebarStateContext.Provider>
+      </View>
+    </View>
+  );
 });
+
+export const OldSidebar = function OldSidebar({
+  previousBody,
+}: {
+  previousBody: any;
+}) {
+  let previousBodyContainer = useRef(null);
+  useLayoutEffect(() => {
+    console.log("previousBody", previousBody.current);
+    console.log("previousBodyContainer", previousBodyContainer.current);
+    if (previousBodyContainer.current && previousBody.current) {
+      previousBodyContainer.current.appendChild(previousBody.current);
+    }
+  });
+  return <View style={s()} ref={previousBodyContainer} />;
+};
+
 export const InnerSidebar = React.memo(function InnerSidebar() {
-  const [
-    addedLineState,
-    deleteLineState,
-    stageStack,
-    moveLog,
-    submitFeedbackState,
-  ] = useRepertoireState((s) => [
-    s.browsingState.addedLineState,
-    s.browsingState.deleteLineState,
-    s.browsingState.sidebarOnboardingState.stageStack,
-    s.browsingState.chessboardState.moveLog,
-    s.browsingState.submitFeedbackState,
-  ]);
+  const [addedLineState, deleteLineState, stageStack, submitFeedbackState] =
+    useSidebarState((s) => [
+      s.addedLineState,
+      s.deleteLineState,
+      s.sidebarOnboardingState.stageStack,
+      s.submitFeedbackState,
+    ]);
+  const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
   let inner = null;
   if (!isEmpty(stageStack)) {
+    console.log("Inner is rendering onboarding");
     inner = <SidebarOnboarding />;
   } else if (submitFeedbackState.visible) {
     inner = <FeedbackView />;
@@ -88,6 +156,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   } else if (addedLineState.visible) {
     inner = <SavedLineView />;
   } else {
+    console.log("Inner is rendering responses");
     inner = <Responses />;
   }
   let backButtonAction = null;
@@ -104,9 +173,11 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   } else if (stageStack.length > 1) {
     backButtonAction = () => {
       quick((s) => {
-        s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+        s.repertoireState.browsingState.moveSidebarState("left");
+        s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
           dropRight(
-            s.repertoireState.browsingState.sidebarOnboardingState.stageStack,
+            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState
+              .stageStack,
             1
           );
       });
@@ -121,15 +192,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
-    <View
-      style={s(
-        c.column,
-        c.zIndex(4),
-        c.bg(c.grays[15]),
-        c.pb(20),
-        c.fullHeight
-      )}
-    >
+    <>
       <Pressable
         onPress={() => {
           quick((s) => {
@@ -157,15 +220,13 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
       <SidebarActions />
       <Spacer height={44} grow />
       <FeedbackPrompt />
-    </View>
+    </>
   );
 });
 
 const FeedbackPrompt = () => {
   const responsive = useResponsive();
-  const [submitFeedbackState] = useBrowsingState(([s]) => [
-    s.submitFeedbackState,
-  ]);
+  const [submitFeedbackState] = useSidebarState((s) => [s.submitFeedbackState]);
 
   if (submitFeedbackState.visible) {
     return null;
@@ -175,7 +236,9 @@ const FeedbackPrompt = () => {
       style={s(c.selfEnd, c.clickable, c.px(getSidebarPadding(responsive)))}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.browsingState.submitFeedbackState.visible = true;
+          s.repertoireState.browsingState.moveSidebarState("left");
+          s.repertoireState.browsingState.sidebarState.submitFeedbackState.visible =
+            true;
         });
       }}
     >
@@ -185,10 +248,11 @@ const FeedbackPrompt = () => {
 };
 
 const SavedLineView = React.memo(function SavedLineView() {
-  const [positionReport, activeSide] = useRepertoireState((s) => [
-    s.browsingState.getCurrentPositionReport(),
-    s.browsingState.activeSide,
-  ]);
+  const [currentEpd] = useSidebarState((s) => [s.currentEpd]);
+  const [positionReport, activeSide] = useRepertoireState(
+    (s) => [s.positionReports[currentEpd], s.browsingState.activeSide],
+    { referenceEquality: true }
+  );
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[activeSide],
   ]);

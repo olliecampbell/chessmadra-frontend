@@ -36,6 +36,7 @@ import {
   useDebugState,
   useRepertoireState,
   useBrowsingState,
+  useSidebarState,
   useUserState,
   quick,
 } from "app/utils/app_state";
@@ -46,7 +47,6 @@ import {
   ScoreTable,
   TableResponse,
 } from "./RepertoireMovesTable";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import { ConfirmMoveConflictModal } from "./ConfirmMoveConflictModal";
 import { BackControls } from "./BackControls";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
@@ -63,143 +63,6 @@ import { AnimatedCheckmark } from "./AnimatedCheckmark";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
-export const MoveLog = () => {
-  let pairs = [];
-  let currentPair = [];
-  const [hasPendingLineToAdd, position, differentMoveIndices] =
-    useBrowsingState(([s]) => [
-      s.hasPendingLineToAdd,
-      s.chessboardState.position,
-      s.differentMoveIndices,
-    ]);
-  let moveList = position.history({ verbose: true });
-  forEach(moveList, (move, i) => {
-    let isNew = differentMoveIndices.includes(i);
-    if (move.color == "b" && isEmpty(currentPair)) {
-      pairs.push([{}, { move, i, isNew }]);
-      return;
-    }
-    currentPair.push({ move, i, isNew });
-    if (move.color == "b") {
-      pairs.push(currentPair);
-      currentPair = [];
-    }
-  });
-  if (!isEmpty(currentPair)) {
-    if (currentPair.length === 1) {
-      currentPair.push({});
-    }
-    pairs.push(currentPair);
-  }
-  const isMobile = useIsMobile();
-  // let minimumNum = isMobile ? 4 : 10;
-  let minimumNum = 1;
-  if (pairs.length < minimumNum) {
-    times(minimumNum - pairs.length, (i) => {
-      pairs.push([{}, {}]);
-    });
-  }
-  const moveStyles = s(
-    c.width(60),
-    c.weightBold,
-    c.fullHeight,
-    c.clickable,
-    c.selfStretch,
-    c.alignStart,
-    c.justifyCenter,
-    c.column,
-    c.fontSize(16),
-    c.fg(c.colors.textPrimary)
-  );
-  return (
-    <View style={s(c.column, isMobile && c.alignCenter)}>
-      <View
-        style={s(
-          c.column,
-          c.br(2),
-          !isMobile && s(c.px(12), c.py(12)),
-          c.width(200),
-          isMobile ? c.selfStretch : c.selfStart,
-          !isMobile && c.bg(c.colors.cardBackground)
-        )}
-      >
-        {!isMobile && (
-          <>
-            <CMText
-              style={s(
-                c.fontSize(22),
-                c.fg(c.colors.textPrimary),
-                c.py(8),
-                c.weightHeavy,
-                c.textAlign("center")
-              )}
-            >
-              Current line
-            </CMText>
-            <Spacer height={12} />
-          </>
-        )}
-        <View
-          style={s(
-            !isMobile && c.bg(c.grays[20]),
-            c.py(12),
-            c.minHeight(200),
-            isMobile && c.br(2)
-          )}
-        >
-          {intersperse(
-            pairs.map((pair, i) => {
-              const [
-                { move: whiteMove, i: whiteI, isNew: whiteIsNew },
-                { move: blackMove, i: blackI, isNew: blackIsNew },
-              ] = pair;
-              const newMoveStyles = s(c.fg(c.grays[65]), c.weightRegular);
-              return (
-                <View
-                  key={`pair-${i}`}
-                  style={s(c.column, c.overflowHidden, c.px(16), c.py(4))}
-                >
-                  <View style={s(c.row, c.alignEnd, c.py(2))}>
-                    <View style={s(c.minWidth(18), c.alignStart, c.mb(1))}>
-                      <CMText
-                        style={s(
-                          c.fg(c.grays[50]),
-                          c.fontSize(14),
-                          c.weightSemiBold
-                        )}
-                      >
-                        {i + 1}.
-                      </CMText>
-                    </View>
-                    <Spacer width={4} />
-                    <Pressable onPress={() => {}}>
-                      <CMText
-                        style={s(moveStyles, whiteIsNew && newMoveStyles)}
-                      >
-                        {whiteMove?.san}
-                      </CMText>
-                    </Pressable>
-                    <Pressable onPress={() => {}}>
-                      <CMText
-                        style={s(moveStyles, blackIsNew && newMoveStyles)}
-                      >
-                        {blackMove?.san ?? ""}
-                      </CMText>
-                    </Pressable>
-                  </View>
-                </View>
-              );
-            }),
-            (i) => {
-              return null;
-            }
-          )}
-        </View>
-      </View>
-    </View>
-  );
-};
-
 let desktopHeaderStyles = s(
   c.fg(c.colors.textPrimary),
   c.fontSize(22),
@@ -210,44 +73,41 @@ let desktopHeaderStyles = s(
 const VERTICAL_BREAKPOINT = BP.md;
 
 export const Responses = React.memo(function Responses() {
+  const [currentEpd] = useSidebarState((s) => [s.currentEpd]);
+  console.log("currentEpd", currentEpd);
   const [positionReport] = useBrowsingState(
-    ([s, rs]) => [s.getCurrentPositionReport()],
+    ([s, rs]) => [rs.positionReports[currentEpd]],
     { referenceEquality: true }
   );
+  console.log("positionReport", positionReport);
   let [
-    position,
     activeSide,
-    currentEpd,
+    currentSide,
     currentLine,
-    currentLineIncidence,
     hasPendingLine,
     tableResponses,
     isPastCoverageGoal,
   ] = useBrowsingState(([s, rs]) => [
-    s.chessboardState.position,
     s.activeSide,
-    s.chessboardState.getCurrentEpd(),
-    s.chessboardState.moveLog,
-    s.getIncidenceOfCurrentLine(),
-    s.hasPendingLineToAdd,
-    s.tableResponses,
-    s.isPastCoverageGoal,
+    s.sidebarState.currentSide,
+    s.sidebarState.moveLog,
+    s.sidebarState.hasPendingLineToAdd,
+    s.sidebarState.tableResponses,
+    s.sidebarState.isPastCoverageGoal,
   ]);
-  let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let usePeerRates = shouldUsePeerRates(positionReport);
-  let side: Side = position.turn() === "b" ? "black" : "white";
-  let ownSide = side === activeSide;
   let yourMoves = filter(tableResponses, (tr) => {
-    return !isNil(tr.repertoireMove) && activeSide === side;
+    return !isNil(tr.repertoireMove) && activeSide === currentSide;
   });
   let otherMoves = filter(tableResponses, (tr) => {
-    return isNil(tr.repertoireMove) && activeSide === side;
+    return isNil(tr.repertoireMove) && activeSide === currentSide;
   });
   // let youCanPlay = filter(tableResponses, (tr) => {
   //   return activeSide === side;
   // });
+  console.log("tableResponses", tableResponses);
   let prepareFor = filter(tableResponses, (tr) => {
-    return activeSide !== side;
+    return activeSide !== currentSide;
   });
   const isMobile = false;
   const [showOtherMoves, setShowOtherMoves] = useState(false);
@@ -284,11 +144,6 @@ export const Responses = React.memo(function Responses() {
   }
   return (
     <View style={s(c.column, c.constrainWidth)}>
-      {debugUi && (
-        <CMText style={s(c.fg(c.colors.debugColorDark))}>
-          Current line incidence: {(currentLineIncidence * 100).toFixed(2)}%
-        </CMText>
-      )}
       <>
         {!isEmpty(yourMoves) && (
           <View style={s()} key={`your-moves-play-${currentEpd}`}>
@@ -297,7 +152,7 @@ export const Responses = React.memo(function Responses() {
                 header: getResponsesHeader(currentLine, !isEmpty(yourMoves)),
                 usePeerRates,
                 activeSide,
-                side,
+                side: currentSide,
                 responses: yourMoves,
               }}
             />
@@ -310,7 +165,7 @@ export const Responses = React.memo(function Responses() {
                 header: getResponsesHeader(currentLine, !isEmpty(yourMoves)),
                 usePeerRates,
                 activeSide,
-                side,
+                side: currentSide,
                 responses: otherMoves,
               }}
             />
@@ -325,7 +180,7 @@ export const Responses = React.memo(function Responses() {
                   header: null,
                   usePeerRates,
                   activeSide,
-                  side,
+                  side: currentSide,
                   responses: otherMoves,
                 }}
               />
@@ -338,7 +193,7 @@ export const Responses = React.memo(function Responses() {
               header: prepareForHeader,
               body: body,
               activeSide,
-              side,
+              side: currentSide,
               responses: prepareFor,
               myMoves: false,
             }}

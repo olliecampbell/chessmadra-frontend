@@ -61,6 +61,7 @@ import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { StorageItem } from "./storageItem";
+import { createContext } from "react";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -88,30 +89,10 @@ export enum SidebarOnboardingImportType {
   PlayerTemplates,
 }
 
-export enum BrowsingTab {
-  Position = "Position",
-  Responses = "Responses",
-  Lines = "My lines",
-  InstructiveGames = "Instructive games",
-  Misses = "Biggest gaps",
-}
-
-export interface BrowsingState {
-  showMetGoal?: boolean;
-  dismissedPastCoverageGoalNotification: boolean;
+export interface SidebarState {
   isPastCoverageGoal?: boolean;
-  updateTableResponses: () => void;
   tableResponses: TableResponse[];
-  requestToAddCurrentLine: () => void;
   hasAnyPendingResponses?: boolean;
-  quick: (fn: (_: BrowsingState) => void) => void;
-  readOnly: boolean;
-  selectedTab: BrowsingTab;
-  activeSide?: Side;
-  chessboardState?: ChessboardState;
-  differentMoveIndices?: number[];
-  sections?: BrowserSection[];
-  onPositionUpdate: () => void;
   deleteLineState: {
     visible: boolean;
   };
@@ -121,31 +102,41 @@ export interface BrowsingState {
   addedLineState: {
     visible: boolean;
   };
-  // TODO: merge w/ onPositionUpdate
-  onEditingPositionUpdate: () => void;
-  addPendingLine: (_?: { replace: boolean }) => void;
-  seenOnboarding: StorageItem<boolean>;
   pendingResponses?: Record<string, RepertoireMove>;
-  isAddingPendingLine: boolean;
-  getIncidenceOfCurrentLine: () => number;
-  getLineIncidences: (_: GetIncidenceOptions) => number[];
-  getShouldShowPastGoalOverlay: () => boolean;
-  dismissTransientSidebarState: () => boolean;
-  getNearestMiss: () => RepertoireMiss;
+  currentSide: Side;
   hasPendingLineToAdd: boolean;
   sidebarOnboardingState: SidebarOnboardingState;
-  pendingLineHasConflictingMoves?: boolean;
+  isAddingPendingLine: boolean;
+  moveLog: string[];
+  positionHistory: string[];
+  currentEpd: string;
+  lastEcoCode?: EcoCode;
+}
+
+export interface BrowsingState {
+  // Functions
   fetchNeededPositionReports: () => void;
   updateRepertoireProgress: () => void;
-  getCurrentPositionReport: () => PositionReport;
   reviewFromCurrentLine: () => void;
   finishSidebarOnboarding: () => void;
+  getIncidenceOfCurrentLine: () => number;
+  getLineIncidences: (_: GetIncidenceOptions) => number[];
+  dismissTransientSidebarState: () => boolean;
+  getNearestMiss: (sidebarState: SidebarState) => RepertoireMiss;
+  onPositionUpdate: () => void;
+  updateTableResponses: () => void;
+  requestToAddCurrentLine: () => void;
+  quick: (fn: (_: BrowsingState) => void) => void;
+  addPendingLine: (_?: { replace: boolean }) => void;
+  moveSidebarState: (direction: "left" | "right") => void;
+
+  // Fields
+  chessboardState?: ChessboardState;
+  sidebarState: SidebarState;
+  previousSidebarState: SidebarState;
+  sidebarDirection: "left" | "right";
+  activeSide?: Side;
   repertoireProgressState: BySide<RepertoireProgressState>;
-  editingState: {
-    lastEcoCode?: EcoCode;
-    etcModalOpen: boolean;
-    addConflictingMoveModalOpen: boolean;
-  };
 }
 
 interface RepertoireProgressState {
@@ -177,6 +168,36 @@ export interface BrowserSection {
 
 type Stack = [BrowsingState, RepertoireState, AppState];
 
+export const SidebarStateContext = createContext(false);
+
+export const makeDefaultSidebarState = () => {
+  return {
+    moveLog: [],
+    positionHistory: null,
+    currentEpd: START_EPD,
+    isPastCoverageGoal: false,
+    tableResponses: [],
+    hasAnyPendingResponses: false,
+    deleteLineState: {
+      visible: false,
+    },
+    submitFeedbackState: {
+      visible: false,
+    },
+    addedLineState: {
+      visible: false,
+    },
+    pendingResponses: {},
+    currentSide: "white",
+    hasPendingLineToAdd: false,
+    sidebarOnboardingState: {
+      stageStack: [SidebarOnboardingStage.Initial],
+      importType: null,
+    },
+    isAddingPendingLine: false,
+  } as SidebarState;
+};
+
 export const getInitialBrowsingState = (
   _set: StateSetter<AppState, any>,
   _get: StateGetter<AppState, any>
@@ -196,26 +217,11 @@ export const getInitialBrowsingState = (
   };
   let initialState = {
     ...createQuick(setOnly),
-    readOnly: false,
-    seenOnboarding: new StorageItem("seen-sidebar-onboarding-v1", false),
-    dismissedPastCoverageGoalNotification: false,
+    previousSidebarState: null,
+    sidebarDirection: null,
+    sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
-    sidebarOnboardingState: {
-      stageStack: [SidebarOnboardingStage.Initial],
-      importType: null,
-    },
-    sidebarOnboardingStage: null,
-    selectedTab: BrowsingTab.Responses,
-    isAddingPendingLine: false,
-    deleteLineState: { visible: false },
-    submitFeedbackState: { visible: false },
-    addedLineState: { visible: false },
-    editingState: {
-      etcModalOpen: false,
-      addConflictingMoveModalOpen: false,
-    },
     activeSide: null,
-    tableResponses: [],
     repertoireProgressState: {
       white: createEmptyRepertoireProgressState(),
       black: createEmptyRepertoireProgressState(),
@@ -232,40 +238,10 @@ export const getInitialBrowsingState = (
             isNil(biggestMissIncidence) || biggestMissIncidence < threshold;
           progressState.completed = completed;
           let expectedNumMoves = rs.expectedNumMovesFromEpd[side][START_EPD];
-          // let magic = 12.7; // Arctan(12.7) = 0.95
           let savedProgress = completed
             ? 100
             : getCoverageProgress(numMoves, expectedNumMoves);
-          let numNew = values(s.pendingResponses).length;
-          let numNewAboveThreshold = values(s.pendingResponses).filter(
-            (m) => m.incidence > threshold
-          ).length;
-          progressState.showPopover = numNew > 0 && !completed;
-          progressState.pendingMoves = numNew;
           progressState.percentComplete = savedProgress;
-          let newProgress =
-            getCoverageProgress(
-              numMoves + numNewAboveThreshold,
-              expectedNumMoves
-            ) - savedProgress;
-          // console.log({
-          //   side,
-          //   biggestMissIncidence,
-          //   threshold,
-          //   completed,
-          //   numNew,
-          //   numNewAboveThreshold,
-          //   pm: logProxy(s.pendingResponses),
-          //   savedProgress,
-          //   newProgress,
-          //   expectedNumMoves,
-          //   numMoves,
-          // });
-          progressState.showNewProgressBar = newProgress > 0;
-          progressState.showPending = some(
-            flatten(values(s.pendingResponses)),
-            (m) => m.mine
-          );
           Animated.timing(progressState.headerOpacityAnim, {
             toValue: progressState.showPopover ? 0 : 1,
             duration: 300,
@@ -274,16 +250,6 @@ export const getInitialBrowsingState = (
           Animated.timing(progressState.popoverOpacityAnim, {
             toValue: progressState.showPopover ? 100 : 0,
             duration: 300,
-            useNativeDriver: true,
-          }).start();
-          Animated.timing(progressState.newProgressLeftAnim, {
-            toValue: savedProgress,
-            duration: 1000,
-            useNativeDriver: true,
-          }).start();
-          Animated.timing(progressState.newProgressAnim, {
-            toValue: newProgress,
-            duration: 1000,
             useNativeDriver: true,
           }).start();
           Animated.timing(progressState.savedProgressAnim, {
@@ -296,14 +262,14 @@ export const getInitialBrowsingState = (
     updateTableResponses: () =>
       get(([s, rs, gs]) => {
         if (!s.activeSide) {
-          s.tableResponses = [];
+          s.sidebarState.tableResponses = [];
           return;
         }
         let threshold = gs.userState.getCurrentThreshold();
         let currentSide: Side =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         let currentEpd = s.chessboardState.getCurrentEpd();
-        let positionReport = s.getCurrentPositionReport();
+        let positionReport = rs.positionReports[s.sidebarState.currentEpd];
         let _tableResponses: Record<string, TableResponse> = {};
         positionReport?.suggestedMoves.map((sm) => {
           _tableResponses[sm.sanPlus] = {
@@ -419,20 +385,17 @@ export const getInitialBrowsingState = (
             tr.needed = incidence > threshold;
           });
         }
-        s.tableResponses = tableResponses;
+        s.sidebarState.tableResponses = tableResponses;
         let noneNeeded =
           every(tableResponses, (tr) => !tr.needed) && !isEmpty(tableResponses);
-        s.isPastCoverageGoal =
+        s.sidebarState.isPastCoverageGoal =
           s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
-        if (!s.isPastCoverageGoal) {
-          s.dismissedPastCoverageGoalNotification = false;
-        }
       }),
-    getNearestMiss: () =>
+    getNearestMiss: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
         let threshold = gs.userState.getCurrentThreshold();
         return findLast(
-          map(s.chessboardState.positionHistory, (epd) => {
+          map(sidebarState.positionHistory, (epd) => {
             let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
             if (miss?.incidence > threshold) {
               return miss;
@@ -442,37 +405,29 @@ export const getInitialBrowsingState = (
       }),
     dismissTransientSidebarState: () =>
       set(([s, rs]) => {
-        if (s.submitFeedbackState.visible) {
-          s.submitFeedbackState.visible = false;
+        if (s.sidebarState.submitFeedbackState.visible) {
+          s.sidebarState.submitFeedbackState.visible = false;
           return true;
-        } else if (s.addedLineState.visible) {
-          s.addedLineState.visible = false;
+        } else if (s.sidebarState.addedLineState.visible) {
+          s.sidebarState.addedLineState.visible = false;
           return true;
-        } else if (s.deleteLineState.visible) {
-          s.deleteLineState.visible = false;
+        } else if (s.sidebarState.deleteLineState.visible) {
+          s.sidebarState.deleteLineState.visible = false;
           return true;
         }
         return false;
       }),
-    getShouldShowPastGoalOverlay: () =>
-      set(([s, rs]) => {
-        return (
-          s.isPastCoverageGoal &&
-          !s.dismissedPastCoverageGoalNotification &&
-          s.hasPendingLineToAdd
-        );
-      }),
     finishSidebarOnboarding: () =>
       set(([s, rs]) => {
-        s.sidebarOnboardingState.stageStack = [];
+        s.sidebarState.sidebarOnboardingState.stageStack = [];
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
         return rs.positionReports[s.chessboardState.getCurrentEpd()];
       }),
-    getCurrentPositionReport: () =>
+    getCurrentPositionReport: (sidebarState: SidebarState) =>
       get(([s, rs]) => {
-        return rs.positionReports[s.chessboardState.getCurrentEpd()];
+        return rs.positionReports[sidebarState.currentEpd];
       }),
     fetchNeededPositionReports: () =>
       set(([s, rs]) => {
@@ -529,22 +484,23 @@ export const getInitialBrowsingState = (
       }),
     requestToAddCurrentLine: () =>
       set(([s, rs]) => {
-        if (s.hasPendingLineToAdd) {
-          // if (s.pendingLineHasConflictingMoves) {
-          //   s.editingState.addConflictingMoveModalOpen = true;
-          // } else {
+        if (s.sidebarState.hasPendingLineToAdd) {
           trackEvent("repertoire.add_pending_line");
           s.addPendingLine();
-          // }
         }
       }),
-    onEditingPositionUpdate: () =>
+    onPositionUpdate: () =>
       set(([s, rs]) => {
-        let line = s.chessboardState.moveLog;
-        s.pendingResponses = {};
-        s.differentMoveIndices = [];
-        if (rs.ecoCodeLookup && s.editingState) {
-          s.editingState.lastEcoCode = last(
+        s.sidebarState.moveLog = s.chessboardState.moveLog;
+        s.sidebarState.currentEpd = s.chessboardState.getCurrentEpd();
+        s.sidebarState.currentSide =
+          s.chessboardState.position.turn() === "b" ? "black" : "white";
+        s.sidebarState.positionHistory = s.chessboardState.positionHistory;
+        s.sidebarState.pendingResponses = {};
+
+        let incidences = s.getLineIncidences({});
+        if (rs.ecoCodeLookup) {
+          s.sidebarState.lastEcoCode = last(
             filter(
               map(s.chessboardState.positionHistory, (p) => {
                 return rs.ecoCodeLookup[p];
@@ -552,8 +508,7 @@ export const getInitialBrowsingState = (
             )
           );
         }
-        s.pendingLineHasConflictingMoves = false;
-        let incidences = s.getLineIncidences({});
+        let line = s.chessboardState.moveLog;
         map(
           zip(s.chessboardState.positionHistory, line, incidences),
           ([position, san, incidence], i) => {
@@ -561,17 +516,6 @@ export const getInitialBrowsingState = (
               return;
             }
             let mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
-            let existingResponses =
-              rs.repertoire[s.activeSide].positionResponses[position];
-            if (
-              !isEmpty(existingResponses) &&
-              mine &&
-              !some(existingResponses, (m) => {
-                return m.sanPlus === san;
-              })
-            ) {
-              s.pendingLineHasConflictingMoves = true;
-            }
             if (
               !some(
                 rs.repertoire[s.activeSide].positionResponses[position],
@@ -580,8 +524,7 @@ export const getInitialBrowsingState = (
                 }
               )
             ) {
-              s.differentMoveIndices.push(i);
-              s.pendingResponses[position] = {
+              s.sidebarState.pendingResponses[position] = {
                 epd: position,
                 epdAfter: s.chessboardState.positionHistory[i + 1],
                 sanPlus: san,
@@ -598,17 +541,17 @@ export const getInitialBrowsingState = (
           }
         );
 
-        s.hasAnyPendingResponses = !isEmpty(
-          flatten(values(s.pendingResponses))
+        s.sidebarState.hasAnyPendingResponses = !isEmpty(
+          flatten(values(s.sidebarState.pendingResponses))
         );
-        s.hasPendingLineToAdd = some(
-          flatten(values(s.pendingResponses)),
+        s.sidebarState.hasPendingLineToAdd = some(
+          flatten(values(s.sidebarState.pendingResponses)),
           (m) => m.mine
         );
         s.fetchNeededPositionReports();
         s.updateRepertoireProgress();
         s.updateTableResponses();
-      }, "onEditingPositionUpdate"),
+      }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
         let startPosition = START_EPD;
@@ -651,17 +594,17 @@ export const getInitialBrowsingState = (
       get(([s, rs]) => {
         return last(s.getLineIncidences(options));
       }),
-    onPositionUpdate: () =>
-      set(([s, repertoireState]) => {
-        s.onEditingPositionUpdate();
+    moveSidebarState: (cfg) =>
+      set(([s, gs]) => {
+        // Do sliding stuff
       }),
     addPendingLine: (cfg) =>
       set(([s, gs]) => {
         let { replace } = cfg ?? { replace: false };
-        s.isAddingPendingLine = true;
+        s.sidebarState.isAddingPendingLine = true;
         client
           .post("/api/v1/openings/add_moves", {
-            moves: flatten(cloneDeep(values(s.pendingResponses))),
+            moves: flatten(cloneDeep(values(s.sidebarState.pendingResponses))),
             side: s.activeSide,
             replace: replace,
           })
@@ -671,17 +614,15 @@ export const getInitialBrowsingState = (
               rs.repertoire = data.repertoire;
               rs.repertoireGrades = data.grades;
               rs.onRepertoireUpdate();
-              s.onEditingPositionUpdate();
-              s.editingState.addConflictingMoveModalOpen = false;
-              s.addedLineState = {
+              s.onPositionUpdate();
+              s.sidebarState.addedLineState = {
                 visible: true,
               };
             });
           })
           .finally(() => {
             set(([s]) => {
-              s.isAddingPendingLine = false;
-              s.editingState.addConflictingMoveModalOpen = false;
+              s.sidebarState.isAddingPendingLine = false;
             });
           });
       }),

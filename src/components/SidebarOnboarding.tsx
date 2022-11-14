@@ -35,7 +35,6 @@ import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import {
   BrowserLine,
   BrowserSection,
-  BrowsingTab,
   SidebarOnboardingImportType,
   SidebarOnboardingStage,
 } from "app/utils/browsing_state";
@@ -45,7 +44,6 @@ import { useAppState } from "app/utils/app_state";
 import { trackEvent, useTrack } from "app/hooks/useTrackEvent";
 import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
-import { RepertoireEditingBottomNav } from "./RepertoireEditingBottomNav";
 import useKeypress from "react-use-keypress";
 import {
   SidebarAction,
@@ -74,7 +72,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 
 export const SidebarOnboarding = React.memo(function SidebarOnboarding() {
   const [onboardingState] = useRepertoireState((s) => [
-    s.browsingState.sidebarOnboardingState,
+    s.browsingState.sidebarState.sidebarOnboardingState,
   ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
@@ -128,7 +126,7 @@ const OnboardingIntro = () => {
         action={{
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                 [SidebarOnboardingStage.SetRating];
             });
           },
@@ -183,7 +181,7 @@ const ConnectAccountOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
-                s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.SetRating];
               });
             },
@@ -352,7 +350,7 @@ const SetRatingOnboarding = () => {
               quick((s) => {
                 s.userState.setRatingRange(ratingRange);
                 s.userState.setRatingSystem(ratingSource);
-                s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.AskAboutExistingRepertoire];
               });
             },
@@ -364,7 +362,7 @@ const SetRatingOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
-                s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.AskAboutExistingRepertoire];
               });
             },
@@ -469,7 +467,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarOnboardingState.stageStack =
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                 [SidebarOnboardingStage.ChooseImportSource];
             });
           },
@@ -499,10 +497,10 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarOnboardingState.stageStack.push(
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
-              s.repertoireState.browsingState.sidebarOnboardingState.importType =
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
                 SidebarOnboardingImportType.PGN;
             });
           },
@@ -512,10 +510,10 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarOnboardingState.stageStack.push(
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
-              s.repertoireState.browsingState.sidebarOnboardingState.importType =
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
                 SidebarOnboardingImportType.LichessUsername;
             });
           },
@@ -525,10 +523,10 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarOnboardingState.stageStack.push(
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
-              s.repertoireState.browsingState.sidebarOnboardingState.importType =
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
                 SidebarOnboardingImportType.PlayerTemplates;
             });
           },
@@ -552,7 +550,7 @@ const ChooseImportSourceOnboarding = () => {
 const ImportOnboarding = () => {
   const responsive = useResponsive();
   let [importType, activeSide] = useRepertoireState((s) => [
-    s.browsingState.sidebarOnboardingState.importType,
+    s.browsingState.sidebarState.sidebarOnboardingState.importType,
     s.browsingState.activeSide,
   ]);
   useEffect(() => {
@@ -661,7 +659,7 @@ const ImportOnboarding = () => {
       actions={actions}
       loading={loading}
     >
-        {body}
+      {body}
     </SidebarTemplate>
   );
 };
