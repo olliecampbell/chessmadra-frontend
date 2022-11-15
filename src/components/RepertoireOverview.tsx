@@ -479,9 +479,6 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
   );
 };
 const EmptyStatus = ({ side }: { side: Side }) => {
-  const [biggestMiss] = useRepertoireState((s) => [
-    s.repertoireGrades[side]?.biggestMiss,
-  ]);
   const responsive = useResponsive();
   const inverse = side === "black";
   const [backgroundColor, foregroundColor, iconColor] =
@@ -491,16 +488,16 @@ const EmptyStatus = ({ side }: { side: Side }) => {
       style={s(c.column, c.maxWidth(200), c.alignEnd, c.clickable)}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side, biggestMiss.lines[0]);
-          trackEvent("overview.go_to_biggest_miss");
+          s.repertoireState.startBrowsing(side as Side);
+          trackEvent("overview.click_empty_state_cta");
         });
       }}
     >
       <CMText style={s(c.weightSemiBold, c.fg(foregroundColor))}>
         This repertoire is empty.{" "}
         {side === "white"
-          ? "Let's start with your first move"
-          : "Let's start with what you're going to play against e4"}{" "}
+          ? "Let's start with your first move."
+          : "Let's see what moves you need to prepare for."}{" "}
       </CMText>
       <Spacer height={8} />
       <View style={s(c.border("none"), c.pt(4), c.pr(0), c.pb(0), c.row)}>
