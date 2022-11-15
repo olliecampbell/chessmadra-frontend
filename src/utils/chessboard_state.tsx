@@ -1,6 +1,6 @@
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { first, isEmpty, isEqual, last, mapValues } from "lodash-es";
+import { first, isEmpty, isEqual, isNil, last, mapValues } from "lodash-es";
 import { getAnimationDurations } from "../components/chessboard/Chessboard";
 import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
@@ -10,14 +10,23 @@ import { lineToPgn, Side } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
 import { pgnToLine } from "app/utils/repertoire";
+import { quick } from "./app_state";
+import { logProxy } from "./state";
 
 export interface MoveArrow {
   move: Move;
 }
 
+interface PlayPgnOptions {
+  animateLine: string[];
+  animated?: boolean;
+  fromEpd?: string;
+}
+
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
+  _animatePosition: Chess;
   arrows: MoveArrow[];
-  playPgn: (pgn: string) => void;
+  playPgn: (pgn: string, options?: PlayPgnOptions) => void;
   frozen?: boolean;
   positionHistory: string[];
   moveHistory: Move[];
@@ -91,6 +100,8 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   isReversingPreviewMove?: boolean;
   isAnimatingPreviewMove?: boolean;
   stepPreviewMove: () => void;
+  animationQueue?: Move[];
+  stepAnimationQueue: () => void;
 }
 
 export interface ChessboardDelegate {
@@ -133,6 +144,7 @@ export const createChessState = (
   let initialState = {
     isColorTraining: false,
     notifyingDelegates: true,
+    _animatePosition: null,
     moveLog: [],
     currentHighlightedSquares: new Set(),
     getDelegate: () => {
@@ -199,6 +211,8 @@ export const createChessState = (
     },
     resetPosition: () => {
       set((s) => {
+        s._animatePosition = null;
+        s.animationQueue = [];
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
         s.position = new Chess();
@@ -318,6 +332,31 @@ export const createChessState = (
         });
       });
     },
+    stepAnimationQueue: () => {
+      set((s: ChessboardState) => {
+        console.log("step animation queue", logProxy(s.animationQueue));
+        if (!isEmpty(s.currentHighlightedSquares)) {
+          s.clearHighlightedSquares();
+        }
+        if (isEmpty(s.animationQueue)) {
+          console.log("no more moves to animate");
+          s._animatePosition = null;
+          s.highlightLastMove();
+        }
+        if (isNil(s._animatePosition)) {
+          return;
+        }
+        let nextMove = s.animationQueue.shift();
+        console.log("animating next move", logProxy(nextMove));
+        s.animatePieceMove(nextMove, PlaybackSpeed.Fast, (completed) => {
+          if (completed) {
+            set((s) => {
+              s.stepAnimationQueue();
+            });
+          }
+        });
+      });
+    },
     stepPreviewMove: () => {
       set((s: ChessboardState) => {
         if (s.isReversingPreviewMove || s.isAnimatingPreviewMove) {
@@ -422,14 +461,24 @@ export const createChessState = (
       });
     },
     arrows: [],
-    playPgn: (pgn: string) => {
+    playPgn: (pgn: string, options?: PlayPgnOptions) => {
       set((s) => {
         s.stopNotifyingDelegates();
-        s.availableMoves = [];
         s.resetPosition();
-        pgnToLine(pgn).map((san) => {
+        let line = pgnToLine(pgn);
+        let animatePosition = null;
+        line.map((san) => {
+          console.log("san", san);
           s.makeMove(san);
         });
+        if (options.animated) {
+          let fen = `${options.fromEpd} 0 1`;
+          s._animatePosition = new Chess(fen);
+          let moves = s._animatePosition.validateMoves(options.animateLine);
+          s.animationQueue = moves;
+          console.log("animation queue", logProxy(s.animationQueue));
+          s.stepAnimationQueue();
+        }
         s.resumeNotifyingDelegates();
         s.getDelegate()?.onPositionUpdated?.();
       });
@@ -474,6 +523,10 @@ export const createChessState = (
     },
     makeMove: (m: Move | string) => {
       set((s) => {
+        if (s._animatePosition) {
+          s._animatePosition.move(m);
+          return;
+        }
         s.availableMoves = [];
         s.previewPosition = null;
         s.activeFromSquare = null;

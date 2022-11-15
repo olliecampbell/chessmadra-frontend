@@ -2,14 +2,15 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { isEmpty } from "lodash-es";
+import { forEachRight, isEmpty, findLastIndex } from "lodash-es";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
 import { quick, useBrowsingState, useSidebarState } from "app/utils/app_state";
 import { useResponsive } from "app/utils/useResponsive";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { useHovering } from "app/hooks/useHovering";
-import { RepertoireMiss } from "app/utils/repertoire";
+import { lineToPgn, pgnToLine, RepertoireMiss } from "app/utils/repertoire";
+import { lineToPositions } from "app/utils/chess";
 
 export interface SidebarAction {
   onPress: () => void;
@@ -32,6 +33,7 @@ export const SidebarActions = () => {
     currentEpd,
     nearestMiss,
     lineMiss,
+    positionHistory,
   ] = useSidebarState(([s, bs]) => [
     s.hasPendingLineToAdd,
     s.isPastCoverageGoal,
@@ -44,6 +46,7 @@ export const SidebarActions = () => {
     s.currentEpd,
     bs.getNearestMiss(s),
     bs.getMissInThisLine(s),
+    s.positionHistory,
   ]);
   const [activeSide] = useBrowsingState(([s]) => [s.activeSide]);
   let reviewCurrentLineAction: SidebarAction = {
@@ -73,8 +76,24 @@ export const SidebarActions = () => {
           quick((s) => {
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.dismissTransientSidebarState();
+            let line = pgnToLine(miss.lines[0]);
+            let missPositions = new Set(lineToPositions(line));
+            console.log("Miss positions", missPositions);
+            console.log("positions history", positionHistory);
+            let i = findLastIndex(positionHistory, (epd) => {
+              if (missPositions.has(epd)) {
+                return true;
+              }
+              return false;
+            });
+            let lastMatchingEpd = positionHistory[i];
             s.repertoireState.browsingState.chessboardState.playPgn(
-              miss.lines[0]
+              lineToPgn(line),
+              {
+                animated: true,
+                fromEpd: lastMatchingEpd,
+                animateLine: line.slice(i),
+              }
             );
           });
         },

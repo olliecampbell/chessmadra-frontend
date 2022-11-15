@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -205,6 +205,31 @@ const BackSection = () => {
       });
     };
   }
+  // useEffect(() => {
+  //   let t1 = null;
+  //   let toggle = () => {
+  //     t1 = window.setTimeout(() => {
+  //       quick((s) => {
+  //         s.repertoireState.browsingState.chessboardState.playPgn(
+  //           "1.e4 e5 2.f4",
+  //           {
+  //             animated: true,
+  //           }
+  //         );
+  //         t1 = window.setTimeout(() => {
+  //           quick((s) => {
+  //             s.repertoireState.browsingState.chessboardState.resetPosition();
+  //             toggle();
+  //           });
+  //         }, 3000);
+  //       });
+  //     }, 1000);
+  //   };
+  //   toggle();
+  //   return () => {
+  //     window.clearTimeout(t1);
+  //   };
+  // }, []);
   return (
     <Pressable
       onPress={() => {

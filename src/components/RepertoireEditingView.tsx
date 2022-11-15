@@ -27,7 +27,6 @@ let desktopHeaderStyles = s(
 );
 
 export const Responses = React.memo(function Responses() {
-  console.log("Rendering Responses");
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
   const positionReport = useBrowsingState(
     ([s, rs]) => rs.positionReports[currentEpd],
@@ -57,14 +56,9 @@ export const Responses = React.memo(function Responses() {
   let otherMoves = filter(tableResponses, (tr) => {
     return isNil(tr.repertoireMove) && activeSide === currentSide;
   });
-  console.log("Rendered responses");
-  // let youCanPlay = filter(tableResponses, (tr) => {
-  //   return activeSide === side;
-  // });
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== currentSide;
   });
-  const isMobile = false;
   let prepareForHeader = "You need to prepare for these moves";
   useEffect(() => {
     const beforeUnloadListener = (event) => {

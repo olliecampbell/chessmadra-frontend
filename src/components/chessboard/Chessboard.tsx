@@ -28,6 +28,7 @@ import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "app/utils/chessboard_state";
 import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "../CMText";
+import { isEmpty, isNil } from "lodash-es";
 
 const animatedXYToPercentage = (x) => {
   return s(
@@ -140,7 +141,7 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
       };
     case PlaybackSpeed.Fast:
       return {
-        moveDuration: 200,
+        moveDuration: 150,
         fadeDuration: 100,
         stayDuration: 100,
       };
@@ -167,7 +168,7 @@ export const ChessboardView = ({
   styles?: any;
 }) => {
   const { availableMoves } = state;
-  const position = state.position;
+  const position = state._animatePosition ?? state.position;
   const tileStyles = s(c.bg("green"), c.grow);
   const stateRef = useRef(state);
   stateRef.current = state;

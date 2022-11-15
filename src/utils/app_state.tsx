@@ -179,30 +179,31 @@ let DEFAULT_EQUALITY_CONFIG = {
 } as EqualityConfig;
 
 const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
+  const debug = config.current.debug;
   if (config.current.referenceEquality) {
     let equal = a === b;
-    if (!equal) {
+    if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
     return equal;
   }
   if (a instanceof Chess && b instanceof Chess) {
     let equal = a.fen() === b.fen();
-    if (!equal) {
+    if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
     return equal;
   }
   if (a instanceof Animated.Value || b instanceof Animated.Value) {
     let equal = a === b;
-    if (!equal) {
+    if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
     return equal;
   }
   if (a instanceof Animated.ValueXY || b instanceof Animated.ValueXY) {
     let equal = a === b;
-    if (!equal) {
+    if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
     return equal;

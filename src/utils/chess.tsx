@@ -1,5 +1,5 @@
 import { COLUMNS, ROWS } from "../types/Chess";
-import { dropRight, indexOf } from "lodash-es";
+import { dropRight, forEach, indexOf } from "lodash-es";
 import { Chess, Move } from "@lubert/chess.ts";
 
 export const getSquareOffset = (square: string, flipped: boolean) => {
@@ -11,6 +11,16 @@ export const getSquareOffset = (square: string, flipped: boolean) => {
     y = 7 - y;
   }
   return { x: x / 8, y: y / 8 };
+};
+
+export const lineToPositions = (line: string[]) => {
+  let position = new Chess();
+  let positions = [START_EPD];
+  forEach(line, (move) => {
+    position.move(move);
+    positions.push(genEpd(position));
+  });
+  return positions;
 };
 
 export const isCheckmate = (move: Move, position: Chess) => {
