@@ -57,7 +57,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           // c.top(200),
           c.fullWidth,
           c.displayGrid,
-          c.fullHeight,
+          c.grow,
           c.right(0)
         )}
       >
