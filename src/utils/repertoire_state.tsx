@@ -869,8 +869,8 @@ export const getInitialRepertoireState = (
                   [SidebarOnboardingStage.Initial];
               }
               // s.startBrowsing(
-              //   "black",
-              //   "1. e4 c6 2. d4 d5 3. e5 Bf5 4. Nf3 e6 5. Be2 Ne7 6. O-O"
+              //   "white",
+              //   "1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 4.Bc4 c6"
               // );
             });
           });

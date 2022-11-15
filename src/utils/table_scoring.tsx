@@ -48,7 +48,7 @@ export const scoreTableResponses = (
         );
         if (!isNil(masterPlayRate)) {
           let masterRateAdditionalWeight = Math.min(
-            getTotalGames(tableResponse.suggestedMove?.masterResults) / 100,
+            getTotalGames(tableResponse.suggestedMove?.masterResults) / 10,
             1
           );
           let scoreForMasterPlayrate =
