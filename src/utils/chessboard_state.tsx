@@ -471,7 +471,7 @@ export const createChessState = (
           console.log("san", san);
           s.makeMove(san);
         });
-        if (options.animated) {
+        if (options?.animated) {
           let fen = `${options.fromEpd} 0 1`;
           s._animatePosition = new Chess(fen);
           let moves = s._animatePosition.validateMoves(options.animateLine);
