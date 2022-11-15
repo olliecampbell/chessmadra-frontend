@@ -136,14 +136,15 @@ export const getSidebarPadding = (responsive: Responsive) => {
 
 export const ExtraChessboardActions = ({}: {}) => {
   const responsive = useResponsive();
+  let fgColor = c.grays[45];
   const textStyles = s(
     c.fontSize(responsive.switch(12, [BP.md, 14])),
-    c.fg(c.grays[50]),
-    c.weightSemiBold
+    c.fg(fgColor),
+    c.weightRegular
   );
   const iconStyles = s(
     c.fontSize(responsive.switch(12, [BP.md, 14])),
-    c.fg(c.grays[50])
+    c.fg(fgColor)
   );
   const padding = 8;
   let [currentLine, activeSide] = useRepertoireState((s) => [

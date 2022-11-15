@@ -397,7 +397,10 @@ export const getInitialBrowsingState = (
         return findLast(
           map(sidebarState.positionHistory, (epd) => {
             let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
-            if (miss?.incidence > threshold) {
+            if (
+              miss?.incidence > threshold &&
+              miss?.epd !== sidebarState.currentEpd
+            ) {
               return miss;
             }
           })
