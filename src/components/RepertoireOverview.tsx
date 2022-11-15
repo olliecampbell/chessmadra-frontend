@@ -389,7 +389,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
   let [expectedDepth, biggestMiss, numMoves] = useRepertoireState((s) => [
     s.repertoireGrades[side]?.expectedDepth,
     s.repertoireGrades[side]?.biggestMiss,
-    s.myResponsesLookup?.[side]?.length,
+    s.getLineCount(side),
   ]);
   let queue = useRepertoireState(
     (s) => s.reviewState.buildQueue({ side: side }),
@@ -446,7 +446,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
           <>
             <SummaryRow
               {...{
-                k: plural(numMoves, "Response"),
+                k: plural(numMoves, "Line"),
                 v: numMoves,
                 inverse,
                 button: <BrowseButton side={side} />,

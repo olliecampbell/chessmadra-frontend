@@ -1,4 +1,3 @@
-
 import client from "app/client";
 import {
   PlayerTemplate,
@@ -104,6 +103,7 @@ export interface RepertoireState {
   epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
+  getLineCount: (side?: Side) => number;
   getIsRepertoireEmpty: (side?: Side) => boolean;
   analyzeLineOnLichess: (line: string[], side?: Side) => void;
   analyzeMoveOnLichess: (fen: string, move: string, turn: Side) => void;
@@ -874,6 +874,33 @@ export const getInitialRepertoireState = (
               // );
             });
           });
+      }),
+    getLineCount: (side?: Side) =>
+      get(([s]) => {
+        let seenEpds = new Set();
+        let lineCount = 0;
+        let recurse = (epd) => {
+          if (seenEpds.has(epd)) {
+            return;
+          }
+          seenEpds.add(epd);
+          let moves = s.repertoire[side].positionResponses[epd] ?? [];
+          if (isEmpty(moves)) {
+            return;
+          }
+          if (lineCount === 0) {
+            lineCount = 1;
+          }
+          lineCount += Math.max(
+            0,
+            filter(moves, (m) => !seenEpds.has(m.epdAfter)).length - 1
+          );
+          forEach(moves, (variationMove) => {
+            recurse(variationMove.epdAfter);
+          });
+        };
+        recurse(START_EPD);
+        return lineCount;
       }),
     getMyResponsesLength: (side?: Side) =>
       get(([s]) => {
