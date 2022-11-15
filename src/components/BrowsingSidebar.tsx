@@ -29,6 +29,7 @@ import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
 import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
+import { FadeInOut } from "./FadeInOut";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -80,7 +81,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
                     inputRange: [0, 1],
                     outputRange: [
                       "0px",
-                      direction === "left" ? "50px" : "-50px",
+                      direction === "left" ? "40px" : "-40px",
                     ],
                   }),
                 },
@@ -109,7 +110,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
                       translateX: currentSidebarAnim.interpolate({
                         inputRange: [0, 1],
                         outputRange: [
-                          direction === "left" ? "-50px" : "50px",
+                          direction === "left" ? "-40px" : "40px",
                           "0px",
                         ],
                       }),
@@ -155,7 +156,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   return (
     <>
       {vertical && <BackSection />}
-      {inner}
+      <View style={s(c.relative, c.zIndex(100))}>{inner}</View>
       <Spacer height={44} />
       <SidebarActions />
       <Spacer height={44} grow />
@@ -231,29 +232,30 @@ const BackSection = () => {
   //   };
   // }, []);
   return (
-    <Pressable
-      onPress={() => {
-        quick((s) => {
-          s.repertoireState.browsingState.moveSidebarState("left");
-          backButtonAction();
-        });
-      }}
-      style={s(
-        !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
-        c.unshrinkable,
-        isNil(backButtonAction) && s(c.opacity(0), c.noPointerEvents),
-        c.column,
-        c.justifyEnd,
-        c.px(getSidebarPadding(responsive))
-      )}
-    >
-      <CMText style={s()}>
-        <i className="fa fa-arrow-left"></i>
-        <Spacer width={8} />
-        Back
-      </CMText>
-      <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
-    </Pressable>
+    <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
+      <Pressable
+        onPress={() => {
+          quick((s) => {
+            s.repertoireState.browsingState.moveSidebarState("left");
+            backButtonAction();
+          });
+        }}
+        style={s(
+          !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
+          c.unshrinkable,
+          c.column,
+          c.justifyEnd,
+          c.px(getSidebarPadding(responsive))
+        )}
+      >
+        <CMText style={s()}>
+          <i className="fa fa-arrow-left"></i>
+          <Spacer width={8} />
+          Back
+        </CMText>
+        <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
+      </Pressable>
+    </FadeInOut>
   );
 };
 
@@ -271,7 +273,7 @@ const FeedbackPrompt = () => {
       style={s(c.selfEnd, c.clickable, c.px(getSidebarPadding(responsive)))}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.browsingState.moveSidebarState("left");
+          s.repertoireState.browsingState.moveSidebarState("right");
           s.repertoireState.browsingState.sidebarState.submitFeedbackState.visible =
             true;
         });

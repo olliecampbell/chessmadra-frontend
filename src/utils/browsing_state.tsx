@@ -602,19 +602,19 @@ export const getInitialBrowsingState = (
       set(([s, gs]) => {
         s.previousSidebarState = cloneDeep(s.sidebarState);
         s.sidebarDirection = direction;
-        const duration = 300;
+        const duration = 200;
         s.previousSidebarAnim.setValue(0.0);
         s.currentSidebarAnim.setValue(0.0);
         Animated.parallel([
           Animated.timing(s.previousSidebarAnim, {
             toValue: 1.0,
             duration: duration,
-            easing: Easing.inOut(Easing.ease),
+            easing: Easing.quad,
             useNativeDriver: true,
           }),
           Animated.timing(s.currentSidebarAnim, {
             toValue: 1.0,
-            easing: Easing.inOut(Easing.ease),
+            easing: Easing.quad,
             duration: duration,
             delay: duration * 1.0,
             useNativeDriver: true,

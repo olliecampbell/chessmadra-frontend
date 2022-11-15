@@ -18,6 +18,7 @@ import { useParams } from "react-router-dom";
 import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
 import useKeypress from "react-use-keypress";
 import { BrowserSidebar } from "./BrowsingSidebar";
+import { FadeInOut } from "./FadeInOut";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -151,11 +152,11 @@ export const ExtraChessboardActions = ({}: {}) => {
     s.browsingState.chessboardState.moveLog,
     s.browsingState.activeSide,
   ]);
-  if (isEmpty(currentLine)) {
-    return null;
-  }
   return (
-    <View style={s(c.row, c.fullWidth, c.justifyCenter)}>
+    <FadeInOut
+      style={s(c.row, c.fullWidth, c.justifyCenter)}
+      open={!isEmpty(currentLine)}
+    >
       <Pressable
         style={s(c.row, c.alignCenter)}
         onPress={() => {
@@ -182,7 +183,7 @@ export const ExtraChessboardActions = ({}: {}) => {
         <Spacer width={padding} />
         <i className="fa fa-up-right-from-square" style={s(iconStyles)}></i>
       </Pressable>
-    </View>
+    </FadeInOut>
   );
 };
 
