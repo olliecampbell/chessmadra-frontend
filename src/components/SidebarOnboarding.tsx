@@ -66,8 +66,8 @@ const OnboardingIntro = () => {
       <View style={s(c.column, c.px(getSidebarPadding(responsive)))}>
         <CMText style={s()}>This site will help you:</CMText>
         <View style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
-          {bullets.map((bullet) => (
-            <View style={s(c.row, c.alignCenter, c.pl(12))}>
+          {bullets.map((bullet, i) => (
+            <View style={s(c.row, c.alignCenter, c.pl(12))} key={i}>
               <i
                 className="fas fa-circle"
                 style={s(c.fg(c.grays[60]), c.fontSize(5))}

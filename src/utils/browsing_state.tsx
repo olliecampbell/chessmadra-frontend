@@ -609,12 +609,12 @@ export const getInitialBrowsingState = (
           Animated.timing(s.previousSidebarAnim, {
             toValue: 1.0,
             duration: duration,
-            easing: Easing.quad,
+            easing: Easing.in(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(s.currentSidebarAnim, {
             toValue: 1.0,
-            easing: Easing.quad,
+            easing: Easing.out(Easing.quad),
             duration: duration,
             delay: duration * 1.0,
             useNativeDriver: true,

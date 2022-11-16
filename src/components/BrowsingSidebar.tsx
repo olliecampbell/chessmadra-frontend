@@ -139,7 +139,6 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     ]);
   let inner = null;
   if (!isEmpty(stageStack)) {
-    console.log("Inner is rendering onboarding");
     inner = <SidebarOnboarding />;
   } else if (submitFeedbackState.visible) {
     inner = <FeedbackView />;
@@ -148,7 +147,6 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   } else if (addedLineState.visible) {
     inner = <SavedLineView />;
   } else {
-    console.log("Inner is rendering responses");
     inner = <Responses />;
   }
   const responsive = useResponsive();

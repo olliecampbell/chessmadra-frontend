@@ -59,7 +59,7 @@ export const Responses = React.memo(function Responses() {
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== currentSide;
   });
-  let prepareForHeader = "You need to prepare for these moves";
+  let prepareForHeader: any = "You need to prepare for these moves";
   useEffect(() => {
     const beforeUnloadListener = (event) => {
       if (hasPendingLine) {
@@ -79,7 +79,15 @@ export const Responses = React.memo(function Responses() {
   let body = null;
   if (isPastCoverageGoal) {
     if (hasPendingLine) {
-      prepareForHeader = "This line looks good!";
+      prepareForHeader = (
+        <>
+          This line looks good! <Spacer width={8} />{" "}
+          <i
+            style={s(c.duotone(c.grays[90], c.grays[70]), c.fontSize(24))}
+            className="fa-duotone fa-party-horn"
+          />
+        </>
+      );
       body =
         "This line is ready to be added to your repertoire. You can continue adding moves if you want.";
     } else {
