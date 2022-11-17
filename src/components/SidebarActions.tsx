@@ -119,7 +119,6 @@ export const SidebarActions = () => {
     buttons.push({
       onPress: () => {
         quick((s) => {
-          s.repertoireState.browsingState.moveSidebarState("right");
           s.repertoireState.browsingState.requestToAddCurrentLine();
         });
       },

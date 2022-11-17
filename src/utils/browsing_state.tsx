@@ -642,6 +642,7 @@ export const getInitialBrowsingState = (
           })
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s, rs]) => {
+              s.moveSidebarState("right");
               // s.backToStartPosition(s);
               rs.repertoire = data.repertoire;
               rs.repertoireGrades = data.grades;
