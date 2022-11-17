@@ -47,6 +47,8 @@ export const SidebarOnboarding = React.memo(function SidebarOnboarding() {
     inner = <ChooseImportSourceOnboarding />;
   } else if (stage === SidebarOnboardingStage.Import) {
     inner = <ImportOnboarding />;
+  } else if (stage === SidebarOnboardingStage.TrimRepertoire) {
+    inner = <TrimRepertoireOnboarding />;
   }
   return <View style={s(c.column)}>{inner}</View>;
 });
@@ -621,6 +623,68 @@ const ImportOnboarding = () => {
   return (
     <SidebarTemplate
       bodyPadding={bodyPadding}
+      header={header}
+      actions={actions}
+      loading={loading}
+    >
+      {body}
+    </SidebarTemplate>
+  );
+};
+
+const TrimRepertoireOnboarding = () => {
+  const responsive = useResponsive();
+  let [getNumResponsesBelowThreshold, activeSide] = useRepertoireState((s) => [
+    s.getNumResponsesBelowThreshold,
+    s.browsingState.activeSide,
+  ]);
+  let header = "Do you want to trim your repertoire?";
+  let actions = [];
+  let body = (
+    <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
+      We can trim your repertoire to only the moves you're likely to see. This
+      can be a good option if you have a large repertoire from other software.
+    </CMText>
+  );
+  const [loading, setLoading] = useState(null as string);
+
+  const trimToThreshold = (threshold: number) => {
+    trackEvent("onboarding.trim_repertoire", { threshold });
+    setLoading("Trimming");
+    quick((s) => {
+      s.repertoireState.trimRepertoire(threshold, [activeSide]);
+      s.repertoireState.browsingState.finishSidebarOnboarding();
+    });
+  };
+
+  [1 / 25, 1 / 100, 1 / 200].forEach((threshold) => {
+    let numMoves = getNumResponsesBelowThreshold(threshold, activeSide);
+    if (numMoves > 0) {
+      actions.push({
+        text: `Trim lines that occur in less than 1 in ${1 / threshold} games`,
+        subtext: `${numMoves} responses`,
+        onPress: () => {
+          trimToThreshold(threshold);
+        },
+        style: "primary",
+      });
+    }
+  });
+  actions.push({
+    text: `No thanks, I'll keep my whole repertoire`,
+    onPress: () => {
+      quick((s) => {
+        s.repertoireState.browsingState.finishSidebarOnboarding();
+      });
+    },
+    style: "primary",
+  });
+  if (loading) {
+    actions = [];
+  }
+  return (
+    <SidebarTemplate
+      bodyPadding
       header={header}
       actions={actions}
       loading={loading}

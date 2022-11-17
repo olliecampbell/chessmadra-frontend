@@ -60,6 +60,7 @@ export enum SidebarOnboardingStage {
   Import,
   AskAboutExistingRepertoire,
   ChooseImportSource,
+  TrimRepertoire,
 }
 
 export interface SidebarOnboardingState {
@@ -178,7 +179,7 @@ export const makeDefaultSidebarState = () => {
     currentSide: "white",
     hasPendingLineToAdd: false,
     sidebarOnboardingState: {
-      stageStack: [SidebarOnboardingStage.Initial],
+      stageStack: [],
       importType: null,
     },
     isAddingPendingLine: false,

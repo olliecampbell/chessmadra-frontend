@@ -1,18 +1,12 @@
-
 import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { CMText } from "./CMText";
 import { useResponsive } from "app/utils/useResponsive";
-import {
-  SidebarAction,
-  SidebarFullWidthButton,
-} from "./SidebarActions";
+import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import {
-  getSidebarPadding,
-} from "./RepertoireBrowsingView";
+import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { BeatLoader } from "react-spinners";
 
 export const SidebarTemplate = ({
@@ -49,7 +43,7 @@ export const SidebarTemplate = ({
               {loading}
             </CMText>
             <Spacer height={8} />
-            <BeatLoader color={c.grays[80]} size={24} />
+            <BeatLoader color={c.grays[70]} size={20} />
           </View>
         ) : (
           children

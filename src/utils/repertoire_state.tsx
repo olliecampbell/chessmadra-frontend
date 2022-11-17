@@ -44,6 +44,8 @@ import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getInitialReviewState, ReviewState } from "./review_state";
 let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 import pkceChallenge from "pkce-challenge";
+import { logProxy } from "./state";
+import { failOnAny } from "./test_settings";
 
 export interface LichessOauthData {
   codeVerifier: string;
@@ -103,6 +105,7 @@ export interface RepertoireState {
   epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
+  getNumResponsesBelowThreshold: (threshold: number, side: Side) => number;
   getLineCount: (side?: Side) => number;
   getIsRepertoireEmpty: (side?: Side) => boolean;
   analyzeLineOnLichess: (line: string[], side?: Side) => void;
@@ -111,6 +114,7 @@ export interface RepertoireState {
   backToStartPosition: () => void;
   deleteRepertoire: (side: Side) => void;
   deleteMove: (response: RepertoireMove) => Promise<void>;
+  trimRepertoire: (threshold: number, sides: Side[]) => Promise<void>;
   exportPgn: (side: Side) => void;
   addTemplates: () => void;
   onRepertoireUpdate: () => void;
@@ -336,7 +340,20 @@ export const getInitialRepertoireState = (
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
-          s.browsingState.finishSidebarOnboarding();
+          let minimumToTrim = 10;
+          let side: Side = blackPgn ? "black" : "white";
+          let numBelowThreshold = s.getNumResponsesBelowThreshold(
+            1 / 100,
+            side
+          );
+          console.log("numBelowThreshold, side", numBelowThreshold, side);
+          if (side && numBelowThreshold > minimumToTrim) {
+            s.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+              SidebarOnboardingStage.TrimRepertoire
+            );
+          } else {
+            s.browsingState.finishSidebarOnboarding();
+          }
         }, "initializeRepertoire");
       }),
     updateShareLink: () =>
@@ -490,6 +507,25 @@ export const getInitialRepertoireState = (
         );
       }, "updateRepertoireStructures"),
 
+    trimRepertoire: (threshold: number, sides: Side[]) =>
+      set(([s]) => {
+        return client
+          .post("/api/v1/openings/trim", {
+            threshold,
+            sides,
+          })
+          .then(({ data }: { data: FetchRepertoireResponse }) => {
+            set(([s]) => {
+              s.repertoire = data.repertoire;
+              s.repertoireGrades = data.grades;
+              s.onRepertoireUpdate();
+              if (s.isBrowsing) {
+                s.browsingState.onPositionUpdate();
+              }
+            });
+          })
+          .finally(() => {});
+      }, "deleteMoveConfirmed"),
     deleteMove: (response: RepertoireMove) =>
       set(([s]) => {
         s.deleteMoveState.isDeletingMove = true;
@@ -891,16 +927,26 @@ export const getInitialRepertoireState = (
           if (lineCount === 0) {
             lineCount = 1;
           }
-          lineCount += Math.max(
-            0,
-            filter(moves, (m) => !seenEpds.has(m.epdAfter)).length - 1
-          );
+          let additionalLines =
+            filter(moves, (m) => !seenEpds.has(m.epdAfter)).length - 1;
+          lineCount += Math.max(0, additionalLines);
           forEach(moves, (variationMove) => {
             recurse(variationMove.epdAfter);
           });
         };
         recurse(START_EPD);
         return lineCount;
+      }),
+    getNumResponsesBelowThreshold: (threshold: number, side: Side) =>
+      get(([s]) => {
+        return filter(getAllRepertoireMoves(s.repertoire), (m) => {
+          let belowThreshold =
+            m.incidence < threshold && m.mine && m.side === side;
+          if (belowThreshold) {
+            console.log("Below the threshold!", m);
+          }
+          return belowThreshold;
+        }).length;
       }),
     getMyResponsesLength: (side?: Side) =>
       get(([s]) => {

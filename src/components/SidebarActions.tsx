@@ -15,6 +15,7 @@ import { lineToPositions } from "app/utils/chess";
 export interface SidebarAction {
   onPress: () => void;
   text: string;
+  subtext?: string;
   style: "primary" | "focus";
 }
 
@@ -147,9 +148,11 @@ export const SidebarFullWidthButton = ({
   const responsive = useResponsive();
   const { hovering, hoveringProps } = useHovering();
   let backgroundColor,
-    foregroundColor = null;
+    foregroundColor,
+    subtextColor = null;
   if (action.style === "focus") {
     foregroundColor = c.grays[10];
+    subtextColor = c.grays[20];
     if (hovering) {
       backgroundColor = c.grays[86];
     } else {
@@ -158,6 +161,7 @@ export const SidebarFullWidthButton = ({
   }
   if (action.style === "primary") {
     foregroundColor = c.grays[90];
+    subtextColor = c.grays[70];
     if (hovering) {
       backgroundColor = c.grays[26];
     } else {
@@ -179,15 +183,32 @@ export const SidebarFullWidthButton = ({
       )}
       key={action.text}
     >
-      <CMText
-        style={s(
-          c.fg(foregroundColor),
-          action.style === "focus" ? c.weightBold : c.weightSemiBold,
-          c.fontSize(14)
+      <View style={s(c.column)}>
+        <CMText
+          style={s(
+            c.fg(foregroundColor),
+            action.style === "focus" ? c.weightBold : c.weightSemiBold,
+            c.fontSize(14)
+          )}
+        >
+          {action.text}
+        </CMText>
+        {action.subtext && (
+          <>
+            <Spacer height={4} />
+            <CMText
+              style={s(
+                c.fg(subtextColor),
+                action.style === "focus" ? c.weightBold : c.weightSemiBold,
+                c.fontSize(14)
+              )}
+            >
+              {action.subtext}
+            </CMText>
+          </>
         )}
-      >
-        {action.text}
-      </CMText>
+      </View>
+      <Spacer width={16} />
       <i
         className="fa-regular fa-arrow-right-long"
         style={s(c.fg(foregroundColor))}
