@@ -601,6 +601,9 @@ export const getInitialRepertoireState = (
             pgn = pgn.trim();
             pgn += ") ";
           });
+          if (seen_epds.has(mainMove.epdAfter)) {
+            return;
+          }
           if (
             !isEmpty(others) &&
             sideOfLastmove(lineToPgn(mainLine)) === "white"
@@ -608,9 +611,6 @@ export const getInitialRepertoireState = (
             pgn += `${getMoveNumber(lineToPgn(mainLine))}... `;
           }
 
-          if (seen_epds.has(mainMove.epdAfter)) {
-            return;
-          }
           seen_epds.add(mainMove.epdAfter);
           recurse(mainMove.epdAfter, mainLine);
         };

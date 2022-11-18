@@ -1,5 +1,5 @@
 import { ScoreTable, TableResponse } from "app/components/RepertoireMovesTable";
-import { PositionReport } from "app/models";
+import { MoveTag, PositionReport } from "app/models";
 import { isNil, sumBy, reverse, sortBy } from "lodash-es";
 import { Side } from "./repertoire";
 import { getPlayRate, getTotalGames, getWinRate } from "./results_distribution";
@@ -133,6 +133,15 @@ export const scoreTableResponses = (
         f.weight = weights[f.source] ?? 1.0;
         f.total = f.weight * f.value;
       });
+      if (tableResponse.tags.includes(MoveTag.BestMove)) {
+        scoreTable.factors.push({
+          // @ts-ignore
+          source: "BestMove",
+          // weight: 1.0,
+          // value: 0,
+          total: 10000,
+        });
+      }
       if (weights.startScore) {
         scoreTable.factors.push({
           source: TableResponseScoreSource.Start,

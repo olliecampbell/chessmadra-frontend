@@ -285,18 +285,8 @@ export const getInitialBrowsingState = (
         });
         let ownSide = currentSide === s.activeSide;
         const usePeerRates = shouldUsePeerRates(positionReport);
-        let tableResponses = scoreTableResponses(
-          values(_tableResponses),
-          positionReport,
-          currentSide,
-          currentEpd,
-          ownSide
-            ? usePeerRates
-              ? EFFECTIVENESS_WEIGHTS_PEERS
-              : EFFECTIVENESS_WEIGHTS_MASTERS
-            : PLAYRATE_WEIGHTS
-        );
         let currentLineIncidence = s.getIncidenceOfCurrentLine();
+        let tableResponses = values(_tableResponses);
         tableResponses.forEach((tr) => {
           let epd = tr.suggestedMove?.epdAfter;
           let knownIncidence = rs.knownEpdIncidences[s.activeSide][epd];
@@ -375,6 +365,17 @@ export const getInitialBrowsingState = (
             tr.needed = incidence > threshold;
           });
         }
+        tableResponses = scoreTableResponses(
+          tableResponses,
+          positionReport,
+          currentSide,
+          currentEpd,
+          ownSide
+            ? usePeerRates
+              ? EFFECTIVENESS_WEIGHTS_PEERS
+              : EFFECTIVENESS_WEIGHTS_MASTERS
+            : PLAYRATE_WEIGHTS
+        );
         s.sidebarState.tableResponses = tableResponses;
         let noneNeeded =
           every(tableResponses, (tr) => !tr.needed) && !isEmpty(tableResponses);

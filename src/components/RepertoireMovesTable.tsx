@@ -186,8 +186,11 @@ export const RepertoireMovesTable = ({
       <View
         style={s(
           c.column,
-          c.borderTop(`1px solid ${c.grays[30]}`),
-          c.borderBottom(`1px solid ${c.grays[30]}`)
+          !editingAnnotations &&
+            s(
+              c.borderTop(`1px solid ${c.grays[30]}`),
+              c.borderBottom(`1px solid ${c.grays[30]}`)
+            )
         )}
       >
         {intersperse(
@@ -215,7 +218,14 @@ export const RepertoireMovesTable = ({
             );
           }),
           (i) => {
-            return <View style={s(c.height(1), c.bg(c.grays[30]))}></View>;
+            return (
+              <View
+                style={s(
+                  c.height(editingAnnotations ? 12 : 1),
+                  !editingAnnotations && c.bg(c.grays[30])
+                )}
+              ></View>
+            );
           }
         )}
       </View>
@@ -556,22 +566,17 @@ const Response = ({
             // c.pl(14),
             // c.pr(8),
             c.clickable,
+            c.mx(getSidebarPadding(responsive)),
+            c.bg(c.grays[12]),
             c.row
           )}
         >
           <View
-            style={s(
-              c.width(120),
-              c.selfStretch,
-              c.row,
-              c.px(12),
-              c.py(12),
-              c.bg(c.grays[95])
-            )}
+            style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
           >
             <CMText
               style={s(
-                c.fg(c.colors.textInverse),
+                c.fg(c.colors.textSecondary),
                 c.weightSemiBold,
                 c.fontSize(18)
               )}
@@ -583,7 +588,7 @@ const Response = ({
             <CMText
               key={sanPlus}
               style={s(
-                c.fg(c.colors.textInverse),
+                c.fg(c.colors.textSecondary),
                 c.fontSize(18),
                 c.weightSemiBold,
                 c.keyedProp("letterSpacing")("0.04rem")

@@ -99,59 +99,69 @@ export const Responses = React.memo(function Responses() {
   return (
     <View style={s(c.column, c.constrainWidth)}>
       <>
-        {!isEmpty(yourMoves) && (
-          <View style={s()} key={`your-moves-play-${currentEpd}`}>
-            <RepertoireMovesTable
-              {...{
-                header: getResponsesHeader(currentLine, !isEmpty(yourMoves)),
-                usePeerRates,
-                activeSide,
-                side: currentSide,
-                responses: yourMoves,
-              }}
-            />
-          </View>
-        )}
-        {isEmpty(yourMoves) && !isEmpty(otherMoves) && (
-          <View style={s()} key={`choose-next-move-${currentEpd}`}>
-            <RepertoireMovesTable
-              {...{
-                header: getResponsesHeader(currentLine, !isEmpty(yourMoves)),
-                usePeerRates,
-                activeSide,
-                side: currentSide,
-                responses: otherMoves,
-              }}
-            />
-          </View>
-        )}
-        {!isEmpty(yourMoves) && !isEmpty(otherMoves) && (
-          <View style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
-            <CollapsibleSidebarSection header="Add an alternative move">
-              <Spacer height={12} />
+        {positionReport && (
+          <>
+            {!isEmpty(yourMoves) && (
+              <View style={s()} key={`your-moves-play-${currentEpd}`}>
+                <RepertoireMovesTable
+                  {...{
+                    header: getResponsesHeader(
+                      currentLine,
+                      !isEmpty(yourMoves)
+                    ),
+                    usePeerRates,
+                    activeSide,
+                    side: currentSide,
+                    responses: yourMoves,
+                  }}
+                />
+              </View>
+            )}
+            {isEmpty(yourMoves) && !isEmpty(otherMoves) && (
+              <View style={s()} key={`choose-next-move-${currentEpd}`}>
+                <RepertoireMovesTable
+                  {...{
+                    header: getResponsesHeader(
+                      currentLine,
+                      !isEmpty(yourMoves)
+                    ),
+                    usePeerRates,
+                    activeSide,
+                    side: currentSide,
+                    responses: otherMoves,
+                  }}
+                />
+              </View>
+            )}
+            {!isEmpty(yourMoves) && !isEmpty(otherMoves) && (
+              <View style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
+                <CollapsibleSidebarSection header="Add an alternative move">
+                  <Spacer height={12} />
+                  <RepertoireMovesTable
+                    {...{
+                      header: null,
+                      usePeerRates,
+                      activeSide,
+                      side: currentSide,
+                      responses: otherMoves,
+                    }}
+                  />
+                </CollapsibleSidebarSection>
+              </View>
+            )}
+            {!isEmpty(prepareFor) && (
               <RepertoireMovesTable
                 {...{
-                  header: null,
-                  usePeerRates,
+                  header: prepareForHeader,
+                  body: body,
                   activeSide,
                   side: currentSide,
-                  responses: otherMoves,
+                  responses: prepareFor,
+                  myMoves: false,
                 }}
               />
-            </CollapsibleSidebarSection>
-          </View>
-        )}
-        {!isEmpty(prepareFor) && (
-          <RepertoireMovesTable
-            {...{
-              header: prepareForHeader,
-              body: body,
-              activeSide,
-              side: currentSide,
-              responses: prepareFor,
-              myMoves: false,
-            }}
-          />
+            )}
+          </>
         )}
       </>
       {(() => {

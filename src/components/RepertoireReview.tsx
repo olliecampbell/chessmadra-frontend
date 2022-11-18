@@ -63,7 +63,6 @@ export const RepertoireReview = (props: {}) => {
           />
         }
       >
-        <Spacer height={12} />
         <CMText
           style={s(
             c.fg(c.colors.textPrimary),
@@ -117,13 +116,13 @@ export const RepertoireReview = (props: {}) => {
             <Spacer height={12} />
           </>
         )}
-        <View style={s(c.row)}>
+        <View style={s(c.row, c.height(56))}>
           <Button
             style={s(
               c.buttons.squareBasicButtons,
               c.buttons.basicInverse,
               buttonStyles,
-              c.maxWidth(72),
+              c.width(56),
               c.height("unset"),
               c.selfStretch
             )}
@@ -149,7 +148,7 @@ export const RepertoireReview = (props: {}) => {
               c.buttons.squareBasicButtons,
               c.buttons.basicInverse,
               buttonStyles,
-              c.maxWidth(72),
+              c.width(56),
               c.height("unset"),
               c.selfStretch
             )}
@@ -183,8 +182,8 @@ export const RepertoireReview = (props: {}) => {
             <CMText
               style={s(
                 showNext
-                  ? c.buttons.primary.textStyles
-                  : c.buttons.basicInverse.textStyles
+                  ? s(c.buttons.primary.textStyles)
+                  : s(c.buttons.basicInverse.textStyles, c.fg(c.grays[80]))
               )}
             >
               {showNext ? "Next" : "I don't know"}
