@@ -15,6 +15,8 @@ import {
   findLast,
   every,
   uniq,
+  sortBy,
+  take,
 } from "lodash-es";
 import {
   RepertoireMove,
@@ -115,6 +117,7 @@ export interface BrowsingState {
   quick: (fn: (_: BrowsingState) => void) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
   moveSidebarState: (direction: "left" | "right") => void;
+  updateArrows: () => void;
 
   // Fields
   chessboardState?: ChessboardState;
@@ -125,6 +128,7 @@ export interface BrowsingState {
   currentSidebarAnim: Animated.Value;
   activeSide?: Side;
   repertoireProgressState: BySide<RepertoireProgressState>;
+  showPlans: boolean;
 }
 
 interface RepertoireProgressState {
@@ -212,6 +216,8 @@ export const getInitialBrowsingState = (
     sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
     activeSide: null,
+    plans: {},
+    showPlans: false,
     repertoireProgressState: {
       white: createEmptyRepertoireProgressState(),
       black: createEmptyRepertoireProgressState(),
@@ -495,14 +501,36 @@ export const getInitialBrowsingState = (
           s.addPendingLine();
         }
       }),
+
+    updateArrows: () =>
+      set(([s, rs]) => {
+        let plans = rs.positionReports[s.sidebarState.currentEpd]?.plans ?? [];
+        plans = sortBy(
+          filter(plans, (p) => p.side === s.activeSide),
+          (p) => -p.occurences
+        );
+        if (!s.showPlans || isEmpty(plans)) {
+          s.chessboardState.plans = [];
+        } else {
+          let maxOccurence = plans[0]?.occurences ?? 0;
+          s.chessboardState.plans = take(plans, 7);
+          s.chessboardState.maxPlanOccurence = maxOccurence;
+        }
+      }),
     onPositionUpdate: () =>
       set(([s, rs]) => {
+        if (s.showPlans) {
+          s.showPlans = false;
+          s.updateArrows();
+        }
         s.sidebarState.moveLog = s.chessboardState.moveLog;
         s.sidebarState.currentEpd = s.chessboardState.getCurrentEpd();
         s.sidebarState.currentSide =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         s.sidebarState.positionHistory = s.chessboardState.positionHistory;
         s.sidebarState.pendingResponses = {};
+
+        s.updateArrows();
 
         let incidences = s.getLineIncidences({});
         if (rs.ecoCodeLookup) {

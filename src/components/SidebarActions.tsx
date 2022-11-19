@@ -49,7 +49,10 @@ export const SidebarActions = () => {
     bs.getMissInThisLine(s),
     s.positionHistory,
   ]);
-  const [activeSide] = useBrowsingState(([s]) => [s.activeSide]);
+  const [activeSide, hasPlans] = useBrowsingState(([s, rs]) => [
+    s.activeSide,
+    !isEmpty(rs.positionReports[s.sidebarState.currentEpd]?.plans),
+  ]);
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
@@ -103,13 +106,18 @@ export const SidebarActions = () => {
       });
     }
   };
+  let showTogglePlansButton = true;
   if (submitFeedbackState.visible) {
+    showTogglePlansButton = false;
     // This is taken care of by the delete line view, maybe bad though
   } else if (deleteLineState.visible) {
+    showTogglePlansButton = false;
     // This is taken care of by the delete line view, maybe bad though
   } else if (!isEmpty(stageStack)) {
+    showTogglePlansButton = false;
     // Taken care of by onboarding
   } else if (addedLineState.visible) {
+    showTogglePlansButton = false;
     addBiggestMissAction(nearestMiss);
     buttons.push(reviewCurrentLineAction);
     buttons.push(continueAddingToThisLineAction);
@@ -130,6 +138,12 @@ export const SidebarActions = () => {
   }
   return (
     <View style={s(c.column, c.fullWidth)}>
+      {showTogglePlansButton && hasPlans && (
+        <>
+          <TogglePlansButton />
+          <Spacer height={24} />
+        </>
+      )}
       {intersperse(
         buttons.map((b) => <SidebarFullWidthButton action={b} />),
         () => {
@@ -211,6 +225,55 @@ export const SidebarFullWidthButton = ({
       <i
         className="fa-regular fa-arrow-right-long"
         style={s(c.fg(foregroundColor))}
+      />
+    </Pressable>
+  );
+};
+
+const TogglePlansButton = () => {
+  let [showPlans] = useBrowsingState(([s, rs]) => [s.showPlans]);
+  const responsive = useResponsive();
+  return (
+    <Pressable
+      style={s(
+        c.row,
+        c.fullWidth,
+        c.alignCenter,
+        c.bg(c.grays[10]),
+        c.py(8),
+        c.px(getSidebarPadding(responsive))
+      )}
+      onPress={() => {
+        quick((s) => {
+          s.repertoireState.browsingState.showPlans = !showPlans;
+          s.repertoireState.browsingState.updateArrows();
+        });
+      }}
+    >
+      <View style={s(c.row, c.alignCenter)}>
+        <CMText style={s(c.fg(c.colors.textSecondary), c.weightSemiBold)}>
+          Show some common plans?
+        </CMText>
+        <Spacer width={8} />
+        <CMText
+          style={s(
+            c.bg(c.grays[80]),
+            c.fontSize(9),
+            c.px(5),
+            c.py(3),
+            c.round,
+            c.caps,
+            c.weightHeavy,
+            c.fg(c.colors.textInverse)
+          )}
+        >
+          Beta
+        </CMText>
+      </View>
+      <Spacer width={12} grow />
+      <i
+        className={`fa-solid fa-toggle-${showPlans ? "on" : "off"}`}
+        style={s(c.fg(c.grays[90]), c.fontSize(24))}
       />
     </Pressable>
   );

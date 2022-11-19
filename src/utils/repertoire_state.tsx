@@ -904,10 +904,10 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              // s.startBrowsing(
-              //   "white",
-              //   "1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 4.Bc4 c6"
-              // );
+              s.startBrowsing(
+                "white",
+                lineToPgn(["e4", "e5", "f4", "exf4", "Nf3", "g5", "h4", "g4"])
+              );
             });
           });
       }),
@@ -942,9 +942,6 @@ export const getInitialRepertoireState = (
         return filter(getAllRepertoireMoves(s.repertoire), (m) => {
           let belowThreshold =
             m.incidence < threshold && m.mine && m.side === side;
-          if (belowThreshold) {
-            console.log("Below the threshold!", m);
-          }
           return belowThreshold;
         }).length;
       }),

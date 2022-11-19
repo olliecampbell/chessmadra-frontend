@@ -12,6 +12,7 @@ import { createQuick, QuickUpdate } from "./quick";
 import { pgnToLine } from "app/utils/repertoire";
 import { quick } from "./app_state";
 import { logProxy } from "./state";
+import { Plan } from "app/models";
 
 export interface MoveArrow {
   move: Move;
@@ -24,8 +25,9 @@ interface PlayPgnOptions {
 }
 
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
+  maxPlanOccurence?: number;
   _animatePosition: Chess;
-  arrows: MoveArrow[];
+  plans: Plan[];
   playPgn: (pgn: string, options?: PlayPgnOptions) => void;
   frozen?: boolean;
   positionHistory: string[];
@@ -143,6 +145,7 @@ export const createChessState = (
 ): ChessboardState => {
   let initialState = {
     isColorTraining: false,
+    plans: [],
     notifyingDelegates: true,
     _animatePosition: null,
     moveLog: [],

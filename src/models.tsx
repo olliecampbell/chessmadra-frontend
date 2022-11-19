@@ -1,4 +1,5 @@
-import { RepertoireGrade } from "./utils/repertoire";
+import { Square } from "@lubert/chess.ts/dist/types";
+import { RepertoireGrade, Side } from "./utils/repertoire";
 
 export interface LichessPuzzle {
   id: string;
@@ -88,6 +89,7 @@ export interface PositionReport {
   stockfish?: StockfishReport;
   results: GameResultsDistribution;
   masterResults: GameResultsDistribution;
+  plans: Plan[];
 }
 
 export interface PawnStructure {
@@ -154,4 +156,11 @@ export enum MoveTag {
   TheoryHeavy,
   BestMove,
   Transposes,
+}
+
+export interface Plan {
+  fromSquare: Square;
+  toSquare: Square;
+  side: Side;
+  occurences: number;
 }

@@ -370,6 +370,71 @@ export const ChessboardView = ({
             chessboardLayout.current = layout;
           }}
         >
+          {state.plans.map((plan, i) => {
+            let from = getSquareOffset(plan.fromSquare, state.flipped);
+            let to = getSquareOffset(plan.toSquare, state.flipped);
+            let dx = Math.abs(from.x - to.x);
+            let dy = Math.abs(from.y - to.y);
+            console.log("dx", dx, "dy", dy);
+            let length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+            let thickness = 10;
+            var angleDeg =
+              (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
+            let color = plan.side === "black" ? c.grays[10] : c.grays[95];
+            let opacity = 20 + (plan.occurences / state.maxPlanOccurence) * 60;
+            console.log(plan.occurences, state.maxPlanOccurence, opacity);
+
+            return (
+              <View
+                style={s(c.opacity(opacity), c.absoluteFull, c.zIndex(100))}
+                key={i}
+              >
+                <View
+                  style={s(
+                    c.absolute,
+                    c.left(`calc(${to.x} * 100%)`),
+                    c.top(`calc(${to.y} * 100%)`),
+                    c.transform(`rotate(${angleDeg - 90}deg)`),
+                    getSquareOffset(plan.toSquare, state.flipped),
+                    c.height("calc(1/8 * 100%)"),
+                    c.width("calc(1/8 * 100%)"),
+                    c.noPointerEvents,
+                    c.zIndex(101)
+                  )}
+                  key={i}
+                  nativeID={`plan-arrow-${i}`}
+                >
+                  <svg width="100%" height="100%" viewBox="0 0 100 100">
+                    <path
+                      stroke={color}
+                      fill={color}
+                      strokeWidth={10}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M 35,40 50,60 65,40 z"
+                    />
+                  </svg>
+                </View>
+                <View
+                  style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(100))}
+                  key={i}
+                  nativeID={`plan-line-${i}`}
+                >
+                  <svg width="100%" height="100%" viewBox="0 0 100 100">
+                    <line
+                      strokeLinecap="round"
+                      strokeWidth={2}
+                      x1={(from.x + 1 / 8 / 2) * 100}
+                      y1={(from.y + 1 / 8 / 2) * 100}
+                      x2={(to.x + 1 / 8 / 2) * 100}
+                      y2={(to.y + 1 / 8 / 2) * 100}
+                      stroke={color}
+                    />
+                  </svg>
+                </View>
+              </View>
+            );
+          })}
           <Animated.View
             pointerEvents="none"
             style={s(
