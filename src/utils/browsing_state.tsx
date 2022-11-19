@@ -677,6 +677,8 @@ export const getInitialBrowsingState = (
               rs.repertoireGrades = data.grades;
               rs.onRepertoireUpdate();
               s.onPositionUpdate();
+              // s.showPlans = true;
+              // s.updateArrows();
               s.sidebarState.addedLineState = {
                 visible: true,
               };

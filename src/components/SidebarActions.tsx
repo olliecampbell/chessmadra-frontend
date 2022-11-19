@@ -117,7 +117,6 @@ export const SidebarActions = () => {
     showTogglePlansButton = false;
     // Taken care of by onboarding
   } else if (addedLineState.visible) {
-    showTogglePlansButton = false;
     addBiggestMissAction(nearestMiss);
     buttons.push(reviewCurrentLineAction);
     buttons.push(continueAddingToThisLineAction);
