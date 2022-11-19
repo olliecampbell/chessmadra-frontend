@@ -904,10 +904,10 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              s.startBrowsing(
-                "white",
-                lineToPgn(["e4", "e5", "f4", "exf4", "Nf3", "g5", "h4", "g4"])
-              );
+              // s.startBrowsing(
+              //   "white",
+              //   lineToPgn(["e4", "e5", "f4", "exf4", "Nf3", "g5", "h4", "g4"])
+              // );
             });
           });
       }),

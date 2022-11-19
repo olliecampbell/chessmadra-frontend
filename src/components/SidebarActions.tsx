@@ -137,17 +137,17 @@ export const SidebarActions = () => {
   }
   return (
     <View style={s(c.column, c.fullWidth)}>
-      {showTogglePlansButton && hasPlans && (
-        <>
-          <TogglePlansButton />
-          <Spacer height={24} />
-        </>
-      )}
       {intersperse(
         buttons.map((b) => <SidebarFullWidthButton action={b} />),
         () => {
           return <Spacer height={10} />;
         }
+      )}
+      {showTogglePlansButton && hasPlans && (
+        <>
+          <Spacer height={10} />
+          <TogglePlansButton />
+        </>
       )}
     </View>
   );
