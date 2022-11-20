@@ -405,14 +405,7 @@ export const ChessboardView = ({
                   nativeID={`plan-arrow-${i}`}
                 >
                   <svg width="100%" height="100%" viewBox="0 0 100 100">
-                    <path
-                      stroke={color}
-                      fill={color}
-                      strokeWidth={10}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M 35,40 50,60 65,40 z"
-                    />
+                    <circle cx="50" cy="50" r="14" fill={color} />
                   </svg>
                 </View>
                 <View
@@ -423,7 +416,7 @@ export const ChessboardView = ({
                   <svg width="100%" height="100%" viewBox="0 0 100 100">
                     <line
                       strokeLinecap="round"
-                      strokeWidth={2}
+                      strokeWidth={1.4}
                       x1={(from.x + 1 / 8 / 2) * 100}
                       y1={(from.y + 1 / 8 / 2) * 100}
                       x2={(to.x + 1 / 8 / 2) * 100}
