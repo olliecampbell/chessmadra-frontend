@@ -179,7 +179,7 @@ export const ExtraChessboardActions = ({}: {}) => {
           });
         }}
       >
-        <CMText style={s(textStyles)}>Analyze on lichess</CMText>
+        <CMText style={s(textStyles)}>Analyze on Lichess</CMText>
         <Spacer width={padding} />
         <i className="fa fa-up-right-from-square" style={s(iconStyles)}></i>
       </Pressable>
