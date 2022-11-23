@@ -1,33 +1,33 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: chess-madra-fe
+  name: chess-frontend-staging
 spec:
   ports:
     - port: 80
   selector:
-    app: chess-madra-fe
+    app: chess-frontend-staging
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chess-madra-fe
+  name: chess-frontend-staging
 spec:
   selector:
     matchLabels:
-      app: chess-madra-fe
+      app: chess-frontend-staging
   replicas: 1
   template:
     metadata:
       labels:
-        app: chess-madra-fe
+        app: chess-frontend-staging
     spec:
       containers:
-        - image: marcusbuffett/chess-madra-fe:latest
-          name: chess-madra-fe
+        - image: marcusbuffett/chess-frontend-staging:latest
+          name: chess-frontend-staging
           ports:
             - containerPort: 80
-              name: chess-madra-fe
+              name: chess-frontend-staging
           readinessProbe:
             httpGet:
               path: /
@@ -40,23 +40,23 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: chess-madra-fe
+  name: chess-frontend-staging
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-    - host: chessmadra.com
+    - host: staging.chessmadra.com
       http:
         paths:
           - path: "/"
             pathType: Prefix
             backend:
               service:
-                name: chess-madra-fe
+                name: chess-frontend-staging
                 port:
                   number: 80
   tls:
     - hosts:
-        - chessmadra.com
-      secretName: chess-madra-cert-prod
+        - staging.chessmadra.com
+      secretName: chess-madra-cert-staging
