@@ -36,6 +36,6 @@ jobs:
       - name: Save DigitalOcean kubeconfig with short-lived credentials
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 cluster-new
       - name: Update deploy.yml
-        run: kubectl apply -f ${{ github.workspace }}/deploy.yml
+        run: kubectl apply -f deploy.yml
       - name: Rollout deployment
         run: kubectl rollout restart deployment chess-madra-fe
