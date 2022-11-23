@@ -1,4 +1,4 @@
-name: ci
+name: staging-cd
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: ci
+name: prod-cd
 
 on:
   push:
