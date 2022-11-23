@@ -27,7 +27,6 @@ spec:
           name: chess-frontend-staging
           ports:
             - containerPort: 80
-              name: chess-frontend-staging
           readinessProbe:
             httpGet:
               path: /
