@@ -1,4 +1,3 @@
-
 import { View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -46,8 +45,7 @@ export const RepertoireBuilder = () => {
         </CMText>
         <Spacer height={12} />
         <CMText style={s()}>
-          Doing some housekeeping, will be down for a while. Everything will be
-          much snappier when we're back!
+          Doing some housekeeping, will be down for a few hours, sorry!
         </CMText>
       </View>
     );
