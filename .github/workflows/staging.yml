@@ -1,9 +1,9 @@
-name: prod-cd
+name: staging-cd
 
 on:
   push:
     branches:
-      - "prod"
+      - "staging"
 
 jobs:
   docker:
@@ -28,7 +28,7 @@ jobs:
           context: ${{ github.workspace }}
           # file: ./server/Dockerfile
           push: true
-          tags: marcusbuffett/chess-frontend:latest
+          tags: marcusbuffett/chess-frontend-staging:latest
       - name: Update deploy.yml
         uses: actions-hub/kubectl@master
         env:
@@ -40,6 +40,6 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: rollout restart deployment chess-frontend
+          args: rollout restart deployment chess-frontend-staging
       # - name: Rollout deployment
       #   run: kubectl rollout restart deployment utility
