@@ -35,6 +35,7 @@ export const SidebarActions = () => {
     nearestMiss,
     lineMiss,
     positionHistory,
+    targetCoverageReachedState,
   ] = useSidebarState(([s, bs]) => [
     s.hasPendingLineToAdd,
     s.isPastCoverageGoal,
@@ -48,6 +49,7 @@ export const SidebarActions = () => {
     bs.getNearestMiss(s),
     bs.getMissInThisLine(s),
     s.positionHistory,
+    s.targetCoverageReachedState,
   ]);
   const [activeSide, hasPlans] = useBrowsingState(([s, rs]) => [
     s.activeSide,
@@ -82,8 +84,6 @@ export const SidebarActions = () => {
             s.repertoireState.browsingState.dismissTransientSidebarState();
             let line = pgnToLine(miss.lines[0]);
             let missPositions = new Set(lineToPositions(line));
-            console.log("Miss positions", missPositions);
-            console.log("positions history", positionHistory);
             let i = findLastIndex(positionHistory, (epd) => {
               if (missPositions.has(epd)) {
                 return true;
@@ -108,6 +108,9 @@ export const SidebarActions = () => {
   };
   let showTogglePlansButton = true;
   if (submitFeedbackState.visible) {
+    showTogglePlansButton = false;
+    // This is taken care of by the delete line view, maybe bad though
+  } else if (targetCoverageReachedState.visible) {
     showTogglePlansButton = false;
     // This is taken care of by the delete line view, maybe bad though
   } else if (deleteLineState.visible) {
@@ -138,7 +141,7 @@ export const SidebarActions = () => {
   return (
     <View style={s(c.column, c.fullWidth)}>
       {intersperse(
-        buttons.map((b) => <SidebarFullWidthButton action={b} />),
+        buttons.map((b, i) => <SidebarFullWidthButton key={i} action={b} />),
         () => {
           return <Spacer height={10} />;
         }
@@ -230,7 +233,9 @@ export const SidebarFullWidthButton = ({
 };
 
 const TogglePlansButton = () => {
-  let [showPlans] = useBrowsingState(([s, rs]) => [s.showPlans]);
+  let [showPlans] = useBrowsingState(([s, rs]) => [
+    s.chessboardState.showPlans,
+  ]);
   const responsive = useResponsive();
   return (
     <Pressable
@@ -244,8 +249,8 @@ const TogglePlansButton = () => {
       )}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.browsingState.showPlans = !showPlans;
-          s.repertoireState.browsingState.updateArrows();
+          let cs = s.repertoireState.browsingState.chessboardState;
+          cs.showPlans = !cs.showPlans;
         });
       }}
     >

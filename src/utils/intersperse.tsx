@@ -1,16 +1,20 @@
 import { chunk, flatMap, filter } from "lodash-es";
 
-export const intersperse = <T,>(arr: T[], separator: (n: string) => T): T[] => {
+export const intersperse = <T,>(
+  arr: T[],
+  separator: (k: string, isLast: boolean) => T
+): T[] => {
   if (!arr) {
     return null;
   }
   return (filter(arr, (a) => a) as T[]).reduce<T[]>(
     (acc, currentElement, currentIndex) => {
       const isLast = currentIndex === arr.length - 1;
+      const isLastSpacer = currentIndex === arr.length - 2;
       return [
         ...acc,
         currentElement,
-        ...(isLast ? [] : [separator(`spacer-${currentIndex}`)]),
+        ...(isLast ? [] : [separator(`spacer-${currentIndex}`, isLastSpacer)]),
       ];
     },
     []

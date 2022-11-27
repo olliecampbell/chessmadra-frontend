@@ -48,6 +48,7 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { createContext } from "react";
 import { logProxy } from "./state";
+import { getTopPlans } from "./plans";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -80,6 +81,10 @@ export interface SidebarState {
   isPastCoverageGoal?: boolean;
   tableResponses: TableResponse[];
   hasAnyPendingResponses?: boolean;
+  targetCoverageReachedState: {
+    visible: boolean;
+    hasShown: boolean;
+  };
   deleteLineState: {
     visible: boolean;
   };
@@ -117,7 +122,8 @@ export interface BrowsingState {
   quick: (fn: (_: BrowsingState) => void) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
   moveSidebarState: (direction: "left" | "right") => void;
-  updateArrows: () => void;
+  updatePlans: () => void;
+  checkShowTargetDepthReached: () => void;
 
   // Fields
   chessboardState?: ChessboardState;
@@ -170,6 +176,10 @@ export const makeDefaultSidebarState = () => {
     isPastCoverageGoal: false,
     tableResponses: [],
     hasAnyPendingResponses: false,
+    targetCoverageReachedState: {
+      visible: false,
+      hasShown: false,
+    },
     deleteLineState: {
       visible: false,
     },
@@ -255,6 +265,23 @@ export const getInitialBrowsingState = (
           }).start();
         });
       }),
+    checkShowTargetDepthReached: () => {
+      set(([s, rs, gs]) => {
+        let threshold = gs.userState.getCurrentThreshold();
+        if (
+          s.sidebarState.isPastCoverageGoal &&
+          !s.sidebarState.targetCoverageReachedState.hasShown
+        ) {
+          // s.moveSidebarState("right")
+          s.sidebarState.targetCoverageReachedState.visible = true;
+          s.sidebarState.targetCoverageReachedState.hasShown = true;
+          s.chessboardState.showPlans = true;
+        }
+        if (!s.sidebarState.isPastCoverageGoal) {
+          s.sidebarState.targetCoverageReachedState.hasShown = false;
+        }
+      });
+    },
     updateTableResponses: () =>
       get(([s, rs, gs]) => {
         if (!s.activeSide) {
@@ -425,6 +452,10 @@ export const getInitialBrowsingState = (
         } else if (s.sidebarState.deleteLineState.visible) {
           s.sidebarState.deleteLineState.visible = false;
           return true;
+        } else if (s.sidebarState.targetCoverageReachedState.visible) {
+          s.sidebarState.targetCoverageReachedState.visible = false;
+          s.sidebarState.targetCoverageReachedState.hasShown = false;
+          return true;
         }
         return false;
       }),
@@ -487,6 +518,8 @@ export const getInitialBrowsingState = (
                 rs.positionReports[report.epd] = report;
               });
               s.updateTableResponses();
+              s.updatePlans();
+              s.checkShowTargetDepthReached();
               s.fetchNeededPositionReports();
             });
           })
@@ -502,27 +535,21 @@ export const getInitialBrowsingState = (
         }
       }),
 
-    updateArrows: () =>
+    updatePlans: () =>
       set(([s, rs]) => {
         let plans = rs.positionReports[s.sidebarState.currentEpd]?.plans ?? [];
-        plans = sortBy(
-          filter(plans, (p) => p.side === s.activeSide),
-          (p) => -p.occurences
+        let maxOccurence = plans[0]?.occurences ?? 0;
+        console.log({ plans: logProxy(plans) });
+        s.chessboardState.focusedPlan = null;
+        s.chessboardState.plans = getTopPlans(
+          plans,
+          s.activeSide,
+          s.chessboardState.position
         );
-        if (!s.showPlans || isEmpty(plans)) {
-          s.chessboardState.plans = [];
-        } else {
-          let maxOccurence = plans[0]?.occurences ?? 0;
-          s.chessboardState.plans = take(plans, 7);
-          s.chessboardState.maxPlanOccurence = maxOccurence;
-        }
+        s.chessboardState.maxPlanOccurence = maxOccurence;
       }),
     onPositionUpdate: () =>
       set(([s, rs]) => {
-        if (s.showPlans) {
-          s.showPlans = false;
-          s.updateArrows();
-        }
         s.sidebarState.moveLog = s.chessboardState.moveLog;
         s.sidebarState.currentEpd = s.chessboardState.getCurrentEpd();
         s.sidebarState.currentSide =
@@ -530,7 +557,7 @@ export const getInitialBrowsingState = (
         s.sidebarState.positionHistory = s.chessboardState.positionHistory;
         s.sidebarState.pendingResponses = {};
 
-        s.updateArrows();
+        s.updatePlans();
 
         let incidences = s.getLineIncidences({});
         if (rs.ecoCodeLookup) {
@@ -585,6 +612,7 @@ export const getInitialBrowsingState = (
         s.fetchNeededPositionReports();
         s.updateRepertoireProgress();
         s.updateTableResponses();
+        s.checkShowTargetDepthReached();
       }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {

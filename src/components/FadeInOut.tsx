@@ -14,22 +14,27 @@ import { SelectOneOf } from "./SelectOneOf";
 export const FadeInOut = ({
   children,
   open,
+  maxOpacity: _maxOpacity,
   style,
 }: {
   children: any;
   open: boolean;
+  maxOpacity?: number;
   style: any;
 }) => {
-  const fadeAnim = React.useRef(new Animated.Value(open ? 1.0 : 0.0)).current;
+  let maxOpacity = _maxOpacity ?? 1;
+  const fadeAnim = React.useRef(
+    new Animated.Value(open ? maxOpacity : 0.0)
+  ).current;
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, {
-      toValue: open ? 1 : 0,
+      toValue: open ? maxOpacity : 0,
       duration: 200,
       easing: Easing.quad,
       useNativeDriver: false,
     }).start();
-  }, [open]);
+  }, [open, maxOpacity]);
   return (
     <Animated.View
       style={s(c.opacity(fadeAnim), !open && c.noPointerEvents, style)}

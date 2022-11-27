@@ -47,6 +47,22 @@ import pkceChallenge from "pkce-challenge";
 import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 
+const TEST_LINE = [
+  "e4",
+  "e5",
+  "f4",
+  "exf4",
+  "Nf3",
+  "g5",
+  "h4",
+  "g4",
+  "Ne5",
+  "h5",
+  "Bc4",
+  "Nh6",
+  "d4",
+];
+
 export interface LichessOauthData {
   codeVerifier: string;
   redirectUri: string;
@@ -904,10 +920,9 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              // s.startBrowsing(
-              //   "white",
-              //   lineToPgn(["e4", "e5", "f4", "exf4", "Nf3", "g5", "h4", "g4"])
-              // );
+              if (TEST_LINE) {
+                s.startBrowsing("white", lineToPgn(TEST_LINE));
+              }
             });
           });
       }),

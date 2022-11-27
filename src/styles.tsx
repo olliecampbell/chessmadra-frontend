@@ -269,6 +269,7 @@ const pinks = genShades(308);
 const purples = genShades(271);
 const reds = genShades(340);
 const greens = genShades(109);
+const forestGreens = genShades(83);
 const failureShades = reds;
 const successShades = genShades(164);
 const colors = {
@@ -553,6 +554,7 @@ export const c = {
   failureShades,
   reds,
   greens,
+  forestGreens,
   successShades,
   weightHeavy,
   weightBlack,

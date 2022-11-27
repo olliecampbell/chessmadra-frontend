@@ -1,3 +1,4 @@
+import { Color } from "@lubert/chess.ts";
 import { LichessGame } from "app/models";
 import { flatten, forEach } from "lodash-es";
 
@@ -42,6 +43,13 @@ export interface BySide<T> {
 }
 
 export type Side = "black" | "white";
+export const toSide = (color: Color) => {
+  if (color === "w") {
+    return "white";
+  } else {
+    return "black";
+  }
+};
 export const SIDES: Side[] = ["white", "black"];
 export function otherSide(side: Side) {
   if (side === "white") {
