@@ -47,24 +47,24 @@ import pkceChallenge from "pkce-challenge";
 import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 
-const TEST_LINE = [
-  "e4",
-  "c6",
-  "d4",
-  "d5",
-  "f3",
-  "dxe4",
-  "fxe4",
-  "e5",
-  "Nf3",
-  "Bg4",
-  "Bc4",
-  "Nd7",
-  "O-O",
-  "Ngf6",
-  "c3",
-];
-// const TEST_LINE = null;
+// const TEST_LINE = [
+//   "e4",
+//   "c6",
+//   "d4",
+//   "d5",
+//   "f3",
+//   "dxe4",
+//   "fxe4",
+//   "e5",
+//   "Nf3",
+//   "Bg4",
+//   "Bc4",
+//   "Nd7",
+//   "O-O",
+//   "Ngf6",
+//   "c3",
+// ];
+const TEST_LINE = null;
 
 export interface LichessOauthData {
   codeVerifier: string;
