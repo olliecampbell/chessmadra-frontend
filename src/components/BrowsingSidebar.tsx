@@ -194,12 +194,17 @@ const BackSection = () => {
   if (
     addedLineState.visible ||
     deleteLineState.visible ||
-    submitFeedbackState.visible ||
-    targetCoverageReachedState.visible
+    submitFeedbackState.visible
   ) {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.dismissTransientSidebarState();
+      });
+    };
+  } else if (targetCoverageReachedState.visible) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.chessboardState.backOne();
       });
     };
   } else if (stageStack.length > 1) {

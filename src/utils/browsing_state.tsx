@@ -495,7 +495,6 @@ export const getInitialBrowsingState = (
           s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.targetCoverageReachedState.visible) {
-          s.chessboardState.backOne();
           s.sidebarState.targetCoverageReachedState.visible = false;
           s.sidebarState.targetCoverageReachedState.hasShown = false;
           s.chessboardState.showPlans = false;
@@ -789,11 +788,13 @@ export const getInitialBrowsingState = (
         },
         onBack: () => {
           set(([s]) => {
+            s.dismissTransientSidebarState();
             s.sidebarState.targetCoverageReachedState.hasShown = false;
           });
         },
         onReset: () => {
           set(([s]) => {
+            s.dismissTransientSidebarState();
             s.sidebarState.targetCoverageReachedState.hasShown = false;
           });
         },
