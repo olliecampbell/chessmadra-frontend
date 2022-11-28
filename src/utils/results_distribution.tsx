@@ -24,6 +24,16 @@ export function getWinRate(x: GameResultsDistribution, side: string) {
   return x[side] / getTotalGames(x);
 }
 
+export function getWinRateRange(
+  x: GameResultsDistribution,
+  side: string
+): [number, number, number] {
+  let w = x[side];
+  let n = getTotalGames(x);
+  let range = 1.96 * Math.sqrt(((w / n) * (1 - w / n)) / n);
+  return [w / n - range, w / n + range, range * 2];
+}
+
 export const getPlayRate = (
   m: SuggestedMove,
   report: PositionReport,

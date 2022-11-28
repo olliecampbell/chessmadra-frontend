@@ -4,11 +4,17 @@ import { Plan } from "app/models";
 import { sortBy, filter, uniqBy, take, cloneDeep } from "lodash-es";
 import { Side, toSide } from "./repertoire";
 
+export interface MetaPlan {
+  plan: Plan;
+  directionChanged: boolean;
+  subsequentMove: boolean;
+}
+
 export const getTopPlans = (
   _plans: Plan[],
   side: Side,
   board: Chess
-): Plan[] => {
+): MetaPlan[] => {
   let plans = _plans;
   plans = filter(plans, (p) => p.side === side);
 
@@ -21,10 +27,10 @@ export const getTopPlans = (
       byFromSquare[p.fromSquare] = [p];
     }
   });
-  let nonGhostPlans: Plan[] = [];
+  let metaPlans: MetaPlan[] = [];
   type SquareMove = string;
   let recurse = (plan: Plan, seenMoves: Set<SquareMove>) => {
-    nonGhostPlans.push(plan);
+    metaPlans.push({ plan, directionChanged: false, subsequentMove: false });
     byFromSquare[plan.fromSquare].forEach((p) => {
       if (seenMoves.has(p.fromSquare + p.toSquare)) {
         seenMoves.add(p.fromSquare + p.toSquare);
@@ -41,12 +47,14 @@ export const getTopPlans = (
     }
   });
 
-  // plans = nonGhostPlans;
-  plans = uniqBy(plans, (p) => `${p.san}-${p.toSquare}-${p.toSquare}`);
-  plans = sortBy(plans, (p) => -p.occurences);
+  metaPlans = uniqBy(
+    metaPlans,
+    (p) => `${p.plan.san}-${p.plan.toSquare}-${p.plan.toSquare}`
+  );
+  metaPlans = sortBy(metaPlans, (p) => -p.plan.occurences);
 
   if (plans.length <= 1) {
     return [];
   }
-  return take(plans, 7);
+  return take(metaPlans, 7);
 };

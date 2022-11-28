@@ -57,6 +57,7 @@ import { useResponsive } from "app/utils/useResponsive";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  lowConfidence?: boolean;
   disableBadgePriority?: boolean;
   biggestMiss?: RepertoireMiss;
   needed?: boolean;
@@ -328,7 +329,8 @@ let useSections = ({
     c.lineHeight("1.3rem")
   );
 
-  let na = <CMText style={s(textStyles, c.fg(c.grays[50]))}>N/A</CMText>;
+  let naStyles = s(textStyles, c.fg(c.grays[50]));
+  let na = <CMText style={s(naStyles)}>N/A</CMText>;
   let notEnoughGames = (
     <CMText style={s(c.fg(c.grays[50]))}>{isMobile ? "N/A" : "N/A"}</CMText>
   );
@@ -471,13 +473,18 @@ let useSections = ({
   }
   if (myTurn) {
     sections.push({
-      width: isMobile ? 70 : 80,
-      content: ({ suggestedMove, positionReport, side }) => {
-        if (
-          !suggestedMove?.results ||
-          getTotalGames(suggestedMove?.results) < 5
-        ) {
+      width: isMobile ? 80 : 80,
+      content: ({ suggestedMove, positionReport, side, tableResponse }) => {
+        if (!suggestedMove?.results) {
           return na;
+        }
+        if (tableResponse.lowConfidence) {
+          return (
+            <CMText style={s(naStyles)}>
+              {suggestedMove?.results[activeSide]} out of{" "}
+              {getTotalGames(suggestedMove?.results)}
+            </CMText>
+          );
         }
         return (
           <>
@@ -684,7 +691,7 @@ const Response = ({
   const tagsRow = !isEmpty(tags) && (
     <View style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}>
       {tags.map((tag, i) => {
-        return tag;
+        return <React.Fragment key={i}>{tag}</React.Fragment>;
       })}
     </View>
   );
@@ -972,13 +979,16 @@ export const DebugScoreView = ({
       <Spacer height={12} />
       {intersperse(
         tableResponse.scoreTable?.factors.map((factor, i) => {
+          console.log({ factor });
           return (
             <View style={s(c.row, c.fullWidth, c.textAlign("end"))} key={i}>
               <CMText style={s(c.width(120))}>{factor.source}</CMText>
               <Spacer width={12} />
-              <CMText style={s(c.width(60))}>{factor.value.toFixed(2)}</CMText>
+              <CMText style={s(c.width(60))}>{factor.value?.toFixed(2)}</CMText>
               <Spacer width={12} />
-              <CMText style={s(c.width(60))}>{factor.weight.toFixed(2)}</CMText>
+              <CMText style={s(c.width(60))}>
+                {factor.weight?.toFixed(2)}
+              </CMText>
               <Spacer width={12} grow />
               <CMText style={s(c.width(60))}>{factor.total.toFixed(2)}</CMText>
             </View>

@@ -31,7 +31,12 @@ import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";
 import { START_EPD } from "./chess";
-import { getPlayRate, getTotalGames, getWinRate } from "./results_distribution";
+import {
+  getPlayRate,
+  getTotalGames,
+  getWinRate,
+  getWinRateRange,
+} from "./results_distribution";
 import client from "app/client";
 import { createQuick } from "./quick";
 import { Animated, Easing } from "react-native";
@@ -267,6 +272,7 @@ export const getInitialBrowsingState = (
       }),
     checkShowTargetDepthReached: () => {
       set(([s, rs, gs]) => {
+        return;
         let threshold = gs.userState.getCurrentThreshold();
         if (
           s.sidebarState.isPastCoverageGoal &&
@@ -294,13 +300,15 @@ export const getInitialBrowsingState = (
         let currentEpd = s.chessboardState.getCurrentEpd();
         let positionReport = rs.positionReports[s.sidebarState.currentEpd];
         let _tableResponses: Record<string, TableResponse> = {};
-        positionReport?.suggestedMoves.map((sm) => {
-          _tableResponses[sm.sanPlus] = {
-            suggestedMove: cloneDeep(sm),
-            tags: [],
-            side: s.activeSide,
-          };
-        });
+        positionReport?.suggestedMoves
+          .filter((sm) => getTotalGames(sm.results) > 0)
+          .map((sm) => {
+            _tableResponses[sm.sanPlus] = {
+              suggestedMove: cloneDeep(sm),
+              tags: [],
+              side: s.activeSide,
+            };
+          });
         let existingMoves =
           rs.repertoire[s.activeSide].positionResponses[
             s.chessboardState.getCurrentEpd()
@@ -347,6 +355,25 @@ export const getInitialBrowsingState = (
           let epd = tr.suggestedMove?.epdAfter;
           if (biggestMisses[epd]) {
             tr.biggestMiss = biggestMisses[epd];
+          }
+        });
+        tableResponses.forEach((tr) => {
+          if (ownSide && tr.suggestedMove && positionReport) {
+            let positionWinRate = getWinRate(
+              positionReport?.results,
+              s.activeSide
+            );
+            let [, , ci] = getWinRateRange(
+              tr.suggestedMove.results,
+              s.activeSide
+            );
+            let moveWinRate = getWinRate(
+              tr.suggestedMove.results,
+              s.activeSide
+            );
+            if (ci > 0.15 && Math.abs(positionWinRate - moveWinRate) > 0.03) {
+              tr.lowConfidence = true;
+            }
           }
         });
         tableResponses.forEach((tr) => {

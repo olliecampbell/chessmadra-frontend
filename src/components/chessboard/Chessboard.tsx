@@ -465,26 +465,30 @@ export const ChessboardView = ({
           </FadeInOut>
           */}
           <FadeInOut
-            maxOpacity={0.6}
+            maxOpacity={1.0}
             style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
             open={state.showPlans}
           >
-            {state.plans.map((plan, i) => {
+            {state.plans.map((metaPlan, i) => {
+              let { plan } = metaPlan;
               let from = getSquareOffset(plan.fromSquare, state.flipped);
               let to = getSquareOffset(plan.toSquare, state.flipped);
               let dx = Math.abs(from.x - to.x);
               let dy = Math.abs(from.y - to.y);
-              let length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+              let length =
+                Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) - (1 / 8) * 0.1;
               let thickness = 10;
               var angle = Math.atan2(to.y - from.y, to.x - from.x);
               var angleDeg = (angle * 180) / Math.PI;
-              let color = c.greens[50];
-              let gradientColor = c.greens[45];
+              let color = plan.side === "black" ? c.grays[10] : c.grays[95];
+              let gradientColor = c.grays[100];
               if (isEqual(state.focusedPlan, plan)) {
                 color = c.purples[50];
                 gradientColor = c.purples[30];
               }
-              let duration = "1.2s";
+              let duration = "1.0s";
+              let speed = 0.2;
+              // let duration = `${length / speed}s`;
               // let color = c.purples[45];
               // let opacity =
               //   20 + (plan.occurences / state.maxPlanOccurence) * 60;
@@ -497,6 +501,10 @@ export const ChessboardView = ({
               let x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
               let y1 = from.y + 1 / 8 / 2;
               let y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
+              let xDiff = x2 - x1;
+              let yDiff = y2 - y1;
+              let red = c.reds[50];
+              let blue = c.blues[50];
 
               return (
                 <React.Fragment key={i}>
@@ -514,55 +522,71 @@ export const ChessboardView = ({
                         id={`plan-line-gradient-${i}`}
                         x1={x1}
                         y1={y1}
-                        x2={x1}
+                        x2={x2}
                         y2={y2}
                         gradientUnits="userSpaceOnUse"
                       >
-                        <stop offset="10%" stop-color={color}></stop>
-                        <stop offset="50%" stop-color={gradientColor}></stop>
-                        <stop offset="55%" stop-color={color} />
+                        <stop offset="0%" stop-color={color}></stop>
+                        <stop offset="25%" stop-color={gradientColor}></stop>
+                        <stop offset="50%" stop-color={color}></stop>
+                        <stop offset="75%" stop-color={gradientColor}></stop>
+                        <stop offset="100%" stop-color={color} />
                         <animate
                           attributeName="y2"
-                          values={`${y1};${y2 + (y2 - y1)}`}
+                          values={`${y2};${y2 + yDiff}`}
                           dur={duration}
                           repeatCount="indefinite"
                         />
                         <animate
                           attributeName="y1"
-                          values={`${y1 - (y2 - y1)};${y2}`}
+                          values={`${y1 - yDiff};${y1}`}
                           dur={duration}
                           repeatCount="indefinite"
                         />
                         <animate
                           attributeName="x2"
-                          values={`${x1};${x2 + (x2 - x1)}`}
+                          values={`${x2};${x2 + xDiff}`}
                           dur={duration}
                           repeatCount="indefinite"
                         />
                         <animate
                           attributeName="x1"
-                          values={`${x1 - (x2 - x1)};${x2}`}
+                          values={`${x1 - xDiff};${x1}`}
                           dur={duration}
                           repeatCount="indefinite"
                         />
                       </linearGradient>
-                      <circle
-                        cx={to.x + 1 / 8 / 2}
-                        cy={to.y + 1 / 8 / 2}
-                        r={1 / 8 / 9}
-                        // fill={color}
-                        fill={`url(#${`plan-line-gradient-${i}`})`}
-                      />
                       <line
-                        stroke={`url(#${`plan-line-gradient-${i}`})`}
-                        // stroke={`white`}
+                        // stroke={`url(#${`plan-line-gradient-${i}`})`}
+                        stroke={color}
                         strokeLinecap="round"
-                        strokeWidth={1.2 / 100}
+                        strokeWidth={1.4 / 100}
                         x1={from.x + 1 / 8 / 2}
                         y1={from.y + 1 / 8 / 2}
                         x2={from.x + 1 / 8 / 2 + length * Math.cos(angle)}
                         y2={from.y + 1 / 8 / 2 + length * Math.sin(angle)}
                       />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill={color}
+                        transform={`rotate(${
+                          angleDeg - 90
+                        } ${toSquareCenterX} ${toSquareCenterY})`}
+                        d={`M ${toSquareCenterX - 2 / 100},${
+                          toSquareCenterY - 2.8 / 100
+                        } ${toSquareCenterX},${toSquareCenterY} ${
+                          toSquareCenterX + 2 / 100
+                        },${toSquareCenterY - 2.8 / 100} Z`}
+                        className="triangle"
+                      />
+                      {/*<circle
+                        cx={to.x + 1 / 8 / 2}
+                        cy={to.y + 1 / 8 / 2}
+                        r={(1 / 8) * 0.12}
+                        fill={gradientColor}
+                        // fill={`url(#${`plan-line-gradient-${i}`})`}
+                      />*/}
                     </svg>
                   </View>
                 </React.Fragment>
