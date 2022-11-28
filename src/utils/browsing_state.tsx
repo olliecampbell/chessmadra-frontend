@@ -371,7 +371,7 @@ export const getInitialBrowsingState = (
               tr.suggestedMove.results,
               s.activeSide
             );
-            if (ci > 0.15 && Math.abs(positionWinRate - moveWinRate) > 0.03) {
+            if (ci > 0.15 && Math.abs(positionWinRate - moveWinRate) > 0.02) {
               tr.lowConfidence = true;
             }
           }
