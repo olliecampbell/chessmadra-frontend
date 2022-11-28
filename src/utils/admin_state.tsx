@@ -171,7 +171,6 @@ export const getInitialAdminState = (
         client
           .post(`/api/v1/admin/reject-move-annotations`, { epd, san })
           .then(({ data }) => {});
-        s.moveAnnotationReviewQueue.shift();
       }),
   } as AdminState;
 
