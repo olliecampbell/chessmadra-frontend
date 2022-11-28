@@ -78,23 +78,9 @@ export const Responses = React.memo(function Responses() {
   }, [hasPendingLine]);
   let body = null;
   if (isPastCoverageGoal) {
-    if (hasPendingLine) {
-      prepareForHeader = (
-        <>
-          This line looks good! <Spacer width={8} />{" "}
-          <i
-            style={s(c.duotone(c.grays[90], c.grays[70]), c.fontSize(24))}
-            className="fa-duotone fa-party-horn"
-          />
-        </>
-      );
-      body =
-        "This line is ready to be added to your repertoire. You can continue adding moves if you want.";
-    } else {
-      prepareForHeader = "You can prepare for these moves";
-      body =
-        "This line is past your coverage goal, but you can add more moves if you want.";
-    }
+    prepareForHeader = "You can prepare for these moves";
+    body =
+      "This line is past your coverage goal, but you can add more moves if you want.";
   }
   return (
     <View style={s(c.column, c.constrainWidth)}>

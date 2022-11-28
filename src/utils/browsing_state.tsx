@@ -129,6 +129,7 @@ export interface BrowsingState {
   moveSidebarState: (direction: "left" | "right") => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
+  checkFreezeChessboard: () => void;
 
   // Fields
   chessboardState?: ChessboardState;
@@ -270,18 +271,29 @@ export const getInitialBrowsingState = (
           }).start();
         });
       }),
+    checkFreezeChessboard: () => {
+      set(([s, rs, gs]) => {
+        if (
+          s.sidebarState.targetCoverageReachedState.visible ||
+          !isEmpty(s.sidebarState.sidebarOnboardingState.stageStack)
+        ) {
+          s.chessboardState.frozen = true;
+        } else {
+          s.chessboardState.frozen = false;
+        }
+      });
+    },
     checkShowTargetDepthReached: () => {
       set(([s, rs, gs]) => {
-        return;
-        let threshold = gs.userState.getCurrentThreshold();
         if (
           s.sidebarState.isPastCoverageGoal &&
+          s.sidebarState.hasPendingLineToAdd &&
           !s.sidebarState.targetCoverageReachedState.hasShown
         ) {
-          // s.moveSidebarState("right")
           s.sidebarState.targetCoverageReachedState.visible = true;
           s.sidebarState.targetCoverageReachedState.hasShown = true;
           s.chessboardState.showPlans = true;
+          s.chessboardState.frozen = true;
         }
         if (!s.sidebarState.isPastCoverageGoal) {
           s.sidebarState.targetCoverageReachedState.hasShown = false;
@@ -472,16 +484,22 @@ export const getInitialBrowsingState = (
       set(([s, rs]) => {
         if (s.sidebarState.submitFeedbackState.visible) {
           s.sidebarState.submitFeedbackState.visible = false;
+          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.addedLineState.visible) {
           s.sidebarState.addedLineState.visible = false;
+          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.deleteLineState.visible) {
           s.sidebarState.deleteLineState.visible = false;
+          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.targetCoverageReachedState.visible) {
+          s.chessboardState.backOne();
           s.sidebarState.targetCoverageReachedState.visible = false;
           s.sidebarState.targetCoverageReachedState.hasShown = false;
+          s.chessboardState.showPlans = false;
+          s.checkFreezeChessboard();
           return true;
         }
         return false;
@@ -490,6 +508,7 @@ export const getInitialBrowsingState = (
       set(([s, rs]) => {
         s.moveSidebarState("right");
         s.sidebarState.sidebarOnboardingState.stageStack = [];
+        s.checkFreezeChessboard();
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
@@ -546,7 +565,6 @@ export const getInitialBrowsingState = (
               });
               s.updateTableResponses();
               s.updatePlans();
-              s.checkShowTargetDepthReached();
               s.fetchNeededPositionReports();
             });
           })
@@ -639,7 +657,6 @@ export const getInitialBrowsingState = (
         s.fetchNeededPositionReports();
         s.updateRepertoireProgress();
         s.updateTableResponses();
-        s.checkShowTargetDepthReached();
       }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
@@ -727,6 +744,7 @@ export const getInitialBrowsingState = (
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s, rs]) => {
               s.moveSidebarState("right");
+              s.dismissTransientSidebarState();
               // s.backToStartPosition(s);
               rs.repertoire = data.repertoire;
               rs.repertoireGrades = data.grades;
@@ -765,10 +783,25 @@ export const getInitialBrowsingState = (
             s.onPositionUpdate();
           });
         },
-        madeMove: () => {
+
+        madeManualMove: () => {
           trackEvent("builder.chessboard.played_move");
         },
-
+        onBack: () => {
+          set(([s]) => {
+            s.sidebarState.targetCoverageReachedState.hasShown = false;
+          });
+        },
+        onReset: () => {
+          set(([s]) => {
+            s.sidebarState.targetCoverageReachedState.hasShown = false;
+          });
+        },
+        onMovePlayed: () => {
+          set(([s]) => {
+            s.checkShowTargetDepthReached();
+          });
+        },
         shouldMakeMove: (move: Move) =>
           set(([s]) => {
             s.moveSidebarState("right");

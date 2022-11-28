@@ -30,7 +30,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   maxPlanOccurence?: number;
   _animatePosition: Chess;
   plans: MetaPlan[];
-  showPlans: boolean;
+  showPlans?: boolean;
   playPgn: (pgn: string, options?: PlayPgnOptions) => void;
   frozen?: boolean;
   positionHistory: string[];
@@ -110,9 +110,13 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
 }
 
 export interface ChessboardDelegate {
+  madeManualMove?(): void;
   shouldMakeMove?: (move: Move) => boolean;
   madeMove?: (move: Move) => void;
   onPositionUpdated?: () => void;
+  onMovePlayed?: () => void;
+  onBack?: () => void;
+  onReset?: () => void;
   completedMoveAnimation?: (move: Move) => void;
 }
 
@@ -213,6 +217,7 @@ export const createChessState = (
           s.position.undo();
           s.updateMoveLogPgn();
           s.getDelegate()?.onPositionUpdated?.();
+          s.getDelegate()?.onBack?.();
         }
       });
     },
@@ -227,6 +232,7 @@ export const createChessState = (
         s.clearHighlightedSquares();
         s.updateMoveLogPgn();
         s.getDelegate()?.onPositionUpdated?.();
+        s.getDelegate()?.onReset?.();
       });
     },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
@@ -252,6 +258,7 @@ export const createChessState = (
             }
           };
           if (s.getDelegate().shouldMakeMove(availableMove)) {
+            s.getDelegate().madeManualMove?.();
             makeMove();
           }
           return;
@@ -488,6 +495,7 @@ export const createChessState = (
         }
         s.resumeNotifyingDelegates();
         s.getDelegate()?.onPositionUpdated?.();
+        s.getDelegate()?.onMovePlayed?.();
       });
     },
     previewMove: (m: string) => {
@@ -548,8 +556,8 @@ export const createChessState = (
           s.moveHistory.push(moveObject);
           s.highlightLastMove();
           s.updateMoveLogPgn();
-          s.getDelegate()?.madeMove?.(moveObject);
           s.getDelegate()?.onPositionUpdated?.();
+          s.getDelegate()?.onMovePlayed?.();
         } else {
           console.log("This move wasn't valid!", m);
         }

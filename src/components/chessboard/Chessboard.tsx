@@ -512,8 +512,8 @@ export const ChessboardView = ({
                     style={s(
                       c.absoluteFull,
                       c.noPointerEvents,
-                      c.zIndex(100)
-                      // c.opacity(80)
+                      c.zIndex(100),
+                      c.opacity(80)
                     )}
                     nativeID={`plan-line-${i}`}
                   >
@@ -569,16 +569,17 @@ export const ChessboardView = ({
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        strokeWidth={(1 / 8) * 0.04}
                         fill={color}
+                        stroke={color}
                         transform={`rotate(${
                           angleDeg - 90
                         } ${toSquareCenterX} ${toSquareCenterY})`}
                         d={`M ${toSquareCenterX - 2 / 100},${
                           toSquareCenterY - 2.8 / 100
-                        } ${toSquareCenterX},${toSquareCenterY} ${
+                        } ${toSquareCenterX},${toSquareCenterY - 0.004} ${
                           toSquareCenterX + 2 / 100
                         },${toSquareCenterY - 2.8 / 100} Z`}
-                        className="triangle"
                       />
                       {/*<circle
                         cx={to.x + 1 / 8 / 2}

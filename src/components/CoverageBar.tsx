@@ -1,13 +1,8 @@
-
 import { Animated, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
-import {
-  Side,
-} from "app/utils/repertoire";
-import {
-  useBrowsingState,
-} from "app/utils/app_state";
+import { Side } from "app/utils/repertoire";
+import { useBrowsingState } from "app/utils/app_state";
 
 export const CoverageBar = ({
   side,
@@ -23,7 +18,7 @@ export const CoverageBar = ({
     return [progressState];
   });
   const [backgroundColor, inProgressColor, completedColor] = isSavedView
-    ? [c.grays[30], c.greens[40], c.greens[40]]
+    ? [c.grays[30], c.greens[50], c.greens[50]]
     : inverse
     ? [c.grays[14], c.yellows[45], c.greens[50]]
     : [c.grays[80], c.yellows[65], c.greens[50]];

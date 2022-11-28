@@ -27,7 +27,7 @@ import { intersperse } from "app/utils/intersperse";
 import { Plan } from "app/models";
 import { Side } from "app/utils/repertoire";
 import { View } from "react-native";
-import { getTopPlans } from "app/utils/plans";
+import { getTopPlans, MetaPlan } from "app/utils/plans";
 import { useHovering } from "app/hooks/useHovering";
 
 type PlanSection = JSX.Element | JSX.Element[] | string;
@@ -68,16 +68,30 @@ export const TargetCoverageReachedView = () => {
   planSections.push(getCastlingPlanSection(plans, activeSide));
   planSections.push(getPawnPlansSection(plans, activeSide));
   planSections.push(getPiecePlansSection(plans, activeSide));
+  planSections = planSections.filter((p) => p);
   return (
     <SidebarTemplate
       header={"You've reached your target depth!  ✅"}
       actions={[
         {
           onPress: () => {
-            submitFeedback();
+            quick((s) => {
+              s.repertoireState.browsingState.addPendingLine();
+            });
           },
           style: "primary",
-          text: "Submit",
+          text: "I'm done, save this line to my repertoire",
+        },
+        {
+          onPress: () => {
+            quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
+              s.repertoireState.browsingState.sidebarState.targetCoverageReachedState.visible =
+                false;
+            });
+          },
+          style: "primary",
+          text: "Keep adding moves to this line",
         },
       ]}
       loading={loading && "Submitting feedback..."}
@@ -116,13 +130,14 @@ export const TargetCoverageReachedView = () => {
 // TODO: move text elements should have a component that has hover behavior that
 // highlights the plan on the board
 
-function getCastlingPlanSection(plans: Plan[], side: Side): PlanSection {
-  let queenside = find(plans, (p) => p.san === "O-O-O");
-  let kingside = find(plans, (p) => p.san === "O-O");
+function getCastlingPlanSection(plans: MetaPlan[], side: Side): PlanSection {
+  let queenside = find(plans, (p) => p.plan.san === "O-O-O");
+  let kingside = find(plans, (p) => p.plan.san === "O-O");
   if (!(queenside || kingside)) {
     return null;
   } else if (queenside && kingside) {
-    let queensideMoreCommon = queenside.occurences > kingside.occurences;
+    let queensideMoreCommon =
+      queenside.plan.occurences > kingside.plan.occurences;
     return (
       <>
         You can castle to either side, although{" "}
@@ -148,31 +163,34 @@ function getCastlingPlanSection(plans: Plan[], side: Side): PlanSection {
   }
 }
 
-function getPawnPlansSection(plans: Plan[], side: Side): PlanSection {
+function getPawnPlansSection(plans: MetaPlan[], side: Side): PlanSection {
   let pawnPlans = filter(plans, (p) =>
-    some(["a", "b", "c", "d", "e", "f", "g", "h"], (f) => p.san.startsWith(f))
+    some(["a", "b", "c", "d", "e", "f", "g", "h"], (f) =>
+      p.plan.san?.startsWith(f)
+    )
   );
   if (isEmpty(pawnPlans)) {
     return null;
   }
   return (
     <>
-      <PlanMoves plans={pawnPlans} />{" "}
+      <PlanMoves plans={pawnPlans.map((p) => p.plan)} />{" "}
       {pawnPlans.length > 1 ? "are common pawn moves" : "is a common pawn move"}
     </>
   );
 }
 
-function getPiecePlansSection(plans: Plan[], side: Side): PlanSection {
+function getPiecePlansSection(plans: MetaPlan[], side: Side): PlanSection {
   let piecePlans = filter(plans, (p) =>
-    some(["N", "B", "R", "Q", "K"], (f) => p.san.startsWith(f))
+    some(["N", "B", "R", "Q", "K"], (f) => p.plan.san?.startsWith(f))
   );
   if (isEmpty(piecePlans)) {
     return null;
   }
   return (
     <>
-      Common piece moves include <PlanMoves plans={piecePlans} />
+      Common piece moves include{" "}
+      <PlanMoves plans={piecePlans.map((p) => p.plan)} />
     </>
   );
 }

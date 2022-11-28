@@ -312,33 +312,12 @@ const SavedLineView = React.memo(function SavedLineView() {
     <View style={s(c.column)}>
       <RepertoireEditingHeader>Line saved!</RepertoireEditingHeader>
       <View style={s(c.px(getSidebarPadding(responsive)))}>
-        <Spacer height={8} />
-        {positionReport && (
-          <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-            At your level, {activeSide} wins{" "}
-            <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-              {formatWinPercentage(
-                getWinRate(positionReport.results, activeSide)
-              )}
-              %
-            </CMText>{" "}
-            of the time.
-          </CMText>
-        )}
-        <Spacer height={12} />
-        <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-          Your {activeSide} repertoire is now{" "}
-          <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-            {Math.round(progressState.percentComplete)}%
-          </CMText>{" "}
-          complete.
-        </CMText>
-        <Spacer height={12} />
+        <Spacer height={24} />
         <View style={s(c.fullWidth)}>
           <Animated.View
             style={s(
               c.row,
-              c.alignEnd,
+              c.alignCenter,
               c.justifyBetween,
               c.fullWidth,
               c.opacity(progressState.headerOpacityAnim),
@@ -346,13 +325,20 @@ const SavedLineView = React.memo(function SavedLineView() {
               c.zIndex(2)
             )}
           >
+            <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
+              Your {activeSide} repertoire is now{" "}
+              <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
+                {Math.round(progressState.percentComplete)}%
+              </CMText>{" "}
+              complete.
+            </CMText>
             <Spacer width={0} grow />
             {responsive.bp >= BP.md && (
               <CoverageGoal textColor={c.grays[90]} fromTop />
             )}
           </Animated.View>
           <Spacer height={4} />
-          <View style={s(c.height(12))}>
+          <View style={s(c.height(24))}>
             <CoverageBar isSavedView side={activeSide} />
           </View>
         </View>
