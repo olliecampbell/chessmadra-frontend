@@ -86,8 +86,7 @@ export const TargetCoverageReachedView = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.sidebarState.targetCoverageReachedState.visible =
-                false;
+              s.repertoireState.browsingState.dismissTransientSidebarState();
             });
           },
           style: "primary",

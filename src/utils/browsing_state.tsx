@@ -287,6 +287,7 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         if (
           s.sidebarState.isPastCoverageGoal &&
+          s.activeSide !== s.sidebarState.currentSide &&
           s.sidebarState.hasPendingLineToAdd &&
           !s.sidebarState.targetCoverageReachedState.hasShown
         ) {
@@ -787,10 +788,7 @@ export const getInitialBrowsingState = (
           trackEvent("builder.chessboard.played_move");
         },
         onBack: () => {
-          set(([s]) => {
-            s.dismissTransientSidebarState();
-            s.sidebarState.targetCoverageReachedState.hasShown = false;
-          });
+          set(([s]) => {});
         },
         onReset: () => {
           set(([s]) => {

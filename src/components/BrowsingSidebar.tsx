@@ -205,6 +205,7 @@ const BackSection = () => {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.chessboardState.backOne();
+        s.repertoireState.browsingState.dismissTransientSidebarState();
       });
     };
   } else if (stageStack.length > 1) {
