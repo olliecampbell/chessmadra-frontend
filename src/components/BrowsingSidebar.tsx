@@ -30,6 +30,7 @@ import { SidebarOnboarding } from "./SidebarOnboarding";
 import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
 import { FadeInOut } from "./FadeInOut";
+import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -130,13 +131,19 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
 });
 
 export const InnerSidebar = React.memo(function InnerSidebar() {
-  const [addedLineState, deleteLineState, stageStack, submitFeedbackState] =
-    useSidebarState(([s]) => [
-      s.addedLineState,
-      s.deleteLineState,
-      s.sidebarOnboardingState.stageStack,
-      s.submitFeedbackState,
-    ]);
+  const [
+    addedLineState,
+    deleteLineState,
+    stageStack,
+    submitFeedbackState,
+    targetCoverageReachedState,
+  ] = useSidebarState(([s]) => [
+    s.addedLineState,
+    s.deleteLineState,
+    s.sidebarOnboardingState.stageStack,
+    s.submitFeedbackState,
+    s.targetCoverageReachedState,
+  ]);
   let inner = null;
   if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
@@ -144,6 +151,8 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     inner = <FeedbackView />;
   } else if (deleteLineState.visible) {
     inner = <DeleteLineView />;
+  } else if (targetCoverageReachedState.visible) {
+    inner = <TargetCoverageReachedView />;
   } else if (addedLineState.visible) {
     inner = <SavedLineView />;
   } else {
@@ -164,13 +173,19 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
 });
 
 const BackSection = () => {
-  const [addedLineState, deleteLineState, stageStack, submitFeedbackState] =
-    useSidebarState(([s]) => [
-      s.addedLineState,
-      s.deleteLineState,
-      s.sidebarOnboardingState.stageStack,
-      s.submitFeedbackState,
-    ]);
+  const [
+    addedLineState,
+    deleteLineState,
+    stageStack,
+    submitFeedbackState,
+    targetCoverageReachedState,
+  ] = useSidebarState(([s]) => [
+    s.addedLineState,
+    s.deleteLineState,
+    s.sidebarOnboardingState.stageStack,
+    s.submitFeedbackState,
+    s.targetCoverageReachedState,
+  ]);
   const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
   const responsive = useResponsive();
   const paddingTop = 140;
@@ -179,7 +194,8 @@ const BackSection = () => {
   if (
     addedLineState.visible ||
     deleteLineState.visible ||
-    submitFeedbackState.visible
+    submitFeedbackState.visible ||
+    targetCoverageReachedState.visible
   ) {
     backButtonAction = () => {
       quick((s) => {

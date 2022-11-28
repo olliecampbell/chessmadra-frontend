@@ -47,6 +47,9 @@ import pkceChallenge from "pkce-challenge";
 import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 
+// const TEST_LINE = ["e4", "c6", "d4", "d5", "f3", "dxe4", "fxe4", "e5"];
+const TEST_LINE = null;
+
 export interface LichessOauthData {
   codeVerifier: string;
   redirectUri: string;
@@ -904,10 +907,9 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              // s.startBrowsing(
-              //   "white",
-              //   lineToPgn(["e4", "e5", "f4", "exf4", "Nf3", "g5", "h4", "g4"])
-              // );
+              if (TEST_LINE) {
+                s.startBrowsing("white", lineToPgn(TEST_LINE));
+              }
             });
           });
       }),

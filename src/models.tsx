@@ -162,5 +162,6 @@ export interface Plan {
   fromSquare: Square;
   toSquare: Square;
   side: Side;
+  san: string;
   occurences: number;
 }

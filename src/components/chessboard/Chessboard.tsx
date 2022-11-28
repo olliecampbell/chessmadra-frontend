@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from "react";
 import {
   Animated,
+  Easing,
   PanResponder,
   PanResponderInstance,
   useWindowDimensions,
@@ -28,7 +29,7 @@ import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "app/utils/chessboard_state";
 import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "../CMText";
-import { isEmpty, isNil } from "lodash-es";
+import { isEmpty, isEqual, isNil } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 
 const animatedXYToPercentage = (x) => {
@@ -371,72 +372,224 @@ export const ChessboardView = ({
             chessboardLayout.current = layout;
           }}
         >
+          {/*
           <FadeInOut
-            style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(100))}
-            open={!isEmpty(state.plans)}
+            maxOpacity={1.0}
+            style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(11))}
+            open={state.showPlans}
           >
             {state.plans.map((plan, i) => {
               let from = getSquareOffset(plan.fromSquare, state.flipped);
               let to = getSquareOffset(plan.toSquare, state.flipped);
               let dx = Math.abs(from.x - to.x);
               let dy = Math.abs(from.y - to.y);
-              console.log("dx", dx, "dy", dy);
               let length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-              let thickness = 10;
-              var angleDeg =
-                (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
               let color = plan.side === "black" ? c.grays[10] : c.grays[95];
-              // let opacity =
-              //   20 + (plan.occurences / state.maxPlanOccurence) * 60;
-              // console.log(plan.occurences, state.maxPlanOccurence, opacity);
+              let indicatorOpacityAnim = new Animated.Value(1.0);
+              let indicatorAnim = new Animated.ValueXY({
+                x: from.x,
+                y: from.y,
+              });
+
+              const timing = 400;
+              const duration = timing * length * 15;
+              Animated.loop(
+                Animated.sequence([
+                  Animated.timing(indicatorAnim, {
+                    toValue: { x: from.x, y: from.y },
+                    duration: 1,
+                    easing: Easing.quad,
+                    useNativeDriver: false,
+                  }),
+                  Animated.parallel([
+                    Animated.sequence([
+                      Animated.timing(indicatorOpacityAnim, {
+                        toValue: 1.0,
+                        duration: duration / 4,
+                        easing: Easing.linear,
+                        useNativeDriver: false,
+                      }),
+                      Animated.timing(indicatorOpacityAnim, {
+                        toValue: 0.0,
+                        delay: duration / 2,
+                        duration: duration / 4,
+                        easing: Easing.linear,
+                        useNativeDriver: false,
+                      }),
+                    ]),
+                    Animated.timing(indicatorAnim, {
+                      toValue: { x: to.x, y: to.y },
+                      duration: duration,
+                      easing: Easing.linear,
+                      useNativeDriver: false,
+                    }),
+                  ]),
+                ])
+              ).start();
 
               return (
-                <>
-                  <View
-                    style={s(
-                      c.absolute,
-                      c.left(`calc(${to.x} * 100%)`),
-                      c.top(`calc(${to.y} * 100%)`),
-                      c.transform(`rotate(${angleDeg - 90}deg)`),
-                      getSquareOffset(plan.toSquare, state.flipped),
-                      c.height("calc(1/8 * 100%)"),
-                      c.width("calc(1/8 * 100%)"),
-                      c.noPointerEvents,
-                      c.zIndex(101),
-                      c.opacity(80)
-                    )}
-                    key={i}
-                    nativeID={`plan-arrow-${i}`}
-                  ></View>
+                <React.Fragment key={i}>
                   <View
                     style={s(
                       c.absoluteFull,
                       c.noPointerEvents,
-                      c.zIndex(100),
-                      c.opacity(80)
+                      c.zIndex(101)
+                      // c.opacity(80)
                     )}
-                    key={i}
+                    nativeID={`plan-animation-${i}`}
+                  >
+                    <Animated.View
+                      pointerEvents="none"
+                      style={s(
+                        c.size("calc(1/8 * 100%)"),
+                        c.zIndex(5),
+                        c.absolute,
+                        c.center,
+                        c.opacity(indicatorOpacityAnim),
+                        animatedXYToPercentage(indicatorAnim)
+                      )}
+                    >
+                      <View
+                        style={s(
+                          c.size("10%"),
+                          c.round,
+                          c.bg(c.grays[0]),
+                          c.opacity(16)
+                        )}
+                      ></View>
+                    </Animated.View>
+                  </View>
+                </React.Fragment>
+              );
+            })}
+          </FadeInOut>
+          */}
+          <FadeInOut
+            maxOpacity={1.0}
+            style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
+            open={state.showPlans}
+          >
+            {state.plans.map((metaPlan, i) => {
+              let { plan } = metaPlan;
+              let from = getSquareOffset(plan.fromSquare, state.flipped);
+              let to = getSquareOffset(plan.toSquare, state.flipped);
+              let dx = Math.abs(from.x - to.x);
+              let dy = Math.abs(from.y - to.y);
+              let length =
+                Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) - (1 / 8) * 0.1;
+              let thickness = 10;
+              var angle = Math.atan2(to.y - from.y, to.x - from.x);
+              var angleDeg = (angle * 180) / Math.PI;
+              let color = plan.side === "black" ? c.grays[10] : c.grays[95];
+              let gradientColor = c.grays[100];
+              if (isEqual(state.focusedPlan, plan)) {
+                color = c.purples[50];
+                gradientColor = c.purples[30];
+              }
+              let duration = "1.0s";
+              let speed = 0.2;
+              // let duration = `${length / speed}s`;
+              // let color = c.purples[45];
+              // let opacity =
+              //   20 + (plan.occurences / state.maxPlanOccurence) * 60;
+              // console.log(plan.occurences, state.maxPlanOccurence, opacity);
+              let toSquareCenterX = to.x + 1 / 8 / 2;
+              let toSquareCenterY = to.y + 1 / 8 / 2;
+              let fromSquareCenterX = (from.x + 1 / 8 / 2) * 100;
+              let fromSquareCenterY = (from.y + 1 / 8 / 2) * 100;
+              let x1 = from.x + 1 / 8 / 2;
+              let x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
+              let y1 = from.y + 1 / 8 / 2;
+              let y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
+              let xDiff = x2 - x1;
+              let yDiff = y2 - y1;
+              let red = c.reds[50];
+              let blue = c.blues[50];
+
+              return (
+                <React.Fragment key={i}>
+                  <View
+                    style={s(
+                      c.absoluteFull,
+                      c.noPointerEvents,
+                      c.zIndex(100)
+                      // c.opacity(80)
+                    )}
                     nativeID={`plan-line-${i}`}
                   >
-                    <svg width="100%" height="100%" viewBox="0 0 100 100">
-                      <circle
-                        cx={(to.x + 1 / 8 / 2) * 100}
-                        cy={(to.y + 1 / 8 / 2) * 100}
-                        r={((1 / 8) * 100) / 9}
-                        fill={color}
-                      />
+                    <svg width="100%" height="100%" viewBox="0 0 1 1">
+                      <linearGradient
+                        id={`plan-line-gradient-${i}`}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stop-color={color}></stop>
+                        <stop offset="25%" stop-color={gradientColor}></stop>
+                        <stop offset="50%" stop-color={color}></stop>
+                        <stop offset="75%" stop-color={gradientColor}></stop>
+                        <stop offset="100%" stop-color={color} />
+                        <animate
+                          attributeName="y2"
+                          values={`${y2};${y2 + yDiff}`}
+                          dur={duration}
+                          repeatCount="indefinite"
+                        />
+                        <animate
+                          attributeName="y1"
+                          values={`${y1 - yDiff};${y1}`}
+                          dur={duration}
+                          repeatCount="indefinite"
+                        />
+                        <animate
+                          attributeName="x2"
+                          values={`${x2};${x2 + xDiff}`}
+                          dur={duration}
+                          repeatCount="indefinite"
+                        />
+                        <animate
+                          attributeName="x1"
+                          values={`${x1 - xDiff};${x1}`}
+                          dur={duration}
+                          repeatCount="indefinite"
+                        />
+                      </linearGradient>
                       <line
-                        strokeLinecap="round"
-                        strokeWidth={1.4}
-                        x1={(from.x + 1 / 8 / 2) * 100}
-                        y1={(from.y + 1 / 8 / 2) * 100}
-                        x2={(to.x + 1 / 8 / 2) * 100}
-                        y2={(to.y + 1 / 8 / 2) * 100}
+                        // stroke={`url(#${`plan-line-gradient-${i}`})`}
                         stroke={color}
+                        strokeLinecap="round"
+                        strokeWidth={1.4 / 100}
+                        x1={from.x + 1 / 8 / 2}
+                        y1={from.y + 1 / 8 / 2}
+                        x2={from.x + 1 / 8 / 2 + length * Math.cos(angle)}
+                        y2={from.y + 1 / 8 / 2 + length * Math.sin(angle)}
                       />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill={color}
+                        transform={`rotate(${
+                          angleDeg - 90
+                        } ${toSquareCenterX} ${toSquareCenterY})`}
+                        d={`M ${toSquareCenterX - 2 / 100},${
+                          toSquareCenterY - 2.8 / 100
+                        } ${toSquareCenterX},${toSquareCenterY} ${
+                          toSquareCenterX + 2 / 100
+                        },${toSquareCenterY - 2.8 / 100} Z`}
+                        className="triangle"
+                      />
+                      {/*<circle
+                        cx={to.x + 1 / 8 / 2}
+                        cy={to.y + 1 / 8 / 2}
+                        r={(1 / 8) * 0.12}
+                        fill={gradientColor}
+                        // fill={`url(#${`plan-line-gradient-${i}`})`}
+                      />*/}
                     </svg>
                   </View>
-                </>
+                </React.Fragment>
               );
             })}
           </FadeInOut>

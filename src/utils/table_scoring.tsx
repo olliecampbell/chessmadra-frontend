@@ -2,7 +2,12 @@ import { ScoreTable, TableResponse } from "app/components/RepertoireMovesTable";
 import { MoveTag, PositionReport } from "app/models";
 import { isNil, sumBy, reverse, sortBy } from "lodash-es";
 import { Side } from "./repertoire";
-import { getPlayRate, getTotalGames, getWinRate } from "./results_distribution";
+import {
+  getPlayRate,
+  getTotalGames,
+  getWinRate,
+  getWinRateRange,
+} from "./results_distribution";
 
 export enum TableResponseScoreSource {
   Start = "start",
@@ -123,13 +128,13 @@ export const scoreTableResponses = (
             value: tableResponse.incidence,
           });
         }
-        let moveWinRate = getWinRate(
+        let [winrateLowerBound, winrateUpperBound] = getWinRateRange(
           tableResponse.suggestedMove?.results,
           side
         );
-        let winrateChange = moveWinRate - positionWinRate;
-        let scoreForWinrate = winrateChange * 100 * rateAdditionalWeight;
-        if (getTotalGames(suggestedMove.results) > 10) {
+        let winrateChange = winrateLowerBound - positionWinRate;
+        if (!isNaN(winrateChange) && !isNil(winrateChange)) {
+          let scoreForWinrate = winrateChange;
           scoreTable.factors.push({
             source: TableResponseScoreSource.Winrate,
             value: scoreForWinrate,
