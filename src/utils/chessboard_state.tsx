@@ -677,7 +677,6 @@ export const createStaticChessState = ({
     if (side) {
       state.flipped = side == "black";
     }
-    state.arrows = [];
     state.hideCoordinates = true;
     if (epd) {
       let fen = `${epd} 0 1`;
