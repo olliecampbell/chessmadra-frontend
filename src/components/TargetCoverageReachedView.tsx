@@ -102,26 +102,30 @@ export const TargetCoverageReachedView = () => {
       <Spacer height={12} />
 */}
       <Spacer height={12} />
-      <CMText
-        style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
-      >
-        How to play from here
-      </CMText>
-      <Spacer height={12} />
-      <View>
-        {intersperse(
-          planSections.map((section, i) => {
-            return (
-              <View style={s()} key={i}>
-                <CMText style={s()}>{section}</CMText>
-              </View>
-            );
-          }),
-          (k) => {
-            return <Spacer key={k} height={12} />;
-          }
-        )}
-      </View>
+      {!isEmpty(planSections) && (
+        <>
+          <CMText
+            style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
+          >
+            How to play from here
+          </CMText>
+          <Spacer height={12} />
+          <View>
+            {intersperse(
+              planSections.map((section, i) => {
+                return (
+                  <View style={s()} key={i}>
+                    <CMText style={s()}>{section}</CMText>
+                  </View>
+                );
+              }),
+              (k) => {
+                return <Spacer key={k} height={12} />;
+              }
+            )}
+          </View>
+        </>
+      )}
     </SidebarTemplate>
   );
 };
