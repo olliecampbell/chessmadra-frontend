@@ -215,7 +215,7 @@ class PlanConsumer {
           <PlanMoveText plan={queensideMoreCommon ? queenside : kingside}>
             castling {queensideMoreCommon ? "queenside" : "kingside"}
           </PlanMoveText>{" "}
-          is most common among experts
+          is most common
         </>
       );
     } else if (kingside) {
