@@ -169,7 +169,6 @@ export const ChessboardView = ({
   onSquarePress?: any;
   styles?: any;
 }) => {
-  console.log("RENDERING CHESSBOARD");
   const { availableMoves } = state;
   const position = state._animatePosition ?? state.position;
   const tileStyles = s(c.bg("green"), c.grow);
@@ -403,11 +402,6 @@ export const ChessboardView = ({
               }
               let duration = "1.0s";
               let speed = 0.2;
-              // let duration = `${length / speed}s`;
-              // let color = c.purples[45];
-              // let opacity =
-              //   20 + (plan.occurences / state.maxPlanOccurence) * 60;
-              // console.log(plan.occurences, state.maxPlanOccurence, opacity);
               let toSquareCenterX = to.x + 1 / 8 / 2;
               let toSquareCenterY = to.y + 1 / 8 / 2;
               let fromSquareCenterX = (from.x + 1 / 8 / 2) * 100;

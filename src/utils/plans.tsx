@@ -83,7 +83,6 @@ export const getMetaPlans = (
         });
       }
       if (piece?.type === "k") {
-        console.log(plan);
         ["d1", "f1", "d8", "f8"].forEach((square) => {
           byFromSquare[square]?.forEach((p) => {
             recurse(p, new Set());
@@ -193,9 +192,6 @@ class PlanConsumer {
     });
   }
   consume<T extends MetaPlan | MetaPlan[]>(plan: T): T {
-    if (plan && plan?.piece == "r") {
-      console.trace("Consuming!");
-    }
     if (Array.isArray(plan)) {
       plan.map((p) => this.consumed.add(p.id));
     } else {
@@ -272,9 +268,7 @@ class PlanConsumer {
           recapture = true;
         }
         this.consume(planBeforeCapture);
-      } else {
-        console.log("no plan before capture", plan, capturedPiece);
-      }
+      } }
       this.planSections.push(
         <>
           The{" "}
@@ -326,7 +320,6 @@ class PlanConsumer {
         mineConsumed++;
       }
     });
-    // console.log("remaining plans", this.metaPlans, mineConsumed, this.consumed);
     return take(
       filter(
         this.metaPlans,
@@ -337,10 +330,9 @@ class PlanConsumer {
   }
 
   piecePlansConsumer() {
-    console.log("PIECE PLANS CONSUMER", this.remainingPlans());
     let piecePlans = sortBy(
       filter(this.remainingPlans(), (p) => p.piece !== "p"),
-      (p) => -p.occurences
+      (p) => -p.plan.occurences
     );
     if (isEmpty(piecePlans)) {
       return null;
@@ -595,14 +587,12 @@ const PlanMoveText = ({
   const { hovering, hoveringProps } = useHovering(
     () => {
       quick((s) => {
-        console.log("hovering", plan);
         const chessboardState = s.repertoireState.browsingState.chessboardState;
         if (plans) {
           chessboardState.focusedPlans = plans.map((p) => p.id);
         } else if (plan) {
           chessboardState.focusedPlans = [plan.id];
         }
-        console.log(chessboardState.focusedPlans);
       });
     },
     () => {
