@@ -61,6 +61,7 @@ import { isTheoryHeavy } from "./theory_heavy";
 import { createContext } from "react";
 import { logProxy } from "./state";
 import { getTopPlans, parsePlans } from "./plans";
+import * as Sentry from "sentry-expo";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -774,6 +775,10 @@ export const getInitialBrowsingState = (
                 visible: true,
               };
             });
+          })
+          .catch((err) => {
+            console.log("Error adding lines!", err);
+            Sentry.captureException(e);
           })
           .finally(() => {
             set(([s]) => {
