@@ -268,7 +268,7 @@ class PlanConsumer {
           recapture = true;
         }
         this.consume(planBeforeCapture);
-      } }
+      }
       this.planSections.push(
         <>
           The{" "}
