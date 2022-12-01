@@ -115,7 +115,7 @@ export const TargetCoverageReachedView = () => {
             {intersperse(
               planSections.map((section, i) => {
                 return (
-                  <View style={s(c.row, c.alignCenter)} key={i}>
+                  <View style={s(c.row, c.alignStart, c.mt(6))} key={i}>
                     <i
                       className="fa-solid fa-circle"
                       style={s(c.fontSize(6), c.fg(c.grays[70]))}
