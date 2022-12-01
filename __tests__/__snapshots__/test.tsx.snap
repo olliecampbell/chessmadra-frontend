@@ -1,0 +1,431 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`plan describer Basics 1`] = `
+Array [
+  <React.Fragment>
+    White
+     typically
+     
+    <PlanMoveText
+      plan={
+        Object {
+          "directionChanged": false,
+          "id": "e1 c1 k",
+          "piece": "k",
+          "plan": Object {
+            "fromSquare": "e1",
+            "occurences": 1,
+            "san": "O-O-O",
+            "side": "white",
+            "toSquare": "c1",
+          },
+          "subsequentMove": false,
+        }
+      }
+    >
+      castles queenside
+    </PlanMoveText>
+  </React.Fragment>,
+  <React.Fragment>
+    Common pawn moves are
+     
+    <PlanMoves
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "c2 c3 p",
+            "piece": "p",
+            "plan": Object {
+              "fromSquare": "c2",
+              "occurences": 1,
+              "san": "c3",
+              "side": "white",
+              "toSquare": "c3",
+            },
+            "subsequentMove": false,
+          },
+          Object {
+            "directionChanged": false,
+            "id": "d2 d3 p",
+            "piece": "p",
+            "plan": Object {
+              "fromSquare": "d2",
+              "occurences": 1,
+              "san": "d3",
+              "side": "white",
+              "toSquare": "d3",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+    />
+     
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Bishop development 1`] = `
+Array [
+  <React.Fragment>
+    The 
+    dark-squared bishop
+     
+    is generally developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "c1 f4 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "c1",
+              "occurences": 1,
+              "san": "Bf4",
+              "side": "white",
+              "toSquare": "f4",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+  <React.Fragment>
+    The 
+    light-squared bishop
+     
+    is generally developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "f1 c4 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "f1",
+              "occurences": 1,
+              "san": "Bc4",
+              "side": "white",
+              "toSquare": "c4",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Bishop development 2`] = `
+Array [
+  <React.Fragment>
+    The 
+    dark-squared bishop
+     
+    is generally developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "c1 f4 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "c1",
+              "occurences": 1,
+              "san": "Bf4",
+              "side": "white",
+              "toSquare": "f4",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+  <React.Fragment>
+    The 
+    light-squared bishop
+     
+    is generally developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "f1 c4 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "f1",
+              "occurences": 1,
+              "san": "Bc4",
+              "side": "white",
+              "toSquare": "c4",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Bishop movement 1`] = `
+Array [
+  <React.Fragment>
+    Common piece moves include 
+    <PlanMoves
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "d2 f4 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "d2",
+              "occurences": 1,
+              "san": "Bf4",
+              "side": "white",
+              "toSquare": "f4",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+    />
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Bishop movement 2`] = `
+Array [
+  <React.Fragment>
+    Common piece moves include 
+    <PlanMoves
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "d2 f4 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "d2",
+              "occurences": 1,
+              "san": "Bf4",
+              "side": "white",
+              "toSquare": "f4",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+    />
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Knight development 1`] = `
+Array [
+  <React.Fragment>
+    The 
+    kingside knight
+     
+    can be developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "g1 f3 n",
+            "piece": "n",
+            "plan": Object {
+              "fromSquare": "g1",
+              "occurences": 1,
+              "san": "Nf3",
+              "side": "white",
+              "toSquare": "f3",
+            },
+            "subsequentMove": false,
+          },
+          Object {
+            "directionChanged": false,
+            "id": "g1 e2 n",
+            "piece": "n",
+            "plan": Object {
+              "fromSquare": "g1",
+              "occurences": 1,
+              "san": "Nf3",
+              "side": "white",
+              "toSquare": "e2",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Pawn pushes 1`] = `
+Array [
+  <React.Fragment>
+    A common pawn move is
+     
+    <PlanMoves
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "c2 c3 p",
+            "piece": "p",
+            "plan": Object {
+              "fromSquare": "c2",
+              "occurences": 1,
+              "san": "c3",
+              "side": "white",
+              "toSquare": "c3",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+    />
+     
+  </React.Fragment>,
+]
+`;
+
+exports[`plan describer Poison pawn 1`] = `
+Array [
+  <React.Fragment>
+    White
+     typically
+     
+    <PlanMoveText
+      plan={
+        Object {
+          "directionChanged": false,
+          "id": "e1 a1 k",
+          "piece": "k",
+          "plan": Object {
+            "fromSquare": "e1",
+            "occurences": 1797,
+            "san": "O-O-O",
+            "side": "white",
+            "toSquare": "a1",
+          },
+          "subsequentMove": false,
+        }
+      }
+    >
+      castles queenside
+    </PlanMoveText>
+  </React.Fragment>,
+  <React.Fragment>
+    The 
+    queen
+     
+    belongs on
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "d1 d2 q",
+            "piece": "q",
+            "plan": Object {
+              "fromSquare": "d1",
+              "occurences": 3315,
+              "san": "Qd2",
+              "side": "white",
+              "toSquare": "d2",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+  <React.Fragment>
+    The 
+    queenside rook
+     
+    is generally developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "a1 b1 r",
+            "piece": "r",
+            "plan": Object {
+              "fromSquare": "a1",
+              "occurences": 2288,
+              "san": "Rb1",
+              "side": "white",
+              "toSquare": "b1",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+  <React.Fragment>
+    The 
+    light-squared bishop
+     
+    is generally developed to
+     
+    <PlanMoves
+      exclusive={true}
+      metaPlans={
+        Array [
+          Object {
+            "directionChanged": false,
+            "id": "f1 e2 b",
+            "piece": "b",
+            "plan": Object {
+              "fromSquare": "f1",
+              "occurences": 2094,
+              "san": "Be2",
+              "side": "white",
+              "toSquare": "e2",
+            },
+            "subsequentMove": false,
+          },
+        ]
+      }
+      stripPieceSymbol={true}
+    />
+  </React.Fragment>,
+]
+`;

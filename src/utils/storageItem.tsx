@@ -12,7 +12,7 @@ export class StorageItem<T> {
   }
 
   private load() {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && window.localStorage) {
       let s = localStorage.getItem(this.key);
       if (s) {
         return JSON.parse(s);

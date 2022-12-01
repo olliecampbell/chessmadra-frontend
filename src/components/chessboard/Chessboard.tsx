@@ -169,6 +169,7 @@ export const ChessboardView = ({
   onSquarePress?: any;
   styles?: any;
 }) => {
+  console.log("RENDERING CHESSBOARD");
   const { availableMoves } = state;
   const position = state._animatePosition ?? state.position;
   const tileStyles = s(c.bg("green"), c.grow);
@@ -372,98 +373,6 @@ export const ChessboardView = ({
             chessboardLayout.current = layout;
           }}
         >
-          {/*
-          <FadeInOut
-            maxOpacity={1.0}
-            style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(11))}
-            open={state.showPlans}
-          >
-            {state.plans.map((plan, i) => {
-              let from = getSquareOffset(plan.fromSquare, state.flipped);
-              let to = getSquareOffset(plan.toSquare, state.flipped);
-              let dx = Math.abs(from.x - to.x);
-              let dy = Math.abs(from.y - to.y);
-              let length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-              let color = plan.side === "black" ? c.grays[10] : c.grays[95];
-              let indicatorOpacityAnim = new Animated.Value(1.0);
-              let indicatorAnim = new Animated.ValueXY({
-                x: from.x,
-                y: from.y,
-              });
-
-              const timing = 400;
-              const duration = timing * length * 15;
-              Animated.loop(
-                Animated.sequence([
-                  Animated.timing(indicatorAnim, {
-                    toValue: { x: from.x, y: from.y },
-                    duration: 1,
-                    easing: Easing.quad,
-                    useNativeDriver: false,
-                  }),
-                  Animated.parallel([
-                    Animated.sequence([
-                      Animated.timing(indicatorOpacityAnim, {
-                        toValue: 1.0,
-                        duration: duration / 4,
-                        easing: Easing.linear,
-                        useNativeDriver: false,
-                      }),
-                      Animated.timing(indicatorOpacityAnim, {
-                        toValue: 0.0,
-                        delay: duration / 2,
-                        duration: duration / 4,
-                        easing: Easing.linear,
-                        useNativeDriver: false,
-                      }),
-                    ]),
-                    Animated.timing(indicatorAnim, {
-                      toValue: { x: to.x, y: to.y },
-                      duration: duration,
-                      easing: Easing.linear,
-                      useNativeDriver: false,
-                    }),
-                  ]),
-                ])
-              ).start();
-
-              return (
-                <React.Fragment key={i}>
-                  <View
-                    style={s(
-                      c.absoluteFull,
-                      c.noPointerEvents,
-                      c.zIndex(101)
-                      // c.opacity(80)
-                    )}
-                    nativeID={`plan-animation-${i}`}
-                  >
-                    <Animated.View
-                      pointerEvents="none"
-                      style={s(
-                        c.size("calc(1/8 * 100%)"),
-                        c.zIndex(5),
-                        c.absolute,
-                        c.center,
-                        c.opacity(indicatorOpacityAnim),
-                        animatedXYToPercentage(indicatorAnim)
-                      )}
-                    >
-                      <View
-                        style={s(
-                          c.size("10%"),
-                          c.round,
-                          c.bg(c.grays[0]),
-                          c.opacity(16)
-                        )}
-                      ></View>
-                    </Animated.View>
-                  </View>
-                </React.Fragment>
-              );
-            })}
-          </FadeInOut>
-          */}
           <FadeInOut
             maxOpacity={1.0}
             style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
@@ -480,9 +389,15 @@ export const ChessboardView = ({
               let thickness = 10;
               var angle = Math.atan2(to.y - from.y, to.x - from.x);
               var angleDeg = (angle * 180) / Math.PI;
-              let color = plan.side === "black" ? c.grays[10] : c.grays[95];
+              let color = metaPlan.mine ? c.arrowColors[55] : c.reds[55];
               let gradientColor = c.grays[100];
-              if (isEqual(state.focusedPlan, plan)) {
+              let focused = false;
+              let opacity = 80;
+              if (!metaPlan.mine) {
+                opacity = 50;
+              }
+              if (state.focusedPlans.includes(metaPlan.id)) {
+                focused = true;
                 color = c.purples[50];
                 gradientColor = c.purples[30];
               }
@@ -512,8 +427,8 @@ export const ChessboardView = ({
                     style={s(
                       c.absoluteFull,
                       c.noPointerEvents,
-                      c.zIndex(100),
-                      c.opacity(80)
+                      c.zIndex(focused ? 101 : 100),
+                      c.opacity(opacity)
                     )}
                     nativeID={`plan-line-${i}`}
                   >

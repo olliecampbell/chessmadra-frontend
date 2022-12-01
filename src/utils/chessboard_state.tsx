@@ -26,7 +26,7 @@ interface PlayPgnOptions {
 }
 
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
-  focusedPlan?: Plan;
+  focusedPlans?: string[];
   maxPlanOccurence?: number;
   _animatePosition: Chess;
   plans: MetaPlan[];
@@ -156,6 +156,7 @@ export const createChessState = (
     showPlans: false,
     notifyingDelegates: true,
     _animatePosition: null,
+    focusedPlans: [],
     moveLog: [],
     currentHighlightedSquares: new Set(),
     getDelegate: () => {

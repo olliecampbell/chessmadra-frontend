@@ -225,7 +225,7 @@ const genGrays = (hue, saturation) => {
 };
 const grays = genGrays(grayHue, 5);
 const trueGrays = genGrays(0, 0);
-const chessboardGrays = genGrays(182, 5);
+const chessboardGrays = genGrays(21, 5);
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -264,7 +264,8 @@ const blues = genShades(186);
 const teals = genShades(150);
 const primaries = blues;
 const yellows = genShades(41, 70, 70);
-const oranges = genShades(24, 70, 70);
+const oranges = genShades(40, 70, 70);
+const arrowColors = genShades(40, 100, 100);
 const pinks = genShades(308);
 const purples = genShades(271);
 const reds = genShades(340);
@@ -673,4 +674,5 @@ export const c = {
   calc,
   noUserSelect,
   sidebarDescriptionStyles,
+  arrowColors,
 };

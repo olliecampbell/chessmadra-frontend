@@ -5,6 +5,7 @@ import {
   PositionReport,
   EcoCode,
   PawnStructureDetails,
+  LineReport,
 } from "app/models";
 import {
   dropRight,
@@ -46,25 +47,28 @@ let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 import pkceChallenge from "pkce-challenge";
 import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
+import { isDevelopment } from "./env";
 
-// const TEST_LINE = [
-//   "e4",
-//   "c6",
-//   "d4",
-//   "d5",
-//   "f3",
-//   "dxe4",
-//   "fxe4",
-//   "e5",
-//   "Nf3",
-//   "Bg4",
-//   "Bc4",
-//   "Nd7",
-//   "O-O",
-//   "Ngf6",
-//   "c3",
-// ];
-const TEST_LINE = null;
+const TEST_LINE = isDevelopment
+  ? [
+      "e4",
+      "e5",
+      "Nf3",
+      "Nc6",
+      "Bb5",
+      "a6",
+      "Ba4",
+      "Nf6",
+      "O-O",
+      "Be7",
+      "d3",
+      "d6",
+      "c3",
+      "O-O",
+      "Nbd2",
+    ]
+  : [];
+// const TEST_LINE = null;
 
 export interface LichessOauthData {
   codeVerifier: string;
@@ -81,6 +85,7 @@ export enum AddLineFromOption {
 }
 
 export interface RepertoireState {
+  lineReports: Record<string, LineReport>;
   numMovesFromEpd: BySide<Record<string, number>>;
   expectedNumMovesFromEpd: BySide<Record<string, number>>;
   quick: (fn: (_: RepertoireState) => void) => void;
@@ -288,6 +293,7 @@ export const getInitialRepertoireState = (
     pawnStructureLookup: {},
     pendingResponses: {},
     positionReports: {},
+    lineReports: {},
     currentLine: [],
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>

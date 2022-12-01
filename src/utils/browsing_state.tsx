@@ -1,5 +1,11 @@
 import { Move } from "@lubert/chess.ts/dist/types";
-import { EcoCode, MoveTag, PositionReport } from "app/models";
+import {
+  EcoCode,
+  LineReport,
+  ModelGame,
+  MoveTag,
+  PositionReport,
+} from "app/models";
 import {
   isEmpty,
   last,
@@ -25,6 +31,7 @@ import {
   SIDES,
   BySide,
   otherSide,
+  lineToPgn,
 } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState, quick } from "./app_state";
@@ -53,7 +60,7 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { createContext } from "react";
 import { logProxy } from "./state";
-import { getTopPlans } from "./plans";
+import { getTopPlans, parsePlans } from "./plans";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -108,6 +115,7 @@ export interface SidebarState {
   positionHistory: string[];
   currentEpd: string;
   lastEcoCode?: EcoCode;
+  planSections?: any;
 }
 
 export interface BrowsingState {
@@ -273,10 +281,7 @@ export const getInitialBrowsingState = (
       }),
     checkFreezeChessboard: () => {
       set(([s, rs, gs]) => {
-        if (
-          s.sidebarState.targetCoverageReachedState.visible ||
-          !isEmpty(s.sidebarState.sidebarOnboardingState.stageStack)
-        ) {
+        if (!isEmpty(s.sidebarState.sidebarOnboardingState.stageStack)) {
           s.chessboardState.frozen = true;
         } else {
           s.chessboardState.frozen = false;
@@ -294,7 +299,7 @@ export const getInitialBrowsingState = (
           s.sidebarState.targetCoverageReachedState.visible = true;
           s.sidebarState.targetCoverageReachedState.hasShown = true;
           s.chessboardState.showPlans = true;
-          s.chessboardState.frozen = true;
+          s.checkFreezeChessboard();
         }
         if (!s.sidebarState.isPastCoverageGoal) {
           s.sidebarState.targetCoverageReachedState.hasShown = false;
@@ -584,13 +589,16 @@ export const getInitialBrowsingState = (
       set(([s, rs]) => {
         let plans = rs.positionReports[s.sidebarState.currentEpd]?.plans ?? [];
         let maxOccurence = plans[0]?.occurences ?? 0;
-        console.log({ plans: logProxy(plans) });
-        s.chessboardState.focusedPlan = null;
-        s.chessboardState.plans = getTopPlans(
-          plans,
+        let consumer = parsePlans(
+          cloneDeep(plans),
           s.activeSide,
           s.chessboardState.position
         );
+        s.chessboardState.focusedPlans = [];
+        s.chessboardState.plans = consumer.metaPlans.filter((p) =>
+          consumer.consumed.has(p.id)
+        );
+        s.sidebarState.planSections = consumer.planSections;
         s.chessboardState.maxPlanOccurence = maxOccurence;
       }),
     onPositionUpdate: () =>
@@ -735,6 +743,16 @@ export const getInitialBrowsingState = (
       set(([s, gs]) => {
         let { replace } = cfg ?? { replace: false };
         s.sidebarState.isAddingPendingLine = true;
+        let line = lineToPgn(s.sidebarState.moveLog);
+        client
+          .post("/api/v1/openings/line_reports", {
+            lines: [line],
+          })
+          .then(({ data }: { data: LineReport[] }) => {
+            set(([s, rs]) => {
+              rs.lineReports[line] = data[0];
+            });
+          });
         client
           .post("/api/v1/openings/add_moves", {
             moves: flatten(cloneDeep(values(s.sidebarState.pendingResponses))),

@@ -23,14 +23,14 @@ import { FadeInOut } from "./FadeInOut";
 export const VERTICAL_BREAKPOINT = BP.md;
 
 export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
-  const [activeSide, isBrowsing, quick, repertoireLoading] = useRepertoireState(
-    (s) => [
+  const [activeSide, isBrowsing, quick, repertoireLoading, chessboardFrozen] =
+    useRepertoireState((s) => [
       s.browsingState.activeSide,
       s.isBrowsing,
       s.quick,
       s.repertoire === undefined,
-    ]
-  );
+      s.browsingState.chessboardState.frozen,
+    ]);
 
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
     if (event.key === "ArrowLeft") {
@@ -88,7 +88,8 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
                 style={s(
                   c.fullWidth,
                   vertical && s(c.selfCenter, c.maxWidth(320), c.pt(20)),
-                  !vertical && c.pt(140)
+                  !vertical && c.pt(140),
+                  chessboardFrozen && c.opacity(20)
                 )}
               >
                 <BrowsingChessboardView />
@@ -236,5 +237,6 @@ export const ReviewFromHereButton = () => {
 
 const BrowsingChessboardView = React.memo(function BrowsingChessboardView() {
   const [chessboardState] = useBrowsingState(([s]) => [s.chessboardState]);
+  console.log("rendering chessboard");
   return <ChessboardView state={chessboardState} />;
 });

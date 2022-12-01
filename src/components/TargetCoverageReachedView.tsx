@@ -9,6 +9,12 @@ import {
   take,
   find,
   every,
+  reverse,
+  keyBy,
+  forEach,
+  map,
+  cloneDeep,
+  mapValues,
 } from "lodash-es";
 import { useResponsive } from "app/utils/useResponsive";
 import { CMTextInput } from "./TextInput";
@@ -25,12 +31,12 @@ import { CMText } from "./CMText";
 import { s, c } from "app/styles";
 import { intersperse } from "app/utils/intersperse";
 import { Plan } from "app/models";
-import { Side } from "app/utils/repertoire";
+import { Side, toSide } from "app/utils/repertoire";
 import { View } from "react-native";
-import { getTopPlans, MetaPlan } from "app/utils/plans";
+import { getPlanPiece, MetaPlan } from "app/utils/plans";
 import { useHovering } from "app/hooks/useHovering";
-
-type PlanSection = JSX.Element | JSX.Element[] | string;
+import { Chess, SQUARES } from "@lubert/chess.ts";
+import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 
 export const TargetCoverageReachedView = () => {
   const responsive = useResponsive();
@@ -54,21 +60,16 @@ export const TargetCoverageReachedView = () => {
         setLoading(false);
       });
   };
-  let [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
+  let [currentEpd, planSections] = useSidebarState(([s]) => [
+    s.currentEpd,
+    cloneDeep(s.planSections),
+  ]);
   const [activeSide] = useBrowsingState(([s, rs]) => [s.activeSide]);
-  let [plans] = useRepertoireState((s) => [
-    getTopPlans(
-      s.positionReports[currentEpd]?.plans ?? [],
-      s.browsingState.activeSide,
-      s.browsingState.chessboardState.position
-    ),
+  let [plans, position] = useRepertoireState((s) => [
+    s.positionReports[currentEpd]?.plans ?? [],
+    s.browsingState.chessboardState.position,
   ]);
 
-  let planSections = [];
-  planSections.push(getCastlingPlanSection(plans, activeSide));
-  planSections.push(getPawnPlansSection(plans, activeSide));
-  planSections.push(getPiecePlansSection(plans, activeSide));
-  planSections = planSections.filter((p) => p);
   return (
     <SidebarTemplate
       header={"You've reached your target depth!  ✅"}
@@ -109,13 +110,20 @@ export const TargetCoverageReachedView = () => {
           >
             How to play from here
           </CMText>
-          <Spacer height={12} />
+          <Spacer height={18} />
           <View>
             {intersperse(
               planSections.map((section, i) => {
                 return (
-                  <View style={s()} key={i}>
-                    <CMText style={s()}>{section}</CMText>
+                  <View style={s(c.row, c.alignCenter)} key={i}>
+                    <i
+                      className="fa-solid fa-circle"
+                      style={s(c.fontSize(6), c.fg(c.grays[70]))}
+                    />
+                    <Spacer width={8} />
+                    <CMText style={s(c.fg(c.colors.textPrimary))}>
+                      {section}
+                    </CMText>
                   </View>
                 );
               }),
@@ -127,112 +135,5 @@ export const TargetCoverageReachedView = () => {
         </>
       )}
     </SidebarTemplate>
-  );
-};
-
-// TODO: move text elements should have a component that has hover behavior that
-// highlights the plan on the board
-
-function getCastlingPlanSection(plans: MetaPlan[], side: Side): PlanSection {
-  let queenside = find(plans, (p) => p.plan.san === "O-O-O");
-  let kingside = find(plans, (p) => p.plan.san === "O-O");
-  if (!(queenside || kingside)) {
-    return null;
-  } else if (queenside && kingside) {
-    let queensideMoreCommon =
-      queenside.plan.occurences > kingside.plan.occurences;
-    return (
-      <>
-        You can castle to either side, although{" "}
-        <PlanMoveText plan={queensideMoreCommon ? queenside : kingside}>
-          castling {queensideMoreCommon ? "queenside" : "kingside"}
-        </PlanMoveText>{" "}
-        is most common among experts
-      </>
-    );
-  } else if (kingside) {
-    return (
-      <>
-        <PlanMoveText plan={kingside}>Castling kingside</PlanMoveText> is best
-      </>
-    );
-  } else if (queenside) {
-    return (
-      <>
-        {capitalize(side)} tends to{" "}
-        <PlanMoveText plan={queenside}>Castling queenside</PlanMoveText> is best
-      </>
-    );
-  }
-}
-
-function getPawnPlansSection(plans: MetaPlan[], side: Side): PlanSection {
-  let pawnPlans = filter(plans, (p) =>
-    some(["a", "b", "c", "d", "e", "f", "g", "h"], (f) =>
-      p.plan.san?.startsWith(f)
-    )
-  );
-  if (isEmpty(pawnPlans)) {
-    return null;
-  }
-  return (
-    <>
-      <PlanMoves plans={pawnPlans.map((p) => p.plan)} />{" "}
-      {pawnPlans.length > 1 ? "are common pawn moves" : "is a common pawn move"}
-    </>
-  );
-}
-
-function getPiecePlansSection(plans: MetaPlan[], side: Side): PlanSection {
-  let piecePlans = filter(plans, (p) =>
-    some(["N", "B", "R", "Q", "K"], (f) => p.plan.san?.startsWith(f))
-  );
-  if (isEmpty(piecePlans)) {
-    return null;
-  }
-  return (
-    <>
-      Common piece moves include{" "}
-      <PlanMoves plans={piecePlans.map((p) => p.plan)} />
-    </>
-  );
-}
-
-const PlanMoveText = ({ plan, children }) => {
-  const { hovering, hoveringProps } = useHovering(
-    () => {
-      quick((s) => {
-        s.repertoireState.browsingState.chessboardState.focusedPlan = plan;
-      });
-    },
-    () => {
-      quick((s) => {
-        s.repertoireState.browsingState.chessboardState.focusedPlan = null;
-      });
-    }
-  );
-  return (
-    <View style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
-      <CMText style={s(c.weightBold)}>{children}</CMText>
-    </View>
-  );
-};
-
-const PlanMoves = ({ plans }: { plans: Plan[] }) => {
-  return (
-    <CMText style={s()}>
-      {intersperse(
-        plans.map((plan, i) => {
-          return <PlanMoveText plan={plan}>{plan.san}</PlanMoveText>;
-        }),
-        (k, isLast) => {
-          return (
-            <CMText key={k} style={s()}>
-              {isLast ? (plans.length > 2 ? ", and " : " and ") : ", "}
-            </CMText>
-          );
-        }
-      )}
-    </CMText>
   );
 };

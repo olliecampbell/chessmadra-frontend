@@ -31,6 +31,9 @@ import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
 import { FadeInOut } from "./FadeInOut";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
+import { lineToPgn } from "app/utils/repertoire";
+import useKeypress from "react-use-keypress";
+import { isDevelopment } from "app/utils/env";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -38,6 +41,26 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   );
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+
+  console.log("Registering keypress");
+  useKeypress(["Escape"], () => {
+    console.log("keypress!");
+    if (isDevelopment) {
+      quick((s) => {
+        let browsingState = s.repertoireState.browsingState;
+        if (!browsingState.sidebarState.targetCoverageReachedState.visible) {
+          browsingState.sidebarState.targetCoverageReachedState.visible = true;
+          browsingState.sidebarState.targetCoverageReachedState.hasShown = true;
+          browsingState.chessboardState.showPlans = true;
+        } else {
+          browsingState.sidebarState.targetCoverageReachedState.visible = false;
+          browsingState.sidebarState.targetCoverageReachedState.hasShown =
+            false;
+          browsingState.chessboardState.showPlans = false;
+        }
+      });
+    }
+  });
   return (
     <View
       style={s(
@@ -306,10 +329,16 @@ const FeedbackPrompt = () => {
 
 const SavedLineView = React.memo(function SavedLineView() {
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
-  const [positionReport, activeSide] = useRepertoireState(
-    (s) => [s.positionReports[currentEpd], s.browsingState.activeSide],
+  const [currentLine] = useSidebarState(([s]) => [lineToPgn(s.moveLog)]);
+  const [positionReport, activeSide, lineReport] = useRepertoireState(
+    (s) => [
+      s.positionReports[currentEpd],
+      s.browsingState.activeSide,
+      s.lineReports[currentLine],
+    ],
     { referenceEquality: true }
   );
+  console.log({ positionReport, activeSide, lineReport });
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[activeSide],
   ]);
