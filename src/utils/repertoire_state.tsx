@@ -931,7 +931,7 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              if (TEST_LINE) {
+              if (!isEmpty(TEST_LINE)) {
                 s.startBrowsing("white", lineToPgn(TEST_LINE));
               }
             });
