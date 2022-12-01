@@ -744,16 +744,16 @@ export const getInitialBrowsingState = (
       set(([s, gs]) => {
         let { replace } = cfg ?? { replace: false };
         s.sidebarState.isAddingPendingLine = true;
-        let line = lineToPgn(s.sidebarState.moveLog);
-        client
-          .post("/api/v1/openings/line_reports", {
-            lines: [line],
-          })
-          .then(({ data }: { data: LineReport[] }) => {
-            set(([s, rs]) => {
-              rs.lineReports[line] = data[0];
-            });
-          });
+        // let line = lineToPgn(s.sidebarState.moveLog);
+        // client
+        //   .post("/api/v1/openings/line_reports", {
+        //     lines: [line],
+        //   })
+        //   .then(({ data }: { data: LineReport[] }) => {
+        //     set(([s, rs]) => {
+        //       rs.lineReports[line] = data[0];
+        //     });
+        //   });
         client
           .post("/api/v1/openings/add_moves", {
             moves: flatten(cloneDeep(values(s.sidebarState.pendingResponses))),
@@ -778,7 +778,7 @@ export const getInitialBrowsingState = (
           })
           .catch((err) => {
             console.log("Error adding lines!", err);
-            Sentry.captureException(e);
+            Sentry.Browser.captureException(err);
           })
           .finally(() => {
             set(([s]) => {
