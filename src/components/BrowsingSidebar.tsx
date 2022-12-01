@@ -8,6 +8,7 @@ import { CMText } from "./CMText";
 import {
   quick,
   useBrowsingState,
+  useUserState,
   useRepertoireState,
   useSidebarState,
 } from "app/utils/app_state";
@@ -43,9 +44,10 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
 
   console.log("Registering keypress");
+  const user = useUserState((s) => s.user);
   useKeypress(["Escape"], () => {
     console.log("keypress!");
-    if (isDevelopment) {
+    if (isDevelopment || user?.isAdmin) {
       quick((s) => {
         let browsingState = s.repertoireState.browsingState;
         if (!browsingState.sidebarState.targetCoverageReachedState.visible) {
