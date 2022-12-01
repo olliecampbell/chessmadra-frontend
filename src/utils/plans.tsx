@@ -208,16 +208,11 @@ class PlanConsumer {
     } else if (queenside && kingside) {
       let queensideMoreCommon =
         queenside.plan.occurences > kingside.plan.occurences;
+      this.consume([queenside, kingside]);
       this.planSections.push(
         <>
           You can castle to either side, although{" "}
-          <PlanMoveText
-            plan={
-              queensideMoreCommon
-                ? this.consume(queenside)
-                : this.consume(kingside)
-            }
-          >
+          <PlanMoveText plan={queensideMoreCommon ? queenside : kingside}>
             castling {queensideMoreCommon ? "queenside" : "kingside"}
           </PlanMoveText>{" "}
           is most common among experts
