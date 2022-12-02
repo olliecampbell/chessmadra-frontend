@@ -78,9 +78,7 @@ export const Responses = React.memo(function Responses() {
   }, [hasPendingLine]);
   let body = null;
   if (isPastCoverageGoal) {
-    prepareForHeader = "You can prepare for these moves";
-    body =
-      "This line is past your coverage goal, but you can add more moves if you want.";
+    prepareForHeader = "Most common responses";
   }
   return (
     <View style={s(c.column, c.constrainWidth)}>
