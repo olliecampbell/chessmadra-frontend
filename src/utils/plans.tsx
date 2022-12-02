@@ -448,7 +448,8 @@ class PlanConsumer {
       if (plan.piece === "q" && isDevelopment) {
         descriptor = "belongs on";
       } else if (allDevelopmentPlans.length > 1 && isDevelopment) {
-        descriptor = "can be developed to";
+        beforeDescriptor = "can be";
+        descriptor = "developed to";
       } else if (allDevelopmentPlans.length > 1 && !isDevelopment) {
         beforeDescriptor = "can be";
         descriptor = "moved to";
@@ -464,7 +465,7 @@ class PlanConsumer {
         <>
           The {pieceDescription}{" "}
           {allDevelopmentPlans.length > 1
-            ? `${descriptor} `
+            ? `${beforeDescriptor} ${descriptor} `
             : beforeDescriptor
             ? `${beforeDescriptor} `
             : ""}

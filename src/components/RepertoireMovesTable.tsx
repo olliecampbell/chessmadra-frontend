@@ -151,6 +151,10 @@ export const RepertoireMovesTable = ({
   let numTruncated = responses.length - trimmedResponses.length;
   let truncated = numTruncated > 0;
   let widths = useRef({});
+
+  const [currentLine] = useSidebarState(([s, rs]) => [s.moveLog]);
+  let moveNumber = Math.floor(currentLine.length / 2) + 1;
+  let hideAnnotations = moveNumber === 1;
   const [moveMaxWidth, setMoveMaxWidth] = useState(40);
   const onMoveRender = (sanPlus, e) => {
     if (isNil(e)) {
@@ -198,6 +202,7 @@ export const RepertoireMovesTable = ({
           trimmedResponses.map((tableResponse, i) => {
             return (
               <Response
+                hideAnnotations={hideAnnotations}
                 myTurn={myTurn}
                 anyMine={anyMine}
                 sections={sections}
@@ -251,7 +256,7 @@ export const RepertoireMovesTable = ({
             <Spacer width={16} />
           </>
         )}
-        {
+        {!hideAnnotations && (
           <>
             <Pressable
               style={s(c.pb(2))}
@@ -270,7 +275,7 @@ export const RepertoireMovesTable = ({
             </Pressable>
             <Spacer width={16} />
           </>
-        }
+        )}
         {anyMine && (
           <>
             <Pressable
@@ -510,6 +515,7 @@ const Response = ({
   tableResponse,
   sections,
   anyMine,
+  hideAnnotations,
   myTurn,
   editing,
   moveMinWidth,
@@ -517,6 +523,7 @@ const Response = ({
 }: {
   tableResponse: TableResponse;
   anyMine: boolean;
+  hideAnnotations: boolean;
   sections: any[];
   myTurn: boolean;
   moveMinWidth: number;
@@ -636,6 +643,9 @@ const Response = ({
     }
   }
   let annotation = renderAnnotation(suggestedMove?.annotation);
+  if (hideAnnotations) {
+    annotation = null;
+  }
   let tags = [];
   if (moveHasTag(tableResponse, MoveTag.BestMove)) {
     tags.push(

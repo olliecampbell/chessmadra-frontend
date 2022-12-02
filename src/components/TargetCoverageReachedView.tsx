@@ -103,7 +103,7 @@ export const TargetCoverageReachedView = () => {
       <Spacer height={12} />
 */}
       <Spacer height={12} />
-      {!isEmpty(planSections) && (
+      {!isEmpty(planSections) ? (
         <>
           <CMText
             style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
@@ -115,10 +115,10 @@ export const TargetCoverageReachedView = () => {
             {intersperse(
               planSections.map((section, i) => {
                 return (
-                  <View style={s(c.row, c.alignStart, c.mt(6))} key={i}>
+                  <View style={s(c.row, c.alignStart)} key={i}>
                     <i
                       className="fa-solid fa-circle"
-                      style={s(c.fontSize(6), c.fg(c.grays[70]))}
+                      style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
                     />
                     <Spacer width={8} />
                     <CMText style={s(c.fg(c.colors.textPrimary))}>
@@ -132,6 +132,19 @@ export const TargetCoverageReachedView = () => {
               }
             )}
           </View>
+        </>
+      ) : (
+        <>
+          <CMText
+            style={s(
+              c.weightRegular,
+              c.fontSize(14),
+              c.fg(c.colors.textPrimary)
+            )}
+          >
+            Do you want to keep adding moves to this line, or save your
+            progress?
+          </CMText>
         </>
       )}
     </SidebarTemplate>
