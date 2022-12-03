@@ -613,8 +613,8 @@ const PlanMoveText = ({
     <View style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
       <CMText
         style={s(
-          c.weightBold,
-          c.fg(hovering ? c.arrowColors[75] : c.arrowColors[55])
+          c.weightSemiBold,
+          c.fg(hovering ? c.purples[65] : c.arrowColors[55])
         )}
       >
         {children}

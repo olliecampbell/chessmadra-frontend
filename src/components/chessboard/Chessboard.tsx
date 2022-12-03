@@ -397,7 +397,7 @@ export const ChessboardView = ({
               }
               if (state.focusedPlans.includes(metaPlan.id)) {
                 focused = true;
-                color = c.arrowColors[75];
+                color = c.purples[65];
                 opacity = 100;
                 gradientColor = c.purples[30];
               }
