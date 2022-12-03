@@ -28,6 +28,7 @@ import {
   formatPlayPercentage,
   getPlayRate,
   getTotalGames,
+  isNegligiblePlayrate,
 } from "app/utils/results_distribution";
 import {
   useAppState,
@@ -416,11 +417,7 @@ let useSections = ({
             positionReport,
             usePeerRates ? false : true
           );
-        if (
-          !playRate ||
-          isNaN(playRate) ||
-          formatPlayPercentage(playRate) === "0%"
-        ) {
+        if (isNegligiblePlayrate(playRate)) {
           return na;
         }
         return (

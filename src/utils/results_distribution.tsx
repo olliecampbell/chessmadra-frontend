@@ -47,3 +47,9 @@ export const getPlayRate = (
   }
   return divisor / total;
 };
+
+export const isNegligiblePlayrate = (playRate: number) => {
+  return (
+    !playRate || isNaN(playRate) || formatPlayPercentage(playRate) === "0%"
+  );
+};

@@ -7,6 +7,7 @@ import {
   getTotalGames,
   getWinRate,
   getWinRateRange,
+  isNegligiblePlayrate,
 } from "./results_distribution";
 
 export enum TableResponseScoreSource {
@@ -52,7 +53,7 @@ export const scoreTableResponses = (
           report,
           true
         );
-        if (!isNil(masterPlayRate)) {
+        if (!isNegligiblePlayrate(masterPlayRate)) {
           let masterRateAdditionalWeight = Math.min(
             getTotalGames(tableResponse.suggestedMove?.masterResults) / 10,
             1
@@ -108,7 +109,7 @@ export const scoreTableResponses = (
           1
         );
         let playRate = getPlayRate(tableResponse.suggestedMove, report);
-        if (!isNil(playRate)) {
+        if (!isNegligiblePlayrate(playRate)) {
           let scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
           scoreTable.factors.push({
             source: TableResponseScoreSource.Playrate,
