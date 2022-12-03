@@ -512,7 +512,6 @@ export const getInitialBrowsingState = (
           return true;
         } else if (s.sidebarState.targetCoverageReachedState.visible) {
           s.sidebarState.targetCoverageReachedState.visible = false;
-          s.sidebarState.targetCoverageReachedState.hasShown = false;
           s.chessboardState.showPlans = false;
           s.checkFreezeChessboard();
           return true;
