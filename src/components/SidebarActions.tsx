@@ -50,7 +50,7 @@ export const SidebarActions = () => {
     nearestMiss,
     lineMiss,
     positionHistory,
-    targetCoverageReachedState,
+    showPlansState,
     transposedState,
   ] = useSidebarState(([s, bs]) => [
     s.hasPendingLineToAdd,
@@ -65,7 +65,7 @@ export const SidebarActions = () => {
     bs.getNearestMiss(s),
     bs.getMissInThisLine(s),
     s.positionHistory,
-    s.targetCoverageReachedState,
+    s.showPlansState,
     s.transposedState,
   ]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
@@ -176,7 +176,7 @@ export const SidebarActions = () => {
     // This is taken care of by the delete line view, maybe bad though
   } else if (transposedState.visible) {
     showTogglePlansButton = false;
-  } else if (targetCoverageReachedState.visible) {
+  } else if (showPlansState.visible) {
     showTogglePlansButton = false;
     // This is taken care of by the delete line view, maybe bad though
   } else if (deleteLineState.visible) {
@@ -204,6 +204,21 @@ export const SidebarActions = () => {
       style: "primary",
     });
   }
+  if (showTogglePlansButton && hasPlans) {
+    buttons.push({
+      onPress: () => {
+        quick((s) => {
+          let bs = s.repertoireState.browsingState;
+          bs.moveSidebarState("right");
+          bs.sidebarState.showPlansState.visible = true;
+          bs.sidebarState.showPlansState.coverageReached = false;
+          bs.chessboardState.showPlans = true;
+        });
+      },
+      text: "How to play from here",
+      style: "primary",
+    });
+  }
   return (
     <View style={s(c.column, c.fullWidth)}>
       {intersperse(
@@ -211,12 +226,6 @@ export const SidebarActions = () => {
         () => {
           return <Spacer height={10} />;
         }
-      )}
-      {showTogglePlansButton && hasPlans && (
-        <>
-          <Spacer height={10} />
-          <TogglePlansButton />
-        </>
       )}
     </View>
   );

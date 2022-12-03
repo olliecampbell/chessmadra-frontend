@@ -51,13 +51,13 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
     if (isDevelopment || user?.isAdmin) {
       quick((s) => {
         let browsingState = s.repertoireState.browsingState;
-        if (!browsingState.sidebarState.targetCoverageReachedState.visible) {
-          browsingState.sidebarState.targetCoverageReachedState.visible = true;
-          browsingState.sidebarState.targetCoverageReachedState.hasShown = true;
+        if (!browsingState.sidebarState.showPlansState.visible) {
+          browsingState.sidebarState.showPlansState.visible = true;
+          browsingState.sidebarState.showPlansState.hasShown = true;
           browsingState.chessboardState.showPlans = true;
         } else {
-          browsingState.sidebarState.targetCoverageReachedState.visible = false;
-          browsingState.sidebarState.targetCoverageReachedState.hasShown =
+          browsingState.sidebarState.showPlansState.visible = false;
+          browsingState.sidebarState.showPlansState.hasShown =
             false;
           browsingState.chessboardState.showPlans = false;
         }
@@ -162,14 +162,14 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     deleteLineState,
     stageStack,
     submitFeedbackState,
-    targetCoverageReachedState,
+    showPlansState,
     transposedState,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
     s.sidebarOnboardingState.stageStack,
     s.submitFeedbackState,
-    s.targetCoverageReachedState,
+    s.showPlansState,
     s.transposedState,
   ]);
   let inner = null;
@@ -181,7 +181,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     inner = <DeleteLineView />;
   } else if (transposedState.visible) {
     inner = <TransposedView />;
-  } else if (targetCoverageReachedState.visible) {
+  } else if (showPlansState.visible) {
     inner = <TargetCoverageReachedView />;
   } else if (addedLineState.visible) {
     inner = <SavedLineView />;
@@ -208,14 +208,14 @@ const BackSection = () => {
     deleteLineState,
     stageStack,
     submitFeedbackState,
-    targetCoverageReachedState,
+    showPlansState,
     transposedState,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
     s.sidebarOnboardingState.stageStack,
     s.submitFeedbackState,
-    s.targetCoverageReachedState,
+    s.showPlansState,
     s.transposedState,
   ]);
   const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
@@ -234,13 +234,13 @@ const BackSection = () => {
         s.repertoireState.browsingState.dismissTransientSidebarState();
       });
     };
-  } else if (targetCoverageReachedState.visible) {
+  } else if (showPlansState.visible) {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.dismissTransientSidebarState();
       });
     };
-  } else if (targetCoverageReachedState.visible) {
+  } else if (showPlansState.visible) {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.chessboardState.backOne();

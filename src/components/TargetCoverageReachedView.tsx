@@ -40,35 +40,44 @@ import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 
 export const TargetCoverageReachedView = () => {
   const responsive = useResponsive();
-  let [currentEpd, planSections] = useSidebarState(([s]) => [
+  let [currentEpd, planSections, showPlansState] = useSidebarState(([s]) => [
     s.currentEpd,
     cloneDeep(s.planSections),
+    s.showPlansState,
   ]);
+  let actions = [];
+  if (showPlansState.coverageReached) {
+    actions = [
+      {
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.browsingState.addPendingLine();
+          });
+        },
+        style: "primary",
+        text: "I'm done, save this line to my repertoire",
+      },
+      {
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.browsingState.moveSidebarState("right");
+            s.repertoireState.browsingState.dismissTransientSidebarState();
+          });
+        },
+        style: "primary",
+        text: "Keep adding moves to this line",
+      },
+    ];
+  }
 
   return (
     <SidebarTemplate
-      header={"You've reached your target depth!  ✅"}
-      actions={[
-        {
-          onPress: () => {
-            quick((s) => {
-              s.repertoireState.browsingState.addPendingLine();
-            });
-          },
-          style: "primary",
-          text: "I'm done, save this line to my repertoire",
-        },
-        {
-          onPress: () => {
-            quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.dismissTransientSidebarState();
-            });
-          },
-          style: "primary",
-          text: "Keep adding moves to this line",
-        },
-      ]}
+      header={
+        showPlansState.coverageReached
+          ? "You've reached your target depth!  ✅"
+          : "How to play from here"
+      }
+      actions={actions}
       bodyPadding={true}
     >
       {/*<CMText style={s(c.sidebarDescriptionStyles(responsive))}>
@@ -79,12 +88,20 @@ export const TargetCoverageReachedView = () => {
       <Spacer height={12} />
       {!isEmpty(planSections) ? (
         <>
-          <CMText
-            style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
-          >
-            How to play from here
-          </CMText>
-          <Spacer height={18} />
+          {showPlansState.coverageReached && (
+            <>
+              <CMText
+                style={s(
+                  c.weightBold,
+                  c.fontSize(14),
+                  c.fg(c.colors.textPrimary)
+                )}
+              >
+                How to play from here
+              </CMText>
+              <Spacer height={18} />
+            </>
+          )}
           <View>
             {intersperse(
               planSections.map((section, i) => {

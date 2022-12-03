@@ -97,8 +97,9 @@ export interface SidebarState {
   transposedState: {
     visible: boolean;
   };
-  targetCoverageReachedState: {
+  showPlansState: {
     visible: boolean;
+    coverageReached: boolean;
     hasShown: boolean;
   };
   deleteLineState: {
@@ -197,7 +198,7 @@ export const makeDefaultSidebarState = () => {
     transposedState: {
       visible: false,
     },
-    targetCoverageReachedState: {
+    showPlansState: {
       visible: false,
       hasShown: false,
     },
@@ -301,15 +302,16 @@ export const getInitialBrowsingState = (
           s.sidebarState.isPastCoverageGoal &&
           s.activeSide !== s.sidebarState.currentSide &&
           s.sidebarState.hasPendingLineToAdd &&
-          !s.sidebarState.targetCoverageReachedState.hasShown
+          !s.sidebarState.showPlansState.hasShown
         ) {
-          s.sidebarState.targetCoverageReachedState.visible = true;
-          s.sidebarState.targetCoverageReachedState.hasShown = true;
+          s.sidebarState.showPlansState.visible = true;
+          s.sidebarState.showPlansState.hasShown = true;
+          s.sidebarState.showPlansState.coverageReached = true;
           s.chessboardState.showPlans = true;
           s.checkFreezeChessboard();
         }
         if (!s.sidebarState.isPastCoverageGoal) {
-          s.sidebarState.targetCoverageReachedState.hasShown = false;
+          s.sidebarState.showPlansState.hasShown = false;
         }
       });
     },
@@ -510,8 +512,9 @@ export const getInitialBrowsingState = (
           s.sidebarState.transposedState.visible = false;
           s.checkFreezeChessboard();
           return true;
-        } else if (s.sidebarState.targetCoverageReachedState.visible) {
-          s.sidebarState.targetCoverageReachedState.visible = false;
+        } else if (s.sidebarState.showPlansState.visible) {
+          s.sidebarState.showPlansState.visible = false;
+          s.sidebarState.showPlansState.coverageReached = false;
           s.chessboardState.showPlans = false;
           s.checkFreezeChessboard();
           return true;
@@ -824,7 +827,7 @@ export const getInitialBrowsingState = (
         onReset: () => {
           set(([s]) => {
             s.dismissTransientSidebarState();
-            s.sidebarState.targetCoverageReachedState.hasShown = false;
+            s.sidebarState.showPlansState.hasShown = false;
           });
         },
         onMovePlayed: () => {
