@@ -6,7 +6,7 @@ import { Plan } from "app/models";
 import { s, c } from "app/styles";
 import React from "react";
 import { intersperse } from "./intersperse";
-import { Side, toSide } from "./repertoire";
+import { otherSide, Side, toSide } from "./repertoire";
 import {
   capitalize,
   filter,
@@ -259,7 +259,13 @@ class PlanConsumer {
       let planBeforeCapture = this.planPrecedingCaptures[plan.plan.toSquare];
       let recapture = false;
       if (planBeforeCapture) {
-        if (planBeforeCapture.plan.san.includes("x")) {
+        let opponentHasPieceOnCaptureSquare =
+          toSide(this.position.get(plan.plan.toSquare)?.color) ==
+          otherSide(plan.plan.side);
+        if (
+          planBeforeCapture.plan.san.includes("x") &&
+          !opponentHasPieceOnCaptureSquare
+        ) {
           recapture = true;
         }
         this.consume(planBeforeCapture);
