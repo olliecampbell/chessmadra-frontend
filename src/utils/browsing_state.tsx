@@ -195,7 +195,7 @@ export const makeDefaultSidebarState = () => {
     tableResponses: [],
     hasAnyPendingResponses: false,
     transposedState: {
-      visible: true,
+      visible: false,
     },
     targetCoverageReachedState: {
       visible: false,
