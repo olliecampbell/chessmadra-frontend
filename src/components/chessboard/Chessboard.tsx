@@ -388,7 +388,7 @@ export const ChessboardView = ({
               let thickness = 10;
               var angle = Math.atan2(to.y - from.y, to.x - from.x);
               var angleDeg = (angle * 180) / Math.PI;
-              let color = metaPlan.mine ? c.arrowColors[55] : c.reds[55];
+              let color = metaPlan.mine ? c.arrowColors[55] : c.grays[35];
               let gradientColor = c.grays[100];
               let focused = false;
               let opacity = 80;
@@ -397,7 +397,8 @@ export const ChessboardView = ({
               }
               if (state.focusedPlans.includes(metaPlan.id)) {
                 focused = true;
-                color = c.purples[50];
+                color = c.arrowColors[75];
+                opacity = 100;
                 gradientColor = c.purples[30];
               }
               let duration = "1.0s";

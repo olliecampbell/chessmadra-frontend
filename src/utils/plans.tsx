@@ -191,6 +191,14 @@ class PlanConsumer {
       }
     });
   }
+
+  adverbIndex = 0;
+
+  nextAdverb(): string {
+    let adverbs = ["typically", "generally", "usually", "often"];
+    return adverbs[this.adverbIndex++ % adverbs.length];
+  }
+
   consume<T extends MetaPlan | MetaPlan[]>(plan: T): T {
     if (Array.isArray(plan)) {
       plan.map((p) => this.consumed.add(p.id));
@@ -221,7 +229,7 @@ class PlanConsumer {
     } else if (kingside) {
       this.planSections.push(
         <>
-          {capitalize(this.side)} typically{" "}
+          {capitalize(this.side)} {this.nextAdverb()}{" "}
           <PlanMoveText plan={this.consume(kingside)}>
             castles kingside
           </PlanMoveText>
@@ -230,7 +238,7 @@ class PlanConsumer {
     } else if (queenside) {
       this.planSections.push(
         <>
-          {capitalize(this.side)} typically{" "}
+          {capitalize(this.side)} ${this.nextAdverb}{" "}
           <PlanMoveText plan={this.consume(queenside)}>
             castles queenside
           </PlanMoveText>
@@ -281,7 +289,7 @@ class PlanConsumer {
                 `${pieceSymbolToPieceName(p.piece)} on ${plan.plan.fromSquare}`
             )}
           />{" "}
-          typically{" "}
+          {this.nextAdverb()}{" "}
           <PlanMoveText plans={this.consume(allCapturers)}>
             {recapture ? "recaptures" : "captures"} the{" "}
             {pieceSymbolToPieceName(capturedPiece)} on {plan.plan.toSquare}
@@ -416,7 +424,7 @@ class PlanConsumer {
 
       this.planSections.push(
         <>
-          The {developmentPieceDescription} is typically{" "}
+          The {developmentPieceDescription} is {this.nextAdverb}{" "}
           <PlanMoveText plan={this.consume(plan)}>
             fianchettoed on {plan.plan.toSquare}
           </PlanMoveText>
@@ -454,17 +462,17 @@ class PlanConsumer {
       if (plan.piece === "q" && isDevelopment) {
         descriptor = "belongs on";
       } else if (allDevelopmentPlans.length > 1 && isDevelopment) {
-        beforeDescriptor = "can be";
-        descriptor = "developed to";
+        beforeDescriptor = "can ";
+        descriptor = "develop to";
       } else if (allDevelopmentPlans.length > 1 && !isDevelopment) {
-        beforeDescriptor = "can be";
-        descriptor = "moved to";
+        beforeDescriptor = "can";
+        descriptor = "move to";
       } else if (isDevelopment) {
-        beforeDescriptor = "is typically";
-        descriptor = "developed to";
+        beforeDescriptor = `${this.nextAdverb()}`;
+        descriptor = "develops to";
       } else {
-        beforeDescriptor = "is often";
-        descriptor = "moved to";
+        beforeDescriptor = "often";
+        descriptor = "moves to";
       }
 
       this.planSections.push(
@@ -606,7 +614,10 @@ const PlanMoveText = ({
   return (
     <View style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
       <CMText
-        style={s(c.weightBold, c.fg(hovering ? c.purples[70] : c.oranges[70]))}
+        style={s(
+          c.weightBold,
+          c.fg(hovering ? c.arrowColors[75] : c.arrowColors[55])
+        )}
       >
         {children}
       </CMText>
