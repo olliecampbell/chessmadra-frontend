@@ -49,7 +49,7 @@ import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 
-const TEST_LINE = isDevelopment ? ["e4", "Nf6", "Nc3", "Nc6"] : [];
+const TEST_LINE = isDevelopment ? [] : [];
 // const TEST_LINE = null;
 
 export interface LichessOauthData {

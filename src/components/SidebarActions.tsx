@@ -2,15 +2,30 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { forEachRight, isEmpty, findLastIndex } from "lodash-es";
+import {
+  forEachRight,
+  isEmpty,
+  findLastIndex,
+  findLast,
+  filter,
+  map,
+  last,
+  isNil,
+} from "lodash-es";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
-import { quick, useBrowsingState, useSidebarState } from "app/utils/app_state";
+import {
+  quick,
+  useBrowsingState,
+  useRepertoireState,
+  useSidebarState,
+} from "app/utils/app_state";
 import { useResponsive } from "app/utils/useResponsive";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { useHovering } from "app/hooks/useHovering";
 import { lineToPgn, pgnToLine, RepertoireMiss } from "app/utils/repertoire";
 import { lineToPositions } from "app/utils/chess";
+import { getNameEcoCodeIdentifier } from "app/utils/eco_codes";
 
 export interface SidebarAction {
   onPress: () => void;
@@ -53,6 +68,9 @@ export const SidebarActions = () => {
     s.targetCoverageReachedState,
     s.transposedState,
   ]);
+  const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
+    referenceEquality: true,
+  });
   const [activeSide, hasPlans] = useBrowsingState(([s, rs]) => [
     s.activeSide,
     !isEmpty(rs.positionReports[s.sidebarState.currentEpd]?.plans),
@@ -77,21 +95,65 @@ export const SidebarActions = () => {
     text: "Continue adding to this line",
     style: "primary",
   };
-  let addBiggestMissAction = (miss: RepertoireMiss) => {
+  let addBiggestMissAction = () => {
+    let miss = null;
+    if (addedLineState.visible) {
+      miss = nearestMiss ?? lineMiss;
+    } else {
+      miss = lineMiss;
+    }
+    if (isNil(miss)) {
+      return;
+    }
+    let text = `Go to the biggest gap in your ${activeSide} repertoire`;
+    let line = pgnToLine(miss.lines[0]);
+    let missPositions = lineToPositions(line);
+    let missPositionsSet = new Set(missPositions);
+    let currentOpeningName = last(
+      filter(
+        map(positionHistory, (epd) => {
+          let ecoCode = ecoCodeLookup[epd];
+          if (ecoCode) {
+            return getNameEcoCodeIdentifier(ecoCode.fullName);
+          }
+        })
+      )
+    );
+    let openingNameOfMiss = last(
+      filter(
+        map(missPositions, (epd) => {
+          let ecoCode = ecoCodeLookup[epd];
+          if (ecoCode) {
+            return getNameEcoCodeIdentifier(ecoCode.fullName);
+          }
+        })
+      )
+    );
+
+    let i = findLastIndex(positionHistory, (epd) => {
+      if (missPositionsSet.has(epd)) {
+        return true;
+      }
+      return false;
+    });
+    if (addedLineState.visible && currentOpeningName === openingNameOfMiss) {
+      text = `Keep filling in lines in the ${currentOpeningName}`;
+    } else if (
+      positionHistory.length === 0 ||
+      (activeSide === "white" && positionHistory.length === 1) ||
+      addedLineState.visible
+    ) {
+      text = `Go to the biggest gap in your ${activeSide} repertoire`;
+    } else if (miss === lineMiss) {
+      text = `Skip ahead to the next gap in this line`;
+    }
+
     if (miss && miss.epd !== currentEpd) {
       buttons.push({
         onPress: () => {
           quick((s) => {
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.dismissTransientSidebarState();
-            let line = pgnToLine(miss.lines[0]);
-            let missPositions = new Set(lineToPositions(line));
-            let i = findLastIndex(positionHistory, (epd) => {
-              if (missPositions.has(epd)) {
-                return true;
-              }
-              return false;
-            });
             let lastMatchingEpd = positionHistory[i];
             s.repertoireState.browsingState.chessboardState.playPgn(
               lineToPgn(line),
@@ -103,7 +165,7 @@ export const SidebarActions = () => {
             );
           });
         },
-        text: "Go to the next gap in your repertoire",
+        text: text,
         style: "primary",
       });
     }
@@ -124,11 +186,11 @@ export const SidebarActions = () => {
     showTogglePlansButton = false;
     // Taken care of by onboarding
   } else if (addedLineState.visible) {
-    addBiggestMissAction(nearestMiss);
+    addBiggestMissAction();
     buttons.push(reviewCurrentLineAction);
     buttons.push(continueAddingToThisLineAction);
   } else if (!hasPendingLineToAdd) {
-    addBiggestMissAction(lineMiss);
+    addBiggestMissAction();
   } else if (hasPendingLineToAdd) {
     buttons.push({
       onPress: () => {
