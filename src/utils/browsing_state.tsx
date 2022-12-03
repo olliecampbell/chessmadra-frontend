@@ -60,7 +60,7 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { createContext } from "react";
 import { logProxy } from "./state";
-import { getTopPlans, parsePlans } from "./plans";
+import { parsePlans } from "./plans";
 import * as Sentry from "sentry-expo";
 
 export interface GetIncidenceOptions {
@@ -94,6 +94,9 @@ export interface SidebarState {
   isPastCoverageGoal?: boolean;
   tableResponses: TableResponse[];
   hasAnyPendingResponses?: boolean;
+  transposedState: {
+    visible: boolean;
+  };
   targetCoverageReachedState: {
     visible: boolean;
     hasShown: boolean;
@@ -191,6 +194,9 @@ export const makeDefaultSidebarState = () => {
     isPastCoverageGoal: false,
     tableResponses: [],
     hasAnyPendingResponses: false,
+    transposedState: {
+      visible: true,
+    },
     targetCoverageReachedState: {
       visible: false,
       hasShown: false,
@@ -410,11 +416,10 @@ export const getInitialBrowsingState = (
           if (!ownSide || tr.repertoireMove) {
             return;
           }
+
           if (!tr.repertoireMove && rs.epdNodes[s.activeSide][epdAfter]) {
             tr.tags.push(MoveTag.Transposes);
-            if (!ownSide) {
-              tr.disableBadgePriority = true;
-            }
+            tr.disableBadgePriority = true;
           }
           if (isTheoryHeavy(tr, currentEpd)) {
             tr.tags.push(MoveTag.TheoryHeavy);
@@ -499,6 +504,10 @@ export const getInitialBrowsingState = (
           return true;
         } else if (s.sidebarState.deleteLineState.visible) {
           s.sidebarState.deleteLineState.visible = false;
+          s.checkFreezeChessboard();
+          return true;
+        } else if (s.sidebarState.transposedState.visible) {
+          s.sidebarState.transposedState.visible = false;
           s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.targetCoverageReachedState.visible) {
@@ -821,6 +830,10 @@ export const getInitialBrowsingState = (
         },
         onMovePlayed: () => {
           set(([s]) => {
+            if (s.sidebarState.transposedState.visible) {
+              s.sidebarState.transposedState.visible = false;
+            }
+
             s.checkShowTargetDepthReached();
           });
         },

@@ -35,6 +35,7 @@ import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
 import { lineToPgn } from "app/utils/repertoire";
 import useKeypress from "react-use-keypress";
 import { isDevelopment } from "app/utils/env";
+import { TransposedView } from "./TransposedView";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -162,12 +163,14 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     stageStack,
     submitFeedbackState,
     targetCoverageReachedState,
+    transposedState,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
     s.sidebarOnboardingState.stageStack,
     s.submitFeedbackState,
     s.targetCoverageReachedState,
+    s.transposedState,
   ]);
   let inner = null;
   if (!isEmpty(stageStack)) {
@@ -176,6 +179,8 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     inner = <FeedbackView />;
   } else if (deleteLineState.visible) {
     inner = <DeleteLineView />;
+  } else if (transposedState.visible) {
+    inner = <TransposedView />;
   } else if (targetCoverageReachedState.visible) {
     inner = <TargetCoverageReachedView />;
   } else if (addedLineState.visible) {
@@ -204,12 +209,14 @@ const BackSection = () => {
     stageStack,
     submitFeedbackState,
     targetCoverageReachedState,
+    transposedState,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
     s.sidebarOnboardingState.stageStack,
     s.submitFeedbackState,
     s.targetCoverageReachedState,
+    s.transposedState,
   ]);
   const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
   const responsive = useResponsive();
@@ -219,8 +226,15 @@ const BackSection = () => {
   if (
     addedLineState.visible ||
     deleteLineState.visible ||
-    submitFeedbackState.visible
+    submitFeedbackState.visible ||
+    transposedState.visible
   ) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.dismissTransientSidebarState();
+      });
+    };
+  } else if (targetCoverageReachedState.visible) {
     backButtonAction = () => {
       quick((s) => {
         s.repertoireState.browsingState.dismissTransientSidebarState();
@@ -251,31 +265,6 @@ const BackSection = () => {
       });
     };
   }
-  // useEffect(() => {
-  //   let t1 = null;
-  //   let toggle = () => {
-  //     t1 = window.setTimeout(() => {
-  //       quick((s) => {
-  //         s.repertoireState.browsingState.chessboardState.playPgn(
-  //           "1.e4 e5 2.f4",
-  //           {
-  //             animated: true,
-  //           }
-  //         );
-  //         t1 = window.setTimeout(() => {
-  //           quick((s) => {
-  //             s.repertoireState.browsingState.chessboardState.resetPosition();
-  //             toggle();
-  //           });
-  //         }, 3000);
-  //       });
-  //     }, 1000);
-  //   };
-  //   toggle();
-  //   return () => {
-  //     window.clearTimeout(t1);
-  //   };
-  // }, []);
   return (
     <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
       <Pressable

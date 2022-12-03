@@ -36,6 +36,7 @@ export const SidebarActions = () => {
     lineMiss,
     positionHistory,
     targetCoverageReachedState,
+    transposedState,
   ] = useSidebarState(([s, bs]) => [
     s.hasPendingLineToAdd,
     s.isPastCoverageGoal,
@@ -50,6 +51,7 @@ export const SidebarActions = () => {
     bs.getMissInThisLine(s),
     s.positionHistory,
     s.targetCoverageReachedState,
+    s.transposedState,
   ]);
   const [activeSide, hasPlans] = useBrowsingState(([s, rs]) => [
     s.activeSide,
@@ -110,6 +112,8 @@ export const SidebarActions = () => {
   if (submitFeedbackState.visible) {
     showTogglePlansButton = false;
     // This is taken care of by the delete line view, maybe bad though
+  } else if (transposedState.visible) {
+    showTogglePlansButton = false;
   } else if (targetCoverageReachedState.visible) {
     showTogglePlansButton = false;
     // This is taken care of by the delete line view, maybe bad though

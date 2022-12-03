@@ -712,7 +712,16 @@ const Response = ({
         onPress={() => {
           quick((s) => {
             s.repertoireState.browsingState.moveSidebarState("right");
-            playSan(sanPlus);
+            // If has transposition tag, quick make transposition state visible on browser state
+
+            if (moveHasTag(tableResponse, MoveTag.Transposes)) {
+              console.log("Is transpose!");
+              quick((s) => {
+                playSan(sanPlus);
+                s.repertoireState.browsingState.sidebarState.transposedState.visible =
+                  true;
+              });
+            }
           });
           trackEvent("repertoire.moves_table.select_move");
         }}

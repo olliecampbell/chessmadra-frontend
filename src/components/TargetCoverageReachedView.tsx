@@ -40,34 +40,9 @@ import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 
 export const TargetCoverageReachedView = () => {
   const responsive = useResponsive();
-  const user = useUserState((s) => s.user);
-  const [feedback, setFeedback] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const submitFeedback = () => {
-    if (isEmpty(feedback)) {
-      return;
-    }
-    setLoading(true);
-    client
-      .post("/api/v1/submit-feedback", {
-        feedback,
-        email: user?.email ?? email ?? null,
-      })
-      .then(() => {
-        setSuccess(true);
-        setLoading(false);
-      });
-  };
   let [currentEpd, planSections] = useSidebarState(([s]) => [
     s.currentEpd,
     cloneDeep(s.planSections),
-  ]);
-  const [activeSide] = useBrowsingState(([s, rs]) => [s.activeSide]);
-  let [plans, position] = useRepertoireState((s) => [
-    s.positionReports[currentEpd]?.plans ?? [],
-    s.browsingState.chessboardState.position,
   ]);
 
   return (
@@ -94,7 +69,6 @@ export const TargetCoverageReachedView = () => {
           text: "Keep adding moves to this line",
         },
       ]}
-      loading={loading && "Submitting feedback..."}
       bodyPadding={true}
     >
       {/*<CMText style={s(c.sidebarDescriptionStyles(responsive))}>
