@@ -717,10 +717,11 @@ const Response = ({
             if (moveHasTag(tableResponse, MoveTag.Transposes)) {
               console.log("Is transpose!");
               quick((s) => {
-                playSan(sanPlus);
                 s.repertoireState.browsingState.sidebarState.transposedState.visible =
                   true;
               });
+            } else {
+              playSan(sanPlus);
             }
           });
           trackEvent("repertoire.moves_table.select_move");
