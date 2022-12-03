@@ -459,10 +459,8 @@ class PlanConsumer {
       }
       let descriptor = null;
       let beforeDescriptor = null;
-      if (plan.piece === "q" && isDevelopment) {
-        descriptor = "belongs on";
-      } else if (allDevelopmentPlans.length > 1 && isDevelopment) {
-        beforeDescriptor = "can ";
+      if (allDevelopmentPlans.length > 1 && isDevelopment) {
+        beforeDescriptor = "can";
         descriptor = "develop to";
       } else if (allDevelopmentPlans.length > 1 && !isDevelopment) {
         beforeDescriptor = "can";
