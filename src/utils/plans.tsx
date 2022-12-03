@@ -341,7 +341,7 @@ class PlanConsumer {
   }
   viaConsumer() {
     this.remainingPlans().map((plan) => {
-      if (plan.piece !== "n") {
+      if (!["n", "q", "r", "k"].includes(plan.piece)) {
         return;
       }
       if (this.position.get(plan.plan.fromSquare)?.type !== plan.piece) {
