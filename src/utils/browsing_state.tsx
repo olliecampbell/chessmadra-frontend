@@ -445,8 +445,8 @@ export const getInitialBrowsingState = (
           tableResponses.forEach((tr) => {
             let incidence = tr.incidenceUpperBound ?? tr.incidence;
             let dangerous =
-              tr.suggestedMove?.dangerous[eloRange] ||
-              isDangerous(tr.suggestedMove, s.activeSide);
+              tr.suggestedMove?.dangerous?.[eloRange] ||
+              (tr.suggestedMove && isDangerous(tr.suggestedMove, s.activeSide));
             if (
               tr.suggestedMove?.epdAfter ===
               "rnbqkbnr/pp2pppp/2p5/3p4/4P3/2N2Q2/PPPP1PPP/R1B1KBNR b KQkq -"
