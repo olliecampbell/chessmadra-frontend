@@ -299,9 +299,6 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
     s.quick,
   ]);
   let height = 48;
-  if (!biggestMiss) {
-    return <View style={s(c.height(height))}></View>;
-  }
   const responsive = useResponsive();
   const { startBrowsing } = useRepertoireState((s) => ({
     startBrowsing: s.startBrowsing,
@@ -309,6 +306,9 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
   const inverse = side === "black";
   const [backgroundColor, foregroundColor, iconColor] =
     getButtonColors(inverse);
+  if (!biggestMiss) {
+    return <View style={s(c.height(height))}></View>;
+  }
   return (
     <Button
       style={s(

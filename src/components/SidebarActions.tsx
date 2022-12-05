@@ -97,6 +97,7 @@ export const SidebarActions = () => {
   };
   let addBiggestMissAction = () => {
     let miss = null;
+    console.log({ lineMiss });
     if (addedLineState.visible) {
       miss = nearestMiss ?? lineMiss;
     } else {
@@ -139,8 +140,8 @@ export const SidebarActions = () => {
     if (addedLineState.visible && currentOpeningName === openingNameOfMiss) {
       text = `Keep filling in lines in the ${currentOpeningName}`;
     } else if (
-      positionHistory.length === 0 ||
-      (activeSide === "white" && positionHistory.length === 1) ||
+      positionHistory.length === 1 ||
+      (activeSide === "white" && positionHistory.length === 2) ||
       addedLineState.visible
     ) {
       text = `Go to the biggest gap in your ${activeSide} repertoire`;

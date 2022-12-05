@@ -111,6 +111,7 @@ export interface RepertoireMiss {
   lines: string[];
   epd: string;
   ecoCodeName?: string;
+  dangerous: boolean;
 }
 
 export interface PendingLine {

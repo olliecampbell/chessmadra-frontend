@@ -15,6 +15,7 @@ export enum TableResponseScoreSource {
   Eval = "eval",
   Winrate = "winrate",
   Playrate = "playrate",
+  Needed = "needed",
   MasterPlayrate = "masterPlayrate",
   Incidence = "Incidence",
 }
@@ -123,6 +124,14 @@ export const scoreTableResponses = (
         } else if (weights[TableResponseScoreSource.Playrate] != 0) {
           scoreTable.notes.push("Insufficient games for playrate");
         }
+        if (weights[TableResponseScoreSource.Needed] > 0) {
+          if (tableResponse.needed) {
+            scoreTable.factors.push({
+              source: TableResponseScoreSource.Needed,
+              value: 10000.0,
+            });
+          }
+        }
         if (tableResponse.incidence) {
           scoreTable.factors.push({
             source: TableResponseScoreSource.Incidence,
@@ -194,7 +203,8 @@ export let PLAYRATE_WEIGHTS = {
   startScore: -3,
   eval: 0.0,
   winrate: 0.0,
-  playrate: 1.0,
+  playrate: 0.0,
+  needed: 1.0,
   incidence: 0.0,
   masterPlayrate: 0.0,
 };

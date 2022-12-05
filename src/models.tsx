@@ -104,6 +104,7 @@ export interface StockfishReport {
 }
 
 export interface SuggestedMove {
+  dangerous: Record<string, boolean>;
   sanPlus: string;
   epdAfter: string;
   stockfish?: StockfishReport;
@@ -151,7 +152,7 @@ export interface MoveAnnotation {
 }
 
 export enum MoveTag {
-  Dangerous,
+  RareDangerous,
   CommonMistake,
   TheoryHeavy,
   BestMove,

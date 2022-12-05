@@ -134,18 +134,14 @@ export const RepertoireMovesTable = ({
     if (anyMine) {
       return false;
     }
-    if (
-      (r.incidence > currentThreshold ||
-        r.incidenceUpperBound > currentThreshold) &&
-      !myTurn
-    ) {
+    if (r.needed && !myTurn) {
       return true;
     }
     return (
       i < MIN_TRUNCATED ||
       r.repertoireMove ||
       (myTurn && r.score > 0) ||
-      moveHasTag(r, MoveTag.Dangerous) ||
+      moveHasTag(r, MoveTag.RareDangerous) ||
       (myTurn && moveHasTag(r, MoveTag.Transposes))
     );
   }) as TableResponse[];
@@ -349,7 +345,7 @@ let useSections = ({
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
         let denominator = Math.round(1 / tableResponse.incidence);
-        let belowCoverageGoal = tableResponse.incidence < threshold;
+        let belowCoverageGoal = !tableResponse.needed;
         let veryRare = false;
         let hideGamesText = false;
         if (denominator >= 1000) {
@@ -671,14 +667,14 @@ const Response = ({
       />
     );
   }
-  if (moveHasTag(tableResponse, MoveTag.Dangerous)) {
-    // tags.push(
-    //   <MoveTagView
-    //     text="Dangerous move"
-    //     icon="fa fa-radiation"
-    //     style={s(c.fg(c.reds[65]), c.fontSize(18))}
-    //   />
-    // );
+  if (moveHasTag(tableResponse, MoveTag.RareDangerous)) {
+    tags.push(
+      <MoveTagView
+        text="Rare but dangerous"
+        icon="fa fa-radiation"
+        style={s(c.fg(c.reds[65]), c.fontSize(18))}
+      />
+    );
   }
   if (moveHasTag(tableResponse, MoveTag.CommonMistake)) {
     tags.push(
@@ -1040,19 +1036,20 @@ const CoverageProgressBar = ({
   let epdAfter =
     tableResponse.suggestedMove?.epdAfter ??
     tableResponse.repertoireMove?.epdAfter;
-  const [hasResponse, numMovesFromHere, expectedNumMovesNeeded] =
+  const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
     useRepertoireState((s) => [
       s.repertoire[s.browsingState.activeSide]?.positionResponses[epdAfter]
         ?.length > 0,
       s.numMovesFromEpd[s.browsingState.activeSide][epdAfter],
       s.expectedNumMovesFromEpd[s.browsingState.activeSide][epdAfter],
+      s.repertoireGrades[s.browsingState.activeSide]?.biggestMisses[epdAfter],
     ]);
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
   let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
   let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
-  let completed = coverage < threshold;
+  let completed = isNil(missFromHere);
   // if (!completed) {
   //   console.log({
   //     numMovesFromHere,

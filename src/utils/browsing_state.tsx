@@ -5,6 +5,7 @@ import {
   ModelGame,
   MoveTag,
   PositionReport,
+  SuggestedMove,
 } from "app/models";
 import {
   isEmpty,
@@ -258,12 +259,9 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         SIDES.forEach((side) => {
           let progressState = s.repertoireProgressState[side];
-          let threshold = gs.userState.getCurrentThreshold();
-          let biggestMissIncidence =
-            rs.repertoireGrades[side]?.biggestMiss?.incidence;
+          let biggestMiss = rs.repertoireGrades[side]?.biggestMiss;
           let numMoves = rs.numResponsesAboveThreshold[side];
-          let completed =
-            isNil(biggestMissIncidence) || biggestMissIncidence < threshold;
+          let completed = isNil(biggestMiss);
           progressState.completed = completed;
           let expectedNumMoves = rs.expectedNumMovesFromEpd[side][START_EPD];
           let savedProgress = completed
@@ -322,6 +320,7 @@ export const getInitialBrowsingState = (
           return;
         }
         let threshold = gs.userState.getCurrentThreshold();
+        let eloRange = gs.userState.user?.eloRange;
         let currentSide: Side =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         let currentEpd = s.chessboardState.getCurrentEpd();
@@ -408,9 +407,6 @@ export const getInitialBrowsingState = (
             if (isCommonMistake(tr, positionReport, threshold)) {
               tr.tags.push(MoveTag.CommonMistake);
             }
-            if (isDangerousMove(tr, positionReport, threshold)) {
-              tr.tags.push(MoveTag.Dangerous);
-            }
           }
         });
         tableResponses.forEach((tr) => {
@@ -448,7 +444,21 @@ export const getInitialBrowsingState = (
         if (!ownSide) {
           tableResponses.forEach((tr) => {
             let incidence = tr.incidenceUpperBound ?? tr.incidence;
-            tr.needed = incidence > threshold;
+            let dangerous =
+              tr.suggestedMove?.dangerous[eloRange] ||
+              isDangerous(tr.suggestedMove, s.activeSide);
+            if (
+              tr.suggestedMove?.epdAfter ===
+              "rnbqkbnr/pp2pppp/2p5/3p4/4P3/2N2Q2/PPPP1PPP/R1B1KBNR b KQkq -"
+            ) {
+              console.log("TR TEST", tr);
+            }
+            if (incidence > threshold) {
+              tr.needed = true;
+            } else if (dangerous && incidence > threshold / 2) {
+              tr.tags.push(MoveTag.RareDangerous);
+              tr.needed = true;
+            }
           });
         }
         tableResponses = scoreTableResponses(
@@ -470,14 +480,11 @@ export const getInitialBrowsingState = (
       }),
     getMissInThisLine: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
-        let threshold = gs.userState.getCurrentThreshold();
         let miss =
           rs.repertoireGrades[s.activeSide].biggestMisses?.[
             sidebarState.currentEpd
           ];
-        if (miss?.incidence > threshold) {
-          return miss;
-        }
+        return miss;
       }),
     getNearestMiss: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
@@ -485,10 +492,7 @@ export const getInitialBrowsingState = (
         return findLast(
           map(sidebarState.positionHistory, (epd) => {
             let miss = rs.repertoireGrades[s.activeSide].biggestMisses?.[epd];
-            if (
-              miss?.incidence > threshold &&
-              miss?.epd !== sidebarState.currentEpd
-            ) {
+            if (miss?.epd !== sidebarState.currentEpd) {
               return miss;
             }
           })
@@ -894,29 +898,6 @@ const isCommonMistake = (
   return true;
 };
 
-const isDangerousMove = (
-  tr: TableResponse,
-  positionReport: PositionReport,
-  threshold: number
-): boolean => {
-  if (!tr.suggestedMove || !positionReport) {
-    return false;
-  }
-  if (getTotalGames(tr.suggestedMove.results) < 100) {
-    return false;
-  }
-  if (tr.incidence < threshold / 2) {
-    return false;
-  }
-  if (
-    getWinRate(tr.suggestedMove.results, otherSide(tr.side)) >
-    getWinRate(positionReport.results, otherSide(tr.side)) + 0.05
-  ) {
-    return true;
-  }
-  return false;
-};
-
 export const getCoverageProgress = (
   numMoves: number,
   expectedNumMoves: number
@@ -927,4 +908,12 @@ export const getCoverageProgress = (
   // return (
   //   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
   // );
+};
+
+const isDangerous = (suggestedMove: SuggestedMove, activeSide: Side) => {
+  if (getWinRate(suggestedMove.results, otherSide(activeSide)) > 0.53) {
+    return true;
+  } else {
+    return false;
+  }
 };
