@@ -121,6 +121,8 @@ export const MoveAnnotationRow = ({
   let fen = `${ann.previousEpd} 0 1`;
   let position = new Chess(fen);
   let [annotation, setAnnotation] = useState(ann.annotation?.text ?? "");
+  let [saved, setSaved] = useState(false);
+  let [loading, setLoading] = useState(false);
   return (
     <View style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
       <View style={s(c.row)}>
@@ -168,16 +170,26 @@ export const MoveAnnotationRow = ({
         <Button
           style={s(c.buttons.primary, c.selfEnd)}
           onPress={() => {
+            setLoading(true);
             quick((s) =>
-              s.adminState.acceptMoveAnnotation(
-                ann.previousEpd,
-                ann.sanPlus,
-                annotation
-              )
+              s.adminState
+                .acceptMoveAnnotation(ann.previousEpd, ann.sanPlus, annotation)
+                .then(() => {
+                  setSaved(true);
+                  setLoading(false);
+                })
             );
           }}
         >
-          Save
+          <CMText style={s(c.buttons.primary.textStyles)}>
+            {saved && (
+              <i
+                className="fa fa-check"
+                style={s(c.fg(c.grays[90]), c.mr(4))}
+              />
+            )}
+            {loading ? "Loading.." : saved ? "Saved" : "Save"}
+          </CMText>
         </Button>
       </View>
     </View>
