@@ -717,6 +717,7 @@ const Response = ({
                 s.repertoireState.browsingState.sidebarState.transposedState.visible =
                   true;
               });
+              playSan(sanPlus);
             } else {
               playSan(sanPlus);
             }
