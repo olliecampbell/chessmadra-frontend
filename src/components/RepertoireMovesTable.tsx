@@ -1126,7 +1126,7 @@ const CoverageProgressBar = ({
 };
 
 function renderAnnotation(_annotation: string) {
-  let annotation = _annotation.trim();
+  let annotation = _annotation?.trim();
   let stops = ["!", "?", "."];
   if (annotation) {
     if (some(stops, (stop) => annotation.endsWith(stop))) {
