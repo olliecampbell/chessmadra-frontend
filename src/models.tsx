@@ -90,6 +90,7 @@ export interface PositionReport {
   results: GameResultsDistribution;
   masterResults: GameResultsDistribution;
   plans: Plan[];
+  side: Side;
 }
 
 export interface PawnStructure {
@@ -104,7 +105,6 @@ export interface StockfishReport {
 }
 
 export interface SuggestedMove {
-  dangerous: Record<string, boolean>;
   sanPlus: string;
   epdAfter: string;
   stockfish?: StockfishReport;
@@ -112,6 +112,8 @@ export interface SuggestedMove {
   masterResults: GameResultsDistribution;
   percentagePlayedAtLevel: number;
   annotation: string;
+  needed: boolean;
+  incidence: number;
 }
 
 export interface GameResultsDistribution {

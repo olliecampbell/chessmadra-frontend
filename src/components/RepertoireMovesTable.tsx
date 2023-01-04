@@ -61,13 +61,10 @@ export interface TableResponse {
   lowConfidence?: boolean;
   disableBadgePriority?: boolean;
   biggestMiss?: RepertoireMiss;
-  needed?: boolean;
-  incidenceUpperBound?: number;
   coverage?: number;
   moveRating?: MoveRating;
   repertoireMove?: RepertoireMove;
   suggestedMove?: SuggestedMove;
-  incidence?: number;
   score?: number;
   scoreTable?: ScoreTable;
   side: Side;
@@ -106,9 +103,10 @@ export const RepertoireMovesTable = ({
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
   const responsive = useResponsive();
+  console.log({ responses });
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let mine = filter(responses, (m) => m.repertoireMove?.mine);
-  let anyNeeded = some(responses, (m) => m.needed);
+  let anyNeeded = some(responses, (m) => m.suggestedMove?.needed);
   let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let user = useAppState((s) => s.userState.user);
   let myTurn = side === activeSide;
@@ -128,13 +126,13 @@ export const RepertoireMovesTable = ({
     if (r.repertoireMove) {
       return true;
     }
-    if (anyNeeded && !r.needed) {
+    if (anyNeeded && !r.suggestedMove?.needed) {
       return false;
     }
     if (anyMine) {
       return false;
     }
-    if (r.needed && !myTurn) {
+    if (r.suggestedMove?.needed && !myTurn) {
       return true;
     }
     return (
@@ -344,8 +342,10 @@ let useSections = ({
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
-        let denominator = Math.round(1 / tableResponse.incidence);
-        let belowCoverageGoal = !tableResponse.needed;
+        let denominator = Math.round(
+          1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
+        );
+        let belowCoverageGoal = !tableResponse.suggestedMove?.needed;
         let veryRare = false;
         let hideGamesText = false;
         if (denominator >= 1000) {
@@ -525,11 +525,10 @@ const Response = ({
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoveringProps } = useHovering();
-  const { suggestedMove, repertoireMove, incidence, moveRating } =
-    tableResponse;
+  const { suggestedMove, repertoireMove, moveRating } = tableResponse;
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
   const positionReport = useBrowsingState(
-    ([s, rs]) => rs.positionReports?.[currentEpd],
+    ([s, rs]) => rs.positionReports?.[s.activeSide]?.[currentEpd],
     { referenceEquality: true }
   );
 
@@ -862,26 +861,14 @@ const Response = ({
             <View style={s(c.row)}>
               <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
                 <CMText style={s(c.fg(c.colors.debugColor), c.fontSize(14))}>
-                  {incidence ? formatIncidence(incidence) : "No incidence"}
+                  {tableResponse?.suggestedMove?.incidence
+                    ? formatIncidence(tableResponse?.suggestedMove?.incidence)
+                    : "No incidence"}
                 </CMText>
               </View>
               <Spacer width={4} />
               <CMText style={s(c.fg(c.colors.debugColor))}>
-                Win before:{" "}
-                {positionReport?.stockfish &&
-                  getWinPercentage(
-                    positionReport?.stockfish,
-                    currentSide
-                  ).toFixed(1)}
-              </CMText>
-              <Spacer width={4} />
-              <CMText style={s(c.fg(c.colors.debugColor))}>
-                Win after:{" "}
-                {positionReport?.stockfish &&
-                  getWinPercentage(
-                    suggestedMove?.stockfish,
-                    currentSide
-                  ).toFixed(1)}
+                {getTotalGames(suggestedMove?.results)} Games
               </CMText>
             </View>
           )}
@@ -1047,8 +1034,8 @@ const CoverageProgressBar = ({
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
-  let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
-  let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
+  // let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
+  // let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
   let completed = isNil(missFromHere);
   // if (!completed) {
   //   console.log({
@@ -1061,16 +1048,13 @@ const CoverageProgressBar = ({
   let debugElements = debugUi && (
     <View style={s(c.column)}>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        incidence: {(tableResponse?.incidence * 100).toFixed(2)}
+        incidence: {(tableResponse?.suggestedMove?.incidence * 100).toFixed(2)}
       </CMText>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
         Moves from here: {numMovesFromHere}
       </CMText>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
         Expected # from here: {expectedNumMovesNeeded}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        incidence UB: {(tableResponse?.incidenceUpperBound * 100).toFixed(2)}
       </CMText>
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
         coverage: {(tableResponse?.coverage * 100).toFixed(2)}

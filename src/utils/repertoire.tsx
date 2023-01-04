@@ -82,6 +82,7 @@ export interface RepertoireMove {
   pending?: boolean;
   side: Side;
   srs: SpacedRepetitionStatus;
+  needed?: boolean;
   incidence?: number;
 }
 
@@ -96,9 +97,9 @@ export type SanPlus = string;
 
 export interface RepertoireGrade {
   // moveIncidence: Record<MoveIdentifier, number>;
-  expectedDepth: number;
-  instructiveGames: LichessGame[];
-  coverage: Record<string, number>;
+  // expectedDepth: number;
+  // instructiveGames: LichessGame[];
+  // coverage: Record<string, number>;
   // exampleGames: LichessGame[];
   biggestMiss: RepertoireMiss;
   biggestMisses: Record<string, RepertoireMiss>;

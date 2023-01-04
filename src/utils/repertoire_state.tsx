@@ -73,7 +73,7 @@ export interface RepertoireState {
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
   numResponsesAboveThreshold: BySide<number>;
-  positionReports: Record<string, PositionReport>;
+  positionReports: BySide<Record<string, PositionReport>>;
   failedToFetchSharedRepertoire?: boolean;
   repertoireGrades: BySide<RepertoireGrade>;
   repertoireShareId?: string;
@@ -107,7 +107,7 @@ export interface RepertoireState {
   showImportView?: boolean;
   startImporting: (side: Side) => void;
   updateRepertoireStructures: () => void;
-  knownEpdIncidences: BySide<Record<string, number>>;
+  epdIncidences: BySide<Record<string, number>>;
   epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
@@ -242,7 +242,7 @@ export const getInitialRepertoireState = (
     expectedNumMovesFromEpd: { white: {}, black: {} },
     // All epds that are covered or arrived at (epd + epd after)
     epdNodes: { white: {}, black: {} },
-    knownEpdIncidences: { white: {}, black: {} },
+    epdIncidences: { white: {}, black: {} },
     deleteMoveState: {
       modalOpen: false,
       isDeletingMove: false,
@@ -274,7 +274,7 @@ export const getInitialRepertoireState = (
     ecoCodeLookup: {},
     pawnStructureLookup: {},
     pendingResponses: {},
-    positionReports: {},
+    positionReports: { white: {}, black: {} },
     lineReports: {},
     currentLine: [],
     // hasCompletedRepertoireInitialization: failOnTrue(true),
@@ -466,7 +466,6 @@ export const getInitialRepertoireState = (
             numMovesByEpd[epd] = totalNumMovesFromHere;
             s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
             s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
-            s.knownEpdIncidences[side][epd] = lastMove?.incidence;
             return {
               numMoves: totalNumMovesFromHere + (incidence > threshold ? 1 : 0),
               additionalExpectedNumMoves:
@@ -475,14 +474,6 @@ export const getInitialRepertoireState = (
           };
           recurse(START_EPD, seenEpds, null);
         });
-        mapSides(
-          s.repertoireGrades,
-          (repertoireGrade: RepertoireGrade, side) => {
-            forEach(repertoireGrade.biggestMisses, (miss) => {
-              s.knownEpdIncidences[side][miss.epd] = miss.incidence;
-            });
-          }
-        );
         s.myResponsesLookup = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
@@ -509,7 +500,7 @@ export const getInitialRepertoireState = (
           (repertoireSide: RepertoireSide) => {
             return flatten(
               Object.values(repertoireSide.positionResponses)
-            ).filter((m) => m.incidence && m.incidence > threshold).length;
+            ).filter((m) => m.needed).length;
           }
         );
       }, "updateRepertoireStructures"),
@@ -668,7 +659,9 @@ export const getInitialRepertoireState = (
           })
           .then(({ data }: { data: any }) => {
             set(([s]) => {
-              s.positionReports[epd]?.suggestedMoves?.forEach((sm) => {
+              s.positionReports[s.browsingState.activeSide][
+                epd
+              ]?.suggestedMoves?.forEach((sm) => {
                 if (sm.sanPlus === san) {
                   sm.annotation = text;
                 }
@@ -914,7 +907,7 @@ export const getInitialRepertoireState = (
                   [SidebarOnboardingStage.Initial];
               }
               if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("white", lineToPgn(TEST_LINE));
+                s.startBrowsing("black", lineToPgn(TEST_LINE));
               }
             });
           });
@@ -948,9 +941,7 @@ export const getInitialRepertoireState = (
     getNumResponsesBelowThreshold: (threshold: number, side: Side) =>
       get(([s]) => {
         return filter(getAllRepertoireMoves(s.repertoire), (m) => {
-          let belowThreshold =
-            m.incidence < threshold && m.mine && m.side === side;
-          return belowThreshold;
+          return m.needed;
         }).length;
       }),
     getMyResponsesLength: (side?: Side) =>

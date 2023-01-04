@@ -57,8 +57,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           browsingState.chessboardState.showPlans = true;
         } else {
           browsingState.sidebarState.showPlansState.visible = false;
-          browsingState.sidebarState.showPlansState.hasShown =
-            false;
+          browsingState.sidebarState.showPlansState.hasShown = false;
           browsingState.chessboardState.showPlans = false;
         }
       });
@@ -323,7 +322,7 @@ const SavedLineView = React.memo(function SavedLineView() {
   const [currentLine] = useSidebarState(([s]) => [lineToPgn(s.moveLog)]);
   const [positionReport, activeSide, lineReport] = useRepertoireState(
     (s) => [
-      s.positionReports[currentEpd],
+      s.positionReports[s.browsingState.activeSide][currentEpd],
       s.browsingState.activeSide,
       s.lineReports[currentLine],
     ],

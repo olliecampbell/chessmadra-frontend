@@ -29,7 +29,7 @@ let desktopHeaderStyles = s(
 export const Responses = React.memo(function Responses() {
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
   const positionReport = useBrowsingState(
-    ([s, rs]) => rs.positionReports[currentEpd],
+    ([s, rs]) => rs.positionReports[s.activeSide][currentEpd],
     { referenceEquality: true }
   );
   let [activeSide] = useBrowsingState(([s]) => [s.activeSide], {});
@@ -56,6 +56,7 @@ export const Responses = React.memo(function Responses() {
   let otherMoves = filter(tableResponses, (tr) => {
     return isNil(tr.repertoireMove) && activeSide === currentSide;
   });
+  console.log({ otherMoves });
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== currentSide;
   });

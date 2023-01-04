@@ -4,6 +4,8 @@ import { camelCase } from "camel-case";
 import { useAppStateInternal } from "./utils/app_state";
 import { clearCookies } from "./utils/auth";
 
+let EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
+
 const client = applyCaseMiddleware(
   axios.create({
     baseURL:
@@ -25,6 +27,9 @@ const client = applyCaseMiddleware(
         }
         if (s.startsWith("EPD_")) {
           return s.replace("EPD_", "");
+        }
+        if (EPD_REGEX.test(s)) {
+          return s;
         }
         return camelCase(s);
       },

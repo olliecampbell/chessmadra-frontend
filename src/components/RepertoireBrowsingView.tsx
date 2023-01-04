@@ -237,6 +237,5 @@ export const ReviewFromHereButton = () => {
 
 const BrowsingChessboardView = React.memo(function BrowsingChessboardView() {
   const [chessboardState] = useBrowsingState(([s]) => [s.chessboardState]);
-  console.log("rendering chessboard");
   return <ChessboardView state={chessboardState} />;
 });

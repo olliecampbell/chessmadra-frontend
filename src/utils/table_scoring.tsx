@@ -125,17 +125,17 @@ export const scoreTableResponses = (
           scoreTable.notes.push("Insufficient games for playrate");
         }
         if (weights[TableResponseScoreSource.Needed] > 0) {
-          if (tableResponse.needed) {
+          if (tableResponse.suggestedMove?.needed) {
             scoreTable.factors.push({
               source: TableResponseScoreSource.Needed,
               value: 10000.0,
             });
           }
         }
-        if (tableResponse.incidence) {
+        if (tableResponse.suggestedMove?.incidence) {
           scoreTable.factors.push({
             source: TableResponseScoreSource.Incidence,
-            value: tableResponse.incidence,
+            value: tableResponse.suggestedMove?.incidence,
           });
         }
         let [winrateLowerBound, winrateUpperBound] = getWinRateRange(

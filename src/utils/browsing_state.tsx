@@ -24,6 +24,8 @@ import {
   uniq,
   sortBy,
   take,
+  forEach,
+  uniqBy,
 } from "lodash-es";
 import {
   RepertoireMove,
@@ -324,7 +326,8 @@ export const getInitialBrowsingState = (
         let currentSide: Side =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         let currentEpd = s.chessboardState.getCurrentEpd();
-        let positionReport = rs.positionReports[s.sidebarState.currentEpd];
+        let positionReport =
+          rs.positionReports[s.activeSide][s.sidebarState.currentEpd];
         let _tableResponses: Record<string, TableResponse> = {};
         positionReport?.suggestedMoves
           .filter((sm) => getTotalGames(sm.results) > 0)
@@ -352,29 +355,7 @@ export const getInitialBrowsingState = (
         });
         let ownSide = currentSide === s.activeSide;
         const usePeerRates = shouldUsePeerRates(positionReport);
-        let currentLineIncidence = s.getIncidenceOfCurrentLine();
         let tableResponses = values(_tableResponses);
-        tableResponses.forEach((tr) => {
-          let epd = tr.suggestedMove?.epdAfter;
-          let knownIncidence = rs.knownEpdIncidences[s.activeSide][epd];
-          if (knownIncidence) {
-            tr.incidence = knownIncidence;
-            return;
-          }
-          let moveIncidence = 0.0;
-          tr.incidence = currentLineIncidence * moveIncidence;
-          tr.incidenceUpperBound = tr.incidence;
-          if (ownSide) {
-            moveIncidence = 1.0;
-            tr.incidence = currentLineIncidence;
-            tr.incidenceUpperBound = tr.incidence;
-          } else if (tr.suggestedMove) {
-            moveIncidence = getPlayRate(tr.suggestedMove, positionReport);
-            tr.incidence = currentLineIncidence * moveIncidence;
-            // TODO: better check here
-            tr.incidenceUpperBound = currentLineIncidence * moveIncidence;
-          }
-        });
         let biggestMisses =
           rs.repertoireGrades[s.activeSide].biggestMisses ?? {};
         tableResponses.forEach((tr) => {
@@ -441,26 +422,14 @@ export const getInitialBrowsingState = (
             }
           });
         }
-        if (!ownSide) {
-          tableResponses.forEach((tr) => {
-            let incidence = tr.incidenceUpperBound ?? tr.incidence;
-            let dangerous =
-              tr.suggestedMove?.dangerous?.[eloRange] ||
-              (tr.suggestedMove && isDangerous(tr.suggestedMove, s.activeSide));
-            if (
-              tr.suggestedMove?.epdAfter ===
-              "rnbqkbnr/pp2pppp/2p5/3p4/4P3/2N2Q2/PPPP1PPP/R1B1KBNR b KQkq -"
-            ) {
-              console.log("TR TEST", tr);
-            }
-            if (incidence > threshold) {
-              tr.needed = true;
-            } else if (dangerous && incidence > threshold / 2) {
-              tr.tags.push(MoveTag.RareDangerous);
-              tr.needed = true;
-            }
-          });
-        }
+        // if (!ownSide) {
+        //   tableResponses.forEach((tr) => {
+        //     let incidence = tr.incidenceUpperBound ?? tr.incidence;
+        //     let dangerous =
+        //       tr.suggestedMove?.dangerous?.[eloRange] ||
+        //       (tr.suggestedMove && isDangerous(tr.suggestedMove, s.activeSide));
+        //   });
+        // }
         tableResponses = scoreTableResponses(
           tableResponses,
           positionReport,
@@ -474,7 +443,8 @@ export const getInitialBrowsingState = (
         );
         s.sidebarState.tableResponses = tableResponses;
         let noneNeeded =
-          every(tableResponses, (tr) => !tr.needed) && !isEmpty(tableResponses);
+          every(tableResponses, (tr) => !tr.suggestedMove?.needed) &&
+          !isEmpty(tableResponses);
         s.sidebarState.isPastCoverageGoal =
           s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
       }),
@@ -542,21 +512,52 @@ export const getInitialBrowsingState = (
     fetchNeededPositionReports: () =>
       set(([s, rs]) => {
         let side = s.activeSide;
-        let neededPositions = [START_EPD];
-        if (!isNil(side)) {
-          s.chessboardState.positionHistory.forEach((epd) => {
-            if (!rs.positionReports[epd]) {
-              neededPositions.push(epd);
-            }
+        let requests: {
+          epd: string;
+          previousEpds: string[];
+          moves: string[];
+          side: Side;
+        }[] = [];
+        SIDES.forEach((side) => {
+          requests.push({
+            epd: START_EPD,
+            previousEpds: [],
+            moves: [],
+            side: side,
           });
-          let currentReport =
-            rs.positionReports[s.chessboardState.getCurrentEpd()];
+        });
+        if (!isNil(side)) {
+          let moveLog = [];
+          let epdLog = [];
+          forEach(
+            zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
+            ([epd, move], i) => {
+              if (move) {
+                moveLog.push(move);
+              }
+              epdLog.push(epd);
+              requests.push({
+                epd: epd,
+                side: side,
+                moves: [...moveLog],
+                previousEpds: [...epdLog],
+              });
+            }
+          );
+          let currentEpd = s.chessboardState.getCurrentEpd();
+          let currentReport = rs.positionReports[s.activeSide][currentEpd];
+          console.log({ req: requests[requests.length - 1] });
           if (currentReport) {
             currentReport.suggestedMoves.forEach((sm) => {
               let epd = sm.epdAfter;
-              if (!rs.positionReports[epd]) {
-                neededPositions.push(epd);
-              }
+              requests.push({
+                epd: epd,
+                side: side,
+                moves: [...moveLog, sm.sanPlus],
+                previousEpds: [...epdLog, epd],
+              });
+              console.log({ currentEpd, sm, epd, moveLog, epdLog });
+              console.log({ req: requests[requests.length - 1] });
             });
           }
         }
@@ -564,25 +565,25 @@ export const getInitialBrowsingState = (
           let startResponses =
             rs.repertoire?.["white"]?.positionResponses[START_EPD];
           if (startResponses?.length === 1) {
-            neededPositions.push(startResponses[0].epdAfter);
+            requests.push({
+              epd: startResponses[0].sanPlus,
+              previousEpds: [START_EPD],
+              moves: [startResponses[0].sanPlus],
+              side: "white",
+            });
           }
         }
-        neededPositions = filter(
-          neededPositions,
-          (epd) => !rs.positionReports[epd]
-        );
-        neededPositions = uniq(neededPositions);
-        if (isEmpty(neededPositions)) {
+        requests = filter(requests, (r) => !rs.positionReports[r.side][r.epd]);
+        requests = uniqBy(requests, (r) => `${r.epd}-${r.side}`);
+        if (isEmpty(requests)) {
           return;
         }
         client
-          .post("/api/v1/openings/position_reports", {
-            epds: neededPositions,
-          })
+          .post("/api/v1/openings/position_reports", requests)
           .then(({ data: reports }: { data: PositionReport[] }) => {
             set(([s, rs]) => {
               reports.forEach((report) => {
-                rs.positionReports[report.epd] = report;
+                rs.positionReports[report.side][report.epd] = report;
               });
               s.updateTableResponses();
               s.updatePlans();
@@ -642,6 +643,7 @@ export const getInitialBrowsingState = (
         map(
           zip(s.chessboardState.positionHistory, line, incidences),
           ([position, san, incidence], i) => {
+            console.log({ position, san, incidence });
             if (!san) {
               return;
             }
@@ -684,7 +686,6 @@ export const getInitialBrowsingState = (
       }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
-        let startPosition = START_EPD;
         if (!s.activeSide) {
           return [];
         }
@@ -693,29 +694,22 @@ export const getInitialBrowsingState = (
         return map(
           zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
           ([position, san], i) => {
-            let moveSide = i % 2 === 0 ? "white" : "black";
-            let knownIncidence = rs.knownEpdIncidences[s.activeSide][position];
-            if (knownIncidence) {
-              incidence = knownIncidence;
-              return incidence;
-            }
-            let mine = moveSide === s.activeSide;
-            if (!mine) {
-              let positionReport = rs.positionReports[position];
-              if (positionReport) {
-                let suggestedMove = find(
-                  positionReport.suggestedMoves,
-                  (sm) => sm.sanPlus === san
+            let positionReport = rs.positionReports[s.activeSide][position];
+            if (positionReport) {
+              let suggestedMove = find(
+                positionReport.suggestedMoves,
+                (sm) => sm.sanPlus === san
+              );
+              if (suggestedMove) {
+                console.log(
+                  "found suggested move, incidence:",
+                  suggestedMove.incidence
                 );
-                if (suggestedMove) {
-                  let moveIncidence = getPlayRate(
-                    suggestedMove,
-                    positionReport
-                  );
-                  incidence *= moveIncidence;
-                }
+                incidence = suggestedMove.incidence;
+                return incidence;
               }
             }
+
             return incidence;
           }
         );
@@ -878,7 +872,7 @@ const isCommonMistake = (
   if (getTotalGames(tr.suggestedMove.results) < 100) {
     return false;
   }
-  if (tr.incidence < threshold) {
+  if (!tr.suggestedMove?.needed) {
     return false;
   }
   if (

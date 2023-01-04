@@ -25,6 +25,7 @@
     "axios-case-converter": "^0.9.0",
     "expo": "~46.0.10",
     "expo-status-bar": "~1.4.0",
+    "global": "^4.4.0",
     "jest-expo": "^47.0.1",
     "js-cookie": "^3.0.1",
     "lodash-es": "^4.17.21",
@@ -48,6 +49,7 @@
     "sentry-expo": "^5.0.2",
     "tslib": "^2.4.0",
     "typescript": "^4.8.2",
+    "typescript-language-server": "^3.0.1",
     "yarn": "^1.22.19",
     "zustand": "^4.1.1"
   },
