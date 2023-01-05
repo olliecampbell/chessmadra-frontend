@@ -712,6 +712,7 @@ const Response = ({
                 s.repertoireState.browsingState.sidebarState.transposedState.visible =
                   true;
               });
+              playSan(sanPlus);
             } else {
               playSan(sanPlus);
             }
@@ -1105,9 +1106,11 @@ const CoverageProgressBar = ({
   );
 };
 
-function renderAnnotation(annotation: string) {
+function renderAnnotation(_annotation: string) {
+  let annotation = _annotation?.trim();
+  let stops = ["!", "?", "."];
   if (annotation) {
-    if (annotation.endsWith(".")) {
+    if (some(stops, (stop) => annotation.endsWith(stop))) {
       return annotation;
     } else {
       return `${annotation}.`;
