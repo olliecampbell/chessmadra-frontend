@@ -142,6 +142,7 @@ export interface MoveAnnotationReview {
   san: string;
   annotations: {
     userId: string;
+    userEmail: string;
     text: string;
   }[];
 }

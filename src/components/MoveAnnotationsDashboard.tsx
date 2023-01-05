@@ -16,6 +16,7 @@ import { AnnotationEditor } from "./AnnotationEditor";
 import { AdminMoveAnnotation } from "app/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
 import { Link } from "react-router-dom";
+import { formatIncidence } from "app/utils/repertoire";
 
 export const MoveAnnotationsDashboard = ({}) => {
   const isMobile = useIsMobile();
@@ -152,6 +153,8 @@ export const MoveAnnotationRow = ({
       )}
       <Spacer height={8} />
       <View style={s(c.row, c.justifyEnd)}>
+        <CMText style={s()}>{formatIncidence(ann?.incidence)}</CMText>
+        <Spacer grow />
         <Button
           style={s(c.buttons.basic, c.selfEnd)}
           onPress={() => {

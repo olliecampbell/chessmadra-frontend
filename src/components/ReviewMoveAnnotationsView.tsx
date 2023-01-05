@@ -182,36 +182,44 @@ const MoveAnnotationsReview = ({
                   />
                 </View>
                 <Spacer height={12} />
-                {x?.userId === user?.id && (
-                  <>
-                    <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
-                      mine
-                    </CMText>
-                    <Spacer height={12} />
-                  </>
-                )}
-                <Button
-                  style={s(
-                    c.buttons.basicSecondary,
-                    c.py(8),
-                    c.mr(12),
-                    c.px(16),
-                    {
-                      textStyles: s(
-                        c.buttons.basicSecondary.textStyles,
-                        c.fontSize(14),
-                        c.fg(c.grays[90])
-                      ),
-                    },
-                    c.selfEnd
+                <View style={s(c.row, c.alignCenter, c.justifyBetween)}>
+                  {x?.userId === user?.id ? (
+                    <>
+                      <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
+                        mine
+                      </CMText>
+                      <Spacer height={12} />
+                    </>
+                  ) : (
+                    <>
+                      <CMText style={s(c.fg(c.grays[0]), c.px(12))}>
+                        {x?.userEmail ?? "Anonymous"}
+                      </CMText>
+                    </>
                   )}
-                  onPress={() => {
-                    acceptMoveAnnotation(review.epd, review.san, x.text);
-                    setReviewed(true);
-                  }}
-                >
-                  Accept
-                </Button>
+                  <Button
+                    style={s(
+                      c.buttons.basicSecondary,
+                      c.py(8),
+                      c.mr(12),
+                      c.px(16),
+                      {
+                        textStyles: s(
+                          c.buttons.basicSecondary.textStyles,
+                          c.fontSize(14),
+                          c.fg(c.grays[90])
+                        ),
+                      },
+                      c.selfEnd
+                    )}
+                    onPress={() => {
+                      acceptMoveAnnotation(review.epd, review.san, x.text);
+                      setReviewed(true);
+                    }}
+                  >
+                    Accept
+                  </Button>
+                </View>
               </View>
             );
           }),
