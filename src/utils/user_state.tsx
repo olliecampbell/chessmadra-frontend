@@ -86,7 +86,10 @@ export const getInitialUserState = (
           .then(({ data }: { data: User }) => {
             set(([s, appState]) => {
               s.setUser(data);
-              appState.repertoireState.positionReports = {};
+              appState.repertoireState.positionReports = {
+                white: {},
+                black: {},
+              };
               appState.repertoireState.browsingState.fetchNeededPositionReports();
               appState.repertoireState.fetchRepertoire();
 

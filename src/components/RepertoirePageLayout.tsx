@@ -4,11 +4,7 @@ import { c, s } from "app/styles";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
-import {
-  useAppState,
-  useRepertoireState,
-  quick,
-} from "app/utils/app_state";
+import { useAppState, useRepertoireState, quick } from "app/utils/app_state";
 import React, { useEffect, useRef, useState } from "react";
 import { HeadSiteMeta } from "./PageContainer";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
@@ -274,7 +270,7 @@ export const RepertoireNavBreadcrumbs = () => {
   const [breadcrumbs] = useRepertoireState((s) => [s.breadcrumbs]);
   const responsive = useResponsive();
   return (
-    <View style={s(c.row, c.alignCenter, c.scrollX, c.constrainWidth)}>
+    <View style={s(c.row, c.alignCenter, c.constrainWidth)}>
       {intersperse(
         breadcrumbs.map((breadcrumb, i) => {
           return (
