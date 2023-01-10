@@ -566,7 +566,7 @@ export const getInitialBrowsingState = (
             rs.repertoire?.["white"]?.positionResponses[START_EPD];
           if (startResponses?.length === 1) {
             requests.push({
-              epd: startResponses[0].sanPlus,
+              epd: startResponses[0].epdAfter,
               previousEpds: [START_EPD],
               moves: [startResponses[0].sanPlus],
               side: "white",
