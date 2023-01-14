@@ -47,7 +47,7 @@ export interface AdminMoveAnnotation {
   sanPlus: string;
   annotation?: MoveAnnotation;
   reviewerEmail?: string;
-  incidence?: number;
+  games: number;
 }
 
 export interface RepertoireAudit {

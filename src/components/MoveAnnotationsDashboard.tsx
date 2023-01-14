@@ -153,7 +153,7 @@ export const MoveAnnotationRow = ({
       )}
       <Spacer height={8} />
       <View style={s(c.row, c.justifyEnd)}>
-        <CMText style={s()}>{formatIncidence(ann?.incidence)}</CMText>
+        <CMText style={s()}>{ann.games.toLocaleString()} games</CMText>
         <Spacer grow />
         <Button
           style={s(c.buttons.basic, c.selfEnd)}
