@@ -353,7 +353,6 @@ export const getInitialRepertoireState = (
             1 / 100,
             side
           );
-          console.log("numBelowThreshold, side", numBelowThreshold, side);
           if (side && numBelowThreshold > minimumToTrim) {
             s.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
               SidebarOnboardingStage.TrimRepertoire

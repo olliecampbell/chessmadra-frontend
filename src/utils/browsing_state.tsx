@@ -392,15 +392,18 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           let epdAfter = tr.suggestedMove?.epdAfter;
-          if (!ownSide || tr.repertoireMove) {
+          if (tr.repertoireMove) {
             return;
           }
 
           if (!tr.repertoireMove && rs.epdNodes[s.activeSide][epdAfter]) {
-            tr.tags.push(MoveTag.Transposes);
-            tr.disableBadgePriority = true;
+            tr.transposes = true;
+            if (ownSide) {
+              tr.tags.push(MoveTag.Transposes);
+            }
           }
-          if (isTheoryHeavy(tr, currentEpd)) {
+
+          if (isTheoryHeavy(tr, currentEpd) && !ownSide) {
             tr.tags.push(MoveTag.TheoryHeavy);
           }
         });
@@ -470,6 +473,7 @@ export const getInitialBrowsingState = (
       }),
     dismissTransientSidebarState: () =>
       set(([s, rs]) => {
+        s.chessboardState.showPlans = false;
         if (s.sidebarState.submitFeedbackState.visible) {
           s.sidebarState.submitFeedbackState.visible = false;
           s.checkFreezeChessboard();
@@ -602,6 +606,9 @@ export const getInitialBrowsingState = (
 
     updatePlans: () =>
       set(([s, rs]) => {
+        if (!s.activeSide) {
+          return;
+        }
         let plans =
           rs.positionReports[s.activeSide][s.sidebarState.currentEpd]?.plans ??
           [];

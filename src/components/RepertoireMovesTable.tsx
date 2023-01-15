@@ -58,8 +58,8 @@ import { useResponsive } from "app/utils/useResponsive";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  transposes?: boolean;
   lowConfidence?: boolean;
-  disableBadgePriority?: boolean;
   biggestMiss?: RepertoireMiss;
   coverage?: number;
   moveRating?: MoveRating;
@@ -345,6 +345,9 @@ let useSections = ({
         let denominator = Math.round(
           1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
         );
+        if (tableResponse.suggestedMove?.sanPlus === "c5") {
+          console.log(tableResponse);
+        }
         let belowCoverageGoal = !tableResponse.suggestedMove?.needed;
         let veryRare = false;
         let hideGamesText = false;
@@ -653,7 +656,7 @@ const Response = ({
       <MoveTagView
         text="Transposes to your repertoire"
         icon="fa-solid fa-merge"
-        style={s(c.fg(c.grays[75]), c.fontSize(14), c.rotate(-90))}
+        style={s(c.fg(c.greens[55]), c.fontSize(14), c.rotate(-90))}
       />
     );
   }
@@ -706,13 +709,16 @@ const Response = ({
             s.repertoireState.browsingState.moveSidebarState("right");
             // If has transposition tag, quick make transposition state visible on browser state
 
-            if (moveHasTag(tableResponse, MoveTag.Transposes)) {
+            console.log("CLICKED", { tableResponse });
+            if (tableResponse.transposes) {
               console.log("Is transpose!");
               quick((s) => {
+                playSan(sanPlus);
                 s.repertoireState.browsingState.sidebarState.transposedState.visible =
                   true;
+                s.repertoireState.browsingState.chessboardState.showPlans =
+                  true;
               });
-              playSan(sanPlus);
             } else {
               playSan(sanPlus);
             }
@@ -1032,6 +1038,9 @@ const CoverageProgressBar = ({
       s.expectedNumMovesFromEpd[s.browsingState.activeSide][epdAfter],
       s.repertoireGrades[s.browsingState.activeSide]?.biggestMisses[epdAfter],
     ]);
+  const [movesFromHere] = useRepertoireState((s) => [
+    s.numMovesFromEpd[s.browsingState.activeSide],
+  ]);
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
@@ -1057,11 +1066,16 @@ const CoverageProgressBar = ({
       <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
         Expected # from here: {expectedNumMovesNeeded}
       </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        coverage: {(tableResponse?.coverage * 100).toFixed(2)}
-      </CMText>
     </View>
   );
+  if (tableResponse.suggestedMove.sanPlus === "c5") {
+    console.log("DEBUG", {
+      missFromHere,
+      numMovesFromHere,
+      expectedNumMovesNeeded,
+      movesFromHere,
+    });
+  }
   // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
   // if (incidence < threshold && !hasResponse) {
   //   return (

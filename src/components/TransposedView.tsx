@@ -37,9 +37,12 @@ import { getPlanPiece, MetaPlan } from "app/utils/plans";
 import { useHovering } from "app/hooks/useHovering";
 import { Chess, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
+import { PlayFromHere } from "./TargetCoverageReachedView";
 
 export const TransposedView = () => {
   const responsive = useResponsive();
+  let [planSections] = useSidebarState(([s]) => [s.planSections]);
+  console.log({ planSections });
 
   return (
     <SidebarTemplate
@@ -57,7 +60,6 @@ export const TransposedView = () => {
       ]}
       bodyPadding={true}
     >
-      <Spacer height={12} />
       <>
         <CMText
           style={s(
@@ -69,6 +71,12 @@ export const TransposedView = () => {
           You don't need to add anything else. All of your moves from this
           position will still apply
         </CMText>
+        {!isEmpty(planSections) && (
+          <>
+            <Spacer height={24} />
+            <PlayFromHere isolated />
+          </>
+        )}
       </>
     </SidebarTemplate>
   );

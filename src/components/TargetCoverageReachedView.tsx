@@ -39,9 +39,7 @@ import { Chess, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 
 export const TargetCoverageReachedView = () => {
-  const responsive = useResponsive();
-  let [currentEpd, planSections, showPlansState] = useSidebarState(([s]) => [
-    s.currentEpd,
+  let [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
@@ -87,43 +85,7 @@ export const TargetCoverageReachedView = () => {
 */}
       <Spacer height={12} />
       {!isEmpty(planSections) ? (
-        <>
-          {showPlansState.coverageReached && (
-            <>
-              <CMText
-                style={s(
-                  c.weightBold,
-                  c.fontSize(14),
-                  c.fg(c.colors.textPrimary)
-                )}
-              >
-                How to play from here
-              </CMText>
-              <Spacer height={18} />
-            </>
-          )}
-          <View>
-            {intersperse(
-              planSections.map((section, i) => {
-                return (
-                  <View style={s(c.row, c.alignStart)} key={i}>
-                    <i
-                      className="fa-solid fa-circle"
-                      style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
-                    />
-                    <Spacer width={8} />
-                    <CMText style={s(c.fg(c.colors.textPrimary))}>
-                      {section}
-                    </CMText>
-                  </View>
-                );
-              }),
-              (k) => {
-                return <Spacer key={k} height={12} />;
-              }
-            )}
-          </View>
-        </>
+        <PlayFromHere />
       ) : (
         <>
           <CMText
@@ -139,5 +101,46 @@ export const TargetCoverageReachedView = () => {
         </>
       )}
     </SidebarTemplate>
+  );
+};
+
+export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
+  const responsive = useResponsive();
+  let [planSections, showPlansState] = useSidebarState(([s]) => [
+    cloneDeep(s.planSections),
+    s.showPlansState,
+  ]);
+  return (
+    <>
+      {(showPlansState.coverageReached || isolated) && (
+        <>
+          <CMText
+            style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
+          >
+            How to play from here
+          </CMText>
+          <Spacer height={18} />
+        </>
+      )}
+      <View>
+        {intersperse(
+          planSections.map((section, i) => {
+            return (
+              <View style={s(c.row, c.alignStart)} key={i}>
+                <i
+                  className="fa-solid fa-circle"
+                  style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
+                />
+                <Spacer width={8} />
+                <CMText style={s(c.fg(c.colors.textPrimary))}>{section}</CMText>
+              </View>
+            );
+          }),
+          (k) => {
+            return <Spacer key={k} height={12} />;
+          }
+        )}
+      </View>
+    </>
   );
 };

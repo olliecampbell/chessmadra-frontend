@@ -238,7 +238,7 @@ class PlanConsumer {
     } else if (queenside) {
       this.planSections.push(
         <>
-          {capitalize(this.side)} ${this.nextAdverb}{" "}
+          {capitalize(this.side)} {this.nextAdverb()}{" "}
           <PlanMoveText plan={this.consume(queenside)}>
             castles queenside
           </PlanMoveText>
