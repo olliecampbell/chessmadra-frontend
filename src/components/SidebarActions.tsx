@@ -73,7 +73,10 @@ export const SidebarActions = () => {
   });
   const [activeSide, hasPlans] = useBrowsingState(([s, rs]) => [
     s.activeSide,
-    !isEmpty(rs.positionReports[s.sidebarState.currentEpd]?.plans),
+    !isEmpty(
+      rs.positionReports[s.sidebarState.currentSide][s.sidebarState.currentEpd]
+        ?.plans
+    ),
   ]);
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
@@ -97,7 +100,6 @@ export const SidebarActions = () => {
   };
   let addBiggestMissAction = () => {
     let miss = null;
-    console.log({ lineMiss });
     if (addedLineState.visible) {
       miss = nearestMiss ?? lineMiss;
     } else {

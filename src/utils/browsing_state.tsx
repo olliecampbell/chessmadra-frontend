@@ -556,8 +556,6 @@ export const getInitialBrowsingState = (
                 moves: [...moveLog, sm.sanPlus],
                 previousEpds: [...epdLog, epd],
               });
-              console.log({ currentEpd, sm, epd, moveLog, epdLog });
-              console.log({ req: requests[requests.length - 1] });
             });
           }
         }
@@ -604,7 +602,10 @@ export const getInitialBrowsingState = (
 
     updatePlans: () =>
       set(([s, rs]) => {
-        let plans = rs.positionReports[s.sidebarState.currentEpd]?.plans ?? [];
+        let plans =
+          rs.positionReports[s.activeSide][s.sidebarState.currentEpd]?.plans ??
+          [];
+
         let maxOccurence = plans[0]?.occurences ?? 0;
         let consumer = parsePlans(
           cloneDeep(plans),
