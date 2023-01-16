@@ -11,6 +11,8 @@ import {
   last,
   clamp,
   includes,
+  max,
+  map,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -163,6 +165,11 @@ export const RepertoireMovesTable = ({
       setMoveMaxWidth(width);
     }
   };
+  let tableMeta = {
+    highestIncidence: max(
+      map(responses, (r) => r.suggestedMove?.incidence ?? 1.0)
+    ),
+  };
   return (
     <View style={s(c.column)}>
       {header && (
@@ -197,6 +204,7 @@ export const RepertoireMovesTable = ({
           trimmedResponses.map((tableResponse, i) => {
             return (
               <Response
+                tableMeta={tableMeta}
                 hideAnnotations={hideAnnotations}
                 myTurn={myTurn}
                 anyMine={anyMine}
@@ -237,7 +245,6 @@ export const RepertoireMovesTable = ({
             <Pressable
               style={s(c.pb(2))}
               onPress={() => {
-                console.log({ expandedLength });
                 setExpandedLength(trimmedResponses.length + 5);
                 trackEvent("repertoire.moves_table.show_more");
               }}
@@ -301,10 +308,12 @@ export const RepertoireMovesTable = ({
 interface Section {
   width: number;
   header: string;
+  alignLeft?: boolean;
   content: (_: {
     suggestedMove: SuggestedMove;
     positionReport: PositionReport;
     tableResponse: TableResponse;
+    tableMeta: TableMeta;
     side: Side;
   }) => any;
 }
@@ -345,9 +354,6 @@ let useSections = ({
         let denominator = Math.round(
           1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
         );
-        if (tableResponse.suggestedMove?.sanPlus === "c5") {
-          console.log(tableResponse);
-        }
         let belowCoverageGoal = !tableResponse.suggestedMove?.needed;
         let veryRare = false;
         let hideGamesText = false;
@@ -392,8 +398,26 @@ let useSections = ({
   if (!myTurn) {
     sections.push({
       width: 80,
-      content: ({ suggestedMove, positionReport, tableResponse }) => {
-        return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
+      alignLeft: true,
+      content: ({
+        suggestedMove,
+        positionReport,
+        tableResponse,
+        tableMeta,
+      }) => {
+        let relativeIncidence =
+          (suggestedMove?.incidence ?? 1.0) / tableMeta.highestIncidence;
+        relativeIncidence = Math.pow(relativeIncidence, 0.3);
+        relativeIncidence = Math.max(relativeIncidence, 0.25);
+        return (
+          <>
+            <View
+              style={s(c.width(`${relativeIncidence * 100}%`), c.selfStart)}
+            >
+              {<CoverageProgressBar tableResponse={tableResponse} />}
+            </View>
+          </>
+        );
       },
       header: "Your coverage",
     });
@@ -507,6 +531,10 @@ let useSections = ({
   return sections;
 };
 
+interface TableMeta {
+  highestIncidence: number;
+}
+
 const Response = ({
   tableResponse,
   sections,
@@ -516,6 +544,7 @@ const Response = ({
   editing,
   moveMinWidth,
   moveRef,
+  tableMeta,
 }: {
   tableResponse: TableResponse;
   anyMine: boolean;
@@ -525,6 +554,7 @@ const Response = ({
   moveMinWidth: number;
   moveRef: any;
   editing;
+  tableMeta: TableMeta;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoveringProps } = useHovering();
@@ -709,9 +739,7 @@ const Response = ({
             s.repertoireState.browsingState.moveSidebarState("right");
             // If has transposition tag, quick make transposition state visible on browser state
 
-            console.log("CLICKED", { tableResponse });
             if (tableResponse.transposes) {
-              console.log("Is transpose!");
               quick((s) => {
                 playSan(sanPlus);
                 s.repertoireState.browsingState.sidebarState.transposedState.visible =
@@ -832,7 +860,12 @@ const Response = ({
                 sections.map((section, i) => {
                   return (
                     <View
-                      style={s(c.width(section.width), c.center, c.row)}
+                      style={s(
+                        c.width(section.width),
+                        c.center,
+                        section.alignLeft && c.justifyStart,
+                        c.row
+                      )}
                       key={i}
                     >
                       {section.content({
@@ -840,6 +873,7 @@ const Response = ({
                         positionReport,
                         tableResponse,
                         side: currentSide,
+                        tableMeta,
                       })}
                     </View>
                   );
@@ -986,7 +1020,6 @@ export const DebugScoreView = ({
       <Spacer height={12} />
       {intersperse(
         tableResponse.scoreTable?.factors.map((factor, i) => {
-          console.log({ factor });
           return (
             <View style={s(c.row, c.fullWidth, c.textAlign("end"))} key={i}>
               <CMText style={s(c.width(120))}>{factor.source}</CMText>
