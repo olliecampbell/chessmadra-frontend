@@ -385,6 +385,16 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           if (!ownSide) {
+            if (
+              tr.suggestedMove?.incidence < threshold &&
+              tr.suggestedMove?.needed
+            ) {
+              tr.tags.push(MoveTag.RareDangerous);
+            }
+          }
+        });
+        tableResponses.forEach((tr) => {
+          if (!ownSide) {
             if (isCommonMistake(tr, positionReport, threshold)) {
               tr.tags.push(MoveTag.CommonMistake);
             }

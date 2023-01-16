@@ -434,7 +434,7 @@ export const getInitialRepertoireState = (
             newSeenEpds.add(epd);
             let allMoves = filter(
               repertoireSide.positionResponses[epd] ?? [],
-              (m) => m.incidence > threshold
+              (m) => m.needed
             );
             let [mainMove, ...others] = allMoves;
             let additionalExpectedNumMoves = 0;
