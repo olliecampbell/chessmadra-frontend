@@ -105,6 +105,7 @@ export interface StockfishReport {
 }
 
 export interface SuggestedMove {
+  danger?: number;
   sanPlus: string;
   epdAfter: string;
   stockfish?: StockfishReport;

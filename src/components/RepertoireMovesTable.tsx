@@ -105,7 +105,6 @@ export const RepertoireMovesTable = ({
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
   const responsive = useResponsive();
-  console.log({ responses });
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let mine = filter(responses, (m) => m.repertoireMove?.mine);
   let anyNeeded = some(responses, (m) => m.suggestedMove?.needed);
@@ -910,6 +909,10 @@ const Response = ({
               <Spacer width={4} />
               <CMText style={s(c.fg(c.colors.debugColor))}>
                 {getTotalGames(suggestedMove?.results)} Games
+              </CMText>
+              <Spacer width={4} />
+              <CMText style={s(c.fg(c.colors.debugColor))}>
+                danger {suggestedMove.danger?.toFixed(3)}
               </CMText>
             </View>
           )}

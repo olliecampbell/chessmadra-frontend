@@ -4,15 +4,10 @@ import { c, s } from "app/styles";
 import { CMText } from "./CMText";
 import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "app/Space";
-import {
-  getRecommendedMissThreshold,
-} from "app/utils/user_state";
-import {
-  getAppState,
-  useUserState,
-  quick,
-} from "app/utils/app_state";
+import { getRecommendedMissThreshold } from "app/utils/user_state";
+import { getAppState, useUserState, quick } from "app/utils/app_state";
 import { BP, useResponsive } from "app/utils/useResponsive";
+import { cloneDeep } from "lodash-es";
 
 export const ProfileModal = () => {
   const [user, profileModalOpen] = useUserState((s) => [
@@ -90,6 +85,10 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
   };
   const responsive = useResponsive();
   const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
+  const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
+  if (user.isAdmin) {
+    thresholdOptions.push(0.25 / 100, 1 / 600);
+  }
   return (
     <View style={s(c.column, c.alignStart)}>
       <CMText
@@ -100,7 +99,7 @@ export const ProfileTargetDepthSelector = ({}: {}) => {
       <Spacer height={responsive.switch(4, [BP.lg, 12])} />
       <SelectOneOf
         containerStyles={s(c.fullWidth)}
-        choices={THRESHOLD_OPTIONS}
+        choices={thresholdOptions}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
         activeChoice={selected}
