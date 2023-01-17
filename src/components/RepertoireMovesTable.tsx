@@ -404,19 +404,7 @@ let useSections = ({
         tableResponse,
         tableMeta,
       }) => {
-        let relativeIncidence =
-          (suggestedMove?.incidence ?? 1.0) / tableMeta.highestIncidence;
-        relativeIncidence = Math.pow(relativeIncidence, 0.3);
-        relativeIncidence = Math.max(relativeIncidence, 0.25);
-        return (
-          <>
-            <View
-              style={s(c.width(`${relativeIncidence * 100}%`), c.selfStart)}
-            >
-              {<CoverageProgressBar tableResponse={tableResponse} />}
-            </View>
-          </>
-        );
+        return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
       },
       header: "Your coverage",
     });
