@@ -3,11 +3,11 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { isEmpty, capitalize } from "lodash-es";
+import { isEmpty, capitalize, dropRight } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
-import { SIDES, Side } from "app/utils/repertoire";
+import { SIDES, Side, pgnToLine, lineToPgn } from "app/utils/repertoire";
 import { plural } from "app/utils/pluralize";
 import { CMText } from "./CMText";
 import {
@@ -324,7 +324,12 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
       )}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side, biggestMiss.lines[0]);
+          let line = pgnToLine(biggestMiss.lines[0]);
+          if (line.length > 1) {
+            line = dropRight(line, 1);
+          }
+
+          s.repertoireState.startBrowsing(side as Side, lineToPgn(line));
           trackEvent("overview.go_to_biggest_miss");
         });
       }}

@@ -49,9 +49,7 @@ import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 
-const TEST_LINE = isDevelopment
-  ? ["e4", "c5", "d4", "cxd4", "c3", "dxc3", "Nxc3", "e6", "Nf3"]
-  : [];
+const TEST_LINE = isDevelopment ? [] : [];
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -569,21 +567,23 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         let pgn = "";
 
-        let seen_epds = new Set();
-        let recurse = (epd, line) => {
+        let seenEpds = new Set();
+        let recurse = (epd, line, seenEpds) => {
           let [mainMove, ...others] =
             s.repertoire[side].positionResponses[epd] ?? [];
+          let newSeenEpds = new Set(seenEpds);
+          newSeenEpds.add(epd);
           if (!mainMove) {
             return;
           }
           let mainLine = [...line, mainMove.sanPlus];
           pgn = pgn + getLastMoveWithNumber(lineToPgn(mainLine)) + " ";
           forEach(others, (variationMove) => {
-            if (seen_epds.has(variationMove.epdAfter)) {
+            if (seenEpds.has(variationMove.epdAfter)) {
               return;
             }
             let variationLine = [...line, variationMove.sanPlus];
-            seen_epds.add(variationMove.epdAfter);
+            seenEpds.add(variationMove.epdAfter);
             pgn += "(";
             if (sideOfLastmove(variationLine) === "black") {
               let n = Math.floor(variationLine.length / 2);
@@ -596,11 +596,11 @@ export const getInitialRepertoireState = (
               pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
             }
 
-            recurse(variationMove.epdAfter, variationLine);
+            recurse(variationMove.epdAfter, variationLine, seenEpds);
             pgn = pgn.trim();
             pgn += ") ";
           });
-          if (seen_epds.has(mainMove.epdAfter)) {
+          if (seenEpds.has(mainMove.epdAfter)) {
             return;
           }
           if (
@@ -610,10 +610,10 @@ export const getInitialRepertoireState = (
             pgn += `${getMoveNumber(lineToPgn(mainLine))}... `;
           }
 
-          seen_epds.add(mainMove.epdAfter);
-          recurse(mainMove.epdAfter, mainLine);
+          seenEpds.add(mainMove.epdAfter);
+          recurse(mainMove.epdAfter, mainLine, seenEpds);
         };
-        recurse(START_EPD, []);
+        recurse(START_EPD, [], seenEpds);
         pgn = pgn.trim();
 
         let downloadLink = document.createElement("a");

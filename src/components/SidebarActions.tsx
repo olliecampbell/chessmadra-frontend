@@ -11,6 +11,7 @@ import {
   map,
   last,
   isNil,
+  dropRight,
 } from "lodash-es";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
@@ -109,7 +110,7 @@ export const SidebarActions = () => {
       return;
     }
     let text = `Go to the biggest gap in your ${activeSide} repertoire`;
-    let line = pgnToLine(miss.lines[0]);
+    let line = dropRight(pgnToLine(miss.lines[0]), 1);
     let missPositions = lineToPositions(line);
     let missPositionsSet = new Set(missPositions);
     let currentOpeningName = last(

@@ -455,11 +455,17 @@ export const getInitialBrowsingState = (
             : PLAYRATE_WEIGHTS
         );
         s.sidebarState.tableResponses = tableResponses;
-        let noneNeeded =
-          every(tableResponses, (tr) => !tr.suggestedMove?.needed) &&
-          !isEmpty(tableResponses);
-        s.sidebarState.isPastCoverageGoal =
-          s.getIncidenceOfCurrentLine() < threshold || (!ownSide && noneNeeded);
+        let noneNeeded = every(
+          tableResponses,
+          (tr) => !tr.suggestedMove?.needed
+        );
+        if (!ownSide && !isEmpty(tableResponses)) {
+          if (noneNeeded) {
+            s.sidebarState.isPastCoverageGoal = true;
+          } else {
+            s.sidebarState.isPastCoverageGoal = false;
+          }
+        }
       }),
     getMissInThisLine: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {

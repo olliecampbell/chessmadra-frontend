@@ -353,7 +353,8 @@ let useSections = ({
         let denominator = Math.round(
           1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
         );
-        let belowCoverageGoal = !tableResponse.suggestedMove?.needed;
+        let belowCoverageGoal =
+          (tableResponse.suggestedMove?.incidence ?? 0) < threshold;
         let veryRare = false;
         let hideGamesText = false;
         if (denominator >= 1000) {
