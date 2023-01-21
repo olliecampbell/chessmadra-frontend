@@ -1092,14 +1092,6 @@ const CoverageProgressBar = ({
       </CMText>
     </View>
   );
-  if (tableResponse.suggestedMove.sanPlus === "c5") {
-    console.log("DEBUG", {
-      missFromHere,
-      numMovesFromHere,
-      expectedNumMovesNeeded,
-      movesFromHere,
-    });
-  }
   // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
   // if (incidence < threshold && !hasResponse) {
   //   return (

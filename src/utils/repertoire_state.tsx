@@ -49,7 +49,9 @@ import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment
+  ? ["e4", "c5", "d4", "cxd4", "c3", "dxc3", "Nxc3", "e6", "Nf3"]
+  : [];
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -906,7 +908,7 @@ export const getInitialRepertoireState = (
                   [SidebarOnboardingStage.Initial];
               }
               if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("black", lineToPgn(TEST_LINE));
+                s.startBrowsing("white", lineToPgn(TEST_LINE));
               }
             });
           });
