@@ -152,7 +152,8 @@ export const SidebarActions = () => {
       text = `Skip ahead to the next gap in this line`;
     }
 
-    if (miss && miss.epd !== currentEpd) {
+    const isAtBiggestMiss = currentEpd === last(missPositions);
+    if (miss && !isAtBiggestMiss) {
       buttons.push({
         onPress: () => {
           quick((s) => {
