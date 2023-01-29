@@ -23,6 +23,7 @@
     "add": "^2.0.6",
     "axios": "^0.27.2",
     "axios-case-converter": "^0.9.0",
+    "dotenv": "^16.0.3",
     "expo": "~46.0.10",
     "expo-status-bar": "~1.4.0",
     "global": "^4.4.0",

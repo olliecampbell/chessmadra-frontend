@@ -4,6 +4,7 @@ import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { Repertoire } from "./repertoire";
+import { StorageItem } from "./storageItem";
 
 export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
@@ -14,6 +15,7 @@ export interface AdminState {
     san: string,
     text: string
   ) => Promise<void>;
+  spoofUser: (email: string) => void;
   editMoveAnnotation: (_: {
     epd: string;
     san: string;
@@ -26,6 +28,7 @@ export interface AdminState {
   moveAnnotationsDashboard?: MoveAnnotationsDashboard;
   fetchMoveAnnotationDashboard: () => void;
   quick: (fn: (_: AdminState) => void) => void;
+  spoofedEmail?: StorageItem<string>;
 }
 
 type Stack = [AdminState, AppState];
@@ -84,6 +87,7 @@ export const getInitialAdminState = (
   let initialState = {
     ...createQuick<AdminState>(setOnly),
     moveAnnotationReviewQueue: null,
+    spoofedEmail: new StorageItem("spoofed-email", undefined),
     fetchMoveAnnotationReviewQueue: () =>
       set(([s]) => {
         client
@@ -94,6 +98,11 @@ export const getInitialAdminState = (
             });
           });
       }),
+    spoofUser: (email: string) => {
+      set(([s]) => {
+        s.spoofedEmail.value = email;
+      });
+    },
     editMoveAnnotation: ({
       epd,
       san,

@@ -87,7 +87,7 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               <View
                 style={s(
                   c.fullWidth,
-                  vertical && s(c.selfCenter, c.maxWidth(320), c.pt(20)),
+                  vertical && s(c.selfCenter, c.maxWidth(440), c.pt(20)),
                   !vertical && c.pt(140),
                   chessboardFrozen && c.opacity(20)
                 )}

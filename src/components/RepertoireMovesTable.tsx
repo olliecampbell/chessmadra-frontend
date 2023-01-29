@@ -13,6 +13,7 @@ import {
   includes,
   max,
   map,
+  reverse,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -152,6 +153,10 @@ export const RepertoireMovesTable = ({
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let hideAnnotations = moveNumber === 1;
   const [moveMaxWidth, setMoveMaxWidth] = useState(40);
+  const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
+  const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
+    referenceEquality: true,
+  });
   const onMoveRender = (sanPlus, e) => {
     if (isNil(e)) {
       // TODO: better deletion, decrease widths
@@ -169,6 +174,41 @@ export const RepertoireMovesTable = ({
       map(responses, (r) => r.suggestedMove?.incidence ?? 1.0)
     ),
   };
+  let includeOpeningName = false;
+  const openingNames = reverse(
+    map(reverse(trimmedResponses), (tr) => {
+      let newOpeningName = null;
+      let [currentOpeningName, currentVariations] = currentEcoCode
+        ? getAppropriateEcoName(currentEcoCode.fullName)
+        : [];
+      let nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
+      if (nextEcoCode) {
+        let [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
+        if (name != currentOpeningName) {
+          includeOpeningName = true;
+          return name;
+        }
+        let lastVariation = last(variations);
+        console.log({
+          lastVariation,
+          name,
+          currentOpeningName,
+          currentEcoCode,
+        });
+
+        if (
+          name === currentOpeningName &&
+          lastVariation != last(currentVariations)
+        ) {
+          includeOpeningName = true;
+          return last(variations);
+        }
+        if (includeOpeningName) {
+          return last(variations);
+        }
+      }
+    })
+  );
   return (
     <View style={s(c.column)}>
       {header && (
@@ -201,8 +241,10 @@ export const RepertoireMovesTable = ({
       >
         {intersperse(
           trimmedResponses.map((tableResponse, i) => {
+            let openingName = openingNames[i];
             return (
               <Response
+                openingName={openingName}
                 tableMeta={tableMeta}
                 hideAnnotations={hideAnnotations}
                 myTurn={myTurn}
@@ -345,6 +387,7 @@ let useSections = ({
   if (!myTurn) {
     sections.push({
       width: 100,
+      alignLeft: true,
       content: ({ suggestedMove, positionReport, tableResponse }) => {
         let playRate =
           suggestedMove &&
@@ -533,6 +576,7 @@ const Response = ({
   moveMinWidth,
   moveRef,
   tableMeta,
+  openingName,
 }: {
   tableResponse: TableResponse;
   anyMine: boolean;
@@ -541,6 +585,7 @@ const Response = ({
   myTurn: boolean;
   moveMinWidth: number;
   moveRef: any;
+  openingName?: string;
   editing;
   tableMeta: TableMeta;
 }) => {
@@ -638,28 +683,12 @@ const Response = ({
       </View>
     );
   }
-  let newOpeningName = null;
-  let [currentOpeningName, currentVariations] = currentEcoCode
-    ? getAppropriateEcoName(currentEcoCode.fullName)
-    : [];
-  if (nextEcoCode) {
-    let [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
-    if (name != currentOpeningName) {
-      newOpeningName = name;
-    }
-    let lastVariation = last(variations);
-    if (
-      name === currentOpeningName &&
-      lastVariation != last(currentVariations)
-    ) {
-      newOpeningName = last(variations);
-    }
-  }
   let annotation = renderAnnotation(suggestedMove?.annotation);
   if (hideAnnotations) {
     annotation = null;
   }
   let tags = [];
+  // newOpeningName = nextEcoCode?.fullName;
   if (moveHasTag(tableResponse, MoveTag.BestMove)) {
     tags.push(
       <MoveTagView
@@ -709,7 +738,7 @@ const Response = ({
   const editingMyMoves = true;
 
   let hasInlineAnnotationOrOpeningName =
-    newOpeningName || (!isMobile && annotation);
+    openingName || (!isMobile && annotation);
 
   const tagsRow = !isEmpty(tags) && (
     <View style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}>
@@ -823,9 +852,9 @@ const Response = ({
                     c.lineHeight("1.3rem")
                   )}
                 >
-                  {newOpeningName && (
+                  {openingName && (
                     <>
-                      <b>{newOpeningName}</b>
+                      <b>{openingName}</b>
                       {!isMobile && annotation && (
                         <>
                           . <Spacer width={2} />
@@ -960,7 +989,7 @@ const TableHeader = ({
               <View
                 style={s(
                   c.width(section.width),
-                  c.center,
+                  section.alignLeft ? c.justifyStart : c.center,
                   c.row,
                   c.textAlign("center")
                 )}

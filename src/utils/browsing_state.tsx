@@ -395,7 +395,10 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           if (!ownSide) {
-            if (isCommonMistake(tr, positionReport, threshold)) {
+            if (
+              isCommonMistake(tr, positionReport, threshold) &&
+              !tr.tags.includes(MoveTag.RareDangerous)
+            ) {
               tr.tags.push(MoveTag.CommonMistake);
             }
           }
@@ -408,9 +411,7 @@ export const getInitialBrowsingState = (
 
           if (!tr.repertoireMove && rs.epdNodes[s.activeSide][epdAfter]) {
             tr.transposes = true;
-            if (ownSide) {
-              tr.tags.push(MoveTag.Transposes);
-            }
+            tr.tags.push(MoveTag.Transposes);
           }
 
           if (isTheoryHeavy(tr, currentEpd) && !ownSide) {
@@ -662,6 +663,7 @@ export const getInitialBrowsingState = (
               })
             )
           );
+          console.log({ lastEcoCode: logProxy(s.sidebarState.lastEcoCode) });
         }
         let line = s.chessboardState.moveLog;
         map(

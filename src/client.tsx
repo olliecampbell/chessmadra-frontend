@@ -6,12 +6,16 @@ import { clearCookies } from "./utils/auth";
 
 let EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
 
+let baseURL = undefined;
+if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+  baseURL = "http://marcus.local:8040";
+}
+if (process.env.API_ENV == "production") {
+  baseURL = "https://chessmadra.com";
+}
 const client = applyCaseMiddleware(
   axios.create({
-    baseURL:
-      !process.env.NODE_ENV || process.env.NODE_ENV === "development"
-        ? "http://marcus.local:8040"
-        : undefined,
+    baseURL,
   }),
   {
     preservedKeys: (input) => {
@@ -43,6 +47,13 @@ client.interceptors.request.use(function (config) {
     return config;
   }
   const { token, tempUserUuid } = useAppStateInternal.getState().userState;
+  const { spoofedEmail } = useAppStateInternal.getState().adminState;
+  const spoofKey = process.env.SPOOF_KEY;
+  console.log({ spoofedEmail, spoofKey });
+  if (spoofedEmail.value) {
+    config.headers["spoof-user-email"] = spoofedEmail.value;
+    config.headers["spoof-key"] = spoofKey;
+  }
   if (token) {
     config.headers.Authorization = token;
   } else {

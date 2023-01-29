@@ -49,7 +49,7 @@ import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment ? ["e4", "c5", "d4", "cxd4"] : [];
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -776,6 +776,7 @@ export const getInitialRepertoireState = (
               s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
               s.pawnStructures = data.pawnStructures;
               s.pawnStructureLookup = {};
+              s.browsingState.onPositionUpdate();
               forEach(s.pawnStructures, (e) => {
                 forEach(e.pawnEpds, (pawnEpd) => {
                   s.pawnStructureLookup[pawnEpd] = e;
