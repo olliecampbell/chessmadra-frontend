@@ -14,6 +14,7 @@ import {
   max,
   map,
   reverse,
+  cloneDeep,
 } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -176,7 +177,7 @@ export const RepertoireMovesTable = ({
   };
   let includeOpeningName = false;
   const openingNames = reverse(
-    map(reverse(trimmedResponses), (tr) => {
+    map(reverse(cloneDeep(trimmedResponses)), (tr) => {
       let newOpeningName = null;
       let [currentOpeningName, currentVariations] = currentEcoCode
         ? getAppropriateEcoName(currentEcoCode.fullName)
