@@ -15,6 +15,7 @@ import {
   useDebugState,
   quick,
   useUserState,
+  getAppState,
 } from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { BP, useResponsive } from "app/utils/useResponsive";
@@ -84,7 +85,10 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
       text={cram ? "Cram" : "Learn"}
       icon={"fa-duotone fa-cards-blank"}
       onPress={() => {
-        startReview(side, { side, cram });
+        // startReview(side, { side, cram });
+        quick((s) => {
+          s.repertoireState.startBrowsing(side, "review");
+        });
         trackEvent("overview.review_moves");
       }}
     />
@@ -329,7 +333,11 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
             line = dropRight(line, 1);
           }
 
-          s.repertoireState.startBrowsing(side as Side, lineToPgn(line));
+          s.repertoireState.startBrowsing(
+            side as Side,
+            "build",
+            lineToPgn(line)
+          );
           trackEvent("overview.go_to_biggest_miss");
         });
       }}
@@ -371,7 +379,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
       icon={"fa-sharp fa-solid fa-compass"}
       onPress={() => {
         trackEvent("overview.browse_repertoire");
-        startBrowsing(side);
+        startBrowsing(side, "build");
       }}
     />
   );

@@ -92,9 +92,11 @@ export enum SidebarOnboardingImportType {
   PGN,
   PlayerTemplates,
 }
+export type BrowsingMode = "review" | "build";
 
 export interface SidebarState {
   isPastCoverageGoal?: boolean;
+  mode: BrowsingMode;
   tableResponses: TableResponse[];
   hasAnyPendingResponses?: boolean;
   transposedState: {
@@ -194,6 +196,7 @@ export const makeDefaultSidebarState = () => {
   return {
     moveLog: [],
     positionHistory: null,
+    mode: "build",
     currentEpd: START_EPD,
     isPastCoverageGoal: false,
     tableResponses: [],
@@ -394,6 +397,26 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
+          if (s.sidebarState.mode == "review" && tr.repertoireMove) {
+            let epd = tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
+            let dueBelow = rs.numMovesDueFromEpd[s.activeSide][epd];
+            let earliestBelow = rs.earliestReviewDueFromEpd[s.activeSide][epd];
+            let dueAt = tr.repertoireMove.srs?.dueAt;
+            console.log("åßtenrdast", logProxy(rs.numMovesDueFromEpd));
+            console.log("åßtenrdast", epd);
+            if (dueAt && (dueAt < earliestBelow || !earliestBelow)) {
+              earliestBelow = dueAt;
+            }
+            let isDue = tr.repertoireMove.srs?.needsReview;
+            dueBelow = dueBelow + (isDue ? 1 : 0);
+            console.log({ earliestBelow, dueBelow });
+            tr.reviewInfo = {
+              earliestDue: earliestBelow,
+              due: dueBelow,
+            };
+          }
+        });
+        tableResponses.forEach((tr) => {
           if (!ownSide) {
             if (
               isCommonMistake(tr, positionReport, threshold) &&
@@ -449,6 +472,7 @@ export const getInitialBrowsingState = (
           positionReport,
           currentSide,
           currentEpd,
+          s.sidebarState.mode,
           ownSide
             ? usePeerRates
               ? EFFECTIVENESS_WEIGHTS_PEERS

@@ -19,6 +19,7 @@ import {
   values,
   sortBy,
   capitalize,
+  isNil,
 } from "lodash-es";
 import {
   BySide,
@@ -36,6 +37,7 @@ import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import {
+  BrowsingMode,
   BrowsingState,
   getInitialBrowsingState,
   makeDefaultSidebarState,
@@ -49,7 +51,7 @@ import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 
-const TEST_LINE = isDevelopment ? ["e4", "c5", "d4", "cxd4"] : [];
+const TEST_LINE = isDevelopment ? ["e4", "e5"] : [];
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -69,6 +71,8 @@ export enum AddLineFromOption {
 export interface RepertoireState {
   lineReports: Record<string, LineReport>;
   numMovesFromEpd: BySide<Record<string, number>>;
+  numMovesDueFromEpd: BySide<Record<string, number>>;
+  earliestReviewDueFromEpd: BySide<Record<string, string>>;
   expectedNumMovesFromEpd: BySide<Record<string, number>>;
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire;
@@ -103,7 +107,7 @@ export interface RepertoireState {
     san: string;
     text: string;
   }) => void;
-  startBrowsing: (side: Side, pgnToPlay?: string) => void;
+  startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay?: string) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
   updateRepertoireStructures: () => void;
@@ -239,6 +243,8 @@ export const getInitialRepertoireState = (
     chessboardState: null,
     expectedNumMoves: { white: 0, black: 0 },
     numMovesFromEpd: { white: {}, black: {} },
+    numMovesDueFromEpd: { white: {}, black: {} },
+    earliestReviewDueFromEpd: { white: {}, black: {} },
     expectedNumMovesFromEpd: { white: {}, black: {} },
     // All epds that are covered or arrived at (epd + epd after)
     epdNodes: { white: {}, black: {} },
@@ -430,8 +436,10 @@ export const getInitialRepertoireState = (
             }
             let incidence = lastMove?.incidence ?? 1;
             let totalNumMovesFromHere = 0;
+            let dueMovesFromHere = 0;
             let newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
+            let earliestDueDate = null;
             let allMoves = filter(
               repertoireSide.positionResponses[epd] ?? [],
               (m) => m.needed
@@ -453,20 +461,33 @@ export const getInitialRepertoireState = (
             );
             let childAdditionalMovesExpected = 0;
             allMoves.forEach((m) => {
-              let { numMoves, additionalExpectedNumMoves } = recurse(
-                m.epdAfter,
-                newSeenEpds,
-                m
-              );
+              let {
+                numMoves,
+                additionalExpectedNumMoves,
+                dueMoves,
+                earliestDueDate: recursedEarliestDueDate,
+              } = recurse(m.epdAfter, newSeenEpds, m);
+              if (
+                (earliestDueDate === null && recursedEarliestDueDate) ||
+                recursedEarliestDueDate < earliestDueDate
+              ) {
+                earliestDueDate = recursedEarliestDueDate;
+              }
               numMovesExpected += additionalExpectedNumMoves;
               childAdditionalMovesExpected += additionalExpectedNumMoves;
               totalNumMovesFromHere += numMoves;
+              dueMovesFromHere += dueMoves;
             });
             numMovesByEpd[epd] = totalNumMovesFromHere;
             s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
             s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
+            s.numMovesDueFromEpd[side][epd] = dueMovesFromHere;
+            s.earliestReviewDueFromEpd[side][epd] = earliestDueDate;
+            let due = lastMove?.srs?.needsReview;
             return {
               numMoves: totalNumMovesFromHere + (incidence > threshold ? 1 : 0),
+              dueMoves: dueMovesFromHere + (due ? 1 : 0),
+              earliestDueDate: earliestDueDate ?? lastMove?.srs?.dueAt,
               additionalExpectedNumMoves:
                 additionalExpectedNumMoves + childAdditionalMovesExpected,
             };
@@ -689,14 +710,14 @@ export const getInitialRepertoireState = (
       }),
     startImporting: (side: Side) =>
       set(([s]) => {
-        s.startBrowsing(side);
+        s.startBrowsing(side, "build");
         s.browsingState.chessboardState.resetPosition();
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
           SidebarOnboardingStage.ChooseImportSource,
         ];
         s.browsingState.checkFreezeChessboard();
       }, "startImporting"),
-    startBrowsing: (side: Side, pgnToPlay: string) =>
+    startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay: string) =>
       set(([s, gs]) => {
         gs.navigationState.push(`/openings/${side}/browse`);
         let breadcrumbs = [
@@ -713,6 +734,7 @@ export const getInitialRepertoireState = (
         s.browsingState.chessboardState.flipped =
           s.browsingState.activeSide === "black";
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
+        s.browsingState.sidebarState.mode = mode;
 
         if (s.browsingState.activeSide === "white") {
           let startResponses =
@@ -861,7 +883,7 @@ export const getInitialRepertoireState = (
         ]).then(() => {
           set(([s, appState]) => {
             // window.location.search = "";
-            s.startBrowsing("white");
+            s.startBrowsing("white", "build");
           });
         });
       }),
@@ -904,12 +926,12 @@ export const getInitialRepertoireState = (
               }
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
-                s.startBrowsing("white");
+                s.startBrowsing("white", "build");
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
               if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("white", lineToPgn(TEST_LINE));
+                s.startBrowsing("white", "review", lineToPgn(TEST_LINE));
               }
             });
           });

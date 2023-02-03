@@ -81,7 +81,7 @@ export interface RepertoireMove {
   epdAfter: string;
   pending?: boolean;
   side: Side;
-  srs: SpacedRepetitionStatus;
+  srs?: SpacedRepetitionStatus;
   needed?: boolean;
   incidence?: number;
 }
@@ -89,6 +89,7 @@ export interface RepertoireMove {
 export interface SpacedRepetitionStatus {
   needsReview: boolean;
   firstReview: boolean;
+  dueAt: string;
   pending?: boolean;
 }
 

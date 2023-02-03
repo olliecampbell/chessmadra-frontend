@@ -1,6 +1,7 @@
 import { ScoreTable, TableResponse } from "app/components/RepertoireMovesTable";
 import { MoveTag, PositionReport } from "app/models";
 import { isNil, sumBy, reverse, sortBy } from "lodash-es";
+import { BrowsingMode } from "./browsing_state";
 import { Side } from "./repertoire";
 import {
   getPlayRate,
@@ -25,6 +26,7 @@ export const scoreTableResponses = (
   report: PositionReport,
   side: Side,
   epd: string,
+  mode: BrowsingMode,
   weights: {
     startScore: number;
     eval: number;
@@ -35,6 +37,14 @@ export const scoreTableResponses = (
 ): TableResponse[] => {
   let positionWinRate = report ? getWinRate(report?.results, side) : NaN;
   let DEBUG_MOVE = null;
+  if (mode == "review") {
+    return sortBy(tableResponses, (tableResponse: TableResponse) => {
+      if (tableResponse.reviewInfo) {
+        return -tableResponse.reviewInfo.due;
+      }
+      return null;
+    });
+  }
   return reverse(
     sortBy(tableResponses, (tableResponse: TableResponse) => {
       // let san =

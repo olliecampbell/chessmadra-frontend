@@ -50,6 +50,7 @@ export const Responses = React.memo(function Responses() {
     {}
   );
   let usePeerRates = shouldUsePeerRates(positionReport);
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   let yourMoves = filter(tableResponses, (tr) => {
     return !isNil(tr.repertoireMove) && activeSide === currentSide;
   });
@@ -81,6 +82,10 @@ export const Responses = React.memo(function Responses() {
   if (isPastCoverageGoal) {
     prepareForHeader = "Most common responses";
   }
+  let reviewHeader = null;
+  if (mode == "review") {
+    reviewHeader = "What do you want to review?";
+  }
   return (
     <View style={s(c.column, c.constrainWidth)}>
       <>
@@ -90,10 +95,9 @@ export const Responses = React.memo(function Responses() {
               <View style={s()} key={`your-moves-play-${currentEpd}`}>
                 <RepertoireMovesTable
                   {...{
-                    header: getResponsesHeader(
-                      currentLine,
-                      !isEmpty(yourMoves)
-                    ),
+                    header:
+                      reviewHeader ??
+                      getResponsesHeader(currentLine, !isEmpty(yourMoves)),
                     usePeerRates,
                     activeSide,
                     side: currentSide,
@@ -106,10 +110,9 @@ export const Responses = React.memo(function Responses() {
               <View style={s()} key={`choose-next-move-${currentEpd}`}>
                 <RepertoireMovesTable
                   {...{
-                    header: getResponsesHeader(
-                      currentLine,
-                      !isEmpty(yourMoves)
-                    ),
+                    header:
+                      reviewHeader ??
+                      getResponsesHeader(currentLine, !isEmpty(yourMoves)),
                     usePeerRates,
                     activeSide,
                     side: currentSide,
@@ -118,7 +121,7 @@ export const Responses = React.memo(function Responses() {
                 />
               </View>
             )}
-            {!isEmpty(yourMoves) && !isEmpty(otherMoves) && (
+            {!isEmpty(yourMoves) && !isEmpty(otherMoves) && mode == "build" && (
               <View style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
                 <CollapsibleSidebarSection header="Add an alternative move">
                   <Spacer height={12} />
@@ -137,7 +140,7 @@ export const Responses = React.memo(function Responses() {
             {!isEmpty(prepareFor) && (
               <RepertoireMovesTable
                 {...{
-                  header: prepareForHeader,
+                  header: reviewHeader ?? prepareForHeader,
                   body: body,
                   activeSide,
                   side: currentSide,

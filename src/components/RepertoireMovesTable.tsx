@@ -58,10 +58,12 @@ import { TableResponseScoreSource } from "app/utils/table_scoring";
 import { getCoverageProgress } from "app/utils/browsing_state";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { useResponsive } from "app/utils/useResponsive";
+import { TableMeta, useSections } from "app/utils/useSections";
 
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
+  reviewInfo: { earliestDue: string; due: number };
   transposes?: boolean;
   lowConfidence?: boolean;
   biggestMiss?: RepertoireMiss;
@@ -107,6 +109,7 @@ export const RepertoireMovesTable = ({
   setShouldShowOtherMoves?: (show: boolean) => void;
 }) => {
   const responsive = useResponsive();
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   let anyMine = some(responses, (m) => m.repertoireMove?.mine);
   let mine = filter(responses, (m) => m.repertoireMove?.mine);
   let anyNeeded = some(responses, (m) => m.suggestedMove?.needed);
@@ -123,6 +126,9 @@ export const RepertoireMovesTable = ({
   let MIN_TRUNCATED = isMobile ? 1 : 1;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = filter(responses, (r, i) => {
+    if (mode == "review") {
+      return r.repertoireMove;
+    }
     if (i < expandedLength) {
       return true;
     }
@@ -347,226 +353,6 @@ export const RepertoireMovesTable = ({
   );
 };
 
-interface Section {
-  width: number;
-  header: string;
-  alignLeft?: boolean;
-  content: (_: {
-    suggestedMove: SuggestedMove;
-    positionReport: PositionReport;
-    tableResponse: TableResponse;
-    tableMeta: TableMeta;
-    side: Side;
-  }) => any;
-}
-
-let useSections = ({
-  myTurn,
-  usePeerRates,
-  isMobile,
-}: {
-  myTurn: boolean;
-  usePeerRates?: boolean;
-  isMobile: boolean;
-}) => {
-  let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
-  const debugUi = useDebugState((s) => s.debugUi);
-  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let sections: Section[] = [];
-  let textStyles = s(
-    c.fg(c.grays[80]),
-    c.weightSemiBold,
-    c.fontSize(12),
-    c.lineHeight("1.3rem")
-  );
-
-  let naStyles = s(textStyles, c.fg(c.grays[50]));
-  let na = <CMText style={s(naStyles)}>N/A</CMText>;
-  let notEnoughGames = (
-    <CMText style={s(c.fg(c.grays[50]))}>{isMobile ? "N/A" : "N/A"}</CMText>
-  );
-  if (!myTurn) {
-    sections.push({
-      width: 100,
-      alignLeft: true,
-      content: ({ suggestedMove, positionReport, tableResponse }) => {
-        let playRate =
-          suggestedMove &&
-          positionReport &&
-          getPlayRate(suggestedMove, positionReport, false);
-        let denominator = Math.round(
-          1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
-        );
-        let belowCoverageGoal =
-          (tableResponse.suggestedMove?.incidence ?? 0) < threshold;
-        let veryRare = false;
-        let hideGamesText = false;
-        if (denominator >= 1000) {
-          hideGamesText = true;
-        }
-        if (denominator >= 10000) {
-          veryRare = true;
-        }
-        return (
-          <>
-            {
-              <View style={s(c.column)}>
-                <CMText
-                  style={s(
-                    textStyles,
-                    belowCoverageGoal && s(c.fg(c.grays[44]))
-                  )}
-                >
-                  {veryRare ? (
-                    <>Very rare</>
-                  ) : (
-                    <>
-                      <b>1</b> in <b>{denominator.toLocaleString()}</b>{" "}
-                      {hideGamesText ? "" : "games"}
-                    </>
-                  )}
-                </CMText>
-                {debugUi && (
-                  <CMText style={s(c.fg(c.colors.debugColorDark))}>
-                    {(playRate * 100).toFixed(2)}
-                  </CMText>
-                )}
-              </View>
-            }
-          </>
-        );
-      },
-      header: "Expected in",
-    });
-  }
-  if (!myTurn) {
-    sections.push({
-      width: 80,
-      alignLeft: true,
-      content: ({
-        suggestedMove,
-        positionReport,
-        tableResponse,
-        tableMeta,
-      }) => {
-        return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
-      },
-      header: "Your coverage",
-    });
-  }
-  if (myTurn) {
-    sections.push({
-      width: 34,
-      content: ({
-        suggestedMove,
-        positionReport,
-      }: {
-        suggestedMove: SuggestedMove;
-        positionReport: PositionReport;
-      }) => {
-        let playRate =
-          suggestedMove &&
-          positionReport &&
-          getPlayRate(
-            suggestedMove,
-            positionReport,
-            usePeerRates ? false : true
-          );
-        if (isNegligiblePlayrate(playRate)) {
-          return na;
-        }
-        return (
-          <>
-            {
-              <CMText style={s(textStyles)}>
-                {formatPlayPercentage(playRate)}
-              </CMText>
-            }
-          </>
-        );
-      },
-      header: usePeerRates ? "Peers" : "Masters",
-    });
-  }
-  if (myTurn) {
-    sections.push({
-      width: 40,
-      content: ({ suggestedMove, positionReport }) => {
-        let whiteWinning =
-          suggestedMove?.stockfish?.eval >= 0 ||
-          suggestedMove?.stockfish?.mate > 0;
-        return (
-          <>
-            {suggestedMove?.stockfish && (
-              <>
-                <View
-                  style={s(
-                    c.row,
-                    c.bg(whiteWinning ? c.grays[90] : c.grays[4]),
-                    c.px(4),
-                    c.minWidth(30),
-                    c.height(18),
-                    c.center,
-                    c.br(2)
-                  )}
-                >
-                  <CMText
-                    style={s(
-                      c.weightHeavy,
-                      c.fontSize(10),
-                      c.fg(whiteWinning ? c.grays[10] : c.grays[90])
-                    )}
-                  >
-                    {formatStockfishEval(suggestedMove?.stockfish)}
-                  </CMText>
-                </View>
-              </>
-            )}
-          </>
-        );
-      },
-      header: "Eval",
-    });
-  }
-  if (myTurn) {
-    sections.push({
-      width: isMobile ? 80 : 80,
-      content: ({ suggestedMove, positionReport, side, tableResponse }) => {
-        if (!suggestedMove?.results) {
-          return na;
-        }
-        if (tableResponse.lowConfidence) {
-          return (
-            <CMText style={s(naStyles)}>
-              {suggestedMove?.results[activeSide]} out of{" "}
-              {getTotalGames(suggestedMove?.results)}
-            </CMText>
-          );
-        }
-        return (
-          <>
-            {suggestedMove && (
-              <View style={s(c.fullWidth)}>
-                <GameResultsBar
-                  previousResults={positionReport?.results}
-                  activeSide={activeSide}
-                  gameResults={suggestedMove.results}
-                />
-              </View>
-            )}
-          </>
-        );
-      },
-      header: isMobile ? "Peer results" : "Peer results",
-    });
-  }
-  return sections;
-};
-
-interface TableMeta {
-  highestIncidence: number;
-}
-
 const Response = ({
   tableResponse,
   sections,
@@ -599,13 +385,23 @@ const Response = ({
     { referenceEquality: true }
   );
 
-  const [playSan, nextEcoCode, previewMove, uploadMoveAnnotation] =
-    useBrowsingState(([s, rs]) => [
-      s.chessboardState.makeMove,
-      rs.ecoCodeLookup[suggestedMove?.epdAfter],
-      s.chessboardState.previewMove,
-      rs.uploadMoveAnnotation,
-    ]);
+  const [
+    playSan,
+    nextEcoCode,
+    previewMove,
+    uploadMoveAnnotation,
+    numMovesDueFromHere,
+    earliestDueDate,
+  ] = useBrowsingState(([s, rs]) => [
+    s.chessboardState.makeMove,
+    rs.ecoCodeLookup[suggestedMove?.epdAfter],
+    s.chessboardState.previewMove,
+    rs.uploadMoveAnnotation,
+    rs.numMovesDueFromEpd[s.activeSide][tableResponse.repertoireMove?.epdAfter],
+    rs.earliestReviewDueFromEpd[s.activeSide][
+      tableResponse.repertoireMove?.epdAfter
+    ],
+  ]);
   const [currentLine, currentSide, currentEcoCode] = useSidebarState(
     ([s, rs]) => [s.moveLog, s.currentSide, s.lastEcoCode]
   );
@@ -887,6 +683,8 @@ const Response = ({
                       key={i}
                     >
                       {section.content({
+                        numMovesDueFromHere,
+                        earliestDueDate,
                         suggestedMove,
                         positionReport,
                         tableResponse,
@@ -1073,98 +871,6 @@ export const DebugScoreView = ({
 
 const getSpaceBetweenStats = (isMobile: boolean) => {
   return isMobile ? 16 : 16;
-};
-
-const CoverageProgressBar = ({
-  tableResponse,
-}: {
-  tableResponse: TableResponse;
-}) => {
-  const debugUi = useDebugState((s) => s.debugUi);
-  const threshold = useUserState((s) => s.getCurrentThreshold());
-  let epdAfter =
-    tableResponse.suggestedMove?.epdAfter ??
-    tableResponse.repertoireMove?.epdAfter;
-  const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
-    useRepertoireState((s) => [
-      s.repertoire[s.browsingState.activeSide]?.positionResponses[epdAfter]
-        ?.length > 0,
-      s.numMovesFromEpd[s.browsingState.activeSide][epdAfter],
-      s.expectedNumMovesFromEpd[s.browsingState.activeSide][epdAfter],
-      s.repertoireGrades[s.browsingState.activeSide]?.biggestMisses[epdAfter],
-    ]);
-  const [movesFromHere] = useRepertoireState((s) => [
-    s.numMovesFromEpd[s.browsingState.activeSide],
-  ]);
-
-  const backgroundColor = c.grays[28];
-  const completedColor = c.greens[50];
-  // let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
-  // let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
-  let completed = isNil(missFromHere);
-  // if (!completed) {
-  //   console.log({
-  //     numMovesFromHere,
-  //     expectedNumMovesNeeded,
-  //     san: tableResponse.suggestedMove?.sanPlus,
-  //     incidence: tableResponse.repertoireMove?.incidence,
-  //   });
-  // }
-  let debugElements = debugUi && (
-    <View style={s(c.column)}>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        incidence: {(tableResponse?.suggestedMove?.incidence * 100).toFixed(2)}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        Moves from here: {numMovesFromHere}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        Expected # from here: {expectedNumMovesNeeded}
-      </CMText>
-    </View>
-  );
-  // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
-  // if (incidence < threshold && !hasResponse) {
-  //   return (
-  //     <View style={s(c.column)}>
-  //       <CMText style={s(c.fontSize(12), c.fg(c.grays[60]))}>Not needed</CMText>
-  //       {debugElements}
-  //     </View>
-  //   );
-  // }
-  let progress = clamp(
-    getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded),
-    5,
-    95
-  );
-  if (!hasResponse) {
-    progress = 0;
-    completed = false;
-  }
-  const inProgressColor = progress < 20 ? c.reds[65] : c.oranges[65];
-  return (
-    <View style={s(c.column, c.fullWidth)}>
-      <View
-        style={s(
-          c.fullWidth,
-          c.bg(backgroundColor),
-          c.round,
-          c.overflowHidden,
-          c.height(4)
-        )}
-      >
-        <View
-          style={s(
-            c.width(completed ? "100%" : `${progress}%`),
-            c.bg(completed ? completedColor : inProgressColor),
-            c.fullHeight
-          )}
-        ></View>
-      </View>
-
-      {debugElements}
-    </View>
-  );
 };
 
 function renderAnnotation(_annotation: string) {

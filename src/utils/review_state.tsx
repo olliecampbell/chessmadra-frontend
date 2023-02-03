@@ -11,11 +11,7 @@ import {
   some,
   filter,
 } from "lodash-es";
-import {
-  lineToPgn,
-  RepertoireMove,
-  Side,
-} from "./repertoire";
+import { lineToPgn, RepertoireMove, Side } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -117,6 +113,7 @@ export const getInitialReviewState = (
           s.activeQueue = options.customQueue;
         } else {
           s.updateQueue(options);
+          console.log("s.activeQueue", s.activeQueue);
         }
         gs.navigationState.push("/openings/review");
         rs.setBreadcrumbs([

@@ -37,7 +37,7 @@ export interface SidebarAction {
 
 export const SidebarActions = () => {
   const responsive = useResponsive();
-  const buttons = [] as SidebarAction[];
+  let buttons = [] as SidebarAction[];
   const [
     hasPendingLineToAdd,
     isPastCoverageGoal,
@@ -53,7 +53,9 @@ export const SidebarActions = () => {
     positionHistory,
     showPlansState,
     transposedState,
-  ] = useSidebarState(([s, bs]) => [
+    mode,
+    numDue,
+  ] = useSidebarState(([s, bs, rs]) => [
     s.hasPendingLineToAdd,
     s.isPastCoverageGoal,
     s.currentSide,
@@ -68,6 +70,8 @@ export const SidebarActions = () => {
     s.positionHistory,
     s.showPlansState,
     s.transposedState,
+    s.mode,
+    rs.numMovesDueFromEpd[bs.activeSide][s.currentEpd],
   ]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
     referenceEquality: true,
@@ -221,6 +225,22 @@ export const SidebarActions = () => {
         });
       },
       text: "How to play from here",
+      style: "primary",
+    });
+  }
+  if (mode === "review") {
+    buttons = [];
+    buttons.push({
+      onPress: () => {
+        quick((s) => {
+          s.repertoireState.reviewState.startReview(activeSide, {
+            side: activeSide,
+            startLine: currentLine,
+            startPosition: currentEpd,
+          });
+        });
+      },
+      text: `Review ${numDue} due moves`,
       style: "primary",
     });
   }

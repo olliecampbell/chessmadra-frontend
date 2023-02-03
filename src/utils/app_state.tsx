@@ -98,12 +98,12 @@ export const useAppStateInternal = create<AppState>()(
         }
       };
       let initialState = {
-        toJSON: () => {
-          return get((s) => {
-            // Redux devtools slows down with big states, undo this for debugging
-            return {};
-          });
-        },
+        // toJSON: () => {
+        //   return get((s) => {
+        //     // Redux devtools slows down with big states, undo this for debugging
+        //     return {};
+        //   });
+        // },
         repertoireState: getInitialRepertoireState(set, get),
         adminState: getInitialAdminState(set, get),
         visualizationState: getInitialVisualizationState(set, get, false),
@@ -310,7 +310,7 @@ export const useBrowsingState = <T,>(
 };
 
 export const useSidebarState = <T,>(
-  fn: (_: [SidebarState, BrowsingState]) => T,
+  fn: (_: [SidebarState, BrowsingState, RepertoireState]) => T,
   config?: Partial<EqualityConfig>
 ) => {
   const usePrevious = useContext(SidebarStateContext);
@@ -322,11 +322,13 @@ export const useSidebarState = <T,>(
           s.repertoireState.browsingState.previousSidebarState ||
             s.repertoireState.browsingState.sidebarState,
           s.repertoireState.browsingState,
+          s.repertoireState,
         ];
       } else {
         return [
           s.repertoireState.browsingState.sidebarState,
           s.repertoireState.browsingState,
+          s.repertoireState,
         ];
       }
     },
