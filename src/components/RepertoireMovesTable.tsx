@@ -63,7 +63,7 @@ import { TableMeta, useSections } from "app/utils/useSections";
 const DELETE_WIDTH = 30;
 
 export interface TableResponse {
-  reviewInfo: { earliestDue: string; due: number };
+  reviewInfo?: { earliestDue: string; due: number };
   transposes?: boolean;
   lowConfidence?: boolean;
   biggestMiss?: RepertoireMiss;

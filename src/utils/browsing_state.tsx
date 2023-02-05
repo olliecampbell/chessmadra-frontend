@@ -326,6 +326,7 @@ export const getInitialBrowsingState = (
         }
         let threshold = gs.userState.getCurrentThreshold();
         let eloRange = gs.userState.user?.eloRange;
+        let mode = s.sidebarState.mode;
         let currentSide: Side =
           s.chessboardState.position.turn() === "b" ? "black" : "white";
         let currentEpd = s.chessboardState.getCurrentEpd();
@@ -338,6 +339,7 @@ export const getInitialBrowsingState = (
             _tableResponses[sm.sanPlus] = {
               suggestedMove: cloneDeep(sm),
               tags: [],
+              reviewInfo: {},
               side: s.activeSide,
             };
           });
@@ -352,6 +354,7 @@ export const getInitialBrowsingState = (
             _tableResponses[r.sanPlus] = {
               repertoireMove: r,
               tags: [],
+              reviewInfo: {},
               side: s.activeSide,
             };
           }
@@ -387,7 +390,7 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
-          if (!ownSide) {
+          if (!ownSide && mode == "build") {
             if (
               tr.suggestedMove?.incidence < threshold &&
               tr.suggestedMove?.needed
@@ -420,7 +423,7 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
-          if (!ownSide) {
+          if (!ownSide && mode == "build") {
             if (
               isCommonMistake(tr, positionReport, threshold) &&
               !tr.tags.includes(MoveTag.RareDangerous)
@@ -431,6 +434,9 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           let epdAfter = tr.suggestedMove?.epdAfter;
+          if (mode != "build") {
+            return;
+          }
           if (tr.repertoireMove) {
             return;
           }
@@ -454,6 +460,9 @@ export const getInitialBrowsingState = (
         });
         if (ownSide && tableResponses.length >= 3) {
           tableResponses.forEach((tr, i) => {
+            if (mode != "build") {
+              return;
+            }
             let allOthersInaccurate = every(tableResponses, (tr, j) => {
               return !isNil(tr.moveRating) || j === i;
             });
