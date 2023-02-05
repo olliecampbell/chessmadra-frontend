@@ -49,7 +49,6 @@ client.interceptors.request.use(function (config) {
   const { token, tempUserUuid } = useAppStateInternal.getState().userState;
   const { spoofedEmail } = useAppStateInternal.getState().adminState;
   const spoofKey = process.env.SPOOF_KEY;
-  console.log({ spoofedEmail, spoofKey });
   if (spoofedEmail.value) {
     config.headers["spoof-user-email"] = spoofedEmail.value;
     config.headers["spoof-key"] = spoofKey;

@@ -89,24 +89,24 @@ export const getInitialReviewState = (
     showNext: false,
     // queues: EMPTY_QUEUES,
     activeQueue: null,
-    markMovesReviewed: (results: ReviewPositionResults[]) =>
-      set(([s, rs]) => {
-        trackEvent(`reviewing.reviewed_move`);
-        results.forEach((r) => {
-          rs.repertoire[r.side].positionResponses[r.epd].forEach(
-            (m: RepertoireMove) => {
-              if (m.sanPlus === r.sanPlus) {
-                if (r.correct) {
-                  m.srs.needsReview = false;
+    markMovesReviewed: (results: ReviewPositionResults[]) => {
+      trackEvent(`reviewing.reviewed_move`);
+      client
+        .post("/api/v1/openings/moves_reviewed", { results })
+        .then(({ data: updatedSrss }) => {
+          set(([s, rs]) => {
+            results.forEach((r, i) => {
+              rs.repertoire[r.side].positionResponses[r.epd].forEach(
+                (m: RepertoireMove) => {
+                  if (m.sanPlus === r.sanPlus) {
+                    m.srs = updatedSrss[i];
+                  }
                 }
-              }
-            }
-          );
+              );
+            });
+          });
         });
-        client
-          .post("/api/v1/openings/moves_reviewed", { results })
-          .then(({ data }) => {});
-      }),
+    },
     startReview: (side: Side, options: ReviewOptions) =>
       set(([s, rs, gs]) => {
         if (options.customQueue) {
@@ -206,6 +206,7 @@ export const getInitialReviewState = (
       }, "giveUp"),
     stopReviewing: () =>
       set(([s, rs]) => {
+        rs.updateRepertoireStructures();
         rs.isReviewing = false;
         s.reviewSide = null;
         if (s.currentMove) {

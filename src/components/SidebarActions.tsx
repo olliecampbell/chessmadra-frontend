@@ -230,17 +230,33 @@ export const SidebarActions = () => {
   }
   if (mode === "review") {
     buttons = [];
+    if (numDue > 0) {
+      buttons.push({
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.reviewState.startReview(activeSide, {
+              side: activeSide,
+              startLine: currentLine,
+              startPosition: currentEpd,
+            });
+          });
+        },
+        text: `Practice ${numDue} moves from here which are due for review`,
+        style: "primary",
+      });
+    }
     buttons.push({
       onPress: () => {
         quick((s) => {
           s.repertoireState.reviewState.startReview(activeSide, {
             side: activeSide,
+            cram: true,
             startLine: currentLine,
             startPosition: currentEpd,
           });
         });
       },
-      text: `Review ${numDue} due moves`,
+      text: `Practice all moves from here`,
       style: "primary",
     });
   }

@@ -439,16 +439,14 @@ const getReviewModeSections = ({
       let minutes = seconds / 60;
       let hours = minutes / 60;
       let days = hours / 24;
-      console.log({ date, now });
-      console.log({ diff, hours, minutes });
       let color = c.grays[50];
       if (diff < 0) {
         color = c.oranges[70];
-        dueString = "Due now";
+        dueString = `${numMovesDueFromHere} Due`;
       } else if (minutes < 60) {
-        dueString = `In ${pluralize(Math.round(minutes), "minutes")}`;
+        dueString = `In ${pluralize(Math.round(minutes), "minute")}`;
       } else if (hours < 24) {
-        dueString = `In ${pluralize(Math.round(hours), "hours")}`;
+        dueString = `In ${pluralize(Math.round(hours), "hour")}`;
       } else {
         dueString = `In ${pluralize(Math.round(days), "day")}`;
       }

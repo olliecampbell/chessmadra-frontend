@@ -50,6 +50,7 @@ import pkceChallenge from "pkce-challenge";
 import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
+import { shouldDebugEpd } from "./debug";
 
 const TEST_LINE = isDevelopment ? ["e4", "e5"] : [];
 // const TEST_LINE = null;
@@ -431,15 +432,19 @@ export const getInitialRepertoireState = (
             seenEpds: Set<string>,
             lastMove: RepertoireMove
           ) => {
+            if (shouldDebugEpd(epd)) {
+              console.log(
+                "[updateRepertoireStructures], this is bting debugged",
+                epd
+              );
+            }
             if (seenEpds.has(epd)) {
               return { numMoves: 0, additionalExpectedNumMoves: 0 };
             }
             let incidence = lastMove?.incidence ?? 1;
             let totalNumMovesFromHere = 0;
-            let dueMovesFromHere = 0;
             let newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
-            let earliestDueDate = null;
             let allMoves = filter(
               repertoireSide.positionResponses[epd] ?? [],
               (m) => m.needed
@@ -461,35 +466,73 @@ export const getInitialRepertoireState = (
             );
             let childAdditionalMovesExpected = 0;
             allMoves.forEach((m) => {
-              let {
-                numMoves,
-                additionalExpectedNumMoves,
-                dueMoves,
-                earliestDueDate: recursedEarliestDueDate,
-              } = recurse(m.epdAfter, newSeenEpds, m);
+              if (shouldDebugEpd(epd)) {
+                console.log("MOVES", m);
+              }
+              let { numMoves, additionalExpectedNumMoves } = recurse(
+                m.epdAfter,
+                newSeenEpds,
+                m
+              );
+              numMovesExpected += additionalExpectedNumMoves;
+              childAdditionalMovesExpected += additionalExpectedNumMoves;
+              totalNumMovesFromHere += numMoves;
+            });
+            numMovesByEpd[epd] = totalNumMovesFromHere;
+            s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
+            s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
+            return {
+              numMoves: totalNumMovesFromHere + (incidence > threshold ? 1 : 0),
+              additionalExpectedNumMoves:
+                additionalExpectedNumMoves + childAdditionalMovesExpected,
+            };
+          };
+          recurse(START_EPD, seenEpds, null);
+        });
+        mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
+          let seenEpds: Set<string> = new Set();
+          let recurse = (
+            epd: string,
+            seenEpds: Set<string>,
+            lastMove: RepertoireMove
+          ) => {
+            if (shouldDebugEpd(epd)) {
+              console.log(
+                "[updateRepertoireStructures], this is bting debugged",
+                epd
+              );
+            }
+            if (seenEpds.has(epd)) {
+              return { numMoves: 0, additionalExpectedNumMoves: 0 };
+            }
+            let newSeenEpds = new Set(seenEpds);
+            newSeenEpds.add(epd);
+            let earliestDueDate = null;
+            let allMoves = repertoireSide.positionResponses[epd] ?? [];
+            let dueMovesFromHere = 0;
+            allMoves.forEach((m) => {
+              if (shouldDebugEpd(epd)) {
+                console.log("MOVES", m);
+              }
+              let { dueMoves, earliestDueDate: recursedEarliestDueDate } =
+                recurse(m.epdAfter, newSeenEpds, m);
               if (
                 (earliestDueDate === null && recursedEarliestDueDate) ||
                 recursedEarliestDueDate < earliestDueDate
               ) {
                 earliestDueDate = recursedEarliestDueDate;
               }
-              numMovesExpected += additionalExpectedNumMoves;
-              childAdditionalMovesExpected += additionalExpectedNumMoves;
-              totalNumMovesFromHere += numMoves;
               dueMovesFromHere += dueMoves;
             });
-            numMovesByEpd[epd] = totalNumMovesFromHere;
-            s.expectedNumMovesFromEpd[side][epd] = numMovesExpected;
-            s.numMovesFromEpd[side][epd] = totalNumMovesFromHere;
             s.numMovesDueFromEpd[side][epd] = dueMovesFromHere;
             s.earliestReviewDueFromEpd[side][epd] = earliestDueDate;
+            if (shouldDebugEpd(epd)) {
+              console.log("earliestDueDate", earliestDueDate);
+            }
             let due = lastMove?.srs?.needsReview;
             return {
-              numMoves: totalNumMovesFromHere + (incidence > threshold ? 1 : 0),
               dueMoves: dueMovesFromHere + (due ? 1 : 0),
               earliestDueDate: earliestDueDate ?? lastMove?.srs?.dueAt,
-              additionalExpectedNumMoves:
-                additionalExpectedNumMoves + childAdditionalMovesExpected,
             };
           };
           recurse(START_EPD, seenEpds, null);

@@ -42,7 +42,7 @@ export const scoreTableResponses = (
       if (tableResponse.reviewInfo) {
         return -tableResponse.reviewInfo.due;
       }
-      return null;
+      return Infinity;
     });
   }
   return reverse(

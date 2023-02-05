@@ -57,7 +57,6 @@ export const Responses = React.memo(function Responses() {
   let otherMoves = filter(tableResponses, (tr) => {
     return isNil(tr.repertoireMove) && activeSide === currentSide;
   });
-  console.log({ otherMoves });
   let prepareFor = filter(tableResponses, (tr) => {
     return activeSide !== currentSide;
   });

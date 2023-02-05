@@ -19,6 +19,7 @@ export const DragAndDropInput = ({
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  console.log("rendering DragAndDropInput", uploaded, loading, isMobile);
   return (
     <View
       style={s(

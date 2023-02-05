@@ -196,12 +196,6 @@ export const RepertoireMovesTable = ({
           return name;
         }
         let lastVariation = last(variations);
-        console.log({
-          lastVariation,
-          name,
-          currentOpeningName,
-          currentEcoCode,
-        });
 
         if (
           name === currentOpeningName &&

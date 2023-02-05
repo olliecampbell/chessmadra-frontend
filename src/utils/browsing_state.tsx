@@ -398,18 +398,21 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           if (s.sidebarState.mode == "review" && tr.repertoireMove) {
+            const DEBUG = {
+              epd: "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -",
+            };
             let epd = tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
             let dueBelow = rs.numMovesDueFromEpd[s.activeSide][epd];
             let earliestBelow = rs.earliestReviewDueFromEpd[s.activeSide][epd];
             let dueAt = tr.repertoireMove.srs?.dueAt;
-            console.log("åßtenrdast", logProxy(rs.numMovesDueFromEpd));
-            console.log("åßtenrdast", epd);
+            if (epd == DEBUG.epd) {
+              console.log("epd", { epd, dueBelow, dueAt, earliestBelow });
+            }
             if (dueAt && (dueAt < earliestBelow || !earliestBelow)) {
               earliestBelow = dueAt;
             }
             let isDue = tr.repertoireMove.srs?.needsReview;
             dueBelow = dueBelow + (isDue ? 1 : 0);
-            console.log({ earliestBelow, dueBelow });
             tr.reviewInfo = {
               earliestDue: earliestBelow,
               due: dueBelow,
@@ -591,7 +594,6 @@ export const getInitialBrowsingState = (
           );
           let currentEpd = s.chessboardState.getCurrentEpd();
           let currentReport = rs.positionReports[s.activeSide][currentEpd];
-          console.log({ req: requests[requests.length - 1] });
           if (currentReport) {
             currentReport.suggestedMoves.forEach((sm) => {
               let epd = sm.epdAfter;
@@ -687,13 +689,11 @@ export const getInitialBrowsingState = (
               })
             )
           );
-          console.log({ lastEcoCode: logProxy(s.sidebarState.lastEcoCode) });
         }
         let line = s.chessboardState.moveLog;
         map(
           zip(s.chessboardState.positionHistory, line, incidences),
           ([position, san, incidence], i) => {
-            console.log({ position, san, incidence });
             if (!san) {
               return;
             }
@@ -751,10 +751,6 @@ export const getInitialBrowsingState = (
                 (sm) => sm.sanPlus === san
               );
               if (suggestedMove) {
-                console.log(
-                  "found suggested move, incidence:",
-                  suggestedMove.incidence
-                );
                 incidence = suggestedMove.incidence;
                 return incidence;
               }
