@@ -228,7 +228,7 @@ export const SidebarActions = () => {
       style: "primary",
     });
   }
-  if (mode === "review") {
+  if (mode === "browse") {
     buttons = [];
     if (numDue > 0) {
       buttons.push({

@@ -12,6 +12,7 @@ import {
   quick,
   useBrowsingState,
   useRepertoireState,
+  useSidebarState,
 } from "app/utils/app_state";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { useParams } from "react-router-dom";
@@ -19,41 +20,68 @@ import { BP, Responsive, useResponsive } from "app/utils/useResponsive";
 import useKeypress from "react-use-keypress";
 import { BrowserSidebar } from "./BrowsingSidebar";
 import { FadeInOut } from "./FadeInOut";
+import { BrowsingMode } from "app/utils/browsing_state";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
-export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
-  const [activeSide, isBrowsing, quick, repertoireLoading, chessboardFrozen] =
-    useRepertoireState((s) => [
+export const SidebarLayout = ({
+  shared,
+  mode,
+}: {
+  shared?: boolean;
+  mode: BrowsingMode;
+}) => {
+  const [activeSide, repertoireLoading, chessboardFrozen] = useRepertoireState(
+    (s) => [
       s.browsingState.activeSide,
-      s.isBrowsing,
-      s.quick,
       s.repertoire === undefined,
       s.browsingState.chessboardState.frozen,
-    ]);
+    ]
+  );
+  const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
 
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
-    if (event.key === "ArrowLeft") {
-      quick((s) => s.backOne());
+    if (event.key === "ArrowLeft" && mode !== "review") {
+      quick((s) => s.repertoireState.backOne());
     }
   });
   let { side: paramSide } = useParams();
   useEffect(() => {
+    if (mode !== sideBarMode) {
+      quick((s) => {
+        // TODO: fix this
+        s.navigationState.push("/");
+        // switch (mode) {
+        //   case "review": {
+        //     s.navigationState.push("/");
+        //   }
+        //   case "review": {
+        //     s.navigationState.push("/");
+        //   }
+        // }
+      });
+    }
+  }, [mode, sideBarMode]);
+  useEffect(() => {
     if (
-      (paramSide !== activeSide || !isBrowsing) &&
+      paramSide !== activeSide &&
+      mode == "build" &&
       !repertoireLoading &&
       !shared
     ) {
       quick((s) => {
         console.log("starting browsing");
-        s.startBrowsing((paramSide as Side) ?? "white");
+        s.repertoireState.startBrowsing(
+          (paramSide as Side) ?? "white",
+          "build"
+        );
       });
     }
   }, [repertoireLoading]);
   // const router = useRouter();
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  const loading = repertoireLoading || isNil(activeSide);
+  const loading = repertoireLoading;
   return (
     <RepertoirePageLayout flushTop bottom={null} fullHeight>
       {loading ? null : (
@@ -87,7 +115,8 @@ export const RepertoireBrowsingView = ({ shared }: { shared?: boolean }) => {
               <View
                 style={s(
                   c.fullWidth,
-                  vertical && s(c.selfCenter, c.maxWidth(440), c.pt(20)),
+                  vertical &&
+                    s(c.selfCenter, c.maxWidth(440), c.pt(20), c.px(12)),
                   !vertical && c.pt(140),
                   chessboardFrozen && c.opacity(20)
                 )}
@@ -153,6 +182,10 @@ export const ExtraChessboardActions = ({}: {}) => {
     s.browsingState.chessboardState.moveLog,
     s.browsingState.activeSide,
   ]);
+  const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
+  if (sideBarMode == "review") {
+    return null;
+  }
   return (
     <FadeInOut
       style={s(c.row, c.fullWidth, c.justifyCenter)}
@@ -236,6 +269,10 @@ export const ReviewFromHereButton = () => {
 };
 
 const BrowsingChessboardView = React.memo(function BrowsingChessboardView() {
-  const [chessboardState] = useBrowsingState(([s]) => [s.chessboardState]);
+  const [chessboardState] = useRepertoireState((s) => [
+    s.browsingState.sidebarState.mode == "review"
+      ? s.reviewState.chessboardState
+      : s.browsingState.chessboardState,
+  ]);
   return <ChessboardView state={chessboardState} />;
 });

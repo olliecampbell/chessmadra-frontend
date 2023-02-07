@@ -87,7 +87,7 @@ const ReviewMovesView = ({ side }: { side?: Side }) => {
       onPress={() => {
         // startReview(side, { side, cram });
         quick((s) => {
-          s.repertoireState.startBrowsing(side, "review");
+          s.repertoireState.startBrowsing(side, "browse");
         });
         trackEvent("overview.review_moves");
       }}

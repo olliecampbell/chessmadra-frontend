@@ -53,6 +53,7 @@ import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
 
 const TEST_LINE = isDevelopment ? ["e4", "e5"] : [];
+const TEST_REVIEWING = isDevelopment ? true : false;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -129,9 +130,6 @@ export interface RepertoireState {
   exportPgn: (side: Side) => void;
   addTemplates: () => void;
   onRepertoireUpdate: () => void;
-  isEditing?: boolean;
-  isBrowsing?: boolean;
-  isReviewing?: boolean;
   editingSide?: Side;
   myResponsesLookup?: BySide<RepertoireMove[]>;
   moveLookup?: BySide<Record<string, RepertoireMove>>;
@@ -580,7 +578,7 @@ export const getInitialRepertoireState = (
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.onRepertoireUpdate();
-              if (s.isBrowsing) {
+              if (s.browsingState.sidebarState.mode !== "review") {
                 s.browsingState.onPositionUpdate();
               }
             });
@@ -599,7 +597,7 @@ export const getInitialRepertoireState = (
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.onRepertoireUpdate();
-              if (s.isBrowsing) {
+              if (s.browsingState.sidebarState.mode !== "review") {
                 s.browsingState.onPositionUpdate();
               }
             });
@@ -738,15 +736,13 @@ export const getInitialRepertoireState = (
     backToOverview: () =>
       set(([s, gs]) => {
         gs.navigationState.push("/");
-        if (s.isReviewing) {
+        if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
         }
         s.setBreadcrumbs([]);
         s.showImportView = false;
         s.backToStartPosition();
         s.browsingState.activeSide = null;
-        s.isEditing = false;
-        s.isBrowsing = false;
         s.divergencePosition = null;
         s.divergenceIndex = null;
         s.browsingState.sidebarState = makeDefaultSidebarState();
@@ -762,7 +758,7 @@ export const getInitialRepertoireState = (
       }, "startImporting"),
     startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay: string) =>
       set(([s, gs]) => {
-        gs.navigationState.push(`/openings/${side}/browse`);
+        console.log("startBrowsing", side, mode, pgnToPlay);
         let breadcrumbs = [
           {
             text: `${capitalize(side)}`,
@@ -770,14 +766,12 @@ export const getInitialRepertoireState = (
         ];
 
         s.setBreadcrumbs(breadcrumbs);
-        s.isBrowsing = true;
-        s.isEditing = false;
+        s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
+        s.browsingState.sidebarState.mode = mode;
         s.browsingState.activeSide = side;
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
           s.browsingState.activeSide === "black";
-        s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
-        s.browsingState.sidebarState.mode = mode;
 
         if (s.browsingState.activeSide === "white") {
           let startResponses =
@@ -797,6 +791,7 @@ export const getInitialRepertoireState = (
           s.browsingState.checkFreezeChessboard();
         } else {
         }
+        gs.navigationState.push(`/openings/${side}/${mode}`);
       }, "startBrowsing"),
     onRepertoireUpdate: () =>
       set(([s]) => {
@@ -973,8 +968,10 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("white", "review", lineToPgn(TEST_LINE));
+              if (TEST_REVIEWING) {
+                s.reviewState.startReview("white", { side: "white" });
+              } else if (!isEmpty(TEST_LINE)) {
+                s.startBrowsing("white", "browse", lineToPgn(TEST_LINE));
               }
             });
           });
@@ -1030,7 +1027,7 @@ export const getInitialRepertoireState = (
       }),
     backOne: () =>
       set(([s]) => {
-        if (s.isBrowsing) {
+        if (s.browsingState.sidebarState.mode === "build") {
           s.browsingState.sidebarState.addedLineState.visible = false;
           s.browsingState.chessboardState.backOne();
           return;
@@ -1038,7 +1035,7 @@ export const getInitialRepertoireState = (
       }),
     backToStartPosition: () =>
       set(([s]) => {
-        if (s.isBrowsing) {
+        if (s.browsingState.sidebarState.mode !== "review") {
           s.browsingState.chessboardState.resetPosition();
           return;
         }

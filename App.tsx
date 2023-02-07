@@ -1,4 +1,3 @@
-
 import { View } from "react-native";
 import { RepertoireBuilder } from "./src/components/RepertoireBuilder";
 import { s, c } from "app/styles";
@@ -32,7 +31,7 @@ import Authenticate from "app/components/Authenticate";
 import { AdminView } from "app/components/AdminView";
 import { MoveAnnotationsDashboard } from "app/components/MoveAnnotationsDashboard";
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
-import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
+import { SidebarLayout } from "app/components/RepertoireBrowsingView";
 import { RepertoireReview } from "app/components/RepertoireReview";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { isDevelopment } from "app/utils/env";
@@ -114,14 +113,18 @@ export default function App() {
                 <Route path="/repertoire" element={<SharedRepertoireView />} />
                 <Route path="/openings" element={<RepertoireBuilder />} />
                 <Route
+                  path="/openings/:side/review"
+                  element={<SidebarLayout mode="review" shared={false} />}
+                />
+                <Route
                   path="/openings/:side/browse"
-                  element={<RepertoireBrowsingView shared={false} />}
+                  element={<SidebarLayout mode="browse" shared={false} />}
+                />
+                <Route
+                  path="/openings/:side/build"
+                  element={<SidebarLayout mode="build" shared={false} />}
                 />
                 <Route path="/openings/review" element={<RepertoireReview />} />
-                <Route
-                  path="/openings/:side/edit"
-                  element={<RepertoireBrowsingView />}
-                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/blindfold" element={<BlindfoldTrainer />} />
                 <Route

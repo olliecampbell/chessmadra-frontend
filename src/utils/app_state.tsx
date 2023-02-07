@@ -98,12 +98,12 @@ export const useAppStateInternal = create<AppState>()(
         }
       };
       let initialState = {
-        // toJSON: () => {
-        //   return get((s) => {
-        //     // Redux devtools slows down with big states, undo this for debugging
-        //     return {};
-        //   });
-        // },
+        toJSON: () => {
+          return get((s) => {
+            // Redux devtools slows down with big states, undo this for debugging
+            return {};
+          });
+        },
         repertoireState: getInitialRepertoireState(set, get),
         adminState: getInitialAdminState(set, get),
         visualizationState: getInitialVisualizationState(set, get, false),

@@ -99,7 +99,7 @@ export const useSections = ({
   );
 
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  if (mode == "review") {
+  if (mode == "browse") {
     sections = sections.concat(
       getReviewModeSections({
         myTurn,

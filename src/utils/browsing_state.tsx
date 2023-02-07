@@ -92,7 +92,7 @@ export enum SidebarOnboardingImportType {
   PGN,
   PlayerTemplates,
 }
-export type BrowsingMode = "review" | "build";
+export type BrowsingMode = "browse" | "build" | "review";
 
 export interface SidebarState {
   isPastCoverageGoal?: boolean;
@@ -196,7 +196,7 @@ export const makeDefaultSidebarState = () => {
   return {
     moveLog: [],
     positionHistory: null,
-    mode: "build",
+    mode: null,
     currentEpd: START_EPD,
     isPastCoverageGoal: false,
     tableResponses: [],
@@ -251,9 +251,9 @@ export const getInitialBrowsingState = (
     sidebarDirection: null,
     previousSidebarAnim: new Animated.Value(0),
     currentSidebarAnim: new Animated.Value(0),
+    activeSide: "white",
     sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
-    activeSide: null,
     plans: {},
     showPlans: false,
     repertoireProgressState: {
@@ -320,7 +320,9 @@ export const getInitialBrowsingState = (
     },
     updateTableResponses: () =>
       get(([s, rs, gs]) => {
-        if (!s.activeSide) {
+        console.log("update table responses");
+        if (!s.activeSide || !rs.repertoire) {
+          console.log("no active side");
           s.sidebarState.tableResponses = [];
           return;
         }
@@ -400,7 +402,7 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
-          if (s.sidebarState.mode == "review" && tr.repertoireMove) {
+          if (s.sidebarState.mode == "browse" && tr.repertoireMove) {
             const DEBUG = {
               epd: "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -",
             };
@@ -739,9 +741,11 @@ export const getInitialBrowsingState = (
           flatten(values(s.sidebarState.pendingResponses)),
           (m) => m.mine
         );
-        s.fetchNeededPositionReports();
-        s.updateRepertoireProgress();
-        s.updateTableResponses();
+        if (s.sidebarState.mode !== "review") {
+          s.fetchNeededPositionReports();
+          s.updateRepertoireProgress();
+          s.updateTableResponses();
+        }
       }),
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {

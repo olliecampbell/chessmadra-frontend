@@ -36,6 +36,7 @@ import { lineToPgn } from "app/utils/repertoire";
 import useKeypress from "react-use-keypress";
 import { isDevelopment } from "app/utils/env";
 import { TransposedView } from "./TransposedView";
+import { RepertoireReview } from "./RepertoireReview";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -46,23 +47,6 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
 
   console.log("Registering keypress");
   const user = useUserState((s) => s.user);
-  useKeypress(["Escape"], () => {
-    console.log("keypress!");
-    if (isDevelopment || user?.isAdmin) {
-      quick((s) => {
-        let browsingState = s.repertoireState.browsingState;
-        if (!browsingState.sidebarState.showPlansState.visible) {
-          browsingState.sidebarState.showPlansState.visible = true;
-          browsingState.sidebarState.showPlansState.hasShown = true;
-          browsingState.chessboardState.showPlans = true;
-        } else {
-          browsingState.sidebarState.showPlansState.visible = false;
-          browsingState.sidebarState.showPlansState.hasShown = false;
-          browsingState.chessboardState.showPlans = false;
-        }
-      });
-    }
-  });
   return (
     <View
       style={s(
@@ -163,6 +147,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     submitFeedbackState,
     showPlansState,
     transposedState,
+    mode,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
@@ -170,9 +155,12 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     s.submitFeedbackState,
     s.showPlansState,
     s.transposedState,
+    s.mode,
   ]);
   let inner = null;
-  if (!isEmpty(stageStack)) {
+  if (mode == "review") {
+    inner = <RepertoireReview/>
+  } else if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
   } else if (submitFeedbackState.visible) {
     inner = <FeedbackView />;

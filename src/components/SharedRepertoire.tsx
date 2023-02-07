@@ -1,5 +1,5 @@
 import { HeadSiteMeta, PageContainer } from "app/components/PageContainer";
-import { RepertoireBrowsingView } from "app/components/RepertoireBrowsingView";
+import { SidebarLayout } from "app/components/RepertoireBrowsingView";
 import React, { useEffect } from "react";
 import { useRepertoireState } from "app/utils/app_state";
 import { useSearchParams } from "react-router-dom";
@@ -18,7 +18,7 @@ export default function SharedRepertoireView() {
   return (
     <>
       <PageContainer hideNavBar hideIcons>
-        <RepertoireBrowsingView shared />
+        <SidebarLayout mode="build" shared />
       </PageContainer>
       <HeadSiteMeta
         siteMeta={{

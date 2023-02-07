@@ -126,7 +126,7 @@ export const RepertoireMovesTable = ({
   let MIN_TRUNCATED = isMobile ? 1 : 1;
   const [editingAnnotations, setEditingAnnotations] = useState(false);
   let trimmedResponses = filter(responses, (r, i) => {
-    if (mode == "review") {
+    if (mode == "browse") {
       return r.repertoireMove;
     }
     if (i < expandedLength) {

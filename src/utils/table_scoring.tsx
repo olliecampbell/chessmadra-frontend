@@ -37,7 +37,7 @@ export const scoreTableResponses = (
 ): TableResponse[] => {
   let positionWinRate = report ? getWinRate(report?.results, side) : NaN;
   let DEBUG_MOVE = null;
-  if (mode == "review") {
+  if (mode == "browse") {
     return sortBy(tableResponses, (tableResponse: TableResponse) => {
       if (tableResponse.reviewInfo) {
         return -tableResponse.reviewInfo.due;

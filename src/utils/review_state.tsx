@@ -20,6 +20,7 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import client from "app/client";
 import { PlaybackSpeed } from "app/types/VisualizationState";
 import { START_EPD } from "./chess";
+import { logProxy } from "./state";
 
 export interface QuizMove {
   moves: RepertoireMove[];
@@ -109,22 +110,21 @@ export const getInitialReviewState = (
     },
     startReview: (side: Side, options: ReviewOptions) =>
       set(([s, rs, gs]) => {
+        rs.browsingState.sidebarState.mode = "review";
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
           s.updateQueue(options);
-          console.log("s.activeQueue", s.activeQueue);
         }
-        gs.navigationState.push("/openings/review");
         rs.setBreadcrumbs([
           {
             text: `Review`,
             onPress: null,
           },
         ]);
-        rs.isReviewing = true;
+        gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
-        s.chessboardState.showMoveLog = true;
+        // s.chessboardState.showMoveLog = true;
         s.setupNextMove();
       }),
     setupNextMove: () =>
@@ -188,6 +188,11 @@ export const getInitialReviewState = (
         let moveObj = s.chessboardState.position.validateMoves([
           move.sanPlus,
         ])?.[0];
+        if (!moveObj) {
+          // todo : this should queue up instead of silently doing nothing
+          console.error("Invalid move", logProxy(move));
+          return;
+        }
         s.chessboardState.frozen = true;
         s.completedReviewPositionMoves[move.sanPlus] = move;
         s.getRemainingReviewPositionMoves().forEach((move) => {
@@ -207,7 +212,8 @@ export const getInitialReviewState = (
     stopReviewing: () =>
       set(([s, rs]) => {
         rs.updateRepertoireStructures();
-        rs.isReviewing = false;
+        rs.browsingState.sidebarState.mode = null;
+
         s.reviewSide = null;
         if (s.currentMove) {
           s.activeQueue = null;

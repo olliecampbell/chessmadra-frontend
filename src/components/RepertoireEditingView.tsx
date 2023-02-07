@@ -49,6 +49,7 @@ export const Responses = React.memo(function Responses() {
     ],
     {}
   );
+  console.log({ tableResponses });
   let usePeerRates = shouldUsePeerRates(positionReport);
   const [mode] = useSidebarState(([s]) => [s.mode]);
   let yourMoves = filter(tableResponses, (tr) => {
@@ -82,7 +83,7 @@ export const Responses = React.memo(function Responses() {
     prepareForHeader = "Most common responses";
   }
   let reviewHeader = null;
-  if (mode == "review") {
+  if (mode == "browse") {
     reviewHeader = "What do you want to review?";
   }
   return (
