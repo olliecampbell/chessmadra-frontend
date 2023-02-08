@@ -427,7 +427,7 @@ const getReviewModeSections = ({
   let na = <CMText style={s(naStyles)}>N/A</CMText>;
 
   sections.push({
-    width: 100,
+    width: 110,
     alignLeft: true,
     content: ({ suggestedMove, positionReport, tableResponse }) => {
       const date = new Date(tableResponse.reviewInfo.earliestDue);
@@ -444,11 +444,11 @@ const getReviewModeSections = ({
         color = c.oranges[70];
         dueString = `${numMovesDueFromHere} Due`;
       } else if (minutes < 60) {
-        dueString = `In ${pluralize(Math.round(minutes), "minute")}`;
+        dueString = `Due in ${pluralize(Math.round(minutes), "minute")}`;
       } else if (hours < 24) {
-        dueString = `In ${pluralize(Math.round(hours), "hour")}`;
+        dueString = `Due in ${pluralize(Math.round(hours), "hour")}`;
       } else {
-        dueString = `In ${pluralize(Math.round(days), "day")}`;
+        dueString = `Due in ${pluralize(Math.round(days), "day")}`;
       }
       return (
         <>
@@ -465,7 +465,7 @@ const getReviewModeSections = ({
         </>
       );
     },
-    header: "Review status",
+    header: "",
   });
 
   return sections;

@@ -399,8 +399,7 @@ const getButtonColors = (inverse: boolean): [string, string, string] => {
 const RepertoireSideSummary = ({ side }: { side: Side }) => {
   const responsive = useResponsive();
   const isMobile = responsive.isMobile;
-  let [expectedDepth, biggestMiss, numMoves] = useRepertoireState((s) => [
-    s.repertoireGrades[side]?.expectedDepth,
+  let [biggestMiss, numMoves] = useRepertoireState((s) => [
     s.repertoireGrades[side]?.biggestMiss,
     s.getLineCount(side),
   ]);
@@ -501,7 +500,7 @@ const EmptyStatus = ({ side }: { side: Side }) => {
       style={s(c.column, c.maxWidth(200), c.alignEnd, c.clickable)}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side);
+          s.repertoireState.startBrowsing(side as Side, "build");
           trackEvent("overview.click_empty_state_cta");
         });
       }}

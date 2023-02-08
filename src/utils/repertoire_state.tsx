@@ -52,8 +52,8 @@ import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
 
-const TEST_LINE = isDevelopment ? ["e4", "e5"] : [];
-const TEST_REVIEWING = isDevelopment ? true : false;
+const TEST_LINE = isDevelopment ? [] : [];
+const TEST_REVIEWING = isDevelopment ? false : false;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {

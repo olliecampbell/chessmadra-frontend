@@ -38,12 +38,24 @@ export const scoreTableResponses = (
   let positionWinRate = report ? getWinRate(report?.results, side) : NaN;
   let DEBUG_MOVE = null;
   if (mode == "browse") {
-    return sortBy(tableResponses, (tableResponse: TableResponse) => {
-      if (tableResponse.reviewInfo) {
-        return -tableResponse.reviewInfo.due;
-      }
-      return Infinity;
-    });
+    return sortBy(
+      tableResponses,
+      [
+        (tableResponse: TableResponse) => {
+          if (tableResponse.reviewInfo) {
+            return -tableResponse.reviewInfo.due;
+          }
+          return 0;
+        },
+        (tableResponse: TableResponse) => {
+          if (tableResponse.reviewInfo) {
+            return tableResponse.reviewInfo.earliestDue;
+          }
+          return Infinity;
+        },
+      ],
+      ["desc", "asc"]
+    );
   }
   return reverse(
     sortBy(tableResponses, (tableResponse: TableResponse) => {

@@ -62,11 +62,7 @@ export const RepertoireReview = (props: {}) => {
     },
   ];
   return (
-    <SidebarTemplate
-      header="Practicing your repertoire"
-      actions={actions}
-      bodyPadding={true}
-    >
+    <SidebarTemplate header={null} actions={actions} bodyPadding={true}>
       <CMText style={s()}>
         {currentMove?.moves.length === 1
           ? "Play the correct response on the board"

@@ -110,6 +110,7 @@ export const getInitialReviewState = (
     },
     startReview: (side: Side, options: ReviewOptions) =>
       set(([s, rs, gs]) => {
+        rs.browsingState.moveSidebarState("right");
         rs.browsingState.sidebarState.mode = "review";
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
@@ -249,7 +250,6 @@ export const getInitialReviewState = (
           });
         };
         recurse(options.startPosition ?? START_EPD, options.startLine ?? []);
-        seen_epds = new Set();
         return queue;
       }),
     updateQueue: (options: ReviewOptions) =>

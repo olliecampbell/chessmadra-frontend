@@ -335,16 +335,17 @@ export const getInitialBrowsingState = (
         let positionReport =
           rs.positionReports[s.activeSide][s.sidebarState.currentEpd];
         let _tableResponses: Record<string, TableResponse> = {};
-        positionReport?.suggestedMoves
-          .filter((sm) => getTotalGames(sm.results) > 0)
-          .map((sm) => {
-            _tableResponses[sm.sanPlus] = {
-              suggestedMove: cloneDeep(sm),
-              tags: [],
-              reviewInfo: {},
-              side: s.activeSide,
-            };
-          });
+        if (mode == "build") {
+          positionReport?.suggestedMoves
+            .filter((sm) => getTotalGames(sm.results) > 0)
+            .map((sm) => {
+              _tableResponses[sm.sanPlus] = {
+                suggestedMove: cloneDeep(sm),
+                tags: [],
+                side: s.activeSide,
+              };
+            });
+        }
         let existingMoves =
           rs.repertoire[s.activeSide].positionResponses[
             s.chessboardState.getCurrentEpd()
@@ -356,7 +357,6 @@ export const getInitialBrowsingState = (
             _tableResponses[r.sanPlus] = {
               repertoireMove: r,
               tags: [],
-              reviewInfo: {},
               side: s.activeSide,
             };
           }

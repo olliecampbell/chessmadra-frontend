@@ -282,7 +282,7 @@ export const RepertoireMovesTable = ({
       </View>
       <Spacer height={12} />
       <View style={s(c.row, c.px(getSidebarPadding(responsive)))}>
-        {truncated && (
+        {truncated && mode == "build" && (
           <>
             <Pressable
               style={s(c.pb(2))}
@@ -300,7 +300,7 @@ export const RepertoireMovesTable = ({
             <Spacer width={16} />
           </>
         )}
-        {!hideAnnotations && (
+        {!hideAnnotations && mode == "build" && (
           <>
             <Pressable
               style={s(c.pb(2))}
@@ -320,7 +320,7 @@ export const RepertoireMovesTable = ({
             <Spacer width={16} />
           </>
         )}
-        {anyMine && (
+        {anyMine && mode == "build" && (
           <>
             <Pressable
               style={s(c.pb(2))}

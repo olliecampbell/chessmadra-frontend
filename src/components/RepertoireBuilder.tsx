@@ -14,23 +14,7 @@ export const RepertoireBuilder = () => {
     s.underConstruction,
     s.debugUi,
   ]);
-  const [
-    repertoireLoading,
-    showImportView,
-    isBrowsing,
-    isEditing,
-    isReviewing,
-    initState,
-  ] = useRepertoireState((s) => [
-    isNil(s.repertoire),
-    s.showImportView,
-    s.isBrowsing,
-    s.isEditing,
-    s.isReviewing,
-    s.initState,
-  ]);
 
-  let inner = null;
   if (underConstruction && !debugUi) {
     return (
       <View style={s(c.column, c.center)}>

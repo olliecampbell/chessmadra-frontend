@@ -241,7 +241,7 @@ export const SidebarActions = () => {
             });
           });
         },
-        text: `Practice ${numDue} moves from here which are due for review`,
+        text: `Practice ${numDue} moves which are due for review`,
         style: "primary",
       });
     }
@@ -256,9 +256,12 @@ export const SidebarActions = () => {
           });
         });
       },
-      text: `Practice all moves from here`,
+      text: `Practice ALL moves from here`,
       style: "primary",
     });
+  }
+  if (mode === "review") {
+    buttons = [];
   }
   return (
     <View style={s(c.column, c.fullWidth)}>

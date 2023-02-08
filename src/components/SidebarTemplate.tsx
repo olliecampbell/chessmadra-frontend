@@ -16,7 +16,7 @@ export const SidebarTemplate = ({
   loading,
   actions,
 }: {
-  header: string;
+  header?: string;
   children?: any;
   loading?: string;
   bodyPadding?: boolean;
@@ -25,8 +25,12 @@ export const SidebarTemplate = ({
   const responsive = useResponsive();
   return (
     <View style={s(c.column)}>
-      <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
-      <Spacer height={12} />
+      {header && (
+        <>
+          <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
+          <Spacer height={12} />
+        </>
+      )}
       <View
         style={s(
           c.column,

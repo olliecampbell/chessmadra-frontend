@@ -159,7 +159,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   ]);
   let inner = null;
   if (mode == "review") {
-    inner = <RepertoireReview/>
+    inner = <RepertoireReview />;
   } else if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
   } else if (submitFeedbackState.visible) {
@@ -197,6 +197,7 @@ const BackSection = () => {
     submitFeedbackState,
     showPlansState,
     transposedState,
+    mode,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
@@ -204,6 +205,7 @@ const BackSection = () => {
     s.submitFeedbackState,
     s.showPlansState,
     s.transposedState,
+    s.mode,
   ]);
   const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
   const responsive = useResponsive();
@@ -252,6 +254,11 @@ const BackSection = () => {
       });
     };
   }
+
+  if (mode == "review") {
+    backButtonAction = null;
+  }
+
   return (
     <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
       <Pressable
