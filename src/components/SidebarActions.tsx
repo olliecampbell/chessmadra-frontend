@@ -144,7 +144,11 @@ export const SidebarActions = () => {
       }
       return false;
     });
-    if (addedLineState.visible && currentOpeningName === openingNameOfMiss) {
+    if (
+      addedLineState.visible &&
+      currentOpeningName === openingNameOfMiss &&
+      currentOpeningName
+    ) {
       text = `Keep filling in lines in the ${currentOpeningName}`;
     } else if (
       positionHistory.length === 1 ||
