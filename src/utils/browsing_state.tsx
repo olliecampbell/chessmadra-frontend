@@ -508,6 +508,9 @@ export const getInitialBrowsingState = (
       }),
     getMissInThisLine: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
+        if (!s.activeSide) {
+          return null;
+        }
         let miss =
           rs.repertoireGrades[s.activeSide].biggestMisses?.[
             sidebarState.currentEpd
@@ -516,6 +519,9 @@ export const getInitialBrowsingState = (
       }),
     getNearestMiss: (sidebarState: SidebarState) =>
       get(([s, rs, gs]) => {
+        if (!s.activeSide) {
+          return null;
+        }
         let threshold = gs.userState.getCurrentThreshold();
         return findLast(
           map(sidebarState.positionHistory, (epd) => {

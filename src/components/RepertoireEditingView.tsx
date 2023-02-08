@@ -29,7 +29,8 @@ let desktopHeaderStyles = s(
 export const Responses = React.memo(function Responses() {
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
   const positionReport = useBrowsingState(
-    ([s, rs]) => rs.positionReports[s.activeSide][currentEpd],
+    // TODO: we should have the active side on sidebar too
+    ([s, rs]) => rs.positionReports[s.activeSide]?.[currentEpd],
     { referenceEquality: true }
   );
   let [activeSide] = useBrowsingState(([s]) => [s.activeSide], {});
@@ -50,6 +51,7 @@ export const Responses = React.memo(function Responses() {
     {}
   );
   console.log({ tableResponses });
+
   let usePeerRates = shouldUsePeerRates(positionReport);
   const [mode] = useSidebarState(([s]) => [s.mode]);
   let yourMoves = filter(tableResponses, (tr) => {

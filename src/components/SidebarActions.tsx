@@ -71,7 +71,7 @@ export const SidebarActions = () => {
     s.showPlansState,
     s.transposedState,
     s.mode,
-    rs.numMovesDueFromEpd[bs.activeSide][s.currentEpd],
+    rs.numMovesDueFromEpd[bs.activeSide]?.[s.currentEpd],
   ]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
     referenceEquality: true,
