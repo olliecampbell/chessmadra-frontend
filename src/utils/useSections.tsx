@@ -340,9 +340,6 @@ const CoverageProgressBar = ({
       s.expectedNumMovesFromEpd[s.browsingState.activeSide][epdAfter],
       s.repertoireGrades[s.browsingState.activeSide]?.biggestMisses[epdAfter],
     ]);
-  const [movesFromHere] = useRepertoireState((s) => [
-    s.numMovesFromEpd[s.browsingState.activeSide],
-  ]);
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
@@ -427,7 +424,7 @@ const getReviewModeSections = ({
   let na = <CMText style={s(naStyles)}>N/A</CMText>;
 
   sections.push({
-    width: 110,
+    width: 120,
     alignLeft: true,
     content: ({ suggestedMove, positionReport, tableResponse }) => {
       const date = new Date(tableResponse.reviewInfo.earliestDue);

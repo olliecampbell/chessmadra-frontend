@@ -70,7 +70,6 @@ export const SidebarLayout = ({
       !shared
     ) {
       quick((s) => {
-        console.log("starting browsing");
         s.repertoireState.startBrowsing(
           (paramSide as Side) ?? "white",
           "build"
