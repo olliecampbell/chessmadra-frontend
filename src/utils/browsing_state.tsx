@@ -149,7 +149,6 @@ export interface BrowsingState {
   moveSidebarState: (direction: "left" | "right") => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
-  checkFreezeChessboard: () => void;
 
   // Fields
   chessboardState?: ChessboardState;
@@ -293,15 +292,6 @@ export const getInitialBrowsingState = (
           }).start();
         });
       }),
-    checkFreezeChessboard: () => {
-      set(([s, rs, gs]) => {
-        if (!isEmpty(s.sidebarState.sidebarOnboardingState.stageStack)) {
-          s.chessboardState.frozen = true;
-        } else {
-          s.chessboardState.frozen = false;
-        }
-      });
-    },
     checkShowTargetDepthReached: () => {
       set(([s, rs, gs]) => {
         if (
@@ -314,7 +304,6 @@ export const getInitialBrowsingState = (
           s.sidebarState.showPlansState.hasShown = true;
           s.sidebarState.showPlansState.coverageReached = true;
           s.chessboardState.showPlans = true;
-          s.checkFreezeChessboard();
         }
         if (!s.sidebarState.isPastCoverageGoal) {
           s.sidebarState.showPlansState.hasShown = false;
@@ -548,25 +537,20 @@ export const getInitialBrowsingState = (
         s.chessboardState.showPlans = false;
         if (s.sidebarState.submitFeedbackState.visible) {
           s.sidebarState.submitFeedbackState.visible = false;
-          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.addedLineState.visible) {
           s.sidebarState.addedLineState.visible = false;
-          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.deleteLineState.visible) {
           s.sidebarState.deleteLineState.visible = false;
-          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.transposedState.visible) {
           s.sidebarState.transposedState.visible = false;
-          s.checkFreezeChessboard();
           return true;
         } else if (s.sidebarState.showPlansState.visible) {
           s.sidebarState.showPlansState.visible = false;
           s.sidebarState.showPlansState.coverageReached = false;
           s.chessboardState.showPlans = false;
-          s.checkFreezeChessboard();
           return true;
         }
         return false;
@@ -578,7 +562,6 @@ export const getInitialBrowsingState = (
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
               [];
-            s.repertoireState.browsingState.checkFreezeChessboard();
           });
         });
       }),

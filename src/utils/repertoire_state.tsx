@@ -775,7 +775,6 @@ export const getInitialRepertoireState = (
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
           SidebarOnboardingStage.ChooseImportSource,
         ];
-        s.browsingState.checkFreezeChessboard();
       }, "startImporting"),
     animateChessboardShown: (
       responsive: Responsive,
@@ -825,7 +824,6 @@ export const getInitialRepertoireState = (
           s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
             SidebarOnboardingStage.AskAboutExistingRepertoire,
           ];
-          s.browsingState.checkFreezeChessboard();
         } else if (mode === "browse" || mode === "build") {
           s.browsingState.chessboardShownAnim.setValue(1);
           if (s.browsingState.sidebarState.activeSide === "white") {

@@ -35,12 +35,18 @@ export const SidebarLayout = ({
   shared?: boolean;
   mode: BrowsingMode;
 }) => {
-  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const [repertoireLoading, chessboardFrozen] = useRepertoireState((s) => [
+  const [activeSide, onboardingStack] = useSidebarState(([s]) => [
+    s.activeSide,
+    s.sidebarOnboardingState.stageStack,
+  ]);
+  const [repertoireLoading] = useRepertoireState((s) => [
     s.repertoire === undefined,
-    s.browsingState.chessboardState.frozen,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
+  let chessboardFrozen = sideBarMode === "overview";
+  if (onboardingStack.length > 0) {
+    chessboardFrozen = true;
+  }
   const [chessboardShownAnim] = useBrowsingState(([s]) => [
     s.chessboardShownAnim,
   ]);
@@ -141,6 +147,7 @@ export const SidebarLayout = ({
                     vertical &&
                       s(c.selfCenter, c.maxWidth(440), c.pt(20), c.px(12)),
                     chessboardFrozen && c.opacity(20),
+                    chessboardFrozen && c.noPointerEvents,
                     vertical &&
                       c.opacity(
                         chessboardShownAnim.interpolate({
