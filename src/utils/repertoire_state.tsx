@@ -101,7 +101,7 @@ export interface RepertoireState {
   }) => void;
   initState: () => void;
   // TODO: move review state stuff to its own module
-  usePlayerTemplate: (id: string) => void;
+  usePlayerTemplate: (id: string, responsive: Responsive) => void;
   backToOverview: () => void;
   uploadMoveAnnotation: ({
     epd,
@@ -264,7 +264,7 @@ export const getInitialRepertoireState = (
         s.fetchRepertoire(true);
         s.fetchSupplementary();
       }, "initState"),
-    usePlayerTemplate: (id: string) =>
+    usePlayerTemplate: (id: string, responsive: Responsive) =>
       set(async ([s]) => {
         let { data }: { data: FetchRepertoireResponse } = await client.post(
           "/api/v1/openings/use_player_template",
@@ -276,7 +276,7 @@ export const getInitialRepertoireState = (
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
-          s.browsingState.finishSidebarOnboarding();
+          s.browsingState.finishSidebarOnboarding(responsive);
         });
       }, "usePlayerTemplate"),
     addTemplates: () =>

@@ -614,7 +614,7 @@ const ImportOnboarding = () => {
           onPress={(template: PlayerTemplate) => {
             setLoading("Copying repertoire");
             quick((s) => {
-              s.repertoireState.usePlayerTemplate(template.id);
+              s.repertoireState.usePlayerTemplate(template.id, responsive);
               trackEvent("import.from_player_template", {
                 player_template_id: template.id,
               });
