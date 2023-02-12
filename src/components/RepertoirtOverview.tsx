@@ -46,13 +46,17 @@ export const RepertoireOverview = (props: {}) => {
   let [numMoves] = useRepertoireState((s) => [s.getLineCount(side)]);
   const empty = numMoves === 0;
   const responsive = useResponsive();
-  const startBrowsing = (mode: BrowsingMode) => {
+  const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
     quick((s) => {
-      s.repertoireState.animateChessboardShown(responsive, true, () => {
-        quick((s) => {
-          s.repertoireState.startBrowsing(side, mode);
+      if (skipAnimation) {
+        s.repertoireState.startBrowsing(side, mode);
+      } else {
+        s.repertoireState.animateChessboardShown(responsive, true, () => {
+          quick((s) => {
+            s.repertoireState.startBrowsing(side, mode);
+          });
         });
-      });
+      }
     });
   };
   let options = [
@@ -60,7 +64,7 @@ export const RepertoireOverview = (props: {}) => {
       core: true,
       onPress: () => {
         quick((s) => {
-          startBrowsing("build");
+          startBrowsing("build", empty);
         });
       },
       left: <CMText style={s(textStyles)}>Add/edit lines</CMText>,
