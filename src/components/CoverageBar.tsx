@@ -6,24 +6,23 @@ import { useBrowsingState } from "app/utils/app_state";
 
 export const CoverageBar = ({
   side,
-  inverse,
   rounded,
   isInSidebar: isInSidebar,
 }: {
   side: Side;
   rounded?: boolean;
   isInSidebar?: boolean;
-  inverse?: boolean;
 }) => {
   const [progressState] = useBrowsingState(([s]) => {
     let progressState = s.repertoireProgressState[side];
     return [progressState];
   });
+  const inverse = side === "white";
   const [backgroundColor, inProgressColor, completedColor] = isInSidebar
     ? [c.grays[30], c.greens[50], c.greens[50]]
     : inverse
-    ? [c.grays[14], c.yellows[45], c.greens[50]]
-    : [c.grays[80], c.yellows[65], c.greens[50]];
+    ? [c.grays[80], c.oranges[55], c.greens[50]]
+    : [c.grays[30], c.oranges[65], c.greens[50]];
   let overlap = 8;
   return (
     <View

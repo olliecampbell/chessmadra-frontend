@@ -576,7 +576,7 @@ const Response = ({
 
           c.px(getSidebarPadding(responsive)),
           c.py(12),
-          hoveringRow && c.bg(c.grays[14]),
+          hoveringRow && c.bg(c.grays[18]),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
           c.clickable,

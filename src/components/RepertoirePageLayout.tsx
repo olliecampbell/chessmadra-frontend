@@ -56,7 +56,7 @@ export const RepertoirePageLayout = ({
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
   const navColor = c.grays[90];
-  const backgroundColor = c.grays[6];
+  const backgroundColor = c.grays[8];
   const responsive = useResponsive();
   const shortUserUI = responsive.bp < BP.md;
   return (
