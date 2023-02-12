@@ -838,11 +838,11 @@ export const getInitialRepertoireState = (
               );
             }
           }
+          if (options.pgnToPlay) {
+            s.browsingState.chessboardState.playPgn(options.pgnToPlay);
+          }
         } else if (mode === "overview") {
           s.browsingState.chessboardShownAnim.setValue(0);
-        } else if (options.pgnToPlay) {
-          s.browsingState.chessboardState.playPgn(options.pgnToPlay);
-          s.browsingState.chessboardShownAnim.setValue(1);
         }
         gs.navigationState.push(`/openings/${side}/${mode}`);
       }, "startBrowsing"),

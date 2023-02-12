@@ -92,6 +92,17 @@ export const getInitialReviewState = (
     activeQueue: null,
     markMovesReviewed: (results: ReviewPositionResults[]) => {
       trackEvent(`reviewing.reviewed_move`);
+      set(([s, rs]) => {
+        results.forEach((r, i) => {
+          rs.repertoire[r.side].positionResponses[r.epd].forEach(
+            (m: RepertoireMove) => {
+              if (m.sanPlus === r.sanPlus) {
+                m.needed = r.correct;
+              }
+            }
+          );
+        });
+      });
       client
         .post("/api/v1/openings/moves_reviewed", { results })
         .then(({ data: updatedSrss }) => {

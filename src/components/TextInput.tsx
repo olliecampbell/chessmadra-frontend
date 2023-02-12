@@ -26,7 +26,7 @@ export const CMTextInput = ({
       // @ts-ignore
       className="text-input"
       style={s(
-        c.bg(c.grays[10]),
+        c.bg(c.grays[14]),
         c.py(12),
         c.px(12),
         c.fontSize(14),

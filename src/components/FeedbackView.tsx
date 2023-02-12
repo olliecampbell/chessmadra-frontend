@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Spacer } from "app/Space";
-import {
-  isEmpty,
-} from "lodash-es";
+import { isEmpty } from "lodash-es";
 import { useResponsive } from "app/utils/useResponsive";
 import { CMTextInput } from "./TextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
@@ -69,7 +67,7 @@ export const FeedbackView = () => {
                 setValue={setEmail}
                 placeholder={"Email (optional)"}
               />
-              <Spacer height={4} />
+              <Spacer height={8} />
             </>
           )}
           <CMTextInput

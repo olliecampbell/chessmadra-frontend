@@ -433,7 +433,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
     };
   } else if (numMovesDueFromHere > 0) {
     action = {
-      cta: null,
+      cta: "Review now",
       description: (
         <>
           You have <b>{pluralize(numMovesDueFromHere, "move")}</b> due for
@@ -479,6 +479,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         quick((s) => {
           let line = pgnToLine(biggestMiss.lines[0]);
 
+          console.log({ line });
           s.repertoireState.startBrowsing(side as Side, "build", {
             pgnToPlay: lineToPgn(line),
           });
