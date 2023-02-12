@@ -783,7 +783,7 @@ export const getInitialRepertoireState = (
           Animated.sequence([
             Animated.timing(s.browsingState.chessboardShownAnim, {
               toValue: animateIn ? 1 : 0,
-              duration: 2000,
+              duration: 400,
               useNativeDriver: true,
               easing: Easing.inOut(Easing.ease),
             }),

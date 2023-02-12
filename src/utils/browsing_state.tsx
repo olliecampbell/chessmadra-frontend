@@ -573,9 +573,11 @@ export const getInitialBrowsingState = (
       }),
     finishSidebarOnboarding: (responsive: Responsive) =>
       set(([s, rs]) => {
-        s.moveSidebarState("right");
-        s.sidebarState.sidebarOnboardingState.stageStack = [];
-        s.checkFreezeChessboard();
+        rs.animateChessboardShown(responsive, true, () => {
+          s.moveSidebarState("right");
+          s.sidebarState.sidebarOnboardingState.stageStack = [];
+          s.checkFreezeChessboard();
+        });
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
