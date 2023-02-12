@@ -807,31 +807,28 @@ export const getInitialRepertoireState = (
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
           s.browsingState.sidebarState.activeSide === "black";
-
-        if (s.browsingState.sidebarState.activeSide === "white") {
-          let startResponses =
-            s.repertoire?.[s.browsingState.sidebarState.activeSide]
-              ?.positionResponses[START_EPD];
-          if (
-            startResponses?.length === 1 &&
-            (mode === "review" || mode === "build")
-          ) {
-            s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
-          }
-        }
-        if (mode === "overview") {
-          s.browsingState.chessboardShownAnim.setValue(0);
-        }
-        if (pgnToPlay) {
-          s.browsingState.chessboardState.playPgn(pgnToPlay);
-          s.browsingState.chessboardShownAnim.setValue(0);
-        } else if (s.getIsRepertoireEmpty(side) && mode === "build") {
+        if (s.getIsRepertoireEmpty(side) && mode === "build") {
           s.browsingState.chessboardShownAnim.setValue(0);
           s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
             SidebarOnboardingStage.AskAboutExistingRepertoire,
           ];
           s.browsingState.checkFreezeChessboard();
-        } else {
+        } else if (
+          s.browsingState.sidebarState.activeSide === "white" &&
+          (mode === "browse" || mode === "build")
+        ) {
+          let startResponses =
+            s.repertoire?.[s.browsingState.sidebarState.activeSide]
+              ?.positionResponses[START_EPD];
+          if (startResponses?.length === 1) {
+            s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
+            s.browsingState.chessboardShownAnim.setValue(1);
+          }
+        } else if (mode === "overview") {
+          s.browsingState.chessboardShownAnim.setValue(0);
+        } else if (pgnToPlay) {
+          s.browsingState.chessboardState.playPgn(pgnToPlay);
+          s.browsingState.chessboardShownAnim.setValue(1);
         }
         gs.navigationState.push(`/openings/${side}/${mode}`);
       }, "startBrowsing"),
