@@ -116,6 +116,7 @@ export const RepertoireOverview = (props: {}) => {
       left: (
         <CMText style={s(textStyles)}>Choose a specific line to review</CMText>
       ),
+      icon: "fa-solid fa-merge",
       right: null,
     },
     {
