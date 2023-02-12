@@ -55,7 +55,7 @@ import { Animated, Easing } from "react-native";
 import { Responsive } from "./useResponsive";
 
 const TEST_LINE = isDevelopment ? ["e4"] : [];
-const TEST_MODE: BrowsingMode = isDevelopment ? "overview" : false;
+const TEST_MODE: BrowsingMode = isDevelopment ? "overview" : null;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {

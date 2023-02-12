@@ -294,7 +294,9 @@ const BackSection = () => {
   }
 
   if (mode == "review") {
-    backButtonAction = null;
+    backButtonAction = () => {
+      backToOverview();
+    };
   }
   if (mode == "browse") {
     if (!isEmpty(moveLog)) {
