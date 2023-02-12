@@ -523,7 +523,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         // c.px(12),
         c.relative,
         c.zIndex(side === "white" ? 20 : 10),
-        c.px(12),
+        c.px(24),
         c.py(topPadding),
         c.center
       )}
@@ -565,10 +565,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
             </View>
           </>
         )}
-        <Spacer
-          height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])}
-          grow
-        />
+        <Spacer height={responsive.switch(48, [BP.lg, 48])} grow />
         {action && <SuggestedAction {...action} />}
       </View>
     </Pressable>
@@ -618,19 +615,29 @@ const SuggestedAction = ({
       <CMText
         style={s(
           c.weightSemiBold,
-          c.lineHeight("1.3rem"),
+          c.fontSize(responsive.switch(12, [BP.md, 14])),
+          c.lineHeight("1.1rem"),
           c.fg(foregroundColor),
           c.selfStart
         )}
       >
         {description}
       </CMText>
-      <Spacer height={16} />
-      <View style={s(c.border("none"), c.pt(4), c.pr(0), c.pb(0), c.row)}>
+      <Spacer height={responsive.switch(12, [BP.md, 16])} />
+      <View
+        style={s(
+          c.border("none"),
+          c.pt(4),
+          c.pr(0),
+          c.pb(0),
+          c.row,
+          c.alignCenter
+        )}
+      >
         <CMText
           style={s(
             c.fg(foregroundColor),
-            c.fontSize(responsive.switch(16)),
+            c.fontSize(responsive.switch(14, [BP.md, 16])),
             c.weightBold
           )}
         >

@@ -65,6 +65,7 @@ import { createContext } from "react";
 import { logProxy } from "./state";
 import { parsePlans } from "./plans";
 import * as Sentry from "sentry-expo";
+import { Responsive } from "./useResponsive";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -134,7 +135,7 @@ export interface BrowsingState {
   fetchNeededPositionReports: () => void;
   updateRepertoireProgress: () => void;
   reviewFromCurrentLine: () => void;
-  finishSidebarOnboarding: () => void;
+  finishSidebarOnboarding: (responsive: Responsive) => void;
   getIncidenceOfCurrentLine: () => number;
   getLineIncidences: (_: GetIncidenceOptions) => number[];
   dismissTransientSidebarState: () => boolean;
@@ -570,7 +571,7 @@ export const getInitialBrowsingState = (
         }
         return false;
       }),
-    finishSidebarOnboarding: () =>
+    finishSidebarOnboarding: (responsive: Responsive) =>
       set(([s, rs]) => {
         s.moveSidebarState("right");
         s.sidebarState.sidebarOnboardingState.stageStack = [];

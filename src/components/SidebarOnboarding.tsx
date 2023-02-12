@@ -441,7 +441,9 @@ const AskAboutExistingRepertoireOnboarding = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.finishSidebarOnboarding();
+              s.repertoireState.browsingState.finishSidebarOnboarding(
+                responsive
+              );
             });
           },
           text: "No, I'll start from scratch",
@@ -504,7 +506,9 @@ const ChooseImportSourceOnboarding = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.finishSidebarOnboarding();
+              s.repertoireState.browsingState.finishSidebarOnboarding(
+                responsive
+              );
             });
           },
           text: "Nevermind, skip this for now",
@@ -542,7 +546,7 @@ const ImportOnboarding = () => {
       } else {
         params.blackPgn = pgn;
       }
-      s.repertoireState.initializeRepertoire(params);
+      s.repertoireState.initializeRepertoire({ ...params, responsive });
       trackEvent("import.from_pgns");
     });
   };
@@ -551,7 +555,10 @@ const ImportOnboarding = () => {
     setLoading("Importing your games");
     quick((s) => {
       trackEvent("import.from_lichess_username");
-      s.repertoireState.initializeRepertoire({ lichessUsername: username });
+      s.repertoireState.initializeRepertoire({
+        lichessUsername: username,
+        responsive,
+      });
     });
   };
 
@@ -653,7 +660,7 @@ const TrimRepertoireOnboarding = () => {
     setLoading("Trimming");
     quick((s) => {
       s.repertoireState.trimRepertoire(threshold, [activeSide]);
-      s.repertoireState.browsingState.finishSidebarOnboarding();
+      s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
     });
   };
 
@@ -674,7 +681,7 @@ const TrimRepertoireOnboarding = () => {
     text: `No thanks, I'll keep my whole repertoire`,
     onPress: () => {
       quick((s) => {
-        s.repertoireState.browsingState.finishSidebarOnboarding();
+        s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
       });
     },
     style: "primary",

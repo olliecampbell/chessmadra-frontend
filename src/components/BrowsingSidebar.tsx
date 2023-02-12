@@ -232,16 +232,13 @@ const BackSection = () => {
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   let backButtonAction: (() => void) | null = null;
   const backToOverview = () => {
+    console.log("back to overview");
     quick((s) => {
       s.repertoireState.animateChessboardShown(responsive, false, () => {
         quick((s) => {
           s.repertoireState.startBrowsing(side, "overview");
         });
       });
-    });
-
-    quick((s) => {
-      s.repertoireState.startBrowsing(side, "overview");
     });
   };
   if (mode === "build") {
@@ -323,9 +320,7 @@ const BackSection = () => {
     <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
       <Pressable
         onPress={() => {
-          quick((s) => {
-            backButtonAction?.();
-          });
+          backButtonAction?.();
         }}
         style={s(
           !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),

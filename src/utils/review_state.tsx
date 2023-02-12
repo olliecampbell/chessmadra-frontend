@@ -112,6 +112,7 @@ export const getInitialReviewState = (
       set(([s, rs, gs]) => {
         rs.browsingState.moveSidebarState("right");
         rs.browsingState.sidebarState.mode = "review";
+        rs.browsingState.sidebarState.activeSide = side;
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
@@ -119,6 +120,7 @@ export const getInitialReviewState = (
         }
         gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
+        rs.browsingState.chessboardShownAnim.setValue(1);
         // s.chessboardState.showMoveLog = true;
         s.setupNextMove();
       }),

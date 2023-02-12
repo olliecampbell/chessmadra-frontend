@@ -97,6 +97,7 @@ export interface RepertoireState {
     whitePgn?: string;
     blackPgn?: string;
     state?: RepertoireState;
+    responsive: Responsive;
   }) => void;
   initState: () => void;
   // TODO: move review state stuff to its own module
@@ -294,7 +295,12 @@ export const getInitialRepertoireState = (
           s.hasCompletedRepertoireInitialization = true;
         });
       }, "addTemplates"),
-    initializeRepertoire: ({ lichessUsername, blackPgn, whitePgn }) =>
+    initializeRepertoire: ({
+      lichessUsername,
+      blackPgn,
+      whitePgn,
+      responsive,
+    }) =>
       set(async ([s]) => {
         let lichessGames = [];
         let chessComGames = [];
@@ -338,7 +344,7 @@ export const getInitialRepertoireState = (
               SidebarOnboardingStage.TrimRepertoire
             );
           } else {
-            s.browsingState.finishSidebarOnboarding();
+            s.browsingState.finishSidebarOnboarding(responsive);
           }
         }, "initializeRepertoire");
       }),
@@ -368,7 +374,7 @@ export const getInitialRepertoireState = (
         }
         if (mode && mode !== "overview") {
           breadcrumbs.push({
-            text: mode,
+            text: capitalize(mode),
             onPress: () => {
               quick((s) => {
                 s.repertoireState.startBrowsing(side, mode);
@@ -777,18 +783,19 @@ export const getInitialRepertoireState = (
           Animated.sequence([
             Animated.timing(s.browsingState.chessboardShownAnim, {
               toValue: animateIn ? 1 : 0,
-              duration: 400,
+              duration: 2000,
               useNativeDriver: true,
               easing: Easing.inOut(Easing.ease),
             }),
-          ]).start(cb);
+          ]).start((r) => {
+            cb();
+          });
         } else {
           cb();
         }
       }),
     startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay: string) =>
       set(([s, gs]) => {
-        console.log("startBrowsing", side, mode, pgnToPlay);
         const currentMode = s.browsingState.sidebarState.mode;
 
         if (currentMode) {
@@ -812,9 +819,14 @@ export const getInitialRepertoireState = (
             s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
           }
         }
+        if (mode === "overview") {
+          s.browsingState.chessboardShownAnim.setValue(0);
+        }
         if (pgnToPlay) {
           s.browsingState.chessboardState.playPgn(pgnToPlay);
-        } else if (s.getIsRepertoireEmpty(side)) {
+          s.browsingState.chessboardShownAnim.setValue(0);
+        } else if (s.getIsRepertoireEmpty(side) && mode === "build") {
+          s.browsingState.chessboardShownAnim.setValue(0);
           s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
             SidebarOnboardingStage.AskAboutExistingRepertoire,
           ];
