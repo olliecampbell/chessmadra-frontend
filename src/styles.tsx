@@ -178,6 +178,7 @@ const absoluteFull = s(absolute, top(0), left(0), fullWidth, fullHeight);
 const dashboardTitle = s(fontSize(40), weightBold, fg("#2e2e3c"));
 const zIndex = keyedProp("zIndex");
 const overflowHidden = keyedProp("overflow")("hidden");
+const overflowY = keyedProp("overflow");
 const scrollY = keyedProp("overflowY")("scroll");
 const scrollX = keyedProp("overflowX")("scroll");
 const aircamBlue = "#1160d6";
@@ -222,7 +223,7 @@ const genGrays = (hue, minSat, maxSat) => {
   }
   return grays;
 };
-const grays = genGrays(grayHue, 20, 5);
+const grays = genGrays(grayHue, 14, 5);
 const trueGrays = genGrays(0, 0, 0);
 const chessboardGrays = genGrays(21, 5, 5);
 
@@ -520,6 +521,7 @@ const sidebarDescriptionStyles = (responsive: Responsive) => {
 
 export const c = {
   keyedProp,
+  overflowY,
   oldContainerStyles,
   containerStyles,
   displayNone,

@@ -97,7 +97,7 @@ export const RepertoirePageLayout = ({
           ) : (
             <View
               style={s(
-                !isMobile && s(c.scrollY),
+!isMobile && s(c.overflowY("auto")),
                 isMobile && s(c.grow),
                 c.center,
                 c.justifyStart,
@@ -109,7 +109,7 @@ export const RepertoirePageLayout = ({
             >
               <View
                 style={s(
-                  !fullHeight && c.pb(isMobile ? 92 : 180),
+                  !fullHeight && !naked && c.pb(isMobile ? 92 : 180),
                   c.center,
                   c.fullWidth,
                   fullHeight && c.grow

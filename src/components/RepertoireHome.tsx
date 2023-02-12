@@ -533,7 +533,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
       <View style={s(c.column, c.alignCenter)}>
         <CMText
           style={s(
-            c.fontSize(responsive.switch(48, [BP.xl, 54], [BP.xxl, 64])),
+            c.fontSize(responsive.switch(48, [BP.xl, 54], [BP.xxl, 70])),
             c.selfCenter,
             c.weightHeavy,
             c.fg(textColor)
@@ -543,7 +543,7 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         </CMText>
         {!empty && (
           <>
-            <Spacer height={responsive.switch(48, [BP.lg, 48], [BP.xl, 48])} />
+            <Spacer height={responsive.switch(36)} />
             <View style={s(c.row, c.selfCenter, c.alignCenter, c.px(24))}>
               <CMText
                 style={s(
