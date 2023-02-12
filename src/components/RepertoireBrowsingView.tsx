@@ -135,7 +135,7 @@ export const SidebarLayout = ({
               {!vertical ? (
                 <View style={s(c.height(140), c.column, c.justifyEnd)}>
                   <NavBreadcrumbs />
-                  <Spacer height={22} />
+                  <Spacer height={12} />
                 </View>
               ) : (
                 <MobileTopBar />
@@ -144,8 +144,7 @@ export const SidebarLayout = ({
                 <Animated.View
                   style={s(
                     c.fullWidth,
-                    vertical &&
-                      s(c.selfCenter, c.maxWidth(440), c.pt(20), c.px(12)),
+                    vertical && s(c.selfCenter, c.maxWidth(440), c.px(16)),
                     chessboardFrozen && c.opacity(20),
                     chessboardFrozen && c.noPointerEvents,
                     vertical &&
@@ -171,7 +170,7 @@ export const SidebarLayout = ({
                       c.mt(
                         chessboardShownAnim.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [-chessboardHeight + 100, 24],
+                          outputRange: [-chessboardHeight + 100, 16],
                         })
                       )
                     )}

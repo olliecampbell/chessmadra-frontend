@@ -57,7 +57,7 @@ import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "app/utils/table_scoring";
 import { getCoverageProgress } from "app/utils/browsing_state";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
-import { useResponsive } from "app/utils/useResponsive";
+import { BP, useResponsive } from "app/utils/useResponsive";
 import { TableMeta, useSections } from "app/utils/useSections";
 
 const DELETE_WIDTH = 30;
@@ -215,7 +215,7 @@ export const RepertoireMovesTable = ({
       {header && (
         <>
           <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
-          <Spacer height={24} />
+          <Spacer height={responsive.switch(20, [BP.md, 24])} />
         </>
       )}
       {body && (
@@ -229,7 +229,7 @@ export const RepertoireMovesTable = ({
           <TableHeader anyMine={anyMine} sections={sections} />
         )}
       </View>
-      <Spacer height={12} />
+      <Spacer height={responsive.switch(6, [BP.md, 12])} />
       <View
         style={s(
           c.column,

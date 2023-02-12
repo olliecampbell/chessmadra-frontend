@@ -56,6 +56,10 @@ export const SettingsButtons = () => {
 const SettingButton = ({ title, icon, onPress }) => {
   const { hovering, hoveringProps } = useHovering();
   let responsive = useResponsive();
+  let color = c.grays[50];
+  if (hovering) {
+    color = c.grays[70];
+  }
   return (
     <Pressable
       onPress={onPress}
@@ -68,9 +72,9 @@ const SettingButton = ({ title, icon, onPress }) => {
       )}
       {...hoveringProps}
     >
-      <i style={s(c.fg(c.grays[50]), c.fontSize(14))} className={icon}></i>
+      <i style={s(c.fg(color), c.fontSize(14))} className={icon}></i>
       <Spacer width={responsive.switch(4, [BP.md, 8])} />
-      <CMText style={s(c.fg(c.grays[50]), c.weightBold)}>{title}</CMText>
+      <CMText style={s(c.fg(color), c.weightBold)}>{title}</CMText>
     </Pressable>
   );
 };

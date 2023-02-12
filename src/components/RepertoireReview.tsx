@@ -64,12 +64,15 @@ export const RepertoireReview = (props: {}) => {
     },
   ];
   return (
-    <SidebarTemplate header={null} actions={actions} bodyPadding={true}>
-      <CMText style={s()}>
-        {currentMove?.moves.length === 1
-          ? "Play the correct response on the board"
-          : `You have ${currentMove?.moves.length} responses to this position in your repertoire. Play all your responses on the board`}
-      </CMText>
+    <SidebarTemplate
+      header={
+        currentMove?.moves.length === 1
+          ? "Play the correct move on the board"
+          : `You have ${currentMove?.moves.length} responses to this position in your repertoire. Play all your responses on the board`
+      }
+      actions={actions}
+      bodyPadding={true}
+    >
       {currentMove?.moves.length > 1 && (
         <>
           <View

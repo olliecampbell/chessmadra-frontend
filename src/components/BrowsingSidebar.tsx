@@ -39,6 +39,7 @@ import { TransposedView } from "./TransposedView";
 import { RepertoireReview } from "./RepertoireReview";
 import { RepertoireOverview } from "./RepertoirtOverview";
 import { SettingsButtons } from "./Settings";
+import { useHovering } from "app/hooks/useHovering";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -55,7 +56,7 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
         c.zIndex(4),
         c.relative,
         c.overflowHidden,
-        c.bg(c.grays[10]),
+        c.bg(c.grays[14]),
         c.pb(20),
         c.minHeight("100%")
       )}
@@ -207,6 +208,7 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
 });
 
 const BackSection = () => {
+  const { hovering, hoveringProps } = useHovering();
   const [
     addedLineState,
     deleteLineState,
@@ -315,10 +317,12 @@ const BackSection = () => {
       });
     };
   }
+  const color = hovering ? c.colors.textSecondary : c.colors.textTertiary;
 
   return (
     <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
       <Pressable
+        {...hoveringProps}
         onPress={() => {
           backButtonAction?.();
         }}
@@ -330,7 +334,7 @@ const BackSection = () => {
           c.px(getSidebarPadding(responsive))
         )}
       >
-        <CMText style={s(c.weightBold, c.fg(c.colors.textTertiary))}>
+        <CMText style={s(c.weightBold, c.fg(color))}>
           <i className="fa fa-arrow-left"></i>
           <Spacer width={8} />
           Back

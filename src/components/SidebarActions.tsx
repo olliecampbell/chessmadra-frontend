@@ -306,9 +306,9 @@ export const SidebarFullWidthButton = ({
     foregroundColor = c.grays[90];
     subtextColor = c.grays[70];
     if (hovering) {
-      backgroundColor = c.grays[18];
+      backgroundColor = c.grays[24];
     } else {
-      backgroundColor = c.grays[16];
+      backgroundColor = c.grays[22];
     }
   }
   return (

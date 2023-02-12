@@ -214,18 +214,17 @@ const grayHue = 239;
 function easeInOutSine(x: number): number {
   return -(Math.cos(Math.PI * x) - 1) / 2;
 }
-const genGrays = (hue, saturation) => {
+const genGrays = (hue, minSat, maxSat) => {
   const grays = {};
   for (let i = 0; i <= 100; i = i + 1) {
-    // let saturation =
-    //   minSaturation + ((maxSaturation - minSaturation) * i) / 100;
+    let saturation = minSat + ((maxSat - minSat) * i) / 100;
     grays[i] = `hsl(${hue}, ${saturation}%, ${i}%)`;
   }
   return grays;
 };
-const grays = genGrays(grayHue, 5);
-const trueGrays = genGrays(0, 0);
-const chessboardGrays = genGrays(21, 5);
+const grays = genGrays(grayHue, 20, 5);
+const trueGrays = genGrays(0, 0, 0);
+const chessboardGrays = genGrays(21, 5, 5);
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
