@@ -838,7 +838,7 @@ export const getInitialRepertoireState = (
               );
             }
           }
-          if (options.pgnToPlay) {
+          if (options?.pgnToPlay) {
             s.browsingState.chessboardState.playPgn(options.pgnToPlay);
           }
         } else if (mode === "overview") {
