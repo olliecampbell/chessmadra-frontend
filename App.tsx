@@ -117,6 +117,10 @@ export default function App() {
                   element={<SidebarLayout mode="review" shared={false} />}
                 />
                 <Route
+                  path="/openings/:side/overview"
+                  element={<SidebarLayout mode="overview" shared={false} />}
+                />
+                <Route
                   path="/openings/:side/browse"
                   element={<SidebarLayout mode="browse" shared={false} />}
                 />

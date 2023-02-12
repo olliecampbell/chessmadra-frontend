@@ -33,7 +33,7 @@ import {
   sideOfLastmove,
 } from "./repertoire";
 import { START_EPD } from "./chess";
-import { AppState } from "./app_state";
+import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import {
@@ -51,9 +51,11 @@ import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
+import { Animated, Easing } from "react-native";
+import { Responsive } from "./useResponsive";
 
-const TEST_LINE = isDevelopment ? [] : [];
-const TEST_REVIEWING = isDevelopment ? false : false;
+const TEST_LINE = isDevelopment ? ["e4"] : [];
+const TEST_MODE: BrowsingMode = isDevelopment ? "overview" : false;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -110,6 +112,11 @@ export interface RepertoireState {
     text: string;
   }) => void;
   startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay?: string) => void;
+  animateChessboardShown: (
+    responsive: Responsive,
+    animateIn: boolean,
+    cb: () => void
+  ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
   updateRepertoireStructures: () => void;
@@ -161,8 +168,7 @@ export interface RepertoireState {
 
   repertoireSettingsModalSide?: Side;
   // Nav bar stuff
-  breadcrumbs: NavBreadcrumb[];
-  setBreadcrumbs: (breadcrumbs: NavBreadcrumb[]) => void;
+  getBreadCrumbs: () => NavBreadcrumb[];
 
   // Debug pawn structure stuff
   debugPawnStructuresState: any & {};
@@ -216,27 +222,6 @@ export const getInitialRepertoireState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
-  const homeBreadcrumb = {
-    text: "Home",
-    onPress: () => {
-      set(([s, appState]) => {
-        appState.navigationState.push("/directory", { removeParams: true });
-      });
-    },
-  };
-
-  const overviewBreadcrumb = {
-    text: "Openings",
-  };
-  const clickableOverviewBreadcrumb = {
-    text: "Openings",
-    onPress: () => {
-      set(([s, appState]) => {
-        appState.navigationState.push("/", { removeParams: true });
-        s.backToOverview();
-      });
-    },
-  };
   let initialState = {
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
@@ -265,16 +250,6 @@ export const getInitialRepertoireState = (
     overviewState: {
       isShowingShareModal: false,
     },
-    breadcrumbs: [homeBreadcrumb, overviewBreadcrumb],
-    setBreadcrumbs: (breadcrumbs: NavBreadcrumb[]) =>
-      set(([s]) => {
-        let atRoot = isEmpty(breadcrumbs);
-        if (atRoot) {
-          s.breadcrumbs = [homeBreadcrumb, overviewBreadcrumb];
-        } else {
-          s.breadcrumbs = [clickableOverviewBreadcrumb, ...breadcrumbs];
-        }
-      }),
     repertoireGrades: { white: null, black: null },
     ecoCodeLookup: {},
     pawnStructureLookup: {},
@@ -366,6 +341,42 @@ export const getInitialRepertoireState = (
             s.browsingState.finishSidebarOnboarding();
           }
         }, "initializeRepertoire");
+      }),
+    getBreadCrumbs: () =>
+      set(([s]) => {
+        const homeBreadcrumb = {
+          text: "Openings",
+          onPress: () => {
+            set(([s, appState]) => {
+              s.backToOverview();
+            });
+          },
+        };
+
+        let breadcrumbs = [homeBreadcrumb];
+        let mode = s.browsingState.sidebarState.mode;
+        let side = s.browsingState.sidebarState.activeSide;
+        if (side) {
+          breadcrumbs.push({
+            text: capitalize(side),
+            onPress: () => {
+              quick((s) => {
+                s.repertoireState.startBrowsing(side, "overview");
+              });
+            },
+          });
+        }
+        if (mode && mode !== "overview") {
+          breadcrumbs.push({
+            text: mode,
+            onPress: () => {
+              quick((s) => {
+                s.repertoireState.startBrowsing(side, mode);
+              });
+            },
+          });
+        }
+        return breadcrumbs;
       }),
     updateShareLink: () =>
       set(([s]) => {
@@ -501,7 +512,7 @@ export const getInitialRepertoireState = (
               );
             }
             if (seenEpds.has(epd)) {
-              return { numMoves: 0, additionalExpectedNumMoves: 0 };
+              return { dueMoves: 0, earliestDueDate: null };
             }
             let newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
@@ -722,7 +733,7 @@ export const getInitialRepertoireState = (
           })
           .then(({ data }: { data: any }) => {
             set(([s]) => {
-              s.positionReports[s.browsingState.activeSide][
+              s.positionReports[s.browsingState.sidebarState.activeSide][
                 epd
               ]?.suggestedMoves?.forEach((sm) => {
                 if (sm.sanPlus === san) {
@@ -735,14 +746,14 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
+        console.log("back to overview");
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
         }
-        s.setBreadcrumbs([]);
         s.showImportView = false;
         s.backToStartPosition();
-        s.browsingState.activeSide = null;
+        s.browsingState.sidebarState.activeSide = null;
         s.divergencePosition = null;
         s.divergenceIndex = null;
         s.browsingState.sidebarState = makeDefaultSidebarState();
@@ -756,29 +767,48 @@ export const getInitialRepertoireState = (
         ];
         s.browsingState.checkFreezeChessboard();
       }, "startImporting"),
+    animateChessboardShown: (
+      responsive: Responsive,
+      animateIn: boolean,
+      cb: () => void
+    ) =>
+      set(([s, gs]) => {
+        if (responsive.isMobile) {
+          Animated.sequence([
+            Animated.timing(s.browsingState.chessboardShownAnim, {
+              toValue: animateIn ? 1 : 0,
+              duration: 400,
+              useNativeDriver: true,
+              easing: Easing.inOut(Easing.ease),
+            }),
+          ]).start(cb);
+        } else {
+          cb();
+        }
+      }),
     startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay: string) =>
       set(([s, gs]) => {
         console.log("startBrowsing", side, mode, pgnToPlay);
-        let breadcrumbs = [
-          {
-            text: `${capitalize(side)}`,
-          },
-        ];
+        const currentMode = s.browsingState.sidebarState.mode;
 
-        s.setBreadcrumbs(breadcrumbs);
+        if (currentMode) {
+          s.browsingState.moveSidebarState("right");
+        }
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
         s.browsingState.sidebarState.mode = mode;
-        s.browsingState.activeSide = side;
+        s.browsingState.sidebarState.activeSide = side;
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
-          s.browsingState.activeSide === "black";
+          s.browsingState.sidebarState.activeSide === "black";
 
-        if (s.browsingState.activeSide === "white") {
+        if (s.browsingState.sidebarState.activeSide === "white") {
           let startResponses =
-            s.repertoire?.[s.browsingState.activeSide]?.positionResponses[
-              START_EPD
-            ];
-          if (startResponses?.length === 1) {
+            s.repertoire?.[s.browsingState.sidebarState.activeSide]
+              ?.positionResponses[START_EPD];
+          if (
+            startResponses?.length === 1 &&
+            (mode === "review" || mode === "build")
+          ) {
             s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
           }
         }
@@ -968,8 +998,8 @@ export const getInitialRepertoireState = (
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
-              if (TEST_REVIEWING) {
-                s.reviewState.startReview("white", { side: "white" });
+              if (TEST_MODE) {
+                s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
                 s.startBrowsing("white", "browse", lineToPgn(TEST_LINE));
               }
@@ -978,6 +1008,9 @@ export const getInitialRepertoireState = (
       }),
     getLineCount: (side?: Side) =>
       get(([s]) => {
+        if (!s.repertoire) {
+          return 0;
+        }
         let seenEpds = new Set();
         let lineCount = 0;
         let recurse = (epd) => {
@@ -1010,6 +1043,9 @@ export const getInitialRepertoireState = (
       }),
     getMyResponsesLength: (side?: Side) =>
       get(([s]) => {
+        if (!s.repertoire) {
+          return 0;
+        }
         if (side) {
           return values(s.repertoire[side].positionResponses)
             .flatMap((v) => v)

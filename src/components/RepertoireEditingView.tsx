@@ -28,12 +28,12 @@ let desktopHeaderStyles = s(
 
 export const Responses = React.memo(function Responses() {
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const positionReport = useBrowsingState(
     // TODO: we should have the active side on sidebar too
-    ([s, rs]) => rs.positionReports[s.activeSide]?.[currentEpd],
+    ([s, rs]) => rs.positionReports[activeSide]?.[currentEpd],
     { referenceEquality: true }
   );
-  let [activeSide] = useBrowsingState(([s]) => [s.activeSide], {});
   let [
     currentSide,
     currentLine,

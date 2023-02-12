@@ -6,7 +6,7 @@ import { isNil } from "lodash-es";
 import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "./CMText";
 import { useRepertoireState, useDebugState } from "app/utils/app_state";
-import { RepertoireOverview } from "./RepertoireOverview";
+import { RepertoireHome } from "./RepertoireHome";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -34,6 +34,6 @@ export const RepertoireBuilder = () => {
       </View>
     );
   } else {
-    return <RepertoireOverview />;
+    return <RepertoireHome />;
   }
 };

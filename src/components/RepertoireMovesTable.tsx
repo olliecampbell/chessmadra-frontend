@@ -235,8 +235,8 @@ export const RepertoireMovesTable = ({
           c.column,
           !editingAnnotations &&
             s(
-              c.borderTop(`1px solid ${c.grays[30]}`),
-              c.borderBottom(`1px solid ${c.grays[30]}`)
+              c.borderTop(`1px solid ${c.colors.sidebarBorder}`),
+              c.borderBottom(`1px solid ${c.colors.sidebarBorder}`)
             )
         )}
       >
@@ -310,7 +310,11 @@ export const RepertoireMovesTable = ({
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
+                style={s(
+                  c.fontSize(12),
+                  c.fg(c.colors.textTertiary),
+                  c.weightSemiBold
+                )}
               >
                 {editingAnnotations
                   ? "Stop editing annotations"
@@ -373,9 +377,12 @@ const Response = ({
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoveringProps } = useHovering();
   const { suggestedMove, repertoireMove, moveRating } = tableResponse;
-  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
+  const [currentEpd, activeSide] = useSidebarState(([s]) => [
+    s.currentEpd,
+    s.activeSide,
+  ]);
   const positionReport = useBrowsingState(
-    ([s, rs]) => rs.positionReports?.[s.activeSide]?.[currentEpd],
+    ([s, rs]) => rs.positionReports?.[activeSide]?.[currentEpd],
     { referenceEquality: true }
   );
 
@@ -391,8 +398,8 @@ const Response = ({
     rs.ecoCodeLookup[suggestedMove?.epdAfter],
     s.chessboardState.previewMove,
     rs.uploadMoveAnnotation,
-    rs.numMovesDueFromEpd[s.activeSide][tableResponse.repertoireMove?.epdAfter],
-    rs.earliestReviewDueFromEpd[s.activeSide][
+    rs.numMovesDueFromEpd[activeSide][tableResponse.repertoireMove?.epdAfter],
+    rs.earliestReviewDueFromEpd[activeSide][
       tableResponse.repertoireMove?.epdAfter
     ],
   ]);
@@ -569,7 +576,7 @@ const Response = ({
 
           c.px(getSidebarPadding(responsive)),
           c.py(12),
-          hoveringRow && c.bg(c.grays[18]),
+          hoveringRow && c.bg(c.grays[14]),
 
           // mine && c.border(`2px solid ${c.purples[60]}`),
           c.clickable,

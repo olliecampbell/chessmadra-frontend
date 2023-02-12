@@ -275,7 +275,9 @@ const failureShades = reds;
 const successShades = genShades(164);
 const colors = {
   textPrimary: grays[95],
-  textSecondary: grays[80],
+  textSecondary: grays[70],
+  textTertiary: grays[60],
+  sidebarBorder: grays[25],
   textInverse: grays[5],
   textInverseSecondary: grays[20],
   successColor: "hsl(164, 98%, 35%)",

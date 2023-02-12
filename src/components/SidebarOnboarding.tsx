@@ -517,9 +517,9 @@ const ChooseImportSourceOnboarding = () => {
 
 const ImportOnboarding = () => {
   const responsive = useResponsive();
-  let [importType, activeSide] = useRepertoireState((s) => [
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  let [importType] = useRepertoireState((s) => [
     s.browsingState.sidebarState.sidebarOnboardingState.importType,
-    s.browsingState.activeSide,
   ]);
   useEffect(() => {
     quick((s) => {
@@ -634,9 +634,9 @@ const ImportOnboarding = () => {
 
 const TrimRepertoireOnboarding = () => {
   const responsive = useResponsive();
-  let [getNumResponsesBelowThreshold, activeSide] = useRepertoireState((s) => [
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  let [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
     s.getNumResponsesBelowThreshold,
-    s.browsingState.activeSide,
   ]);
   let header = "Do you want to trim your repertoire?";
   let actions = [];

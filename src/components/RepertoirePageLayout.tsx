@@ -25,6 +25,7 @@ export const RepertoirePageLayout = ({
   centered,
   fullHeight,
   flushTop,
+  naked,
   lighterBackground,
 }: {
   children: any;
@@ -33,6 +34,7 @@ export const RepertoirePageLayout = ({
   lighterBackground?: boolean;
   centered?: boolean;
   fullHeight?: boolean;
+  naked?: boolean;
 }) => {
   const isMobile = useIsMobile();
   let [repertoireLoading, initState] = useRepertoireState((s) => [
@@ -54,7 +56,7 @@ export const RepertoirePageLayout = ({
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
   const navColor = c.grays[90];
-  const backgroundColor = c.grays[10];
+  const backgroundColor = c.grays[6];
   const responsive = useResponsive();
   const shortUserUI = responsive.bp < BP.md;
   return (
@@ -87,122 +89,125 @@ export const RepertoirePageLayout = ({
           repertoireLoading && c.grow
         )}
       >
-        <View
-          style={s(
-            c.fullWidth,
-            c.height(64),
-            c.bg(navColor),
-            c.lightCardShadow,
-            c.zIndex(10)
-            // c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
-          )}
-        >
-          <View
-            style={s(
-              c.containerStyles(responsive.bp),
-              c.alignEnd,
-              c.justifyBetween,
-              c.row,
-              c.fullHeight,
-              c.alignCenter,
-              c.pt(4)
-            )}
-          >
-            <RepertoireNavBreadcrumbs />
-            <Spacer width={12} grow />
-            <Pressable
-              style={s(c.row, c.alignCenter)}
-              onPress={() => {
-                quick((s) => {
-                  s.userState.profileModalOpen = true;
-                });
-              }}
-            >
-              {needsLogin ? (
-                <Link to="/login">
-                  <CMText
-                    style={s(
-                      c.mr(8),
-                      c.clickable,
-                      c.br(4),
-                      c.fg(c.grays[30]),
-                      c.weightBold,
-                      c.fontSize(isMobile ? 14 : 16)
-                    )}
-                  >
-                    Log in
-                  </CMText>
-                </Link>
-              ) : (
-                !shortUserUI && (
-                  <>
-                    <CMText
-                      style={s(
-                        c.weightSemiBold,
-                        c.fg(c.grays[20]),
-                        c.fontSize(14)
-                      )}
-                    >
-                      {ratingDescription}
-                    </CMText>
-                    <Spacer width={12} />
-                  </>
-                )
-              )}
-
-              <span
-                style={s(c.fontSize(shortUserUI ? 14 : 18))}
-                className={shortUserUI ? `fa-stack` : ""}
-              >
-                {shortUserUI && (
-                  <i
-                    style={s(c.fg(c.grays[20]))}
-                    className="fa fa-circle fa-stack-2x"
-                  />
-                )}
-                <i
-                  style={s(
-                    c.fg(c.grays[shortUserUI ? 80 : 20]),
-                    c.fontSize(shortUserUI ? 14 : 18)
-                  )}
-                  className={`fa-sharp fa-user ${
-                    shortUserUI ? "fa-stack-1x" : ""
-                  }`}
-                ></i>
-              </span>
-            </Pressable>
-          </View>
-        </View>
-        {repertoireLoading ? (
-          <View style={s(c.grow, c.center)}>
-            <GridLoader color={c.purples[55]} size={20} />
-          </View>
-        ) : (
-          <View
-            style={s(
-              !isMobile && s(c.scrollY),
-              isMobile && s(c.grow),
-              c.center,
-              c.justifyStart,
-              c.flexShrink(1),
-              fullHeight && s(c.grow),
-              !flushTop && c.pt(isMobile ? 24 : 48),
-              centered && s(c.grow, c.justifyCenter)
-            )}
-          >
+        <>
+          {!naked && (
             <View
               style={s(
-                !fullHeight && c.pb(isMobile ? 92 : 180),
-                c.center,
                 c.fullWidth,
-                fullHeight && c.grow
+                c.height(64),
+                c.bg(navColor),
+                c.lightCardShadow,
+                c.zIndex(10)
+                // c.shadow(0, 0, 40, 0, "hsla(0, 0%, 0%, 20%)")
               )}
             >
-              {children}
+              <View
+                style={s(
+                  c.containerStyles(responsive.bp),
+                  c.alignEnd,
+                  c.justifyBetween,
+                  c.row,
+                  c.fullHeight,
+                  c.alignCenter,
+                  c.pt(4)
+                )}
+              >
+                <RepertoireNavBreadcrumbs />
+                <Spacer width={12} grow />
+                <Pressable
+                  style={s(c.row, c.alignCenter)}
+                  onPress={() => {
+                    quick((s) => {
+                      s.userState.profileModalOpen = true;
+                    });
+                  }}
+                >
+                  {needsLogin ? (
+                    <Link to="/login">
+                      <CMText
+                        style={s(
+                          c.mr(8),
+                          c.clickable,
+                          c.br(4),
+                          c.fg(c.grays[30]),
+                          c.weightBold,
+                          c.fontSize(isMobile ? 14 : 16)
+                        )}
+                      >
+                        Log in
+                      </CMText>
+                    </Link>
+                  ) : (
+                    !shortUserUI && (
+                      <>
+                        <CMText
+                          style={s(
+                            c.weightSemiBold,
+                            c.fg(c.grays[20]),
+                            c.fontSize(14)
+                          )}
+                        >
+                          {ratingDescription}
+                        </CMText>
+                        <Spacer width={12} />
+                      </>
+                    )
+                  )}
+
+                  <span
+                    style={s(c.fontSize(shortUserUI ? 14 : 18))}
+                    className={shortUserUI ? `fa-stack` : ""}
+                  >
+                    {shortUserUI && (
+                      <i
+                        style={s(c.fg(c.grays[20]))}
+                        className="fa fa-circle fa-stack-2x"
+                      />
+                    )}
+                    <i
+                      style={s(
+                        c.fg(c.grays[shortUserUI ? 80 : 20]),
+                        c.fontSize(shortUserUI ? 14 : 18)
+                      )}
+                      className={`fa-sharp fa-user ${
+                        shortUserUI ? "fa-stack-1x" : ""
+                      }`}
+                    ></i>
+                  </span>
+                </Pressable>
+              </View>
             </View>
-            {isMobile && !fullHeight && <Spacer height={100} />}
-          </View>
-        )}
+          )}
+          {repertoireLoading ? (
+            <View style={s(c.grow, c.center)}>
+              <GridLoader color={c.purples[55]} size={20} />
+            </View>
+          ) : (
+            <View
+              style={s(
+                !isMobile && s(c.scrollY),
+                isMobile && s(c.grow),
+                c.center,
+                c.justifyStart,
+                c.flexShrink(1),
+                fullHeight && s(c.grow),
+                !flushTop && !naked && c.pt(isMobile ? 24 : 48),
+                centered && s(c.grow, c.justifyCenter)
+              )}
+            >
+              <View
+                style={s(
+                  !fullHeight && c.pb(isMobile ? 92 : 180),
+                  c.center,
+                  c.fullWidth,
+                  fullHeight && c.grow
+                )}
+              >
+                {children}
+              </View>
+            </View>
+          )}
+        </>
       </View>
       {repertoireLoading ? null : bottom}
     </View>

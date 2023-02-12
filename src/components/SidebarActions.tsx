@@ -12,6 +12,7 @@ import {
   last,
   isNil,
   dropRight,
+  cloneDeep,
 } from "lodash-es";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
@@ -38,7 +39,8 @@ export interface SidebarAction {
 export const SidebarActions = () => {
   const responsive = useResponsive();
   let buttons = [] as SidebarAction[];
-  const [
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  let [
     hasPendingLineToAdd,
     isPastCoverageGoal,
     currentSide,
@@ -65,19 +67,19 @@ export const SidebarActions = () => {
     s.moveLog,
     s.sidebarOnboardingState.stageStack,
     s.currentEpd,
-    bs.getNearestMiss(s),
-    bs.getMissInThisLine(s),
+    cloneDeep(bs.getNearestMiss(s)),
+    cloneDeep(bs.getMissInThisLine(s)),
     s.positionHistory,
     s.showPlansState,
     s.transposedState,
     s.mode,
-    rs.numMovesDueFromEpd[bs.activeSide]?.[s.currentEpd],
+    rs.numMovesDueFromEpd[activeSide]?.[s.currentEpd],
   ]);
+  positionHistory = positionHistory ?? [];
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
     referenceEquality: true,
   });
-  const [activeSide, hasPlans] = useBrowsingState(([s, rs]) => [
-    s.activeSide,
+  const [hasPlans] = useBrowsingState(([s, rs]) => [
     !isEmpty(
       rs.positionReports[s.sidebarState.currentSide][s.sidebarState.currentEpd]
         ?.plans
@@ -267,6 +269,9 @@ export const SidebarActions = () => {
   if (mode === "review") {
     buttons = [];
   }
+  if (mode === "overview") {
+    buttons = [];
+  }
   return (
     <View style={s(c.column, c.fullWidth)}>
       {intersperse(
@@ -301,9 +306,9 @@ export const SidebarFullWidthButton = ({
     foregroundColor = c.grays[90];
     subtextColor = c.grays[70];
     if (hovering) {
-      backgroundColor = c.grays[26];
+      backgroundColor = c.grays[18];
     } else {
-      backgroundColor = c.grays[22];
+      backgroundColor = c.grays[16];
     }
   }
   return (

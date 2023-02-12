@@ -4,7 +4,11 @@ import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { isNil } from "lodash-es";
 import { CMText } from "./CMText";
-import { quick, useRepertoireState } from "app/utils/app_state";
+import {
+  quick,
+  useRepertoireState,
+  useSidebarState,
+} from "app/utils/app_state";
 import { useResponsive } from "app/utils/useResponsive";
 import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
@@ -13,8 +17,9 @@ import React from "react";
 
 export const DeleteLineView = React.memo(function DeleteLineView() {
   const responsive = useResponsive();
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [responses, deleting] = useRepertoireState((s) => [
-    s.repertoire[s.browsingState.activeSide].positionResponses[
+    s.repertoire[activeSide].positionResponses[
       s.browsingState.chessboardState.getCurrentEpd()
     ],
     s.deleteMoveState.isDeletingMove,

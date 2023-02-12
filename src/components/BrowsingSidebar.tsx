@@ -37,6 +37,8 @@ import useKeypress from "react-use-keypress";
 import { isDevelopment } from "app/utils/env";
 import { TransposedView } from "./TransposedView";
 import { RepertoireReview } from "./RepertoireReview";
+import { RepertoireOverview } from "./RepertoirtOverview";
+import { SettingsButtons } from "./Settings";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -45,7 +47,6 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
 
-  console.log("Registering keypress");
   const user = useUserState((s) => s.user);
   return (
     <View
@@ -54,11 +55,25 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
         c.zIndex(4),
         c.relative,
         c.overflowHidden,
-        c.bg(c.grays[15]),
+        c.bg(c.grays[10]),
         c.pb(20),
         c.minHeight("100%")
       )}
     >
+      {!vertical && (
+        <View
+          style={s(
+            c.absolute,
+            c.top(0),
+            c.right(0),
+            c.zIndex(15),
+            c.pr(getSidebarPadding(responsive)),
+            c.pt(getSidebarPadding(responsive))
+          )}
+        >
+          <SettingsButtons />
+        </View>
+      )}
       {!vertical && <BackSection />}
       <View
         nativeID="body"
@@ -160,6 +175,8 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
   let inner = null;
   if (mode == "review") {
     inner = <RepertoireReview />;
+  } else if (mode == "overview") {
+    inner = <RepertoireOverview />;
   } else if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
   } else if (submitFeedbackState.visible) {
@@ -198,6 +215,7 @@ const BackSection = () => {
     showPlansState,
     transposedState,
     mode,
+    side,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
@@ -206,57 +224,97 @@ const BackSection = () => {
     s.showPlansState,
     s.transposedState,
     s.mode,
+    s.activeSide,
   ]);
   const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
   const responsive = useResponsive();
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  let backButtonAction = null;
-  if (
-    addedLineState.visible ||
-    deleteLineState.visible ||
-    submitFeedbackState.visible ||
-    transposedState.visible
-  ) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.dismissTransientSidebarState();
+  let backButtonAction: (() => void) | null = null;
+  const backToOverview = () => {
+    quick((s) => {
+      s.repertoireState.animateChessboardShown(responsive, false, () => {
+        quick((s) => {
+          s.repertoireState.startBrowsing(side, "overview");
+        });
       });
-    };
-  } else if (showPlansState.visible) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.dismissTransientSidebarState();
-      });
-    };
-  } else if (showPlansState.visible) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.chessboardState.backOne();
-        s.repertoireState.browsingState.dismissTransientSidebarState();
-      });
-    };
-  } else if (stageStack.length > 1) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-          dropRight(
-            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState
-              .stageStack,
-            1
-          );
-      });
-    };
-  } else if (!isEmpty(moveLog)) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.chessboardState.backOne();
-      });
-    };
+    });
+
+    quick((s) => {
+      s.repertoireState.startBrowsing(side, "overview");
+    });
+  };
+  if (mode === "build") {
+    if (
+      addedLineState.visible ||
+      deleteLineState.visible ||
+      submitFeedbackState.visible ||
+      transposedState.visible
+    ) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.dismissTransientSidebarState();
+        });
+      };
+    } else if (showPlansState.visible) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.dismissTransientSidebarState();
+        });
+      };
+    } else if (showPlansState.visible) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.chessboardState.backOne();
+          s.repertoireState.browsingState.dismissTransientSidebarState();
+        });
+      };
+    } else if (stageStack.length > 1) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+            dropRight(
+              s.repertoireState.browsingState.sidebarState
+                .sidebarOnboardingState.stageStack,
+              1
+            );
+        });
+      };
+    } else if (!isEmpty(moveLog)) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.chessboardState.backOne();
+        });
+      };
+    } else if (isEmpty(moveLog)) {
+      backButtonAction = () => {
+        backToOverview();
+      };
+    }
   }
 
   if (mode == "review") {
     backButtonAction = null;
+  }
+  if (mode == "browse") {
+    if (!isEmpty(moveLog)) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.chessboardState.backOne();
+        });
+      };
+    } else if (isEmpty(moveLog)) {
+      backButtonAction = () => {
+        backToOverview();
+      };
+    }
+  }
+  if (mode == "overview") {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.backToOverview();
+      });
+    };
   }
 
   return (
@@ -264,8 +322,7 @@ const BackSection = () => {
       <Pressable
         onPress={() => {
           quick((s) => {
-            s.repertoireState.browsingState.moveSidebarState("left");
-            backButtonAction();
+            backButtonAction?.();
           });
         }}
         style={s(
@@ -276,12 +333,12 @@ const BackSection = () => {
           c.px(getSidebarPadding(responsive))
         )}
       >
-        <CMText style={s()}>
+        <CMText style={s(c.weightBold, c.fg(c.colors.textTertiary))}>
           <i className="fa fa-arrow-left"></i>
           <Spacer width={8} />
           Back
         </CMText>
-        <Spacer height={!vertical ? 44 : backButtonAction ? 18 : 0} />
+        <Spacer height={!vertical ? 22 : backButtonAction ? 18 : 0} />
       </Pressable>
     </FadeInOut>
   );
@@ -313,12 +370,14 @@ const FeedbackPrompt = () => {
 };
 
 const SavedLineView = React.memo(function SavedLineView() {
-  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
+  const [currentEpd, activeSide] = useSidebarState(([s]) => [
+    s.currentEpd,
+    s.activeSide,
+  ]);
   const [currentLine] = useSidebarState(([s]) => [lineToPgn(s.moveLog)]);
-  const [positionReport, activeSide, lineReport] = useRepertoireState(
+  const [positionReport, lineReport] = useRepertoireState(
     (s) => [
-      s.positionReports[s.browsingState.activeSide][currentEpd],
-      s.browsingState.activeSide,
+      s.positionReports[activeSide][currentEpd],
       s.lineReports[currentLine],
     ],
     { referenceEquality: true }
@@ -359,7 +418,7 @@ const SavedLineView = React.memo(function SavedLineView() {
           </Animated.View>
           <Spacer height={4} />
           <View style={s(c.height(24))}>
-            <CoverageBar isSavedView side={activeSide} />
+            <CoverageBar isInSidebar side={activeSide} />
           </View>
         </View>
         <Spacer height={12} />

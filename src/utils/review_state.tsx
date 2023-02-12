@@ -117,12 +117,6 @@ export const getInitialReviewState = (
         } else {
           s.updateQueue(options);
         }
-        rs.setBreadcrumbs([
-          {
-            text: `Review`,
-            onPress: null,
-          },
-        ]);
         gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
         // s.chessboardState.showMoveLog = true;

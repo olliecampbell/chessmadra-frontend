@@ -3,12 +3,12 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { isEmpty, capitalize, dropRight } from "lodash-es";
+import { isEmpty, capitalize, dropRight, last } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { SIDES, Side, pgnToLine, lineToPgn } from "app/utils/repertoire";
-import { plural } from "app/utils/pluralize";
+import { plural, pluralize } from "app/utils/pluralize";
 import { CMText } from "./CMText";
 import {
   useRepertoireState,
@@ -16,6 +16,7 @@ import {
   quick,
   useUserState,
   getAppState,
+  useBrowsingState,
 } from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { BP, useResponsive } from "app/utils/useResponsive";
@@ -23,21 +24,27 @@ import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { CoverageBar } from "./CoverageBar";
 import { trackModule } from "app/utils/user_state";
 import { CoverageGoal } from "./CoverageGoal";
+import { useHovering } from "app/hooks/useHovering";
+import { CoverageAndBar } from "./RepertoirtOverview";
+import { START_EPD } from "app/utils/chess";
+import { ReviewText } from "./ReviewText";
+import { THRESHOLD_OPTIONS } from "./ProfileModal";
 
-export const RepertoireOverview = ({}: {}) => {
+export const RepertoireHome = ({}: {}) => {
   const responsive = useResponsive();
   const vertical = responsive.isMobile;
   useEffect(() => {
     trackModule("openings");
   }, []);
   return (
-    <RepertoirePageLayout centered lighterBackground>
+    <RepertoirePageLayout naked>
       <View
         style={s(
-          c.containerStyles(responsive.bp),
-          c.py(24),
           vertical ? c.column : c.row,
+          c.fullWidth,
+          c.fullHeight,
           c.justifyCenter,
+          c.pageHeight,
           vertical ? c.alignCenter : c.alignStretch
         )}
       >
@@ -46,19 +53,7 @@ export const RepertoireOverview = ({}: {}) => {
             return <RepertoireSideSummary key={side} side={side} />;
           }),
           (i) => {
-            return (
-              <Spacer
-                height={32}
-                width={responsive.switch(
-                  16,
-                  [BP.lg, 32],
-                  [BP.xl, 56],
-                  [BP.xxl, 128]
-                )}
-                key={i}
-                {...{ isMobile: vertical }}
-              />
-            );
+            return null;
           }
         )}
       </View>
@@ -121,7 +116,6 @@ export const SideSectionHeader = ({
     <View
       style={s(
         c.row,
-        c.brbr(4),
         c.px(padding),
         c.pt(padding),
         c.alignCenter,
@@ -147,7 +141,7 @@ export const SideSectionHeader = ({
 
 const SideEtcButton = ({ side }: { side: Side }) => {
   const responsive = useResponsive();
-  const inverse = side === "black";
+  const inverse = side === "white";
   const [backgroundColor, _fg, iconColor] = getButtonColors(inverse);
   const [repertoireEmpty] = useRepertoireState((s) => [
     s.getIsRepertoireEmpty(side),
@@ -262,7 +256,7 @@ const SideSummaryButton = ({
   const { startBrowsing } = useRepertoireState((s) => ({
     startBrowsing: s.startBrowsing,
   }));
-  const inverse = side === "black";
+  const inverse = side === "white";
   const [backgroundColor, foregroundColor, iconColor] =
     getButtonColors(inverse);
   const buttonHeight = getButtonHeight(responsive);
@@ -307,7 +301,7 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
   const { startBrowsing } = useRepertoireState((s) => ({
     startBrowsing: s.startBrowsing,
   }));
-  const inverse = side === "black";
+  const inverse = side === "white";
   const [backgroundColor, foregroundColor, iconColor] =
     getButtonColors(inverse);
   if (!biggestMiss) {
@@ -364,7 +358,7 @@ export const BrowseButton = ({ side }: { side: Side }) => {
   const { startBrowsing } = useRepertoireState((s) => ({
     startBrowsing: s.startBrowsing,
   }));
-  const inverse = side === "black";
+  const inverse = side === "white";
   let [getMyResponsesLength] = useRepertoireState((s) => {
     return [s.getMyResponsesLength];
   });
@@ -386,132 +380,252 @@ export const BrowseButton = ({ side }: { side: Side }) => {
 };
 
 const getTextColors = (inverse: boolean): [string, string] => {
-  return inverse ? [c.grays[95], c.grays[70]] : [c.grays[8], c.grays[32]];
+  return inverse ? [c.grays[8], c.grays[32]] : [c.grays[95], c.grays[70]];
 };
 
 const getButtonColors = (inverse: boolean): [string, string, string] => {
   return inverse
-    ? [c.grays[12], c.grays[70], c.grays[40]]
+    ? [c.grays[90], c.grays[35], c.grays[70]]
     : // Background, foreground, icon
-      [c.grays[90], c.grays[35], c.grays[70]];
+      [c.grays[12], c.grays[70], c.grays[40]];
 };
 
 const RepertoireSideSummary = ({ side }: { side: Side }) => {
+  const { hovering, hoveringProps } = useHovering();
   const responsive = useResponsive();
   const isMobile = responsive.isMobile;
   let [biggestMiss, numMoves] = useRepertoireState((s) => [
     s.repertoireGrades[side]?.biggestMiss,
     s.getLineCount(side),
   ]);
-  let queue = useRepertoireState(
-    (s) => s.reviewState.buildQueue({ side: side }),
-    { referenceEquality: true }
-  );
+  const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
+    rs.numMovesDueFromEpd[side][START_EPD],
+    rs.earliestReviewDueFromEpd[side][START_EPD],
+  ]);
   // let [queueLength] = useRepertoireState((s) => {
   //   return [s.reviewState.getQueueLength(side)];
   // });
-  const inverse = side === "black";
+  const inverse = side === "white";
   const [textColor, secondaryTextColor] = getTextColors(inverse);
   const padding = getRepertoireSideCardPadding(responsive);
   const empty = numMoves === 0;
-  const topPadding = responsive.switch(12, [BP.lg, 28], [BP.xl, 28]);
-  // let biggestMissRow = createBiggestMissRow(state, side);
-  return (
+  let [progressState] = useRepertoireState((s) => [
+    s.browsingState.repertoireProgressState[side],
+  ]);
+  let action: SuggestedActionType = null;
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  if (empty) {
+    action = {
+      cta: null,
+      description: (
+        <>
+          This repertoire is empty.{" "}
+          {side === "white"
+            ? "Let's start with your first move."
+            : "Let's see what moves you need to prepare for."}{" "}
+        </>
+      ),
+      side,
+      action: () => {
+        quick((s) => {
+          s.repertoireState.startBrowsing(side as Side, "build");
+          trackEvent("overview.click_empty_state_cta");
+        });
+      },
+    };
+  } else if (numMovesDueFromHere > 0) {
+    action = {
+      cta: null,
+      description: (
+        <>
+          You have <b>{pluralize(numMovesDueFromHere, "move")}</b> due for
+          review, it's recommended to review these before building your
+          repertoire further.
+        </>
+      ),
+      side,
+      action: () => {
+        quick((s) => {
+          s.repertoireState.reviewState.startReview(side, { side });
+          trackEvent("overview.click_empty_state_cta");
+        });
+      },
+    };
+  } else if (progressState.completed && threshold > last(THRESHOLD_OPTIONS)) {
+    action = {
+      cta: null,
+      description: (
+        <>
+          You have completed your repertoire! Increase your coverage target if
+          you want to go deeper, or you can go play some games!
+        </>
+      ),
+      side,
+      action: () => {
+        quick((s) => {
+          s.repertoireState.startBrowsing(side as Side, "build");
+          trackEvent("overview.click_empty_state_cta");
+        });
+      },
+    };
+  } else if (!progressState.completed) {
+    action = {
+      cta: null,
+      description: (
+        <>
+          Your repertoire is <b>{Math.round(progressState.percentComplete)}%</b>{" "}
+          complete. Address the gaps in you repertoire to get that to 100%.
+        </>
+      ),
+      side,
+      action: () => {
+        quick((s) => {
+          s.repertoireState.startBrowsing(side as Side, "build");
+          trackEvent("overview.click_empty_state_cta");
+        });
+      },
+    };
+  }
+  const topPadding = responsive.switch(48, [BP.lg, 28], [BP.xl, 28]);
+  const separator = (
     <View
       style={s(
+        c.mx(responsive.switch(16, [BP.xl, 24])),
+        c.width(1),
+        c.selfStretch,
+        c.bg(inverse ? c.grays[80] : c.grays[30])
+      )}
+    ></View>
+  );
+  // let biggestMissRow = createBiggestMissRow(state, side);
+  return (
+    <Pressable
+      {...hoveringProps}
+      onPress={() => {
+        quick((s) => {
+          console.log("start browsing", side);
+          s.repertoireState.startBrowsing(side, "overview");
+        });
+      }}
+      style={s(
+        c.clickable,
         c.column,
+        c.selfStretch,
         responsive.isMobile && c.fullWidth,
-        c.maxWidth(600),
         responsive.isMobile && c.minHeight(300),
         c.shadow(0, 8, 16, 0, "rgba(0, 0, 0, 0.5)"),
         c.grow,
         c.flexShrink,
         !responsive.isMobile && c.flexible,
         c.rounded,
-        c.bg(inverse ? c.grays[4] : c.grays[95]),
+        c.bg(inverse ? c.grays[95] : c.grays[4]),
+        hovering && c.bg(inverse ? c.grays[97] : c.grays[0]),
         // c.px(12),
-        c.pt(topPadding),
         c.relative,
-        c.zIndex(side === "white" ? 20 : 10)
+        c.zIndex(side === "white" ? 20 : 10),
+        c.px(12),
+        c.py(topPadding),
+        c.center
       )}
     >
-      <View style={s(c.absolute, c.top(topPadding), c.right(padding))}>
-        <SideEtcButton side={side} />
-      </View>
-      <CMText
-        style={s(
-          c.fontSize(
-            responsive.switch(24, [BP.lg, 24], [BP.xl, 28], [BP.xxl, 32])
-          ),
-          c.selfCenter,
-          c.weightBold,
-          c.fg(textColor)
-        )}
-      >
-        {capitalize(side) + responsive.switch("", [BP.md, " repertoire"])}
-      </CMText>
-      <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} />
-      <View style={s(c.row, c.selfCenter, c.px(24))}>
-        {empty ? (
-          <EmptyStatus side={side} />
-        ) : (
+      <View style={s(c.column, c.alignCenter)}>
+        <CMText
+          style={s(
+            c.fontSize(responsive.switch(48, [BP.xl, 54], [BP.xxl, 64])),
+            c.selfCenter,
+            c.weightHeavy,
+            c.fg(textColor)
+          )}
+        >
+          {capitalize(side)}
+        </CMText>
+        {!empty && (
           <>
-            <SummaryRow
-              {...{
-                k: plural(numMoves, "Line"),
-                v: numMoves,
-                inverse,
-                button: <BrowseButton side={side} />,
-              }}
-            />
-            <Spacer
-              width={responsive.switch(16, [BP.md, 32], [BP.xl, 48])}
-              height={24}
-              style={s(c.flexShrink)}
-              isMobile={responsive.isMobile}
-            />
-            <SummaryRow
-              {...{
-                k: "Due",
-                v: queue?.length ?? 0,
-                inverse,
-                button: <ReviewMovesView side={side} />,
-              }}
-            />
+            <Spacer height={responsive.switch(48, [BP.lg, 48], [BP.xl, 48])} />
+            <View style={s(c.row, c.selfCenter, c.alignCenter, c.px(24))}>
+              <CMText
+                style={s(
+                  c.fg(inverse ? c.colors.textInverse : c.colors.textSecondary)
+                )}
+              >
+                {pluralize(numMoves, "line")}
+              </CMText>
+              {separator}
+              <CoverageAndBar
+                side={side}
+                home={true}
+                hideBar={responsive.bp < BP.md}
+              />
+              {separator}
+              <ReviewText
+                inverse={inverse}
+                date={earliestDueDate}
+                numDue={numMovesDueFromHere}
+              />
+            </View>
           </>
         )}
+        <Spacer
+          height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])}
+          grow
+        />
+        {action && <SuggestedAction {...action} />}
       </View>
-      <Spacer height={responsive.switch(48, [BP.lg, 72], [BP.xl, 108])} grow />
-      {numMoves > 0 && (
-        <>
-          <SideProgressReport side={side} />
-        </>
-      )}
-    </View>
+    </Pressable>
   );
 };
-const EmptyStatus = ({ side }: { side: Side }) => {
+
+interface SuggestedActionType {
+  action: () => void;
+  description: React.ReactNode;
+  cta?: string;
+  side: Side;
+}
+
+const SuggestedAction = ({
+  action,
+  description,
+  cta,
+  side,
+}: SuggestedActionType) => {
   const responsive = useResponsive();
-  const inverse = side === "black";
+  const inverse = side === "white";
   const [backgroundColor, foregroundColor, iconColor] =
     getButtonColors(inverse);
+  const { hovering, hoveringProps } = useHovering();
+  const bgShade = inverse ? 90 : 10;
   return (
     <Pressable
-      style={s(c.column, c.maxWidth(200), c.alignEnd, c.clickable)}
+      style={s(
+        c.column,
+        c.px(12),
+        c.br(4),
+        c.py(12),
+        c.bg(c.grays[bgShade + (hovering ? 5 : 0) * (inverse ? -1 : 1)]),
+        c.border(`1px solid ${c.grays[inverse ? 80 : 25]}`),
+        c.minWidth(200),
+        c.maxWidth(400),
+        c.alignEnd,
+        c.clickable,
+        c.selfCenter
+      )}
+      {...hoveringProps}
       onPress={() => {
-        quick((s) => {
-          s.repertoireState.startBrowsing(side as Side, "build");
-          trackEvent("overview.click_empty_state_cta");
-        });
+        console.log("action");
+        action();
       }}
     >
-      <CMText style={s(c.weightSemiBold, c.fg(foregroundColor))}>
-        This repertoire is empty.{" "}
-        {side === "white"
-          ? "Let's start with your first move."
-          : "Let's see what moves you need to prepare for."}{" "}
+      <CMText
+        style={s(
+          c.weightSemiBold,
+          c.lineHeight("1.3rem"),
+          c.fg(foregroundColor),
+          c.selfStart
+        )}
+      >
+        {description}
       </CMText>
-      <Spacer height={8} />
+      <Spacer height={16} />
       <View style={s(c.border("none"), c.pt(4), c.pr(0), c.pb(0), c.row)}>
         <CMText
           style={s(
@@ -520,7 +634,7 @@ const EmptyStatus = ({ side }: { side: Side }) => {
             c.weightBold
           )}
         >
-          Take me there
+          {cta ?? "Take me there"}
         </CMText>
         <Spacer width={8} />
         <CMText style={s(c.fg(iconColor), c.fontSize(18))}>
@@ -528,85 +642,6 @@ const EmptyStatus = ({ side }: { side: Side }) => {
         </CMText>
       </View>
     </Pressable>
-  );
-};
-
-const SideProgressReport = ({ side }: { side: Side }) => {
-  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  const responsive = useResponsive();
-  const inverse = side === "black";
-  const [backgroundColor, inProgressColor, completedColor] = inverse
-    ? [c.grays[14], c.yellows[45], c.greens[50]]
-    : [c.grays[80], c.yellows[65], c.greens[50]];
-  let [biggestMissIncidence, numMoves, numAboveThreshold, progressState] =
-    useRepertoireState((s) => [
-      s.repertoireGrades[side]?.biggestMiss?.incidence * 100,
-      s.myResponsesLookup?.[side]?.length,
-      s.numResponsesAboveThreshold?.[side],
-      s.browsingState.repertoireProgressState[side],
-    ]);
-  const debugUi = useDebugState((s) => s.debugUi);
-
-  const [textColor, secondaryTextColor] = getTextColors(inverse);
-  const percentComplete = progressState.percentComplete;
-  return (
-    <View
-      style={s(
-        c.column,
-        c.justifyStart,
-        c.fullWidth,
-        c.py(responsive.switch(18, [BP.lg, 24])),
-        c.px(getRepertoireSideCardPadding(responsive)),
-        c.bg(inverse ? c.grays[10] : c.grays[90])
-        // c.borderTop(`1px solid ${inverse ? c.grays[15] : c.grays[80]}`)
-      )}
-    >
-      <View
-        style={s(c.row, c.justifyBetween, c.alignEnd, c.zIndex(12), c.relative)}
-      >
-        <CMText
-          style={s(
-            c.fg(secondaryTextColor),
-            c.fontSize(responsive.switch(20)),
-            c.weightSemiBold
-          )}
-        >
-          {progressState.completed ? (
-            <>Completed</>
-          ) : (
-            <>{Math.round(percentComplete)}% complete</>
-          )}
-        </CMText>
-        <CoverageGoal textColor={secondaryTextColor} />
-      </View>
-      <Spacer height={8} />
-      <View
-        style={s(
-          c.fullWidth,
-          c.bg(backgroundColor),
-          c.round,
-          c.overflowHidden,
-          c.height(6)
-        )}
-      >
-        <CoverageBar side={side} inverse={inverse} />
-      </View>
-      {debugUi && (
-        <View style={s()}>
-          <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-            # above threshold {numAboveThreshold}
-          </CMText>
-        </View>
-      )}
-      {!progressState.completed && (
-        <>
-          <Spacer height={8} />
-          <View style={s(c.selfEnd)}>
-            <SeeBiggestMissButton side={side} />
-          </View>
-        </>
-      )}
-    </View>
   );
 };
 

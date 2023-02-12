@@ -5,7 +5,7 @@ import { Spacer } from "app/Space";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "./CMText";
-import { useRepertoireState, quick } from "app/utils/app_state";
+import { useRepertoireState, quick, useSidebarState } from "app/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import { useResponsive, BP } from "app/utils/useResponsive";
@@ -39,6 +39,8 @@ export const BackControls: React.FC<BackControlsProps> = ({
     s.backToStartPosition,
     s.backOne,
   ]);
+
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const isMobile = useIsMobile();
   let gap = isMobile ? 6 : 12;
   let foreground = c.grays[90];
@@ -126,17 +128,14 @@ export const BackControls: React.FC<BackControlsProps> = ({
             style={s(c.buttons.darkFloater)}
             onPress={() => {
               quick((s) => {
-                s.repertoireState.reviewState.startReview(
-                  s.repertoireState.browsingState.activeSide,
-                  {
-                    side: s.repertoireState.browsingState.activeSide,
-                    cram: true,
-                    startLine:
-                      s.repertoireState.browsingState.chessboardState.moveLog,
-                    startPosition:
-                      s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
-                  }
-                );
+                s.repertoireState.reviewState.startReview(activeSide, {
+                  side: activeSide,
+                  cram: true,
+                  startLine:
+                    s.repertoireState.browsingState.chessboardState.moveLog,
+                  startPosition:
+                    s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
+                });
               });
             }}
           >

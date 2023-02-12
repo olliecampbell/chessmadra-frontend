@@ -57,6 +57,7 @@ import { TableResponse } from "app/components/RepertoireMovesTable";
 import { CMText } from "app/components/CMText";
 import { GameResultsBar } from "app/components/GameResultsBar";
 import { pluralize } from "./pluralize";
+import { ReviewText } from "app/components/ReviewText";
 
 interface Section {
   width: number;
@@ -87,7 +88,7 @@ export const useSections = ({
   usePeerRates,
   isMobile,
 }: UseSectionProps) => {
-  let [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const debugUi = useDebugState((s) => s.debugUi);
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let sections: Section[] = [];
@@ -332,13 +333,13 @@ const CoverageProgressBar = ({
   let epdAfter =
     tableResponse.suggestedMove?.epdAfter ??
     tableResponse.repertoireMove?.epdAfter;
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
     useRepertoireState((s) => [
-      s.repertoire[s.browsingState.activeSide]?.positionResponses[epdAfter]
-        ?.length > 0,
-      s.numMovesFromEpd[s.browsingState.activeSide][epdAfter],
-      s.expectedNumMovesFromEpd[s.browsingState.activeSide][epdAfter],
-      s.repertoireGrades[s.browsingState.activeSide]?.biggestMisses[epdAfter],
+      s.repertoire[activeSide]?.positionResponses[epdAfter]?.length > 0,
+      s.numMovesFromEpd[activeSide][epdAfter],
+      s.expectedNumMovesFromEpd[activeSide][epdAfter],
+      s.repertoireGrades[activeSide]?.biggestMisses[epdAfter],
     ]);
 
   const backgroundColor = c.grays[28];
@@ -427,39 +428,11 @@ const getReviewModeSections = ({
     width: 120,
     alignLeft: true,
     content: ({ suggestedMove, positionReport, tableResponse }) => {
-      const date = new Date(tableResponse.reviewInfo.earliestDue);
-      const numMovesDueFromHere = tableResponse.reviewInfo.due;
-      let now = new Date();
-      let diff = date.getTime() - now.getTime();
-      let dueString = "";
-      let seconds = diff / 1000;
-      let minutes = seconds / 60;
-      let hours = minutes / 60;
-      let days = hours / 24;
-      let color = c.grays[50];
-      if (diff < 0) {
-        color = c.oranges[70];
-        dueString = `${numMovesDueFromHere} Due`;
-      } else if (minutes < 60) {
-        dueString = `Due in ${pluralize(Math.round(minutes), "minute")}`;
-      } else if (hours < 24) {
-        dueString = `Due in ${pluralize(Math.round(hours), "hour")}`;
-      } else {
-        dueString = `Due in ${pluralize(Math.round(days), "day")}`;
-      }
       return (
-        <>
-          {
-            <View style={s(c.row, c.alignCenter)}>
-              <i
-                style={s(c.fg(color), c.fontSize(14))}
-                className="fa-regular fa-clock"
-              ></i>
-              <Spacer width={4} />
-              <CMText style={s(textStyles, c.fg(color))}>{dueString}</CMText>
-            </View>
-          }
-        </>
+        <ReviewText
+          date={tableResponse.reviewInfo.earliestDue}
+          numDue={tableResponse.reviewInfo.due}
+        />
       );
     },
     header: "",

@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Pressable, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
@@ -21,6 +21,10 @@ import useKeypress from "react-use-keypress";
 import { BrowserSidebar } from "./BrowsingSidebar";
 import { FadeInOut } from "./FadeInOut";
 import { BrowsingMode } from "app/utils/browsing_state";
+import { intersperse } from "app/utils/intersperse";
+import { isVertical } from "react-range/lib/utils";
+import { SettingsButtons } from "./Settings";
+import { useMeasure } from "@reactivers/hooks";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -31,14 +35,15 @@ export const SidebarLayout = ({
   shared?: boolean;
   mode: BrowsingMode;
 }) => {
-  const [activeSide, repertoireLoading, chessboardFrozen] = useRepertoireState(
-    (s) => [
-      s.browsingState.activeSide,
-      s.repertoire === undefined,
-      s.browsingState.chessboardState.frozen,
-    ]
-  );
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  const [repertoireLoading, chessboardFrozen] = useRepertoireState((s) => [
+    s.repertoire === undefined,
+    s.browsingState.chessboardState.frozen,
+  ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
+  const [chessboardShownAnim] = useBrowsingState(([s]) => [
+    s.chessboardShownAnim,
+  ]);
 
   useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
     if (event.key === "ArrowLeft" && mode !== "review") {
@@ -46,8 +51,9 @@ export const SidebarLayout = ({
     }
   });
   let { side: paramSide } = useParams();
+  console.log(mode, sideBarMode);
   useEffect(() => {
-    if (mode !== sideBarMode) {
+    if (mode && !sideBarMode) {
       quick((s) => {
         // TODO: fix this
         s.navigationState.push("/");
@@ -80,9 +86,18 @@ export const SidebarLayout = ({
   // const router = useRouter();
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  console.log("vertical", vertical);
   const loading = repertoireLoading;
+  let chessboardHidden = false;
+  const chessboardRef = useRef(null);
+  const { height: chessboardHeight } = useMeasure({ ref: chessboardRef });
+  if (vertical) {
+    if (mode === "overview") {
+      chessboardHidden = true;
+    }
+  }
   return (
-    <RepertoirePageLayout flushTop bottom={null} fullHeight>
+    <RepertoirePageLayout flushTop bottom={null} fullHeight naked>
       {loading ? null : (
         <View
           nativeID="BrowsingView"
@@ -111,26 +126,51 @@ export const SidebarLayout = ({
                 vertical ? c.selfCenter : c.selfStretch
               )}
             >
-              <View
-                style={s(
-                  c.fullWidth,
-                  vertical &&
-                    s(c.selfCenter, c.maxWidth(440), c.pt(20), c.px(12)),
-                  !vertical && c.pt(140),
-                  chessboardFrozen && c.opacity(20)
-                )}
-              >
-                <BrowsingChessboardView />
-              </View>
-              <Spacer height={12} />
-              <ExtraChessboardActions />
+              {!vertical ? (
+                <View style={s(c.height(140), c.column, c.justifyEnd)}>
+                  <NavBreadcrumbs />
+                  <Spacer height={22} />
+                </View>
+              ) : (
+                <MobileTopBar />
+              )}
+              <>
+                <Animated.View
+                  style={s(
+                    c.fullWidth,
+                    vertical &&
+                      s(c.selfCenter, c.maxWidth(440), c.pt(20), c.px(12)),
+                    chessboardFrozen && c.opacity(20),
+                    vertical &&
+                      c.opacity(
+                        chessboardShownAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.2, 1],
+                        })
+                      )
+                  )}
+                >
+                  <BrowsingChessboardView ref={chessboardRef} />
+                </Animated.View>
+                <Spacer height={12} />
+                <ExtraChessboardActions />
+              </>
               {vertical ? (
                 <>
-                  <Spacer height={24} />
+                  <Animated.View
+                    style={s(
+                      c.grow,
 
-                  <View style={s(c.grow)}>
+                      c.mt(
+                        chessboardShownAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-chessboardHeight + 100, 24],
+                        })
+                      )
+                    )}
+                  >
                     <BrowserSidebar />
-                  </View>
+                  </Animated.View>
                 </>
               ) : (
                 <Spacer height={60} />
@@ -177,9 +217,9 @@ export const ExtraChessboardActions = ({}: {}) => {
     c.fg(fgColor)
   );
   const padding = 8;
-  let [currentLine, activeSide] = useRepertoireState((s) => [
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  let [currentLine] = useRepertoireState((s) => [
     s.browsingState.chessboardState.moveLog,
-    s.browsingState.activeSide,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
   if (sideBarMode == "review") {
@@ -230,23 +270,19 @@ export const ReviewFromHereButton = () => {
     c.px(8),
     c.py(12)
   );
-  const [activeSide] = useRepertoireState((s) => [s.browsingState.activeSide]);
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   return (
     <Button
       style={s(buttonStyles)}
       onPress={() => {
         quick((s) => {
-          s.repertoireState.reviewState.startReview(
-            s.repertoireState.browsingState.activeSide,
-            {
-              side: activeSide,
-              cram: true,
-              startLine:
-                s.repertoireState.browsingState.chessboardState.moveLog,
-              startPosition:
-                s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
-            }
-          );
+          s.repertoireState.reviewState.startReview(activeSide, {
+            side: activeSide,
+            cram: true,
+            startLine: s.repertoireState.browsingState.chessboardState.moveLog,
+            startPosition:
+              s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
+          });
         });
       }}
     >
@@ -267,11 +303,70 @@ export const ReviewFromHereButton = () => {
   );
 };
 
-const BrowsingChessboardView = React.memo(function BrowsingChessboardView() {
+const BrowsingChessboardView = React.forwardRef(function BrowsingChessboardView(
+  {},
+  ref
+) {
   const [chessboardState] = useRepertoireState((s) => [
     s.browsingState.sidebarState.mode == "review"
       ? s.reviewState.chessboardState
       : s.browsingState.chessboardState,
   ]);
-  return <ChessboardView state={chessboardState} />;
+  return <ChessboardView state={chessboardState} ref={ref} />;
 });
+
+const MobileTopBar = ({}) => {
+  const responsive = useResponsive();
+  return (
+    <View
+      style={s(
+        c.row,
+        c.alignCenter,
+        c.fullWidth,
+        c.justifyBetween,
+        c.px(getSidebarPadding(responsive)),
+        c.py(8)
+      )}
+    >
+      <NavBreadcrumbs />
+      <SettingsButtons />
+    </View>
+  );
+};
+
+export const NavBreadcrumbs = () => {
+  const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs()]);
+  const responsive = useResponsive();
+  return (
+    <View style={s(c.row, c.alignCenter, c.constrainWidth)}>
+      {intersperse(
+        breadcrumbs.map((breadcrumb, i) => {
+          return (
+            <Pressable
+              key={`breadcrumb-${i}`}
+              style={s(breadcrumb.onPress ? c.clickable : c.unclickable)}
+              onPress={() => {
+                breadcrumb.onPress?.();
+              }}
+            >
+              <View style={s()}>
+                <CMText style={s(c.weightBold, c.fg(c.colors.textSecondary))}>
+                  {breadcrumb.text}
+                </CMText>
+              </View>
+            </Pressable>
+          );
+        }),
+        (i) => {
+          return (
+            <View key={i} style={s(c.mx(responsive.switch(6, [BP.lg, 8])))}>
+              <CMText style={s(c.fg(c.grays[40]))}>
+                <i className="fa-light fa-angle-right" />
+              </CMText>
+            </View>
+          );
+        }
+      )}
+    </View>
+  );
+};
