@@ -574,9 +574,12 @@ export const getInitialBrowsingState = (
     finishSidebarOnboarding: (responsive: Responsive) =>
       set(([s, rs]) => {
         rs.animateChessboardShown(responsive, true, () => {
-          s.moveSidebarState("right");
-          s.sidebarState.sidebarOnboardingState.stageStack = [];
-          s.checkFreezeChessboard();
+          quick((s) => {
+            s.repertoireState.browsingState.moveSidebarState("right");
+            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+              [];
+            s.repertoireState.browsingState.checkFreezeChessboard();
+          });
         });
       }),
     reviewFromCurrentLine: () =>

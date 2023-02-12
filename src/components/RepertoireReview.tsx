@@ -54,7 +54,9 @@ export const RepertoireReview = (props: {}) => {
           trackEvent(`reviewing.inspect_line`);
           let qm = s.repertoireState.reviewState.currentMove;
           s.repertoireState.backToOverview();
-          s.repertoireState.startBrowsing(qm.moves[0].side, "build", qm.line);
+          s.repertoireState.startBrowsing(qm.moves[0].side, "build", {
+            pgnToPlay: qm.line,
+          });
         });
       },
       style: "primary",

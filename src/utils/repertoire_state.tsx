@@ -54,8 +54,8 @@ import { shouldDebugEpd } from "./debug";
 import { Animated, Easing } from "react-native";
 import { Responsive } from "./useResponsive";
 
-const TEST_LINE = isDevelopment ? ["e4"] : [];
-const TEST_MODE: BrowsingMode = isDevelopment ? "overview" : null;
+const TEST_LINE = isDevelopment ? [] : [];
+const TEST_MODE: BrowsingMode = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -112,7 +112,11 @@ export interface RepertoireState {
     san: string;
     text: string;
   }) => void;
-  startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay?: string) => void;
+  startBrowsing: (
+    side: Side,
+    mode: BrowsingMode,
+    options?: { pgnToPlay?: string; import?: boolean }
+  ) => void;
   animateChessboardShown: (
     responsive: Responsive,
     animateIn: boolean,
@@ -766,7 +770,7 @@ export const getInitialRepertoireState = (
       }),
     startImporting: (side: Side) =>
       set(([s]) => {
-        s.startBrowsing(side, "build");
+        s.startBrowsing(side, "build", { import: true });
         s.browsingState.chessboardState.resetPosition();
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
           SidebarOnboardingStage.ChooseImportSource,
@@ -794,11 +798,18 @@ export const getInitialRepertoireState = (
           cb();
         }
       }),
-    startBrowsing: (side: Side, mode: BrowsingMode, pgnToPlay: string) =>
+    startBrowsing: (
+      side: Side,
+      mode: BrowsingMode,
+      options?: { pgnToPlay?: string; import?: boolean }
+    ) =>
       set(([s, gs]) => {
+        console.log("start browsing", side, mode);
         const currentMode = s.browsingState.sidebarState.mode;
 
-        if (currentMode) {
+        if (currentMode && mode === "overview") {
+          s.browsingState.moveSidebarState("left");
+        } else if (mode && currentMode === "overview") {
           s.browsingState.moveSidebarState("right");
         }
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
@@ -807,27 +818,30 @@ export const getInitialRepertoireState = (
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboardState.flipped =
           s.browsingState.sidebarState.activeSide === "black";
-        if (s.getIsRepertoireEmpty(side) && mode === "build") {
+        if (options?.import) {
+          // just don't show the chessboard
+        } else if (s.getIsRepertoireEmpty(side) && mode === "build") {
           s.browsingState.chessboardShownAnim.setValue(0);
           s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
             SidebarOnboardingStage.AskAboutExistingRepertoire,
           ];
           s.browsingState.checkFreezeChessboard();
-        } else if (
-          s.browsingState.sidebarState.activeSide === "white" &&
-          (mode === "browse" || mode === "build")
-        ) {
-          let startResponses =
-            s.repertoire?.[s.browsingState.sidebarState.activeSide]
-              ?.positionResponses[START_EPD];
-          if (startResponses?.length === 1) {
-            s.browsingState.chessboardState.makeMove(startResponses[0].sanPlus);
-            s.browsingState.chessboardShownAnim.setValue(1);
+        } else if (mode === "browse" || mode === "build") {
+          s.browsingState.chessboardShownAnim.setValue(1);
+          if (s.browsingState.sidebarState.activeSide === "white") {
+            let startResponses =
+              s.repertoire?.[s.browsingState.sidebarState.activeSide]
+                ?.positionResponses[START_EPD];
+            if (startResponses?.length === 1) {
+              s.browsingState.chessboardState.makeMove(
+                startResponses[0].sanPlus
+              );
+            }
           }
         } else if (mode === "overview") {
           s.browsingState.chessboardShownAnim.setValue(0);
-        } else if (pgnToPlay) {
-          s.browsingState.chessboardState.playPgn(pgnToPlay);
+        } else if (options.pgnToPlay) {
+          s.browsingState.chessboardState.playPgn(options.pgnToPlay);
           s.browsingState.chessboardShownAnim.setValue(1);
         }
         gs.navigationState.push(`/openings/${side}/${mode}`);
@@ -1010,7 +1024,9 @@ export const getInitialRepertoireState = (
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("white", "browse", lineToPgn(TEST_LINE));
+                s.startBrowsing("white", "browse", {
+                  pgnToPlay: lineToPgn(TEST_LINE),
+                });
               }
             });
           });

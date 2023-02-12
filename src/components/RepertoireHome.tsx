@@ -327,11 +327,9 @@ const SeeBiggestMissButton = ({ side }: { side: Side }) => {
             line = dropRight(line, 1);
           }
 
-          s.repertoireState.startBrowsing(
-            side as Side,
-            "build",
-            lineToPgn(line)
-          );
+          s.repertoireState.startBrowsing(side as Side, "build", {
+            pgnToPlay: lineToPgn(line),
+          });
           trackEvent("overview.go_to_biggest_miss");
         });
       }}
@@ -463,14 +461,13 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
       side,
       action: () => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side, "build");
-          trackEvent("overview.click_empty_state_cta");
+          s.userState.profileModalOpen = true;
         });
       },
     };
   } else if (!progressState.completed) {
     action = {
-      cta: null,
+      cta: "Go to biggest gap",
       description: (
         <>
           Your repertoire is <b>{Math.round(progressState.percentComplete)}%</b>{" "}
@@ -480,8 +477,12 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
       side,
       action: () => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side as Side, "build");
-          trackEvent("overview.click_empty_state_cta");
+          let line = pgnToLine(biggestMiss.lines[0]);
+
+          s.repertoireState.startBrowsing(side as Side, "build", {
+            pgnToPlay: lineToPgn(line),
+          });
+          trackEvent("overview.click_go_to_biggest_gap");
         });
       },
     };

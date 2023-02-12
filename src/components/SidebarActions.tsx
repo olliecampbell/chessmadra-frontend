@@ -116,7 +116,7 @@ export const SidebarActions = () => {
       return;
     }
     let text = `Go to the biggest gap in your ${activeSide} repertoire`;
-    let line = dropRight(pgnToLine(miss.lines[0]), 1);
+    let line = pgnToLine(miss.lines[0]);
     let missPositions = lineToPositions(line);
     let missPositionsSet = new Set(missPositions);
     let currentOpeningName = last(
