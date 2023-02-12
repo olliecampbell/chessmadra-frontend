@@ -549,6 +549,7 @@ export const getInitialBrowsingState = (
           return true;
         } else if (s.sidebarState.showPlansState.visible) {
           s.sidebarState.showPlansState.visible = false;
+          s.sidebarState.showPlansState.hasShown = false;
           s.sidebarState.showPlansState.coverageReached = false;
           s.chessboardState.showPlans = false;
           return true;
@@ -824,6 +825,7 @@ export const getInitialBrowsingState = (
       set(([s, gs]) => {
         let { replace } = cfg ?? { replace: false };
         s.sidebarState.isAddingPendingLine = true;
+        s.sidebarState.showPlansState.hasShown = false;
         // let line = lineToPgn(s.sidebarState.moveLog);
         // client
         //   .post("/api/v1/openings/line_reports", {
