@@ -200,7 +200,7 @@ const black = (opacity: number) => {
   return `hsla(0, 0%, 0%, ${opacity}%)`;
 };
 
-const grayHue = 239;
+const grayHue = 30;
 // const grays = {
 //   10: `hsl(${grayHue}, 39%, 4%)`,
 //   20: `hsl(${grayHue}, 20%, 8%)`,
@@ -223,9 +223,9 @@ const genGrays = (hue, minSat, maxSat) => {
   }
   return grays;
 };
-const grays = genGrays(grayHue, 14, 5);
+const grays = genGrays(grayHue, 8, 5);
 const trueGrays = genGrays(0, 0, 0);
-const chessboardGrays = genGrays(21, 5, 5);
+const chessboardGrays = genGrays(grayHue, 10, 3);
 
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -291,8 +291,8 @@ const colors = {
   // lightTile: grays[48],
   // darkTile: grays[38],
 
-  lightTile: hsl(180, 12, 70),
-  darkTile: hsl(180, 12, 40),
+  lightTile: hsl(grayHue, 16, 70),
+  darkTile: hsl(grayHue, 16, 40),
   debugColor: hsl(71, 100, 42),
   debugColorDark: hsl(71, 100, 28),
 };
@@ -423,10 +423,10 @@ const duotone = (primary, secondary) => {
 
 export const chessboardColors = {
   outlineWidth: 0.8,
-  blackFill: chessboardGrays[33],
-  blackOutline: chessboardGrays[10],
-  blackLightAccent: chessboardGrays[40],
-  blackDarkAccent: "hsla(0, 0%, 10%, 33%)",
+  blackFill: chessboardGrays[22],
+  blackOutline: chessboardGrays[5],
+  blackLightAccent: chessboardGrays[26],
+  blackDarkAccent: "hsla(0, 0%, 100%, 10%)",
   blackKnightAccent: chessboardGrays[20],
   whiteFill: chessboardGrays[95],
   whiteOutline: chessboardGrays[0],

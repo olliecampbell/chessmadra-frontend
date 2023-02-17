@@ -36,7 +36,7 @@ export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
   const textStyles = s(c.fg(c.colors.textPrimary), c.weightSemiBold);
   const rightTextStyles = s(
-    c.fg(c.colors.textSecondary),
+    c.fg(c.colors.textTertiary),
     c.weightSemiBold,
     c.fontSize(12)
   );
@@ -275,7 +275,7 @@ const Option = ({
       {option.left}
       {option.right ?? (
         <i
-          style={s(c.fg(c.colors.textSecondary), c.fontSize(14))}
+          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
           className={option.icon}
         ></i>
       )}

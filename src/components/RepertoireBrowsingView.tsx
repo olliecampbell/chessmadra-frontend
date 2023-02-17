@@ -25,6 +25,7 @@ import { intersperse } from "app/utils/intersperse";
 import { isVertical } from "react-range/lib/utils";
 import { SettingsButtons } from "./Settings";
 import { useMeasure } from "@reactivers/hooks";
+import { useHovering } from "app/hooks/useHovering";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -135,7 +136,7 @@ export const SidebarLayout = ({
               {!vertical ? (
                 <View style={s(c.height(140), c.column, c.justifyEnd)}>
                   <NavBreadcrumbs />
-                  <Spacer height={22} />
+                  <Spacer height={32} />
                 </View>
               ) : (
                 <MobileTopBar />
@@ -145,7 +146,7 @@ export const SidebarLayout = ({
                   style={s(
                     c.fullWidth,
                     vertical && s(c.selfCenter, c.maxWidth(440), c.px(16)),
-                    chessboardFrozen && c.opacity(20),
+                    chessboardFrozen && c.opacity(60),
                     chessboardFrozen && c.noPointerEvents,
                     vertical &&
                       c.opacity(
@@ -212,10 +213,10 @@ export const getSidebarPadding = (responsive: Responsive) => {
 
 export const ExtraChessboardActions = ({}: {}) => {
   const responsive = useResponsive();
-  let fgColor = c.grays[45];
+  let fgColor = c.colors.textTertiary;
   const textStyles = s(
     c.fontSize(responsive.switch(12, [BP.md, 14])),
-    c.fg(fgColor),
+    c.fg(c.colors.textTertiary),
     c.weightRegular
   );
   const iconStyles = s(
@@ -344,7 +345,7 @@ export const NavBreadcrumbs = () => {
               }}
             >
               <View style={s()}>
-                <CMText style={s(c.weightBold, c.fg(c.colors.textSecondary))}>
+                <CMText style={s(c.weightBold, c.fg(c.colors.textTertiary))}>
                   {breadcrumb.text}
                 </CMText>
               </View>

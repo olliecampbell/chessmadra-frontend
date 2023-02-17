@@ -48,7 +48,8 @@ export const RepertoireHome = ({}: {}) => {
           c.justifyCenter,
           c.pageHeight,
           vertical ? c.alignCenter : c.alignStretch,
-          c.relative
+          c.relative,
+          c.clickable
         )}
       >
         <View

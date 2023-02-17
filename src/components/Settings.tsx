@@ -56,9 +56,9 @@ export const SettingsButtons = () => {
 export const SettingButton = ({ title, icon, onPress }) => {
   const { hovering, hoveringProps } = useHovering();
   let responsive = useResponsive();
-  let color = c.grays[50];
+  let color = c.colors.textTertiary;
   if (hovering) {
-    color = c.grays[70];
+    color = c.colors.textSecondary;
   }
   return (
     <Pressable

@@ -331,7 +331,7 @@ const BackSection = () => {
           <Spacer width={8} />
           Back
         </CMText>
-        <Spacer height={!vertical ? 22 : backButtonAction ? 18 : 0} />
+        <Spacer height={!vertical ? 32 : backButtonAction ? 18 : 0} />
       </Pressable>
     </FadeInOut>
   );

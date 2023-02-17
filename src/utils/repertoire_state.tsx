@@ -54,7 +54,7 @@ import { shouldDebugEpd } from "./debug";
 import { Animated, Easing } from "react-native";
 import { BP, Responsive } from "./useResponsive";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment ? ["e4"] : [];
 const TEST_MODE: BrowsingMode = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
@@ -762,6 +762,7 @@ export const getInitialRepertoireState = (
           s.reviewState.stopReviewing();
         }
         s.showImportView = false;
+        console.log("back to overview 2");
         s.backToStartPosition();
         s.browsingState.sidebarState.activeSide = null;
         s.divergencePosition = null;
@@ -808,6 +809,7 @@ export const getInitialRepertoireState = (
 
         if (currentMode && mode === "overview") {
           s.browsingState.moveSidebarState("left");
+          s.browsingState.chessboardState.resetPosition();
         } else if (mode && currentMode === "overview") {
           s.browsingState.moveSidebarState("right");
         }
