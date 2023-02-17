@@ -35,7 +35,11 @@ export const RepertoireOverview = (props: {}) => {
   const isMobile = useIsMobile();
   const [side] = useSidebarState(([s]) => [s.activeSide]);
   const textStyles = s(c.fg(c.colors.textPrimary), c.weightSemiBold);
-  const rightTextStyles = s(c.fg(c.colors.textSecondary), c.weightSemiBold);
+  const rightTextStyles = s(
+    c.fg(c.colors.textSecondary),
+    c.weightSemiBold,
+    c.fontSize(12)
+  );
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[side],
   ]);
@@ -292,7 +296,8 @@ export const CoverageAndBar = ({
   const textStyles = s(
     c.fg(inverse ? c.colors.textInverse : c.colors.textSecondary),
     !home && c.fg(c.colors.textSecondary),
-    c.weightSemiBold
+    c.weightSemiBold,
+    c.fontSize(12)
   );
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[side],

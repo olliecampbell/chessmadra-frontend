@@ -56,16 +56,29 @@ export const RepertoireHome = ({}: {}) => {
             c.absolute,
             c.zIndex(15),
             c.top(getSidebarPadding(responsive)),
-            c.right(getSidebarPadding(responsive))
+            c.right(getSidebarPadding(responsive)),
+            c.row,
+            c.gap(responsive.switch(12, [BP.md, 16]))
           )}
         >
           <SettingButton
             title={"Other tools"}
-            icon={"fa-sharp fa-gear"}
+            icon={"fa-sharp fa-bars"}
             onPress={() => {
               quick((s) => {
                 quick((s) => {
                   s.navigationState.push("/directory");
+                });
+              });
+            }}
+          />
+          <SettingButton
+            title={"Settings"}
+            icon={"fa-sharp fa-gear"}
+            onPress={() => {
+              quick((s) => {
+                quick((s) => {
+                  s.userState.profileModalOpen = true;
                 });
               });
             }}

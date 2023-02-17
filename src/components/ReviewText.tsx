@@ -63,7 +63,7 @@ export const ReviewText = ({
       {
         <View style={s(c.row, c.alignCenter)}>
           <i
-            style={s(c.fg(color), c.fontSize(14))}
+            style={s(c.fg(color), c.fontSize(12))}
             className="fa-regular fa-clock"
           ></i>
           <Spacer width={4} />
