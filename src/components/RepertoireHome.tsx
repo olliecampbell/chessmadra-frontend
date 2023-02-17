@@ -475,8 +475,11 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
       {...hoveringProps}
       onPress={() => {
         quick((s) => {
-          console.log("start browsing", side);
-          s.repertoireState.startBrowsing(side, "overview");
+          if (empty) {
+            s.repertoireState.startBrowsing(side as Side, "build");
+          } else {
+            s.repertoireState.startBrowsing(side, "overview");
+          }
         });
       }}
       style={s(
