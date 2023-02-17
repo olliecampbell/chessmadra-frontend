@@ -29,6 +29,8 @@ import { CoverageAndBar } from "./RepertoirtOverview";
 import { START_EPD } from "app/utils/chess";
 import { ReviewText } from "./ReviewText";
 import { THRESHOLD_OPTIONS } from "./ProfileModal";
+import { SettingButton } from "./Settings";
+import { getSidebarPadding } from "./RepertoireBrowsingView";
 
 export const RepertoireHome = ({}: {}) => {
   const responsive = useResponsive();
@@ -45,11 +47,32 @@ export const RepertoireHome = ({}: {}) => {
           c.fullHeight,
           c.justifyCenter,
           c.pageHeight,
-          vertical ? c.alignCenter : c.alignStretch
+          vertical ? c.alignCenter : c.alignStretch,
+          c.relative
         )}
       >
+        <View
+          style={s(
+            c.absolute,
+            c.zIndex(15),
+            c.top(getSidebarPadding(responsive)),
+            c.right(getSidebarPadding(responsive))
+          )}
+        >
+          <SettingButton
+            title={"Other tools"}
+            icon={"fa-sharp fa-gear"}
+            onPress={() => {
+              quick((s) => {
+                quick((s) => {
+                  s.navigationState.push("/directory");
+                });
+              });
+            }}
+          />
+        </View>
         {intersperse(
-          SIDES.map((side, i) => {
+          (vertical ? ["black", "white"] : SIDES).map((side, i) => {
             return <RepertoireSideSummary key={side} side={side} />;
           }),
           (i) => {
@@ -541,32 +564,6 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         >
           {capitalize(side)}
         </CMText>
-        {!empty && (
-          <>
-            <Spacer height={responsive.switch(36)} />
-            <View style={s(c.row, c.selfCenter, c.alignCenter, c.px(24))}>
-              <CMText
-                style={s(
-                  c.fg(inverse ? c.colors.textInverse : c.colors.textSecondary)
-                )}
-              >
-                {pluralize(numMoves, "line")}
-              </CMText>
-              {separator}
-              <CoverageAndBar
-                side={side}
-                home={true}
-                hideBar={responsive.bp < BP.md}
-              />
-              {separator}
-              <ReviewText
-                inverse={inverse}
-                date={earliestDueDate}
-                numDue={numMovesDueFromHere}
-              />
-            </View>
-          </>
-        )}
       </View>
     </Pressable>
   );

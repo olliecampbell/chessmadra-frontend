@@ -53,7 +53,7 @@ export const SettingsButtons = () => {
   );
 };
 
-const SettingButton = ({ title, icon, onPress }) => {
+export const SettingButton = ({ title, icon, onPress }) => {
   const { hovering, hoveringProps } = useHovering();
   let responsive = useResponsive();
   let color = c.grays[50];
