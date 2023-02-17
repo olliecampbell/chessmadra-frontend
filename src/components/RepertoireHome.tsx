@@ -72,9 +72,11 @@ export const RepertoireHome = ({}: {}) => {
           />
         </View>
         {intersperse(
-          (vertical ? ["black", "white"] : SIDES).map((side, i) => {
-            return <RepertoireSideSummary key={side} side={side} />;
-          }),
+          (vertical ? ["black" as Side, "white" as Side] : SIDES).map(
+            (side, i) => {
+              return <RepertoireSideSummary key={side} side={side} />;
+            }
+          ),
           (i) => {
             return null;
           }
@@ -454,63 +456,8 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         });
       },
     };
-  } else if (numMovesDueFromHere > 0) {
-    action = {
-      cta: "Review now",
-      description: (
-        <>
-          You have <b>{pluralize(numMovesDueFromHere, "move")}</b> due for
-          review, it's recommended to review these before building your
-          repertoire further.
-        </>
-      ),
-      side,
-      action: () => {
-        quick((s) => {
-          s.repertoireState.reviewState.startReview(side, { side });
-          trackEvent("overview.click_empty_state_cta");
-        });
-      },
-    };
-  } else if (progressState.completed && threshold > last(THRESHOLD_OPTIONS)) {
-    action = {
-      cta: null,
-      description: (
-        <>
-          You have completed your repertoire! Increase your coverage target if
-          you want to go deeper, or you can go play some games!
-        </>
-      ),
-      side,
-      action: () => {
-        quick((s) => {
-          s.userState.profileModalOpen = true;
-        });
-      },
-    };
-  } else if (!progressState.completed) {
-    action = {
-      cta: "Go to biggest gap",
-      description: (
-        <>
-          Your repertoire is <b>{Math.round(progressState.percentComplete)}%</b>{" "}
-          complete. Address the gaps in you repertoire to get that to 100%.
-        </>
-      ),
-      side,
-      action: () => {
-        quick((s) => {
-          let line = pgnToLine(biggestMiss.lines[0]);
-
-          console.log({ line });
-          s.repertoireState.startBrowsing(side as Side, "build", {
-            pgnToPlay: lineToPgn(line),
-          });
-          trackEvent("overview.click_go_to_biggest_gap");
-        });
-      },
-    };
   }
+
   const topPadding = responsive.switch(48, [BP.lg, 28], [BP.xl, 28]);
   const separator = (
     <View
@@ -564,6 +511,34 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         >
           {capitalize(side)}
         </CMText>
+        {!empty && (
+          <>
+            <Spacer height={responsive.switch(48, [BP.lg, 48])} grow />
+            <View style={s(c.row, c.selfCenter, c.alignCenter, c.px(24))}>
+              <CMText
+                style={s(
+                  c.fg(inverse ? c.colors.textInverse : c.colors.textSecondary)
+                )}
+              >
+                {pluralize(numMoves, "line")}
+              </CMText>
+              {separator}
+              <CoverageAndBar
+                side={side}
+                home={true}
+                hideBar={responsive.bp < BP.md}
+              />
+              {separator}
+              <ReviewText
+                inverse={inverse}
+                date={earliestDueDate}
+                numDue={numMovesDueFromHere}
+              />
+            </View>
+          </>
+        )}
+        <Spacer height={responsive.switch(48, [BP.lg, 48])} grow />
+        {action && <SuggestedAction {...action} />}
       </View>
     </Pressable>
   );
