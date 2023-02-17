@@ -291,8 +291,8 @@ const colors = {
   // lightTile: grays[48],
   // darkTile: grays[38],
 
-  lightTile: hsl(grayHue, 16, 70),
-  darkTile: hsl(grayHue, 16, 40),
+  lightTile: hsl(grayHue, 24, 70),
+  darkTile: hsl(grayHue, 24, 40),
   debugColor: hsl(71, 100, 42),
   debugColorDark: hsl(71, 100, 28),
 };
@@ -423,7 +423,7 @@ const duotone = (primary, secondary) => {
 
 export const chessboardColors = {
   outlineWidth: 0.8,
-  blackFill: chessboardGrays[22],
+  blackFill: chessboardGrays[28],
   blackOutline: chessboardGrays[5],
   blackLightAccent: chessboardGrays[26],
   blackDarkAccent: "hsla(0, 0%, 100%, 10%)",
