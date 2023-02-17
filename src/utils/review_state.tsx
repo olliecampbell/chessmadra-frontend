@@ -116,6 +116,8 @@ export const getInitialReviewState = (
                 }
               );
             });
+            if (rs.browsingState.sidebarState.mode !== "review")
+              rs.updateRepertoireStructures();
           });
         });
     },

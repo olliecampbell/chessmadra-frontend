@@ -293,9 +293,6 @@ const BackSection = () => {
   }
 
   if (mode == "review") {
-    backButtonAction = () => {
-      backToOverview();
-    };
   }
   if (mode == "browse") {
     if (!isEmpty(moveLog)) {
@@ -311,11 +308,6 @@ const BackSection = () => {
     }
   }
   if (mode == "overview") {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.backToOverview();
-      });
-    };
   }
   const color = hovering ? c.colors.textSecondary : c.colors.textTertiary;
 

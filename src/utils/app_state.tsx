@@ -47,7 +47,7 @@ import {
 
 enableMapSet();
 
-const DEBUG_STATE = true;
+const DEBUG_STATE = false;
 Chess[immerable] = true;
 
 export interface AppState {
@@ -222,7 +222,7 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
       }
       return false;
     }
-    if (a.length > 100 || b.length > 100) {
+    if (a.length > 20 || b.length > 20) {
       logExpensive(a, b, path, Math.max(a.length, b.length), config);
     }
     let arrayEqual = every(
@@ -265,7 +265,18 @@ export function equality(
   b: any,
   config: RefObject<EqualityConfig>
 ): boolean {
-  return customEqualityCheck(a, b, "", config);
+  const t = performance.now();
+  let eq = customEqualityCheck(a, b, "", config);
+  const t2 = performance.now();
+  const duration = t2 - t;
+  if (duration > 0.5 && false) {
+    console.log(
+      "slow equality",
+      t2 - t,
+      (take(config.current?.stackTrace, 5) ?? []).join("\n")
+    );
+  }
+  return eq;
 }
 
 // Hooks for slices

@@ -50,7 +50,6 @@ export const Responses = React.memo(function Responses() {
     ],
     {}
   );
-  console.log({ tableResponses });
 
   let usePeerRates = shouldUsePeerRates(positionReport);
   const [mode] = useSidebarState(([s]) => [s.mode]);

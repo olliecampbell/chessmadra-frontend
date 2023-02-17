@@ -521,7 +521,6 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
         !responsive.isMobile && c.flexible,
         c.rounded,
         c.bg(inverse ? c.grays[95] : c.grays[4]),
-        hovering && c.bg(inverse ? c.grays[97] : c.grays[0]),
         // c.px(12),
         c.relative,
         c.zIndex(side === "white" ? 20 : 10),
@@ -536,7 +535,8 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
             c.fontSize(responsive.switch(48, [BP.xl, 54], [BP.xxl, 70])),
             c.selfCenter,
             c.weightHeavy,
-            c.fg(textColor)
+            c.fg(textColor),
+            c.borderBottom(`4px solid ${hovering ? textColor : "transparent"}`)
           )}
         >
           {capitalize(side)}
@@ -567,8 +567,6 @@ const RepertoireSideSummary = ({ side }: { side: Side }) => {
             </View>
           </>
         )}
-        <Spacer height={responsive.switch(48, [BP.lg, 48])} grow />
-        {action && <SuggestedAction {...action} />}
       </View>
     </Pressable>
   );

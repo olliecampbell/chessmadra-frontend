@@ -74,7 +74,7 @@ const SettingButton = ({ title, icon, onPress }) => {
     >
       <i style={s(c.fg(color), c.fontSize(14))} className={icon}></i>
       <Spacer width={responsive.switch(4, [BP.md, 8])} />
-      <CMText style={s(c.fg(color), c.weightBold)}>{title}</CMText>
+      <CMText style={s(c.fg(color), c.weightSemiBold)}>{title}</CMText>
     </Pressable>
   );
 };

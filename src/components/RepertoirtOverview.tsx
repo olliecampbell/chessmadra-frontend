@@ -18,7 +18,7 @@ import { trackEvent } from "app/hooks/useTrackEvent";
 import React, { useEffect, useState } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { pgnToLine, Side } from "app/utils/repertoire";
+import { lineToPgn, pgnToLine, Side } from "app/utils/repertoire";
 import { getSidebarPadding, SidebarLayout } from "./RepertoireBrowsingView";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
@@ -29,21 +29,25 @@ import { ReviewText } from "./ReviewText";
 import { START_EPD } from "app/utils/chess";
 import { useResponsive } from "app/utils/useResponsive";
 import { BrowsingMode } from "app/utils/browsing_state";
+import { pluralize } from "app/utils/pluralize";
 
 export const RepertoireOverview = (props: {}) => {
   const isMobile = useIsMobile();
   const [side] = useSidebarState(([s]) => [s.activeSide]);
   const textStyles = s(c.fg(c.colors.textPrimary), c.weightSemiBold);
-  const rightTextStyles = s(c.fg(c.colors.textPrimary), c.weightRegular);
+  const rightTextStyles = s(c.fg(c.colors.textSecondary), c.weightSemiBold);
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[side],
+  ]);
+  let [biggestMiss, numMoves] = useRepertoireState((s) => [
+    s.repertoireGrades[side]?.biggestMiss,
+    s.getLineCount(side),
   ]);
   const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
     rs.numMovesDueFromEpd[side][START_EPD],
     rs.earliestReviewDueFromEpd[side][START_EPD],
   ]);
 
-  let [numMoves] = useRepertoireState((s) => [s.getLineCount(side)]);
   const empty = numMoves === 0;
   const responsive = useResponsive();
   const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
@@ -62,18 +66,42 @@ export const RepertoireOverview = (props: {}) => {
   let options = [
     {
       core: true,
+      hidden: isNil(biggestMiss),
       onPress: () => {
         quick((s) => {
-          startBrowsing("build", empty);
+          let line = pgnToLine(biggestMiss.lines[0]);
+          s.repertoireState.animateChessboardShown(responsive, true, () => {
+            quick((s) => {
+              s.repertoireState.startBrowsing(side as Side, "build", {
+                pgnToPlay: lineToPgn(line),
+              });
+            });
+          });
+          trackEvent("overview.click_go_to_biggest_gap");
         });
       },
-      left: <CMText style={s(textStyles)}>Add/edit lines</CMText>,
+      left: <CMText style={s(textStyles)}>Go to biggest gap</CMText>,
       right: empty ? null : (
         <View style={s(c.row, c.alignCenter)}>
           <CoverageAndBar side={side} home={false} />
         </View>
       ),
       icon: "fa-sharp fa-plus",
+    },
+    {
+      core: true,
+      hidden: empty,
+      onPress: () => {
+        quick((s) => {
+          startBrowsing("build", empty);
+        });
+      },
+      left: <CMText style={s(textStyles)}>Add/edit lines</CMText>,
+      right: (
+        <CMText style={s(rightTextStyles)}>
+          {pluralize(numMoves, "line")} added
+        </CMText>
+      ),
     },
     {
       core: true,
@@ -92,7 +120,7 @@ export const RepertoireOverview = (props: {}) => {
         <CMText
           style={s(textStyles, numMovesDueFromHere === 0 && c.fg(c.grays[50]))}
         >
-          Review due lines
+          Practice all lines due for review
         </CMText>
       ),
       right: (
@@ -114,9 +142,11 @@ export const RepertoireOverview = (props: {}) => {
         });
       },
       left: (
-        <CMText style={s(textStyles)}>Choose a specific line to review</CMText>
+        <CMText style={s(textStyles)}>
+          Choose a specific line to practice
+        </CMText>
       ),
-      icon: "fa-solid fa-merge",
+      icon: "fa-solid fa-split",
       right: null,
     },
     {
@@ -162,7 +192,7 @@ export const RepertoireOverview = (props: {}) => {
       actions={[]}
       bodyPadding={false}
     >
-      <Spacer height={48} />
+      <Spacer height={24} />
       <View
         style={s(c.height(1), c.fullWidth, c.bg(c.colors.sidebarBorder))}
       ></View>
@@ -183,7 +213,7 @@ export const RepertoireOverview = (props: {}) => {
       ></View>
       <Spacer height={12} />
       <View style={s(c.row, c.px(getSidebarPadding(responsive)))}>
-        {!expanded && !empty && (
+        {!empty && (
           <Pressable
             style={s(c.pb(2))}
             onPress={() => {
@@ -198,7 +228,7 @@ export const RepertoireOverview = (props: {}) => {
                 c.weightSemiBold
               )}
             >
-              More
+              {!expanded ? "More" : "Less"}
             </CMText>
           </Pressable>
         )}
@@ -219,7 +249,14 @@ const Option = ({
     disabled?: boolean;
   };
 }) => {
-  const styles = s(c.py(12), c.px(12), c.center, c.row, c.justifyBetween);
+  const responsive = useResponsive();
+  const styles = s(
+    c.py(12),
+    c.px(getSidebarPadding(responsive)),
+    c.center,
+    c.row,
+    c.justifyBetween
+  );
   const { hovering, hoveringProps } = useHovering();
   return (
     <Pressable
@@ -254,8 +291,8 @@ export const CoverageAndBar = ({
   const inverse = home && side === "white";
   const textStyles = s(
     c.fg(inverse ? c.colors.textInverse : c.colors.textSecondary),
-    !home && c.fg(c.colors.textTertiary),
-    c.weightRegular
+    !home && c.fg(c.colors.textSecondary),
+    c.weightSemiBold
   );
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[side],
@@ -273,7 +310,9 @@ export const CoverageAndBar = ({
       {!hideBar && (
         <>
           <Spacer width={8} />
-          <View style={s(c.height(4), c.width(100), c.row)}>
+          <View
+            style={s(c.height(home ? 4 : 4), c.width(home ? 100 : 80), c.row)}
+          >
             <CoverageBar isInSidebar={!home} side={side} />
           </View>
         </>

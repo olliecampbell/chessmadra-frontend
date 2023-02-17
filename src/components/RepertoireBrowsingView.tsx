@@ -135,7 +135,7 @@ export const SidebarLayout = ({
               {!vertical ? (
                 <View style={s(c.height(140), c.column, c.justifyEnd)}>
                   <NavBreadcrumbs />
-                  <Spacer height={12} />
+                  <Spacer height={22} />
                 </View>
               ) : (
                 <MobileTopBar />
@@ -228,28 +228,16 @@ export const ExtraChessboardActions = ({}: {}) => {
     s.browsingState.chessboardState.moveLog,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
-  if (sideBarMode == "review") {
-    return null;
-  }
   return (
     <FadeInOut
       style={s(c.row, c.fullWidth, c.justifyCenter)}
-      open={!isEmpty(currentLine)}
+      open={
+        !isEmpty(currentLine) &&
+        (sideBarMode == "browse" ||
+          sideBarMode == "review" ||
+          sideBarMode == "build")
+      }
     >
-      <Pressable
-        style={s(c.row, c.alignCenter)}
-        onPress={() => {
-          quick((s) => {
-            s.repertoireState.browsingState.dismissTransientSidebarState();
-            s.repertoireState.browsingState.chessboardState.resetPosition();
-          });
-        }}
-      >
-        <CMText style={s(textStyles)}>Reset board</CMText>
-        <Spacer width={padding} />
-        <i className="fa fa-arrows-rotate" style={s(iconStyles)}></i>
-      </Pressable>
-      <Spacer width={18} />
       <Pressable
         style={s(c.row, c.alignCenter)}
         onPress={() => {

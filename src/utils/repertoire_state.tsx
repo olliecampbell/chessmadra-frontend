@@ -52,7 +52,7 @@ import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
 import { Animated, Easing } from "react-native";
-import { Responsive } from "./useResponsive";
+import { BP, Responsive } from "./useResponsive";
 
 const TEST_LINE = isDevelopment ? [] : [];
 const TEST_MODE: BrowsingMode = isDevelopment ? null : null;
@@ -355,7 +355,7 @@ export const getInitialRepertoireState = (
     getBreadCrumbs: () =>
       set(([s]) => {
         const homeBreadcrumb = {
-          text: "Openings",
+          text: "Home",
           onPress: () => {
             set(([s, appState]) => {
               s.backToOverview();
@@ -782,7 +782,7 @@ export const getInitialRepertoireState = (
       cb: () => void
     ) =>
       set(([s, gs]) => {
-        if (responsive.isMobile) {
+        if (responsive.bp < BP.md) {
           Animated.sequence([
             Animated.timing(s.browsingState.chessboardShownAnim, {
               toValue: animateIn ? 1 : 0,

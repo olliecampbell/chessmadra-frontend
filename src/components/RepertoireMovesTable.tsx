@@ -386,26 +386,16 @@ const Response = ({
     { referenceEquality: true }
   );
 
-  const [
-    playSan,
-    nextEcoCode,
-    previewMove,
-    uploadMoveAnnotation,
-    numMovesDueFromHere,
-    earliestDueDate,
-  ] = useBrowsingState(([s, rs]) => [
-    s.chessboardState.makeMove,
-    rs.ecoCodeLookup[suggestedMove?.epdAfter],
-    s.chessboardState.previewMove,
-    rs.uploadMoveAnnotation,
+  const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
     rs.numMovesDueFromEpd[activeSide][tableResponse.repertoireMove?.epdAfter],
     rs.earliestReviewDueFromEpd[activeSide][
       tableResponse.repertoireMove?.epdAfter
     ],
   ]);
-  const [currentLine, currentSide, currentEcoCode] = useSidebarState(
-    ([s, rs]) => [s.moveLog, s.currentSide, s.lastEcoCode]
-  );
+  const [currentLine, currentSide] = useSidebarState(([s, rs]) => [
+    s.moveLog,
+    s.currentSide,
+  ]);
   const isMobile = useIsMobile();
   let moveNumber = Math.floor(currentLine.length / 2) + 1;
   let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
@@ -415,10 +405,14 @@ const Response = ({
   let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
       () => {
-        previewMove(sanPlus);
+        quick((s) => {
+          s.repertoireState.browsingState.chessboardState.previewMove(sanPlus);
+        });
       },
       () => {
-        previewMove(null);
+        quick((s) => {
+          s.repertoireState.browsingState.chessboardState.previewMove(null);
+        });
       }
     );
 
@@ -470,10 +464,12 @@ const Response = ({
           <AnnotationEditor
             annotation={suggestedMove?.annotation}
             onUpdate={(annotation) => {
-              uploadMoveAnnotation({
-                epd: currentEpd,
-                san: sanPlus,
-                text: annotation,
+              quick((s) => {
+                s.repertoireState.uploadMoveAnnotation({
+                  epd: currentEpd,
+                  san: sanPlus,
+                  text: annotation,
+                });
               });
             }}
           />
@@ -555,15 +551,12 @@ const Response = ({
             // If has transposition tag, quick make transposition state visible on browser state
 
             if (tableResponse.transposes) {
-              quick((s) => {
-                playSan(sanPlus);
-                s.repertoireState.browsingState.sidebarState.transposedState.visible =
-                  true;
-                s.repertoireState.browsingState.chessboardState.showPlans =
-                  true;
-              });
+              s.repertoireState.browsingState.chessboardState.makeMove(sanPlus);
+              s.repertoireState.browsingState.sidebarState.transposedState.visible =
+                true;
+              s.repertoireState.browsingState.chessboardState.showPlans = true;
             } else {
-              playSan(sanPlus);
+              s.repertoireState.browsingState.chessboardState.makeMove(sanPlus);
             }
           });
           trackEvent("repertoire.moves_table.select_move");
