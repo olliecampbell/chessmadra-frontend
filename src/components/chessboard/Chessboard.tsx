@@ -723,7 +723,7 @@ export const ChessboardView = React.forwardRef(
                               {
                                 opacity: state.squareHighlightAnims[square],
                               },
-                              c.bg(c.primaries[60]),
+                              c.bg(c.oranges[65]),
                               c.absolute,
                               c.size("100%"),
                               c.zIndex(4)
