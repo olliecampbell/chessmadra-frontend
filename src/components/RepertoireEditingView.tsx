@@ -34,22 +34,17 @@ export const Responses = React.memo(function Responses() {
     ([s, rs]) => rs.positionReports[activeSide]?.[currentEpd],
     { referenceEquality: true }
   );
-  let [
-    currentSide,
-    currentLine,
-    hasPendingLine,
-    tableResponses,
-    isPastCoverageGoal,
-  ] = useSidebarState(
-    ([s]) => [
-      s.currentSide,
-      s.moveLog,
-      s.hasPendingLineToAdd,
-      s.tableResponses,
-      s.isPastCoverageGoal,
-    ],
-    {}
-  );
+  let [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
+    useSidebarState(
+      ([s]) => [
+        s.currentSide,
+        s.moveLog,
+        s.hasPendingLineToAdd,
+        s.isPastCoverageGoal,
+      ],
+      {}
+    );
+  let [tableResponses] = useSidebarState(([s]) => [s.tableResponses], {});
 
   let usePeerRates = shouldUsePeerRates(positionReport);
   const [mode] = useSidebarState(([s]) => [s.mode]);

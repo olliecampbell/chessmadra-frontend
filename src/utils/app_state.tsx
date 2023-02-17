@@ -161,17 +161,19 @@ const logExpensive = (
   keys: number,
   config?: RefObject<EqualityConfig>
 ) => {
-  console.log(
-    `%c ${path}%c is expensive, ${keys} keys`,
-    `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.grays[80]}; color: ${c.purples[55]}; font-weight: 600;`,
-    `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}; margin-bottom: 8px;`,
-    "\n\n\n",
-    a,
-    "\n\nBut is now:\n\n",
-    b,
-    config.current,
-    (take(config.current?.stackTrace, 5) ?? []).join("\n")
-  );
+  if (isDevelopment) {
+    console.log(
+      `%c ${path}%c is expensive, ${keys} keys`,
+      `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.grays[80]}; color: ${c.purples[55]}; font-weight: 600;`,
+      `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}; margin-bottom: 8px;`,
+      "\n\n\n",
+      a,
+      "\n\nBut is now:\n\n",
+      b,
+      config.current,
+      (take(config.current?.stackTrace, 5) ?? []).join("\n")
+    );
+  }
 };
 
 interface EqualityConfig {
@@ -242,7 +244,7 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
       return false;
     }
     let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
-    if (allKeys.size > 100) {
+    if (allKeys.size > 20) {
       logExpensive(a, b, path, allKeys.size, config);
     }
     return every([...allKeys], (k) => {
