@@ -94,6 +94,18 @@ const OnboardingIntro = () => {
           text: "Get started",
         }}
       />
+      <Spacer height={12}/>
+      <SidebarFullWidthButton
+        action={{
+          onPress: () => {
+            quick((s) => {
+              s.navigationState.push("/directory");
+            });
+          },
+          style: "secondary",
+          text: "Other tools",
+        }}
+      />
     </View>
   );
 };

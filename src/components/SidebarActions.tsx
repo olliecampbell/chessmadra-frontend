@@ -33,7 +33,7 @@ export interface SidebarAction {
   onPress: () => void;
   text: string;
   subtext?: string;
-  style: "primary" | "focus";
+  style: "primary" | "focus" | "secondary";
 }
 
 export const SidebarActions = () => {
@@ -302,13 +302,25 @@ export const SidebarFullWidthButton = ({
       backgroundColor = c.grays[82];
     }
   }
+  if (action.style === "secondary") {
+    foregroundColor = c.colors.textTertiary;
+    subtextColor = c.grays[20];
+    if (hovering) {
+      foregroundColor = c.colors.textSecondary;
+    }
+    // if (hovering) {
+    //   backgroundColor = c.grays[8];
+    // } else {
+    //   backgroundColor = c.grays[16];
+    // }
+  }
   if (action.style === "primary") {
-    foregroundColor = c.grays[90];
+    foregroundColor = c.colors.textPrimary;
     subtextColor = c.grays[70];
     if (hovering) {
-      backgroundColor = c.grays[24];
+      backgroundColor = c.grays[36];
     } else {
-      backgroundColor = c.grays[22];
+      backgroundColor = c.grays[30];
     }
   }
   return (

@@ -10,6 +10,7 @@ import {
   useAppState,
   useUserState,
   quick,
+  useSidebarState,
 } from "app/utils/app_state";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { cloneDeep } from "lodash-es";
@@ -21,12 +22,24 @@ export const SettingsButtons = () => {
     s.userState.getUserRatingDescription(),
     s.userState.authStatus,
   ]);
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
   let responsive = useResponsive();
   return (
     <View style={s(c.row, c.gap(responsive.switch(12, [BP.md, 16])))}>
+      {mode === "home" && (
+        <SettingButton
+          title={"Other tools"}
+          icon={"fa-sharp fa-bars"}
+          onPress={() => {
+            quick((s) => {
+                s.navigationState.push("/directory");
+            });
+          }}
+        />
+      )}
       <SettingButton
         title={"Settings"}
         icon={"fa-sharp fa-gear"}
