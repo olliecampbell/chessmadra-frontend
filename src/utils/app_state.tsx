@@ -187,6 +187,8 @@ let DEFAULT_EQUALITY_CONFIG = {
   referenceEquality: false,
 } as EqualityConfig;
 
+const EXPENSIVE_CUTOFF = 100;
+
 const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
   const debug = config.current.debug;
   if (config.current.referenceEquality) {
@@ -224,7 +226,7 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
       }
       return false;
     }
-    if (a.length > 20 || b.length > 20) {
+    if (a.length > EXPENSIVE_CUTOFF || b.length > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, Math.max(a.length, b.length), config);
     }
     let arrayEqual = every(
@@ -244,7 +246,7 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
       return false;
     }
     let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
-    if (allKeys.size > 20) {
+    if (allKeys.size > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, allKeys.size, config);
     }
     return every([...allKeys], (k) => {

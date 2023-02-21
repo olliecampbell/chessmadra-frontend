@@ -292,7 +292,11 @@ export const RepertoireMovesTable = ({
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
+                style={s(
+                  c.fontSize(12),
+                  c.fg(c.colors.textTertiary),
+                  c.weightSemiBold
+                )}
               >
                 Show more moves
               </CMText>
@@ -338,7 +342,11 @@ export const RepertoireMovesTable = ({
               }}
             >
               <CMText
-                style={s(c.fontSize(12), c.fg(c.grays[65]), c.weightSemiBold)}
+                style={s(
+                  c.fontSize(12),
+                  c.fg(c.colors.textTertiary),
+                  c.weightSemiBold
+                )}
               >
                 {`Remove ${mine.length > 1 ? "a" : "this"} move`}
               </CMText>
@@ -790,7 +798,7 @@ const TableHeader = ({
               >
                 <CMText
                   style={s(
-                    c.fg(c.grays[70]),
+                    c.fg(c.colors.textTertiary),
                     c.fontSize(12),
                     c.whitespace("nowrap")
                   )}

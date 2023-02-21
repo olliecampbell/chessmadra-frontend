@@ -11,7 +11,7 @@ import {
   some,
   filter,
 } from "lodash-es";
-import { lineToPgn, RepertoireMove, Side } from "./repertoire";
+import { lineToPgn, RepertoireMove, Side, SIDES } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -49,7 +49,7 @@ export interface ReviewState {
   reviewLine: (line: string[], side: Side) => void;
   giveUp: () => void;
   setupNextMove: () => void;
-  startReview: (_side: Side, options: ReviewOptions) => void;
+  startReview: (_side?: Side, options: ReviewOptions) => void;
   reviewWithQueue: (queue: QuizMove[]) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
@@ -61,7 +61,7 @@ type Stack = [ReviewState, RepertoireState, AppState];
 const EMPTY_QUEUES = { white: [], black: [] };
 
 interface ReviewOptions {
-  side: Side;
+  side?: Side;
   startPosition?: string;
   startLine?: string[];
   cram?: boolean;
@@ -131,6 +131,7 @@ export const getInitialReviewState = (
         } else {
           s.updateQueue(options);
         }
+        console.log(s.activeQueue);
         gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
         rs.browsingState.chessboardShownAnim.setValue(1);
@@ -235,30 +236,35 @@ export const getInitialReviewState = (
         if (isNil(rs.repertoire)) {
           return null;
         }
-        let seen_epds = new Set();
         let queue: QuizMove[] = [];
-        const recurse = (epd, line) => {
-          let responses = rs.repertoire[options.side].positionResponses[epd];
-          if (responses?.[0]?.mine) {
-            let needsToReviewAny =
-              some(responses, (r) => r.srs.needsReview) || options.cram;
-            if (needsToReviewAny) {
-              queue.push({
-                moves: responses,
-                line: lineToPgn(line),
-                side: options.side,
-              } as QuizMove);
-            }
+        SIDES.forEach((side) => {
+          let seen_epds = new Set();
+          if (options.side && options.side !== side) {
+            return;
           }
-
-          map(shuffle(responses), (m) => {
-            if (!seen_epds.has(m.epdAfter)) {
-              seen_epds.add(m.epdAfter);
-              recurse(m.epdAfter, [...line, m.sanPlus]);
+          const recurse = (epd, line) => {
+            let responses = rs.repertoire[side].positionResponses[epd];
+            if (responses?.[0]?.mine) {
+              let needsToReviewAny =
+                some(responses, (r) => r.srs.needsReview) || options.cram;
+              if (needsToReviewAny) {
+                queue.push({
+                  moves: responses,
+                  line: lineToPgn(line),
+                  side,
+                } as QuizMove);
+              }
             }
-          });
-        };
-        recurse(options.startPosition ?? START_EPD, options.startLine ?? []);
+
+            map(shuffle(responses), (m) => {
+              if (!seen_epds.has(m.epdAfter)) {
+                seen_epds.add(m.epdAfter);
+                recurse(m.epdAfter, [...line, m.sanPlus]);
+              }
+            });
+          };
+          recurse(options.startPosition ?? START_EPD, options.startLine ?? []);
+        });
         return queue;
       }),
     updateQueue: (options: ReviewOptions) =>

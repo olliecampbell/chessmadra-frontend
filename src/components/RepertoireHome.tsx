@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { isEmpty, capitalize, dropRight, last } from "lodash-es";
+import { isEmpty, capitalize, dropRight, last, isNil, sortBy } from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -31,8 +31,98 @@ import { ReviewText } from "./ReviewText";
 import { THRESHOLD_OPTIONS } from "./ProfileModal";
 import { SettingButton } from "./Settings";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
+import { SidebarTemplate } from "./SidebarTemplate";
+import {
+  SidebarAction,
+  SidebarActions,
+  SidebarFullWidthButton,
+} from "./SidebarActions";
+import { mapSides } from "app/utils/repertoire_state";
+import { bySide } from "app/utils/repertoire";
 
-export const RepertoireHome = ({}: {}) => {
+export const RepertoireHome = (props: {}) => {
+  const isMobile = useIsMobile();
+  const buttonStyles = s(c.width("unset"), c.py(8));
+  const responsive = useResponsive();
+  const [numMovesDueBySide, numLines] = useRepertoireState((s) => [
+    bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
+    bySide((side) => s.getLineCount(side)),
+  ]);
+  const totalDue =
+    numMovesDueBySide?.white ?? 0 + numMovesDueBySide?.black ?? 0;
+  const overallActions: SidebarAction[] = [];
+  if (totalDue > 0) {
+    overallActions.push({
+      text: "Practice all moves due for review",
+      style: "primary",
+      onPress: () => {
+        quick((s) => {
+          s.repertoireState.reviewState.startReview(null, {});
+        });
+      },
+    });
+  }
+  return (
+    <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
+      <View style={s(c.column, c.fullWidth, c.gap(10))}>
+        {SIDES.map((side, i) => {
+          return (
+            <Pressable
+              onPress={() => {
+                quick((s) => {
+                  if (numLines[side] > 0) {
+                    s.repertoireState.browsingState.moveSidebarState("right");
+                    s.repertoireState.startBrowsing(side, "overview");
+                  } else {
+                    s.repertoireState.browsingState.moveSidebarState("right");
+                    s.repertoireState.startImporting(side);
+                  }
+                });
+              }}
+              style={s(
+                c.fullWidth,
+                c.center,
+                c.row,
+                c.justifyBetween,
+                c.bg(c.grays[22]),
+                c.height(64),
+                c.px(getSidebarPadding(responsive))
+              )}
+            >
+              <CMText
+                style={s(
+                  c.fg(c.colors.textPrimary),
+                  c.fontSize(20),
+                  c.weightSemiBold
+                )}
+              >
+                {capitalize(side)}
+              </CMText>
+              <CMText style={s()}>
+                {numLines[side] > 0
+                  ? pluralize(numLines[side], "line")
+                  : "Not started"}
+              </CMText>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Spacer height={46} />
+      {!isEmpty(overallActions) && (
+        <>
+          <View style={s(c.gridColumn({ gap: 12 }))}>
+            {overallActions.map((action, i) => {
+              return <SidebarFullWidthButton key={i} action={action} />;
+            })}
+          </View>
+          <Spacer height={46} />
+        </>
+      )}
+    </SidebarTemplate>
+  );
+};
+
+export const _RepertoireHome = ({}: {}) => {
   const responsive = useResponsive();
   const vertical = responsive.isMobile;
   useEffect(() => {

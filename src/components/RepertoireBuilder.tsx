@@ -7,6 +7,7 @@ import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "./CMText";
 import { useRepertoireState, useDebugState } from "app/utils/app_state";
 import { RepertoireHome } from "./RepertoireHome";
+import { SidebarLayout } from "./RepertoireBrowsingView";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();
@@ -34,6 +35,6 @@ export const RepertoireBuilder = () => {
       </View>
     );
   } else {
-    return <RepertoireHome />;
+    return <SidebarLayout mode="home" shared={false} />;
   }
 };

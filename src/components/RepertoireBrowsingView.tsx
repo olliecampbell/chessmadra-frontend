@@ -44,7 +44,7 @@ export const SidebarLayout = ({
     s.repertoire === undefined,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
-  let chessboardFrozen = sideBarMode === "overview";
+  let chessboardFrozen = sideBarMode === "overview" || sideBarMode === "home";
   if (onboardingStack.length > 0) {
     chessboardFrozen = true;
   }
@@ -332,8 +332,10 @@ const MobileTopBar = ({}) => {
 export const NavBreadcrumbs = () => {
   const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs()]);
   const responsive = useResponsive();
+  let hidden = breadcrumbs.length == 1;
   return (
-    <View style={s(c.row, c.alignCenter, c.constrainWidth)}>
+    // todo: figure out why this is not working
+    <FadeInOut open={!hidden} style={s(c.row, c.alignCenter, c.constrainWidth)}>
       {intersperse(
         breadcrumbs.map((breadcrumb, i) => {
           return (
@@ -341,7 +343,10 @@ export const NavBreadcrumbs = () => {
               key={`breadcrumb-${i}`}
               style={s(breadcrumb.onPress ? c.clickable : c.unclickable)}
               onPress={() => {
-                breadcrumb.onPress?.();
+                quick((s) => {
+                  s.repertoireState.browsingState.moveSidebarState("left");
+                  breadcrumb.onPress?.();
+                });
               }}
             >
               <View style={s()}>
@@ -362,6 +367,6 @@ export const NavBreadcrumbs = () => {
           );
         }
       )}
-    </View>
+    </FadeInOut>
   );
 };

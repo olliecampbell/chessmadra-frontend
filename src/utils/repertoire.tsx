@@ -136,3 +136,10 @@ export const formatIncidence = (incidence: number) => {
 const removeTrailingZeros = (n: string) => {
   return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
 };
+
+export const bySide = <T,>(f: (_: Side) => T): BySide<T> => {
+  return {
+    white: f("white"),
+    black: f("black"),
+  };
+};

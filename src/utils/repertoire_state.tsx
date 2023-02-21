@@ -54,7 +54,7 @@ import { shouldDebugEpd } from "./debug";
 import { Animated, Easing } from "react-native";
 import { BP, Responsive } from "./useResponsive";
 
-const TEST_LINE = isDevelopment ? ["e4"] : [];
+const TEST_LINE = isDevelopment ? [] : [];
 const TEST_MODE: BrowsingMode = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
@@ -376,7 +376,7 @@ export const getInitialRepertoireState = (
             },
           });
         }
-        if (mode && mode !== "overview") {
+        if (mode && mode !== "overview" && mode !== "home") {
           breadcrumbs.push({
             text: capitalize(mode),
             onPress: () => {
@@ -474,14 +474,28 @@ export const getInitialRepertoireState = (
               others.forEach((m) => {
                 let additional = getExpectedNumMovesBetween(
                   m.incidence,
-                  threshold
+                  threshold,
+                  side,
+                  m.epd === START_EPD &&
+                    (m.sanPlus === "d4" ||
+                      m.sanPlus === "c4" ||
+                      m.sanPlus == "Nf3")
                 );
                 additionalExpectedNumMoves += additional;
               });
             }
             let numMovesExpected = getExpectedNumMovesBetween(
               incidence,
-              threshold
+              threshold,
+              side,
+              epd === START_EPD &&
+                some(
+                  allMoves,
+                  (m) =>
+                    m.sanPlus === "d4" ||
+                    m.sanPlus === "c4" ||
+                    m.sanPlus == "Nf3"
+                )
             );
             let childAdditionalMovesExpected = 0;
             allMoves.forEach((m) => {
@@ -756,13 +770,11 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
-        console.log("back to overview");
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
         }
         s.showImportView = false;
-        console.log("back to overview 2");
         s.backToStartPosition();
         s.browsingState.sidebarState.activeSide = null;
         s.divergencePosition = null;
@@ -804,11 +816,9 @@ export const getInitialRepertoireState = (
       options?: { pgnToPlay?: string; import?: boolean }
     ) =>
       set(([s, gs]) => {
-        console.log("start browsing", side, mode);
         const currentMode = s.browsingState.sidebarState.mode;
 
-        if (currentMode && mode === "overview") {
-          s.browsingState.moveSidebarState("left");
+        if (currentMode !== "home" && mode === "overview") {
           s.browsingState.chessboardState.resetPosition();
         } else if (mode && currentMode === "overview") {
           s.browsingState.moveSidebarState("right");
@@ -1119,7 +1129,7 @@ function getLastMoveWithNumber(id: string) {
   return `${n}. ${m}`;
 }
 
-function mapSides<T, Y>(
+export function mapSides<T, Y>(
   bySide: BySide<T>,
   fn: (x: T, side: Side) => Y
 ): BySide<Y> {
@@ -1131,15 +1141,27 @@ function mapSides<T, Y>(
 function getMoveNumber(id: string) {
   return Math.floor(id.split(" ").length / 2 + 1);
 }
+
 export const getExpectedNumMovesBetween = (
   current: number,
-  destination: number
+  destination: number,
+  side: Side,
+  high_transposition: boolean
 ): number => {
+  let m = 1;
+  let distance_pow = 1.11;
+  if (high_transposition && side === "white") {
+    m = 1.5;
+    distance_pow = 1.12;
+  } else if (side === "black") {
+    m = 0.24;
+    distance_pow = 1.32;
+  }
   const get_distance = (x, y) => {
     let distance = 1 / y / (1 / x);
-    return Math.pow(distance, 1.2);
+    return Math.pow(distance, distance_pow);
   };
   let distance = Math.max(0, get_distance(current, destination));
-  current = Math.max(current, 0.45);
-  return 1.17262165 * distance;
+  return m * distance;
 };
+// window.getExpectedNumMovesBetween = getExpectedNumMovesBetween;

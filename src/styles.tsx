@@ -200,7 +200,7 @@ const black = (opacity: number) => {
   return `hsla(0, 0%, 0%, ${opacity}%)`;
 };
 
-const grayHue = 30;
+const grayHue = 200;
 // const grays = {
 //   10: `hsl(${grayHue}, 39%, 4%)`,
 //   20: `hsl(${grayHue}, 20%, 8%)`,
@@ -260,7 +260,7 @@ const genShades = (
   //   90: `hsl(${hue}, 65%, 95%)`,
   // };
 };
-const blues = genShades(186);
+const blues = genShades(grayHue, 50, 80);
 const teals = genShades(150);
 const primaries = blues;
 const yellows = genShades(41, 70, 70);
@@ -276,7 +276,7 @@ const successShades = genShades(164);
 const colors = {
   textPrimary: grays[95],
   textSecondary: grays[70],
-  textTertiary: grays[60],
+  textTertiary: grays[55],
   sidebarBorder: grays[25],
   textInverse: grays[5],
   textInverseSecondary: grays[20],
@@ -291,8 +291,8 @@ const colors = {
   // lightTile: grays[48],
   // darkTile: grays[38],
 
-  lightTile: hsl(grayHue, 24, 70),
-  darkTile: hsl(grayHue, 24, 40),
+  lightTile: hsl(grayHue, 14, 60),
+  darkTile: hsl(grayHue, 14, 40),
   debugColor: hsl(71, 100, 42),
   debugColorDark: hsl(71, 100, 28),
 };
@@ -423,7 +423,7 @@ const duotone = (primary, secondary) => {
 
 export const chessboardColors = {
   outlineWidth: 0.8,
-  blackFill: chessboardGrays[28],
+  blackFill: chessboardGrays[26],
   blackOutline: chessboardGrays[5],
   blackLightAccent: chessboardGrays[26],
   blackDarkAccent: "hsla(0, 0%, 100%, 10%)",

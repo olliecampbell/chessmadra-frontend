@@ -20,7 +20,7 @@ export const FadeInOut = ({
   children: any;
   open: boolean;
   maxOpacity?: number;
-  style: any;
+  style?: any;
 }) => {
   let maxOpacity = _maxOpacity ?? 1;
   const fadeAnim = React.useRef(

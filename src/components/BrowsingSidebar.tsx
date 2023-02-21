@@ -40,6 +40,7 @@ import { RepertoireReview } from "./RepertoireReview";
 import { RepertoireOverview } from "./RepertoirtOverview";
 import { SettingsButtons } from "./Settings";
 import { useHovering } from "app/hooks/useHovering";
+import { RepertoireHome } from "./RepertoireHome";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -174,14 +175,16 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     s.mode,
   ]);
   let inner = null;
-  if (mode == "review") {
-    inner = <RepertoireReview />;
+  if (submitFeedbackState.visible) {
+    inner = <FeedbackView />;
+  } else if (mode == "home") {
+    inner = <RepertoireHome />;
   } else if (mode == "overview") {
     inner = <RepertoireOverview />;
+  } else if (mode == "review") {
+    inner = <RepertoireReview />;
   } else if (!isEmpty(stageStack)) {
     inner = <SidebarOnboarding />;
-  } else if (submitFeedbackState.visible) {
-    inner = <FeedbackView />;
   } else if (deleteLineState.visible) {
     inner = <DeleteLineView />;
   } else if (transposedState.visible) {
@@ -247,7 +250,6 @@ const BackSection = () => {
     if (
       addedLineState.visible ||
       deleteLineState.visible ||
-      submitFeedbackState.visible ||
       transposedState.visible
     ) {
       backButtonAction = () => {
@@ -308,15 +310,30 @@ const BackSection = () => {
     }
   }
   if (mode == "overview") {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.backToOverview();
+      });
+    };
   }
   const color = hovering ? c.colors.textSecondary : c.colors.textTertiary;
+  if (submitFeedbackState.visible) {
+    backButtonAction = () => {
+      quick((s) => {
+        s.repertoireState.browsingState.dismissTransientSidebarState();
+      });
+    };
+  }
 
   return (
     <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
       <Pressable
         {...hoveringProps}
         onPress={() => {
-          backButtonAction?.();
+          quick((s) => {
+            s.repertoireState.browsingState.moveSidebarState("left");
+            backButtonAction?.();
+          });
         }}
         style={s(
           !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
@@ -375,7 +392,6 @@ const SavedLineView = React.memo(function SavedLineView() {
     ],
     { referenceEquality: true }
   );
-  console.log({ positionReport, activeSide, lineReport });
   let [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[activeSide],
   ]);

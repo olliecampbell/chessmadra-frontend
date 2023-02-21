@@ -32,7 +32,7 @@ export const CMTextInput = ({
         c.fontSize(14),
         focus
           ? c.border(`1px solid ${c.grays[30]}`)
-          : c.border(`1px solid transparent`),
+          : c.border(`1px solid ${c.grays[26]}`),
         c.br(4),
         c.keyedProp("outline")("none"),
         c.fg(c.colors.textPrimary),

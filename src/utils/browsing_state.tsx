@@ -93,7 +93,7 @@ export enum SidebarOnboardingImportType {
   PGN,
   PlayerTemplates,
 }
-export type BrowsingMode = "browse" | "build" | "review" | "overview";
+export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
 
 export interface SidebarState {
   isPastCoverageGoal?: boolean;
@@ -197,7 +197,7 @@ export const makeDefaultSidebarState = () => {
   return {
     moveLog: [],
     positionHistory: null,
-    mode: null,
+    mode: "home",
     currentEpd: START_EPD,
     isPastCoverageGoal: false,
     tableResponses: [],
@@ -969,9 +969,14 @@ export const getCoverageProgress = (
   numMoves: number,
   expectedNumMoves: number
 ): number => {
-  let k = 0 - (1 / expectedNumMoves) * 3;
-  let y = (1 / (1 + Math.exp(k * numMoves)) - 0.5) * 2;
-  return y * 100;
+  return (
+    (1 / (1 + Math.pow(Math.E, -4 * (numMoves / expectedNumMoves))) - 0.5) *
+    2 *
+    100
+  );
+  // let k = 0 - (1 / expectedNumMoves) * 3;
+  // let y = (1 / (1 + Math.exp(k * numMoves)) - 0.5) * 2;
+  // return y * 100;
   // return (
   //   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
   // );
