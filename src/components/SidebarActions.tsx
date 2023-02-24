@@ -32,8 +32,9 @@ import { getNameEcoCodeIdentifier } from "app/utils/eco_codes";
 export interface SidebarAction {
   onPress: () => void;
   text: string;
+  right?: React.ReactNode;
   subtext?: string;
-  style: "primary" | "focus" | "secondary";
+  style: "primary" | "focus" | "secondary" | "wide";
 }
 
 export const SidebarActions = () => {
@@ -290,6 +291,7 @@ export const SidebarFullWidthButton = ({
 }) => {
   const responsive = useResponsive();
   const { hovering, hoveringProps } = useHovering();
+  let py = 12;
   let backgroundColor,
     foregroundColor,
     subtextColor = null;
@@ -300,6 +302,16 @@ export const SidebarFullWidthButton = ({
       backgroundColor = c.grays[86];
     } else {
       backgroundColor = c.grays[82];
+    }
+  }
+  if (action.style === "wide") {
+    foregroundColor = c.colors.textPrimary;
+    // subtextColor = c.grays[20];
+    py = 20;
+    if (hovering) {
+      backgroundColor = c.grays[24];
+    } else {
+      backgroundColor = c.grays[22];
     }
   }
   if (action.style === "secondary") {
@@ -333,7 +345,7 @@ export const SidebarFullWidthButton = ({
         c.row,
         c.justifyBetween,
         c.alignCenter,
-        c.py(12),
+        c.py(py),
         c.px(getSidebarPadding(responsive))
       )}
       key={action.text}
@@ -364,10 +376,12 @@ export const SidebarFullWidthButton = ({
         )}
       </View>
       <Spacer width={16} />
-      <i
-        className="fa-regular fa-arrow-right-long"
-        style={s(c.fg(foregroundColor))}
-      />
+      {action.right ?? (
+        <i
+          className="fa-regular fa-arrow-right-long"
+          style={s(c.fg(foregroundColor))}
+        />
+      )}
     </Pressable>
   );
 };

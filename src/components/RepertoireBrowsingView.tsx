@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
@@ -58,7 +58,6 @@ export const SidebarLayout = ({
     }
   });
   let { side: paramSide } = useParams();
-  console.log(mode, sideBarMode);
   useEffect(() => {
     if (mode && !sideBarMode) {
       quick((s) => {
@@ -93,11 +92,10 @@ export const SidebarLayout = ({
   // const router = useRouter();
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  console.log("vertical", vertical);
   const loading = repertoireLoading;
   let chessboardHidden = false;
-  const chessboardRef = useRef(null);
-  const { height: chessboardHeight } = useMeasure({ ref: chessboardRef });
+  const [chessboardHeight, setChessboardHeight] = useState(0);
+
   if (vertical) {
     if (mode === "overview") {
       chessboardHidden = true;
@@ -145,7 +143,12 @@ export const SidebarLayout = ({
                 <Animated.View
                   style={s(
                     c.fullWidth,
-                    vertical && s(c.selfCenter, c.maxWidth(440), c.px(16)),
+                    vertical &&
+                      s(
+                        c.selfCenter,
+                        c.maxWidth(440),
+                        c.px(getSidebarPadding(responsive))
+                      ),
                     chessboardFrozen && c.opacity(60),
                     chessboardFrozen && c.noPointerEvents,
                     vertical &&
@@ -157,7 +160,14 @@ export const SidebarLayout = ({
                       )
                   )}
                 >
-                  <BrowsingChessboardView ref={chessboardRef} />
+                  <BrowsingChessboardView
+                    ref={(e) => {
+                      if (e) {
+                        // @ts-ignore
+                        setChessboardHeight(e.clientHeight);
+                      }
+                    }}
+                  />
                 </Animated.View>
                 <Spacer height={12} />
                 <ExtraChessboardActions />
@@ -168,12 +178,14 @@ export const SidebarLayout = ({
                     style={s(
                       c.grow,
 
-                      c.mt(
-                        chessboardShownAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [-chessboardHeight + 100, 16],
-                        })
-                      )
+                      chessboardHeight
+                        ? c.mt(
+                            chessboardShownAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-chessboardHeight + 100, 16],
+                            })
+                          )
+                        : c.mt(16)
                     )}
                   >
                     <BrowserSidebar />

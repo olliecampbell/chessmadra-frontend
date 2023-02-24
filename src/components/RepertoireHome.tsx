@@ -67,43 +67,30 @@ export const RepertoireHome = (props: {}) => {
       <View style={s(c.column, c.fullWidth, c.gap(10))}>
         {SIDES.map((side, i) => {
           return (
-            <Pressable
-              onPress={() => {
-                quick((s) => {
-                  if (numLines[side] > 0) {
-                    s.repertoireState.browsingState.moveSidebarState("right");
-                    s.repertoireState.startBrowsing(side, "overview");
-                  } else {
-                    s.repertoireState.browsingState.moveSidebarState("right");
-                    s.repertoireState.startImporting(side);
-                  }
-                });
+            <SidebarFullWidthButton
+              action={{
+                style: "wide",
+                text: capitalize(side),
+                right: (
+                  <CMText style={s(c.fg(c.colors.textSecondary))}>
+                    {numLines[side] > 0
+                      ? pluralize(numLines[side], "line")
+                      : "Not started"}
+                  </CMText>
+                ),
+                onPress: () => {
+                  quick((s) => {
+                    if (numLines[side] > 0) {
+                      s.repertoireState.browsingState.moveSidebarState("right");
+                      s.repertoireState.startBrowsing(side, "overview");
+                    } else {
+                      s.repertoireState.browsingState.moveSidebarState("right");
+                      s.repertoireState.startImporting(side);
+                    }
+                  });
+                },
               }}
-              style={s(
-                c.fullWidth,
-                c.center,
-                c.row,
-                c.justifyBetween,
-                c.bg(c.grays[22]),
-                c.height(64),
-                c.px(getSidebarPadding(responsive))
-              )}
-            >
-              <CMText
-                style={s(
-                  c.fg(c.colors.textPrimary),
-                  c.fontSize(20),
-                  c.weightSemiBold
-                )}
-              >
-                {capitalize(side)}
-              </CMText>
-              <CMText style={s()}>
-                {numLines[side] > 0
-                  ? pluralize(numLines[side], "line")
-                  : "Not started"}
-              </CMText>
-            </Pressable>
+            />
           );
         })}
       </View>

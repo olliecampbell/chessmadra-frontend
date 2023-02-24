@@ -265,7 +265,11 @@ const Option = ({
   return (
     <Pressable
       {...hoveringProps}
-      style={css(styles, s(hovering && !option.disabled && c.bg(c.grays[18])))}
+      style={css(
+        styles,
+        option.disabled && c.noPointerEvents,
+        s(hovering && !option.disabled && c.bg(c.grays[18]))
+      )}
       onPress={() => {
         if (!option.disabled) {
           option.onPress();
