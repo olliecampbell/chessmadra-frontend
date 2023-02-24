@@ -267,12 +267,17 @@ export const SidebarActions = () => {
       style: "primary",
     });
   }
+  // TODO: this is terrible, the views should just define their own actions
   if (mode === "review") {
     buttons = [];
   }
   if (mode === "overview") {
     buttons = [];
   }
+  if (mode === "home") {
+    buttons = [];
+  }
+  console.log(buttons, mode);
   return (
     <View style={s(c.column, c.fullWidth)}>
       {intersperse(
