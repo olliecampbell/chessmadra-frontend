@@ -30,11 +30,12 @@ import { lineToPositions } from "app/utils/chess";
 import { getNameEcoCodeIdentifier } from "app/utils/eco_codes";
 
 export interface SidebarAction {
+  rightText?: string;
   onPress: () => void;
   text: string;
   right?: React.ReactNode;
   subtext?: string;
-  style: "primary" | "focus" | "secondary" | "wide";
+  style: "primary" | "focus" | "secondary" | "tertiary" | "wide";
 }
 
 export const SidebarActions = () => {
@@ -277,7 +278,6 @@ export const SidebarActions = () => {
   if (mode === "home") {
     buttons = [];
   }
-  console.log(buttons, mode);
   return (
     <View style={s(c.column, c.fullWidth)}>
       {intersperse(
@@ -319,11 +319,23 @@ export const SidebarFullWidthButton = ({
       backgroundColor = c.grays[22];
     }
   }
-  if (action.style === "secondary") {
+  if (action.style === "tertiary") {
     foregroundColor = c.colors.textTertiary;
     subtextColor = c.grays[20];
     if (hovering) {
       foregroundColor = c.colors.textSecondary;
+    }
+    // if (hovering) {
+    //   backgroundColor = c.grays[8];
+    // } else {
+    //   backgroundColor = c.grays[16];
+    // }
+  }
+  if (action.style === "secondary") {
+    foregroundColor = c.colors.textSecondary;
+    subtextColor = c.grays[20];
+    if (hovering) {
+      foregroundColor = c.colors.textPrimary;
     }
     // if (hovering) {
     //   backgroundColor = c.grays[8];
@@ -351,7 +363,9 @@ export const SidebarFullWidthButton = ({
         c.justifyBetween,
         c.alignCenter,
         c.py(py),
-        c.px(getSidebarPadding(responsive))
+        c.px(getSidebarPadding(responsive)),
+        action.style === "secondary" &&
+    c.borderBottom(`1px solid ${c.colors.border}`),
       )}
       key={action.text}
     >
@@ -382,12 +396,53 @@ export const SidebarFullWidthButton = ({
       </View>
       <Spacer width={16} />
       {action.right ?? (
-        <i
-          className="fa-regular fa-arrow-right-long"
-          style={s(c.fg(foregroundColor))}
-        />
+        <View style={s(c.row, c.center)}>
+          {action.rightText && (
+            <CMText
+              style={s(
+                c.fg(foregroundColor),
+                action.style === "focus" ? c.weightBold : c.weightSemiBold,
+                c.fontSize(12),
+                c.pr(12)
+              )}
+            >
+              {action.rightText}
+            </CMText>
+          )}
+          <i
+            className="fa-regular fa-arrow-right-long"
+            style={s(c.fg(foregroundColor))}
+          />
+        </View>
       )}
     </Pressable>
+  );
+};
+
+export const SidebarSectionHeader = ({
+  text,
+  right,
+}: {
+  text: string;
+  right?: React.ReactNode;
+}) => {
+  const responsive = useResponsive();
+  return (
+    <View
+      style={s(
+        c.row,
+        c.justifyBetween,
+        c.alignCenter,
+        c.px(getSidebarPadding(responsive)),
+        c.pb(8),
+    c.borderBottom(`1px solid ${c.colors.border}`),
+      )}
+    >
+      <CMText style={s(c.fontSize(14), c.fg(c.colors.textTertiary))}>
+        {text}
+      </CMText>
+      {right}
+    </View>
   );
 };
 

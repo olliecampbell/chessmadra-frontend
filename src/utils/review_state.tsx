@@ -11,7 +11,13 @@ import {
   some,
   filter,
 } from "lodash-es";
-import { lineToPgn, RepertoireMove, Side, SIDES } from "./repertoire";
+import {
+  lineToPgn,
+  pgnToLine,
+  RepertoireMove,
+  Side,
+  SIDES,
+} from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -49,7 +55,7 @@ export interface ReviewState {
   reviewLine: (line: string[], side: Side) => void;
   giveUp: () => void;
   setupNextMove: () => void;
-  startReview: (_side?: Side, options: ReviewOptions) => void;
+  startReview: (_side: Side | null, options: ReviewOptions) => void;
   reviewWithQueue: (queue: QuizMove[]) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
@@ -338,28 +344,46 @@ export const getInitialReviewState = (
               s.completedReviewPositionMoves[matchingResponse.sanPlus] =
                 matchingResponse;
               // TODO: this is really dirty
-              const willUndo = !isEmpty(s.getRemainingReviewPositionMoves());
+              const willUndoBecauseMultiple = !isEmpty(
+                s.getRemainingReviewPositionMoves()
+              );
+              if (willUndoBecauseMultiple) {
+                window.setTimeout(() => {
+                  set(([s]) => {
+                    s.chessboardState.backOne();
+                  });
+                }, 500);
+                return true;
+              }
+              const nextMove = s.activeQueue[1];
+              console.log(s.activeQueue);
+              // todo: make this actually work
+              const continuesCurrentLine =
+                nextMove?.line ==
+                lineToPgn([...pgnToLine(s.currentMove.line), move.san]);
+              console.log(
+                "continuesCurrentLine",
+                continuesCurrentLine,
+                nextMove?.line,
+                lineToPgn([...pgnToLine(s.currentMove.line), move.san])
+              );
               window.setTimeout(
                 () => {
                   set(([s]) => {
-                    if (isEmpty(s.getRemainingReviewPositionMoves())) {
-                      if (s.currentMove?.moves.length > 1) {
-                        s.showNext = true;
-                      } else {
-                        console.log("Should setup next?");
-                        if (isEmpty(s.failedReviewPositionMoves)) {
-                          console.log("Yup?");
-                          s.setupNextMove();
-                        } else {
-                          s.showNext = true;
-                        }
-                      }
+                    if (s.currentMove?.moves.length > 1) {
+                      s.showNext = true;
                     } else {
-                      s.chessboardState.backOne();
+                      console.log("Should setup next?");
+                      if (isEmpty(s.failedReviewPositionMoves)) {
+                        console.log("Yup?");
+                        s.setupNextMove();
+                      } else {
+                        s.showNext = true;
+                      }
                     }
                   });
                 },
-                willUndo ? 500 : 100
+                continuesCurrentLine ? 200 : 200
               );
               return true;
             } else {

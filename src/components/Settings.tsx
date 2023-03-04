@@ -1,4 +1,5 @@
 import { Modal } from "./Modal";
+import Cookies from "js-cookie";
 import { View, Pressable } from "react-native";
 import { c, s } from "app/styles";
 import { CMText } from "./CMText";
@@ -15,6 +16,8 @@ import {
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { cloneDeep } from "lodash-es";
 import { useHovering } from "app/hooks/useHovering";
+import { SidebarSetting } from "./SidebarSettings";
+import { clearCookies, JWT_COOKIE_KEY, TEMP_USER_UUID } from "app/utils/auth";
 
 export const SettingsButtons = () => {
   const [user, ratingDescription, authStatus] = useAppState((s) => [
@@ -35,29 +38,30 @@ export const SettingsButtons = () => {
           icon={"fa-sharp fa-bars"}
           onPress={() => {
             quick((s) => {
-                s.navigationState.push("/directory");
+              s.navigationState.push("/directory");
             });
           }}
         />
       )}
-      <SettingButton
-        title={"Settings"}
-        icon={"fa-sharp fa-gear"}
-        onPress={() => {
-          quick((s) => {
-            quick((s) => {
-              s.userState.profileModalOpen = true;
-            });
-          });
-        }}
-      />
-      {needsLogin && (
+      {needsLogin ? (
         <SettingButton
           title={"Log in"}
           icon={"fa-sharp fa-user"}
           onPress={() => {
             quick((s) => {
               s.navigationState.push("/login");
+            });
+          }}
+        />
+      ) : (
+        <SettingButton
+          title={"Log out"}
+          icon={"fa-sharp fa-sign-out-alt"}
+          onPress={() => {
+            quick((s) => {
+              Cookies.remove(JWT_COOKIE_KEY);
+              Cookies.remove(TEMP_USER_UUID);
+              window.location.reload();
             });
           }}
         />

@@ -60,7 +60,7 @@ export const GamesSearch = () => {
     c.selfStretch,
     c.pb(4),
     c.mb(16),
-    c.borderBottom(`1px solid ${c.grays[30]}`)
+    c.borderBottom(`1px solid ${c.colors.border}`)
   );
   const createSlider = (title, key, min, max, step) => {
     return (

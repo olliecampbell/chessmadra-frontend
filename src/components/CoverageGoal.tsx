@@ -4,15 +4,12 @@ import { Animated, Pressable, View } from "react-native";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { CMText } from "./CMText";
-import {
-  quick,
-  useUserState,
-} from "app/utils/app_state";
-import { THRESHOLD_OPTIONS } from "./ProfileModal";
+import { quick, useUserState } from "app/utils/app_state";
 import { useResponsive } from "app/utils/useResponsive";
 import { getRecommendedMissThreshold } from "app/utils/user_state";
 import { useOutsideClick } from "app/components/useOutsideClick";
 import { SelectOneOf } from "./SelectOneOf";
+import { THRESHOLD_OPTIONS } from "./SidebarSettings";
 
 export const CoverageGoal = ({
   textColor,

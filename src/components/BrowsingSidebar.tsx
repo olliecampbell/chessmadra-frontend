@@ -1,9 +1,9 @@
-import React, { useEffect, useLayoutEffect, useRef } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { isEmpty, isNil, dropRight } from "lodash-es";
+import { isEmpty, isNil, dropRight, cloneDeep } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   quick,
@@ -157,6 +157,14 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
 });
 
 export const InnerSidebar = React.memo(function InnerSidebar() {
+  const [view] = useSidebarState(([s]) => [s.view], {
+    referenceEquality: true,
+  });
+  const usePrevious = useContext(SidebarStateContext);
+  if (usePrevious) {
+    console.log("usePrevious", usePrevious, view);
+  }
+
   const [
     addedLineState,
     deleteLineState,
@@ -175,7 +183,9 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     s.mode,
   ]);
   let inner = null;
-  if (submitFeedbackState.visible) {
+  if (view) {
+    inner = cloneDeep(view);
+  } else if (submitFeedbackState.visible) {
     inner = <FeedbackView />;
   } else if (mode == "home") {
     inner = <RepertoireHome />;
@@ -212,6 +222,9 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
 
 const BackSection = () => {
   const { hovering, hoveringProps } = useHovering();
+  const [view] = useSidebarState(([s]) => [s.view], {
+    referenceEquality: true,
+  });
   const [
     addedLineState,
     deleteLineState,
@@ -326,13 +339,17 @@ const BackSection = () => {
   }
 
   return (
-    <FadeInOut style={s(c.column)} open={!isNil(backButtonAction)}>
+    <FadeInOut style={s(c.column)} open={!isNil(backButtonAction) || !!view}>
       <Pressable
         {...hoveringProps}
         onPress={() => {
           quick((s) => {
-            s.repertoireState.browsingState.moveSidebarState("left");
-            backButtonAction?.();
+            if (view) {
+              s.repertoireState.browsingState.replaceView(null, "left");
+            } else {
+              s.repertoireState.browsingState.moveSidebarState("left");
+              backButtonAction?.();
+            }
           });
         }}
         style={s(

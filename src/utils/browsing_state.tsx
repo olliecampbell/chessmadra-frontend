@@ -96,6 +96,7 @@ export enum SidebarOnboardingImportType {
 export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
 
 export interface SidebarState {
+  view: React.ReactNode;
   isPastCoverageGoal?: boolean;
   mode: BrowsingMode;
   tableResponses: TableResponse[];
@@ -147,6 +148,8 @@ export interface BrowsingState {
   quick: (fn: (_: BrowsingState) => void) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
   moveSidebarState: (direction: "left" | "right") => void;
+  replaceView: (view: React.ReactNode, direction: "left" | "right") => void;
+  popView: () => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
 
@@ -788,6 +791,16 @@ export const getInitialBrowsingState = (
     getIncidenceOfCurrentLine: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
         return last(s.getLineIncidences(options));
+      }),
+    replaceView: (view: React.ReactNode, direction: "left" | "right") =>
+      set(([s, gs]) => {
+        s.moveSidebarState(direction);
+        s.sidebarState.view = view;
+      }),
+    popView: () =>
+      set(([s, gs]) => {
+        s.moveSidebarState("left");
+        s.sidebarState.view = null;
       }),
     moveSidebarState: (direction: "left" | "right") =>
       set(([s, gs]) => {

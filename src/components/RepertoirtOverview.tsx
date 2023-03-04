@@ -21,7 +21,7 @@ import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { lineToPgn, pgnToLine, Side } from "app/utils/repertoire";
 import { getSidebarPadding, SidebarLayout } from "./RepertoireBrowsingView";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { SidebarAction } from "./SidebarActions";
+import { SidebarAction, SidebarSectionHeader } from "./SidebarActions";
 import { CoverageBar } from "./CoverageBar";
 import styled, { css } from "@emotion/native";
 import { useHovering } from "../hooks/useHovering";
@@ -30,6 +30,7 @@ import { START_EPD } from "app/utils/chess";
 import { useResponsive } from "app/utils/useResponsive";
 import { BrowsingMode } from "app/utils/browsing_state";
 import { pluralize } from "app/utils/pluralize";
+import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 
 export const RepertoireOverview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -67,10 +68,9 @@ export const RepertoireOverview = (props: {}) => {
       }
     });
   };
-  let options = [
+  let buildOptions = [
     {
-      core: true,
-      hidden: isNil(biggestMiss),
+      hidden: empty,
       onPress: () => {
         quick((s) => {
           let line = pgnToLine(biggestMiss.lines[0]);
@@ -84,16 +84,15 @@ export const RepertoireOverview = (props: {}) => {
           trackEvent("overview.click_go_to_biggest_gap");
         });
       },
-      left: <CMText style={s(textStyles)}>Go to biggest gap</CMText>,
-      right: empty ? null : (
-        <View style={s(c.row, c.alignCenter)}>
-          <CoverageAndBar side={side} home={false} />
-        </View>
+      left: (
+        <CMText style={s(textStyles)}>
+          {empty ? "Start building" : "Go to biggest gap"}
+        </CMText>
       ),
-      icon: "fa-sharp fa-plus",
+      right: null,
+      icon: empty && "fa-sharp fa-plus",
     },
     {
-      core: true,
       hidden: empty,
       onPress: () => {
         quick((s) => {
@@ -101,16 +100,11 @@ export const RepertoireOverview = (props: {}) => {
         });
       },
       left: <CMText style={s(textStyles)}>Add/edit lines</CMText>,
-      right: (
-        <CMText style={s(rightTextStyles)}>
-          {pluralize(numMoves, "line")} added
-        </CMText>
-      ),
     },
+  ];
+  let reviewOptions = [
     {
-      core: true,
-      hidden: empty,
-      disabled: numMovesDueFromHere === 0,
+      hidden: numMovesDueFromHere === 0,
       onPress: () => {
         quick((s) => {
           s.repertoireState.animateChessboardShown(responsive, true, () => {
@@ -121,24 +115,26 @@ export const RepertoireOverview = (props: {}) => {
         });
       },
       left: (
-        <CMText
-          style={s(textStyles, numMovesDueFromHere === 0 && c.fg(c.grays[50]))}
-        >
-          Practice all lines due for review
-        </CMText>
-      ),
-      right: (
-        <View style={s(c.row, c.alignCenter)}>
-          <ReviewText
-            date={earliestDueDate}
-            numDue={numMovesDueFromHere}
-            overview={true}
-          />
-        </View>
+        <CMText style={s(textStyles)}>Practice all lines due for review</CMText>
       ),
     },
     {
-      core: true,
+      hidden: numMovesDueFromHere > 0,
+      onPress: () => {
+        quick((s) => {
+          s.repertoireState.animateChessboardShown(responsive, true, () => {
+            quick((s) => {
+              s.repertoireState.reviewState.startReview(side, {
+                side,
+                cram: true,
+              });
+            });
+          });
+        });
+      },
+      left: <CMText style={s(textStyles)}>Practice all lines</CMText>,
+    },
+    {
       hidden: empty,
       onPress: () => {
         quick((s) => {
@@ -147,11 +143,28 @@ export const RepertoireOverview = (props: {}) => {
       },
       left: (
         <CMText style={s(textStyles)}>
-          Choose a specific line to practice
+          Choose a specific opening to practice
         </CMText>
       ),
-      icon: "fa-solid fa-split",
       right: null,
+    },
+  ];
+  let options = [
+    {
+      hidden: !empty,
+      onPress: () => {
+        quick((s) => {
+          s.repertoireState.animateChessboardShown(responsive, true, () => {
+            quick((s) => {
+              s.repertoireState.startBrowsing(side as Side, "build");
+            });
+          });
+          trackEvent("overview.start_building");
+        });
+      },
+      left: <CMText style={s(textStyles)}>{"Start building"}</CMText>,
+      right: null,
+      icon: empty && "fa-sharp fa-plus",
     },
     {
       onPress: () => {
@@ -169,15 +182,19 @@ export const RepertoireOverview = (props: {}) => {
           s.repertoireState.exportPgn(side);
         });
       },
+      hidden: empty,
       left: <CMText style={s(textStyles)}>Export repertoire</CMText>,
       icon: "fa-sharp fa-arrow-down-to-line",
       right: null,
     },
     {
+      hidden: empty,
       onPress: () => {
         quick((s) => {
-          s.repertoireState.deleteRepertoire(side);
-          trackEvent("repertoire.delete_side");
+          s.repertoireState.browsingState.replaceView(
+            <ConfirmDeleteRepertoire />,
+            "right"
+          );
         });
       },
       left: <CMText style={s(textStyles)}>Delete repertoire</CMText>,
@@ -188,8 +205,29 @@ export const RepertoireOverview = (props: {}) => {
   const [expanded, setExpanded] = useState(false);
   options = options.filter((o) => {
     if (o.hidden) return false;
-    return empty || expanded || o.core;
+    return empty || expanded;
   });
+  let reviewStatus = `You have ${pluralize(
+    numMovesDueFromHere,
+    "move"
+  )} due for review`;
+  let reviewTimer = null;
+  if (numMovesDueFromHere === 0) {
+    reviewStatus = "You have no moves due for review";
+    reviewTimer = (
+      <ReviewText
+        date={earliestDueDate}
+        numDue={numMovesDueFromHere}
+        overview={true}
+      />
+    );
+  }
+  let repertoireStatus = `Your repertoire is ${Math.round(
+    progressState.percentComplete
+  )}% complete`;
+  if (empty) {
+    repertoireStatus = `Your repertoire is empty`;
+  }
   return (
     <SidebarTemplate
       header={`${capitalize(side)} Repertoire`}
@@ -197,25 +235,49 @@ export const RepertoireOverview = (props: {}) => {
       bodyPadding={false}
     >
       <Spacer height={24} />
-      <View
-        style={s(c.height(1), c.fullWidth, c.bg(c.colors.sidebarBorder))}
-      ></View>
-      {intersperse(
-        options.map((opt) => {
-          return <Option option={opt} />;
-        }),
-        (i) => {
-          return (
-            <View
-              style={s(c.height(1), c.fullWidth, c.bg(c.colors.sidebarBorder))}
-            ></View>
-          );
-        }
+
+      {!empty && (
+        <>
+          <SidebarSectionHeader
+            text={repertoireStatus}
+            right={
+              !empty && (
+                <View style={s(c.height(4), c.width(80), c.row)}>
+                  <CoverageBar isInSidebar={true} side={side} />
+                </View>
+              )
+            }
+          />
+          {buildOptions
+            .filter((opt) => !opt.hidden)
+            .map((opt) => {
+              return <Option option={opt} />;
+            })}
+          <Spacer height={36} />
+        </>
       )}
-      <View
-        style={s(c.height(1), c.fullWidth, c.bg(c.colors.sidebarBorder))}
-      ></View>
-      <Spacer height={12} />
+      {!empty && (
+        <>
+          <SidebarSectionHeader text={reviewStatus} right={reviewTimer} />
+          {reviewOptions
+            .filter((opt) => !opt.hidden)
+            .map((opt) => {
+              return <Option option={opt} />;
+            })}
+          <Spacer height={36} />
+        </>
+      )}
+      {options.length > 0 && (
+        <>
+          <SidebarSectionHeader
+            text={empty ? "Your repertoire is empty" : "More options"}
+          />
+          {options.map((opt) => {
+            return <Option option={opt} />;
+          })}
+          <Spacer height={12} />
+        </>
+      )}
       <View style={s(c.row, c.px(getSidebarPadding(responsive)))}>
         {!empty && (
           <Pressable
@@ -232,7 +294,7 @@ export const RepertoireOverview = (props: {}) => {
                 c.weightSemiBold
               )}
             >
-              {!expanded ? "More" : "Less"}
+              {!expanded ? "More options..." : "Hide "}
             </CMText>
           </Pressable>
         )}
@@ -265,9 +327,10 @@ const Option = ({
   return (
     <Pressable
       {...hoveringProps}
-      style={css(
+      style={s(
         styles,
         option.disabled && c.noPointerEvents,
+        c.borderBottom(`1px solid ${c.colors.border}`),
         s(hovering && !option.disabled && c.bg(c.grays[18]))
       )}
       onPress={() => {
@@ -280,7 +343,7 @@ const Option = ({
       {option.right ?? (
         <i
           style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
-          className={option.icon}
+          className={option.icon || "fa fa-arrow-right"}
         ></i>
       )}
     </Pressable>

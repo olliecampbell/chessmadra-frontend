@@ -13,7 +13,6 @@ import { Spacer } from "app/Space";
 import { Helmet } from "react-helmet";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { useOutsideClick } from "app/components/useOutsideClick";
-import { ProfileModal } from "./ProfileModal";
 import { ShareRepertoireModal } from "./ShareRepertoireModal";
 import { SideSettingsModal } from "./SideSettingsModal";
 import { Link } from "react-router-dom";
@@ -72,7 +71,6 @@ export const RepertoirePageLayout = ({
       <Helmet>
         <meta name="theme-color" content={backgroundColor} />
       </Helmet>
-      <ProfileModal />
       <ShareRepertoireModal />
       <SideSettingsModal />
       <HeadSiteMeta
@@ -97,7 +95,7 @@ export const RepertoirePageLayout = ({
           ) : (
             <View
               style={s(
-!isMobile && s(c.overflowY("auto")),
+                !isMobile && s(c.overflowY("auto")),
                 isMobile && s(c.grow),
                 c.center,
                 c.justifyStart,

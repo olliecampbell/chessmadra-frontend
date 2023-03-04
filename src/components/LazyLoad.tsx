@@ -5,7 +5,6 @@ import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
 import { CMText } from "./CMText";
 import { quick, useUserState } from "app/utils/app_state";
-import { THRESHOLD_OPTIONS } from "./ProfileModal";
 import { useResponsive } from "app/utils/useResponsive";
 import { getRecommendedMissThreshold } from "app/utils/user_state";
 import { useOutsideClick } from "app/components/useOutsideClick";
