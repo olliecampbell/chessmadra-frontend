@@ -14,7 +14,7 @@ export type TileTheme = {
 };
 
 export type BoardThemeId = "default" | "reddish" | "stripey";
-export type PieceSetId = keyof typeof PIECE_SETS;
+export type PieceSetId = string;
 export const PIECE_SETS = [
   "alpha",
   "anarcandy",
