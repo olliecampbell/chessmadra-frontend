@@ -176,9 +176,6 @@ export const RepertoireHome = (props: {}) => {
                     <ThemeSettings />,
                     "right"
                   );
-                  s.repertoireState.browsingState.chessboardState.makeMove(
-                    "e4"
-                  );
                 });
               },
               text: "Board appearance",
