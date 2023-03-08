@@ -38,6 +38,8 @@ export interface User {
   // The range/system that's visible to the user
   ratingRange: string;
   ratingSystem: string;
+  theme?: string;
+  pieceSet?: string;
 }
 
 export interface LichessGame {

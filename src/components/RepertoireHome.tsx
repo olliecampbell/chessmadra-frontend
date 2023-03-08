@@ -43,6 +43,7 @@ import {
   CoverageSettings,
   RatingSettings,
   SidebarSetting,
+  ThemeSettings,
 } from "./SidebarSettings";
 
 export const RepertoireHome = (props: {}) => {
@@ -166,6 +167,22 @@ export const RepertoireHome = (props: {}) => {
               },
               text: "Your rating",
               rightText: `${user.ratingRange} ${user.ratingSystem}`,
+              style: "secondary",
+            } as SidebarAction,
+            {
+              onPress: () => {
+                quick((s) => {
+                  s.repertoireState.browsingState.replaceView(
+                    <ThemeSettings />,
+                    "right"
+                  );
+                  s.repertoireState.browsingState.chessboardState.makeMove(
+                    "e4"
+                  );
+                });
+              },
+              text: "Board appearance",
+              rightText: null,
               style: "secondary",
             } as SidebarAction,
           ].map((action: SidebarAction, i) => {

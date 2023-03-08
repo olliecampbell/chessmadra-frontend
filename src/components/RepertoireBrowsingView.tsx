@@ -149,7 +149,6 @@ export const SidebarLayout = ({
                         c.maxWidth(440),
                         c.px(getSidebarPadding(responsive))
                       ),
-                    chessboardFrozen && c.opacity(60),
                     chessboardFrozen && c.noPointerEvents,
                     vertical &&
                       c.opacity(

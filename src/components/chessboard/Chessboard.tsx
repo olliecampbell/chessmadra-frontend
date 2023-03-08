@@ -31,6 +31,8 @@ import { useIsMobile } from "app/utils/isMobile";
 import { CMText } from "../CMText";
 import { isEmpty, isEqual, isNil } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
+import { quick, useAdminState, useUserState } from "app/utils/app_state";
+import { BoardTheme, BOARD_THEMES_BY_ID } from "app/utils/theming";
 
 const animatedXYToPercentage = (x) => {
   return s(
@@ -110,15 +112,17 @@ const getIconForPiece = (piece: PieceSymbol, color: ChessColor) => {
   }
 };
 const pieceCache = {};
+const getSvgName = (piece: PieceSymbol, color: ChessColor) => {
+  return `${color}${piece.toUpperCase()}`;
+};
 
-export const PieceView = ({ piece }: { piece: Piece }) => {
-  let key = piece.type + piece.color;
-  if (pieceCache[key]) {
-    return pieceCache[key];
-  } else {
-    pieceCache[key] = getIconForPiece(piece.type, piece.color);
-    return pieceCache[key];
-  }
+export const PieceView = ({ piece, pieceSet }: { piece: Piece; pieceSet }) => {
+  return (
+    <img
+      style={s(c.constrainWidth, c.constrainHeight)}
+      src={`/pieces/${pieceSet}/${getSvgName(piece.type, piece.color)}.svg`}
+    />
+  );
 };
 
 export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
@@ -175,8 +179,14 @@ export const ChessboardView = React.forwardRef(
   ) => {
     const { availableMoves } = state;
     const position = state._animatePosition ?? state.position;
-    const tileStyles = s(c.bg("green"), c.grow);
     const stateRef = useRef(state);
+    const [user] = useUserState((s) => [s.user]);
+    const theme: BoardTheme =
+      BOARD_THEMES_BY_ID[user?.theme] ?? BOARD_THEMES_BY_ID["default"];
+    console.log(theme);
+    let colors = state.highContrast
+      ? [c.grays[75], c.grays[65]]
+      : [theme.light.color, theme.dark.color];
     stateRef.current = state;
     const chessboardLayout = useRef(null);
     const getSquareFromLayoutAndGesture = (
@@ -584,7 +594,10 @@ export const ChessboardView = React.forwardRef(
               if (piece) {
                 let pieceViewInner = (
                   <View style={s(c.fullWidth, c.fullHeight)}>
-                    <PieceView piece={piece} />
+                    <PieceView
+                      piece={piece}
+                      pieceSet={user?.pieceSet ?? "staunty"}
+                    />
                   </View>
                 );
                 if (animated) {
@@ -646,10 +659,9 @@ export const ChessboardView = React.forwardRef(
                     <View
                       style={s(
                         isJustIndicator ? c.size("30%") : c.size("100%"),
-                        isJustIndicator ? c.opacity(50) : c.opacity(40),
                         isJustIndicator
-                          ? c.bg(c.primaries[0])
-                          : c.bg(c.primaries[40]),
+                          ? c.bg(theme.highlightDark)
+                          : c.bg(theme.highlight),
                         isJustIndicator && c.round,
                         c.absolute,
                         c.zIndex(4)
@@ -680,11 +692,13 @@ export const ChessboardView = React.forwardRef(
                     )}
                   >
                     {times(8)((j) => {
-                      let colors = state.highContrast
-                        ? [c.grays[75], c.grays[65]]
-                        : [c.colors.lightTile, c.colors.darkTile];
-                      let [color, inverseColor] =
-                        (i + j) % 2 == 0 ? colors : [colors[1], colors[0]];
+                      let light = (i + j) % 2 == 0;
+                      let [color, inverseColor] = light
+                        ? colors
+                        : [colors[1], colors[0]];
+                      let themeStyles = light
+                        ? theme.light.styles
+                        : theme.dark.styles;
                       if (state.hideColors) {
                         color = c.grays[30];
                       }
@@ -703,8 +717,8 @@ export const ChessboardView = React.forwardRef(
                           key={j}
                           style={s(
                             c.keyedProp("touchAction")("none"),
-                            tileStyles,
                             c.bg(color),
+                            themeStyles,
                             c.center,
                             !state.frozen && c.clickable,
                             c.flexible,
@@ -723,7 +737,7 @@ export const ChessboardView = React.forwardRef(
                               {
                                 opacity: state.squareHighlightAnims[square],
                               },
-                              c.bg(c.primaries[60]),
+                              c.bg(theme.highlight),
                               c.absolute,
                               c.size("100%"),
                               c.zIndex(4)

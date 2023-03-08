@@ -313,7 +313,7 @@ export const createChessState = (
         // );
         highlightSquares.forEach((sq) => {
           Animated.timing(s.squareHighlightAnims[sq], {
-            toValue: 0.4,
+            toValue: 1.0,
             duration: duration ?? 100,
             useNativeDriver: true,
           }).start(({ finished }) => {});

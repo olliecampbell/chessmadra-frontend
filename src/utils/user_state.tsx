@@ -6,6 +6,7 @@ import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import client from "app/client";
 import { trackEvent } from "app/hooks/useTrackEvent";
+import { BoardThemeId, PieceSetId } from "./theming";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -21,6 +22,10 @@ export interface UserState {
   authStatus: AuthStatus;
   tempUserUuid?: string;
   updateUserRatingSettings: () => void;
+  updateUserSettings: (_: {
+    theme?: BoardThemeId;
+    pieceSet?: PieceSetId;
+  }) => void;
   isUpdatingEloRange: boolean;
 }
 
@@ -74,6 +79,27 @@ export const getInitialUserState = (
         }`;
       });
     },
+    updateUserSettings: ({ theme, pieceSet }) =>
+      set(([s]) => {
+        client
+          .post("/api/v1/user/settings", {
+            theme,
+            pieceSet,
+          })
+          .then(({ data }: { data: User }) => {
+            set(([s, appState]) => {
+              s.setUser(data);
+              const identifyObj = new Identify();
+              identifyObj.set("theme", s.user.theme);
+              identifyObj.set("piece_set", s.user.pieceSet);
+              identify(identifyObj);
+            });
+          })
+          .finally(() => {
+            // set(([s, appState]) => {
+            // });
+          });
+      }),
     updateUserRatingSettings: () =>
       set(([s]) => {
         s.isUpdatingEloRange = true;

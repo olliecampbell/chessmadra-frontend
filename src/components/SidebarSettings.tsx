@@ -7,7 +7,7 @@ import { Spacer } from "app/Space";
 import { getRecommendedMissThreshold } from "app/utils/user_state";
 import { getAppState, useUserState, quick } from "app/utils/app_state";
 import { BP, useResponsive } from "app/utils/useResponsive";
-import { cloneDeep } from "lodash-es";
+import { cloneDeep, keys } from "lodash-es";
 import {
   SidebarAction,
   SidebarActions,
@@ -16,6 +16,14 @@ import {
 } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
+import {
+  BoardThemeId,
+  BOARD_THEMES,
+  BOARD_THEMES_BY_ID,
+  PieceSetId,
+  PIECE_SETS,
+} from "app/utils/theming";
+import { PieceView } from "./chessboard/Chessboard";
 
 export const SidebarSetting = () => {
   return (
@@ -191,6 +199,95 @@ export const RatingSettings = ({}: {}) => {
           return r;
         }}
       />
+    </SidebarTemplate>
+  );
+};
+
+export const ThemeSettings = ({}: {}) => {
+  let responsive = useResponsive();
+  const themes = BOARD_THEMES;
+  const [user] = useUserState((s) => [s.user]);
+  return (
+    <SidebarTemplate actions={[]} header={null}>
+      <Spacer height={12} />
+      <SidebarSelectOneOf
+        description={null}
+        title={"Tiles"}
+        choices={keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
+        // cellStyles={s(c.bg(c.grays[15]))}
+        // horizontal={true}
+        activeChoice={user.theme}
+        onSelect={(t: BoardThemeId) => {
+          quick((s) => {
+            s.userState.updateUserSettings({ theme: t });
+          });
+        }}
+        renderChoice={(themeId: BoardThemeId) => {
+          const theme = BOARD_THEMES_BY_ID[themeId];
+          console.log(theme, themeId);
+          return (
+            <View style={s(c.row, c.center)}>
+              <View style={s(c.row)}>
+                <View style={s(c.size(40), c.bg(theme.light.color))}></View>
+                <View style={s(c.size(40), c.bg(theme.dark.color))}></View>
+              </View>
+              <Spacer width={12} />
+              <CMText style={s(c.weightSemiBold, c.fontSize(16))}>
+                {theme.name}
+              </CMText>
+            </View>
+          );
+        }}
+      />
+      <Spacer height={24} />
+
+      <CMText
+        style={s(
+          c.fontSize(16),
+          c.weightSemiBold,
+          c.fg(c.colors.textPrimary),
+          c.px(getSidebarPadding(responsive))
+        )}
+      >
+        Piece set
+      </CMText>
+      <Spacer height={12} />
+      <View
+        style={s(
+          c.grid({
+            templateColumns: ["1fr", "1fr", "1fr", "1fr", "1fr"],
+            columnGap: 24,
+            templateRows: [],
+            rowGap: 24,
+          })
+        )}
+      >
+        {PIECE_SETS.map((pieceSet, i) => {
+          const active = user.pieceSet === pieceSet;
+          return (
+            <Pressable
+              onPress={() => {
+                quick((s) => {
+                  s.userState.updateUserSettings({ pieceSet });
+                });
+              }}
+              style={s(
+                c.height(80),
+                c.px(16),
+                active && c.bg(c.grays[40]),
+                c.center
+              )}
+            >
+              <View style={s(c.row, c.center, c.size(60))}>
+                <PieceView
+                  pieceSet={pieceSet}
+                  piece={{ color: "w", type: "n" }}
+                />
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
     </SidebarTemplate>
   );
 };

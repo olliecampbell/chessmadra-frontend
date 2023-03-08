@@ -200,7 +200,7 @@ const black = (opacity: number) => {
   return `hsla(0, 0%, 0%, ${opacity}%)`;
 };
 
-const grayHue = 200;
+export const grayHue = 200;
 // const grays = {
 //   10: `hsl(${grayHue}, 39%, 4%)`,
 //   20: `hsl(${grayHue}, 20%, 8%)`,
