@@ -81,8 +81,12 @@ export const getInitialUserState = (
     },
     updateUserSettings: ({ theme, pieceSet }) =>
       set(([s]) => {
-        s.user.pieceSet = pieceSet;
-        s.user.theme = theme;
+        if (pieceSet) {
+          s.user.pieceSet = pieceSet;
+        }
+        if (theme) {
+          s.user.theme = theme;
+        }
         client
           .post("/api/v1/user/settings", {
             theme,
