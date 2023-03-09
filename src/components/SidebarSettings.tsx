@@ -231,7 +231,7 @@ export const ThemeSettings = ({}: {}) => {
           console.log(theme, themeId);
           return (
             <View style={s(c.row, c.center)}>
-              <View style={s(c.row, c.border(`2px solid ${c.grays[80]}`))}>
+              <View style={s(c.row)}>
                 <View
                   style={s(
                     c.size(30),

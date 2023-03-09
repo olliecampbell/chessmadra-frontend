@@ -17,6 +17,7 @@ export type BoardThemeId =
   | "default"
   | "reddish"
   | "stripey"
+  | "chess.com"
   | "low-contrast"
   | "lichess-brown"
   | "lichess-blue";
@@ -94,6 +95,18 @@ export const BOARD_THEMES: BoardTheme[] = [
     },
     dark: {
       color: `hsl(198, 19%, 64%)`,
+    },
+  },
+  {
+    id: "chess.com",
+    name: "chess.com",
+    highlight: adjustOpacity(c.yellows[60], 50),
+    highlightDark: adjustOpacity(c.yellows[35], 60),
+    light: {
+      color: `hsl(60, 44%, 88%)`,
+    },
+    dark: {
+      color: `hsl(90, 27%, 46%)`,
     },
   },
   {
