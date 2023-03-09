@@ -13,39 +13,45 @@ export type TileTheme = {
   styles?: any;
 };
 
-export type BoardThemeId = "default" | "reddish" | "stripey" | "low-contrast";
+export type BoardThemeId =
+  | "default"
+  | "reddish"
+  | "stripey"
+  | "low-contrast"
+  | "lichess-brown"
+  | "lichess-blue";
 export type PieceSetId = string;
 export const PIECE_SETS = [
-  "alpha",
-  "anarcandy",
-  "california",
-  "cardinal",
   "cburnett",
-  "celtic",
-  "chess7",
-  "chessnut",
-  "companion",
-  "disguised",
-  "dubrovny",
-  "fantasy",
-  "fresca",
-  "gioco",
-  "governor",
-  "horsey",
-  "icpieces",
-  "kosal",
-  "leipzig",
-  "letter",
-  "libra",
-  "maestro",
   "merida",
-  "pirouetti",
-  "pixel",
-  "riohacha",
-  "shapes",
-  "spatial",
-  "staunty",
-  "tatiana",
+  "alpha",
+  "fantasy",
+  "anarcandy",
+  "companion",
+  "chessnut",
+  "chess7",
+  "cardinal",
+  // "california",
+  // "celtic",
+  // "disguised",
+  // "dubrovny",
+  // "fresca",
+  // "gioco",
+  // "governor",
+  // "horsey",
+  // "icpieces",
+  // "kosal",
+  // "leipzig",
+  // "letter",
+  // "libra",
+  // "maestro",
+  // "pirouetti",
+  // "pixel",
+  // "riohacha",
+  // "shapes",
+  // "spatial",
+  // "staunty",
+  // "tatiana",
 ];
 const adjustOpacity = (hsl: string, opacity: number) => {
   return hsl.replace("hsl", "hsla").replace(")", `, ${opacity / 100})`);
@@ -63,6 +69,31 @@ export const BOARD_THEMES: BoardTheme[] = [
     },
     dark: {
       color: c.hsl(grayHue, 14, 40),
+    },
+  },
+  // top 3 lichess themes
+  {
+    id: "lichess-brown",
+    name: "Lichess brown",
+    highlight: adjustOpacity(c.trueGrays[0], 40),
+    highlightDark: adjustOpacity(c.trueGrays[0], 40),
+    light: {
+      color: `hsl(37, 67%, 83%)`,
+    },
+    dark: {
+      color: `hsl(27, 40%, 57%)`,
+    },
+  },
+  {
+    id: "lichess-blue",
+    name: "Lichess blue",
+    highlight: adjustOpacity(c.yellows[60], 50),
+    highlightDark: adjustOpacity(c.yellows[35], 60),
+    light: {
+      color: `hsl(200, 20%, 92%)`,
+    },
+    dark: {
+      color: `hsl(198, 19%, 64%)`,
     },
   },
   {

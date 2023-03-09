@@ -592,6 +592,7 @@ export const c = {
   justifyBetween,
   alignCenter,
   grays,
+  trueGrays,
   alignStretch,
   justifyCenter,
   fg,

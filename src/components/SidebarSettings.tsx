@@ -7,7 +7,7 @@ import { Spacer } from "app/Space";
 import { getRecommendedMissThreshold } from "app/utils/user_state";
 import { getAppState, useUserState, quick } from "app/utils/app_state";
 import { BP, useResponsive } from "app/utils/useResponsive";
-import { cloneDeep, keys } from "lodash-es";
+import { cloneDeep, keys, upperFirst } from "lodash-es";
 import {
   SidebarAction,
   SidebarActions,
@@ -219,7 +219,11 @@ export const ThemeSettings = ({}: {}) => {
         activeChoice={user.theme}
         onSelect={(t: BoardThemeId) => {
           quick((s) => {
-            s.userState.updateUserSettings({ theme: t });
+            const params: any = { theme: t };
+            if (t === "low-contrast") {
+              params.pieceSet = "cardinal";
+            }
+            s.userState.updateUserSettings(params);
           });
         }}
         renderChoice={(themeId: BoardThemeId) => {
@@ -227,9 +231,21 @@ export const ThemeSettings = ({}: {}) => {
           console.log(theme, themeId);
           return (
             <View style={s(c.row, c.center)}>
-              <View style={s(c.row)}>
-                <View style={s(c.size(40), c.bg(theme.light.color))}></View>
-                <View style={s(c.size(40), c.bg(theme.dark.color))}></View>
+              <View style={s(c.row, c.border(`2px solid ${c.grays[80]}`))}>
+                <View
+                  style={s(
+                    c.size(30),
+                    c.bg(theme.light.color),
+                    theme.light.styles
+                  )}
+                ></View>
+                <View
+                  style={s(
+                    c.size(30),
+                    c.bg(theme.dark.color),
+                    theme.dark.styles
+                  )}
+                ></View>
               </View>
               <Spacer width={12} />
               <CMText style={s(c.weightSemiBold, c.fontSize(16))}>
@@ -241,53 +257,33 @@ export const ThemeSettings = ({}: {}) => {
       />
       <Spacer height={24} />
 
-      <CMText
-        style={s(
-          c.fontSize(16),
-          c.weightSemiBold,
-          c.fg(c.colors.textPrimary),
-          c.px(getSidebarPadding(responsive))
-        )}
-      >
-        Piece set
-      </CMText>
-      <Spacer height={12} />
-      <View
-        style={s(
-          c.grid({
-            templateColumns: ["1fr", "1fr", "1fr", "1fr", "1fr"],
-            columnGap: 24,
-            templateRows: [],
-            rowGap: 24,
-          })
-        )}
-      >
-        {PIECE_SETS.map((pieceSet, i) => {
-          const active = user.pieceSet === pieceSet;
+      <SidebarSelectOneOf
+        description={null}
+        title={"Pieces"}
+        choices={PIECE_SETS}
+        activeChoice={user.pieceSet}
+        onSelect={(t: PieceSetId) => {
+          quick((s) => {
+            s.userState.updateUserSettings({ pieceSet: t });
+          });
+        }}
+        renderChoice={(pieceSet: PieceSetId) => {
           return (
-            <Pressable
-              onPress={() => {
-                quick((s) => {
-                  s.userState.updateUserSettings({ pieceSet });
-                });
-              }}
-              style={s(
-                c.height(80),
-                c.px(16),
-                active && c.bg(c.grays[40]),
-                c.center
-              )}
-            >
-              <View style={s(c.row, c.center, c.size(60))}>
+            <View style={s(c.row, c.center)}>
+              <View style={s(c.size(40))}>
                 <PieceView
                   pieceSet={pieceSet}
                   piece={{ color: "w", type: "n" }}
                 />
               </View>
-            </Pressable>
+              <Spacer width={12} />
+              <CMText style={s(c.weightSemiBold, c.fontSize(16))}>
+                {upperFirst(pieceSet)}
+              </CMText>
+            </View>
           );
-        })}
-      </View>
+        }}
+      />
     </SidebarTemplate>
   );
 };
