@@ -13,7 +13,7 @@ export type TileTheme = {
   styles?: any;
 };
 
-export type BoardThemeId = "default" | "reddish" | "stripey";
+export type BoardThemeId = "default" | "reddish" | "stripey" | "low-contrast";
 export type PieceSetId = string;
 export const PIECE_SETS = [
   "alpha",
@@ -91,6 +91,18 @@ export const BOARD_THEMES: BoardTheme[] = [
         ),
         c.keyedProp("box-shadow")(`    inset 0px 0px 0px 0.5px black `)
       ),
+    },
+  },
+  {
+    id: "low-contrast",
+    name: "Low Contrast",
+    highlight: adjustOpacity(c.blues[60], 30),
+    highlightDark: adjustOpacity(c.blues[80], 30),
+    light: {
+      color: c.grays[20],
+    },
+    dark: {
+      color: c.grays[8],
     },
   },
   {
