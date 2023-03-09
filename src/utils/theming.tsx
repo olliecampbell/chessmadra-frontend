@@ -100,8 +100,8 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "chess.com",
     name: "chess.com",
-    highlight: adjustOpacity(c.yellows[60], 50),
-    highlightDark: adjustOpacity(c.yellows[35], 60),
+    highlight: adjustOpacity(c.yellows[70], 80),
+    highlightDark: adjustOpacity(c.yellows[60], 100),
     light: {
       color: `hsl(60, 44%, 88%)`,
     },
