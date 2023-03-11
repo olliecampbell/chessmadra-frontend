@@ -13,7 +13,7 @@ Pragma = "no-cache"
 Expires = "0"
 
 [[advanced.headers]]
-source = "*.{js,css,png,jpg,jpeg}"
+source = "*.{js,css,png,jpg,jpeg,svg}"
 [advanced.headers.headers]
 Cache-Control = "public, max-age=36000"
 Pragma = ""
