@@ -360,6 +360,9 @@ export const NavBreadcrumbs = () => {
               key={`breadcrumb-${i}`}
               style={s(breadcrumb.onPress ? c.clickable : c.unclickable)}
               onPress={() => {
+                if (!breadcrumb.onPress) {
+                  return;
+                }
                 quick((s) => {
                   trackEvent("breadcrumbs.clicked", {
                     mode,

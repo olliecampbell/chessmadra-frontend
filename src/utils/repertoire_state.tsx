@@ -184,6 +184,7 @@ export interface RepertoireState {
 
 export interface NavBreadcrumb {
   text: string;
+  unclickable?: boolean;
   onPress?: () => void;
 }
 
@@ -363,7 +364,7 @@ export const getInitialRepertoireState = (
           },
         };
 
-        let breadcrumbs = [homeBreadcrumb];
+        let breadcrumbs: NavBreadcrumb[] = [homeBreadcrumb];
         let mode = s.browsingState.sidebarState.mode;
         let side = s.browsingState.sidebarState.activeSide;
         if (side) {
@@ -376,14 +377,20 @@ export const getInitialRepertoireState = (
             },
           });
         }
+        const unclickableModes: BrowsingMode[] = ["review"];
         if (mode && mode !== "overview" && mode !== "home") {
+          const unclickable = unclickableModes.includes(mode);
           breadcrumbs.push({
             text: capitalize(mode),
-            onPress: () => {
-              quick((s) => {
-                s.repertoireState.startBrowsing(side, mode);
-              });
-            },
+            unclickable,
+            onPress: unclickable
+              ? undefined
+              : () => {
+                  quick((s) => {
+                    s.repertoireState.startBrowsing(side, mode);
+                    s.repertoireState.browsingState.chessboardState.resetPosition();
+                  });
+                },
           });
         }
         return breadcrumbs;
