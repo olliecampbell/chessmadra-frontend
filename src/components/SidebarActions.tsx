@@ -200,8 +200,8 @@ export const SidebarActions = () => {
     buttons.push({
       onPress: () => {
         isPastCoverageGoal
-          ? trackEvent("browsing.save_line")
-          : trackEvent("browsing.save_line_premature");
+          ? trackEvent(`${mode}.save_line`)
+          : trackEvent(`${mode}.save_line_premature`);
         quick((s) => {
           s.repertoireState.browsingState.requestToAddCurrentLine();
         });

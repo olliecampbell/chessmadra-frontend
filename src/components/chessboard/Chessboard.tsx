@@ -182,7 +182,7 @@ export const ChessboardView = React.forwardRef(
     const stateRef = useRef(state);
     const [user] = useUserState((s) => [s.user]);
     const theme: BoardTheme =
-      BOARD_THEMES_BY_ID[user?.theme] ?? BOARD_THEMES_BY_ID["default"];
+      BOARD_THEMES_BY_ID[user?.theme] ?? BOARD_THEMES_BY_ID["lichess-brown"];
     let colors = state.highContrast
       ? [c.grays[75], c.grays[65]]
       : [theme.light.color, theme.dark.color];
@@ -595,7 +595,7 @@ export const ChessboardView = React.forwardRef(
                   <View style={s(c.fullWidth, c.fullHeight)}>
                     <PieceView
                       piece={piece}
-                      pieceSet={user?.pieceSet ?? "staunty"}
+                      pieceSet={user?.pieceSet ?? "cburnett"}
                     />
                   </View>
                 );

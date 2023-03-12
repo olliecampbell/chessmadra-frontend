@@ -33,6 +33,7 @@ export const PIECE_SETS = [
   "chessnut",
   "chess7",
   "cardinal",
+  "staunty",
   // "california",
   // "celtic",
   // "disguised",
@@ -52,7 +53,6 @@ export const PIECE_SETS = [
   // "riohacha",
   // "shapes",
   // "spatial",
-  // "staunty",
   // "tatiana",
 ];
 const adjustOpacity = (hsl: string, opacity: number) => {

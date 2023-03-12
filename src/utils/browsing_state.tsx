@@ -107,8 +107,8 @@ export const modeToUI = (mode: BrowsingMode) => {
       return "Overview";
     case "home":
       return "Home";
-  } 
-}
+  }
+};
 
 export interface SidebarState {
   view: React.ReactNode;
@@ -321,6 +321,13 @@ export const getInitialBrowsingState = (
           s.sidebarState.hasPendingLineToAdd &&
           !s.sidebarState.showPlansState.hasShown
         ) {
+          trackEvent(`${s.sidebarState.mode}.coverage_reached`, {
+            hasPlans: !isNil(
+              rs.positionReports[s.sidebarState.activeSide][
+                s.sidebarState.currentEpd
+              ]?.plans
+            ),
+          });
           s.sidebarState.showPlansState.visible = true;
           s.sidebarState.showPlansState.hasShown = true;
           s.sidebarState.showPlansState.coverageReached = true;

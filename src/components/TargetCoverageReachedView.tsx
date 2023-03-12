@@ -37,6 +37,7 @@ import { getPlanPiece, MetaPlan } from "app/utils/plans";
 import { useHovering } from "app/hooks/useHovering";
 import { Chess, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const TargetCoverageReachedView = () => {
   let [planSections, showPlansState] = useSidebarState(([s]) => [
@@ -44,10 +45,12 @@ export const TargetCoverageReachedView = () => {
     s.showPlansState,
   ]);
   let actions = [];
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   if (showPlansState.coverageReached) {
     actions = [
       {
         onPress: () => {
+          trackEvent(`${mode}.save_line`);
           quick((s) => {
             s.repertoireState.browsingState.addPendingLine();
           });
@@ -58,6 +61,7 @@ export const TargetCoverageReachedView = () => {
       {
         onPress: () => {
           quick((s) => {
+            trackEvent(`${mode}.plans_view.keep_adding`);
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.dismissTransientSidebarState();
           });
