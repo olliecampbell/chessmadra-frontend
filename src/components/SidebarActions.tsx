@@ -120,7 +120,7 @@ export const SidebarActions = () => {
     if (isNil(miss)) {
       return;
     }
-    let text = `Go to the biggest gap in your ${activeSide} repertoire`;
+    let text = `Go to the next gap in your repertoire`;
     let line = pgnToLine(miss.lines[0]);
     let missPositions = lineToPositions(line);
     let missPositionsSet = new Set(missPositions);
@@ -151,22 +151,6 @@ export const SidebarActions = () => {
       }
       return false;
     });
-    if (
-      addedLineState.visible &&
-      currentOpeningName === openingNameOfMiss &&
-      currentOpeningName
-    ) {
-      text = `Keep filling in lines in the ${currentOpeningName}`;
-    } else if (
-      positionHistory.length === 1 ||
-      (activeSide === "white" && positionHistory.length === 2) ||
-      addedLineState.visible
-    ) {
-      text = `Go to the biggest gap in your ${activeSide} repertoire`;
-    } else if (miss === lineMiss) {
-      text = `Skip ahead to the next gap in this line`;
-    }
-
     const isAtBiggestMiss = currentEpd === last(missPositions);
     if (miss && !isAtBiggestMiss) {
       buttons.push({
@@ -187,7 +171,7 @@ export const SidebarActions = () => {
           });
         },
         text: text,
-        style: "primary",
+        style: "focus",
       });
     }
   };
@@ -309,6 +293,7 @@ export const SidebarFullWidthButton = ({
   let backgroundColor,
     foregroundColor,
     subtextColor = null;
+  let textStyles = s();
   if (action.style === "focus") {
     foregroundColor = c.grays[10];
     subtextColor = c.grays[20];
@@ -319,6 +304,7 @@ export const SidebarFullWidthButton = ({
     }
   }
   if (action.style === "wide") {
+    textStyles = s(textStyles, c.fontSize(18), c.weightBold);
     foregroundColor = c.colors.textPrimary;
     // subtextColor = c.grays[20];
     py = 20;
@@ -383,7 +369,8 @@ export const SidebarFullWidthButton = ({
           style={s(
             c.fg(foregroundColor),
             action.style === "focus" ? c.weightBold : c.weightSemiBold,
-            c.fontSize(14)
+            c.fontSize(14),
+            textStyles
           )}
         >
           {action.text}
