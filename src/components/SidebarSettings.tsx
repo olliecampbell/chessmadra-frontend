@@ -223,7 +223,7 @@ export const ThemeSettings = ({}: {}) => {
           quick((s) => {
             const params: any = { theme: t };
             if (t === "low-contrast") {
-              params.pieceSet = "cardinal";
+              params.pieceSet = "monochrome";
             }
             s.userState.updateUserSettings(params);
           });
