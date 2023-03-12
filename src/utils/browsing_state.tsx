@@ -95,6 +95,20 @@ export enum SidebarOnboardingImportType {
   PlayerTemplates,
 }
 export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
+export const modeToUI = (mode: BrowsingMode) => {
+  switch (mode) {
+    case "browse":
+      return "Browse";
+    case "build":
+      return "Build";
+    case "review":
+      return "Review";
+    case "overview":
+      return "Overview";
+    case "home":
+      return "Home";
+  } 
+}
 
 export interface SidebarState {
   view: React.ReactNode;

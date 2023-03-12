@@ -24,6 +24,7 @@ import {
   PIECE_SETS,
 } from "app/utils/theming";
 import { PieceView } from "./chessboard/Chessboard";
+import { PieceSymbol } from "@lubert/chess.ts";
 
 export const SidebarSetting = () => {
   return (
@@ -48,7 +49,7 @@ export const SidebarSelectOneOf = <T,>({
   choices: T[];
   activeChoice: T;
   onSelect: (_: T, i?: number) => void;
-  renderChoice: (x: T) => string;
+  renderChoice: (x: T) => React.ReactNode;
 }) => {
   const responsive = useResponsive();
   let actions = choices.map((choice, i) => {
@@ -207,6 +208,7 @@ export const ThemeSettings = ({}: {}) => {
   let responsive = useResponsive();
   const themes = BOARD_THEMES;
   const [user] = useUserState((s) => [s.user]);
+  const height = 24;
   return (
     <SidebarTemplate actions={[]} header={null}>
       <Spacer height={12} />
@@ -230,25 +232,25 @@ export const ThemeSettings = ({}: {}) => {
           const theme = BOARD_THEMES_BY_ID[themeId];
           console.log(theme, themeId);
           return (
-            <View style={s(c.row, c.center)}>
+            <View style={s(c.row, c.center, c.height(height))}>
               <View style={s(c.row)}>
                 <View
                   style={s(
-                    c.size(30),
+                    c.size(22),
                     c.bg(theme.light.color),
                     theme.light.styles
                   )}
                 ></View>
                 <View
                   style={s(
-                    c.size(30),
+                    c.size(22),
                     c.bg(theme.dark.color),
                     theme.dark.styles
                   )}
                 ></View>
               </View>
-              <Spacer width={12} />
-              <CMText style={s(c.weightSemiBold, c.fontSize(16))}>
+              <Spacer width={22} />
+              <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme.name}
               </CMText>
             </View>
@@ -269,15 +271,19 @@ export const ThemeSettings = ({}: {}) => {
         }}
         renderChoice={(pieceSet: PieceSetId) => {
           return (
-            <View style={s(c.row, c.center)}>
-              <View style={s(c.size(40))}>
-                <PieceView
-                  pieceSet={pieceSet}
-                  piece={{ color: "w", type: "n" }}
-                />
-              </View>
+            <View style={s(c.row, c.center, c.height(height))}>
+              {["q", "k"].map((p: PieceSymbol) => {
+                return (
+                  <View style={s(c.size(24), c.mr(4))}>
+                    <PieceView
+                      pieceSet={pieceSet}
+                      piece={{ color: "w", type: p }}
+                    />
+                  </View>
+                );
+              })}
               <Spacer width={12} />
-              <CMText style={s(c.weightSemiBold, c.fontSize(16))}>
+              <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {upperFirst(pieceSet)}
               </CMText>
             </View>

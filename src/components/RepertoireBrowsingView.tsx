@@ -75,21 +75,21 @@ export const SidebarLayout = ({
       });
     }
   }, [mode, sideBarMode]);
-  useEffect(() => {
-    if (
-      paramSide !== activeSide &&
-      mode == "build" &&
-      !repertoireLoading &&
-      !shared
-    ) {
-      quick((s) => {
-        s.repertoireState.startBrowsing(
-          (paramSide as Side) ?? "white",
-          "build"
-        );
-      });
-    }
-  }, [repertoireLoading]);
+  // useEffect(() => {
+  //   if (
+  //     paramSide !== activeSide &&
+  //     mode == "build" &&
+  //     !repertoireLoading &&
+  //     !shared
+  //   ) {
+  //     quick((s) => {
+  //       s.repertoireState.startBrowsing(
+  //         (paramSide as Side) ?? "white",
+  //         "build"
+  //       );
+  //     });
+  //   }
+  // }, [repertoireLoading]);
   // const router = useRouter();
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;

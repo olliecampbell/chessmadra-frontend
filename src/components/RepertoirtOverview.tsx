@@ -70,7 +70,7 @@ export const RepertoireOverview = (props: {}) => {
   };
   let buildOptions = [
     {
-      hidden: empty,
+      hidden: empty || isNil(biggestMiss),
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.go_to_biggest_gap");

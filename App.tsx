@@ -42,7 +42,6 @@ import { OauthCallback } from "app/components/OauthCallback";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-console.log("Development?", development);
 amplitudeInit(
   development
     ? "a15d3fdaf95400ebeae67dafbb5e8929"

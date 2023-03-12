@@ -58,14 +58,17 @@ export const PIECE_SETS = [
 const adjustOpacity = (hsl: string, opacity: number) => {
   return hsl.replace("hsl", "hsla").replace(")", `, ${opacity / 100})`);
 };
+
 console.log("adjusted", adjustOpacity(c.primaries[60], 40));
+const defaultHighlight = `hsla(73, 100%, 39%, 0.41)`;
+const defaultDarkHighlight = `hsla(129, 60%, 21%, 0.5)`;
 
 export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "default",
     name: "Default",
-    highlight: adjustOpacity(c.primaries[60], 40),
-    highlightDark: adjustOpacity(c.primaries[0], 40),
+    highlight: defaultHighlight,
+    highlightDark: defaultDarkHighlight,
     light: {
       color: c.hsl(grayHue, 14, 60),
     },
@@ -73,36 +76,35 @@ export const BOARD_THEMES: BoardTheme[] = [
       color: c.hsl(grayHue, 14, 40),
     },
   },
-  // top 3 lichess themes
   {
     id: "lichess-brown",
     name: "Lichess brown",
-    highlight: adjustOpacity(c.trueGrays[0], 40),
-    highlightDark: adjustOpacity(c.trueGrays[0], 40),
+    highlight: defaultHighlight,
+    highlightDark: defaultDarkHighlight,
     light: {
       color: `hsl(37, 67%, 83%)`,
     },
     dark: {
-      color: `hsl(27, 40%, 57%)`,
+      color: `hsl(27, 36%, 55%)`,
     },
   },
   {
     id: "lichess-blue",
     name: "Lichess blue",
-    highlight: adjustOpacity(c.yellows[60], 50),
-    highlightDark: adjustOpacity(c.yellows[35], 60),
+    highlight: defaultHighlight,
+    highlightDark: defaultDarkHighlight,
     light: {
-      color: `hsl(200, 20%, 92%)`,
+      color: `hsl(200, 14%, 89%)`,
     },
     dark: {
-      color: `hsl(198, 19%, 64%)`,
+      color: `hsl(199, 16%, 61%)`,
     },
   },
   {
     id: "chess.com",
     name: "chess.com",
-    highlight: adjustOpacity(c.yellows[70], 80),
-    highlightDark: adjustOpacity(c.yellows[60], 100),
+    highlight: defaultHighlight,
+    highlightDark: defaultDarkHighlight,
     light: {
       color: `hsl(60, 44%, 88%)`,
     },
@@ -113,11 +115,11 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "stripey",
     name: "Stripey",
-    highlight: c.hsl(0, 0, 0, 40),
-    highlightDark: c.hsl(0, 0, 0, 50),
+    highlight: defaultHighlight,
+    highlightDark: defaultDarkHighlight,
     light: {
       color: c.hsl(0, 0, 86),
-      styles: c.keyedProp("box-shadow")(`    inset 0px 0px 0px 0.5px black `),
+      styles: c.keyedProp("box-shadow")(`inset 0px 0px 0px 0.5px black`),
     },
     dark: {
       color: c.hsl(0, 0, 79),
@@ -141,8 +143,8 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "low-contrast",
     name: "Low Contrast",
-    highlight: adjustOpacity(c.blues[60], 30),
-    highlightDark: adjustOpacity(c.blues[80], 30),
+    highlight: defaultHighlight,
+    highlightDark: adjustOpacity(c.grays[100], 40),
     light: {
       color: c.grays[20],
     },

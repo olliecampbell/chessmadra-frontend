@@ -41,6 +41,7 @@ import {
   BrowsingState,
   getInitialBrowsingState,
   makeDefaultSidebarState,
+  modeToUI,
   SidebarOnboardingStage,
 } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
@@ -381,7 +382,7 @@ export const getInitialRepertoireState = (
         if (mode && mode !== "overview" && mode !== "home") {
           const unclickable = unclickableModes.includes(mode);
           breadcrumbs.push({
-            text: capitalize(mode),
+            text: capitalize(modeToUI(mode)),
             unclickable,
             onPress: unclickable
               ? undefined
