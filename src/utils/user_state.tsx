@@ -129,7 +129,10 @@ export const getInitialUserState = (
               identifyObj.set("rating_range", s.user.ratingRange);
               identifyObj.set("rating_system", s.user.ratingSystem);
               identifyObj.set("computed_rating", s.user.eloRange);
-              identifyObj.set("target_depth", s.user.missThreshold);
+              identifyObj.set(
+                "coverage_target",
+                `1 in ${Math.round(1 / s.user.missThreshold)} games`
+              );
               identify(identifyObj);
             });
           })
@@ -142,7 +145,9 @@ export const getInitialUserState = (
     setTargetDepth: (t: number) => {
       set(([s]) => {
         s.user.missThreshold = t * 100;
-        trackEvent(`user.update_miss_threshold`, { miss_threshold: t });
+        trackEvent(`user.update_coverage_target`, {
+          target: `1 in ${Math.round(1 / t)} games`,
+        });
         s.updateUserRatingSettings();
       });
     },

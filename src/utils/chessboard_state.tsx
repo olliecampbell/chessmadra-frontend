@@ -483,7 +483,6 @@ export const createChessState = (
         let line = pgnToLine(pgn);
         let animatePosition = null;
         line.map((san) => {
-          console.log("san", san);
           s.makeMove(san);
         });
         if (options?.animated) {
@@ -491,7 +490,6 @@ export const createChessState = (
           s._animatePosition = new Chess(fen);
           let moves = s._animatePosition.validateMoves(options.animateLine);
           s.animationQueue = moves;
-          console.log("animation queue", logProxy(s.animationQueue));
           s.stepAnimationQueue();
         }
         s.resumeNotifyingDelegates();

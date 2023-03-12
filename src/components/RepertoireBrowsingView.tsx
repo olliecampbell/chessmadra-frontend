@@ -26,6 +26,7 @@ import { isVertical } from "react-range/lib/utils";
 import { SettingsButtons } from "./Settings";
 import { useMeasure } from "@reactivers/hooks";
 import { useHovering } from "app/hooks/useHovering";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -254,6 +255,10 @@ export const ExtraChessboardActions = ({}: {}) => {
         style={s(c.row, c.alignCenter)}
         onPress={() => {
           quick((s) => {
+            trackEvent("chessboard.analyze_on_lichess", {
+              side: activeSide,
+              mode: sideBarMode,
+            });
             s.repertoireState.analyzeLineOnLichess(currentLine, activeSide);
           });
         }}
@@ -344,6 +349,7 @@ export const NavBreadcrumbs = () => {
   const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs()]);
   const responsive = useResponsive();
   let hidden = breadcrumbs.length == 1;
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   return (
     // todo: figure out why this is not working
     <FadeInOut open={!hidden} style={s(c.row, c.alignCenter, c.constrainWidth)}>
@@ -355,6 +361,10 @@ export const NavBreadcrumbs = () => {
               style={s(breadcrumb.onPress ? c.clickable : c.unclickable)}
               onPress={() => {
                 quick((s) => {
+                  trackEvent("breadcrumbs.clicked", {
+                    mode,
+                    breadcrumb: breadcrumb.text,
+                  });
                   s.repertoireState.browsingState.moveSidebarState("left");
                   breadcrumb.onPress?.();
                 });

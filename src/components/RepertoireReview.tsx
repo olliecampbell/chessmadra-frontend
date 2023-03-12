@@ -9,7 +9,11 @@ import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
 import { CMText } from "./CMText";
-import { useRepertoireState, quick } from "app/utils/app_state";
+import {
+  useRepertoireState,
+  quick,
+  useSidebarState,
+} from "app/utils/app_state";
 import { trackEvent } from "app/hooks/useTrackEvent";
 import React, { useEffect } from "react";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
@@ -33,6 +37,7 @@ export const RepertoireReview = (props: {}) => {
     s.repertoire === undefined,
     s.reviewState.showNext,
   ]);
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   const actions: SidebarAction[] = [
     {
       onPress: () => {
@@ -40,7 +45,7 @@ export const RepertoireReview = (props: {}) => {
           if (s.repertoireState.reviewState.showNext) {
             s.repertoireState.reviewState.setupNextMove();
           } else {
-            trackEvent(`reviewing.give_up`);
+            trackEvent(`${mode}.give_up`);
             s.repertoireState.reviewState.giveUp();
           }
         });
@@ -51,7 +56,7 @@ export const RepertoireReview = (props: {}) => {
     {
       onPress: () => {
         quick((s) => {
-          trackEvent(`reviewing.inspect_line`);
+          trackEvent(`${mode}.inspect_line`);
           let qm = s.repertoireState.reviewState.currentMove;
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(qm.moves[0].side, "build", {

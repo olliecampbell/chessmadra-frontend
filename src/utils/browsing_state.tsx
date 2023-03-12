@@ -66,6 +66,7 @@ import { logProxy } from "./state";
 import { parsePlans } from "./plans";
 import * as Sentry from "sentry-expo";
 import { Responsive } from "./useResponsive";
+import { Identify, identify } from "@amplitude/analytics-browser";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -293,6 +294,9 @@ export const getInitialBrowsingState = (
             duration: 1000,
             useNativeDriver: true,
           }).start();
+          const identifyObj = new Identify();
+          identifyObj.set(`completed_${side}`, progressState.completed);
+          identify(identifyObj);
         });
       }),
     checkShowTargetDepthReached: () => {
@@ -663,7 +667,6 @@ export const getInitialBrowsingState = (
     requestToAddCurrentLine: () =>
       set(([s, rs]) => {
         if (s.sidebarState.hasPendingLineToAdd) {
-          trackEvent("repertoire.add_pending_line");
           s.addPendingLine();
         }
       }),
@@ -804,7 +807,6 @@ export const getInitialBrowsingState = (
       }),
     moveSidebarState: (direction: "left" | "right") =>
       set(([s, gs]) => {
-        console.log("moveSidebarState", direction);
         s.previousSidebarState = cloneDeep(s.sidebarState);
         s.sidebarDirection = direction;
         const duration = 200;
@@ -903,7 +905,9 @@ export const getInitialBrowsingState = (
         },
 
         madeManualMove: () => {
-          trackEvent("builder.chessboard.played_move");
+          get(([s]) => {
+            trackEvent(`${s.sidebarState.mode}.chessboard.played_move`);
+          });
         },
         onBack: () => {
           set(([s]) => {});

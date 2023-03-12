@@ -183,7 +183,6 @@ export const ChessboardView = React.forwardRef(
     const [user] = useUserState((s) => [s.user]);
     const theme: BoardTheme =
       BOARD_THEMES_BY_ID[user?.theme] ?? BOARD_THEMES_BY_ID["default"];
-    console.log(theme);
     let colors = state.highContrast
       ? [c.grays[75], c.grays[65]]
       : [theme.light.color, theme.dark.color];

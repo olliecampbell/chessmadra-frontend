@@ -41,6 +41,7 @@ import { RepertoireOverview } from "./RepertoirtOverview";
 import { SettingsButtons } from "./Settings";
 import { useHovering } from "app/hooks/useHovering";
 import { RepertoireHome } from "./RepertoireHome";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const BrowserSidebar = React.memo(function BrowserSidebar() {
   let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -161,9 +162,6 @@ export const InnerSidebar = React.memo(function InnerSidebar() {
     referenceEquality: true,
   });
   const usePrevious = useContext(SidebarStateContext);
-  if (usePrevious) {
-    console.log("usePrevious", usePrevious, view);
-  }
 
   const [
     addedLineState,
@@ -385,6 +383,7 @@ const FeedbackPrompt = () => {
       style={s(c.selfEnd, c.clickable, c.px(getSidebarPadding(responsive)))}
       onPress={() => {
         quick((s) => {
+          trackEvent("give_feedback.clicked")
           s.repertoireState.browsingState.moveSidebarState("right");
           s.repertoireState.browsingState.sidebarState.submitFeedbackState.visible =
             true;

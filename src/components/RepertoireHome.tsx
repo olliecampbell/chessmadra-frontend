@@ -72,6 +72,7 @@ export const RepertoireHome = (props: {}) => {
       text: "Practice all moves due for review",
       style: "secondary",
       onPress: () => {
+        trackEvent("home.practice_all_due");
         quick((s) => {
           s.repertoireState.reviewState.startReview(null, {});
         });
@@ -101,12 +102,13 @@ export const RepertoireHome = (props: {}) => {
                 ),
                 onPress: () => {
                   quick((s) => {
+                    trackEvent("home.select_side", { side });
                     if (numLines[side] > 0) {
                       s.repertoireState.browsingState.moveSidebarState("right");
                       s.repertoireState.startBrowsing(side, "overview");
                     } else {
                       s.repertoireState.browsingState.moveSidebarState("right");
-                      s.repertoireState.startImporting(side);
+                      s.repertoireState.startBrowsing(side, "overview");
                     }
                   });
                 },
@@ -146,6 +148,7 @@ export const RepertoireHome = (props: {}) => {
             {
               onPress: () => {
                 quick((s) => {
+                  trackEvent("home.settings.coverage");
                   s.repertoireState.browsingState.replaceView(
                     <CoverageSettings />,
                     "right"
@@ -159,6 +162,7 @@ export const RepertoireHome = (props: {}) => {
             {
               onPress: () => {
                 quick((s) => {
+                  trackEvent("home.settings.rating");
                   s.repertoireState.browsingState.replaceView(
                     <RatingSettings />,
                     "right"
@@ -172,6 +176,7 @@ export const RepertoireHome = (props: {}) => {
             {
               onPress: () => {
                 quick((s) => {
+                  trackEvent("home.settings.theme");
                   s.repertoireState.browsingState.replaceView(
                     <ThemeSettings />,
                     "right"

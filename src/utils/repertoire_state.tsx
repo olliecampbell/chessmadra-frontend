@@ -832,10 +832,10 @@ export const getInitialRepertoireState = (
         if (options?.import) {
           // just don't show the chessboard
         } else if (s.getIsRepertoireEmpty(side) && mode === "build") {
-          s.browsingState.chessboardShownAnim.setValue(0);
-          s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
-            SidebarOnboardingStage.AskAboutExistingRepertoire,
-          ];
+          // s.browsingState.chessboardShownAnim.setValue(0);
+          // s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
+          //   SidebarOnboardingStage.AskAboutExistingRepertoire,
+          // ];
         } else if (mode === "browse" || mode === "build") {
           s.browsingState.chessboardShownAnim.setValue(1);
           if (s.browsingState.sidebarState.activeSide === "white") {

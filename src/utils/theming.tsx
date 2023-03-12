@@ -26,6 +26,7 @@ export const PIECE_SETS = [
   "cburnett",
   "merida",
   "alpha",
+  "monochrome",
   "fantasy",
   "anarcandy",
   "companion",

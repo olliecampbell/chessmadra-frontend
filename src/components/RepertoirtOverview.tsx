@@ -73,6 +73,7 @@ export const RepertoireOverview = (props: {}) => {
       hidden: empty,
       onPress: () => {
         quick((s) => {
+          trackEvent("side_overview.go_to_biggest_gap");
           let line = pgnToLine(biggestMiss.lines[0]);
           s.repertoireState.animateChessboardShown(responsive, true, () => {
             quick((s) => {
@@ -81,14 +82,9 @@ export const RepertoireOverview = (props: {}) => {
               });
             });
           });
-          trackEvent("overview.click_go_to_biggest_gap");
         });
       },
-      left: (
-        <CMText style={s(textStyles)}>
-          {empty ? "Start building" : "Go to biggest gap"}
-        </CMText>
-      ),
+      left: <CMText style={s(textStyles)}>{"Go to biggest gap"}</CMText>,
       right: null,
       icon: empty && "fa-sharp fa-plus",
     },
@@ -96,6 +92,7 @@ export const RepertoireOverview = (props: {}) => {
       hidden: empty,
       onPress: () => {
         quick((s) => {
+          trackEvent("side_overview.browse_add_lines");
           startBrowsing("build", empty);
         });
       },
@@ -107,6 +104,7 @@ export const RepertoireOverview = (props: {}) => {
       hidden: numMovesDueFromHere === 0,
       onPress: () => {
         quick((s) => {
+          trackEvent("side_overview.start_review");
           s.repertoireState.animateChessboardShown(responsive, true, () => {
             quick((s) => {
               s.repertoireState.reviewState.startReview(side, { side });
@@ -121,6 +119,7 @@ export const RepertoireOverview = (props: {}) => {
     {
       hidden: numMovesDueFromHere > 0,
       onPress: () => {
+        trackEvent("side_overview.practice_all_lines");
         quick((s) => {
           s.repertoireState.animateChessboardShown(responsive, true, () => {
             quick((s) => {
@@ -137,6 +136,7 @@ export const RepertoireOverview = (props: {}) => {
     {
       hidden: empty,
       onPress: () => {
+        trackEvent("side_overview.choose_line_to_practice");
         quick((s) => {
           startBrowsing("browse");
         });
@@ -153,13 +153,14 @@ export const RepertoireOverview = (props: {}) => {
     {
       hidden: !empty,
       onPress: () => {
+        trackEvent("side_overview.start_building");
         quick((s) => {
           s.repertoireState.animateChessboardShown(responsive, true, () => {
             quick((s) => {
               s.repertoireState.startBrowsing(side as Side, "build");
             });
           });
-          trackEvent("overview.start_building");
+          trackEvent("side_overview.start_building");
         });
       },
       left: <CMText style={s(textStyles)}>{"Start building"}</CMText>,
@@ -168,6 +169,7 @@ export const RepertoireOverview = (props: {}) => {
     },
     {
       onPress: () => {
+        trackEvent("side_overview.import");
         quick((s) => {
           s.repertoireState.startImporting(side);
         });
@@ -179,6 +181,7 @@ export const RepertoireOverview = (props: {}) => {
     {
       onPress: () => {
         quick((s) => {
+          trackEvent("side_overview.export");
           s.repertoireState.exportPgn(side);
         });
       },
@@ -191,6 +194,7 @@ export const RepertoireOverview = (props: {}) => {
       hidden: empty,
       onPress: () => {
         quick((s) => {
+          trackEvent("side_overview.delete_repertoire");
           s.repertoireState.browsingState.replaceView(
             <ConfirmDeleteRepertoire />,
             "right"
@@ -283,7 +287,7 @@ export const RepertoireOverview = (props: {}) => {
           <Pressable
             style={s(c.pb(2))}
             onPress={() => {
-              trackEvent("repertoire.moves_table.edit_annotations");
+              trackEvent("side_overview.go_to_biggest_gap");
               setExpanded(!expanded);
             }}
           >

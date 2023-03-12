@@ -18,6 +18,7 @@ import { cloneDeep } from "lodash-es";
 import { useHovering } from "app/hooks/useHovering";
 import { SidebarSetting } from "./SidebarSettings";
 import { clearCookies, JWT_COOKIE_KEY, TEMP_USER_UUID } from "app/utils/auth";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const SettingsButtons = () => {
   const [user, ratingDescription, authStatus] = useAppState((s) => [
@@ -38,6 +39,7 @@ export const SettingsButtons = () => {
           icon={"fa-sharp fa-bars"}
           onPress={() => {
             quick((s) => {
+              trackEvent("top_buttons.other_tools.clicked");
               s.navigationState.push("/directory");
             });
           }}
@@ -49,6 +51,7 @@ export const SettingsButtons = () => {
           icon={"fa-sharp fa-user"}
           onPress={() => {
             quick((s) => {
+              trackEvent("top_buttons.log_in.clicked");
               s.navigationState.push("/login");
             });
           }}
@@ -59,6 +62,7 @@ export const SettingsButtons = () => {
           icon={"fa-sharp fa-sign-out-alt"}
           onPress={() => {
             quick((s) => {
+              trackEvent("top_buttons.log_out.clicked");
               Cookies.remove(JWT_COOKIE_KEY);
               Cookies.remove(TEMP_USER_UUID);
               window.location.reload();

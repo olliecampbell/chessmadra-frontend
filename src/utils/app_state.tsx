@@ -125,10 +125,13 @@ export const useAppStateInternal = create<AppState>()(
         userState: getInitialUserState(set, get),
         trackEvent: (name: string, props?: Object) => {
           get((s) => {
-            console.log(`---- ${name} ----`);
-            if (props) {
-              console.log({ props });
-            }
+            console.log(
+              `%c${name} %c ${Object.entries(props ?? {})
+                .map(([k, v]) => `${k}=${v}`)
+                .join(" | ")}`,
+              "color: salmon; font-weight: bold;",
+              "color: hsl(217, 92%, 76%); font-weight: bold;"
+            );
             amplitude.track(name, props);
           });
         },

@@ -6,6 +6,7 @@ import { CMTextInput } from "./TextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import client from "app/client";
 import { useUserState } from "app/utils/app_state";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export const FeedbackView = () => {
   const responsive = useResponsive();
@@ -42,6 +43,7 @@ export const FeedbackView = () => {
           : [
               {
                 onPress: () => {
+                  trackEvent("give_feedback.sent");
                   submitFeedback();
                 },
                 style: "primary",

@@ -28,6 +28,7 @@ import { useHovering } from "app/hooks/useHovering";
 import { lineToPgn, pgnToLine, RepertoireMiss } from "app/utils/repertoire";
 import { lineToPositions } from "app/utils/chess";
 import { getNameEcoCodeIdentifier } from "app/utils/eco_codes";
+import { trackEvent } from "app/hooks/useTrackEvent";
 
 export interface SidebarAction {
   rightText?: string;
@@ -89,6 +90,7 @@ export const SidebarActions = () => {
   ]);
   let reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
+      trackEvent(`${mode}.added_line_state.practice_line`);
       quick((s) => {
         s.repertoireState.reviewState.reviewLine(currentLine, activeSide);
       });
@@ -99,6 +101,7 @@ export const SidebarActions = () => {
   let continueAddingToThisLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
+        trackEvent(`${mode}.added_line_state.contrinue_this_line`);
         s.repertoireState.browsingState.moveSidebarState("right");
         s.repertoireState.browsingState.sidebarState.addedLineState.visible =
           false;
@@ -169,6 +172,7 @@ export const SidebarActions = () => {
       buttons.push({
         onPress: () => {
           quick((s) => {
+            trackEvent(`${mode}.added_line_state.next_gap`);
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.dismissTransientSidebarState();
             let lastMatchingEpd = positionHistory[i];
@@ -211,6 +215,9 @@ export const SidebarActions = () => {
   } else if (hasPendingLineToAdd) {
     buttons.push({
       onPress: () => {
+        isPastCoverageGoal
+          ? trackEvent("browsing.save_line")
+          : trackEvent("browsing.save_line_premature");
         quick((s) => {
           s.repertoireState.browsingState.requestToAddCurrentLine();
         });
@@ -239,6 +246,7 @@ export const SidebarActions = () => {
   if (mode === "browse") {
     buttons = [];
     if (numDue > 0) {
+      trackEvent(`${mode}.practice_due`);
       buttons.push({
         onPress: () => {
           quick((s) => {
@@ -256,6 +264,7 @@ export const SidebarActions = () => {
     buttons.push({
       onPress: () => {
         quick((s) => {
+          trackEvent(`${mode}.practice_all`);
           s.repertoireState.reviewState.startReview(activeSide, {
             side: activeSide,
             cram: true,
@@ -365,7 +374,7 @@ export const SidebarFullWidthButton = ({
         c.py(py),
         c.px(getSidebarPadding(responsive)),
         action.style === "secondary" &&
-    c.borderBottom(`1px solid ${c.colors.border}`),
+          c.borderBottom(`1px solid ${c.colors.border}`)
       )}
       key={action.text}
     >
@@ -435,7 +444,7 @@ export const SidebarSectionHeader = ({
         c.alignCenter,
         c.px(getSidebarPadding(responsive)),
         c.pb(8),
-    c.borderBottom(`1px solid ${c.colors.border}`),
+        c.borderBottom(`1px solid ${c.colors.border}`)
       )}
     >
       <CMText style={s(c.fontSize(14), c.fg(c.colors.textTertiary))}>

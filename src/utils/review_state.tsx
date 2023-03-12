@@ -173,6 +173,7 @@ export const getInitialReviewState = (
         s.currentMove = s.activeQueue.shift();
         if (!s.currentMove) {
           rs.backToOverview();
+          trackEvent(`review.review_complete`);
           return;
         }
         s.reviewSide = s.currentMove.side;
@@ -361,21 +362,19 @@ export const getInitialReviewState = (
               const continuesCurrentLine =
                 nextMove?.line ==
                 lineToPgn([...pgnToLine(s.currentMove.line), move.san]);
-              console.log(
-                "continuesCurrentLine",
-                continuesCurrentLine,
-                nextMove?.line,
-                lineToPgn([...pgnToLine(s.currentMove.line), move.san])
-              );
+              // console.log(
+              //   "continuesCurrentLine",
+              //   continuesCurrentLine,
+              //   nextMove?.line,
+              //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
+              // );
               window.setTimeout(
                 () => {
                   set(([s]) => {
                     if (s.currentMove?.moves.length > 1) {
                       s.showNext = true;
                     } else {
-                      console.log("Should setup next?");
                       if (isEmpty(s.failedReviewPositionMoves)) {
-                        console.log("Yup?");
                         s.setupNextMove();
                       } else {
                         s.showNext = true;

@@ -288,7 +288,7 @@ export const RepertoireMovesTable = ({
               style={s(c.pb(2))}
               onPress={() => {
                 setExpandedLength(trimmedResponses.length + 5);
-                trackEvent("repertoire.moves_table.show_more");
+                trackEvent("browsing.moves_table.show_more");
               }}
             >
               <CMText
@@ -309,7 +309,9 @@ export const RepertoireMovesTable = ({
             <Pressable
               style={s(c.pb(2))}
               onPress={() => {
-                trackEvent("repertoire.moves_table.edit_annotations");
+                if (!editingAnnotations) {
+                  trackEvent(`${mode}.moves_table.edit_annotations`);
+                }
                 setEditingAnnotations(!editingAnnotations);
               }}
             >
@@ -333,7 +335,7 @@ export const RepertoireMovesTable = ({
             <Pressable
               style={s(c.pb(2))}
               onPress={() => {
-                trackEvent("repertoire.moves_table.edit_annotations");
+                trackEvent(`${mode}.moves_table.delete_move`);
                 quick((s) => {
                   s.repertoireState.browsingState.moveSidebarState("right");
                   s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
@@ -423,6 +425,7 @@ const Response = ({
         });
       }
     );
+  const [mode] = useSidebarState(([s]) => [s.mode]);
 
   if (editing) {
     return (
@@ -555,6 +558,7 @@ const Response = ({
       <Pressable
         onPress={() => {
           quick((s) => {
+            trackEvent(`${mode}.moves_table.select_move`);
             s.repertoireState.browsingState.moveSidebarState("right");
             // If has transposition tag, quick make transposition state visible on browser state
 
@@ -567,7 +571,6 @@ const Response = ({
               s.repertoireState.browsingState.chessboardState.makeMove(sanPlus);
             }
           });
-          trackEvent("repertoire.moves_table.select_move");
         }}
         style={s(
           c.grow,

@@ -40,7 +40,7 @@ export const getInitialNavigationState = (
     },
     push: (path: string, options) => {
       set(([s]) => {
-        console.log(`PUSH - ${path}`);
+        // console.log(`PUSH - ${path}`);
         if (!s._navigate) {
           s._pendingPush = () => {
             set(([s]) => {
