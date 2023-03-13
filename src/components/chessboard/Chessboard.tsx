@@ -33,6 +33,7 @@ import { isEmpty, isEqual, isNil } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import { quick, useAdminState, useUserState } from "app/utils/app_state";
 import { BoardTheme, BOARD_THEMES_BY_ID } from "app/utils/theming";
+import { getStatic } from "app/utils/assets";
 
 const animatedXYToPercentage = (x) => {
   return s(
@@ -119,8 +120,10 @@ const getSvgName = (piece: PieceSymbol, color: ChessColor) => {
 export const PieceView = ({ piece, pieceSet }: { piece: Piece; pieceSet }) => {
   return (
     <img
-      style={s(c.constrainWidth, c.constrainHeight)}
-      src={`/pieces/${pieceSet}/${getSvgName(piece.type, piece.color)}.svg`}
+      style={s(c.fullWidth, c.fullHeight)}
+      src={getStatic(
+        `/pieces/${pieceSet}/${getSvgName(piece.type, piece.color)}.svg`
+      )}
     />
   );
 };
