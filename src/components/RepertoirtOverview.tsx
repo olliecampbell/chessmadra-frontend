@@ -96,7 +96,7 @@ export const RepertoireOverview = (props: {}) => {
           startBrowsing("build", empty);
         });
       },
-      left: <CMText style={s(textStyles)}>Add/edit lines</CMText>,
+      left: <CMText style={s(textStyles)}>Browse/add new line</CMText>,
     },
   ];
   let reviewOptions = [

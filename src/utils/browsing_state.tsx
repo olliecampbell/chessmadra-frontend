@@ -98,7 +98,7 @@ export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
 export const modeToUI = (mode: BrowsingMode) => {
   switch (mode) {
     case "browse":
-      return "Browse";
+      return "Review";
     case "build":
       return "Build";
     case "review":

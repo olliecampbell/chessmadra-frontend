@@ -48,7 +48,8 @@ amplitudeInit(
     : "3709b7c3cbe8ef56eecec29da70f3d3c",
   undefined,
   {
-    serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
+    serverUrl: undefined,
+    // serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
   }
 );
 
