@@ -91,7 +91,7 @@ export const RepertoireHome = (props: {}) => {
           numDue={totalDue}
         />
       ),
-      style: "secondary",
+      style: "primary",
       onPress: () => {
         trackEvent("home.practice_all_due");
         quick((s) => {
