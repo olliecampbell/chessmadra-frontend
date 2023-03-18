@@ -3,7 +3,15 @@ import { Pressable, View } from "react-native";
 // import { ExchangeRates } from "app/ExchangeRate";
 import { c, s } from "app/styles";
 import { Spacer } from "app/Space";
-import { isEmpty, capitalize, dropRight, last, isNil, sortBy } from "lodash-es";
+import {
+  isEmpty,
+  capitalize,
+  dropRight,
+  last,
+  isNil,
+  sortBy,
+  upperFirst,
+} from "lodash-es";
 import { Button } from "app/components/Button";
 import { useIsMobile } from "app/utils/isMobile";
 import { intersperse } from "app/utils/intersperse";
@@ -45,6 +53,7 @@ import {
   SidebarSetting,
   ThemeSettings,
 } from "./SidebarSettings";
+import { BOARD_THEMES_BY_ID } from "app/utils/theming";
 
 export const RepertoireHome = (props: {}) => {
   const isMobile = useIsMobile();
@@ -54,6 +63,8 @@ export const RepertoireHome = (props: {}) => {
     s.user,
     s.getCurrentThreshold(),
   ]);
+  let { theme: themeId, pieceSet } = user;
+  let theme = BOARD_THEMES_BY_ID[themeId];
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
       bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -80,7 +91,7 @@ export const RepertoireHome = (props: {}) => {
           numDue={totalDue}
         />
       ),
-      style: "primary",
+      style: "secondary",
       onPress: () => {
         trackEvent("home.practice_all_due");
         quick((s) => {
@@ -196,7 +207,14 @@ export const RepertoireHome = (props: {}) => {
                 });
               },
               text: "Board appearance",
-              rightText: null,
+              rightText:
+                theme && pieceSet
+                  ? `${upperFirst(theme.name)} / ${upperFirst(pieceSet)}`
+                  : theme
+                  ? `${upperFirst(theme.name)}`
+                  : pieceSet
+                  ? `${pieceSet}`
+                  : "No theme",
               style: "secondary",
             } as SidebarAction,
           ].map((action: SidebarAction, i) => {

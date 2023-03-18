@@ -396,19 +396,20 @@ export const SidebarFullWidthButton = ({
           {action.rightText && (
             <CMText
               style={s(
-                c.fg(foregroundColor),
+                c.fg(c.colors.textTertiary),
                 action.style === "focus" ? c.weightBold : c.weightSemiBold,
-                c.fontSize(12),
-                c.pr(12)
+                c.fontSize(12)
               )}
             >
               {action.rightText}
             </CMText>
           )}
+          {/*
           <i
             className="fa-regular fa-arrow-right-long"
             style={s(c.fg(foregroundColor))}
           />
+          */}
         </View>
       )}
     </Pressable>

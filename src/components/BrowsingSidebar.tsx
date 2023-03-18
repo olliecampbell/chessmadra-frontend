@@ -335,6 +335,10 @@ const BackSection = () => {
       });
     };
   }
+  if (view) {
+    // this is terrible
+    backButtonAction = "bogus";
+  }
 
   return (
     <FadeInOut style={s(c.column)} open={!isNil(backButtonAction) || !!view}>
@@ -383,7 +387,7 @@ const FeedbackPrompt = () => {
       style={s(c.selfEnd, c.clickable, c.px(getSidebarPadding(responsive)))}
       onPress={() => {
         quick((s) => {
-          trackEvent("give_feedback.clicked")
+          trackEvent("give_feedback.clicked");
           s.repertoireState.browsingState.moveSidebarState("right");
           s.repertoireState.browsingState.sidebarState.submitFeedbackState.visible =
             true;
