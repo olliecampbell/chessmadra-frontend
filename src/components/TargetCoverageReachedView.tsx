@@ -76,7 +76,7 @@ export const TargetCoverageReachedView = () => {
     <SidebarTemplate
       header={
         showPlansState.coverageReached
-          ? "You've reached your target depth!  ✅"
+          ? "You've reached your target depth!"
           : "How to play from here"
       }
       actions={actions}

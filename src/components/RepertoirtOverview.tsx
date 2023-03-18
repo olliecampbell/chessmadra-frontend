@@ -96,7 +96,7 @@ export const RepertoireOverview = (props: {}) => {
           startBrowsing("build", empty);
         });
       },
-      left: <CMText style={s(textStyles)}>Browse/add new line</CMText>,
+      left: <CMText style={s(textStyles)}>Browse / add new line</CMText>,
     },
   ];
   let reviewOptions = [
@@ -113,7 +113,7 @@ export const RepertoireOverview = (props: {}) => {
         });
       },
       left: (
-        <CMText style={s(textStyles)}>Practice all lines due for review</CMText>
+        <CMText style={s(textStyles)}>Practice all moves due for review</CMText>
       ),
     },
     {
@@ -131,7 +131,7 @@ export const RepertoireOverview = (props: {}) => {
           });
         });
       },
-      left: <CMText style={s(textStyles)}>Practice all lines</CMText>,
+      left: <CMText style={s(textStyles)}>Practice all moves</CMText>,
     },
     {
       hidden: empty,

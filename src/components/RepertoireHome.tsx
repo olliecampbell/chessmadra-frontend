@@ -70,7 +70,17 @@ export const RepertoireHome = (props: {}) => {
   if (totalDue > 0) {
     overallActions.push({
       text: "Practice all moves due for review",
-      style: "secondary",
+      right: (
+        <ReviewText
+          date={
+            earliestDueDate["white"] < earliestDueDate["black"]
+              ? earliestDueDate["white"]
+              : earliestDueDate["black"]
+          }
+          numDue={totalDue}
+        />
+      ),
+      style: "primary",
       onPress: () => {
         trackEvent("home.practice_all_due");
         quick((s) => {
@@ -90,7 +100,7 @@ export const RepertoireHome = (props: {}) => {
             <SidebarFullWidthButton
               action={{
                 style: "wide",
-                text: capitalize(side),
+                text: `${capitalize(side)} repertoire`,
                 right: (
                   <CMText style={s(c.fg(c.colors.textSecondary))}>
                     {numLines[side] > 0
@@ -120,6 +130,7 @@ export const RepertoireHome = (props: {}) => {
       <Spacer height={46} />
       {!isEmpty(overallActions) && (
         <>
+          {/*
           <SidebarSectionHeader
             text="It's time to review the moves you've added"
             right={
@@ -133,6 +144,7 @@ export const RepertoireHome = (props: {}) => {
               />
             }
           />
+        */}
           <View style={s(c.gridColumn({ gap: 12 }))}>
             {overallActions.map((action, i) => {
               return <SidebarFullWidthButton key={i} action={action} />;

@@ -144,12 +144,7 @@ export const SidebarLayout = ({
                 <Animated.View
                   style={s(
                     c.fullWidth,
-                    vertical &&
-                      s(
-                        c.selfCenter,
-                        c.maxWidth(440),
-                        c.px(getSidebarPadding(responsive))
-                      ),
+                    vertical && s(c.selfCenter, c.maxWidth(480)),
                     chessboardFrozen && c.noPointerEvents,
                     vertical &&
                       c.opacity(

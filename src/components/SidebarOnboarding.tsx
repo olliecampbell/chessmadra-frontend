@@ -94,7 +94,7 @@ const OnboardingIntro = () => {
           text: "Get started",
         }}
       />
-      <Spacer height={12}/>
+      <Spacer height={12} />
       <SidebarFullWidthButton
         action={{
           onPress: () => {
@@ -500,20 +500,20 @@ const ChooseImportSourceOnboarding = () => {
           text: "From my Lichess games",
           style: "primary",
         },
-        {
-          onPress: () => {
-            quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                SidebarOnboardingStage.Import
-              );
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
-                SidebarOnboardingImportType.PlayerTemplates;
-            });
-          },
-          text: "Copy a popular streamer",
-          style: "primary",
-        },
+        // {
+        //   onPress: () => {
+        //     quick((s) => {
+        //       s.repertoireState.browsingState.moveSidebarState("right");
+        //       s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+        //         SidebarOnboardingStage.Import
+        //       );
+        //       s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
+        //         SidebarOnboardingImportType.PlayerTemplates;
+        //     });
+        //   },
+        //   text: "Copy a popular streamer",
+        //   style: "primary",
+        // },
         {
           onPress: () => {
             quick((s) => {

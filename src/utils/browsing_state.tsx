@@ -100,7 +100,7 @@ export const modeToUI = (mode: BrowsingMode) => {
     case "browse":
       return "Review";
     case "build":
-      return "Build";
+      return "Browse / add new";
     case "review":
       return "Review";
     case "overview":
@@ -473,7 +473,7 @@ export const getInitialBrowsingState = (
             tr.tags.push(MoveTag.Transposes);
           }
 
-          if (isTheoryHeavy(tr, currentEpd) && !ownSide) {
+          if (isTheoryHeavy(tr, currentEpd) && ownSide) {
             tr.tags.push(MoveTag.TheoryHeavy);
           }
         });
