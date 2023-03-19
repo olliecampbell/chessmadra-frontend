@@ -37,16 +37,17 @@ export const SidebarLayout = ({
   shared?: boolean;
   mode: BrowsingMode;
 }) => {
-  const [activeSide, onboardingStack] = useSidebarState(([s]) => [
+  const [activeSide, onboardingStack, showingPlans] = useSidebarState(([s]) => [
     s.activeSide,
     s.sidebarOnboardingState.stageStack,
+    s.showPlansState.visible,
   ]);
   const [repertoireLoading] = useRepertoireState((s) => [
     s.repertoire === undefined,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
   let chessboardFrozen = sideBarMode === "overview" || sideBarMode === "home";
-  if (onboardingStack.length > 0) {
+  if (onboardingStack.length > 0 || showingPlans) {
     chessboardFrozen = true;
   }
   const [chessboardShownAnim] = useBrowsingState(([s]) => [
