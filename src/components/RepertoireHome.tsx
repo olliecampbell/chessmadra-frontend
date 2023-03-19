@@ -179,7 +179,7 @@ export const RepertoireHome = (props: {}) => {
                 });
               },
               text: "Cover lines seen in",
-              rightText: `1 in ${Math.round(1 / missThreshold)} games`,
+              right: `1 in ${Math.round(1 / missThreshold)} games`,
               style: "secondary",
             } as SidebarAction,
             {
@@ -193,7 +193,7 @@ export const RepertoireHome = (props: {}) => {
                 });
               },
               text: "Your rating",
-              rightText: `${user.ratingRange} ${user.ratingSystem}`,
+              right: `${user.ratingRange} ${user.ratingSystem}`,
               style: "secondary",
             } as SidebarAction,
             {
@@ -207,7 +207,7 @@ export const RepertoireHome = (props: {}) => {
                 });
               },
               text: "Board appearance",
-              rightText:
+              right:
                 theme && pieceSet
                   ? `${upperFirst(theme.name)} / ${upperFirst(pieceSet)}`
                   : theme

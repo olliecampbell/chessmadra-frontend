@@ -281,7 +281,7 @@ const colors = {
   border: grays[25],
   textInverse: grays[5],
   textInverseSecondary: grays[20],
-  successColor: "hsl(164, 98%, 35%)",
+  successColor: "hsl(164, 98%, 55%)",
   failureColor: "hsl(340, 70%, 52%)",
   failureLight: "hsl(348, 100%, 72%)",
   buttonSecondary: grays[80],

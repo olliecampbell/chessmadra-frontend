@@ -391,9 +391,9 @@ export const SidebarFullWidthButton = ({
         )}
       </View>
       <Spacer width={16} />
-      {action.right ?? (
+      {action.right && (
         <View style={s(c.row, c.center)}>
-          {action.rightText && (
+          {typeof action.right === "string" ? (
             <CMText
               style={s(
                 c.fg(c.colors.textTertiary),
@@ -401,15 +401,13 @@ export const SidebarFullWidthButton = ({
                 c.fontSize(12)
               )}
             >
-              {action.rightText}
+              {action.right}
+            </CMText>
+          ) : (
+            <CMText style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}>
+              {action.right}
             </CMText>
           )}
-          {/*
-          <i
-            className="fa-regular fa-arrow-right-long"
-            style={s(c.fg(foregroundColor))}
-          />
-          */}
         </View>
       )}
     </Pressable>
@@ -431,7 +429,7 @@ export const SidebarSectionHeader = ({
         c.justifyBetween,
         c.alignCenter,
         c.px(getSidebarPadding(responsive)),
-        c.pb(8),
+        c.pb(12),
         c.borderBottom(`1px solid ${c.colors.border}`)
       )}
     >

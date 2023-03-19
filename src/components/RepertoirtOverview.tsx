@@ -90,6 +90,12 @@ export const RepertoireOverview = (props: {}) => {
     },
     {
       hidden: empty,
+      right: (
+        <View style={s(c.height(4), c.row)}>
+          <CoverageAndBar home={false} side={side} />
+        </View>
+      ),
+
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.browse_add_lines");
@@ -99,6 +105,17 @@ export const RepertoireOverview = (props: {}) => {
       left: <CMText style={s(textStyles)}>Browse / add new line</CMText>,
     },
   ];
+  let reviewTimer = null;
+  if (numMovesDueFromHere !== 0) {
+    // reviewStatus = "You have no moves due for review";
+    reviewTimer = (
+      <ReviewText
+        date={earliestDueDate}
+        numDue={numMovesDueFromHere}
+        overview={true}
+      />
+    );
+  }
   let reviewOptions = [
     {
       hidden: numMovesDueFromHere === 0,
@@ -112,6 +129,7 @@ export const RepertoireOverview = (props: {}) => {
           });
         });
       },
+      right: reviewTimer,
       left: (
         <CMText style={s(textStyles)}>Practice all moves due for review</CMText>
       ),
@@ -146,7 +164,12 @@ export const RepertoireOverview = (props: {}) => {
           Choose a specific opening to practice
         </CMText>
       ),
-      right: null,
+      right: (
+        <i
+          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
+          className={"fa fa-arrow-right"}
+        />
+      ),
     },
   ];
   let options = [
@@ -211,21 +234,10 @@ export const RepertoireOverview = (props: {}) => {
     if (o.hidden) return false;
     return empty || expanded;
   });
-  let reviewStatus = `You have ${pluralize(
-    numMovesDueFromHere,
-    "move"
-  )} due for review`;
-  let reviewTimer = null;
-  if (numMovesDueFromHere === 0) {
-    reviewStatus = "You have no moves due for review";
-    reviewTimer = (
-      <ReviewText
-        date={earliestDueDate}
-        numDue={numMovesDueFromHere}
-        overview={true}
-      />
-    );
-  }
+  // let reviewStatus = `You have ${pluralize(
+  //   numMovesDueFromHere,
+  //   "move"
+  // )} due for review`;
   let repertoireStatus = `Your repertoire is ${Math.round(
     progressState.percentComplete
   )}% complete`;
@@ -241,48 +253,22 @@ export const RepertoireOverview = (props: {}) => {
       <Spacer height={24} />
 
       {!empty && (
-        <>
-          <SidebarSectionHeader
-            text={repertoireStatus}
-            right={
-              !empty && (
-                <View style={s(c.height(4), c.width(80), c.row)}>
-                  <CoverageBar isInSidebar={true} side={side} />
-                </View>
-              )
-            }
-          />
-          {buildOptions
+        <View style={s(c.borderTop(`1px solid ${c.colors.border}`))}>
+          {[...buildOptions, ...reviewOptions]
             .filter((opt) => !opt.hidden)
             .map((opt) => {
               return <Option option={opt} />;
             })}
-          <Spacer height={36} />
-        </>
-      )}
-      {!empty && (
-        <>
-          <SidebarSectionHeader text={reviewStatus} right={reviewTimer} />
-          {reviewOptions
-            .filter((opt) => !opt.hidden)
-            .map((opt) => {
-              return <Option option={opt} />;
-            })}
-          <Spacer height={36} />
-        </>
+        </View>
       )}
       {options.length > 0 && (
         <>
-          <SidebarSectionHeader
-            text={empty ? "Your repertoire is empty" : "More options"}
-          />
           {options.map((opt) => {
             return <Option option={opt} />;
           })}
-          <Spacer height={12} />
         </>
       )}
-      <View style={s(c.row, c.px(getSidebarPadding(responsive)))}>
+      <View style={s(c.row, c.px(getSidebarPadding(responsive)), c.pt(8))}>
         {!empty && (
           <Pressable
             style={s(c.pb(2))}
@@ -344,12 +330,7 @@ const Option = ({
       }}
     >
       {option.left}
-      {option.right ?? (
-        <i
-          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
-          className={option.icon || "fa fa-arrow-right"}
-        ></i>
-      )}
+      {option.right}
     </Pressable>
   );
 };

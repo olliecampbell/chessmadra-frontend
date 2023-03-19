@@ -380,7 +380,6 @@ export const ChessboardView = React.forwardRef(
                 width: "100%",
                 height: "100%",
                 position: "absolute",
-                overflow: "hidden",
                 // shadowColor: "black",
                 // shadowOpacity: 0.4,
                 // shadowRadius: 10,
@@ -553,7 +552,8 @@ export const ChessboardView = React.forwardRef(
                 c.fullHeight,
                 c.zIndex(3),
                 // c.bg("black"),
-                c.border(`6px solid ${state.ringColor}`),
+                // c.shadow(0, 0, 6, 6, state.ringColor),
+                c.shadow(0, 0, 0, 4, state.ringColor),
                 // @ts-ignore
                 c.opacity(state.ringIndicatorAnim)
               )}

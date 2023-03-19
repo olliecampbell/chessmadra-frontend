@@ -55,7 +55,7 @@ export const PIECE_SETS = [
   // "spatial",
   // "tatiana",
 ];
-const adjustOpacity = (hsl: string, opacity: number) => {
+export const adjustOpacity = (hsl: string, opacity: number) => {
   return hsl.replace("hsl", "hsla").replace(")", `, ${opacity / 100})`);
 };
 

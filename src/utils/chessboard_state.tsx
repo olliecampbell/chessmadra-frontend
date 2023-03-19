@@ -14,6 +14,7 @@ import { quick } from "./app_state";
 import { logProxy } from "./state";
 import { Plan } from "app/models";
 import { MetaPlan } from "./plans";
+import { adjustOpacity } from "./theming";
 
 export interface MoveArrow {
   move: Move;
@@ -567,7 +568,7 @@ export const createChessState = (
         const animDuration = 200;
         state.ringColor = success
           ? c.colors.successColor
-          : c.colors.failureColor;
+          : c.colors.failureLight;
         Animated.sequence([
           Animated.timing(state.ringIndicatorAnim, {
             toValue: 1,
