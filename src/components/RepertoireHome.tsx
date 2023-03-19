@@ -63,7 +63,7 @@ export const RepertoireHome = (props: {}) => {
     s.user,
     s.getCurrentThreshold(),
   ]);
-  let { theme: themeId, pieceSet } = user;
+  let { theme: themeId, pieceSet } = user ?? {};
   let theme = BOARD_THEMES_BY_ID[themeId];
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
