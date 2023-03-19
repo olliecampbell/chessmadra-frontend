@@ -230,9 +230,9 @@ export const SidebarActions = () => {
   if (mode === "browse") {
     buttons = [];
     if (numDue > 0) {
-      trackEvent(`${mode}.practice_due`);
       buttons.push({
         onPress: () => {
+          trackEvent(`${mode}.practice_due`);
           quick((s) => {
             s.repertoireState.reviewState.startReview(activeSide, {
               side: activeSide,

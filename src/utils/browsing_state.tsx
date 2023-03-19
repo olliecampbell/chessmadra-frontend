@@ -319,7 +319,8 @@ export const getInitialBrowsingState = (
           s.sidebarState.isPastCoverageGoal &&
           s.sidebarState.activeSide !== s.sidebarState.currentSide &&
           s.sidebarState.hasPendingLineToAdd &&
-          !s.sidebarState.showPlansState.hasShown
+          !s.sidebarState.showPlansState.hasShown &&
+          s.sidebarState.mode === "build"
         ) {
           trackEvent(`${s.sidebarState.mode}.coverage_reached`, {
             hasPlans: !isNil(
@@ -355,17 +356,15 @@ export const getInitialBrowsingState = (
             s.sidebarState.currentEpd
           ];
         let _tableResponses: Record<string, TableResponse> = {};
-        if (mode == "build") {
-          positionReport?.suggestedMoves
-            .filter((sm) => getTotalGames(sm.results) > 0)
-            .map((sm) => {
-              _tableResponses[sm.sanPlus] = {
-                suggestedMove: cloneDeep(sm),
-                tags: [],
-                side: s.sidebarState.activeSide,
-              };
-            });
-        }
+        positionReport?.suggestedMoves
+          .filter((sm) => getTotalGames(sm.results) > 0)
+          .map((sm) => {
+            _tableResponses[sm.sanPlus] = {
+              suggestedMove: cloneDeep(sm),
+              tags: [],
+              side: s.sidebarState.activeSide,
+            };
+          });
         let existingMoves =
           rs.repertoire[s.sidebarState.activeSide].positionResponses[
             s.chessboardState.getCurrentEpd()
@@ -384,6 +383,9 @@ export const getInitialBrowsingState = (
         let ownSide = currentSide === s.sidebarState.activeSide;
         const usePeerRates = shouldUsePeerRates(positionReport);
         let tableResponses = values(_tableResponses);
+        if (mode != "build") {
+          tableResponses = tableResponses.filter((tr) => tr.repertoireMove);
+        }
         let biggestMisses =
           rs.repertoireGrades[s.sidebarState.activeSide].biggestMisses ?? {};
         tableResponses.forEach((tr) => {
