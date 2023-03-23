@@ -87,12 +87,17 @@ export interface PlayerTemplateMeta {
 export interface PositionReport {
   epd: string;
   suggestedMoves: SuggestedMove[];
+  instructiveGames: InstructiveGame[];
   pawnStructure: PawnStructure;
   stockfish?: StockfishReport;
   results: GameResultsDistribution;
   masterResults: GameResultsDistribution;
   plans: Plan[];
   side: Side;
+}
+
+export interface InstructiveGame {
+  gameLink: string;
 }
 
 export interface PawnStructure {

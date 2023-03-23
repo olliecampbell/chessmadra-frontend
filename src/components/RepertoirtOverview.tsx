@@ -60,7 +60,7 @@ export const RepertoireOverview = (props: {}) => {
       if (skipAnimation) {
         s.repertoireState.startBrowsing(side, mode);
       } else {
-        s.repertoireState.animateChessboardShown(responsive, true, () => {
+        s.repertoireState.animateChessboardShown(true, responsive, () => {
           quick((s) => {
             s.repertoireState.startBrowsing(side, mode);
           });
@@ -122,7 +122,7 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.start_review");
-          s.repertoireState.animateChessboardShown(responsive, true, () => {
+          s.repertoireState.animateChessboardShown(true, responsive, () => {
             quick((s) => {
               s.repertoireState.reviewState.startReview(side, { side });
             });
@@ -139,7 +139,7 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         trackEvent("side_overview.practice_all_lines");
         quick((s) => {
-          s.repertoireState.animateChessboardShown(responsive, true, () => {
+          s.repertoireState.animateChessboardShown(true, responsive, () => {
             quick((s) => {
               s.repertoireState.reviewState.startReview(side, {
                 side,
@@ -178,7 +178,7 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         trackEvent("side_overview.start_building");
         quick((s) => {
-          s.repertoireState.animateChessboardShown(responsive, true, () => {
+          s.repertoireState.animateChessboardShown(true, responsive, () => {
             quick((s) => {
               s.repertoireState.startBrowsing(side as Side, "build");
             });

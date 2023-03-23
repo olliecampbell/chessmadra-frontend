@@ -119,9 +119,9 @@ export interface RepertoireState {
     options?: { pgnToPlay?: string; import?: boolean }
   ) => void;
   animateChessboardShown: (
-    responsive: Responsive,
     animateIn: boolean,
-    cb: () => void
+    responsive?: Responsive,
+    cb?: () => void
   ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
@@ -360,7 +360,7 @@ export const getInitialRepertoireState = (
           text: "Home",
           onPress: () => {
             set(([s, appState]) => {
-              s.backToOverview();
+              s.startBrowsing(null, "home");
             });
           },
         };
@@ -778,6 +778,7 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
+        s.startBrowsing(null, "home");
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
@@ -798,12 +799,14 @@ export const getInitialRepertoireState = (
         ];
       }, "startImporting"),
     animateChessboardShown: (
-      responsive: Responsive,
       animateIn: boolean,
+      responsive: Responsive,
       cb: () => void
     ) =>
       set(([s, gs]) => {
-        if (responsive.bp < BP.md) {
+        if (isNil(responsive) || responsive.bp < BP.md) {
+          console.log(`animating chessboard ${animateIn ? "in" : "out"}`);
+          console.trace("blah");
           Animated.sequence([
             Animated.timing(s.browsingState.chessboardShownAnim, {
               toValue: animateIn ? 1 : 0,
@@ -812,10 +815,10 @@ export const getInitialRepertoireState = (
               easing: Easing.inOut(Easing.ease),
             }),
           ]).start((r) => {
-            cb();
+            cb?.();
           });
         } else {
-          cb();
+          cb?.();
         }
       }),
     startBrowsing: (
@@ -859,10 +862,14 @@ export const getInitialRepertoireState = (
           if (options?.pgnToPlay) {
             s.browsingState.chessboardState.playPgn(options.pgnToPlay);
           }
-        } else if (mode === "overview") {
-          s.browsingState.chessboardShownAnim.setValue(0);
+        } else if (mode === "overview" || mode === "home") {
+          s.animateChessboardShown(false);
         }
-        gs.navigationState.push(`/openings/${side}/${mode}`);
+        if (mode === "home") {
+          gs.navigationState.push(`/`);
+        } else {
+          gs.navigationState.push(`/openings/${side}/${mode}`);
+        }
       }, "startBrowsing"),
     onRepertoireUpdate: () =>
       set(([s]) => {

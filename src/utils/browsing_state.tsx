@@ -588,7 +588,7 @@ export const getInitialBrowsingState = (
       }),
     finishSidebarOnboarding: (responsive: Responsive) =>
       set(([s, rs]) => {
-        rs.animateChessboardShown(responsive, true, () => {
+        rs.animateChessboardShown(true, responsive, () => {
           quick((s) => {
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =

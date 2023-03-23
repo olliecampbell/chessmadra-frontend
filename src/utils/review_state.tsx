@@ -140,7 +140,7 @@ export const getInitialReviewState = (
         console.log(s.activeQueue);
         gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
-        rs.browsingState.chessboardShownAnim.setValue(1);
+        rs.animateChessboardShown(true);
         // s.chessboardState.showMoveLog = true;
         s.setupNextMove();
       }),

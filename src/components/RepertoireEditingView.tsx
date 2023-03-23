@@ -9,6 +9,7 @@ import { CMText } from "./CMText";
 import { StockfishReport } from "app/models";
 import {
   useDebugState,
+  useUserState,
   useBrowsingState,
   useSidebarState,
 } from "app/utils/app_state";
@@ -17,6 +18,7 @@ import { RepertoireMovesTable } from "./RepertoireMovesTable";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { shouldUsePeerRates } from "app/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
+import { InstructiveGamesView } from "./InstructiveGamesView";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 let desktopHeaderStyles = s(
@@ -29,6 +31,7 @@ let desktopHeaderStyles = s(
 export const Responses = React.memo(function Responses() {
   const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  const user = useUserState((s) => s.user);
   const positionReport = useBrowsingState(
     // TODO: we should have the active side on sidebar too
     ([s, rs]) => rs.positionReports[activeSide]?.[currentEpd],
@@ -148,6 +151,7 @@ export const Responses = React.memo(function Responses() {
           </>
         )}
       </>
+      {user?.isAdmin && <InstructiveGamesView />}
       {(() => {
         if (!positionReport) {
           return (

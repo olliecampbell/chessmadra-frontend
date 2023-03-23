@@ -59,6 +59,7 @@ import { getCoverageProgress } from "app/utils/browsing_state";
 import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { BP, useResponsive } from "app/utils/useResponsive";
 import { TableMeta, useSections } from "app/utils/useSections";
+import { InstructiveGamesView } from "./InstructiveGamesView";
 
 const DELETE_WIDTH = 30;
 
