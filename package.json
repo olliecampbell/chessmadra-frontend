@@ -1,0 +1,42 @@
+{
+  "name": "frontend-solid",
+  "scripts": {
+    "dev": "solid-start dev",
+    "build": "solid-start build",
+    "start": "solid-start start"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "esbuild": "^0.14.54",
+    "postcss": "^8.4.21",
+    "solid-devtools": "^0.26.0",
+    "solid-start-node": "^0.2.19",
+    "typescript": "^4.9.4",
+    "vite": "^4.1.4"
+  },
+  "dependencies": {
+    "@amplitude/analytics-browser": "^1.9.1",
+    "@lubert/chess.ts": "^0.16.1",
+    "@sentry/browser": "^7.45.0",
+    "@sentry/tracing": "^7.45.0",
+    "@sentry/utils": "^7.45.0",
+    "@solidjs/meta": "^0.28.2",
+    "@solidjs/router": "^0.8.1",
+    "@types/lodash-es": "^4.17.6",
+    "axios": "^0.27.2",
+    "axios-case-converter": "^0.9.0",
+    "camel-case": "^4.1.2",
+    "immer": "^9.0.21",
+    "js-cookie": "^3.0.1",
+    "lodash-es": "^4.17.21",
+    "solid-js": "^1.6.11",
+    "solid-start": "^0.2.23",
+    "solid-zustand": "^1.5.0",
+    "undici": "^5.15.1",
+    "zustand": "^4.3.6"
+  },
+  "engines": {
+    "node": ">=16.8"
+  }
+}
