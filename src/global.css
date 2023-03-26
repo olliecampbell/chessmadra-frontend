@@ -21,6 +21,23 @@ a:link {
 body {
   background-color: hsl(240, 12%, 7%);
 }
+div {
+  display: flex;
+  flex-direction: column;
+}
+script {
+  display: none;
+}
+p,
+a,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span {
+}
 .progress-popover:after {
   content: "";
   position: absolute;

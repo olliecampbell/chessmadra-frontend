@@ -89,8 +89,8 @@ const fullWidth = keyedProp("width")("100%");
 
 const height = keyedPixelProp("height");
 const width = keyedPixelProp("width");
-const minWidth = keyedPixelProp("minWidth");
-const minHeight = keyedPixelProp("minHeight");
+const minWidth = keyedPixelProp("min-width");
+const minHeight = keyedPixelProp("min-height");
 const size = (x: string | number) => {
   return s(height(x), width(x));
 };
@@ -133,7 +133,7 @@ const borderLeft = keyedProp("border-left");
 
 const center = s(alignCenter, justifyCenter, displayFlex);
 
-const br = keyedPixelProp("borderRadius");
+const br = keyedPixelProp("border-radius");
 const rounded = br(2);
 const brtl = keyedPixelProp("border-top-left-radius");
 const brtr = keyedPixelProp("border-top-right-radius");
@@ -215,8 +215,12 @@ export const grayHue = 200;
 function easeInOutSine(x: number): number {
   return -(Math.cos(Math.PI * x) - 1) / 2;
 }
-const genGrays = (hue, minSat, maxSat) => {
-  const grays = {};
+const genGrays = (
+  hue: number,
+  minSat: number,
+  maxSat: number
+): Record<number, string> => {
+  const grays: Record<number, string> = {};
   for (let i = 0; i <= 100; i = i + 1) {
     let saturation = minSat + ((maxSat - minSat) * i) / 100;
     grays[i] = `hsl(${hue}, ${saturation}%, ${i}%)`;
@@ -234,8 +238,8 @@ const genShades = (
   hue: number,
   _minSaturation?: number,
   _maxSaturation?: number
-) => {
-  const shades = {};
+): Record<number, string> => {
+  const shades: Record<number, string> = {};
   let minSaturation = _minSaturation ?? 20;
   let maxSaturation = _maxSaturation ?? 80;
   let minLightness = 4;
@@ -652,7 +656,7 @@ export const c = {
   fontFamily,
   block: display("-block"),
   inlineBlock: display("inline-block"),
-  whitespace: keyedProp("whiteSpace"),
+  whitespace: keyedProp("white-space"),
   shadow,
   cardShadow,
   lightCardShadow,

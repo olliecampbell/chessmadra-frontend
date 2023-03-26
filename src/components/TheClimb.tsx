@@ -67,14 +67,14 @@ export const TheClimb = () => {
           </>
         }
       >
-        <View style={s()}>
+        <div style={s()}>
           {state.isPlayingClimb ? (
-            <View style={s(c.column, c.alignStretch)}>{visualizationUi}</View>
+            <div style={s(c.column, c.alignStretch)}>{visualizationUi}</div>
           ) : (
-            <View style={s(c.column)}>
-              <View style={c.selfCenter}>
+            <div style={s(c.column)}>
+              <div style={c.selfCenter}>
                 <Score score={state.highScore.value} text={"High Score"} />
-              </View>
+              </div>
               <Spacer height={isMobile ? 12 : 24} />
               <CMText style={s(c.fg(c.colors.textSecondary))}>
                 The <b>number of hidden moves</b> and <b>puzzle difficulty</b>{" "}
@@ -92,9 +92,9 @@ export const TheClimb = () => {
               >
                 Start
               </Button>
-            </View>
+            </div>
           )}
-        </View>
+        </div>
       </TrainerLayout>
     </PageContainer>
   );

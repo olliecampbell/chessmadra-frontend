@@ -115,13 +115,13 @@ export const GamesSearch = () => {
   let inner = null;
   if (state.loading) {
     inner = (
-      <View style={s(c.center, c.minHeight("80vh"))}>
+      <div style={s(c.center, c.minHeight("80vh"))}>
         <BeatLoader color={c.grays[100]} size={20} />;
-      </View>
+      </div>
     );
   } else if (!isEmpty(state.returnedGames)) {
     inner = (
-      <View style={s(c.oldContainerStyles(isMobile), c.alignStart)}>
+      <div style={s(c.oldContainerStyles(isMobile), c.alignStart)}>
         <Button
           style={s(c.buttons.primary)}
           onPress={() => {
@@ -147,7 +147,7 @@ export const GamesSearch = () => {
               link += "/black";
             }
             return (
-              <View style={s(c.column)}>
+              <div style={s(c.column)}>
                 <a href={link} target="_blank">
                   <LichessGameCell game={game} />
                 </a>
@@ -165,7 +165,7 @@ export const GamesSearch = () => {
                     </Button>
                   </>
                 )}
-              </View>
+              </div>
             );
           }),
           (i) => {
@@ -176,15 +176,15 @@ export const GamesSearch = () => {
             return <Spacer height={12} key={i} />;
           },
           (children) => {
-            return <View style={s(c.row)}>{children}</View>;
+            return <div style={s(c.row)}>{children}</div>;
           }
         )}
-      </View>
+      </div>
     );
   } else {
     inner = (
       <>
-        <View
+        <div
           style={s(
             c.bg(c.grays[15]),
             c.br(4),
@@ -218,7 +218,7 @@ export const GamesSearch = () => {
             Some example searches:
             <br />
             <Spacer height={12} />
-            <View style={s(c.column)}>
+            <div style={s(c.column)}>
               <ExampleGame
                 {...{
                   name: "Games where White won against the Falkbeer Countergambit",
@@ -247,11 +247,11 @@ export const GamesSearch = () => {
                 }}
               />
               <Spacer height={8} />
-            </View>
+            </div>
           </CMText>
-        </View>
+        </div>
         <Spacer height={24} />
-        <View
+        <div
           style={s(
             c.bg(c.grays[15]),
             c.br(4),
@@ -273,7 +273,7 @@ export const GamesSearch = () => {
               opening.
             </CMText>
             <Spacer height={12} />
-            <View
+            <div
               style={s(
                 c.maxWidth(400),
                 c.column,
@@ -311,15 +311,15 @@ export const GamesSearch = () => {
                   </Button>
                 </>
               )}
-            </View>
+            </div>
           </>
           <Spacer height={24} />
           {chunked(
             formSections.map((section, i) => {
               return (
-                <View style={s(c.column, c.flexible, c.alignStart)}>
+                <div style={s(c.column, c.flexible, c.alignStart)}>
                   {section}
-                </View>
+                </div>
               );
             }),
             (i) => {
@@ -330,7 +330,7 @@ export const GamesSearch = () => {
               return <Spacer height={48} key={i} />;
             },
             (children) => {
-              return <View style={s(c.row, c.fullWidth)}>{children}</View>;
+              return <div style={s(c.row, c.fullWidth)}>{children}</div>;
             }
           )}
           <Spacer height={48} />
@@ -369,7 +369,7 @@ export const GamesSearch = () => {
               Find Games
             </CMText>
           </Button>
-        </View>
+        </div>
       </>
     );
   }
@@ -408,7 +408,7 @@ const ExampleGame = ({
   state: GameSearchState;
 }) => {
   return (
-    <View style={s()}>
+    <div style={s()}>
       <Button
         onPress={() => {
           state.quick((s) => {
@@ -438,6 +438,6 @@ const ExampleGame = ({
           {name}
         </CMText>
       </Button>
-    </View>
+    </div>
   );
 };

@@ -354,7 +354,7 @@ export const getInitialRepertoireState = (
         }, "initializeRepertoire");
       }),
     getBreadCrumbs: () =>
-      set(([s]) => {
+      get(([s]) => {
         const homeBreadcrumb = {
           text: "Home",
           onPress: () => {
@@ -829,8 +829,6 @@ export const getInitialRepertoireState = (
 
         if (currentMode !== "home" && mode === "overview") {
           s.browsingState.chessboardState.resetPosition();
-        } else if (mode && currentMode === "overview") {
-          s.browsingState.moveSidebarState("right");
         }
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
         s.browsingState.sidebarState.mode = mode;
@@ -846,7 +844,7 @@ export const getInitialRepertoireState = (
           //   SidebarOnboardingStage.AskAboutExistingRepertoire,
           // ];
         } else if (mode === "browse" || mode === "build") {
-          s.browsingState.chessboardShownAnim.setValue(1);
+          s.browsingState.chessboardShownAnim = 1;
           if (s.browsingState.sidebarState.activeSide === "white") {
             let startResponses =
               s.repertoire?.[s.browsingState.sidebarState.activeSide]
@@ -1067,22 +1065,7 @@ export const getInitialRepertoireState = (
             return;
           }
           seenEpds.add(epd);
-          console.log("getting moves");
-          if (side == null) {
-            debugger;
-          }
-          console.log("side", side, logProxy(s.repertoire?.[side]));
-          console.log(
-            "repertoire",
-            s.repertoire,
-            logProxy(s.repertoire),
-            side,
-            "---",
-            s.repertoire[side],
-            s.repertoire[side].positionResponses
-          );
           let moves = s.repertoire[side].positionResponses[epd] ?? [];
-          console.log("moves");
           if (isEmpty(moves)) {
             return;
           }

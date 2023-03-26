@@ -53,7 +53,7 @@ export const CoverageGoal = ({
         Goal
       </CMText>
       <Spacer height={0} />
-      <View style={s(c.row, c.alignCenter)}>
+      <div style={s(c.row, c.alignCenter)}>
         <CMText
           style={s(c.weightBold, c.fg(textColor), c.weightBold, c.fontSize(12))}
         >
@@ -64,7 +64,7 @@ export const CoverageGoal = ({
           className="fa fa-caret-down"
           style={s(c.fontSize(14), c.fg(textColor), c.opacity(60))}
         />
-      </View>
+      </div>
       <Animated.View
         style={s(
           c.absolute,
@@ -100,7 +100,7 @@ export const CoverageGoal = ({
                   onSelect(r);
                 }}
               >
-                <View
+                <div
                   style={s(
                     c.height(34),
                     c.px(8),
@@ -134,7 +134,7 @@ export const CoverageGoal = ({
                       Recommended
                     </CMText>
                   )}
-                </View>
+                </div>
               </Pressable>
             );
           }}

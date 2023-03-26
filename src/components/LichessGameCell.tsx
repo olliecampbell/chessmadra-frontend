@@ -22,7 +22,7 @@ export const LichessGameCell = ({
   showFirstMoves?: boolean;
 }) => {
   return (
-    <View
+    <div
       style={s(
         c.pt(16),
         c.bg(c.grays[80]),
@@ -34,7 +34,7 @@ export const LichessGameCell = ({
       )}
     >
       {!hideLink && (
-        <View style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
+        <div style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
           <CMText style={s()}>
             <i
               style={s(
@@ -45,17 +45,17 @@ export const LichessGameCell = ({
               className="fa-sharp fa-arrow-up-right-from-square"
             ></i>
           </CMText>
-        </View>
+        </div>
       )}
       <Spacer height={0} />
-      <View style={s(c.column, c.px(16))}>
+      <div style={s(c.column, c.px(16))}>
         {intersperse(
           ["white", "black"].map((color, i) => {
             // console.log(game);
             return (
-              <View style={s(c.column)}>
-                <View style={s(c.row, c.alignCenter)}>
-                  <View style={s(c.round, c.size(12), c.bg(color))}></View>
+              <div style={s(c.column)}>
+                <div style={s(c.row, c.alignCenter)}>
+                  <div style={s(c.round, c.size(12), c.bg(color))}></div>
 
                   <Spacer width={4} />
                   <CMText
@@ -67,7 +67,7 @@ export const LichessGameCell = ({
                   <CMText style={s(c.fg(c.grays[40]), c.weightBold)}>
                     ({game[`${color}Elo`]})
                   </CMText>
-                </View>
+                </div>
                 {false && (
                   <>
                     <Spacer height={4} />
@@ -80,25 +80,25 @@ export const LichessGameCell = ({
                     </CMText>
                   </>
                 )}
-              </View>
+              </div>
             );
           }),
           (i) => {
             return <Spacer height={12} key={i} />;
           }
         )}
-      </View>
+      </div>
       <Spacer height={24} />
       {showFirstMoves && (
-        <View style={s(c.px(16))}>
+        <div style={s(c.px(16))}>
           <CMText style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}>
             {lineToPgn(take(game.moves, 8))}
           </CMText>
           <Spacer height={4} />
-        </View>
+        </div>
       )}
 
-      <View style={s(c.row, c.justifyBetween, c.alignEnd, c.px(16))}>
+      <div style={s(c.row, c.justifyBetween, c.alignEnd, c.px(16))}>
         <CMText
           style={s(c.weightBold, c.fontSize(18), c.fg(c.colors.textInverse))}
         >
@@ -119,19 +119,19 @@ export const LichessGameCell = ({
             moves
           </CMText>
         </CMText>
-      </View>
+      </div>
       {gameStatus?.everReviewed ? (
-        <View
+        <div
           style={s(
             c.bg(!gameStatus.needsReview ? c.primaries[50] : c.yellows[60]),
             c.mt(12),
             c.px(12),
             c.py(8)
           )}
-        ></View>
+        ></div>
       ) : (
         <Spacer height={12} />
       )}
-    </View>
+    </div>
   );
 };

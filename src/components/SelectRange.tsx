@@ -86,7 +86,7 @@ export const SelectRange: React.FC<{
                 c.br(2)
               )}
             >
-              <View style={s(c.absolute, c.top(-20))}>
+              <div style={s(c.absolute, c.top(-20))}>
                 <CMText
                   style={s(
                     c.fg(c.colors.textSecondary),
@@ -96,7 +96,7 @@ export const SelectRange: React.FC<{
                 >
                   {formatted}
                 </CMText>
-              </View>
+              </div>
             </div>
           );
         }}

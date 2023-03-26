@@ -18,6 +18,7 @@ import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
 import { createEffect } from "solid-js";
 import { View } from "./View";
+import { destructure } from "@solid-primitives/destructure";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 let desktopHeaderStyles = s(
@@ -28,104 +29,111 @@ let desktopHeaderStyles = s(
 );
 
 export const Responses = function Responses() {
-  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd], {});
+  const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const user = useUserState((s) => s.user);
-  const positionReport = useBrowsingState(
+  const [user] = useUserState((s) => [s.user]);
+  const [positionReport] = useBrowsingState(
     // TODO: we should have the active side on sidebar too
-    ([s, rs]) => rs.positionReports[activeSide]?.[currentEpd],
-    { referenceEquality: true }
+    ([s, rs]) => [rs.positionReports[activeSide()]?.[currentEpd()]]
   );
-  let [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
-    useSidebarState(
-      ([s]) => [
-        s.currentSide,
-        s.moveLog,
-        s.hasPendingLineToAdd,
-        s.isPastCoverageGoal,
-      ],
-      {}
-    );
-  let [tableResponses] = useSidebarState(([s]) => [s.tableResponses], {});
-
-  let usePeerRates = shouldUsePeerRates(positionReport);
-  const [mode] = useSidebarState(([s]) => [s.mode]);
-  let yourMoves = filter(tableResponses, (tr) => {
-    return !isNil(tr.repertoireMove) && activeSide === currentSide;
-  });
-  let otherMoves = filter(tableResponses, (tr) => {
-    return isNil(tr.repertoireMove) && activeSide === currentSide;
-  });
-  let prepareFor = filter(tableResponses, (tr) => {
-    return activeSide !== currentSide;
-  });
-  let prepareForHeader: any = "You need to prepare for these moves";
   createEffect(() => {
-    const beforeUnloadListener = (event) => {
-      if (hasPendingLine) {
-        event.preventDefault();
-        let prompt = "You have an unsaved line, are you sure you want to exit?";
-        event.returnValue = prompt;
-        return prompt;
-      }
-    };
-    addEventListener("beforeunload", beforeUnloadListener, { capture: true });
-    return () => {
-      removeEventListener("beforeunload", beforeUnloadListener, {
-        capture: true,
-      });
-    };
-  }, [hasPendingLine]);
+    console.log("pos report", positionReport());
+  });
+  let [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
+    useSidebarState(([s]) => [
+      s.currentSide,
+      s.moveLog,
+      s.hasPendingLineToAdd,
+      s.isPastCoverageGoal,
+    ]);
+  let [tableResponses] = useSidebarState(([s]) => [s.tableResponses]);
+
+  let usePeerRates = () => shouldUsePeerRates(positionReport());
+  const [mode] = useSidebarState(([s]) => [s.mode]);
+  let yourMoves = () =>
+    filter(tableResponses(), (tr) => {
+      return !isNil(tr.repertoireMove) && activeSide === currentSide;
+    });
+  let otherMoves = () =>
+    filter(tableResponses(), (tr) => {
+      return isNil(tr.repertoireMove) && activeSide === currentSide;
+    });
+  let prepareFor = () =>
+    filter(tableResponses(), (tr) => {
+      return activeSide !== currentSide;
+    });
+    // TODO: solid
+  // createEffect(() => {
+  //   const beforeUnloadListener = (event) => {
+  //     if (hasPendingLine()) {
+  //       event.preventDefault();
+  //       let prompt = "You have an unsaved line, are you sure you want to exit?";
+  //       event.returnValue = prompt;
+  //       return prompt;
+  //     }
+  //   };
+  //   addEventListener("beforeunload", beforeUnloadListener, { capture: true });
+  //   return () => {
+  //     removeEventListener("beforeunload", beforeUnloadListener, {
+  //       capture: true,
+  //     });
+  //   };
+  // }, [hasPendingLine]);
   let body = null;
-  if (isPastCoverageGoal) {
-    prepareForHeader = "Most common responses";
-  }
-  let reviewHeader = null;
-  if (mode == "browse") {
-    reviewHeader = "What do you want to review?";
-  }
+  const { prepareForHeader, reviewHeader } = destructure(() => {
+    let reviewHeader = null;
+    let prepareForHeader: any = "You need to prepare for these moves";
+    if (isPastCoverageGoal()) {
+      prepareForHeader = "Most common responses";
+    }
+    if (mode() == "browse") {
+      reviewHeader = "What do you want to review?";
+    }
+    return { prepareForHeader, reviewHeader };
+  });
   return (
-    <View style={s(c.column, c.constrainWidth)}>
-      <>
-        {positionReport && (
-          <>
-            {!isEmpty(yourMoves) && (
-              <View style={s()} key={`your-moves-play-${currentEpd}`}>
-                <RepertoireMovesTable
-                  {...{
-                    header:
-                      reviewHeader ??
-                      getResponsesHeader(currentLine, !isEmpty(yourMoves)),
-                    usePeerRates,
-                    activeSide,
-                    side: currentSide,
-                    responses: yourMoves,
-                  }}
-                />
-              </View>
-            )}
-            {isEmpty(yourMoves) && !isEmpty(otherMoves) && (
-              <View style={s()} key={`choose-next-move-${currentEpd}`}>
-                <RepertoireMovesTable
-                  {...{
-                    header:
-                      reviewHeader ??
-                      getResponsesHeader(currentLine, !isEmpty(yourMoves)),
-                    usePeerRates,
-                    activeSide,
-                    side: currentSide,
-                    responses: otherMoves,
-                  }}
-                />
-              </View>
-            )}
-            {!isEmpty(yourMoves) && !isEmpty(otherMoves) && mode == "build" && (
-              <View style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
+    <div style={s(c.column, c.constrainWidth)}>
+      {positionReport() && (
+        <>
+          {!isEmpty(yourMoves()) && (
+            <div style={s()} key={`your-moves-play-${currentEpd}`}>
+              <RepertoireMovesTable
+                {...{
+                  header: () =>
+                    reviewHeader ??
+                    getResponsesHeader(currentLine(), !isEmpty(yourMoves())),
+                  usePeerRates,
+                  activeSide,
+                  side: currentSide,
+                  responses: yourMoves,
+                }}
+              />
+            </div>
+          )}
+          {isEmpty(yourMoves()) && !isEmpty(otherMoves()) && (
+            <div style={s()} key={`choose-next-move-${currentEpd}`}>
+              <RepertoireMovesTable
+                {...{
+                  header: () =>
+                    reviewHeader ??
+                    getResponsesHeader(currentLine(), !isEmpty(yourMoves())),
+                  usePeerRates,
+                  activeSide,
+                  side: currentSide,
+                  responses: otherMoves,
+                }}
+              />
+            </div>
+          )}
+          {!isEmpty(yourMoves()) &&
+            !isEmpty(otherMoves()) &&
+            mode() == "build" && (
+              <div style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
                 <CollapsibleSidebarSection header="Add an alternative move">
                   <Spacer height={12} />
                   <RepertoireMovesTable
                     {...{
-                      header: null,
+                      header: () => null,
                       usePeerRates,
                       activeSide,
                       side: currentSide,
@@ -133,66 +141,64 @@ export const Responses = function Responses() {
                     }}
                   />
                 </CollapsibleSidebarSection>
-              </View>
+              </div>
             )}
-            {!isEmpty(prepareFor) && (
-              <RepertoireMovesTable
-                {...{
-                  header: reviewHeader ?? prepareForHeader,
-                  body: body,
-                  activeSide,
-                  side: currentSide,
-                  responses: prepareFor,
-                  myMoves: false,
-                }}
-              />
-            )}
-          </>
-        )}
-      </>
+          {!isEmpty(prepareFor()) && (
+            <RepertoireMovesTable
+              {...{
+                header: reviewHeader ?? prepareForHeader,
+                usePeerRates,
+                body: body,
+                activeSide,
+                side: currentSide,
+                responses: prepareFor,
+                myMoves: false,
+              }}
+            />
+          )}
+        </>
+      )}
       {user?.isAdmin && <InstructiveGamesView />}
       {(() => {
-        if (!positionReport) {
+        if (!positionReport()) {
           return (
-            <View style={s(c.center, c.column, c.py(48))}>
-              <BeatLoader color={c.grays[100]} size={14} />
-            </View>
+            <div style={s(c.center, c.column, c.py(48))}>
+              <div>todo: solid</div>
+            </div>
           );
         } else if (
-          isEmpty(positionReport.suggestedMoves) &&
+          isEmpty(positionReport().suggestedMoves) &&
           isEmpty(yourMoves)
         ) {
           return (
-            <>
-              <View
-                style={s(
-                  c.column,
-                  c.alignCenter,
-                  c.selfCenter,
-                  c.px(12),
-                  c.maxWidth(240),
-                  c.py(48)
-                )}
-              >
-                <CMText>
-                  <i
-                    className="fa-light fa-empty-set"
-                    style={s(c.fg(c.grays[50]), c.fontSize(24))}
-                  />
-                </CMText>
-                <Spacer height={18} />
-                <CMText style={s(c.fg(c.grays[75]))}>
-                  No moves available for this position. You can still add a move
-                  by playing it on the board.
-                </CMText>
-              </View>
-            </>
+            <div
+              style={s(
+                c.column,
+                c.alignCenter,
+                c.selfCenter,
+                c.px(12),
+                c.maxWidth(240),
+                c.py(48)
+              )}
+            >
+              <CMText>
+                <i
+                  class="fa-light fa-empty-set"
+                  style={s(c.fg(c.grays[50]), c.fontSize(24))}
+                />
+              </CMText>
+              <Spacer height={18} />
+              <CMText style={s(c.fg(c.grays[75]))}>
+                No moves available for this position. You can still add a move
+                by playing it on the board.
+              </CMText>
+            </div>
           );
         } else {
           return <></>;
         }
       })()}
-    </View>
+    </div>
   );
 };
 

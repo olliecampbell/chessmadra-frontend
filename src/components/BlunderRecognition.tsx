@@ -21,7 +21,7 @@ import { trackModule } from "~/utils/user_state";
 
 export const Score = ({ score, text }) => {
   return (
-    <View style={s(c.column, c.alignCenter)}>
+    <div style={s(c.column, c.alignCenter)}>
       <CMText
         style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}
       >
@@ -31,7 +31,7 @@ export const Score = ({ score, text }) => {
       <CMText style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
         {score}
       </CMText>
-    </View>
+    </div>
   );
 };
 
@@ -61,9 +61,9 @@ export const BlunderRecognition = () => {
           />
         }
       >
-        <View style={s()}>
+        <div style={s()}>
           {state.isPlaying && !state.donePlaying && (
-            <View style={s(c.column, c.alignCenter)}>
+            <div style={s(c.column, c.alignCenter)}>
               <CMText style={s(c.fg(c.grays[70]), c.fontSize(16))}>
                 <CMText
                   style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(16))}
@@ -80,7 +80,7 @@ export const BlunderRecognition = () => {
                 </CMText>
               </CMText>
               <Spacer height={24} />
-              <View style={s(c.row, c.alignCenter)}>
+              <div style={s(c.row, c.alignCenter)}>
                 <Button
                   onPress={() => {
                     trackEvent("blunder_recognition.guess");
@@ -100,12 +100,12 @@ export const BlunderRecognition = () => {
                 >
                   Blunder
                 </Button>
-              </View>
-            </View>
+              </div>
+            </div>
           )}
           {!state.isPlaying && !state.donePlaying && (
-            <View style={s(c.column)}>
-              <View
+            <div style={s(c.column)}>
+              <div
                 style={s(
                   c.bg(c.grays[20]),
                   c.column,
@@ -115,7 +115,7 @@ export const BlunderRecognition = () => {
                   c.rounded
                 )}
               >
-                <View style={s(c.row, c.fullWidth)}>
+                <div style={s(c.row, c.fullWidth)}>
                   {intersperse(
                     [
                       BlunderRecognitionDifficulty.Easy,
@@ -138,11 +138,11 @@ export const BlunderRecognition = () => {
                             c.flexible
                           )}
                         >
-                          <View style={s(c.column, c.alignCenter)}>
+                          <div style={s(c.column, c.alignCenter)}>
                             <CMText style={s(c.buttons.basic.textStyles)}>
                               {x}
                             </CMText>
-                          </View>
+                          </div>
                         </Button>
                       );
                     }),
@@ -150,7 +150,7 @@ export const BlunderRecognition = () => {
                       return <Spacer key={i} width={8} />;
                     }
                   )}
-                </View>
+                </div>
                 <Spacer height={12} />
                 <CMText
                   style={s(
@@ -195,11 +195,11 @@ export const BlunderRecognition = () => {
                 >
                   Start
                 </Button>
-              </View>
-            </View>
+              </div>
+            </div>
           )}
           {state.donePlaying && (
-            <View style={s(c.column, c.alignCenter)}>
+            <div style={s(c.column, c.alignCenter)}>
               <CMText
                 style={s(
                   c.fg(
@@ -219,7 +219,7 @@ export const BlunderRecognition = () => {
                 {state.isBlunder ? "is a blunder" : "is the best move"}
               </CMText>
               <Spacer height={24} />
-              <View style={s(c.row)}>
+              <div style={s(c.row)}>
                 <Button
                   onPress={() => {
                     window.open(
@@ -241,10 +241,10 @@ export const BlunderRecognition = () => {
                 >
                   Next
                 </Button>
-              </View>
-            </View>
+              </div>
+            </div>
           )}
-        </View>
+        </div>
       </TrainerLayout>
     </PageContainer>
   );

@@ -14,6 +14,7 @@ import { logProxy } from "./state";
 import { Plan } from "~/utils/models";
 import { MetaPlan } from "./plans";
 import { adjustOpacity } from "./theming";
+import { createSignal } from "solid-js";
 
 export interface MoveArrow {
   move: Move;
@@ -25,10 +26,34 @@ interface PlayPgnOptions {
   fromEpd?: string;
 }
 
+function createChessProxy(chess: Chess): Chess {
+  const [track, trigger] = createSignal(undefined, { equals: false });
+  const handler: ProxyHandler<Chess> = {
+    get(target, prop, receiver) {
+      track();
+      if (typeof target[prop] === "function" && prop !== "get") {
+        let fen = chess.fen();
+        return (...args: any[]) => {
+          const result = target[prop](...args);
+          let newFen = chess.fen();
+          if (fen !== newFen) {
+            trigger();
+          }
+          return result;
+        };
+      }
+      let x = Reflect.get(target, prop, receiver);
+      return x;
+    },
+  };
+
+  return new Proxy(chess, handler);
+}
+
 export interface ChessboardState extends QuickUpdate<ChessboardState> {
   focusedPlans?: string[];
   maxPlanOccurence?: number;
-  _animatePosition: Chess;
+  _animatePosition: Chess | null;
   plans: MetaPlan[];
   showPlans?: boolean;
   playPgn: (pgn: string, options?: PlayPgnOptions) => void;
@@ -50,7 +75,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
     duration?: number,
     unhighlight?: boolean
   ) => void;
-  ringColor?: string;
+  ringColor: string | null;
   ringIndicatorAnim?: number;
   hideColors?: boolean;
   playbackSpeed?: PlaybackSpeed;
@@ -97,7 +122,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   updateMoveLogPgn: () => void;
   resumeNotifyingDelegates: () => void;
   notifyingDelegates: boolean;
-  previewMove: (m: Move | string) => void;
+  previewMove: (m: Move | string | null) => void;
   previewPieceMoveAnim: number;
   previewedMove?: Move;
   nextPreviewMove?: Move;
@@ -189,7 +214,7 @@ export const createChessState = (
       return 0.0;
     }),
     flipped: false,
-    position: new Chess(),
+    position: createChessProxy(new Chess()),
 
     // TODO: solid
     moveIndicatorAnim: { x: 0, y: 0 },
@@ -231,7 +256,7 @@ export const createChessState = (
         s.animationQueue = [];
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
-        s.position = new Chess();
+        s.position = createChessProxy(new Chess());
         s.previewPosition = null;
         s.clearHighlightedSquares();
         s.updateMoveLogPgn();
@@ -308,19 +333,14 @@ export const createChessState = (
         highlightSquares.forEach((sq) => {
           s.currentHighlightedSquares.add(sq);
         });
-        // console.log("___HIGHLIGHTED SQUARES___");
-        // console.log(
-        //   "squares to highlight, new squares",
-        //   logProxy(Array.from(s.currentHighlightedSquares)),
-        //   highlightSquares
-        // );
-        highlightSquares.forEach((sq) => {
-          Animated.timing(s.squareHighlightAnims[sq], {
-            toValue: 1.0,
-            duration: duration ?? 100,
-            useNativeDriver: true,
-          }).start(({ finished }) => {});
-        });
+        // todo: solid
+        // highlightSquares.forEach((sq) => {
+        //   Animated.timing(s.squareHighlightAnims[sq], {
+        //     toValue: 1.0,
+        //     duration: duration ?? 100,
+        //     useNativeDriver: true,
+        //   }).start(({ finished }) => {});
+        // });
       }),
     reversePreviewMove: () => {
       set((s: ChessboardState) => {
@@ -333,21 +353,22 @@ export const createChessState = (
         ];
         let duration = getAnimationTime(start, end);
         s.clearHighlightedSquares();
-        s.previewPieceMoveAnim.setValue(start);
-        Animated.sequence([
-          Animated.timing(s.previewPieceMoveAnim, {
-            toValue: end,
-            duration,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease),
-          }),
-        ]).start(({ finished }) => {
-          set((s) => {
-            s.previewedMove = null;
-            s.isReversingPreviewMove = false;
-            s.stepPreviewMove();
-          });
-        });
+        // todo: solid
+        // s.previewPieceMoveAnim.setValue(start);
+        // Animated.sequence([
+        //   Animated.timing(s.previewPieceMoveAnim, {
+        //     toValue: end,
+        //     duration,
+        //     useNativeDriver: true,
+        //     easing: Easing.out(Easing.ease),
+        //   }),
+        // ]).start(({ finished }) => {
+        //   set((s) => {
+        //     s.previewedMove = null;
+        //     s.isReversingPreviewMove = false;
+        //     s.stepPreviewMove();
+        //   });
+        // });
       });
     },
     stepAnimationQueue: () => {
@@ -401,7 +422,7 @@ export const createChessState = (
     animatePreviewMove: () => {
       set((s: ChessboardState) => {
         let move = s.nextPreviewMove;
-        s.previewPosition = s.position.clone();
+        s.previewPosition = createChessProxy(s.position.clone());
         s.previewPosition.move(s.nextPreviewMove);
         // s.nextPreviewMove = null;
         s.previewedMove = s.nextPreviewMove;
@@ -418,31 +439,32 @@ export const createChessState = (
         ];
         let duration = getAnimationTime(start, end);
         s.highlightMoveSquares(move, duration);
-        s.previewPieceMoveAnim.setValue(start);
+        // s.previewPieceMoveAnim.setValue(start);
         let supplementaryMove = getSupplementaryMove(move);
-        Animated.sequence([
-          Animated.timing(s.previewPieceMoveAnim, {
-            toValue: end,
-            duration: duration,
-            useNativeDriver: true,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          ...(supplementaryMove
-            ? [
-                Animated.timing(s.previewPieceMoveAnim, {
-                  toValue: end,
-                  duration: duration,
-                  useNativeDriver: true,
-                  easing: Easing.inOut(Easing.ease),
-                }),
-              ]
-            : []),
-        ]).start(({ finished }) => {
-          set((s) => {
-            s.isAnimatingPreviewMove = false;
-            s.stepPreviewMove();
-          });
-        });
+        // todo: solid
+        //   Animated.sequence([
+        //     Animated.timing(s.previewPieceMoveAnim, {
+        //       toValue: end,
+        //       duration: duration,
+        //       useNativeDriver: true,
+        //       easing: Easing.inOut(Easing.ease),
+        //     }),
+        //     ...(supplementaryMove
+        //       ? [
+        //           Animated.timing(s.previewPieceMoveAnim, {
+        //             toValue: end,
+        //             duration: duration,
+        //             useNativeDriver: true,
+        //             easing: Easing.inOut(Easing.ease),
+        //           }),
+        //         ]
+        //       : []),
+        //   ]).start(({ finished }) => {
+        //     set((s) => {
+        //       s.isAnimatingPreviewMove = false;
+        //       s.stepPreviewMove();
+        //     });
+        //   });
       });
     },
     animatePieceMove: (
@@ -461,21 +483,22 @@ export const createChessState = (
           getAnimationDurations(speed);
         // @ts-ignore
         let [start, end]: Square[] = [move.from, move.to];
-        s.pieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
-        Animated.sequence([
-          Animated.timing(s.pieceMoveAnim, {
-            toValue: getSquareOffset(end, s.flipped),
-            duration: moveDuration,
-            useNativeDriver: true,
-            easing: Easing.inOut(Easing.ease),
-          }),
-        ]).start(() => {
-          set((s) => {
-            s.animatedMove = null;
-
-            callback(true);
-          });
-        });
+        // todo: solid
+        // s.pieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
+        //   Animated.sequence([
+        //     Animated.timing(s.pieceMoveAnim, {
+        //       toValue: getSquareOffset(end, s.flipped),
+        //       duration: moveDuration,
+        //       useNativeDriver: true,
+        //       easing: Easing.inOut(Easing.ease),
+        //     }),
+        //   ]).start(() => {
+        //     set((s) => {
+        //       s.animatedMove = null;
+        //
+        //       callback(true);
+        //     });
+        //   });
       });
     },
     arrows: [],
@@ -490,7 +513,7 @@ export const createChessState = (
         });
         if (options?.animated) {
           let fen = `${options.fromEpd} 0 1`;
-          s._animatePosition = new Chess(fen);
+          s._animatePosition = createChessProxy(new Chess(fen));
           let moves = s._animatePosition.validateMoves(options.animateLine);
           s.animationQueue = moves;
           s.stepAnimationQueue();
@@ -500,7 +523,7 @@ export const createChessState = (
         s.getDelegate()?.onMovePlayed?.();
       });
     },
-    previewMove: (m: string) => {
+    previewMove: (m: string | null | Move) => {
       set((s) => {
         if (m) {
           let [moveObject] = s.position.validateMoves([m]) ?? [];
@@ -518,17 +541,19 @@ export const createChessState = (
         if (squares) {
           squares.forEach((sq) => {
             s.currentHighlightedSquares.delete(sq);
-            Animated.timing(s.squareHighlightAnims[sq], {
-              toValue: 0.0,
-              duration: 150,
-              useNativeDriver: false,
-            }).start(({ finished }) => {
-              set((s) => {
-                if (!finished && !s.currentHighlightedSquares.has(sq)) {
-                  s.squareHighlightAnims[sq].setValue(0.0);
-                }
-              });
-            });
+
+            // todo: solid
+            // Animated.timing(s.squareHighlightAnims[sq], {
+            //   toValue: 0.0,
+            //   duration: 150,
+            //   useNativeDriver: false,
+            // }).start(({ finished }) => {
+            //   set((s) => {
+            //     if (!finished && !s.currentHighlightedSquares.has(sq)) {
+            //       s.squareHighlightAnims[sq].setValue(0.0);
+            //     }
+            //   });
+            // });
           });
         }
       });
@@ -685,7 +710,7 @@ export const createStaticChessState = ({
   side?: Side;
 }) => {
   return createChessState(null, null, (state: ChessboardState) => {
-    state.position = new Chess();
+    state.position = createChessProxy(new Chess());
     state.frozen = true;
     state.highContrast = false;
     if (side) {
@@ -694,7 +719,7 @@ export const createStaticChessState = ({
     state.hideCoordinates = true;
     if (epd) {
       let fen = `${epd} 0 1`;
-      state.position = new Chess(fen);
+      state.position = createChessProxy(new Chess(fen));
     } else if (line) {
       state.position.loadPgn(line);
     }

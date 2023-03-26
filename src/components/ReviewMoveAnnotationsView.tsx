@@ -59,7 +59,7 @@ export const ReviewMoveAnnotationsView = ({}) => {
           );
         }
         return (
-          <View style={s(c.gridColumn({ gap: 92 }))}>
+          <div style={s(c.gridColumn({ gap: 92 }))}>
             {moveAnnotationReviewQueue.map((review) => {
               return (
                 <MoveAnnotationsReview
@@ -68,7 +68,7 @@ export const ReviewMoveAnnotationsView = ({}) => {
                 />
               );
             })}
-          </View>
+          </div>
         );
       })()}
     </AdminPageLayout>
@@ -100,9 +100,9 @@ const MoveAnnotationsReview = ({
   const ref = useRef(null);
   const onScreen = useOnScreen(ref, "-500px");
   return (
-    <View style={s(isMobile ? c.column : c.row, c.constrainWidth, c.relative)}>
+    <div style={s(isMobile ? c.column : c.row, c.constrainWidth, c.relative)}>
       {reviewed && (
-        <View
+        <div
           style={s(
             c.absoluteFull,
             c.bg(c.grays[20]),
@@ -112,9 +112,9 @@ const MoveAnnotationsReview = ({
           )}
         >
           <CMText style={s()}>Reviewed!</CMText>
-        </View>
+        </div>
       )}
-      <View style={s(c.width(400), c.constrainWidth)} ref={ref}>
+      <div style={s(c.width(400), c.constrainWidth)} ref={ref}>
         <LazyLoad style={s(c.pb("100%"), c.height(0), c.width("100%"))}>
           <ChessboardView
             onSquarePress={() => {}}
@@ -130,9 +130,9 @@ const MoveAnnotationsReview = ({
             windowReference.location = `https://lichess.org/analysis/${review.epd}`;
           }}
         >
-          <View style={s(c.size(isMobile ? 20 : 22))}>
+          <div style={s(c.size(isMobile ? 20 : 22))}>
             <LichessLogoIcon color={"white"} />
-          </View>
+          </div>
           <Spacer width={8} />
           <CMText
             style={s(
@@ -145,9 +145,9 @@ const MoveAnnotationsReview = ({
             Analyze on Lichess
           </CMText>
         </Button>
-      </View>
+      </div>
       <Spacer width={24} />
-      <View style={s(c.column, c.flexShrink(1))}>
+      <div style={s(c.column, c.flexShrink(1))}>
         <CMText style={s(c.fontSize(24), c.weightBold)}>
           {capitalize(position.turn() === "b" ? "Black" : "White")} plays{" "}
           {review.san}
@@ -156,7 +156,7 @@ const MoveAnnotationsReview = ({
         {intersperse(
           review.annotations.map((x, i) => {
             return (
-              <View
+              <div
                 key={i}
                 style={s(
                   c.pb(12),
@@ -165,7 +165,7 @@ const MoveAnnotationsReview = ({
                   c.bg(c.grays[80])
                 )}
               >
-                <View style={s(c.height(120))}>
+                <div style={s(c.height(120))}>
                   <AnnotationEditor
                     key={`${review.san}-${review.epd}`}
                     annotation={x.text}
@@ -180,9 +180,9 @@ const MoveAnnotationsReview = ({
                       });
                     }}
                   />
-                </View>
+                </div>
                 <Spacer height={12} />
-                <View style={s(c.row, c.alignCenter, c.justifyBetween)}>
+                <div style={s(c.row, c.alignCenter, c.justifyBetween)}>
                   {x?.userId === user?.id ? (
                     <>
                       <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
@@ -219,8 +219,8 @@ const MoveAnnotationsReview = ({
                   >
                     Accept
                   </Button>
-                </View>
-              </View>
+                </div>
+              </div>
             );
           }),
           (i) => {
@@ -250,7 +250,7 @@ const MoveAnnotationsReview = ({
         >
           {`Reject ${pluralize(review.annotations.length, "annotation")}`}
         </Button>
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

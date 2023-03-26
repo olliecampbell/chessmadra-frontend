@@ -25,7 +25,7 @@ export const CoverageBar = ({
     : [c.grays[30], c.oranges[65], c.greens[50]];
   let overlap = 8;
   return (
-    <View
+    <div
       style={s(
         c.relative,
         c.fullHeight,
@@ -54,6 +54,6 @@ export const CoverageBar = ({
           c.fullHeight
         )}
       ></Animated.View>
-    </View>
+    </div>
   );
 };

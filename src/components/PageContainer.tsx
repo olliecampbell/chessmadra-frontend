@@ -5,6 +5,7 @@ import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 import { View } from "./View";
 import { Helmet } from "~/mocks";
+import { Meta, Title } from "@solidjs/meta";
 
 export const PageContainer = ({
   children,
@@ -25,9 +26,9 @@ export const PageContainer = ({
     { icon: "fa fa-envelope", link: "mailto:me@mbuffett.com" },
   ];
   return (
-    <View style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
+    <div style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
       {!hideNavBar && <NavBar />}
-      <View
+      <div
         style={s(
           c.grow,
           c.fullWidth,
@@ -38,11 +39,11 @@ export const PageContainer = ({
         )}
       >
         {children}
-      </View>
+      </div>
       {!hideIcons && (
         <>
           <Spacer height={32} />
-          <View
+          <div
             style={s(
               c.fullWidth,
               c.row,
@@ -67,10 +68,10 @@ export const PageContainer = ({
                 return <Spacer key={i} width={24} />;
               }
             )}
-          </View>
+          </div>
         </>
       )}
-    </View>
+    </div>
   );
 };
 
@@ -81,49 +82,21 @@ export interface SiteMetadata {
 
 export const HeadSiteMeta = ({ siteMeta }: { siteMeta: SiteMetadata }) => {
   return (
-    <Helmet>
-      <title>{siteMeta.title}</title>
+    <>
+      <Title>{siteMeta.title}</Title>
       {/*
       // @ts-ignore */}
-      <meta itemProp="name" content={siteMeta.title} key="meta_name" />
+      <Meta itemProp="name" content={siteMeta.title} key="meta_name" />
       {/*
       // @ts-ignore */}
-      <meta
-        name="description"
-        content={siteMeta.description}
-        key="meta_description"
-      />
-      <meta
-        name="twitter:site"
-        content="chessmadra.com"
-        key="meta_twitter:site"
-      />
-      <meta
-        name="twitter:title"
-        content={siteMeta.title}
-        key="meta_twitter:title"
-      />
-      <meta
-        name="twitter:description"
-        content={siteMeta.description}
-        key="meta_twitter:description"
-      />
-      <meta property="og:title" content={siteMeta.title} key="meta_og:title" />
-      <meta
-        property="og:description"
-        content={siteMeta.description}
-        key="meta_og:description"
-      />
-      <meta
-        property="og:site_name"
-        content="chessmadra.com"
-        key="meta_og:site_name"
-      />
-      <meta
-        name="description"
-        content={siteMeta.description}
-        key="meta_description"
-      />
-    </Helmet>
+      <Meta name="description" content={siteMeta.description} />
+      <Meta name="twitter:site" content="chessmadra.com" />
+      <Meta name="twitter:title" content={siteMeta.title} />
+      <Meta name="twitter:description" content={siteMeta.description} />
+      <Meta property="og:title" content={siteMeta.title} />
+      <Meta property="og:description" content={siteMeta.description} />
+      <Meta property="og:site_name" content="chessmadra.com" />
+      <Meta name="description" content={siteMeta.description} />
+    </>
   );
 };

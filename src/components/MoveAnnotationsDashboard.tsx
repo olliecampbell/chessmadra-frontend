@@ -40,7 +40,7 @@ export const MoveAnnotationsDashboard = ({}) => {
           );
         }
         return (
-          <View style={s(c.column)}>
+          <div style={s(c.column)}>
             <CMText style={s(c.weightSemiBold, c.selfEnd)}>
               <Link to="/admin/move-annotations/community">
                 Go to community review queue
@@ -90,7 +90,7 @@ export const MoveAnnotationsDashboard = ({}) => {
                 );
               }}
             />
-            <View key={activeTab} style={s(c.gridColumn({ gap: 24 }))}>
+            <div key={activeTab} style={s(c.gridColumn({ gap: 24 }))}>
               <Spacer height={24} />
               {(activeTab === "Needed"
                 ? dashboard.needed
@@ -104,8 +104,8 @@ export const MoveAnnotationsDashboard = ({}) => {
                   />
                 );
               })}
-            </View>
-          </View>
+            </div>
+          </div>
         );
       })()}
     </AdminPageLayout>
@@ -125,9 +125,9 @@ export const MoveAnnotationRow = ({
   let [saved, setSaved] = useState(false);
   let [loading, setLoading] = useState(false);
   return (
-    <View style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
-      <View style={s(c.row)}>
-        <View style={s(c.size(180))}>
+    <div style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
+      <div style={s(c.row)}>
+        <div style={s(c.size(180))}>
           <ChessboardView
             onSquarePress={() => {}}
             state={createStaticChessState({
@@ -136,13 +136,13 @@ export const MoveAnnotationRow = ({
               nextMove: ann.sanPlus,
             })}
           />
-        </View>
+        </div>
 
         <Spacer width={24} />
-        <View style={s(c.width(400))}>
+        <div style={s(c.width(400))}>
           <AnnotationEditor annotation={annotation} onUpdate={setAnnotation} />
-        </View>
-      </View>
+        </div>
+      </div>
       {completed && (
         <>
           <Spacer height={8} />
@@ -152,7 +152,7 @@ export const MoveAnnotationRow = ({
         </>
       )}
       <Spacer height={8} />
-      <View style={s(c.row, c.justifyEnd)}>
+      <div style={s(c.row, c.justifyEnd)}>
         <CMText style={s()}>{ann.games.toLocaleString()} games</CMText>
         <Spacer grow />
         <Button
@@ -194,7 +194,7 @@ export const MoveAnnotationRow = ({
             {loading ? "Loading.." : saved ? "Saved" : "Save"}
           </CMText>
         </Button>
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

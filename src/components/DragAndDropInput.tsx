@@ -20,7 +20,7 @@ export const DragAndDropInput = ({
   const [loading, setLoading] = createSignal(false);
   const [uploaded, setUploaded] = createSignal(false);
   return (
-    <View
+    <div
       style={s(
         c.border(`1px solid ${c.grays[50]}`),
         c.center,
@@ -59,6 +59,6 @@ export const DragAndDropInput = ({
           </CMText>
         </>
       )}
-    </View>
+    </div>
   );
 };

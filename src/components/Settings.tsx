@@ -28,14 +28,13 @@ export const SettingsButtons = () => {
     s.userState.getUserRatingDescription(),
     s.userState.authStatus,
   ]);
-  const sidebarState = useSidebarState();
-  const mode = () => sidebarState().mode;
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
   let responsive = useResponsive();
   return (
-    <View style={s(c.row, c.gap(responsive.switch(12, [BP.md, 16])))}>
+    <div style={s(c.row, c.gap(responsive.switch(12, [BP.md, 16])))}>
       <Show when={mode() === "home"}>
         <SettingButton
           title={"Other tools"}
@@ -73,7 +72,7 @@ export const SettingsButtons = () => {
           }}
         />
       )}
-    </View>
+    </div>
   );
 };
 

@@ -46,7 +46,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
   let foreground = c.grays[90];
   let textColor = c.fg(foreground);
   return (
-    <View
+    <div
       style={s(
         c.row,
         c.height(height ?? bp.switch(40, [BP.lg, 48])),
@@ -100,9 +100,9 @@ export const BackControls: React.FC<BackControlsProps> = ({
               analyzeLineOnLichess(currentLine);
             }}
           >
-            <View style={s(c.size(isMobile ? 20 : 22))}>
+            <div style={s(c.size(isMobile ? 20 : 22))}>
               <LichessLogoIcon color={foreground} />
-            </View>
+            </div>
             {layout.current?.width > 400 && (
               <>
                 <Spacer width={8} />
@@ -145,6 +145,6 @@ export const BackControls: React.FC<BackControlsProps> = ({
           </Button>
         </>
       )}
-    </View>
+    </div>
   );
 };

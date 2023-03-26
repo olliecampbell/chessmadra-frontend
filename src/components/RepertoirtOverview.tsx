@@ -21,14 +21,13 @@ import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
-import { Component, createEffect, createSignal, For } from "solid-js";
+import { Component, createEffect, createSignal, For, Show } from "solid-js";
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
 import { View } from "./View";
 
 export const RepertoireOverview = (props: {}) => {
-  const sidebarState = useSidebarState();
-  const side = () => sidebarState().activeSide;
+  const [side] = useSidebarState(([s]) => [s.activeSide]);
   const textStyles = s(c.fg(c.colors.textPrimary), c.weightSemiBold);
   const appState = getAppState();
   const { repertoireState, userState } = appState;
@@ -80,9 +79,9 @@ export const RepertoireOverview = (props: {}) => {
     {
       hidden: empty(),
       right: (
-        <View style={s(c.height(4), c.row)}>
+        <div style={s(c.height(4), c.row)}>
           <CoverageAndBar home={false} side={side()} />
-        </View>
+        </div>
       ),
 
       onPress: () => {
@@ -164,69 +163,68 @@ export const RepertoireOverview = (props: {}) => {
       ),
     },
   ];
-  let options = () => [
-    {
-      hidden: !empty(),
-      onPress: () => {
-        trackEvent("side_overview.start_building");
-        quick((s) => {
-          s.repertoireState.animateChessboardShown(true, responsive, () => {
-            quick((s) => {
-              s.repertoireState.startBrowsing(side() as Side, "build");
-            });
-          });
+  let options = () =>
+    [
+      {
+        hidden: !empty(),
+        onPress: () => {
           trackEvent("side_overview.start_building");
-        });
+          quick((s) => {
+            s.repertoireState.animateChessboardShown(true, responsive, () => {
+              quick((s) => {
+                s.repertoireState.startBrowsing(side() as Side, "build");
+              });
+            });
+            trackEvent("side_overview.start_building");
+          });
+        },
+        left: <CMText style={s(textStyles)}>{"Start building"}</CMText>,
+        right: null,
+        icon: empty() && "fa-sharp fa-plus",
       },
-      left: <CMText style={s(textStyles)}>{"Start building"}</CMText>,
-      right: null,
-      icon: empty() && "fa-sharp fa-plus",
-    },
-    {
-      onPress: () => {
-        trackEvent("side_overview.import");
-        quick((s) => {
-          s.repertoireState.startImporting(side());
-        });
+      {
+        onPress: () => {
+          trackEvent("side_overview.import");
+          quick((s) => {
+            s.repertoireState.startImporting(side());
+          });
+        },
+        left: <CMText style={s(textStyles)}>Import lines</CMText>,
+        icon: "fa-sharp fa-file-import",
+        right: null,
       },
-      left: <CMText style={s(textStyles)}>Import lines</CMText>,
-      icon: "fa-sharp fa-file-import",
-      right: null,
-    },
-    {
-      onPress: () => {
-        quick((s) => {
-          trackEvent("side_overview.export");
-          s.repertoireState.exportPgn(side());
-        });
+      {
+        onPress: () => {
+          quick((s) => {
+            trackEvent("side_overview.export");
+            s.repertoireState.exportPgn(side());
+          });
+        },
+        hidden: empty(),
+        left: <CMText style={s(textStyles)}>Export repertoire</CMText>,
+        icon: "fa-sharp fa-arrow-down-to-line",
+        right: null,
       },
-      hidden: empty(),
-      left: <CMText style={s(textStyles)}>Export repertoire</CMText>,
-      icon: "fa-sharp fa-arrow-down-to-line",
-      right: null,
-    },
-    {
-      hidden: empty(),
-      onPress: () => {
-        quick((s) => {
-          trackEvent("side_overview.delete_repertoire");
-          s.repertoireState.browsingState.replaceView(
-            <ConfirmDeleteRepertoire />,
-            "right"
-          );
-        });
+      {
+        hidden: empty(),
+        onPress: () => {
+          quick((s) => {
+            trackEvent("side_overview.delete_repertoire");
+            s.repertoireState.browsingState.replaceView(
+              <ConfirmDeleteRepertoire />,
+              "right"
+            );
+          });
+        },
+        left: <CMText style={s(textStyles)}>Delete repertoire</CMText>,
+        icon: "fa-sharp fa-trash",
+        right: null,
       },
-      left: <CMText style={s(textStyles)}>Delete repertoire</CMText>,
-      icon: "fa-sharp fa-trash",
-      right: null,
-    },
-  ];
-  const [expanded, setExpanded] = createSignal(false);
-  options = () =>
-    options().filter((o) => {
+    ].filter((o) => {
       if (o.hidden) return false;
-      return empty || expanded();
+      return empty() || expanded();
     });
+  const [expanded, setExpanded] = createSignal(false);
   // let reviewStatus = `You have ${pluralize(
   //   numMovesDueFromHere,
   //   "move"
@@ -247,22 +245,26 @@ export const RepertoireOverview = (props: {}) => {
     >
       <Spacer height={24} />
 
-      {!empty() && (
-        <View style={s(c.borderTop(`1px solid ${c.colors.border}`))}>
-          {[...buildOptions(), ...reviewOptions()]
-            .filter((opt) => !opt.hidden)
-            .map((opt) => {
+      <Show when={!empty()}>
+        <div style={s(c.borderTop(`1px solid ${c.colors.border}`))}>
+          <For
+            each={[...buildOptions(), ...reviewOptions()].filter(
+              (opt) => !opt.hidden
+            )}
+          >
+            {(opt) => {
               return <Option option={opt} />;
-            })}
-        </View>
-      )}
-      <For each={options}>
+            }}
+          </For>
+        </div>
+      </Show>
+      <For each={options()}>
         {(opt) => {
           return <Option option={opt} />;
         }}
       </For>
-      <View style={s(c.row, c.px(c.getSidebarPadding(responsive)), c.pt(8))}>
-        {!empty && (
+      <div style={s(c.row, c.px(c.getSidebarPadding(responsive)), c.pt(8))}>
+        {!empty() && (
           <Pressable
             style={s(c.pb(2))}
             onPress={() => {
@@ -281,7 +283,7 @@ export const RepertoireOverview = (props: {}) => {
             </CMText>
           </Pressable>
         )}
-      </View>
+      </div>
     </SidebarTemplate>
   );
 };
@@ -314,7 +316,7 @@ const Option = ({
         styles,
         option.disabled && c.noPointerEvents,
         c.borderBottom(`1px solid ${c.colors.border}`),
-        s(hovering && !option.disabled && c.bg(c.grays[18]))
+        s(hovering() && !option.disabled && c.bg(c.grays[18]))
       )}
       onPress={() => {
         if (!option.disabled) {
@@ -349,24 +351,24 @@ export const CoverageAndBar = ({
   ]);
 
   return (
-    <View style={s(c.row, c.alignCenter)}>
+    <div style={s(c.row, c.alignCenter)}>
       <CMText style={s(textStyles)}>
-        {progressState.completed ? (
+        {progressState().completed ? (
           <>Completed</>
         ) : (
-          <>{Math.round(progressState.percentComplete)}% complete</>
+          <>{Math.round(progressState().percentComplete)}% complete</>
         )}
       </CMText>
       {!hideBar && (
         <>
           <Spacer width={8} />
-          <View
+          <div
             style={s(c.height(home ? 4 : 4), c.width(home ? 100 : 80), c.row)}
           >
             <CoverageBar isInSidebar={!home} side={side} />
-          </View>
+          </div>
         </>
       )}
-    </View>
+    </div>
   );
 };

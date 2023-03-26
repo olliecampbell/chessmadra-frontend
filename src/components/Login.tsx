@@ -10,6 +10,7 @@ import { Spacer } from "~/components/Space";
 import { Button } from "./Button";
 import { CMText } from "./CMText";
 import { useTrack } from "~/hooks/useTrackEvent";
+import { Show } from "solid-js";
 
 export default function Login({ signup }: { signup?: boolean }) {
   const onSubmit = (data) => console.log(data);
@@ -50,7 +51,7 @@ export default function Login({ signup }: { signup?: boolean }) {
         }}
       />
       <PageContainer centered>
-        <View
+        <div
           style={s(
             // c.bg(c.grays[80]),
             c.maxWidth(300),
@@ -59,11 +60,11 @@ export default function Login({ signup }: { signup?: boolean }) {
             // c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
           )}
         >
-          {!submitted && (
-            <View style={s(c.column, c.alignCenter, c.fullWidth)}>
-              <View style={s(c.size(48))}>
+        <Show when={!submitted }>
+            <div style={s(c.column, c.alignCenter, c.fullWidth)}>
+              <div style={s(c.size(48))}>
                 <KnightWhiteIcon />
-              </View>
+              </div>
               <Spacer height={12} />
               <CMText
                 style={s(
@@ -87,18 +88,18 @@ export default function Login({ signup }: { signup?: boolean }) {
                 Just enter your email and you'll get a link to sign you in; no
                 password or sign-up needed.
               </CMText>
-            </View>
-          )}
+            </div>
+            </Show>
           <Spacer height={24} />
           {submitted ? (
-            <View style={s()}>
-              <View style={s(c.column, c.alignCenter, c.textAlign("center"))}>
-                <View style={s()}>
+            <div style={s()}>
+              <div style={s(c.column, c.alignCenter, c.textAlign("center"))}>
+                <div style={s()}>
                   <i
                     style={s(c.fg(c.colors.successColor), c.fontSize(28))}
                     className={`fas fa-check`}
                   ></i>
-                </View>
+                </div>
                 <Spacer height={12} />
                 <CMText
                   style={s(
@@ -109,14 +110,14 @@ export default function Login({ signup }: { signup?: boolean }) {
                 >
                   Success! Check your email and click the link to log in.
                 </CMText>
-              </View>
-            </View>
+              </div>
+            </div>
           ) : (
-            <View style={s(c.br(4), c.px(0), c.py(0))}>
-              <View style={s()}>
-                <View style={s()}>
-                  <View>
-                    <View style={s()}>
+            <div style={s(c.br(4), c.px(0), c.py(0))}>
+              <div style={s()}>
+                <div style={s()}>
+                  <div>
+                    <div style={s()}>
                       <TextInput
                         // onKeyPress={onEnter(signIn)}
                         onSubmitEditing={() => {
@@ -139,8 +140,8 @@ export default function Login({ signup }: { signup?: boolean }) {
                           c.fontSize(16)
                         )}
                       />
-                    </View>
-                  </View>
+                    </div>
+                  </div>
 
                   <Spacer height={12} />
                   <Button
@@ -157,11 +158,11 @@ export default function Login({ signup }: { signup?: boolean }) {
                       "Log in"
                     )}
                   </Button>
-                </View>
-              </View>
-            </View>
+                </div>
+              </div>
+            </div>
           )}
-        </View>
+        </div>
       </PageContainer>
     </Fragment>
   );

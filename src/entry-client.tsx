@@ -1,3 +1,4 @@
+import { render } from "solid-js/web";
 import { mount, StartClient } from "solid-start/entry-client";
 
-mount(() => <StartClient />, document);
+render(() => <StartClient />, document);

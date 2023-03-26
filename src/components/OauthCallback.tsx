@@ -45,11 +45,11 @@ export const OauthCallback = ({ type }: { type: "lichess" }) => {
   }, [stage]);
   return (
     <SimplePageLayout>
-      <View style={s(c.maxWidth(600), c.column, c.center)}>
+      <div style={s(c.maxWidth(600), c.column, c.center)}>
         <CMText style={s(c.fontSize(18))}>Authenticating...</CMText>
         <Spacer height={24} />
         <GridLoader color={c.grays[80]} size={20} />
-      </View>
+      </div>
     </SimplePageLayout>
   );
 };

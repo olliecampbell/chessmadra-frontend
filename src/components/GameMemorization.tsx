@@ -83,7 +83,7 @@ export const GameMemorization = () => {
             <Spacer height={12} />
           </>
         )}
-        <View style={s(c.row, c.justifyEnd)}>
+        <div style={s(c.row, c.justifyEnd)}>
           <Button
             style={s(c.buttons.squareBasicButtons)}
             onPress={() => {
@@ -137,7 +137,7 @@ export const GameMemorization = () => {
               ></i>
             </CMText>
           </Button>
-        </View>
+        </div>
       </TrainerLayout>
     );
   } else if (state.games) {
@@ -171,7 +171,7 @@ export const GameMemorization = () => {
               //   console.log(utf8Encode.encode("oQdmyYry"));
             }
             return (
-              <View style={s(c.relative)}>
+              <div style={s(c.relative)}>
                 <Button
                   style={s(
                     c.absolute,
@@ -204,7 +204,7 @@ export const GameMemorization = () => {
                     gameStatus={state.gameStatuses[game.id]}
                   />
                 </Pressable>
-              </View>
+              </div>
             );
           }),
           (i) => {
@@ -215,7 +215,7 @@ export const GameMemorization = () => {
             return <Spacer height={12} key={i} />;
           },
           (children) => {
-            return <View style={s(c.row)}>{children}</View>;
+            return <div style={s(c.row)}>{children}</div>;
           }
         )}
       </>

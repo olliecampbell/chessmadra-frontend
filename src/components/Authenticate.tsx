@@ -64,7 +64,7 @@ const Authenticate = (props) => {
   }, [t]);
   return (
     <PageContainer centered>
-      <View style={s(c.column, c.alignCenter)}>
+      <div style={s(c.column, c.alignCenter)}>
         {authStatus === AuthStatus.Failed ? null : (
           <BeatLoader color={c.grays[100]} size={20} />
         )}
@@ -96,7 +96,7 @@ const Authenticate = (props) => {
             "Authenticating..."
           )}
         </CMText>
-      </View>
+      </div>
     </PageContainer>
   );
 };

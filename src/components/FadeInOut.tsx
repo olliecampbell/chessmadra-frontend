@@ -8,39 +8,32 @@ import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { useOutsideClick } from "~/components/useOutsideClick";
 import { SelectOneOf } from "./SelectOneOf";
 import { Animated } from "./View";
+import { Motion } from "@motionone/solid";
+import { Accessor, createEffect } from "solid-js";
 
 export const FadeInOut = ({
   children,
+  id,
   open,
   maxOpacity: _maxOpacity,
   style,
 }: {
   children: any;
-  open: boolean;
+  open: Accessor<boolean>;
   maxOpacity?: number;
   style?: any;
+  id?: string;
 }) => {
-  let maxOpacity = _maxOpacity ?? 1;
-  // TODO: solid
-  const fadeAnim = 100;
-  // const fadeAnim = React.useRef(
-  //   new Animated.Value(open ? maxOpacity : 0.0)
-  // ).current;
-
-  // TODO: solid
-  // React.useEffect(() => {
-  //   Animated.timing(fadeAnim, {
-  //     toValue: open ? maxOpacity : 0,
-  //     duration: 200,
-  //     easing: Easing.quad,
-  //     useNativeDriver: false,
-  //   }).start();
-  // }, [open, maxOpacity]);
+  let maxOpacity = _maxOpacity ?? 100;
+  const opacity = () => (open() ? maxOpacity : 0);
   return (
-    <Animated.View
-      style={s(c.opacity(fadeAnim), !open && c.noPointerEvents, style)}
+    <Motion
+      id={id}
+      initial={{ opacity: opacity() }}
+      animate={{ opacity: opacity() }}
+      style={s(!open && c.noPointerEvents, style)}
     >
       {children}
-    </Animated.View>
+    </Motion>
   );
 };

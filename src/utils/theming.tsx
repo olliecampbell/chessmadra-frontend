@@ -59,7 +59,6 @@ export const adjustOpacity = (hsl: string, opacity: number) => {
   return hsl.replace("hsl", "hsla").replace(")", `, ${opacity / 100})`);
 };
 
-console.log("adjusted", adjustOpacity(c.primaries[60], 40));
 const defaultHighlight = `hsla(73, 100%, 39%, 0.41)`;
 const defaultDarkHighlight = `hsla(129, 60%, 21%, 0.5)`;
 

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     devtools({
       /* additional options */
-      autoname: true, // e.g. enable autoname
+      // autoname: true, // e.g. enable autoname
     }),
     solid(),
   ],

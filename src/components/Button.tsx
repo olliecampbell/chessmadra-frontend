@@ -1,3 +1,4 @@
+import { Show } from "solid-js";
 import { BarLoader } from "~/mocks";
 import { c, s } from "~/utils/styles";
 // import { LoaderSizeMarginProps } from "react-spinners/interfaces";
@@ -31,18 +32,18 @@ export const Button = ({
         }
       }}
     >
-      {isLoading && (
-        <View style={s(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
-          <View style={s(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
+      <Show when={isLoading}>
+        <div style={s(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
+          <div style={s(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
             <BarLoader {...loaderProps} cssOverride={s(c.width("100%"))} />
-          </View>
-        </View>
-      )}
-      <View
+          </div>
+        </div>
+      </Show>
+      <div
         style={s(c.opacity(isLoading ? 0 : 100), c.row, c.center, c.fullWidth)}
       >
         {inner}
-      </View>
+      </div>
     </Pressable>
   );
 };

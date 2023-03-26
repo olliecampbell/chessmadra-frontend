@@ -26,10 +26,6 @@ const AuthHandler = ({ children }) => {
       Cookies.set(TEMP_USER_UUID, userState.tempUserUuid, { expires: 5000 });
     }
   });
-  // log user auth status in create effect
-  createEffect(() => {
-    console.log("auth status", userState.authStatus);
-  });
   createEffect;
   createEffect(() => {
     userState.quick((s) => {

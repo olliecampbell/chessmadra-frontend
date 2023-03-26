@@ -17,7 +17,7 @@ export const CollapsibleSidebarSection = ({
   const responsive = useResponsive();
   const [collapsed, setCollapsed] = createSignal(true);
   return (
-    <View style={s()}>
+    <div style={s()}>
       <Pressable
         style={s(
           c.row,
@@ -39,14 +39,14 @@ export const CollapsibleSidebarSection = ({
         >
           {header}
         </CMText>
-        <View style={s()}>
+        <div style={s()}>
           <i
             class={!collapsed() ? "fa fa-chevron-down" : "fa fa-chevron-right"}
             style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
           ></i>
-        </View>
+        </div>
       </Pressable>
-      <View style={s()}>{collapsed() ? null : children}</View>
-    </View>
+      <div style={s()}>{collapsed() ? null : children}</div>
+    </div>
   );
 };

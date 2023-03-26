@@ -2,7 +2,7 @@
 import { c, s } from "~/utils/styles";
 import { throttle } from "lodash-es";
 import { CMText } from "./CMText";
-import { createSignal } from "solid-js";
+import { Accessor, createSignal } from "solid-js";
 import { View } from "./View";
 
 export const MAX_ANNOTATION_LENGTH = 300;
@@ -11,12 +11,12 @@ export const AnnotationEditor = ({
   annotation: _annotation,
   onUpdate,
 }: {
-  annotation: string;
+  annotation: Accessor<string>;
   onUpdate: (annotation: string) => void;
 }) => {
   const [focus, setFocus] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
-  const [annotation, setAnnotation] = createSignal(_annotation);
+  const [annotation, setAnnotation] = createSignal(_annotation());
   // TODO: solid
   // const { fadeStyling } = useFadeAnimation(loading(), { duration: 300 });
   const fadeStyling = 100;
@@ -37,8 +37,8 @@ export const AnnotationEditor = ({
     { leading: true }
   );
   return (
-    <View style={s(c.grow, c.relative)}>
-      <View
+    <div style={s(c.grow, c.relative)}>
+      <div
         style={s(
           c.absolute,
           c.bottom(12),
@@ -51,7 +51,7 @@ export const AnnotationEditor = ({
         )}
       >
         <CMText style={s(c.fg(c.grays[50]), c.opacity(fadeStyling))}>
-          <i className="fas fa-circle-notch fa-spin"></i>
+          <i class="fas fa-circle-notch fa-spin"></i>
         </CMText>
         <CMText
           style={s(
@@ -65,8 +65,8 @@ export const AnnotationEditor = ({
         >
           {annotation()?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
         </CMText>
-      </View>
-      <View style={s(c.bg(c.grays[20]), c.py(12), c.grow)}>
+      </div>
+      <div style={s(c.bg(c.grays[20]), c.py(12), c.grow)}>
         <input
           multiline
           value={annotation() ?? ""}
@@ -98,7 +98,7 @@ export const AnnotationEditor = ({
             }
           }}
         />
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

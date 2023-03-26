@@ -18,6 +18,7 @@ import * as Sentry from "@sentry/browser";
 import { BrowserTracing } from "@sentry/tracing";
 import { c, s } from "./utils/styles";
 import "~/global.css";
+import { MetaProvider, renderTags } from "@solidjs/meta";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -80,6 +81,7 @@ export default function Root() {
         />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
+        <meta name="theme-color" content={c.grays[8]} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"

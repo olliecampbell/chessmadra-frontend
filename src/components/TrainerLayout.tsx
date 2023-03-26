@@ -10,7 +10,7 @@ export const TrainerLayout = ({
 }: any) => {
   const isMobile = useIsMobile();
   return (
-    <View
+    <div
       style={{
         flex: 1,
         justifyContent: "flex-start",
@@ -20,10 +20,10 @@ export const TrainerLayout = ({
         width: "100%",
       }}
     >
-      <View style={s(c.fullWidth, c.center, !isMobile && c.minWidth("100vw"))}>
+      <div style={s(c.fullWidth, c.center, !isMobile && c.minWidth("100vw"))}>
         {chessboard ? (
           <>
-            <View
+            <div
               style={s(
                 c.oldContainerStyles(isMobile),
                 isMobile && s(c.alignCenter),
@@ -32,7 +32,7 @@ export const TrainerLayout = ({
                 c.justifyCenter
               )}
             >
-              <View
+              <div
                 style={s(
                   c.width(500),
                   c.maxWidth("100%"),
@@ -42,9 +42,9 @@ export const TrainerLayout = ({
                 )}
               >
                 {chessboard}
-              </View>
+              </div>
               <Spacer height={12} width={24} isMobile={isMobile} />
-              <View
+              <div
                 style={s(
                   c.column,
                   c.width(400),
@@ -53,13 +53,13 @@ export const TrainerLayout = ({
                 )}
               >
                 {children}
-              </View>
-            </View>
+              </div>
+            </div>
           </>
         ) : (
           <>{children}</>
         )}
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

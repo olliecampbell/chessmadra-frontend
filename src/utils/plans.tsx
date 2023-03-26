@@ -25,6 +25,8 @@ import {
   isNil,
 } from "lodash-es";
 import { View } from "~/components/View";
+import { useHovering } from "~/mocks";
+import { JSXElement } from "solid-js";
 
 export interface MetaPlan {
   plan: Plan;
@@ -144,7 +146,7 @@ function getPieceDescription(plan: MetaPlan): string {
   return `${pieceSymbolToPieceName(plan.piece)} on ${plan.plan.fromSquare}`;
 }
 
-type PlanSection = JSX.Element | JSX.Element[] | string;
+type PlanSection = JSXElement
 
 class PlanConsumer {
   metaPlans: MetaPlan[];
@@ -608,16 +610,16 @@ const PlanMoveText = ({
     }
   );
   return (
-    <View style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
+    <div style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
       <CMText
         style={s(
           c.weightSemiBold,
-          c.fg(hovering ? c.purples[65] : c.arrowColors[55])
+          c.fg(hovering() ? c.purples[65] : c.arrowColors[55])
         )}
       >
         {children}
       </CMText>
-    </View>
+    </div>
   );
 };
 

@@ -16,7 +16,7 @@ export const SimplePageLayout = ({ children }: { children: any }) => {
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
   return (
-    <View
+    <div
       style={s(
         c.column,
         c.fullWidth,
@@ -27,6 +27,6 @@ export const SimplePageLayout = ({ children }: { children: any }) => {
       )}
     >
       {children}
-    </View>
+    </div>
   );
 };

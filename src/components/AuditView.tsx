@@ -25,11 +25,11 @@ export const AuditView = (props: {}) => {
   });
   let responsive = useResponsive();
   return (
-    <View
+    <div
       style={s(c.column, c.containerStyles(responsive.bp), c.py(48), c.px(12))}
     >
-      <View style={s(c.column, c.selfStretch)}>
-        <View style={s(c.column, c.px(12), c.py(12), c.bg(c.primaries[40]))}>
+      <div style={s(c.column, c.selfStretch)}>
+        <div style={s(c.column, c.px(12), c.py(12), c.bg(c.primaries[40]))}>
           <CMText style={s(c.weightBold, c.fontSize(32), c.fg(c.grays[95]))}>
             Long Live the King's Gambit
           </CMText>
@@ -39,8 +39,8 @@ export const AuditView = (props: {}) => {
           >
             Repertoire Audit
           </CMText>
-        </View>
-      </View>
+        </div>
+      </div>
       <Spacer height={8} />
       <CMText
         style={s(
@@ -72,13 +72,13 @@ export const AuditView = (props: {}) => {
         Elo band.
       </CMText>
       <Spacer height={48} />
-      <View style={s(c.column, c.px(12), c.py(12), c.bg(c.primaries[40]))}>
+      <div style={s(c.column, c.px(12), c.py(12), c.bg(c.primaries[40]))}>
         <CMText style={s(c.weightBold, c.fontSize(24), c.fg(c.grays[90]))}>
           Missed positions
         </CMText>
-      </View>
+      </div>
       <Spacer height={24} />
-      <View
+      <div
         style={s(
           c.px(12),
           c.grid({
@@ -92,16 +92,16 @@ export const AuditView = (props: {}) => {
         {auditResponse?.eloAudits.map((audit) => (
           <EloAudit audit={audit} />
         ))}
-      </View>
+      </div>
       <Spacer height={48} />
-      <View style={s(c.column, c.px(12), c.py(12), c.bg(c.primaries[40]))}>
+      <div style={s(c.column, c.px(12), c.py(12), c.bg(c.primaries[40]))}>
         <CMText style={s(c.weightBold, c.fontSize(24), c.fg(c.grays[90]))}>
           Excessive lines
         </CMText>
-      </View>
+      </div>
       <Spacer height={24} />
       {auditResponse && <ExcessiveLinesAudit auditResponse={auditResponse} />}
-    </View>
+    </div>
   );
 };
 
@@ -150,8 +150,8 @@ export const ExcessiveLinesAudit = ({
     (cl) => cl.maxIncidence
   );
   return (
-    <View style={s(c.px(12))}>
-      <View
+    <div style={s(c.px(12))}>
+      <div
         style={s(
           c.column,
           c.grid({
@@ -181,8 +181,8 @@ export const ExcessiveLinesAudit = ({
                 c.clickable
               )}
             >
-              <View style={s(c.column, c.py(12), c.flexible, c.grow, c.px(12))}>
-                <View
+              <div style={s(c.column, c.py(12), c.flexible, c.grow, c.px(12))}>
+                <div
                   style={s(
                     c.grid({
                       templateColumns: ["1fr"],
@@ -213,7 +213,7 @@ export const ExcessiveLinesAudit = ({
             line.deleteMove?.sanPlus,
             `[${line.deleteMove?.sanPlus}]`
           )*/}
-                </View>
+                </div>
                 <Spacer height={4} grow />
                 <CMText
                   style={s(
@@ -226,24 +226,24 @@ export const ExcessiveLinesAudit = ({
                   Expected in 1 in{" "}
                   {Math.round(1 / el.maxIncidence).toLocaleString()} games
                 </CMText>
-              </View>
+              </div>
             </Pressable>
           );
         })}
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
 
 export const EloAudit = ({ audit }: { audit: RepertoireAudit }) => {
   let { eloRange, missedLines, excessiveLines } = audit;
   return (
-    <View style={s()}>
+    <div style={s()}>
       <CMText style={s(c.weightBold, c.fontSize(24), c.fg(c.grays[90]))}>
         {eloRange} Elo
       </CMText>
       <Spacer height={12} />
-      <View
+      <div
         style={s(
           c.column,
           c.grid({
@@ -256,13 +256,13 @@ export const EloAudit = ({ audit }: { audit: RepertoireAudit }) => {
       >
         {missedLines.map((ml) => {
           return (
-            <View style={s(c.block)}>
+            <div style={s(c.block)}>
               <MissView miss={ml} />
-            </View>
+            </div>
           );
         })}
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
 
@@ -285,7 +285,7 @@ const MissView = ({ miss }: { miss: AuditMissedLine }) => {
         c.clickable
       )}
     >
-      <View style={s(c.column, c.py(12), c.flexible, c.grow, c.px(12))}>
+      <div style={s(c.column, c.py(12), c.flexible, c.grow, c.px(12))}>
         <CMText
           style={s(
             c.fontSize(16),
@@ -309,8 +309,8 @@ const MissView = ({ miss }: { miss: AuditMissedLine }) => {
         >
           Expected in 1 in {Math.round(1 / miss.incidence)} games
         </CMText>
-      </View>
-      <View style={s(c.size(120))}>
+      </div>
+      <div style={s(c.size(120))}>
         <ChessboardView
           onSquarePress={() => {}}
           state={createStaticChessState({
@@ -318,7 +318,7 @@ const MissView = ({ miss }: { miss: AuditMissedLine }) => {
             side: "white",
           })}
         />
-      </View>
+      </div>
     </Pressable>
   );
 };

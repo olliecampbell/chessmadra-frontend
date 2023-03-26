@@ -1,12 +1,13 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { useIsMobile } from "~/utils/isMobile";
-import { useRepertoireState } from "~/utils/app_state";
+import { quick, useRepertoireState } from "~/utils/app_state";
 import { HeadSiteMeta } from "./PageContainer";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { createEffect, Show } from "solid-js";
 import { GridLoader, Helmet } from "~/mocks";
 import { c, s } from "~/utils/styles";
 import { View } from "./View";
+import { Spinner, SpinnerType } from "solid-spinner";
 
 export const RepertoirePageLayout = ({
   children,
@@ -24,17 +25,20 @@ export const RepertoirePageLayout = ({
   naked?: boolean;
 }) => {
   const isMobile = useIsMobile();
-  const repertoireState = useRepertoireState((s) => s);
-  const repertoireLoading = () => repertoireState.repertoire === undefined;
+  const [repertoireLoading] = useRepertoireState((s) => [
+    s.repertoire === undefined,
+  ]);
 
   createEffect(() => {
     if (repertoireLoading()) {
-      repertoireState.initState();
+      quick((s) => {
+        s.repertoireState.initState();
+      });
     }
   });
   const backgroundColor = c.grays[8];
   return (
-    <View
+    <div
       style={s(
         c.column,
         c.fullWidth,
@@ -43,16 +47,13 @@ export const RepertoirePageLayout = ({
         s(c.minHeight("100vh"))
       )}
     >
-      <Helmet>
-        <meta name="theme-color" content={backgroundColor} />
-      </Helmet>
       <HeadSiteMeta
         siteMeta={{
           title: "Opening Builder",
           description: OPENINGS_DESCRIPTION,
         }}
       />
-      <View
+      <div
         style={s(
           isMobile ? s(c.grow) : c.flexShrink(1),
           centered && c.grow,
@@ -60,40 +61,38 @@ export const RepertoirePageLayout = ({
           repertoireLoading() && c.grow
         )}
       >
-        <>
-          <Show when={repertoireLoading()}>
-            <View style={s(c.grow, c.center)}>
-              <GridLoader color={c.purples[55]} size={20} />
-            </View>
-          </Show>
-          <Show when={!repertoireLoading()}>
-            <View
+        <Show when={repertoireLoading()}>
+          <div style={s(c.grow, c.center)}>
+            <Spinner type={SpinnerType.puff} color={c.primaries[65]} />
+          </div>
+        </Show>
+        <Show when={!repertoireLoading()}>
+          <div
+            style={s(
+              !isMobile && s(c.overflowY("auto")),
+              isMobile && s(c.grow),
+              c.center,
+              c.justifyStart,
+              c.flexShrink(1),
+              fullHeight && s(c.grow),
+              !flushTop && !naked && c.pt(isMobile ? 24 : 48),
+              centered && s(c.grow, c.justifyCenter)
+            )}
+          >
+            <div
               style={s(
-                !isMobile && s(c.overflowY("auto")),
-                isMobile && s(c.grow),
+                !fullHeight && !naked && c.pb(isMobile ? 92 : 180),
                 c.center,
-                c.justifyStart,
-                c.flexShrink(1),
-                fullHeight && s(c.grow),
-                !flushTop && !naked && c.pt(isMobile ? 24 : 48),
-                centered && s(c.grow, c.justifyCenter)
+                c.fullWidth,
+                fullHeight && c.grow
               )}
             >
-              <View
-                style={s(
-                  !fullHeight && !naked && c.pb(isMobile ? 92 : 180),
-                  c.center,
-                  c.fullWidth,
-                  fullHeight && c.grow
-                )}
-              >
-                {children}
-              </View>
-            </View>
-          </Show>
-        </>
-      </View>
+              {children}
+            </div>
+          </div>
+        </Show>
+      </div>
       <Show when={!repertoireLoading()}>{bottom}</Show>
-    </View>
+    </div>
   );
 };

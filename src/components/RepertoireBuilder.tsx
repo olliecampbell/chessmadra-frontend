@@ -17,7 +17,7 @@ export const RepertoireBuilder = () => {
 
   if (underConstruction && !debugUi) {
     return (
-      <View style={s(c.column, c.center)}>
+      <div style={s(c.column, c.center)}>
         {!isMobile && <Spacer height={48} />}
         <i
           className="fa-sharp fa-hammer"
@@ -31,7 +31,7 @@ export const RepertoireBuilder = () => {
         <CMText style={s()}>
           Doing some housekeeping, will be down for a few hours, sorry!
         </CMText>
-      </View>
+      </div>
     );
   } else {
     return <SidebarLayout mode="home" shared={false} />;

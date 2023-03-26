@@ -1,5 +1,7 @@
 // import { useWindowDimensions } from "react-native";
 
+import { useWindowSize } from "@solid-primitives/resize-observer";
+
 export enum ResponsiveBreakpoint {
   xsm = 0,
   sm = 1,
@@ -61,20 +63,20 @@ export interface Responsive {
 
 export const useResponsive = (): Responsive => {
   // solid TODO
-  // const { width: windowWidth } = useWindowDimensions();
+  const windowSize = useWindowSize();
   // const [isMobile, setIsMobile] = useState(true);
   // useEffect(() => {
   //   setIsMobile(windowWidth < 1000);
   // }, []);
   // console.log({ windowWidth });
-  const breakpoint = getBreakpoint(1200);
+  const breakpoint = () => getBreakpoint(windowSize.width);
   return {
-    isMobile: breakpoint <= ResponsiveBreakpoint.md,
-    bp: breakpoint,
+    isMobile: breakpoint() <= ResponsiveBreakpoint.md,
+    bp: breakpoint(),
     switch: <T,>(def: T, ...xs: [ResponsiveBreakpoint, T][]): T => {
       let result = def;
       xs.forEach(([bp, val]) => {
-        if (breakpoint >= bp) {
+        if (breakpoint() >= bp) {
           result = val;
         }
       });

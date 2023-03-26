@@ -69,6 +69,8 @@ import { Responsive } from "./useResponsive";
 import client from "./client";
 import { Component, createContext } from "solid-js";
 import { identify, Identify } from "@amplitude/analytics-browser";
+import { Animated } from "./animation";
+import { animateTo } from "./animation";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -171,13 +173,14 @@ export interface BrowsingState {
   checkShowTargetDepthReached: () => void;
 
   // Fields
-  chessboardState?: ChessboardState;
+  chessboardState: ChessboardState;
   sidebarState: SidebarState;
   previousSidebarState: SidebarState;
   sidebarDirection: "left" | "right";
-  previousSidebarAnim: Animated.Value;
-  currentSidebarAnim: Animated.Value;
-  chessboardShownAnim: Animated.Value;
+  sidebarIter: number;
+  previousSidebarAnim: Animated<number>;
+  currentSidebarAnim: Animated<number>;
+  chessboardShownAnim: Animated<number>;
   repertoireProgressState: BySide<RepertoireProgressState>;
   showPlans: boolean;
 }
@@ -270,10 +273,11 @@ export const getInitialBrowsingState = (
     ...createQuick(setOnly),
     previousSidebarState: null,
     sidebarDirection: null,
+    sidebarIter: 0,
     // TODO: solid
-    previousSidebarAnim: 0,
+    previousSidebarAnim: { value: 0, duration: 200 },
     // TODO: solid
-    currentSidebarAnim: 0,
+    currentSidebarAnim: { value: 0, duration: 200 },
     activeSide: "white",
     sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
@@ -838,34 +842,15 @@ export const getInitialBrowsingState = (
       set(([s, gs]) => {
         s.previousSidebarState = cloneDeep(s.sidebarState);
         s.sidebarDirection = direction;
+        s.sidebarIter += 1;
         const duration = 200;
         // TODO: solid
         // s.previousSidebarAnim.setValue(0.0);
         // s.currentSidebarAnim.setValue(0.0);
-        s.currentSidebarAnim = 0;
-        // Animated.parallel([
-        //   Animated.timing(s.previousSidebarAnim, {
-        //     toValue: 1.0,
-        //     duration: duration,
-        //     easing: Easing.in(Easing.quad),
-        //     useNativeDriver: true,
-        //   }),
-        //   Animated.timing(s.currentSidebarAnim, {
-        //     toValue: 1.0,
-        //     easing: Easing.out(Easing.quad),
-        //     duration: duration,
-        //     delay: duration * 1.0,
-        //     useNativeDriver: true,
-        //   }),
-        // ]).start(({ finished }) => {
-        //   if (!finished) {
-        //     quick((s) => {
-        //       s.repertoireState.browsingState.previousSidebarAnim.setValue(1.0);
-        //       s.repertoireState.browsingState.currentSidebarAnim.setValue(1.0);
-        //       s.repertoireState.browsingState.sidebarDirection = null;
-        //     });
-        //   }
-        // });
+        // skipTo(s.previousSidebarAnim, 0)
+        // skipTo(s.currentSidebarAnim, 0)
+        animateTo(s.previousSidebarAnim, 1.0, { duration, initial: 0.0 });
+        // animateTo(s.currentSidebarAnim, 1.0, duration, duration);
       }),
     addPendingLine: (cfg) =>
       set(([s, gs]) => {

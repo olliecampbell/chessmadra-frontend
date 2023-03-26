@@ -28,14 +28,14 @@ export const Directory = () => {
       />
 
       {failOnTrue(false) && (
-        <View style={s(c.row)}>
+        <div style={s(c.row)}>
           <ColorSwatch colors={c.primaries} />
           <ColorSwatch colors={c.yellows} />
           <ColorSwatch colors={c.grays} />
-        </View>
+        </div>
       )}
       <Spacer height={44} />
-      <View style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
+      <div style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
         <CMText
           style={s(
             c.fg(c.colors.textPrimary),
@@ -63,7 +63,7 @@ export const Directory = () => {
           if you have any feedback, or just to say hi :)
         </CMText>
         <Spacer height={44} />
-        <View
+        <div
           style={s({
             display: "grid",
             gridTemplateColumns: responsive.switch("1fr", [BP.md, "1fr 1fr"]),
@@ -89,9 +89,9 @@ export const Directory = () => {
                   )}
                   to={path}
                 >
-                  <View>
+                  <div>
                     {isNew && (
-                      <View
+                      <div
                         style={s(
                           c.absolute,
                           c.top(0),
@@ -119,10 +119,10 @@ export const Directory = () => {
                         >
                           New
                         </CMText>
-                      </View>
+                      </div>
                     )}
                     {beta && !isNew && (
-                      <View
+                      <div
                         style={s(
                           c.absolute,
                           c.top(0),
@@ -144,7 +144,7 @@ export const Directory = () => {
                         >
                           Beta
                         </CMText>
-                      </View>
+                      </div>
                     )}
                     <CMText
                       style={s(
@@ -168,25 +168,25 @@ export const Directory = () => {
                         Start
                       </CMText>
                     </Pressable>
-                  </View>
+                  </div>
                 </Link>
               );
             })}
-        </View>
-      </View>
+        </div>
+      </div>
     </PageContainer>
   );
 };
 
 export const ColorSwatch = ({ colors }) => {
   return (
-    <View style={s(c.column, c.width(100))}>
+    <div style={s(c.column, c.width(100))}>
       {times(20).map((i) => {
         let color = colors[i * 5];
         return (
-          <View style={s(c.bg(color), c.selfStretch, c.height(20))}></View>
+          <div style={s(c.bg(color), c.selfStretch, c.height(20))}></div>
         );
       })}
-    </View>
+    </div>
   );
 };

@@ -31,7 +31,7 @@ export const SelectOneOf = <T,>({
   textStyles?: any;
 }) => {
   return (
-    <View
+    <div
       style={s(
         c.overflowHidden,
         horizontal ? c.row : c.column,
@@ -95,6 +95,6 @@ export const SelectOneOf = <T,>({
           return <Spacer key={`space-${i}`} height={0} />;
         }
       )}
-    </View>
+    </div>
   );
 };

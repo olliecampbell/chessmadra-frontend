@@ -56,6 +56,8 @@ import { GameResultsBar } from "~/components/GameResultsBar";
 import { pluralize } from "./pluralize";
 import { ReviewText } from "~/components/ReviewText";
 import { View } from "~/components/View";
+import { Accessor } from "solid-js";
+import { destructure } from "@solid-primitives/destructure";
 
 interface Section {
   width: number;
@@ -98,7 +100,7 @@ export const useSections = ({
   );
 
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  if (mode == "browse") {
+  if (mode() == "browse") {
     sections = sections.concat(
       getReviewModeSections({
         myTurn,
@@ -107,7 +109,7 @@ export const useSections = ({
         isMobile,
         debugUi,
         threshold,
-        activeSide,
+        activeSide: activeSide(),
       })
     );
   } else {
@@ -119,7 +121,7 @@ export const useSections = ({
         isMobile,
         debugUi,
         threshold,
-        activeSide,
+        activeSide: activeSide(),
       })
     );
   }
@@ -168,7 +170,7 @@ const getBuildModeSections = ({
         return (
           <>
             {
-              <View style={s(c.column)}>
+              <div style={s(c.column)}>
                 <CMText
                   style={s(
                     textStyles,
@@ -189,7 +191,7 @@ const getBuildModeSections = ({
                     {(playRate * 100).toFixed(2)}
                   </CMText>
                 )}
-              </View>
+              </div>
             }
           </>
         );
@@ -257,7 +259,7 @@ const getBuildModeSections = ({
           <>
             {suggestedMove?.stockfish && (
               <>
-                <View
+                <div
                   style={s(
                     c.row,
                     c.bg(whiteWinning ? c.grays[90] : c.grays[4]),
@@ -277,7 +279,7 @@ const getBuildModeSections = ({
                   >
                     {formatStockfishEval(suggestedMove?.stockfish)}
                   </CMText>
-                </View>
+                </div>
               </>
             )}
           </>
@@ -304,13 +306,13 @@ const getBuildModeSections = ({
         return (
           <>
             {suggestedMove && (
-              <View style={s(c.fullWidth)}>
+              <div style={s(c.fullWidth)}>
                 <GameResultsBar
                   previousResults={positionReport?.results}
                   activeSide={activeSide}
                   gameResults={suggestedMove.results}
                 />
-              </View>
+              </div>
             )}
           </>
         );
@@ -324,7 +326,7 @@ const getBuildModeSections = ({
 const CoverageProgressBar = ({
   tableResponse,
 }: {
-  tableResponse: TableResponse;
+  tableResponse: Accessor<TableResponse>;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const threshold = useUserState((s) => s.getCurrentThreshold());
@@ -334,60 +336,32 @@ const CoverageProgressBar = ({
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
     useRepertoireState((s) => [
-      s.repertoire[activeSide]?.positionResponses[epdAfter]?.length > 0,
-      s.numMovesFromEpd[activeSide][epdAfter],
-      s.expectedNumMovesFromEpd[activeSide][epdAfter],
-      s.repertoireGrades[activeSide]?.biggestMisses[epdAfter],
+      s.repertoire[activeSide()]?.positionResponses[epdAfter]?.length > 0,
+      s.numMovesFromEpd[activeSide()][epdAfter],
+      s.expectedNumMovesFromEpd[activeSide()][epdAfter],
+      s.repertoireGrades[activeSide()]?.biggestMisses[epdAfter],
     ]);
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
-  // let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
-  // let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
-  let completed = isNil(missFromHere);
-  // if (!completed) {
-  //   console.log({
-  //     numMovesFromHere,
-  //     expectedNumMovesNeeded,
-  //     san: tableResponse.suggestedMove?.sanPlus,
-  //     incidence: tableResponse.repertoireMove?.incidence,
-  //   });
-  // }
-  let debugElements = debugUi && (
-    <View style={s(c.column)}>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        incidence: {(tableResponse?.suggestedMove?.incidence * 100).toFixed(2)}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        Moves from here: {numMovesFromHere}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        Expected # from here: {expectedNumMovesNeeded}
-      </CMText>
-    </View>
-  );
-  // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
-  // if (incidence < threshold && !hasResponse) {
-  //   return (
-  //     <View style={s(c.column)}>
-  //       <CMText style={s(c.fontSize(12), c.fg(c.grays[60]))}>Not needed</CMText>
-  //       {debugElements}
-  //     </View>
-  //   );
-  // }
-  let progress = clamp(
-    getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded),
-    5,
-    95
-  );
-  if (!hasResponse) {
-    progress = 0;
-    completed = false;
-  }
-  const inProgressColor = progress < 20 ? c.reds[65] : c.oranges[65];
+  let { completed, progress } = destructure(() => {
+    let completed = isNil(missFromHere());
+    let progress = clamp(
+      getCoverageProgress(numMovesFromHere(), expectedNumMovesNeeded()),
+      5,
+      95
+    );
+    if (!hasResponse()) {
+      progress = 0;
+      completed = false;
+    }
+    return { completed, progress };
+  });
+
+  const inProgressColor = () => (progress() < 20 ? c.reds[65] : c.oranges[65]);
   return (
-    <View style={s(c.column, c.fullWidth)}>
-      <View
+    <div style={s(c.column, c.fullWidth)}>
+      <div
         style={s(
           c.fullWidth,
           c.bg(backgroundColor),
@@ -396,17 +370,15 @@ const CoverageProgressBar = ({
           c.height(4)
         )}
       >
-        <View
+        <div
           style={s(
-            c.width(completed ? "100%" : `${progress}%`),
-            c.bg(completed ? completedColor : inProgressColor),
+            c.width(completed() ? "100%" : `${progress}%`),
+            c.bg(completed() ? completedColor : inProgressColor),
             c.fullHeight
           )}
-        ></View>
-      </View>
-
-      {debugElements}
-    </View>
+        ></div>
+      </div>
+    </div>
   );
 };
 const getReviewModeSections = ({

@@ -46,7 +46,7 @@ export const SidebarOnboarding = function SidebarOnboarding() {
   } else if (stage === SidebarOnboardingStage.TrimRepertoire) {
     inner = <TrimRepertoireOnboarding />;
   }
-  return <View style={s(c.column)}>{inner}</View>;
+  return <div style={s(c.column)}>{inner}</div>;
 };
 
 const OnboardingIntro = () => {
@@ -58,24 +58,24 @@ const OnboardingIntro = () => {
     "Thoroughly learn your lines using next-gen spaced repetition",
   ];
   return (
-    <View style={s(c.column)}>
+    <div style={s(c.column)}>
       <RepertoireEditingHeader>Welcome to Chess Madra!</RepertoireEditingHeader>
       <Spacer height={12} />
-      <View style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
+      <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
         <CMText style={s()}>This site will help you:</CMText>
-        <View style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
+        <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
           {bullets.map((bullet, i) => (
-            <View style={s(c.row, c.alignCenter, c.pl(12))} key={i}>
+            <div style={s(c.row, c.alignCenter, c.pl(12))} key={i}>
               <i
                 className="fas fa-circle"
                 style={s(c.fg(c.grays[60]), c.fontSize(5))}
               />
               <Spacer width={8} />
               <CMText style={s()}>{bullet}</CMText>
-            </View>
+            </div>
           ))}
-        </View>
-      </View>
+        </div>
+      </div>
       <Spacer height={36} />
       <SidebarFullWidthButton
         action={{
@@ -102,27 +102,27 @@ const OnboardingIntro = () => {
           text: "Other tools",
         }}
       />
-    </View>
+    </div>
   );
 };
 
 const ConnectAccountOnboarding = () => {
   const responsive = useResponsive();
   return (
-    <View style={s(c.column)}>
+    <div style={s(c.column)}>
       <RepertoireEditingHeader>
         Connect your online chess account
       </RepertoireEditingHeader>
       <Spacer height={12} />
-      <View style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
+      <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
         <CMText style={s()}>
           We'll use your rating to prepare you for common lines you'll encounter
           at your level. This will also let you save your repertoire. Chess.com
           integration coming soon.
         </CMText>
-      </View>
+      </div>
       <Spacer height={36} />
-      <View style={s(c.gridColumn({ gap: 12 }))}>
+      <div style={s(c.gridColumn({ gap: 12 }))}>
         {/*
         <SidebarFullWidthButton
           action={{
@@ -157,8 +157,8 @@ const ConnectAccountOnboarding = () => {
             text: "Skip this step for now",
           }}
         />
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
 
@@ -167,12 +167,12 @@ const SetRatingOnboarding = () => {
   const [ratingRange, setRatingRange] = createSignal("1300-1500");
   const [ratingSource, setRatingSource] = createSignal(RatingSource.Lichess);
   return (
-    <View style={s(c.column)}>
+    <div style={s(c.column)}>
       <RepertoireEditingHeader>
         What's your current rating?
       </RepertoireEditingHeader>
       <Spacer height={12} />
-      <View
+      <div
         style={s(
           c.column,
           c.px(c.getSidebarPadding(responsive)),
@@ -185,7 +185,7 @@ const SetRatingOnboarding = () => {
           your level.
         </CMText>
         <Spacer height={12} />
-        <View style={s(c.row, c.alignCenter)}>
+        <div style={s(c.row, c.alignCenter)}>
           <Dropdown
             onSelect={(range) => {
               setRatingRange(range);
@@ -235,7 +235,7 @@ const SetRatingOnboarding = () => {
             }}
           ></Dropdown>
           <Spacer width={32} />
-          <View style={s(c.row)}>
+          <div style={s(c.row)}>
             <Dropdown
               onSelect={(choice) => {
                 console.log("On select", choice);
@@ -272,9 +272,9 @@ const SetRatingOnboarding = () => {
                     <Pressable style={s(containerStyles)} onPress={onPress}>
                       <CMText style={s(textStyles)}>Lichess</CMText>
                       <Spacer width={8} />
-                      <View style={s(c.size(20))}>
+                      <div style={s(c.size(20))}>
                         <LichessLogoIcon color={textColor} />
-                      </View>
+                      </div>
                     </Pressable>
                   );
                 } else if (choice === RatingSource.USCF) {
@@ -294,24 +294,24 @@ const SetRatingOnboarding = () => {
                     <Pressable style={s(containerStyles)} onPress={onPress}>
                       <CMText style={s(textStyles)}>Chess.com</CMText>
                       <Spacer width={8} />
-                      <View style={s(c.size(20))}>
+                      <div style={s(c.size(20))}>
                         <LichessLogoIcon color={textColor} />
 
                         <img
                           src={"/chess_com_logo.png"}
                           style={s(c.size(24))}
                         />
-                      </View>
+                      </div>
                     </Pressable>
                   );
                 }
               }}
             ></Dropdown>
-          </View>
-        </View>
-      </View>
+          </div>
+        </div>
+      </div>
       <Spacer height={36} />
-      <View style={s(c.gridColumn({ gap: 12 }))}>
+      <div style={s(c.gridColumn({ gap: 12 }))}>
         <SidebarFullWidthButton
           action={{
             onPress: () => {
@@ -340,8 +340,8 @@ const SetRatingOnboarding = () => {
             text: "I don't know, skip this step",
           }}
         />
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
 
@@ -576,7 +576,7 @@ const ImportOnboarding = () => {
   if (importType === SidebarOnboardingImportType.PGN) {
     header = "Please upload your PGN file";
     body = (
-      <View style={s(c.pt(20))}>
+      <div style={s(c.pt(20))}>
         <DragAndDropInput
           style={s(c.height(80))}
           humanName={`Tap to select your ${capitalize(
@@ -592,20 +592,20 @@ const ImportOnboarding = () => {
             }
           }}
         />
-      </View>
+      </div>
     );
   }
   if (importType === SidebarOnboardingImportType.LichessUsername) {
     header = "What's your lichess username?";
     body = (
-      <View style={s(c.pt(20))}>
+      <div style={s(c.pt(20))}>
         <CMTextInput
           placeholder="username"
           value={username}
           setValue={setUsername}
           style={s(c.maxWidth(200))}
         />
-      </View>
+      </div>
     );
     actions.push({
       text: "Submit",

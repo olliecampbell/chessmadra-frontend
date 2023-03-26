@@ -23,8 +23,8 @@ export const LazyLoad = ({
   const onScreen = useOnScreen(ref, "300px");
 
   return (
-    <View ref={ref} style={s(style)}>
+    <div ref={ref} style={s(style)}>
       {onScreen && children}
-    </View>
+    </div>
   );
 };

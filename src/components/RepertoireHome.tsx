@@ -51,7 +51,7 @@ import {
 } from "./SidebarSettings";
 import { BOARD_THEMES_BY_ID } from "~/utils/theming";
 import { View } from "./View";
-import { createEffect, Show, splitProps } from "solid-js";
+import { Accessor, createEffect, For, Show, splitProps } from "solid-js";
 
 export const RepertoireHome = (props: {}) => {
   const userState = useUserState((s) => s);
@@ -59,6 +59,7 @@ export const RepertoireHome = (props: {}) => {
   // let { theme: themeId, pieceSet } = splitProps(user, ["theme", "pieceSet"]);
   let theme = () => BOARD_THEMES_BY_ID[themeId()];
   let pieceSet = () => userState.user?.pieceSet;
+  const [showPlans] = useBrowsingState(([s]) => [s.showPlans]);
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
       bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -69,38 +70,39 @@ export const RepertoireHome = (props: {}) => {
   const [progressState] = useBrowsingState(([s]) => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
-  const totalDue =
-    numMovesDueBySide?.white ?? 0 + numMovesDueBySide?.black ?? 0;
-  const overallActions: SidebarAction[] = [];
-  if (totalDue > 0) {
-    overallActions.push({
-      text: "Practice all moves due for review",
-      right: (
-        <ReviewText
-          date={
-            earliestDueDate["white"] < earliestDueDate["black"]
-              ? earliestDueDate["white"]
-              : earliestDueDate["black"]
-          }
-          numDue={totalDue}
-        />
-      ),
-      style: "primary",
-      onPress: () => {
-        trackEvent("home.practice_all_due");
-        quick((s) => {
-          s.repertoireState.reviewState.startReview(null, {});
-        });
-      },
-    });
-  }
-  createEffect(() => {
-    console.log("userState.user", userState.user);
-  });
+  const overallActions: Accessor<SidebarAction[]> = () => {
+    const totalDue =
+      numMovesDueBySide()?.white ?? 0 + numMovesDueBySide()?.black ?? 0;
+    const actions = [];
+
+    if (totalDue > 0) {
+      actions.push({
+        text: "Practice all moves due for review",
+        right: (
+          <ReviewText
+            date={
+              earliestDueDate()["white"] < earliestDueDate()["black"]
+                ? earliestDueDate()["white"]
+                : earliestDueDate()["black"]
+            }
+            numDue={totalDue}
+          />
+        ),
+        style: "primary",
+        onPress: () => {
+          trackEvent("home.practice_all_due");
+          quick((s) => {
+            s.repertoireState.reviewState.startReview(null, {});
+          });
+        },
+      } as SidebarAction);
+    }
+    return actions;
+  };
   return (
     <Show when={userState.user}>
       <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
-        <View style={s(c.column, c.fullWidth, c.gap("10px"))}>
+        <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
           {SIDES.map((side, i) => {
             return (
               <SidebarFullWidthButton
@@ -109,9 +111,9 @@ export const RepertoireHome = (props: {}) => {
                   text: `${capitalize(side)} repertoire`,
                   right: (
                     <CMText style={s(c.fg(c.colors.textSecondary))}>
-                      {numLines[side] > 0
+                      {numLines()[side] > 0
                         ? `${Math.round(
-                            progressState[side].percentComplete
+                            progressState()[side].percentComplete
                           )}% complete`
                         : "Not started"}
                     </CMText>
@@ -119,7 +121,7 @@ export const RepertoireHome = (props: {}) => {
                   onPress: () => {
                     quick((s) => {
                       trackEvent("home.select_side", { side });
-                      if (numLines[side] > 0) {
+                      if (numLines()[side] > 0) {
                         s.repertoireState.browsingState.moveSidebarState(
                           "right"
                         );
@@ -136,36 +138,19 @@ export const RepertoireHome = (props: {}) => {
               />
             );
           })}
-        </View>
+        </div>
         <Spacer height={46} />
-        {!isEmpty(overallActions) && (
-          <>
-            {/*
-          <SidebarSectionHeader
-            text="It's time to review the moves you've added"
-            right={
-              <ReviewText
-                date={
-                  earliestDueDate["white"] < earliestDueDate["black"]
-                    ? earliestDueDate["white"]
-                    : earliestDueDate["black"]
-                }
-                numDue={totalDue}
-              />
-            }
-          />
-        */}
-            <View style={s(c.gridColumn({ gap: 12 }))}>
-              {overallActions.map((action, i) => {
-                return <SidebarFullWidthButton key={i} action={action} />;
-              })}
-            </View>
-            <Spacer height={46} />
-          </>
-        )}
+        <Show when={overallActions}>
+          <div style={s(c.gridColumn({ gap: 12 }))}>
+            <For each={overallActions()}>
+              {(action, i) => <SidebarFullWidthButton action={action} />}
+            </For>
+          </div>
+          <Spacer height={46} />
+        </Show>
         <>
           <SidebarSectionHeader text="Repertoire settings" />
-          <View style={s()}>
+          <div style={s()}>
             {[
               {
                 onPress: () => {
@@ -221,7 +206,7 @@ export const RepertoireHome = (props: {}) => {
             ].map((action: SidebarAction, i) => {
               return <SidebarFullWidthButton key={i} action={action} />;
             })}
-          </View>
+          </div>
           <Spacer height={46} />
         </>
       </SidebarTemplate>

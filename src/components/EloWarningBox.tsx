@@ -11,7 +11,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
   let [] = useRepertoireState((s) => []);
   let buttonStyles = s(c.fontSize(14));
   return (
-    <View
+    <div
       style={s(
         c.px(12),
         c.py(12),
@@ -35,7 +35,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
         your level.
       </CMText>
       <Spacer height={12} />
-      <View style={s(c.row, c.fullWidth, c.justifyEnd, c.alignCenter)}>
+      <div style={s(c.row, c.fullWidth, c.justifyEnd, c.alignCenter)}>
         <Button
           style={s(buttonStyles)}
           onPress={() => {
@@ -66,7 +66,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
             Update
           </CMText>
         </Button>
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

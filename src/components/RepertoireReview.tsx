@@ -74,7 +74,7 @@ export const RepertoireReview = (props: {}) => {
     >
       {currentMove?.moves.length > 1 && (
         <>
-          <View
+          <div
             style={s(
               c.row,
               c.overflowHidden,
@@ -93,23 +93,23 @@ export const RepertoireReview = (props: {}) => {
                   completedReviewPositionMoves[x.sanPlus]
                 );
                 return (
-                  <View
+                  <div
                     style={s(
                       hasCompleted ? c.bg(c.grays[80]) : c.bg(c.grays[10]),
                       c.grow
                     )}
-                  ></View>
+                  ></div>
                 );
               }),
               (i) => {
                 return (
-                  <View
+                  <div
                     style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
-                  ></View>
+                  ></div>
                 );
               }
             )}
-          </View>
+          </div>
           <Spacer height={12} />
         </>
       )}

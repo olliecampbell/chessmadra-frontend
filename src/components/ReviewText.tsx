@@ -59,14 +59,14 @@ export const ReviewText = ({
   return (
     <>
       {
-        <View style={s(c.row, c.alignCenter)}>
+        <div style={s(c.row, c.alignCenter)}>
           <i
             style={s(c.fg(color), c.fontSize(12))}
             className="fa-regular fa-clock"
           ></i>
           <Spacer width={4} />
           <CMText style={s(textStyles, c.fg(color))}>{dueString}</CMText>
-        </View>
+        </div>
       }
     </>
   );

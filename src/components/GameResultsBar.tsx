@@ -24,7 +24,7 @@ export const GameResultsBar = ({
   let threshold = 0.2;
   let fontSize = 10;
   let whiteResults = (
-    <View
+    <div
       style={s(
         c.width(`${(gameResults.white / total) * 100}%`),
         c.bg(c.grays[90]),
@@ -55,10 +55,10 @@ export const GameResultsBar = ({
           )}
         </>
       )}
-    </View>
+    </div>
   );
   let blackResults = (
-    <View
+    <div
       style={s(
         c.width(`${(gameResults.black / total) * 100}%`),
         c.bg(c.grays[6]),
@@ -89,14 +89,14 @@ export const GameResultsBar = ({
           )}
         </>
       )}
-    </View>
+    </div>
   );
   let [first, last] =
     activeSide === "white"
       ? [whiteResults, blackResults]
       : [blackResults, whiteResults];
   return (
-    <View
+    <div
       style={s(
         c.row,
         c.fullWidth,
@@ -107,7 +107,7 @@ export const GameResultsBar = ({
       )}
     >
       {first}
-      <View
+      <div
         style={s(
           c.width(`${(gameResults.draw / total) * 100}%`),
           c.bg(c.grays[40]),
@@ -123,9 +123,9 @@ export const GameResultsBar = ({
               {formatWinPercentage(gameResults.draw / total)}
             </CMText>
           )}
-      </View>
+      </div>
       {last}
-    </View>
+    </div>
   );
 };
 
@@ -158,8 +158,8 @@ export const MovementIndicator = ({
     return null;
   }
   return (
-    <View style={s()}>
+    <div style={s()}>
       <i className={icon} style={s(c.fg(color), c.fontSize(12))} />
-    </View>
+    </div>
   );
 };

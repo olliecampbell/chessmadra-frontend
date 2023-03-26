@@ -8,9 +8,18 @@ export const CMText = (props) => {
         props,
         style: s(
           {
-            fontFamily: "Inter",
-            // fontVariationSettings: '"wdth" 112.5',
+            border: "0px solid black",
+            "box-sizing": "border-box",
+            display: "inline",
+            "list-style": "none",
+            margin: "0px",
+            padding: "0px",
+            "text-align": "inherit",
+            "text-decoration": "none",
+            "white-space": "pre-wrap",
+            "overflow-wrap": "break-word",
           },
+          c.fontSize(14),
           c.weightRegular,
           c.fg(c.colors.textSecondary),
           props.style

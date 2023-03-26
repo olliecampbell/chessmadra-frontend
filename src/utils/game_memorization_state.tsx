@@ -147,11 +147,8 @@ export const getInitialGameMemorizationState = (
           return;
         }
         s.moveNumber += 1;
-        console.log("Move is ", move);
         s.nextMoves = drop(s.nextMoves, 1);
-        console.log("next moves", logProxy(s.nextMoves));
         let moveObj = s.chessboardState.position.validateMoves([move])?.[0];
-        console.log("Move obj", moveObj);
         if (animate) {
           s.chessboardState.animatePieceMove(
             moveObj,

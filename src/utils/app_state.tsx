@@ -41,8 +41,9 @@ import {
   SidebarState,
   SidebarStateContext,
 } from "./browsing_state";
-import { useContext } from "solid-js";
+import { Accessor, createEffect, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
+import { destructure } from "@solid-primitives/destructure";
 
 enableMapSet();
 
@@ -283,27 +284,57 @@ export const useStateSlice = <Y, T>(
   return useAppStateInternal((s) => selector(sliceSelector(s)));
 };
 
-export const useRepertoireState = <T,>(
+export const useStateSliceDestructure = <Y, T extends any[]>(
+  selector: (_: Y) => T,
+  sliceSelector: (_: AppState) => Y,
+  _config?: Partial<EqualityConfig>
+): AccessorArray<T> => {
+  let config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
+  config.stackTrace = getStackTrace();
+  const stateSlice = () =>
+    useAppStateInternal((s) => selector(sliceSelector(s)));
+  return destructure(stateSlice, { memo: true });
+};
+
+export const useRepertoireState = <T extends any[]>(
   fn: (_: RepertoireState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.repertoireState, config);
+  return useStateSliceDestructure(fn, (s) => s.repertoireState, config);
 };
 
-export const useBrowsingState = <T,>(
+export const useBrowsingState = <T extends any[]>(
   fn: (_: [BrowsingState, RepertoireState]) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(
+  return useStateSliceDestructure(
     fn,
-    (s) => [s.repertoireState.browsingState, s.repertoireState],
+    (s) =>
+      [s.repertoireState.browsingState, s.repertoireState] as [
+        BrowsingState,
+        RepertoireState
+      ],
     config
   );
 };
 
-export const useSidebarState = (): (() => SidebarState) => {
+// type ReactiveSource = [] | any[] | Object;
+// type DeepDestructure<T extends ReactiveSource> = {
+//   readonly [K in keyof T]-?: T[K] extends ReactiveSource
+//     ? T[K] extends AnyFunction
+//       ? Accessor<T[K]>
+//       : DeepDestructure<T[K]>
+//     : Accessor<T[K]>;
+// };
+type AccessorArray<T extends any[]> = {
+  [K in keyof T]: Accessor<T[K]>;
+};
+
+export const useSidebarState = <T extends any[]>(
+  f: (s: [SidebarState, BrowsingState, RepertoireState]) => T
+): AccessorArray<T> => {
   const usePrevious = useContext(SidebarStateContext);
-  return () => {
+  const sidebarState = () => {
     if (usePrevious) {
       return (
         getAppState().repertoireState.browsingState.previousSidebarState ||
@@ -313,6 +344,15 @@ export const useSidebarState = (): (() => SidebarState) => {
       return getAppState().repertoireState.browsingState.sidebarState;
     }
   };
+  return destructure(
+    () =>
+      f([
+        sidebarState(),
+        getAppState().repertoireState.browsingState,
+        getAppState().repertoireState,
+      ]),
+    { memo: true }
+  );
 };
 
 export const useVisualizationState = <T,>(

@@ -34,72 +34,66 @@ import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
 import { View } from "./View";
+import { Intersperse } from "./Intersperse";
+import { createEffect, Show } from "solid-js";
 
 export const TargetCoverageReachedView = () => {
   let [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
-  let actions = [];
+  let actions = () => {
+    let acts = [];
+    if (showPlansState().coverageReached) {
+      acts = [
+        {
+          onPress: () => {
+            trackEvent(`${mode}.save_line`);
+            quick((s) => {
+              s.repertoireState.browsingState.addPendingLine();
+            });
+          },
+          style: "primary",
+          text: "I'm done, save this line to my repertoire",
+        },
+        {
+          onPress: () => {
+            quick((s) => {
+              trackEvent(`${mode}.plans_view.keep_adding`);
+              s.repertoireState.browsingState.moveSidebarState("right");
+              s.repertoireState.browsingState.dismissTransientSidebarState();
+            });
+          },
+          style: "primary",
+          text: "Keep adding moves to this line",
+        },
+      ];
+    }
+    return acts;
+  };
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  if (showPlansState.coverageReached) {
-    actions = [
-      {
-        onPress: () => {
-          trackEvent(`${mode}.save_line`);
-          quick((s) => {
-            s.repertoireState.browsingState.addPendingLine();
-          });
-        },
-        style: "primary",
-        text: "I'm done, save this line to my repertoire",
-      },
-      {
-        onPress: () => {
-          quick((s) => {
-            trackEvent(`${mode}.plans_view.keep_adding`);
-            s.repertoireState.browsingState.moveSidebarState("right");
-            s.repertoireState.browsingState.dismissTransientSidebarState();
-          });
-        },
-        style: "primary",
-        text: "Keep adding moves to this line",
-      },
-    ];
-  }
 
   return (
     <SidebarTemplate
       header={
-        showPlansState.coverageReached
+        showPlansState().coverageReached
           ? "You've reached your target depth!"
           : "How to play from here"
       }
-      actions={actions}
+      actions={actions()}
       bodyPadding={true}
     >
-      {/*<CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-        Feature request? Bug report? Etc? Let us know
-      </CMText>
       <Spacer height={12} />
-*/}
-      <Spacer height={12} />
-      {!isEmpty(planSections) ? (
+      <Show when={!isEmpty(planSections())}>
         <PlayFromHere />
-      ) : (
-        <>
-          <CMText
-            style={s(
-              c.weightRegular,
-              c.fontSize(14),
-              c.fg(c.colors.textPrimary)
-            )}
-          >
-            Do you want to keep adding moves to this line, or save your
-            progress?
-          </CMText>
-        </>
-      )}
+      </Show>
+      <Show when={isEmpty(planSections())}>
+        <CMText
+          style={s(c.weightRegular, c.fontSize(14), c.fg(c.colors.textPrimary))}
+        >
+          Do you want to keep adding moves to this line, or save your progress?
+        </CMText>
+      </Show>
     </SidebarTemplate>
   );
 };
@@ -110,37 +104,40 @@ export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
+  createEffect(() => {
+    console.log("plans", planSections);
+  });
   return (
     <>
-      {(showPlansState.coverageReached || isolated) && (
-        <>
-          <CMText
-            style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
-          >
-            How to play from here
-          </CMText>
-          <Spacer height={18} />
-        </>
-      )}
-      <View>
-        {intersperse(
-          planSections.map((section, i) => {
+      <Show when={showPlansState().coverageReached || isolated}>
+        <CMText
+          style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
+        >
+          How to play from here
+        </CMText>
+        <Spacer height={18} />
+      </Show>
+      <div>
+        <Intersperse
+          separator={() => {
+            return <Spacer height={12} />;
+          }}
+          each={planSections}
+        >
+          {(section, i) => {
             return (
-              <View style={s(c.row, c.alignStart)} key={i}>
+              <div style={s(c.row, c.alignStart)}>
                 <i
-                  className="fa-solid fa-circle"
+                  class="fa-solid fa-circle"
                   style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
                 />
                 <Spacer width={8} />
                 <CMText style={s(c.fg(c.colors.textPrimary))}>{section}</CMText>
-              </View>
+              </div>
             );
-          }),
-          (k) => {
-            return <Spacer key={k} height={12} />;
-          }
-        )}
-      </View>
+          }}
+        </Intersperse>
+      </div>
     </>
   );
 };

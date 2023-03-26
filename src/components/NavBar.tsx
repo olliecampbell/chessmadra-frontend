@@ -9,6 +9,7 @@ import { CMText } from "./CMText";
 import { some } from "lodash-es";
 import { useRepertoireState, useAppState } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
+import { Show } from "solid-js";
 
 export const OPENINGS_DESCRIPTION = `Create your own opening repertoire. Use spaced repetition to memorize it. Uses statistics from millions of games to find the biggest gaps in your repertoire.`;
 export const CLIMB_DESCRIPTION = `Train your visualization! But with each solved puzzle the visualization and puzzle difficulty will increase. Solve puzzles quickly to get more points!`;
@@ -93,7 +94,7 @@ export const NavBar = (props: {}) => {
   });
   if (!isMobile) {
     return (
-      <View
+      <div
         style={s(
           c.row,
           c.px(padding),
@@ -153,14 +154,14 @@ export const NavBar = (props: {}) => {
             }),
           (i) => {
             return (
-              <View
+              <div
                 key={i}
                 style={s(c.width(1), c.height(34), c.bg(c.grays[30]), c.mx(12))}
-              ></View>
+              ></div>
             );
           }
         )}
-        <View
+        <div
           style={
             s(c.pl(24))
             // c.absolute,
@@ -169,7 +170,7 @@ export const NavBar = (props: {}) => {
             // c.right(padding)
           }
         >
-          {needsLogin && (
+        <Show when={needsLogin }>
             <Link to="/login">
               <CMText
                 style={s(
@@ -186,15 +187,15 @@ export const NavBar = (props: {}) => {
                 Log in / Register
               </CMText>
             </Link>
-          )}
-        </View>
-      </View>
+            </Show>
+        </div>
+      </div>
     );
   }
   const mobileDrawerWidth = 240;
   return (
     <>
-      <View
+      <div
         style={s(
           c.row,
           c.center,
@@ -215,7 +216,7 @@ export const NavBar = (props: {}) => {
             className="fa-sharp fa-bars"
           ></i>
         </Button>
-        {needsLogin && (
+        <Show when={needsLogin }>
           <>
             <Spacer width={0} grow />
             <Link to="/login">
@@ -235,9 +236,9 @@ export const NavBar = (props: {}) => {
               </CMText>
             </Link>
           </>
-        )}
-      </View>
-      <View
+          </Show>
+      </div>
+      <div
         style={s(
           c.fixed,
           c.top(0),
@@ -250,8 +251,8 @@ export const NavBar = (props: {}) => {
           c.noPointerEvents,
           c.zIndex(8)
         )}
-      ></View>
-      <View
+      ></div>
+      <div
         style={s(
           c.fixed,
           c.left(mobileNavOpen ? 0 : -mobileDrawerWidth),
@@ -263,7 +264,7 @@ export const NavBar = (props: {}) => {
         )}
         ref={mobileDrawerRef}
       >
-        <View
+        <div
           style={s(
             c.fullHeight,
             c.fullWidth,
@@ -311,8 +312,8 @@ export const NavBar = (props: {}) => {
               return <Spacer key={i} height={32} />;
             }
           )}
-        </View>
-      </View>
+        </div>
+      </div>
     </>
   );
 };

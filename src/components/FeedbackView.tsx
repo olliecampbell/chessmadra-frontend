@@ -4,7 +4,7 @@ import { useResponsive } from "~/utils/useResponsive";
 import { CMTextInput } from "./TextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { useUserState } from "~/utils/app_state";
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { trackEvent } from "~/utils/trackEvent";
 import client from "~/utils/client";
 
@@ -60,7 +60,7 @@ export const FeedbackView = () => {
       <Spacer height={12} />
 */}
       <Spacer height={12} />
-      {!success && (
+      <Show when={!success }>
         <>
           {isEmpty(user?.email) && (
             <>
@@ -79,7 +79,7 @@ export const FeedbackView = () => {
             placeholder={"Your feedback here..."}
           />
         </>
-      )}
+        </Show>
     </SidebarTemplate>
   );
 };

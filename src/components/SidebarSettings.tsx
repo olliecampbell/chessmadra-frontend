@@ -24,7 +24,7 @@ import {
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
 import { View } from "./View";
-import { Component } from "solid-js";
+import { Accessor, Component, Show } from "solid-js";
 
 export const SidebarSetting = () => {
   return (
@@ -44,15 +44,15 @@ export const SidebarSelectOneOf = <T,>({
   activeChoice,
   title,
 }: {
-  title?: string;
-  description?: string;
-  choices: T[];
-  activeChoice: T;
+  title: Accessor<string>;
+  description: Accessor<string>;
+  choices: Accessor<T[]>;
+  activeChoice: Accessor<T>;
   onSelect: (_: T, i?: number) => void;
   renderChoice: (x: T) => Component;
 }) => {
   const responsive = useResponsive();
-  let actions = choices.map((choice, i) => {
+  let actions = () => choices.map((choice, i) => {
     const active = choice === activeChoice;
     return {
       style: active ? "primary" : ("secondary" as SidebarAction["style"]),
@@ -64,8 +64,8 @@ export const SidebarSelectOneOf = <T,>({
     };
   });
   return (
-    <View style={s(c.column, c.fullWidth)}>
-      {title && (
+    <div style={s(c.column, c.fullWidth)}>
+    <Show when={title() }>
         <>
           <CMText
             style={s(
@@ -75,11 +75,13 @@ export const SidebarSelectOneOf = <T,>({
               c.px(c.getSidebarPadding(responsive))
             )}
           >
-            {title}
+            {title()}
           </CMText>
           <Spacer height={12} />
         </>
-      )}
+        </Show>
+      <Show when={description}>
+      </Show>
       {description && (
         <>
           <CMText
@@ -95,12 +97,12 @@ export const SidebarSelectOneOf = <T,>({
           <Spacer height={12} />
         </>
       )}
-      <View style={s(c.fullWidth)}>
+      <div style={s(c.fullWidth)}>
         {actions.map((action, i) => {
           return <SidebarFullWidthButton key={i} action={action} />;
         })}
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
 
@@ -205,20 +207,18 @@ export const RatingSettings = ({}: {}) => {
 };
 
 export const ThemeSettings = ({}: {}) => {
-  let responsive = useResponsive();
-  const themes = BOARD_THEMES;
-  const [user] = useUserState((s) => [s.user]);
+  const user = () => getAppState().userState?.user;
   const height = 24;
   return (
     <SidebarTemplate actions={[]} header={null}>
       <Spacer height={12} />
       <SidebarSelectOneOf
-        description={null}
-        title={"Tiles"}
-        choices={keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
+        description={() => null}
+        title={() => "Tiles"}
+        choices={() => keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user.theme}
+        activeChoice={() => user()?.theme}
         onSelect={(t: BoardThemeId) => {
           quick((s) => {
             const params: any = { theme: t };
@@ -232,28 +232,28 @@ export const ThemeSettings = ({}: {}) => {
           const theme = BOARD_THEMES_BY_ID[themeId];
           console.log(theme, themeId);
           return (
-            <View style={s(c.row, c.center, c.height(height))}>
-              <View style={s(c.row)}>
-                <View
+            <div style={s(c.row, c.center, c.height(height))}>
+              <div style={s(c.row)}>
+                <div
                   style={s(
                     c.size(22),
                     c.bg(theme.light.color),
                     theme.light.styles
                   )}
-                ></View>
-                <View
+                ></div>
+                <div
                   style={s(
                     c.size(22),
                     c.bg(theme.dark.color),
                     theme.dark.styles
                   )}
-                ></View>
-              </View>
+                ></div>
+              </div>
               <Spacer width={22} />
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme.name}
               </CMText>
-            </View>
+            </div>
           );
         }}
       />
@@ -271,22 +271,22 @@ export const ThemeSettings = ({}: {}) => {
         }}
         renderChoice={(pieceSet: PieceSetId) => {
           return (
-            <View style={s(c.row, c.center, c.height(height))}>
+            <div style={s(c.row, c.center, c.height(height))}>
               {["q", "k"].map((p: PieceSymbol) => {
                 return (
-                  <View style={s(c.size(24), c.mr(4))}>
+                  <div style={s(c.size(24), c.mr(4))}>
                     <PieceView
-                      pieceSet={pieceSet}
+                      pieceSet={() => pieceSet}
                       piece={{ color: "w", type: p }}
                     />
-                  </View>
+                  </div>
                 );
               })}
               <Spacer width={12} />
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {upperFirst(pieceSet)}
               </CMText>
-            </View>
+            </div>
           );
         }}
       />

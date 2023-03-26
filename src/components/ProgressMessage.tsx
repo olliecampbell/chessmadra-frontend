@@ -19,7 +19,7 @@ export const ProgressMessageView = ({
 }) => {
   const isMobile = useIsMobile();
   return (
-    <View style={s(c.br(4), c.fullWidth)}>
+    <div style={s(c.br(4), c.fullWidth)}>
       <CMText
         style={s(
           c.fg(
@@ -56,6 +56,6 @@ export const ProgressMessageView = ({
           </CMText>
         </Pressable>
       )}
-    </View>
+    </div>
   );
 };

@@ -22,8 +22,8 @@
 //     return null;
 //   }
 //   return (
-//     <View style={s(c.column, c.fullWidth, c.justifyCenter, c.alignCenter)}>
-//       <View style={s(c.column, c.fullWidth)}>
+//     <div style={s(c.column, c.fullWidth, c.justifyCenter, c.alignCenter)}>
+//       <div style={s(c.column, c.fullWidth)}>
 //         {intersperse(
 //           playerTemplates.map((playerTemplate, i) => {
 //             return (
@@ -32,7 +32,7 @@
 //                   onPress(playerTemplate);
 //                 }}
 //               >
-//                 <View
+//                 <div
 //                   style={s(
 //                     c.px(c.getSidebarPadding(responsive)),
 //                     c.br(4),
@@ -42,7 +42,7 @@
 //                     c.column
 //                   )}
 //                 >
-//                   <View style={s(c.row, c.alignCenter)}>
+//                   <div style={s(c.row, c.alignCenter)}>
 //                     <img
 //                       src={`/${playerTemplate.meta.image}`}
 //                       style={s(
@@ -52,7 +52,7 @@
 //                       )}
 //                     />
 //                     <Spacer width={isMobile ? 12 : 16} />
-//                     <View style={s(c.column, c.flexible)}>
+//                     <div style={s(c.column, c.flexible)}>
 //                       <CMText
 //                         style={s(
 //                           c.fg(c.colors.textPrimary),
@@ -62,10 +62,10 @@
 //                       >
 //                         {playerTemplate.meta.title}
 //                       </CMText>
-//                     </View>
-//                   </View>
+//                     </div>
+//                   </div>
 //                   <Spacer height={12} />
-//                   <View style={s(c.row, c.flexWrap, c.gap(6))}>
+//                   <div style={s(c.row, c.flexWrap, c.gap(6))}>
 //                     {playerTemplate.meta.openings.map((x, i) => {
 //                       return (
 //                         <CMText
@@ -83,20 +83,20 @@
 //                         </CMText>
 //                       );
 //                     })}
-//                   </View>
-//                 </View>
+//                   </div>
+//                 </div>
 //               </Pressable>
 //             );
 //           }),
 //           (i) => {
 //             return (
-//               <View
+//               <div
 //                 style={s(c.height(1), c.my(12), c.fullWidth, c.bg(c.grays[30]))}
-//               ></View>
+//               ></div>
 //             );
 //           }
 //         )}
-//       </View>
-//     </View>
+//       </div>
+//     </div>
 //   );
 // };

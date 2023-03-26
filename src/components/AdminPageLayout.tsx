@@ -31,7 +31,7 @@ export const AdminPageLayout = ({ children }) => {
   console.log("user email", user);
   if (user && isNil(user?.email)) {
     inner = (
-      <View style={s()}>
+      <div style={s()}>
         <CMText style={s()}>
           Looks like you're not logged in, go
           <CMText style={s(c.fg(c.blues[55]), c.weightSemiBold, c.px(4))}>
@@ -39,11 +39,11 @@ export const AdminPageLayout = ({ children }) => {
           </CMText>
           first and then come back here:{" "}
         </CMText>
-      </View>
+      </div>
     );
   } else if (user && !user?.isAdmin) {
     inner = (
-      <View style={s(c.oldContainerStyles(isMobile))}>
+      <div style={s(c.oldContainerStyles(isMobile))}>
         <CMText style={s()}>
           You don't seem to be an admin. Do you have the password?
         </CMText>
@@ -63,13 +63,13 @@ export const AdminPageLayout = ({ children }) => {
         >
           Become admin
         </Button>
-      </View>
+      </div>
     );
   }
 
   return (
-    <View style={s(c.oldContainerStyles(isMobile), c.center, c.pt(48))}>
+    <div style={s(c.oldContainerStyles(isMobile), c.center, c.pt(48))}>
       {inner}
-    </View>
+    </div>
   );
 };

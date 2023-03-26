@@ -123,7 +123,7 @@ export const BlindfoldTrainer = () => {
           </>
         )}
         <Spacer height={12} />
-        <View
+        <div
           style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
         >
           <Button
@@ -179,7 +179,7 @@ export const BlindfoldTrainer = () => {
             }}
             visible={settingsOpen}
           >
-            <View style={s(c.px(12), c.py(12))}>
+            <div style={s(c.px(12), c.py(12))}>
               <SettingsTitle text={"Number of Pieces"} />
               <Spacer height={12} />
               <SelectRange
@@ -230,9 +230,9 @@ export const BlindfoldTrainer = () => {
                   });
                 }}
               />
-            </View>
+            </div>
           </Modal>
-        </View>
+        </div>
       </TrainerLayout>
     </PageContainer>
   );
@@ -260,7 +260,7 @@ const BlindfoldPieceOverview = ({
   {}); //watch out the empty {}, which is passed as "result"
   const isMobile = useIsMobile();
   return (
-    <View
+    <div
       style={s(
         c.column,
         c.fullWidth,
@@ -271,7 +271,7 @@ const BlindfoldPieceOverview = ({
       )}
     >
       {state.puzzleState.puzzlePosition && (
-        <View style={s(c.absolute, c.fullWidth, c.fullHeight, c.top(0))}>
+        <div style={s(c.absolute, c.fullWidth, c.fullHeight, c.top(0))}>
           {intersperse(
             COLORS.map((color) => {
               const pieces = PIECE_TYPES.map((t) => ({
@@ -288,22 +288,22 @@ const BlindfoldPieceOverview = ({
                 })
                 .filter((x) => x);
               return (
-                <View style={s(c.row, c.grow, c.constrainWidth, c.center)}>
-                  <View style={s(c.row, c.constrainWidth)}>
+                <div style={s(c.row, c.grow, c.constrainWidth, c.center)}>
+                  <div style={s(c.row, c.constrainWidth)}>
                     {intersperse(
                       squaresByPiece.map(({ piece, squares }) => {
                         console.log({ piece, squares });
                         return (
-                          <View style={s(c.column, c.alignCenter)}>
-                            <View style={s(c.size(isMobile ? 38 : 48))}>
+                          <div style={s(c.column, c.alignCenter)}>
+                            <div style={s(c.size(isMobile ? 38 : 48))}>
                               <PieceView piece={piece} />
-                            </View>
+                            </div>
                             <Spacer height={12} />
-                            <View style={s(isMobile ? c.column : c.row)}>
+                            <div style={s(isMobile ? c.column : c.row)}>
                               {intersperse(
                                 (squares.sort() || []).map((square) => {
                                   return (
-                                    <View style={s()}>
+                                    <div style={s()}>
                                       <CMText
                                         style={s(
                                           c.weightBold,
@@ -314,7 +314,7 @@ const BlindfoldPieceOverview = ({
                                       >
                                         {square}
                                       </CMText>
-                                    </View>
+                                    </div>
                                   );
                                 }),
                                 (i) => {
@@ -328,13 +328,13 @@ const BlindfoldPieceOverview = ({
                                   );
                                 }
                               )}
-                            </View>
-                          </View>
+                            </div>
+                          </div>
                         );
                       }),
                       (i) => {
                         return (
-                          <View
+                          <div
                             style={s(
                               c.flexible,
                               c.flexShrink(1),
@@ -343,35 +343,35 @@ const BlindfoldPieceOverview = ({
                               c.selfCenter
                             )}
                           >
-                            <View
+                            <div
                               style={s(
                                 c.px(isMobile ? 12 : 24),
                                 // c.width(DIVIDER_SIZE),
                                 !isMobile && c.bg(DIVIDER_COLOR)
                               )}
                             />
-                          </View>
+                          </div>
                         );
                       }
                     )}
-                  </View>
-                </View>
+                  </div>
+                </div>
               );
             }),
             (i) => {
               return (
-                <View
+                <div
                   style={s(
                     c.height(DIVIDER_SIZE),
                     c.fullWidth,
                     c.bg(DIVIDER_COLOR)
                   )}
-                ></View>
+                ></div>
               );
             }
           )}
-        </View>
+        </div>
       )}
-    </View>
+    </div>
   );
 };

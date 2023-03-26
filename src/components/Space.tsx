@@ -1,14 +1,14 @@
 import { View } from "./View";
 
 export const Spacer = ({
-  width = null,
-  height = null,
+  width = null as number | null,
+  height = null as number | null,
   block = false,
   grow = false,
   style = {},
   isMobile = null,
 }) => {
-  let styles: any = { flexGrow: grow ? 1 : 0, ...style };
+  let styles: any = { "flex-grow": grow ? 1 : 0, ...style };
   if (block) {
     styles.display = "block";
   }
@@ -24,5 +24,5 @@ export const Spacer = ({
   if (width) {
     styles.width = `${width}px`;
   }
-  return <View style={styles}></View>;
+  return <div style={styles}></div>;
 };
