@@ -1,56 +1,42 @@
-import React, { useState } from "react";
-import { View, TextInput } from "react-native";
-import { Fragment } from "react";
 import client from "~/utils/client";
-import { BeatLoader } from "react-spinners";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
 import { c, s } from "~/utils/styles";
-import KnightWhiteIcon from "./chessboard/pieces/KnightWhiteIcon";
 import { Spacer } from "~/components/Space";
 import { Button } from "./Button";
 import { CMText } from "./CMText";
-import { useTrack } from "~/hooks/useTrackEvent";
-import { Show } from "solid-js";
+import { createSignal, Match, Show, Switch } from "solid-js";
+import { PieceView } from "./chessboard/Chessboard";
+import { trackEvent } from "~/utils/trackEvent";
+import { Spinner, SpinnerType } from "solid-spinner";
+import { RepertoirePageLayout } from "./RepertoirePageLayout";
+import { CMTextInput } from "./TextInput";
+import { onEnter } from "~/utils/onEnter";
 
 export default function Login({ signup }: { signup?: boolean }) {
-  const onSubmit = (data) => console.log(data);
-  // let applicationName = AppStore.useState((s) => s.meta.applicationMeta?.name);
-  let [email, setEmail] = useState("");
-  const track = useTrack();
-  // let [password, setPassword] = useState("");
-  // EmailValidator.validate("test@email.com"); // true
-  // let errors: string[] = [];
-  // if (!EmailValidator.validate(email)) {
-  //   errors.push("Email is not valid");
-  // }
-  // if (password.length < 6) {
-  //   errors.push("Password is too short, must be at least 6 characters");
-  // }
-
-  // let router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  let signIn = async () => {
-    if (loading) {
+  const [email, setEmail] = createSignal("");
+  const [loading, setLoading] = createSignal(false);
+  const [submitted, setSubmitted] = createSignal(false);
+  const signIn = async () => {
+    if (loading()) {
       return;
     }
     setLoading(true);
-    let { data } = await client.post("/api/send_auth_email", {
-      email,
+    const { data } = await client.post("/api/send_auth_email", {
+      email: email(),
     });
-    track("login.email_sent", { email: email });
+    trackEvent("login.email_sent", { email: email });
     setLoading(false);
     setSubmitted(true);
   };
   return (
-    <Fragment>
+    <>
       <HeadSiteMeta
         siteMeta={{
           title: "Login",
           description: "Login to Chess Madra",
         }}
       />
-      <PageContainer centered>
+      <RepertoirePageLayout centered>
         <div
           style={s(
             // c.bg(c.grays[80]),
@@ -60,10 +46,13 @@ export default function Login({ signup }: { signup?: boolean }) {
             // c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
           )}
         >
-        <Show when={!submitted }>
+          <Show when={!submitted()}>
             <div style={s(c.column, c.alignCenter, c.fullWidth)}>
               <div style={s(c.size(48))}>
-                <KnightWhiteIcon />
+                <PieceView
+                  piece={{ color: "w", type: "n" }}
+                  pieceSet={"alpha"}
+                />
               </div>
               <Spacer height={12} />
               <CMText
@@ -89,15 +78,65 @@ export default function Login({ signup }: { signup?: boolean }) {
                 password or sign-up needed.
               </CMText>
             </div>
-            </Show>
+          </Show>
           <Spacer height={24} />
-          {submitted ? (
+          <Show
+            when={submitted()}
+            fallback={
+              <div style={s(c.br(4), c.px(0), c.py(0))}>
+                <div style={s()}>
+                  <div style={s()}>
+                    <div>
+                      <div style={s()}>
+                        <CMTextInput
+                          // todo: enter to submit
+                          placeholder="E-mail"
+                          value={email()}
+                          setValue={setEmail}
+                          // @ts-ignore
+                          type="email"
+                          autoComplete="email"
+                          required
+                          style={s(
+                            c.bg(c.grays[100]),
+                            c.fg(c.colors.textInverse),
+                            c.br(2),
+                            c.px(8),
+                            c.py(8),
+                            c.fontSize(16)
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Spacer height={12} />
+                    <Button
+                      onPress={() => {
+                        signIn();
+                      }}
+                      style={s(c.buttons.primary)}
+                    >
+                      <Switch fallback={"Log in"}>
+                        <Match when={loading()}>
+                          <Spinner
+                            type={SpinnerType.puff}
+                            color={c.primaries[65]}
+                          />
+                        </Match>
+                        <Match when={signup}>{"Sign up"}</Match>
+                      </Switch>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <div style={s()}>
               <div style={s(c.column, c.alignCenter, c.textAlign("center"))}>
                 <div style={s()}>
                   <i
                     style={s(c.fg(c.colors.successColor), c.fontSize(28))}
-                    className={`fas fa-check`}
+                    class={`fas fa-check`}
                   ></i>
                 </div>
                 <Spacer height={12} />
@@ -112,58 +151,9 @@ export default function Login({ signup }: { signup?: boolean }) {
                 </CMText>
               </div>
             </div>
-          ) : (
-            <div style={s(c.br(4), c.px(0), c.py(0))}>
-              <div style={s()}>
-                <div style={s()}>
-                  <div>
-                    <div style={s()}>
-                      <TextInput
-                        // onKeyPress={onEnter(signIn)}
-                        onSubmitEditing={() => {
-                          signIn();
-                        }}
-                        placeholder="E-mail"
-                        // @ts-ignore
-                        type="email"
-                        onChange={(e) => {
-                          // @ts-ignore
-                          setEmail(e.target.value);
-                        }}
-                        autoComplete="email"
-                        required
-                        style={s(
-                          c.bg(c.grays[100]),
-                          c.br(2),
-                          c.px(8),
-                          c.py(8),
-                          c.fontSize(16)
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <Spacer height={12} />
-                  <Button
-                    onPress={() => {
-                      signIn();
-                    }}
-                    style={s(c.buttons.primary)}
-                  >
-                    {loading ? (
-                      <BeatLoader size={10} color={"white"} />
-                    ) : signup ? (
-                      "Sign up"
-                    ) : (
-                      "Log in"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          </Show>
         </div>
-      </PageContainer>
-    </Fragment>
+      </RepertoirePageLayout>
+    </>
   );
 }

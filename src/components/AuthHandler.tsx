@@ -2,9 +2,9 @@ import Cookies from "js-cookie";
 import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { User } from "~/utils/models";
 import { uuid4 } from "@sentry/utils";
-import { useUserState, quick } from "~/utils/app_state";
+import { useUserState, quick, getAppState } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
-import { createEffect } from "solid-js";
+import { createEffect, onMount } from "solid-js";
 
 const AuthHandler = ({ children }) => {
   // let [user, authStatus, token, tempUserUuid, quick] = useAppState((s) => [
@@ -14,7 +14,7 @@ const AuthHandler = ({ children }) => {
   //   s.userState.tempUserUuid,
   //   s.userState.quick,
   // ]);
-  const userState = useUserState((s) => s);
+  const userState = getAppState().userState;
   // let subscribeAfterSignup = AppStore.useState((s) => s.subscribeAfterSignup);
   createEffect(() => {
     if (userState.token) {
@@ -29,7 +29,7 @@ const AuthHandler = ({ children }) => {
   createEffect;
   createEffect(() => {
     userState.quick((s) => {
-      let cookieToken = Cookies.get(JWT_COOKIE_KEY);
+      const cookieToken = Cookies.get(JWT_COOKIE_KEY);
       if (cookieToken) {
         s.token = cookieToken;
       } else {
@@ -37,16 +37,16 @@ const AuthHandler = ({ children }) => {
       }
     });
   }, []);
-  createEffect(() => {
+  onMount(() => {
     userState.quick((s) => {
-      let tempUserUuid = Cookies.get(TEMP_USER_UUID);
+      const tempUserUuid = Cookies.get(TEMP_USER_UUID);
       if (tempUserUuid) {
         s.tempUserUuid = tempUserUuid;
       } else {
         s.tempUserUuid = uuid4();
       }
     });
-  }, []);
+  });
   createEffect(() => {
     (async () => {
       if (
@@ -64,7 +64,7 @@ const AuthHandler = ({ children }) => {
           })
           .catch((e) => {
             console.log("error fetching user", e);
-            let status = e?.response?.status || 0;
+            const status = e?.response?.status || 0;
             if (status === 401 || status === 500) {
               userState.quick((s) => {
                 s.token = undefined;

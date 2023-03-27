@@ -20,9 +20,5 @@ import { SidebarLayout } from "~/components/SidebarLayout";
 //   );
 // }
 export default () => {
-  return (
-    <AuthHandler>
-      <SidebarLayout />
-    </AuthHandler>
-  );
+  return <SidebarLayout />;
 };

@@ -32,10 +32,10 @@ export const SettingsButtons = () => {
   const needsLogin =
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
-  let responsive = useResponsive();
+  const responsive = useResponsive();
   return (
     <div style={s(c.row, c.gap(responsive.switch(12, [BP.md, 16])))}>
-      <Show when={mode() === "home"}>
+      <Show when={mode() === "home" && false}>
         <SettingButton
           title={"Other tools"}
           icon={"fa-sharp fa-bars"}
@@ -78,7 +78,7 @@ export const SettingsButtons = () => {
 
 export const SettingButton = ({ title, icon, onPress }) => {
   const { hovering, hoveringProps } = useHovering();
-  let responsive = useResponsive();
+  const responsive = useResponsive();
   let color = c.colors.textTertiary;
   if (hovering) {
     color = c.colors.textSecondary;

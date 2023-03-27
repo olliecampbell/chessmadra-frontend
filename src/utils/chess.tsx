@@ -14,8 +14,8 @@ export const getSquareOffset = (square: string, flipped: boolean) => {
 };
 
 export const lineToPositions = (line: string[]) => {
-  let position = new Chess();
-  let positions = [START_EPD];
+  const position = new Chess();
+  const positions = [START_EPD];
   forEach(line, (move) => {
     position.move(move);
     positions.push(genEpd(position));
@@ -25,14 +25,14 @@ export const lineToPositions = (line: string[]) => {
 
 export const isCheckmate = (move: Move, position: Chess) => {
   position.move(move);
-  let isCheckMate = position.inCheckmate();
+  const isCheckMate = position.inCheckmate();
   position.undo();
   return isCheckMate;
 };
 
 export function genEpd(position: Chess): string {
-  let fen = position.fen();
-  let fenParts = dropRight(fen.split(" "), 2);
+  const fen = position.fen();
+  const fenParts = dropRight(fen.split(" "), 2);
 
   let found_ep = false;
   const legal_moves = position.moves({ verbose: true });

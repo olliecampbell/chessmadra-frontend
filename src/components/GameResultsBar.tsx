@@ -20,10 +20,10 @@ export const GameResultsBar = ({
   hideNumbers?: boolean;
   activeSide: Side;
 }) => {
-  let total = getTotalGames(gameResults);
-  let threshold = 0.2;
-  let fontSize = 10;
-  let whiteResults = (
+  const total = getTotalGames(gameResults);
+  const threshold = 0.2;
+  const fontSize = 10;
+  const whiteResults = (
     <div
       style={s(
         c.width(`${(gameResults.white / total) * 100}%`),
@@ -57,7 +57,7 @@ export const GameResultsBar = ({
       )}
     </div>
   );
-  let blackResults = (
+  const blackResults = (
     <div
       style={s(
         c.width(`${(gameResults.black / total) * 100}%`),
@@ -91,7 +91,7 @@ export const GameResultsBar = ({
       )}
     </div>
   );
-  let [first, last] =
+  const [first, last] =
     activeSide === "white"
       ? [whiteResults, blackResults]
       : [blackResults, whiteResults];
@@ -144,9 +144,9 @@ export const MovementIndicator = ({
 
   let icon = null;
   let color = null;
-  let threshold = 0.02;
-  let oldWr = getWinRate(previous, side);
-  let newWr = getWinRate(results, side);
+  const threshold = 0.02;
+  const oldWr = getWinRate(previous, side);
+  const newWr = getWinRate(results, side);
   if (newWr < oldWr - threshold) {
     icon = "fa-sharp fa-arrow-down-right";
     color = side === "white" ? c.reds[45] : c.reds[55];

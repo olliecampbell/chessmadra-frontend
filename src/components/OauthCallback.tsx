@@ -18,10 +18,10 @@ enum Stage {
 }
 
 export const OauthCallback = ({ type }: { type: "lichess" }) => {
-  let [searchParams] = useSearchParams();
-  let [stage, setStage] = useState(Stage.Initial);
-  let oauthCode = searchParams.get("code");
-  let lichessOauthData = useRef(
+  const [searchParams] = useSearchParams();
+  const [stage, setStage] = useState(Stage.Initial);
+  const oauthCode = searchParams.get("code");
+  const lichessOauthData = useRef(
     JSON.parse(
       window.sessionStorage.getItem("lichess-oauth-data") ?? "{}"
     ) as LichessOauthData

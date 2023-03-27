@@ -7,8 +7,8 @@ export const TEMP_USER_UUID = "temp-user-uuid";
 
 export async function signupUser(email: string, password: string) {
   // @ts-ignore
-  let application = Store.getRawState().meta.applicationMeta?.application;
-  let {
+  const application = Store.getRawState().meta.applicationMeta?.application;
+  const {
     // @ts-ignore
     data: { token, user },
   } = await axios.post("/api/signup", {
@@ -26,7 +26,7 @@ export async function signupUser(email: string, password: string) {
 }
 
 export async function fetchUser() {
-  let { data: user } = await client.get("/api/user");
+  const { data: user } = await client.get("/api/user");
   return user;
 }
 

@@ -31,7 +31,7 @@ export const LichessGameCellMini = ({
         c.relative
       )}
     >
-      {!hideLink && (
+    <Show when={!hideLink }>
         <div style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
           <CMText style={s()}>
             <i
@@ -40,11 +40,11 @@ export const LichessGameCellMini = ({
                 c.fontSize(18),
                 c.fg(c.grays[40])
               )}
-              className="fa-sharp fa-arrow-up-right-from-square"
+              class="fa-sharp fa-arrow-up-right-from-square"
             ></i>
           </CMText>
         </div>
-      )}
+        </Show>
       <Spacer height={0} />
       <div style={s(c.row, c.px(12))}>
         {intersperse(
@@ -74,13 +74,13 @@ export const LichessGameCellMini = ({
         <Spacer width={2} grow />
       </div>
       <Spacer height={6} />
-      {showFirstMoves && (
+      <Show when={showFirstMoves }>
         <div style={s(c.px(12), c.row)}>
           <CMText style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(12))}>
             {lineToPgn(take(game.moves, 4))} ...
           </CMText>
         </div>
-      )}
+        </Show>
     </div>
   );
 };

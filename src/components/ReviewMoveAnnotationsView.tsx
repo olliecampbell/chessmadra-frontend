@@ -23,7 +23,7 @@ import { LazyLoad } from "./LazyLoad";
 export const ReviewMoveAnnotationsView = ({}) => {
   const isMobile = useIsMobile();
   const user = useUserState((s) => s.user);
-  let [
+  const [
     moveAnnotationReviewQueue,
     fetchMoveAnnotationReviewQueue,
     acceptMoveAnnotation,
@@ -81,8 +81,8 @@ const MoveAnnotationsReview = ({
   review: MoveAnnotationReview;
 }) => {
   console.log("Epd is ", review.epd);
-  let fen = `${review.epd} 0 1`;
-  let position = new Chess(fen);
+  const fen = `${review.epd} 0 1`;
+  const position = new Chess(fen);
   const isMobile = useIsMobile();
   const user = useUserState((s) => s.user);
   const [
@@ -101,7 +101,7 @@ const MoveAnnotationsReview = ({
   const onScreen = useOnScreen(ref, "-500px");
   return (
     <div style={s(isMobile ? c.column : c.row, c.constrainWidth, c.relative)}>
-      {reviewed && (
+    <Show when={reviewed }>
         <div
           style={s(
             c.absoluteFull,
@@ -113,7 +113,7 @@ const MoveAnnotationsReview = ({
         >
           <CMText style={s()}>Reviewed!</CMText>
         </div>
-      )}
+        </Show>
       <div style={s(c.width(400), c.constrainWidth)} ref={ref}>
         <LazyLoad style={s(c.pb("100%"), c.height(0), c.width("100%"))}>
           <ChessboardView
@@ -126,7 +126,7 @@ const MoveAnnotationsReview = ({
         <Button
           style={s(c.buttons.darkFloater)}
           onPress={() => {
-            var windowReference = window.open("about:blank", "_blank");
+            const windowReference = window.open("about:blank", "_blank");
             windowReference.location = `https://lichess.org/analysis/${review.epd}`;
           }}
         >

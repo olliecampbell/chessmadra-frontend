@@ -16,12 +16,12 @@ import { BP, useResponsive } from "~/utils/useResponsive";
 import { shouldUsePeerRates } from "~/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
-import { createEffect } from "solid-js";
+import { createEffect, Show } from "solid-js";
 import { View } from "./View";
 import { destructure } from "@solid-primitives/destructure";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
-let desktopHeaderStyles = s(
+const desktopHeaderStyles = s(
   c.fg(c.colors.textPrimary),
   c.fontSize(22),
   c.mb(12),
@@ -39,30 +39,30 @@ export const Responses = function Responses() {
   createEffect(() => {
     console.log("pos report", positionReport());
   });
-  let [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
+  const [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
     useSidebarState(([s]) => [
       s.currentSide,
       s.moveLog,
       s.hasPendingLineToAdd,
       s.isPastCoverageGoal,
     ]);
-  let [tableResponses] = useSidebarState(([s]) => [s.tableResponses]);
+  const [tableResponses] = useSidebarState(([s]) => [s.tableResponses]);
 
-  let usePeerRates = () => shouldUsePeerRates(positionReport());
+  const usePeerRates = () => shouldUsePeerRates(positionReport());
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  let yourMoves = () =>
+  const yourMoves = () =>
     filter(tableResponses(), (tr) => {
       return !isNil(tr.repertoireMove) && activeSide === currentSide;
     });
-  let otherMoves = () =>
+  const otherMoves = () =>
     filter(tableResponses(), (tr) => {
       return isNil(tr.repertoireMove) && activeSide === currentSide;
     });
-  let prepareFor = () =>
+  const prepareFor = () =>
     filter(tableResponses(), (tr) => {
       return activeSide !== currentSide;
     });
-    // TODO: solid
+  // TODO: solid
   // createEffect(() => {
   //   const beforeUnloadListener = (event) => {
   //     if (hasPendingLine()) {
@@ -79,7 +79,7 @@ export const Responses = function Responses() {
   //     });
   //   };
   // }, [hasPendingLine]);
-  let body = null;
+  const body = null;
   const { prepareForHeader, reviewHeader } = destructure(() => {
     let reviewHeader = null;
     let prepareForHeader: any = "You need to prepare for these moves";
@@ -93,7 +93,7 @@ export const Responses = function Responses() {
   });
   return (
     <div style={s(c.column, c.constrainWidth)}>
-      {positionReport() && (
+      <Show when={positionReport()}>
         <>
           {!isEmpty(yourMoves()) && (
             <div style={s()} key={`your-moves-play-${currentEpd}`}>
@@ -157,8 +157,8 @@ export const Responses = function Responses() {
             />
           )}
         </>
-      )}
-      {user?.isAdmin && <InstructiveGamesView />}
+      </Show>
+      {user()?.isAdmin && <InstructiveGamesView />}
       {(() => {
         if (!positionReport()) {
           return (

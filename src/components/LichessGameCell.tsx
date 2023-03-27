@@ -33,7 +33,7 @@ export const LichessGameCell = ({
         c.relative
       )}
     >
-      {!hideLink && (
+    <Show when={!hideLink }>
         <div style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
           <CMText style={s()}>
             <i
@@ -42,11 +42,11 @@ export const LichessGameCell = ({
                 c.fontSize(18),
                 c.fg(c.grays[40])
               )}
-              className="fa-sharp fa-arrow-up-right-from-square"
+              class="fa-sharp fa-arrow-up-right-from-square"
             ></i>
           </CMText>
         </div>
-      )}
+        </Show>
       <Spacer height={0} />
       <div style={s(c.column, c.px(16))}>
         {intersperse(
@@ -68,7 +68,7 @@ export const LichessGameCell = ({
                     ({game[`${color}Elo`]})
                   </CMText>
                 </div>
-                {false && (
+                <Show when={false }>
                   <>
                     <Spacer height={4} />
                     <CMText style={s(c.fg(c.colors.textInverseSecondary))}>
@@ -79,7 +79,7 @@ export const LichessGameCell = ({
                       <b>{game[`${color}CentipawnLoss`]}</b> avg centipawn loss
                     </CMText>
                   </>
-                )}
+                  </Show>
               </div>
             );
           }),
@@ -89,14 +89,14 @@ export const LichessGameCell = ({
         )}
       </div>
       <Spacer height={24} />
-      {showFirstMoves && (
+      <Show when={showFirstMoves }>
         <div style={s(c.px(16))}>
           <CMText style={s(c.fg(c.colors.textInverseSecondary), c.weightBold)}>
             {lineToPgn(take(game.moves, 8))}
           </CMText>
           <Spacer height={4} />
         </div>
-      )}
+        </Show>
 
       <div style={s(c.row, c.justifyBetween, c.alignEnd, c.px(16))}>
         <CMText

@@ -87,7 +87,7 @@ export const getInitialBlundersState = (
     return _get((s) => fn([s.blunderState, s]));
   };
 
-  let initialState = {
+  const initialState = {
     isPlaying: false,
     startTime: null,
     score: 0,
@@ -120,7 +120,7 @@ export const getInitialBlundersState = (
     guess: (isBlunder: boolean) =>
       set(([s]) => {
         s.donePlaying = true;
-        let correct = isBlunder === s.isBlunder;
+        const correct = isBlunder === s.isBlunder;
         if (correct) {
           s.wasCorrect = true;
         } else {
@@ -130,7 +130,7 @@ export const getInitialBlundersState = (
       }),
     prefetchPuzzles: async () =>
       set(async ([s]) => {
-        let puzzles = await fetchNewBlunderPuzzle({
+        const puzzles = await fetchNewBlunderPuzzle({
           centipawn_loss_max: getBlunderRange(s.difficulty.value)[1],
           centipawn_loss_min: getBlunderRange(s.difficulty.value)[0],
           limit: 1,
@@ -142,7 +142,7 @@ export const getInitialBlundersState = (
       }),
     setupNextRound: () => {
       set(([s]) => {
-        let showBlunder = Math.random() < 0.5;
+        const showBlunder = Math.random() < 0.5;
         s.currentPuzzle = s.puzzles.shift();
         if (!s.currentPuzzle) {
           console.log("No current puzzle");
@@ -160,9 +160,9 @@ export const getInitialBlundersState = (
           ? s.currentPuzzle.blunder
           : s.currentPuzzle.bestMove;
         s.isBlunder = showBlunder;
-        let pos = new Chess(s.currentPuzzle.fen);
+        const pos = new Chess(s.currentPuzzle.fen);
         pos.move(s.currentMove);
-        let move = pos.undo();
+        const move = pos.undo();
         s.chessboardState.position = pos;
         s.chessboardState.flipped = pos.turn() === "b";
         s.chessboardState.visualizeMove(move, PlaybackSpeed.Normal, () => {});

@@ -8,6 +8,7 @@ import { forEach, isEmpty } from "lodash-es";
 import { Spacer } from "~/components/Space";
 import { Move } from "@lubert/chess.ts";
 import { CMText } from "./CMText";
+import { Show } from "solid-js";
 
 export const MoveList = ({
   moveList,
@@ -18,7 +19,7 @@ export const MoveList = ({
   focusedMoveIndex?: number;
   onMoveClick: (move: Move, _: number) => void;
 }) => {
-  let pairs = [];
+  const pairs = [];
   let currentPair = [];
   forEach(moveList, (move, i) => {
     if (move.color == "b" && isEmpty(currentPair)) {
@@ -106,9 +107,9 @@ export const MoveList = ({
                 </CMText>
               </Pressable>
             </div>
-            {i != pairs.length - 1 && (
+            <Show when={i != pairs.length - 1 }>
               <div style={s(c.height(1), c.bg(c.grays[30]))} />
-            )}
+              </Show>
           </div>
         );
       })}

@@ -81,7 +81,7 @@ export const BlindfoldTrainer = () => {
           )
         }
       >
-        {!state.isDone && (
+      <Show when={!state.isDone }>
           <CMText style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
             <CMText style={s(c.fg(c.grays[90]), c.weightBold)}>
               {state.chessboardState.position.turn() === "b"
@@ -90,7 +90,7 @@ export const BlindfoldTrainer = () => {
             </CMText>{" "}
             to play.
           </CMText>
-        )}
+          </Show>
         {state.stage === BlindfoldTrainingStage.Blindfold && (
           <>
             <CMText style={s(c.fg(c.grays[70]), c.weightBold, c.fontSize(14))}>
@@ -112,7 +112,7 @@ export const BlindfoldTrainer = () => {
             </Button>
           </>
         )}
-        {state.isDone && (
+        <Show when={state.isDone }>
           <>
             <NewPuzzleButton
               onPress={() => {
@@ -121,7 +121,7 @@ export const BlindfoldTrainer = () => {
               }}
             />
           </>
-        )}
+          </Show>
         <Spacer height={12} />
         <div
           style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
@@ -142,7 +142,7 @@ export const BlindfoldTrainer = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-search"
+                class="fa-sharp fa-search"
               ></i>
             </CMText>
           </Button>
@@ -157,7 +157,7 @@ export const BlindfoldTrainer = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-circle-question"
+                class="fa-sharp fa-circle-question"
               ></i>
             </CMText>
           </Button>
@@ -170,7 +170,7 @@ export const BlindfoldTrainer = () => {
           >
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fa-sharp fa-gear"
+              class="fa-sharp fa-gear"
             ></i>
           </Button>
           <Modal
@@ -249,9 +249,9 @@ const BlindfoldPieceOverview = ({
     index,
     array
   ) {
-    let piece = state.chessboardState.position.get(square);
+    const piece = state.chessboardState.position.get(square);
     if (piece != undefined) {
-      let existing = result[pieceToKey(piece)] || [];
+      const existing = result[pieceToKey(piece)] || [];
       existing.push(square);
       result[pieceToKey(piece)] = existing;
     }
@@ -280,7 +280,7 @@ const BlindfoldPieceOverview = ({
               })) as Piece[];
               const squaresByPiece = pieces
                 .map((p) => {
-                  let squares = pieceMap[pieceToKey(p)];
+                  const squares = pieceMap[pieceToKey(p)];
                   if (!squares) {
                     return null;
                   }

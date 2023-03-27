@@ -91,7 +91,7 @@ export const getInitialReviewState = (
       fn([s.repertoireState.reviewState, s.repertoireState, s])
     );
   };
-  let initialState = {
+  const initialState = {
     chessboardState: null,
     showNext: false,
     // queues: EMPTY_QUEUES,
@@ -149,7 +149,7 @@ export const getInitialReviewState = (
         s.chessboardState.frozen = false;
         s.showNext = false;
         if (s.currentMove) {
-          let failedMoves = values(s.failedReviewPositionMoves);
+          const failedMoves = values(s.failedReviewPositionMoves);
           if (!isEmpty(failedMoves)) {
             // let side = failedMoves[0].side;
             s.activeQueue.push({
@@ -160,7 +160,7 @@ export const getInitialReviewState = (
           }
           s.markMovesReviewed(
             s.currentMove.moves.map((m) => {
-              let failed = s.failedReviewPositionMoves[m.sanPlus];
+              const failed = s.failedReviewPositionMoves[m.sanPlus];
               return {
                 side: m.side,
                 epd: m.epd,
@@ -182,7 +182,7 @@ export const getInitialReviewState = (
         s.chessboardState.flipped = s.currentMove.moves[0].side === "black";
         s.chessboardState.resetPosition();
         s.chessboardState.playPgn(s.currentMove.line);
-        let lastOpponentMove = last(
+        const lastOpponentMove = last(
           s.chessboardState.position.history({ verbose: true })
         );
         s.chessboardState.backOne();
@@ -202,8 +202,8 @@ export const getInitialReviewState = (
 
     giveUp: () =>
       set(([s]) => {
-        let move = s.getNextReviewPositionMove();
-        let moveObj = s.chessboardState.position.validateMoves([
+        const move = s.getNextReviewPositionMove();
+        const moveObj = s.chessboardState.position.validateMoves([
           move.sanPlus,
         ])?.[0];
         if (!moveObj) {
@@ -243,16 +243,16 @@ export const getInitialReviewState = (
         if (isNil(rs.repertoire)) {
           return null;
         }
-        let queue: QuizMove[] = [];
+        const queue: QuizMove[] = [];
         SIDES.forEach((side) => {
-          let seen_epds = new Set();
+          const seen_epds = new Set();
           if (options.side && options.side !== side) {
             return;
           }
           const recurse = (epd, line) => {
-            let responses = rs.repertoire[side].positionResponses[epd];
+            const responses = rs.repertoire[side].positionResponses[epd];
             if (responses?.[0]?.mine) {
-              let needsToReviewAny =
+              const needsToReviewAny =
                 some(responses, (r) => r.srs.needsReview) || options.cram;
               if (needsToReviewAny) {
                 queue.push({
@@ -281,11 +281,11 @@ export const getInitialReviewState = (
     reviewLine: (line: string[], side: Side) =>
       set(([s, rs]) => {
         rs.backToOverview();
-        let queue = [];
+        const queue = [];
         let epd = START_EPD;
-        let lineSoFar = [];
+        const lineSoFar = [];
         line.map((move) => {
-          let response = find(
+          const response = find(
             rs.repertoire[side].positionResponses[epd],
             (m) => m.sanPlus === move
           );
@@ -335,7 +335,7 @@ export const getInitialReviewState = (
 
         shouldMakeMove: (move: Move) =>
           set(([s]) => {
-            let matchingResponse = find(
+            const matchingResponse = find(
               s.currentMove.moves,
               (m) => move.san == m.sanPlus
             );

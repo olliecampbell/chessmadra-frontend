@@ -14,7 +14,7 @@ export const CoverageBar = ({
   isInSidebar?: boolean;
 }) => {
   const [progressState] = useBrowsingState(([s]) => {
-    let progressState = s.repertoireProgressState[side];
+    const progressState = s.repertoireProgressState[side];
     return [progressState];
   });
   const inverse = side === "white";
@@ -23,7 +23,7 @@ export const CoverageBar = ({
     : inverse
     ? [c.grays[80], c.oranges[55], c.greens[50]]
     : [c.grays[30], c.oranges[65], c.greens[50]];
-  let overlap = 8;
+  const overlap = 8;
   return (
     <div
       style={s(

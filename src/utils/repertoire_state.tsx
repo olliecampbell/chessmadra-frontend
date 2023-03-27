@@ -46,7 +46,7 @@ import {
 } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getInitialReviewState, ReviewState } from "./review_state";
-let NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
+const NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 // import pkceChallenge from "pkce-challenge";
 import { logProxy } from "./state";
 import { failOnAny } from "./test_settings";
@@ -228,7 +228,7 @@ export const getInitialRepertoireState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick<RepertoireState>(setOnly),
     chessboardState: null,
     expectedNumMoves: { white: 0, black: 0 },
@@ -271,7 +271,7 @@ export const getInitialRepertoireState = (
       }, "initState"),
     usePlayerTemplate: (id: string, responsive: Responsive) =>
       set(async ([s]) => {
-        let { data }: { data: FetchRepertoireResponse } = await client.post(
+        const { data }: { data: FetchRepertoireResponse } = await client.post(
           "/api/v1/openings/use_player_template",
           {
             id,
@@ -286,7 +286,7 @@ export const getInitialRepertoireState = (
       }, "usePlayerTemplate"),
     addTemplates: () =>
       set(async ([s]) => {
-        let { data }: { data: FetchRepertoireResponse } = await client.post(
+        const { data }: { data: FetchRepertoireResponse } = await client.post(
           "/api/v1/openings/add_templates",
           {
             templates: Object.values(s.selectedTemplates),
@@ -308,10 +308,10 @@ export const getInitialRepertoireState = (
     }) =>
       set(async ([s]) => {
         let lichessGames = [];
-        let chessComGames = [];
+        const chessComGames = [];
         if (lichessUsername) {
-          let max = 200;
-          let { data }: { data: string } = await client.get(
+          const max = 200;
+          const { data }: { data: string } = await client.get(
             `https://lichess.org/api/games/user/${encodeURIComponent(
               lichessUsername
             )}?max=${max}`,
@@ -324,7 +324,7 @@ export const getInitialRepertoireState = (
             .filter((s) => s.length > 2)
             .map((s) => JSON.parse(s));
         }
-        let { data }: { data: FetchRepertoireResponse } = await client.post(
+        const { data }: { data: FetchRepertoireResponse } = await client.post(
           "/api/v1/initialize_repertoire",
           {
             lichessGames,
@@ -338,9 +338,9 @@ export const getInitialRepertoireState = (
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
-          let minimumToTrim = 10;
-          let side: Side = blackPgn ? "black" : "white";
-          let numBelowThreshold = s.getNumResponsesBelowThreshold(
+          const minimumToTrim = 10;
+          const side: Side = blackPgn ? "black" : "white";
+          const numBelowThreshold = s.getNumResponsesBelowThreshold(
             1 / 100,
             side
           );
@@ -364,9 +364,9 @@ export const getInitialRepertoireState = (
           },
         };
 
-        let breadcrumbs: NavBreadcrumb[] = [homeBreadcrumb];
-        let mode = s.browsingState.sidebarState.mode;
-        let side = s.browsingState.sidebarState.activeSide;
+        const breadcrumbs: NavBreadcrumb[] = [homeBreadcrumb];
+        const mode = s.browsingState.sidebarState.mode;
+        const side = s.browsingState.sidebarState.activeSide;
         if (side) {
           breadcrumbs.push({
             text: capitalize(side),
@@ -405,7 +405,7 @@ export const getInitialRepertoireState = (
       }),
     analyzeMoveOnLichess: (fen: string, move: string, turn: Side) =>
       set(([s]) => {
-        var bodyFormData = new FormData();
+        const bodyFormData = new FormData();
         bodyFormData.append(
           "pgn",
           `
@@ -415,29 +415,29 @@ export const getInitialRepertoireState = (
           ${turn === "white" ? "1." : "1..."} ${move}
         `
         );
-        var windowReference = window.open("about:blank", "_blank");
+        const windowReference = window.open("about:blank", "_blank");
         client
           .post(`https://lichess.org/api/import`, bodyFormData)
           .then(({ data }) => {
-            let url = data["url"];
+            const url = data["url"];
             windowReference.location = `${url}/${turn}#999`;
           });
       }),
     analyzeLineOnLichess: (line: string[], _side?: Side) =>
       set(([s]) => {
-        var bodyFormData = new FormData();
+        const bodyFormData = new FormData();
         bodyFormData.append("pgn", lineToPgn(line));
         if (isEmpty(line)) {
           // TODO: figure out a way to open up analysis from black side
           window.open(`https://lichess.org/analysis`, "_blank");
           return;
         }
-        var windowReference = window.open("about:blank", "_blank");
-        let side = _side ?? sideOfLastmove(line);
+        const windowReference = window.open("about:blank", "_blank");
+        const side = _side ?? sideOfLastmove(line);
         client
           .post(`https://lichess.org/api/import`, bodyFormData)
           .then(({ data }) => {
-            let url = data["url"];
+            const url = data["url"];
             windowReference.location = `${url}/${side}#${line.length}`;
           });
       }),
@@ -449,11 +449,11 @@ export const getInitialRepertoireState = (
       }, "onMove"),
     updateRepertoireStructures: () =>
       set(([s, gs]) => {
-        let threshold = gs.userState.getCurrentThreshold();
+        const threshold = gs.userState.getCurrentThreshold();
         mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
-          let seenEpds: Set<string> = new Set();
-          let numMovesByEpd = {};
-          let recurse = (
+          const seenEpds: Set<string> = new Set();
+          const numMovesByEpd = {};
+          const recurse = (
             epd: string,
             seenEpds: Set<string>,
             lastMove: RepertoireMove
@@ -467,19 +467,19 @@ export const getInitialRepertoireState = (
             if (seenEpds.has(epd)) {
               return { numMoves: 0, additionalExpectedNumMoves: 0 };
             }
-            let incidence = lastMove?.incidence ?? 1;
+            const incidence = lastMove?.incidence ?? 1;
             let totalNumMovesFromHere = 0;
-            let newSeenEpds = new Set(seenEpds);
+            const newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
-            let allMoves = filter(
+            const allMoves = filter(
               repertoireSide.positionResponses[epd] ?? [],
               (m) => m.needed
             );
-            let [mainMove, ...others] = allMoves;
+            const [mainMove, ...others] = allMoves;
             let additionalExpectedNumMoves = 0;
             if (mainMove?.mine && !isEmpty(others)) {
               others.forEach((m) => {
-                let additional = getExpectedNumMovesBetween(
+                const additional = getExpectedNumMovesBetween(
                   m.incidence,
                   threshold,
                   side,
@@ -509,7 +509,7 @@ export const getInitialRepertoireState = (
               if (shouldDebugEpd(epd)) {
                 console.log("MOVES", m);
               }
-              let { numMoves, additionalExpectedNumMoves } = recurse(
+              const { numMoves, additionalExpectedNumMoves } = recurse(
                 m.epdAfter,
                 newSeenEpds,
                 m
@@ -530,8 +530,8 @@ export const getInitialRepertoireState = (
           recurse(START_EPD, seenEpds, null);
         });
         mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
-          let seenEpds: Set<string> = new Set();
-          let recurse = (
+          const seenEpds: Set<string> = new Set();
+          const recurse = (
             epd: string,
             seenEpds: Set<string>,
             lastMove: RepertoireMove
@@ -545,16 +545,16 @@ export const getInitialRepertoireState = (
             if (seenEpds.has(epd)) {
               return { dueMoves: 0, earliestDueDate: null };
             }
-            let newSeenEpds = new Set(seenEpds);
+            const newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
             let earliestDueDate = null;
-            let allMoves = repertoireSide.positionResponses[epd] ?? [];
+            const allMoves = repertoireSide.positionResponses[epd] ?? [];
             let dueMovesFromHere = 0;
             allMoves.forEach((m) => {
               if (shouldDebugEpd(epd)) {
                 console.log("MOVES", m);
               }
-              let { dueMoves, earliestDueDate: recursedEarliestDueDate } =
+              const { dueMoves, earliestDueDate: recursedEarliestDueDate } =
                 recurse(m.epdAfter, newSeenEpds, m);
               if (
                 (earliestDueDate === null && recursedEarliestDueDate) ||
@@ -569,7 +569,7 @@ export const getInitialRepertoireState = (
             if (shouldDebugEpd(epd)) {
               console.log("earliestDueDate", earliestDueDate);
             }
-            let due = lastMove?.srs?.needsReview;
+            const due = lastMove?.srs?.needsReview;
             return {
               dueMoves: dueMovesFromHere + (due ? 1 : 0),
               earliestDueDate: earliestDueDate ?? lastMove?.srs?.dueAt,
@@ -588,8 +588,8 @@ export const getInitialRepertoireState = (
         s.epdNodes = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
-            let nodeEpds = {};
-            let allEpds = flatten(
+            const nodeEpds = {};
+            const allEpds = flatten(
               Object.values(repertoireSide.positionResponses)
             ).flatMap((m) => [m.epd, m.epdAfter]);
             allEpds.forEach((epd) => {
@@ -671,26 +671,26 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         let pgn = "";
 
-        let seenEpds = new Set();
-        let recurse = (epd, line, seenEpds) => {
-          let [mainMove, ...others] =
+        const seenEpds = new Set();
+        const recurse = (epd, line, seenEpds) => {
+          const [mainMove, ...others] =
             s.repertoire[side].positionResponses[epd] ?? [];
-          let newSeenEpds = new Set(seenEpds);
+          const newSeenEpds = new Set(seenEpds);
           newSeenEpds.add(epd);
           if (!mainMove) {
             return;
           }
-          let mainLine = [...line, mainMove.sanPlus];
+          const mainLine = [...line, mainMove.sanPlus];
           pgn = pgn + getLastMoveWithNumber(lineToPgn(mainLine)) + " ";
           forEach(others, (variationMove) => {
             if (seenEpds.has(variationMove.epdAfter)) {
               return;
             }
-            let variationLine = [...line, variationMove.sanPlus];
+            const variationLine = [...line, variationMove.sanPlus];
             seenEpds.add(variationMove.epdAfter);
             pgn += "(";
             if (sideOfLastmove(variationLine) === "black") {
-              let n = Math.floor(variationLine.length / 2);
+              const n = Math.floor(variationLine.length / 2);
 
               pgn +=
                 `${n}... ` +
@@ -720,11 +720,11 @@ export const getInitialRepertoireState = (
         recurse(START_EPD, [], seenEpds);
         pgn = pgn.trim();
 
-        let downloadLink = document.createElement("a");
+        const downloadLink = document.createElement("a");
 
-        let csvFile = new Blob([pgn], { type: "text" });
+        const csvFile = new Blob([pgn], { type: "text" });
 
-        let url = window.URL.createObjectURL(csvFile);
+        const url = window.URL.createObjectURL(csvFile);
         downloadLink.download = `${side}.pgn`;
         downloadLink.href = url;
         downloadLink.style.display = "none";
@@ -734,12 +734,12 @@ export const getInitialRepertoireState = (
 
     getPawnStructure: (epd: string) =>
       get(([s]) => {
-        let pawnEpd = getPawnOnlyEpd(epd);
+        const pawnEpd = getPawnOnlyEpd(epd);
         let pawnStructure = s.pawnStructureLookup[pawnEpd];
         if (pawnStructure) {
           return { reversed: false, pawnStructure };
         }
-        let reversed = reversePawnEpd(pawnEpd);
+        const reversed = reversePawnEpd(pawnEpd);
         pawnStructure = s.pawnStructureLookup[reversed];
         if (pawnStructure) {
           return { reversed: true, pawnStructure };
@@ -783,6 +783,7 @@ export const getInitialRepertoireState = (
           s.reviewState.stopReviewing();
         }
         s.showImportView = false;
+        console.log("back to overview?");
         s.backToStartPosition();
         s.browsingState.sidebarState.activeSide = null;
         s.divergencePosition = null;
@@ -827,7 +828,7 @@ export const getInitialRepertoireState = (
       set(([s, gs]) => {
         const currentMode = s.browsingState.sidebarState.mode;
 
-        if (currentMode !== "home" && mode === "overview") {
+        if (mode === "overview" || mode === "home") {
           s.browsingState.chessboardState.resetPosition();
         }
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
@@ -846,7 +847,7 @@ export const getInitialRepertoireState = (
         } else if (mode === "browse" || mode === "build") {
           s.browsingState.chessboardShownAnim = 1;
           if (s.browsingState.sidebarState.activeSide === "white") {
-            let startResponses =
+            const startResponses =
               s.repertoire?.[s.browsingState.sidebarState.activeSide]
                 ?.positionResponses[START_EPD];
             if (startResponses?.length === 1) {
@@ -959,7 +960,7 @@ export const getInitialRepertoireState = (
       }),
     selectDebugGame: (i: number) =>
       set(([s]) => {
-        let { game, pawnStructures } = s.debugPawnStructuresState.games[i];
+        const { game, pawnStructures } = s.debugPawnStructuresState.games[i];
         s.debugPawnStructuresState.i = i;
         s.debugPawnStructuresState.game = game;
         s.debugPawnStructuresState.moves = NUM_MOVES_DEBUG_PAWN_STRUCTURES;
@@ -1058,21 +1059,21 @@ export const getInitialRepertoireState = (
         if (!s.repertoire) {
           return 0;
         }
-        let seenEpds = new Set();
+        const seenEpds = new Set();
         let lineCount = 0;
-        let recurse = (epd) => {
+        const recurse = (epd) => {
           if (seenEpds.has(epd)) {
             return;
           }
           seenEpds.add(epd);
-          let moves = s.repertoire[side].positionResponses[epd] ?? [];
+          const moves = s.repertoire[side].positionResponses[epd] ?? [];
           if (isEmpty(moves)) {
             return;
           }
           if (lineCount === 0) {
             lineCount = 1;
           }
-          let additionalLines =
+          const additionalLines =
             filter(moves, (m) => !seenEpds.has(m.epdAfter)).length - 1;
           lineCount += Math.max(0, additionalLines);
           forEach(moves, (variationMove) => {
@@ -1135,7 +1136,7 @@ function removeLastMove(id: string) {
 }
 
 function getLastMoveWithNumber(id: string) {
-  let [n, m] = last(id.split(" ")).split(".");
+  const [n, m] = last(id.split(" ")).split(".");
   if (!m) {
     return n;
   }
@@ -1171,10 +1172,10 @@ export const getExpectedNumMovesBetween = (
     distance_pow = 1.32;
   }
   const get_distance = (x, y) => {
-    let distance = 1 / y / (1 / x);
+    const distance = 1 / y / (1 / x);
     return Math.pow(distance, distance_pow);
   };
-  let distance = Math.max(0, get_distance(current, destination));
+  const distance = Math.max(0, get_distance(current, destination));
   return m * distance;
 };
 // window.getExpectedNumMovesBetween = getExpectedNumMovesBetween;

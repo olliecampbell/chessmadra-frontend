@@ -35,7 +35,7 @@ export const SidebarLayout = ({
   mode: BrowsingMode;
 }) => {
   // TODO solid
-  let chessboardFrozen = () => false;
+  const chessboardFrozen = () => false;
   // let chessboardFrozen = sideBarMode === "overview" || sideBarMode === "home";
   // if (onboardingStack.length > 0 || showingPlans) {
   //   chessboardFrozen = true;
@@ -153,7 +153,7 @@ export const SidebarLayout = ({
               <Spacer height={60} />
             )}
           </div>
-          {!vertical && (
+          <Show when={!vertical }>
             <>
               <Spacer width={responsive.switch(24, [BP.lg, 48])} />
               <div
@@ -169,7 +169,7 @@ export const SidebarLayout = ({
                 <BrowserSidebar />
               </div>
             </>
-          )}
+            </Show>
         </div>
       </div>
     </RepertoirePageLayout>
@@ -180,7 +180,7 @@ export const ExtraChessboardActions = ({}: {}) => {
   // TODO solid
   return null;
   const responsive = useResponsive();
-  let fgColor = c.colors.textTertiary;
+  const fgColor = c.colors.textTertiary;
   const textStyles = s(
     c.fontSize(responsive.switch(12, [BP.md, 14])),
     c.fg(c.colors.textTertiary),
@@ -192,7 +192,7 @@ export const ExtraChessboardActions = ({}: {}) => {
   );
   const padding = 8;
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  let [currentLine] = useRepertoireState((s) => [
+  const [currentLine] = useRepertoireState((s) => [
     s.browsingState.chessboardState.moveLog,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
@@ -220,7 +220,7 @@ export const ExtraChessboardActions = ({}: {}) => {
       >
         <CMText style={s(textStyles)}>Analyze on Lichess</CMText>
         <Spacer width={padding} />
-        <i className="fa fa-up-right-from-square" style={s(iconStyles)}></i>
+        <i class="fa fa-up-right-from-square" style={s(iconStyles)}></i>
       </Pressable>
     </FadeInOut>
   );
@@ -304,7 +304,7 @@ export const NavBreadcrumbs = () => {
   const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs()]);
 
   const responsive = useResponsive();
-  let hidden = () => breadcrumbs().length == 1;
+  const hidden = () => breadcrumbs().length == 1;
   const [mode] = useSidebarState(([s]) => [s.mode]);
   return (
     // todo: figure out why this is not working

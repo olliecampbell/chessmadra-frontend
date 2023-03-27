@@ -54,12 +54,10 @@ import { View } from "./View";
 import { Accessor, createEffect, For, Show, splitProps } from "solid-js";
 
 export const RepertoireHome = (props: {}) => {
-  const userState = useUserState((s) => s);
-  let themeId = () => userState.user?.theme;
-  // let { theme: themeId, pieceSet } = splitProps(user, ["theme", "pieceSet"]);
-  let theme = () => BOARD_THEMES_BY_ID[themeId()];
-  let pieceSet = () => userState.user?.pieceSet;
-  const [showPlans] = useBrowsingState(([s]) => [s.showPlans]);
+  const userState = getAppState().userState;
+  const themeId = () => userState.user?.theme;
+  const theme = () => BOARD_THEMES_BY_ID[themeId()];
+  const pieceSet = () => userState.user?.pieceSet;
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
       bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -196,9 +194,9 @@ export const RepertoireHome = (props: {}) => {
                 right:
                   theme() && pieceSet()
                     ? `${upperFirst(theme().name)} / ${upperFirst(pieceSet())}`
-                    : theme
-                    ? `${upperFirst(theme.name())}`
-                    : pieceSet
+                    : theme()
+                    ? `${upperFirst(theme().name)}`
+                    : pieceSet()
                     ? `${pieceSet()}`
                     : "No theme",
                 style: "secondary",
@@ -215,7 +213,7 @@ export const RepertoireHome = (props: {}) => {
 };
 
 export const getExpectedNumberOfMovesForTarget = (target: number) => {
-  let [a, b] = [98.76334927, 137.34870497];
+  const [a, b] = [98.76334927, 137.34870497];
 
   return (1 / (target * a)) * b;
 };

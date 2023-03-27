@@ -32,7 +32,7 @@ export const RepertoireOverview = (props: {}) => {
   const appState = getAppState();
   const { repertoireState, userState } = appState;
   const { browsingState } = repertoireState;
-  let progressState = () => browsingState.repertoireProgressState[side()];
+  const progressState = () => browsingState.repertoireProgressState[side()];
   const biggestMiss = () =>
     repertoireState.repertoireGrades[side()]?.biggestMiss;
   const numMoves = () => repertoireState.getLineCount(side());
@@ -56,13 +56,13 @@ export const RepertoireOverview = (props: {}) => {
       }
     });
   };
-  let buildOptions = () => [
+  const buildOptions = () => [
     {
       hidden: empty() || isNil(biggestMiss),
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.go_to_biggest_gap");
-          let line = pgnToLine(biggestMiss().lines[0]);
+          const line = pgnToLine(biggestMiss().lines[0]);
           s.repertoireState.animateChessboardShown(true, responsive, () => {
             quick((s) => {
               s.repertoireState.startBrowsing(side() as Side, "build", {
@@ -93,7 +93,7 @@ export const RepertoireOverview = (props: {}) => {
       left: <CMText style={s(textStyles)}>Browse / add new line</CMText>,
     },
   ];
-  let reviewTimer = () => {
+  const reviewTimer = () => {
     let reviewTimer = null;
     if (numMovesDueFromHere() !== 0) {
       // reviewStatus = "You have no moves due for review";
@@ -107,7 +107,7 @@ export const RepertoireOverview = (props: {}) => {
     }
     return reviewTimer;
   };
-  let reviewOptions = () => [
+  const reviewOptions = () => [
     {
       hidden: numMovesDueFromHere() === 0,
       onPress: () => {
@@ -163,7 +163,7 @@ export const RepertoireOverview = (props: {}) => {
       ),
     },
   ];
-  let options = () =>
+  const options = () =>
     [
       {
         hidden: !empty(),
@@ -229,7 +229,7 @@ export const RepertoireOverview = (props: {}) => {
   //   numMovesDueFromHere,
   //   "move"
   // )} due for review`;
-  let repertoireStatus = () => {
+  const repertoireStatus = () => {
     if (empty()) {
       return `Your repertoire is empty`;
     }
@@ -264,7 +264,7 @@ export const RepertoireOverview = (props: {}) => {
         }}
       </For>
       <div style={s(c.row, c.px(c.getSidebarPadding(responsive)), c.pt(8))}>
-        {!empty() && (
+      <Show when={!empty() }>
           <Pressable
             style={s(c.pb(2))}
             onPress={() => {
@@ -282,7 +282,7 @@ export const RepertoireOverview = (props: {}) => {
               {!expanded() ? "More options..." : "Hide "}
             </CMText>
           </Pressable>
-        )}
+          </Show>
       </div>
     </SidebarTemplate>
   );
@@ -346,7 +346,7 @@ export const CoverageAndBar = ({
     c.weightSemiBold,
     c.fontSize(12)
   );
-  let [progressState] = useRepertoireState((s) => [
+  const [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[side],
   ]);
 
@@ -359,7 +359,7 @@ export const CoverageAndBar = ({
           <>{Math.round(progressState().percentComplete)}% complete</>
         )}
       </CMText>
-      {!hideBar && (
+      <Show when={!hideBar }>
         <>
           <Spacer width={8} />
           <div
@@ -368,7 +368,7 @@ export const CoverageAndBar = ({
             <CoverageBar isInSidebar={!home} side={side} />
           </div>
         </>
-      )}
+        </Show>
     </div>
   );
 };

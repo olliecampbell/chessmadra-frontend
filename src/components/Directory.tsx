@@ -27,13 +27,13 @@ export const Directory = () => {
         }}
       />
 
-      {failOnTrue(false) && (
+<Show when={failOnTrue(false) }>
         <div style={s(c.row)}>
           <ColorSwatch colors={c.primaries} />
           <ColorSwatch colors={c.yellows} />
           <ColorSwatch colors={c.grays} />
         </div>
-      )}
+        </Show>
       <Spacer height={44} />
       <div style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
         <CMText
@@ -90,7 +90,7 @@ export const Directory = () => {
                   to={path}
                 >
                   <div>
-                    {isNew && (
+                  <Show when={isNew }>
                       <div
                         style={s(
                           c.absolute,
@@ -106,7 +106,7 @@ export const Directory = () => {
                       >
                         <i
                           style={s(c.fg(c.grays[30]))}
-                          className="fa-solid fa-party-horn"
+                          class="fa-solid fa-party-horn"
                         ></i>
                         <Spacer width={12} />
                         <CMText
@@ -120,8 +120,8 @@ export const Directory = () => {
                           New
                         </CMText>
                       </div>
-                    )}
-                    {beta && !isNew && (
+                      </Show>
+                      <Show when={beta && !isNew }>
                       <div
                         style={s(
                           c.absolute,
@@ -145,7 +145,7 @@ export const Directory = () => {
                           Beta
                         </CMText>
                       </div>
-                    )}
+                      </Show>
                     <CMText
                       style={s(
                         c.fg(c.colors.textInverse),
@@ -182,7 +182,7 @@ export const ColorSwatch = ({ colors }) => {
   return (
     <div style={s(c.column, c.width(100))}>
       {times(20).map((i) => {
-        let color = colors[i * 5];
+        const color = colors[i * 5];
         return (
           <div style={s(c.bg(color), c.selfStretch, c.height(20))}></div>
         );

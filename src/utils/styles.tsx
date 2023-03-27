@@ -222,7 +222,7 @@ const genGrays = (
 ): Record<number, string> => {
   const grays: Record<number, string> = {};
   for (let i = 0; i <= 100; i = i + 1) {
-    let saturation = minSat + ((maxSat - minSat) * i) / 100;
+    const saturation = minSat + ((maxSat - minSat) * i) / 100;
     grays[i] = `hsl(${hue}, ${saturation}%, ${i}%)`;
   }
   return grays;
@@ -240,15 +240,15 @@ const genShades = (
   _maxSaturation?: number
 ): Record<number, string> => {
   const shades: Record<number, string> = {};
-  let minSaturation = _minSaturation ?? 20;
-  let maxSaturation = _maxSaturation ?? 80;
-  let minLightness = 4;
-  let maxLightness = 80;
+  const minSaturation = _minSaturation ?? 20;
+  const maxSaturation = _maxSaturation ?? 80;
+  const minLightness = 4;
+  const maxLightness = 80;
   for (let i = 0; i <= 100; i = i + 1) {
-    let lightness_y = easeInOutSine(i / 100);
-    let saturation =
+    const lightness_y = easeInOutSine(i / 100);
+    const saturation =
       minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;
-    let lightness = minLightness + (maxLightness - minLightness) * lightness_y;
+    const lightness = minLightness + (maxLightness - minLightness) * lightness_y;
     shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
   return shades;
@@ -503,7 +503,7 @@ const gridColumn = ({ gap }: { gap: number }) => {
     c.displayGrid,
     c.keyedProp("grid-template-columns")("1fr"),
     // c.keyedProp("grid-template-rows")("1fr"),
-    c.keyedProp("row-gap")(gap)
+    c.keyedProp("row-gap")(pixelifyIfNeeded(gap))
     // c.keyedProp("column-gap")(columnGap ?? 12)
   );
 };

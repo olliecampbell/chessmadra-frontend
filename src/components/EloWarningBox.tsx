@@ -9,7 +9,7 @@ import { trackEvent } from "~/utils/trackEvent";
 
 export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
   let [] = useRepertoireState((s) => []);
-  let buttonStyles = s(c.fontSize(14));
+  const buttonStyles = s(c.fontSize(14));
   return (
     <div
       style={s(

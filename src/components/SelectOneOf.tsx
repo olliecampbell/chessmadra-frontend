@@ -44,7 +44,7 @@ export const SelectOneOf = <T,>({
             ? equality(choice, activeChoice)
             : choice === activeChoice;
           const isLast = i == choices.length - 1;
-          let rendered = renderChoice(choice, active, i);
+          const rendered = renderChoice(choice, active, i);
           if (typeof rendered === "string") {
             return (
               <Pressable

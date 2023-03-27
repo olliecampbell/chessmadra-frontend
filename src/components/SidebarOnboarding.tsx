@@ -19,9 +19,11 @@ import { DragAndDropInput } from "./DragAndDropInput";
 import { PlayerTemplate } from "~/utils/models";
 import { PlayerTemplates } from "./PlayerTemplates";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { createEffect, createSignal } from "solid-js";
+import { Component, createEffect, createSignal } from "solid-js";
 import { Animated, View } from "./View";
 import { Pressable } from "./Pressable";
+import { Motion } from "@motionone/solid";
+import { destructure } from "@solid-primitives/destructure";
 
 export const SidebarOnboarding = function SidebarOnboarding() {
   const [onboardingState] = useSidebarState(([s]) => [
@@ -29,24 +31,28 @@ export const SidebarOnboarding = function SidebarOnboarding() {
   ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
-  let inner = null;
-  let stage = last(onboardingState.stageStack);
-  if (stage === SidebarOnboardingStage.Initial) {
-    inner = <OnboardingIntro />;
-  } else if (stage === SidebarOnboardingStage.ConnectAccount) {
-    inner = <ConnectAccountOnboarding />;
-  } else if (stage === SidebarOnboardingStage.SetRating) {
-    inner = <SetRatingOnboarding />;
-  } else if (stage === SidebarOnboardingStage.AskAboutExistingRepertoire) {
-    inner = <AskAboutExistingRepertoireOnboarding />;
-  } else if (stage === SidebarOnboardingStage.ChooseImportSource) {
-    inner = <ChooseImportSourceOnboarding />;
-  } else if (stage === SidebarOnboardingStage.Import) {
-    inner = <ImportOnboarding />;
-  } else if (stage === SidebarOnboardingStage.TrimRepertoire) {
-    inner = <TrimRepertoireOnboarding />;
-  }
-  return <div style={s(c.column)}>{inner}</div>;
+  const inner = () => {
+    const stage = last(onboardingState().stageStack);
+
+    let _inner = null;
+    if (stage === SidebarOnboardingStage.Initial) {
+      _inner = <OnboardingIntro />;
+    } else if (stage === SidebarOnboardingStage.ConnectAccount) {
+      _inner = <ConnectAccountOnboarding />;
+    } else if (stage === SidebarOnboardingStage.SetRating) {
+      _inner = <SetRatingOnboarding />;
+    } else if (stage === SidebarOnboardingStage.AskAboutExistingRepertoire) {
+      _inner = <AskAboutExistingRepertoireOnboarding />;
+    } else if (stage === SidebarOnboardingStage.ChooseImportSource) {
+      _inner = <ChooseImportSourceOnboarding />;
+    } else if (stage === SidebarOnboardingStage.Import) {
+      _inner = <ImportOnboarding />;
+    } else if (stage === SidebarOnboardingStage.TrimRepertoire) {
+      _inner = <TrimRepertoireOnboarding />;
+    }
+    return _inner;
+  };
+  return <div style={s(c.column)}>{inner()}</div>;
 };
 
 const OnboardingIntro = () => {
@@ -67,7 +73,7 @@ const OnboardingIntro = () => {
           {bullets.map((bullet, i) => (
             <div style={s(c.row, c.alignCenter, c.pl(12))} key={i}>
               <i
-                className="fas fa-circle"
+                class="fas fa-circle"
                 style={s(c.fg(c.grays[60]), c.fontSize(5))}
               />
               <Spacer width={8} />
@@ -88,18 +94,6 @@ const OnboardingIntro = () => {
           },
           style: "primary",
           text: "Get started",
-        }}
-      />
-      <Spacer height={12} />
-      <SidebarFullWidthButton
-        action={{
-          onPress: () => {
-            quick((s) => {
-              s.navigationState.push("/directory");
-            });
-          },
-          style: "secondary",
-          text: "Other tools",
         }}
       />
     </div>
@@ -200,9 +194,9 @@ const SetRatingOnboarding = () => {
             ]}
             choice={ratingRange()}
             renderChoice={(choice, inList, onPress) => {
-              let textColor = c.grays[80];
-              let textStyles = s(c.fg(textColor), c.fontSize(16));
-              let containerStyles = s(
+              const textColor = c.grays[80];
+              const textStyles = s(c.fg(textColor), c.fontSize(16));
+              const containerStyles = s(
                 c.py(12),
                 inList && c.px(16),
                 c.row,
@@ -212,7 +206,7 @@ const SetRatingOnboarding = () => {
                 c.width("fit-content"),
                 c.minWidth(80)
               );
-              let inner = (
+              const inner = (
                 <CMText
                   style={s(
                     textStyles,
@@ -249,13 +243,13 @@ const SetRatingOnboarding = () => {
               ]}
               choice={ratingSource()}
               renderChoice={(choice, inList, onPress) => {
-                let textColor = c.grays[80];
-                let textStyles = s(
+                const textColor = c.grays[80];
+                const textStyles = s(
                   c.fg(textColor),
                   c.fontSize(16),
                   c.weightSemiBold
                 );
-                let containerStyles = s(
+                const containerStyles = s(
                   c.py(12),
                   inList && c.px(16),
                   c.row,
@@ -352,31 +346,17 @@ enum RatingSource {
   FIDE = "FIDE",
 }
 
-export const Dropdown = <T,>({
-  choices,
-  renderChoice,
-  onSelect,
-  choice,
-}: {
-  choice: T;
-  choices: T[];
-  onSelect: (_: T) => void;
-  renderChoice: (_: T, inDropdown: boolean, onPress: () => void) => any;
-}) => {
+type TFake = any;
+export const Dropdown: Component<{
+  choice: TFake;
+  choices: TFake[];
+  onSelect: (_: TFake) => void;
+  renderChoice: (_: TFake, inDropdown: boolean, onPress: () => void) => any;
+}> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
-  const ref = null;
-  // TODO: solid
-  // const fadeAnim = React.useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
-  const fadeAnim = 100;
+  const [ref, setRef] = createSignal(null);
 
-  // React.useEffect(() => {
-  //   Animated.timing(fadeAnim, {
-  //     toValue: isOpen ? 1 : 0,
-  //     duration: 200,
-  //     useNativeDriver: false,
-  //   }).start();
-  // }, [isOpen]);
-  useOutsideClick(ref, (e) => {
+  useOutsideClick(ref, (e: MouseEvent) => {
     if (isOpen()) {
       setIsOpen(false);
       e.preventDefault();
@@ -384,29 +364,27 @@ export const Dropdown = <T,>({
       return false;
     }
   });
-  console.log("Choice is", choice);
   return (
     <Pressable
-      ref={ref}
-      style={s(c.row, c.alignCenter, c.zIndex(10))}
+      ref={setRef}
+      style={s(c.row, c.alignCenter, c.zIndex(10), c.relative)}
       onPress={() => {
-        console.log("toggle");
         setIsOpen(!isOpen());
       }}
     >
-      {renderChoice(choice, false, () => {
+      {props.renderChoice(props.choice, false, () => {
         setIsOpen(!isOpen());
       })}
       <Spacer width={8} />
       <i
-        className="fas fa-angle-down"
+        class="fas fa-angle-down"
         style={s(c.fontSize(18), c.fg(c.grays[80]))}
       />
-      <Animated.View
+      <Motion
+        animate={{ opacity: isOpen() ? 1 : 0 }}
         style={s(
           c.absolute,
           c.minWidth("fit-content"),
-          c.opacity(fadeAnim),
           !isOpen() && c.noPointerEvents,
           c.zIndex(100),
           c.right(-20),
@@ -418,13 +396,13 @@ export const Dropdown = <T,>({
           c.alignStretch
         )}
       >
-        {choices.map((c) =>
-          renderChoice(c, true, () => {
-            onSelect(c);
+        {props.choices.map((c) =>
+          props.renderChoice(c, true, () => {
+            props.onSelect(c);
             setIsOpen(false);
           })
         )}
-      </Animated.View>
+      </Motion>
     </Pressable>
   );
 };
@@ -532,7 +510,7 @@ const ChooseImportSourceOnboarding = () => {
 const ImportOnboarding = () => {
   const responsive = useResponsive();
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  let [importType] = useRepertoireState((s) => [
+  const [importType] = useRepertoireState((s) => [
     s.browsingState.sidebarState.sidebarOnboardingState.importType,
   ]);
   createEffect(() => {
@@ -541,17 +519,87 @@ const ImportOnboarding = () => {
       s.repertoireState.fetchPlayerTemplates();
     });
   }, []);
-  const [username, setUsername] = useState("");
-  let header = null;
-  let actions = [];
-  let body = null;
-  const [loading, setLoading] = useState(null as string);
+  const [username, setUsername] = createSignal("");
+  const [loading, setLoading] = createSignal(null as string | null);
+  const [pgnUploadRef, setPgnUploadRef] = createSignal(
+    null as HTMLInputElement | null
+  );
+  // createEffect(() => {
+  //   let dropContainer = pgnUploadRef();
+  //   console.log("dropContainer", dropContainer);
+  //   if (dropContainer) {
+  //     dropContainer.ondragover = dropContainer.ondragenter = function (evt) {
+  //       evt.preventDefault();
+  //     };
+  //
+  //     const onFileUpoad = async (e: any) => {};
+  //     dropContainer.onchange = onFileUpoad;
+  //     dropContainer.ondrop = onFileUpoad;
+  //   }
+  // });
+  createEffect(() => {
+    const input = pgnUploadRef();
+    console.log("creating change watcher thing");
+    if (input) {
+      input.addEventListener("change", async (e) => {
+        console.log("file upload");
+        const file = input.files?.[0];
+        debugger;
+        console.log("file upload", file);
+        if (file) {
+          const body = await file.text();
+          importFromPgn(body);
+          return true;
+        }
+        e.preventDefault();
+      });
+    }
+  });
+
+  const { body, header, actions, bodyPadding } = destructure(() => {
+    const bodyPadding = true;
+    let header = null;
+    let actions = [];
+    let body = null;
+    if (importType() === SidebarOnboardingImportType.PGN) {
+      header = "Please upload your PGN file";
+      body = (
+        <div style={s(c.pt(20))}>
+          <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
+        </div>
+      );
+    }
+    if (importType() === SidebarOnboardingImportType.LichessUsername) {
+      header = "What's your lichess username?";
+      body = (
+        <div style={s(c.pt(20))}>
+          <CMTextInput
+            placeholder="username"
+            value={username()}
+            setValue={setUsername}
+            style={s(c.maxWidth(200))}
+          />
+        </div>
+      );
+      actions.push({
+        text: "Submit",
+        onPress: () => {
+          importFromLichessUsername();
+        },
+        style: "primary",
+      });
+    }
+    if (loading()) {
+      actions = [];
+    }
+    return { body, header, bodyPadding, actions };
+  });
 
   const importFromPgn = (pgn) => {
     setLoading("Importing");
     quick((s) => {
-      let params = {} as any;
-      if (activeSide === "white") {
+      const params = {} as any;
+      if (activeSide() === "white") {
         params.whitePgn = pgn;
       } else {
         params.blackPgn = pgn;
@@ -566,79 +614,24 @@ const ImportOnboarding = () => {
     quick((s) => {
       trackEvent("import.from_lichess_username");
       s.repertoireState.initializeRepertoire({
-        lichessUsername: username,
+        lichessUsername: username(),
         responsive,
       });
     });
   };
 
-  let bodyPadding = true;
-  if (importType === SidebarOnboardingImportType.PGN) {
-    header = "Please upload your PGN file";
-    body = (
-      <div style={s(c.pt(20))}>
-        <DragAndDropInput
-          style={s(c.height(80))}
-          humanName={`Tap to select your ${capitalize(
-            activeSide
-          )} repertoire file`}
-          accept="*.pgn"
-          onUpload={async (e) => {
-            let file = e.target.files[0];
-            if (file) {
-              let body = await file.text();
-              importFromPgn(body);
-              return true;
-            }
-          }}
-        />
-      </div>
-    );
-  }
-  if (importType === SidebarOnboardingImportType.LichessUsername) {
-    header = "What's your lichess username?";
-    body = (
-      <div style={s(c.pt(20))}>
-        <CMTextInput
-          placeholder="username"
-          value={username}
-          setValue={setUsername}
-          style={s(c.maxWidth(200))}
-        />
-      </div>
-    );
-    actions.push({
-      text: "Submit",
-      onPress: () => {
-        importFromLichessUsername();
-      },
-      style: "primary",
-    });
-  }
-  if (loading) {
-    actions = [];
-  }
-  return (
-    <SidebarTemplate
-      bodyPadding={bodyPadding}
-      header={header}
-      actions={actions}
-      loading={loading}
-    >
-      {body}
-    </SidebarTemplate>
-  );
+  return body;
 };
 
 const TrimRepertoireOnboarding = () => {
   const responsive = useResponsive();
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  let [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
+  const [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
     s.getNumResponsesBelowThreshold,
   ]);
-  let header = "Do you want to trim your repertoire?";
+  const header = "Do you want to trim your repertoire?";
   let actions = [];
-  let body = (
+  const body = (
     <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
       We can trim your repertoire to only the moves you're likely to see. This
       can be a good option if you have a large repertoire from other software.
@@ -656,7 +649,7 @@ const TrimRepertoireOnboarding = () => {
   };
 
   [1 / 25, 1 / 100, 1 / 200].forEach((threshold) => {
-    let numMoves = getNumResponsesBelowThreshold(threshold, activeSide);
+    const numMoves = getNumResponsesBelowThreshold(threshold, activeSide);
     if (numMoves > 0) {
       actions.push({
         text: `Trim lines that occur in less than 1 in ${1 / threshold} games`,

@@ -1,29 +1,18 @@
 import { c, s } from "~/utils/styles";
-import { createSignal } from "solid-js";
+import { Component, createSignal } from "solid-js";
 
-export const CMTextInput = ({
-  value,
-  placeholder,
-  setValue,
-  onKeyDown,
-  textInputProps,
-  style,
-}: {
+export const CMTextInput: Component<{
   value: string;
   style?: any;
   onKeyDown?: any;
   textInputProps?: Partial<any>;
   placeholder: string;
   setValue: (x: string) => void;
-}) => {
+}> = (props) => {
   const [focus, setFocus] = createSignal(false);
   return (
     <input
-      {...textInputProps}
-      // @ts-ignore
-      onKeyDown={onKeyDown}
-      // @ts-ignore
-      className="text-input"
+      class="text-input"
       style={s(
         c.bg(c.grays[14]),
         c.py(12),
@@ -35,18 +24,19 @@ export const CMTextInput = ({
         c.br(4),
         c.keyedProp("outline")("none"),
         c.fg(c.colors.textPrimary),
-        style ?? {}
+        props.style ?? {}
       )}
-      placeholder={placeholder}
-      placeholderTextColor={c.grays[60]}
+      placeholder={props.placeholder}
+      onInput={(e) => {
+        props.setValue(e.currentTarget.value);
+      }}
       onFocus={() => {
         setFocus(true);
       }}
       onBlur={() => {
         setFocus(false);
       }}
-      value={value}
-      onChangeText={setValue}
+      value={props.value}
     />
   );
 };

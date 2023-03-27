@@ -33,7 +33,7 @@ export const ProgressMessageView = ({
       >
         {progressMessage.message}
       </CMText>
-      {progressMessage.prompt && (
+      <Show when={progressMessage.prompt }>
         <Pressable
           onPress={() => {
             progressMessage.onPromptPress();
@@ -55,7 +55,7 @@ export const ProgressMessageView = ({
             {progressMessage.prompt}
           </CMText>
         </Pressable>
-      )}
+        </Show>
     </div>
   );
 };

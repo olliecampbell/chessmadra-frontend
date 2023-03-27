@@ -9,7 +9,7 @@ export default function SharedRepertoireView() {
     s.fetchSharedRepertoire,
   ]);
   const [searchParams] = useSearchParams();
-  let shareId = searchParams.get("id");
+  const shareId = searchParams.get("id");
   useEffect(() => {
     if (shareId) {
       fetchSharedRepertoire(shareId as string);

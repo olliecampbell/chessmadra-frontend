@@ -52,7 +52,7 @@ export const getInitialPuzzleState = (
           move.san == s.solutionMoves[0].san ||
           isCheckmate(move, s.puzzlePosition)
         ) {
-          let otherSideMove = s.solutionMoves[1];
+          const otherSideMove = s.solutionMoves[1];
           s.puzzlePosition.move(move);
           if (otherSideMove) {
             s.puzzlePosition.move(otherSideMove);

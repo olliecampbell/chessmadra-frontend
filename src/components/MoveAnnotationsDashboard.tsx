@@ -45,7 +45,7 @@ export const MoveAnnotationsDashboard = ({}) => {
               <Link to="/admin/move-annotations/community">
                 Go to community review queue
                 <Spacer width={8} />
-                <i className="fa fa-arrow-right" style={s()} />
+                <i class="fa fa-arrow-right" style={s()} />
               </Link>
             </CMText>
             <Spacer height={32} />
@@ -119,11 +119,11 @@ export const MoveAnnotationRow = ({
   annotation: AdminMoveAnnotation;
   completed: boolean;
 }) => {
-  let fen = `${ann.previousEpd} 0 1`;
-  let position = new Chess(fen);
-  let [annotation, setAnnotation] = useState(ann.annotation?.text ?? "");
-  let [saved, setSaved] = useState(false);
-  let [loading, setLoading] = useState(false);
+  const fen = `${ann.previousEpd} 0 1`;
+  const position = new Chess(fen);
+  const [annotation, setAnnotation] = useState(ann.annotation?.text ?? "");
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
   return (
     <div style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
       <div style={s(c.row)}>
@@ -143,14 +143,14 @@ export const MoveAnnotationRow = ({
           <AnnotationEditor annotation={annotation} onUpdate={setAnnotation} />
         </div>
       </div>
-      {completed && (
+      <Show when={completed }>
         <>
           <Spacer height={8} />
           <CMText style={s()}>
             Reviewer: {ann.reviewerEmail ?? "me@mbuffett.com"}
           </CMText>
         </>
-      )}
+        </Show>
       <Spacer height={8} />
       <div style={s(c.row, c.justifyEnd)}>
         <CMText style={s()}>{ann.games.toLocaleString()} games</CMText>
@@ -185,12 +185,12 @@ export const MoveAnnotationRow = ({
           }}
         >
           <CMText style={s(c.buttons.primary.textStyles)}>
-            {saved && (
+          <Show when={saved }>
               <i
-                className="fa fa-check"
+                class="fa fa-check"
                 style={s(c.fg(c.grays[90]), c.mr(4))}
               />
-            )}
+              </Show>
             {loading ? "Loading.." : saved ? "Saved" : "Save"}
           </CMText>
         </Button>

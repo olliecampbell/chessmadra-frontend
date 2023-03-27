@@ -1,5 +1,5 @@
 export const times = (x) => (f) => {
-  let results = [];
+  const results = [];
   for (let i = 0; i < x; i++) {
     results.push(f(i));
   }

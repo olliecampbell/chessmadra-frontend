@@ -1,5 +1,5 @@
 // @refresh reload
-import { Suspense } from "solid-js";
+import { onMount, Suspense } from "solid-js";
 import {
   A,
   Body,
@@ -18,58 +18,60 @@ import * as Sentry from "@sentry/browser";
 import { BrowserTracing } from "@sentry/tracing";
 import { c, s } from "./utils/styles";
 import "~/global.css";
-import { MetaProvider, renderTags } from "@solidjs/meta";
+import AuthHandler from "./components/AuthHandler";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-amplitudeInit(
-  development
-    ? "a15d3fdaf95400ebeae67dafbb5e8929"
-    : "3709b7c3cbe8ef56eecec29da70f3d3c",
-  undefined,
-  {
-    serverUrl: undefined,
-    // serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
-  }
-);
-
-// Option 1, initialize with API_KEY only
-
-const SENTRY_DSN: string =
-  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
-
-Sentry.init({
-  dsn:
-    SENTRY_DSN ||
-    "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185",
-  enableInExpoDevelopment: false,
-  integrations: [new BrowserTracing()],
-
-  debug: !(!process.env.NODE_ENV || process.env.NODE_ENV === "development"),
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 1.0,
-  beforeBreadcrumb: (breadcrumb, hint) => {
-    if (breadcrumb.category === "xhr") {
-      let xhr = hint.xhr as XMLHttpRequest;
-      const data = {
-        // @ts-ignore
-        requestBody: xhr.__sentry_xhr__.body,
-        responseCode: xhr.status,
-        response: xhr.response,
-        responseUrl: xhr.responseURL,
-      };
-      return { ...breadcrumb, data };
-    }
-    return breadcrumb;
-  },
-  // ...
-  // Note: if you want to override the automatic release value, do not set a
-  // `release` value here - use the environment variable `SENTRY_RELEASE`, so
-  // that it will also get attached to your source maps
-});
 
 export default function Root() {
+  onMount(() => {
+    amplitudeInit(
+      development
+        ? "a15d3fdaf95400ebeae67dafbb5e8929"
+        : "3709b7c3cbe8ef56eecec29da70f3d3c",
+      undefined,
+      {
+        serverUrl: undefined,
+        // serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
+      }
+    );
+
+    // Option 1, initialize with API_KEY only
+
+    const SENTRY_DSN: string =
+      process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+    Sentry.init({
+      dsn:
+        SENTRY_DSN ||
+        "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185",
+      enableInExpoDevelopment: false,
+      integrations: [new BrowserTracing()],
+
+      debug: !(!process.env.NODE_ENV || process.env.NODE_ENV === "development"),
+      // We recommend adjusting this value in production, or using tracesSampler
+      // for finer control
+      tracesSampleRate: 1.0,
+      beforeBreadcrumb: (breadcrumb, hint) => {
+        if (breadcrumb.category === "xhr") {
+          const xhr = hint.xhr as XMLHttpRequest;
+          const data = {
+            // @ts-ignore
+            requestBody: xhr.__sentry_xhr__.body,
+            responseCode: xhr.status,
+            response: xhr.response,
+            responseUrl: xhr.responseURL,
+          };
+          return { ...breadcrumb, data };
+        }
+        return breadcrumb;
+      },
+      // ...
+      // Note: if you want to override the automatic release value, do not set a
+      // `release` value here - use the environment variable `SENTRY_RELEASE`, so
+      // that it will also get attached to your source maps
+    });
+  });
   return (
     <Html lang="en">
       <Head>
@@ -109,9 +111,11 @@ export default function Root() {
       >
         <Suspense>
           <ErrorBoundary>
-            <Routes>
-              <FileRoutes />
-            </Routes>
+            <AuthHandler>
+              <Routes>
+                <FileRoutes />
+              </Routes>
+            </AuthHandler>
           </ErrorBoundary>
         </Suspense>
         <Scripts />

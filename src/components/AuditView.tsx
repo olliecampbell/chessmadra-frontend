@@ -20,10 +20,10 @@ export const AuditView = (props: {}) => {
       s.adminState.fetchAudit();
     });
   }, []);
-  let auditResponse = useAdminState((s) => s.auditResponse, {
+  const auditResponse = useAdminState((s) => s.auditResponse, {
     referenceEquality: true,
   });
-  let responsive = useResponsive();
+  const responsive = useResponsive();
   return (
     <div
       style={s(c.column, c.containerStyles(responsive.bp), c.py(48), c.px(12))}
@@ -129,9 +129,9 @@ export const ExcessiveLinesAudit = ({
   let collatedExcessiveLines: ProcessedExcessiveLine[] = [];
   excessiveEpds.forEach((epd) => {
     let maxIncidence = 0.0;
-    let lines: Set<string> = new Set();
+    const lines: Set<string> = new Set();
     auditResponse.eloAudits.map((audit) => {
-      let excessiveLine = audit.excessiveLines.find((el) => el.epd === epd);
+      const excessiveLine = audit.excessiveLines.find((el) => el.epd === epd);
       excessiveLine.lines.forEach((line) => {
         lines.add(line);
       });
@@ -236,7 +236,7 @@ export const ExcessiveLinesAudit = ({
 };
 
 export const EloAudit = ({ audit }: { audit: RepertoireAudit }) => {
-  let { eloRange, missedLines, excessiveLines } = audit;
+  const { eloRange, missedLines, excessiveLines } = audit;
   return (
     <div style={s()}>
       <CMText style={s(c.weightBold, c.fontSize(24), c.fg(c.grays[90]))}>

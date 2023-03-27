@@ -11,7 +11,7 @@ export const SidebarTemplate: Component<{
   header: string;
   children: any;
   loading?: string;
-  bodyPadding: boolean;
+  bodyPadding?: boolean;
   actions: SidebarAction[];
 }> = (props) => {
   const responsive = useResponsive();

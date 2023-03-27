@@ -24,7 +24,7 @@ export const FadeInOut = ({
   style?: any;
   id?: string;
 }) => {
-  let maxOpacity = _maxOpacity ?? 100;
+  const maxOpacity = _maxOpacity ?? 100;
   const opacity = () => (open() ? maxOpacity : 0);
   return (
     <Motion

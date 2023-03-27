@@ -51,7 +51,7 @@ export const DragAndDropInput = ({
       ) : (
         <>
           <CMText style={s(c.fontSize(14), c.fg(c.grays[70]))}>
-            <i className="fa-light fa-plus"></i>
+            <i class="fa-light fa-plus"></i>
           </CMText>
           <Spacer width={isMobile ? 4 : 12} />
           <CMText style={s(c.fg(c.colors.textSecondary), c.fontSize(14))}>

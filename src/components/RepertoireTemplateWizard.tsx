@@ -168,14 +168,14 @@ export const SelectTemplate = ({
   const singular = templates.length === 1;
   return (
     <div style={s(c.column)}>
-      {!singular && (
+    <Show when={!singular }>
         <>
           <CMText style={s(c.fg(c.colors.textPrimary))}>
             How do you want to respond to <b>{line}</b>?
           </CMText>
           <Spacer height={8} />
         </>
-      )}
+        </Show>
       {singular ? (
         <TemplateCell singular state={state} template={templates[0]} />
       ) : (

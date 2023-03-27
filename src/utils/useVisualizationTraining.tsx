@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useEffect, useState } from "react";
 import { Pressable, View, Platform } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
@@ -164,7 +165,7 @@ export const useVisualizationTraining = ({
     </>
   );
 
-  let ui = (
+  const ui = (
     <>
       {state.progressMessage && (
         <>
@@ -172,7 +173,7 @@ export const useVisualizationTraining = ({
           <Spacer height={12} />
         </>
       )}
-      {state.isDone && (
+      <Show when={state.isDone}>
         <>
           <NewPuzzleButton
             onPress={() => {
@@ -182,7 +183,7 @@ export const useVisualizationTraining = ({
           />
           <Spacer height={12} />
         </>
-      )}
+      </Show>
       {!state.showPuzzlePosition && !state.isDone && player}
       {
         <div
@@ -218,7 +219,7 @@ export const useVisualizationTraining = ({
                 )}
               </div>
             </div>
-            {isNil(score) && (
+            <Show when={isNil(score)}>
               <>
                 <div
                   style={s(
@@ -258,7 +259,7 @@ export const useVisualizationTraining = ({
                   </div>
                 </div>
               </>
-            )}
+            </Show>
             {!isNil(score) && (
               <>
                 <div style={s(c.width(1), c.bg(c.grays[30]))} />
@@ -357,9 +358,7 @@ export const useVisualizationTraining = ({
           </Pressable>
         </div>
       }
-      <div
-        style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
-      >
+      <div style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}>
         {state.mockPassFail && !state.isDone && (
           <>
             <Button
@@ -378,7 +377,7 @@ export const useVisualizationTraining = ({
               <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
-                  className="fa-sharp fa-times"
+                  class="fa-sharp fa-times"
                 ></i>
               </CMText>
             </Button>
@@ -398,7 +397,7 @@ export const useVisualizationTraining = ({
               <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
-                  className="fa-sharp fa-check"
+                  class="fa-sharp fa-check"
                 ></i>
               </CMText>
             </Button>
@@ -421,7 +420,7 @@ export const useVisualizationTraining = ({
           <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fa-sharp fa-search"
+              class="fa-sharp fa-search"
             ></i>
           </CMText>
         </Button>
@@ -435,7 +434,7 @@ export const useVisualizationTraining = ({
           <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fa-sharp fa-circle-question"
+              class="fa-sharp fa-circle-question"
             ></i>
           </CMText>
         </Button>
@@ -450,13 +449,13 @@ export const useVisualizationTraining = ({
             >
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-gear"
+                class="fa-sharp fa-gear"
               ></i>
             </Button>
           </>
         }
       </div>
-      {debugButtons && (
+      <Show when={debugButtons}>
         <>
           <Spacer height={12} />
           <Button style={c.buttons.basic} onPress={() => {}}>
@@ -471,7 +470,7 @@ export const useVisualizationTraining = ({
             Show future position
           </Button>
         </>
-      )}
+      </Show>
       {helpModal}
       <Modal
         onClose={() => {
@@ -480,7 +479,7 @@ export const useVisualizationTraining = ({
         visible={settingsOpen}
       >
         <div style={s(c.px(12), c.pt(12), c.pb(24))}>
-          {!isClimb && (
+          <Show when={!isClimb}>
             <>
               <SettingsTitle text={"Hidden moves"} />
               <Spacer height={24} />
@@ -493,7 +492,7 @@ export const useVisualizationTraining = ({
                 >
                   <i
                     style={s(incrementDecrementTextStyles)}
-                    className="fa-sharp fa-minus"
+                    class="fa-sharp fa-minus"
                   ></i>
                 </Button>
                 <Spacer width={12} />
@@ -517,13 +516,13 @@ export const useVisualizationTraining = ({
                 >
                   <i
                     style={s(incrementDecrementTextStyles)}
-                    className="fa-sharp fa-plus"
+                    class="fa-sharp fa-plus"
                   ></i>
                 </Button>
               </div>
               <Spacer height={24} />
             </>
-          )}
+          </Show>
 
           <SettingsTitle text={"Playback speed"} />
           <Spacer height={24} />
@@ -543,7 +542,7 @@ export const useVisualizationTraining = ({
             }}
           />
           <Spacer height={24} />
-          {!isClimb && (
+          <Show when={!isClimb}>
             <>
               <SettingsTitle text={"Difficulty"} />
               <Spacer height={12} />
@@ -576,7 +575,7 @@ export const useVisualizationTraining = ({
                 />
               </div>
             </>
-          )}
+          </Show>
         </div>
       </Modal>
     </>

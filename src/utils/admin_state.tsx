@@ -84,7 +84,7 @@ export const getInitialAdminState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick<AdminState>(setOnly),
     moveAnnotationReviewQueue: null,
     spoofedEmail: new StorageItem("spoofed-email", undefined),

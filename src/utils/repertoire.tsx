@@ -17,7 +17,7 @@ export function sideOfLastmove(_line: string[] | string): Side {
 export function lineToPgn(line: string[]): string {
   let pgn = "";
   forEach(line, (m, j) => {
-    let i = j / 2 + 1;
+    const i = j / 2 + 1;
     if (j % 2 === 1) {
       pgn = `${pgn} ${m}`;
     } else {
@@ -122,10 +122,10 @@ export interface PendingLine {
 }
 
 export const formatIncidence = (incidence: number) => {
-  let format = (i: number) => {
+  const format = (i: number) => {
     return `${removeTrailingZeros((incidence * 100).toFixed(i))}%`;
   };
-  let x = format(1);
+  const x = format(1);
   if (x === "0%") {
     return format(2);
   } else {

@@ -1,10 +1,10 @@
 import axios from "axios";
 import applyCaseMiddleware from "axios-case-converter";
 import { camelCase } from "camel-case";
-import { getAppState, useAppStateInternal } from "./app_state";
+import { getAppState, useAppStateInternal, quick } from "./app_state";
 import { clearCookies } from "./auth";
 
-let EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
+const EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
 
 let baseURL = undefined;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
@@ -68,7 +68,7 @@ client.interceptors.response.use(
   function (error) {
     console.log({ error });
     if (error?.response?.status === 401) {
-      useAppStateInternal.getState().quick((s) => {
+      quick((s) => {
         s.userState.token = undefined;
         clearCookies();
         window.location.href = `${window.location.origin}/login`;

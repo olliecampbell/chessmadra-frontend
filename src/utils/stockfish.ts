@@ -3,10 +3,10 @@ import { StockfishReport } from "~/utils/models";
 
 export function formatStockfishEval(stockfish: StockfishReport) {
   // let debug = failOnTrue(false);
-  let debug = false;
+  const debug = false;
   let x = "";
   if (!isNil(stockfish.eval)) {
-    let rounded = (stockfish.eval / 100).toFixed(1);
+    const rounded = (stockfish.eval / 100).toFixed(1);
     if (rounded === "0.0") {
       x = `=`;
     } else if (stockfish.eval > 0) {

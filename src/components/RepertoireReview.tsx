@@ -51,7 +51,7 @@ export const RepertoireReview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent(`${mode}.inspect_line`);
-          let qm = s.repertoireState.reviewState.currentMove;
+          const qm = s.repertoireState.reviewState.currentMove;
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(qm.moves[0].side, "build", {
             pgnToPlay: qm.line,
@@ -89,7 +89,7 @@ export const RepertoireReview = (props: {}) => {
               sortBy(currentMove.moves, (m) =>
                 isNil(completedReviewPositionMoves[m.sanPlus])
               ).map((x, i) => {
-                let hasCompleted = !isNil(
+                const hasCompleted = !isNil(
                   completedReviewPositionMoves[x.sanPlus]
                 );
                 return (

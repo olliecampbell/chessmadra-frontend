@@ -1,7 +1,7 @@
 import { c, s } from "~/utils/styles";
 
 export const CMText = (props) => {
-  let { children } = props;
+  const { children } = props;
   return (
     <p
       {...{

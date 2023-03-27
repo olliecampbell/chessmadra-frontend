@@ -7,12 +7,12 @@ interface PuzzleFetchOptions {
   maxPly?: number;
 }
 
-let flipper = 0;
+const flipper = 0;
 export const fetchNewPuzzle = async (
   args: PuzzleFetchOptions
 ): Promise<LichessPuzzle> => {
   try {
-    let response = await client.post("/api/v2/tactic", {
+    const response = await client.post("/api/v2/tactic", {
       ...args,
     });
     // @ts-ignore
@@ -32,7 +32,7 @@ export const fetchNewBlunderPuzzle = async ({
   limit: number;
 }): Promise<BlunderPuzzle[]> => {
   try {
-    let response = await client.post("/api/v1/blunder_puzzle", {
+    const response = await client.post("/api/v1/blunder_puzzle", {
       centipawn_loss_min,
       centipawn_loss_max,
       limit,

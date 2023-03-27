@@ -39,7 +39,7 @@ import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { Motion } from "@motionone/solid";
 
 export const BrowserSidebar = function BrowserSidebar() {
-  let [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =
+  const [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =
     useBrowsingState(([s]) => [
       s.previousSidebarAnim,
       s.currentSidebarAnim,
@@ -52,9 +52,9 @@ export const BrowserSidebar = function BrowserSidebar() {
     if (!previousRef() || !currentRef()) {
       return;
     }
-    let dir = direction();
-    let ms = 200;
-    let duration = `${ms}ms`;
+    const dir = direction();
+    const ms = 200;
+    const duration = `${ms}ms`;
     previousRef().style.transform = "translateX(0px)";
     currentRef().style.transform =
       dir === "right" ? "translateX(40px)" : "translateX(-40px)";
@@ -83,7 +83,6 @@ export const BrowserSidebar = function BrowserSidebar() {
   const responsive = useResponsive();
   const vertical = () => responsive.bp < VERTICAL_BREAKPOINT;
 
-  const user = useUserState((s) => s.user);
   return (
     <div
       style={s(
@@ -96,7 +95,7 @@ export const BrowserSidebar = function BrowserSidebar() {
         c.minHeight("100%")
       )}
     >
-      {!vertical && (
+      <Show when={!vertical}>
         <div
           style={s(
             c.absolute,
@@ -109,7 +108,7 @@ export const BrowserSidebar = function BrowserSidebar() {
         >
           <SettingsButtons />
         </div>
-      )}
+      </Show>
       {!vertical() && <BackSection />}
       <div
         style={s(
@@ -450,13 +449,9 @@ const FeedbackPrompt = () => {
 };
 
 const SavedLineView = function SavedLineView() {
-  const [currentEpd, activeSide] = useSidebarState(([s]) => [
-    s.currentEpd,
-    s.activeSide,
-  ]);
-  const [currentLine] = useSidebarState(([s]) => [lineToPgn(s.moveLog)]);
-  let [progressState] = useRepertoireState((s) => [
-    s.browsingState.repertoireProgressState[activeSide],
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  const [progressState] = useRepertoireState((s) => [
+    s.browsingState.repertoireProgressState[activeSide()],
   ]);
   const responsive = useResponsive();
   return (
@@ -471,7 +466,7 @@ const SavedLineView = function SavedLineView() {
               c.alignCenter,
               c.justifyBetween,
               c.fullWidth,
-              c.opacity(progressState.headerOpacityAnim),
+              c.opacity(progressState().headerOpacityAnim),
               c.relative,
               c.zIndex(2)
             )}
@@ -479,14 +474,10 @@ const SavedLineView = function SavedLineView() {
             <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
               Your {activeSide} repertoire is now{" "}
               <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-                {Math.round(progressState.percentComplete)}%
+                {Math.round(progressState().percentComplete)}%
               </CMText>{" "}
               complete.
             </CMText>
-            <Spacer width={0} grow />
-            {responsive.bp >= BP.md && (
-              <CoverageGoal textColor={c.grays[90]} fromTop />
-            )}
           </Animated.View>
           <Spacer height={4} />
           <div style={s(c.height(24))}>

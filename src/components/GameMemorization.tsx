@@ -88,7 +88,7 @@ export const GameMemorization = () => {
             style={s(c.buttons.squareBasicButtons)}
             onPress={() => {
               (async () => {
-                let link = `https://lichess.org/${state.activeGame.id}/${
+                const link = `https://lichess.org/${state.activeGame.id}/${
                   state.activeGame.result == -1 ? "black" : ""
                 }#${state.moveNumber}`;
                 console.log({ link });
@@ -99,7 +99,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-search"
+                class="fa-sharp fa-search"
               ></i>
             </CMText>
           </Button>
@@ -115,7 +115,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-trash-can"
+                class="fa-sharp fa-trash-can"
               ></i>
             </CMText>
           </Button>
@@ -133,7 +133,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-grid"
+                class="fa-sharp fa-grid"
               ></i>
             </CMText>
           </Button>
@@ -188,7 +188,7 @@ export const GameMemorization = () => {
                   <CMText style={s(c.buttons.basic.textStyles)}>
                     <i
                       style={s(c.fg(c.colors.textInverse))}
-                      className="fa-sharp fa-trash-can"
+                      class="fa-sharp fa-trash-can"
                     ></i>
                   </CMText>
                 </Button>
@@ -223,7 +223,7 @@ export const GameMemorization = () => {
   }
   return <PageContainer>{inner}</PageContainer>;
 };
-function removeGame(id: String, state: GameMemorizationState) {
+function removeGame(id: string, state: GameMemorizationState) {
   client.post("/api/v1/my_games/remove", {
     gameIds: [id],
   });

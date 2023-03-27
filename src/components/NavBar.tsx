@@ -83,7 +83,7 @@ export const NavBar = (props: {}) => {
   const mobileDrawerRef = useRef(null);
   const [backToOverview] = useRepertoireState((s) => [s.backToOverview]);
   const [quick] = useAppState((s) => [s.quick]);
-  let location = useLocation();
+  const location = useLocation();
   useOutsideClick(mobileDrawerRef, (e) => {
     if (mobileNavOpen) {
       setMobileNavOpen(false);
@@ -115,7 +115,7 @@ export const NavBar = (props: {}) => {
           <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
             <i
               style={s(c.fg(c.colors.textSecondary))}
-              className="fa-sharp fa-house"
+              class="fa-sharp fa-house"
             ></i>
           </CMText>
         </Pressable>
@@ -213,7 +213,7 @@ export const NavBar = (props: {}) => {
         >
           <i
             style={s(c.fg(c.grays[80]), c.fontSize(18))}
-            className="fa-sharp fa-bars"
+            class="fa-sharp fa-bars"
           ></i>
         </Button>
         <Show when={needsLogin }>

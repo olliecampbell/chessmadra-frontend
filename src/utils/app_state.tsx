@@ -1,4 +1,3 @@
-import { immer } from "zustand/middleware/immer";
 import { VisualizationState } from "~/types/VisualizationState";
 import { OpDraft } from "./op_draft";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
@@ -95,7 +94,7 @@ const set = (fn: (state: AppState) => AppState) => {
 const get = <T,>(s: (_: AppState) => T): T => {
   return s(appState);
 };
-let initialState = {
+const initialState = {
   // toJSON:
   //   isDevelopment && DEBUG_STATE
   //     ? undefined
@@ -176,7 +175,7 @@ interface EqualityConfig {
   referenceEquality: boolean;
 }
 
-let DEFAULT_EQUALITY_CONFIG = {
+const DEFAULT_EQUALITY_CONFIG = {
   debug: false,
   referenceEquality: false,
 } as EqualityConfig;
@@ -186,14 +185,14 @@ const EXPENSIVE_CUTOFF = 100;
 const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
   const debug = config.debug;
   if (config.referenceEquality) {
-    let equal = a === b;
+    const equal = a === b;
     if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
     return equal;
   }
   if (a instanceof Chess && b instanceof Chess) {
-    let equal = a.fen() === b.fen();
+    const equal = a.fen() === b.fen();
     if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
@@ -209,7 +208,7 @@ const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
     if (a.length > EXPENSIVE_CUTOFF || b.length > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, Math.max(a.length, b.length), config);
     }
-    let arrayEqual = every(
+    const arrayEqual = every(
       zip(a, b).map(([a, b], i) => {
         let newPath = path;
         newPath = newPath + `[${i}]`;
@@ -225,19 +224,19 @@ const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
       }
       return false;
     }
-    let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
+    const allKeys = new Set([...keysIn(a), ...keysIn(b)]);
     if (allKeys.size > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, allKeys.size, config);
     }
     return every([...allKeys], (k) => {
       let newPath = path;
-      let a1 = a[k];
-      let b1 = b[k];
+      const a1 = a[k];
+      const b1 = b[k];
       newPath = newPath + `.${k}`;
       return customEqualityCheck(a1, b1, newPath, config);
     });
   }
-  let plainEquality = a == b;
+  const plainEquality = a == b;
   if (!plainEquality && config.debug) {
     logUnequal(a, b, path, config);
   }
@@ -246,7 +245,7 @@ const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
 
 export function equality(a: any, b: any, config: EqualityConfig): boolean {
   const t = performance.now();
-  let eq = customEqualityCheck(a, b, "", config);
+  const eq = customEqualityCheck(a, b, "", config);
   const t2 = performance.now();
   const duration = t2 - t;
   if (duration > 0.5 && false) {
@@ -261,7 +260,7 @@ export function equality(a: any, b: any, config: EqualityConfig): boolean {
 
 // Hooks for slices
 function getStackTrace() {
-  var stack;
+  let stack;
   try {
     throw new Error("");
   } catch (error) {
@@ -279,7 +278,7 @@ export const useStateSlice = <Y, T>(
   sliceSelector: (_: AppState) => Y,
   _config?: Partial<EqualityConfig>
 ) => {
-  let config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
+  const config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
   config.stackTrace = getStackTrace();
   return useAppStateInternal((s) => selector(sliceSelector(s)));
 };
@@ -289,7 +288,7 @@ export const useStateSliceDestructure = <Y, T extends any[]>(
   sliceSelector: (_: AppState) => Y,
   _config?: Partial<EqualityConfig>
 ): AccessorArray<T> => {
-  let config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
+  const config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
   config.stackTrace = getStackTrace();
   const stateSlice = () =>
     useAppStateInternal((s) => selector(sliceSelector(s)));
@@ -401,35 +400,35 @@ export const useGameSearchState = <T,>(
   fn: (_: GameSearchState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.gameSearchState, config);
+  return useStateSliceDestructure(fn, (s) => s.gameSearchState, config);
 };
 
 export const useDebugState = <T,>(
   fn: (_: DebugState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.debugState, config);
+  return useStateSliceDestructure(fn, (s) => s.debugState, config);
 };
 
 export const useUserState = <T,>(
   fn: (_: UserState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.userState, config);
+  return useStateSliceDestructure(fn, (s) => s.userState, config);
 };
 
 export const useAdminState = <T,>(
   fn: (_: AdminState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.adminState, config);
+  return useStateSliceDestructure(fn, (s) => s.adminState, config);
 };
 
 export const useAppState = <T,>(
   fn: (_: AppState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s, config);
+  return useStateSliceDestructure(fn, (s) => s, config);
 };
 
 export const getAppState = () => {

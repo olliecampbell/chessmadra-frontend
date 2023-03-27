@@ -110,23 +110,23 @@ export const RepertoireMovesTable = ({
 }) => {
   const responsive = useResponsive();
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  let [expandedLength, setExpandedLength] = createSignal(0);
+  const [expandedLength, setExpandedLength] = createSignal(0);
   const [editingAnnotations, setEditingAnnotations] = createSignal(false);
   const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
     destructure(() => {
-      let anyMine = some(responses(), (m) => m.repertoireMove?.mine);
-      let mine = filter(responses(), (m) => m.repertoireMove?.mine);
-      let anyNeeded = some(responses(), (m) => m.suggestedMove?.needed);
-      let myTurn = side() === activeSide();
+      const anyMine = some(responses(), (m) => m.repertoireMove?.mine);
+      const mine = filter(responses(), (m) => m.repertoireMove?.mine);
+      const anyNeeded = some(responses(), (m) => m.suggestedMove?.needed);
+      const myTurn = side() === activeSide();
       const isMobile = useIsMobile();
       // todo: solid, prob need to use accessors here
-      let sections = useSections({
+      const sections = useSections({
         myTurn,
         usePeerRates: usePeerRates(),
         isMobile,
       });
-      let MIN_TRUNCATED = isMobile ? 1 : 1;
-      let trimmedResponses = filter(responses(), (r, i) => {
+      const MIN_TRUNCATED = isMobile ? 1 : 1;
+      const trimmedResponses = filter(responses(), (r, i) => {
         if (mode() == "browse") {
           return r.repertoireMove;
         }
@@ -153,8 +153,8 @@ export const RepertoireMovesTable = ({
           (myTurn && moveHasTag(r, MoveTag.Transposes))
         );
       }) as TableResponse[];
-      let numTruncated = responses.length - trimmedResponses.length;
-      let truncated = numTruncated > 0;
+      const numTruncated = responses.length - trimmedResponses.length;
+      const truncated = numTruncated > 0;
       console.log("returning sections", sections);
       return {
         trimmedResponses,
@@ -165,11 +165,11 @@ export const RepertoireMovesTable = ({
         truncated,
       };
     });
-  let widths: Record<string, number | null> = {};
+  const widths: Record<string, number | null> = {};
 
   const [currentLine] = useSidebarState(([s, rs]) => [s.moveLog]);
-  let moveNumber = () => Math.floor(currentLine().length / 2) + 1;
-  let hideAnnotations = () => moveNumber() === 1;
+  const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
+  const hideAnnotations = () => moveNumber() === 1;
   const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
   const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
@@ -181,13 +181,13 @@ export const RepertoireMovesTable = ({
       widths[sanPlus] = null;
       return;
     }
-    let width = e.getBoundingClientRect().width;
+    const width = e.getBoundingClientRect().width;
     widths[sanPlus] = width;
     if (width > moveMaxWidth()) {
       setMoveMaxWidth(width);
     }
   };
-  let tableMeta: Accessor<TableMeta> = () => {
+  const tableMeta: Accessor<TableMeta> = () => {
     return {
       highestIncidence: max(
         map(responses(), (r) => r.suggestedMove?.incidence ?? 1.0)
@@ -198,18 +198,18 @@ export const RepertoireMovesTable = ({
   const openingNames = () =>
     reverse(
       map(reverse(cloneDeep(trimmedResponses())), (tr) => {
-        let newOpeningName = null;
-        let [currentOpeningName, currentVariations] = currentEcoCode()
+        const newOpeningName = null;
+        const [currentOpeningName, currentVariations] = currentEcoCode()
           ? getAppropriateEcoName(currentEcoCode()?.fullName)
           : [];
-        let nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
+        const nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
         if (nextEcoCode) {
-          let [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
+          const [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
           if (name != currentOpeningName) {
             includeOpeningName = true;
             return name;
           }
-          let lastVariation = last(variations);
+          const lastVariation = last(variations);
 
           if (
             name === currentOpeningName &&
@@ -226,24 +226,24 @@ export const RepertoireMovesTable = ({
     );
   return (
     <div style={s(c.column)}>
-      {header && (
+      <Show when={header()}>
         <>
-          <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
+          <RepertoireEditingHeader>{header()}</RepertoireEditingHeader>
           <Spacer height={responsive.switch(20, [BP.md, 24])} />
         </>
-      )}
-      {body && (
+      </Show>
+      <Show when={body}>
         <>
           <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
             {body}
           </CMText>
           <Spacer height={24} />
         </>
-      )}
+      </Show>
       <div style={s(c.height(16))}>
-        {!editingAnnotations() && (
+        <Show when={!editingAnnotations()}>
           <TableHeader anyMine={anyMine()} sections={sections} />
-        )}
+        </Show>
       </div>
       <Spacer height={responsive.switch(6, [BP.md, 12])} />
       <div
@@ -268,7 +268,7 @@ export const RepertoireMovesTable = ({
           )}
         >
           {(tableResponse, i) => {
-            let openingName = () => openingNames()[i()];
+            const openingName = () => openingNames()[i()];
             return (
               <Response
                 openingName={openingName}
@@ -423,15 +423,15 @@ const Response = ({
     s.currentSide,
   ]);
   const isMobile = useIsMobile();
-  let moveNumber = () => Math.floor(currentLine().length / 2) + 1;
-  let sanPlus = () =>
+  const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
+  const sanPlus = () =>
     tableResponse().suggestedMove?.sanPlus ??
     tableResponse()?.repertoireMove?.sanPlus;
-  let mine = () => tableResponse().repertoireMove?.mine;
-  let moveRating = () => tableResponse().moveRating;
+  const mine = () => tableResponse().repertoireMove?.mine;
+  const moveRating = () => tableResponse().moveRating;
 
   const responsive = useResponsive();
-  let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
+  const { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
       () => {
         quick((s) => {
@@ -447,14 +447,14 @@ const Response = ({
       }
     );
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  let annotation = () => {
+  const annotation = () => {
     if (hideAnnotations()) {
       return null;
     }
     return renderAnnotation(tableResponse().suggestedMove?.annotation);
   };
-  let tags = () => {
-    let tags = [];
+  const tags = () => {
+    const tags = [];
     // newOpeningName = nextEcoCode?.fullName;
     if (moveHasTag(tableResponse(), MoveTag.BestMove)) {
       tags.push(
@@ -504,7 +504,7 @@ const Response = ({
     return tags;
   };
 
-  let hasInlineAnnotationOrOpeningName = () =>
+  const hasInlineAnnotationOrOpeningName = () =>
     openingName() || (!isMobile && annotation());
 
   const tagsRow = () =>
@@ -703,90 +703,44 @@ const Response = ({
                 </div>
 
                 <div style={s(c.row, c.alignCenter)}>
-                  {intersperse(
-                    sections().map((section, i) => {
-                      return (
-                        <div
-                          style={s(
-                            c.width(section.width),
-                            c.center,
-                            section.alignLeft && c.justifyStart,
-                            c.row
-                          )}
-                        >
-                          {section.content({
-                            numMovesDueFromHere,
-                            earliestDueDate,
-                            suggestedMove: tableResponse().suggestedMove,
-                            positionReport: positionReport(),
-                            tableResponse: tableResponse(),
-                            side: currentSide,
-                            tableMeta,
-                          })}
-                        </div>
-                      );
-                    }),
-                    (i) => {
+                  <Intersperse
+                    separator={() => {
                       return <Spacer width={getSpaceBetweenStats(isMobile)} />;
-                    }
-                  )}
+                    }}
+                    each={sections}
+                  >
+                    {(section) => (
+                      <div
+                        style={s(
+                          c.width(section.width),
+                          c.center,
+                          section.alignLeft && c.justifyStart,
+                          c.row
+                        )}
+                      >
+                        {section.content({
+                          numMovesDueFromHere,
+                          earliestDueDate,
+                          suggestedMove: tableResponse().suggestedMove,
+                          positionReport: positionReport(),
+                          tableResponse: tableResponse(),
+                          side: currentSide,
+                          tableMeta,
+                        })}
+                      </div>
+                    )}
+                  </Intersperse>
                 </div>
               </div>
               <div style={s(c.column, c.maxWidth(400))}>
-                {isMobile && annotation && (
+                <Show when={isMobile && annotation()}>
                   <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
                     <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
-                      {annotation}
+                      {annotation()}
                     </CMText>
                   </CMText>
-                )}
+                </Show>
               </div>
-              {debugUi && suggestedMove?.stockfish && (
-                <div style={s(c.row)}>
-                  <div style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
-                    <CMText
-                      style={s(c.fg(c.colors.debugColor), c.fontSize(14))}
-                    >
-                      {tableResponse?.suggestedMove?.incidence
-                        ? formatIncidence(
-                            tableResponse?.suggestedMove?.incidence
-                          )
-                        : "No incidence"}
-                    </CMText>
-                  </div>
-                  <Spacer width={4} />
-                  <CMText style={s(c.fg(c.colors.debugColor))}>
-                    {getTotalGames(suggestedMove?.results)} Games
-                  </CMText>
-                  <Spacer width={4} />
-                  <CMText style={s(c.fg(c.colors.debugColor))}>
-                    danger {suggestedMove.danger?.toFixed(3)}
-                  </CMText>
-                </div>
-              )}
-              {debugUi && (
-                <div style={s(c.row)} {...hoveringProps}>
-                  <CMText
-                    style={s(c.fg(c.colors.debugColor), c.relative, c.px(12))}
-                  >
-                    (score: {tableResponse.score?.toFixed(1)})
-                    {hovering && (
-                      <div
-                        style={s(
-                          c.absolute,
-                          c.bottom(20),
-                          c.border(`1px solid ${c.colors.debugColor}`),
-                          c.px(12),
-                          c.py(12),
-                          c.bg(c.grays[20])
-                        )}
-                      >
-                        <DebugScoreView tableResponse={tableResponse} />
-                      </div>
-                    )}
-                  </CMText>
-                </div>
-              )}
             </div>
           </Pressable>
         </div>
@@ -883,8 +837,8 @@ const getSpaceBetweenStats = (isMobile: boolean) => {
 };
 
 function renderAnnotation(_annotation: string) {
-  let annotation = _annotation?.trim();
-  let stops = ["!", "?", "."];
+  const annotation = _annotation?.trim();
+  const stops = ["!", "?", "."];
   if (annotation) {
     if (some(stops, (stop) => annotation.endsWith(stop))) {
       return annotation;

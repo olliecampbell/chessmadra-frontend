@@ -23,7 +23,7 @@ const COUNT_FORMATS = [
 ];
 
 const getFormat = (x: number) => {
-  for (let format of COUNT_FORMATS) {
+  for (const format of COUNT_FORMATS) {
     if (Math.abs(x) < format.limit) {
       return format;
     }
@@ -35,7 +35,7 @@ function getStatMantissa(x: number, format: any): string {
 }
 
 export const formatLargeNumber = (x: number, long?: boolean): string => {
-  let format = getFormat(x);
+  const format = getFormat(x);
   if (format) {
     if (long) {
       return `${getStatMantissa(x, format)} ${format.long}`.trim();

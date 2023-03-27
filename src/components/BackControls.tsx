@@ -26,7 +26,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
 }) => {
   const bp = useResponsive();
   const layout = useRef(null);
-  let [
+  const [
     // searchOnChessable,
     analyzeLineOnLichess,
     currentLine,
@@ -42,9 +42,9 @@ export const BackControls: React.FC<BackControlsProps> = ({
 
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const isMobile = useIsMobile();
-  let gap = isMobile ? 6 : 12;
-  let foreground = c.grays[90];
-  let textColor = c.fg(foreground);
+  const gap = isMobile ? 6 : 12;
+  const foreground = c.grays[90];
+  const textColor = c.fg(foreground);
   return (
     <div
       style={s(
@@ -63,7 +63,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
         }}
       >
         <i
-          className="fa-sharp fa-angles-left"
+          class="fa-sharp fa-angles-left"
           style={s(
             c.buttons.darkFloater.textStyles,
             c.px(0),
@@ -80,17 +80,17 @@ export const BackControls: React.FC<BackControlsProps> = ({
         }}
       >
         <i
-          className="fa-sharp fa-angle-left"
+          class="fa-sharp fa-angle-left"
           style={s(c.buttons.darkFloater.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
-      {extraButton && (
+      <Show when={extraButton }>
         <>
           <Spacer width={gap} />
           {extraButton}
         </>
-      )}
-      {includeAnalyze && (
+        </Show>
+        <Show when={includeAnalyze }>
         <>
           <Spacer width={gap} />
           <Button
@@ -120,8 +120,8 @@ export const BackControls: React.FC<BackControlsProps> = ({
             )}
           </Button>
         </>
-      )}
-      {includeReview && (
+        </Show>
+        <Show when={includeReview }>
         <>
           <Spacer width={gap} />
           <Button
@@ -144,7 +144,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
             </CMText>
           </Button>
         </>
-      )}
+        </Show>
     </div>
   );
 };

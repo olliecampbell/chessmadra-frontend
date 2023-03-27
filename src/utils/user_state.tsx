@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { User } from "~/utils/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -7,6 +8,7 @@ import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import client from "~/utils/client";
 import { BoardThemeId, PieceSetId } from "./theming";
+import { trackEvent } from "~/utils/trackEvent";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -53,7 +55,7 @@ export const getInitialUserState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
-  let initialState = {
+  const initialState = {
     isUpdatingEloRange: false,
     setUser: (user: User) => {
       set(([s]) => {

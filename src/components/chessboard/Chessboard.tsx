@@ -19,9 +19,12 @@ import {
 import { BoardTheme, BOARD_THEMES_BY_ID, PieceSetId } from "~/utils/theming";
 import {
   Accessor,
+  Component,
   createEffect,
+  createMemo,
   createSignal,
   For,
+  Show,
   splitProps,
 } from "solid-js";
 import { Motion } from "@motionone/solid";
@@ -75,18 +78,18 @@ const getSvgName = (piece: PieceSymbol, color: ChessColor) => {
   return `${color}${piece.toUpperCase()}`;
 };
 //
-export const PieceView = ({
-  piece,
-  pieceSet,
-}: {
-  piece;
-  pieceSet: Accessor<PieceSetId>;
-}) => {
+export const PieceView: Component<{
+  piece: Piece;
+  pieceSet: PieceSetId;
+}> = (props) => {
   return (
     <img
       style={s(c.fullWidth, c.fullHeight)}
       src={getStatic(
-        `/pieces/${pieceSet()}/${getSvgName(piece.type, piece.color)}.svg`
+        `/pieces/${props.pieceSet}/${getSvgName(
+          props.piece.type,
+          props.piece.color
+        )}.svg`
       )}
     />
   );
@@ -149,17 +152,18 @@ export const ChessboardView = (
   const user = () => userState.user;
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[user()?.theme] ?? BOARD_THEMES_BY_ID["lichess-brown"];
-  let colors = () => [theme().light.color, theme().dark.color];
+  const colors = () => [theme().light.color, theme().dark.color];
+  const flipped = createMemo(() => !!state.flipped);
 
   const getSquareFromLayoutAndGesture = (chessboardLayout, gesture): Square => {
-    let columnPercent =
+    const columnPercent =
       (gesture.moveX - chessboardLayout.left) / chessboardLayout.width;
-    let rowPercent =
+    const rowPercent =
       (gesture.moveY - chessboardLayout.top - window.scrollY) /
       chessboardLayout.height;
     let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
     let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
-    if (state.flipped) {
+    if (flipped()) {
       column = 7 - column;
       row = 7 - row;
     }
@@ -172,15 +176,16 @@ export const ChessboardView = (
   const indicatorColor = () => state.indicatorColor;
 
   const hiddenColorsBorder = `1px solid ${c.grays[70]}`;
-  const pan: Accessor<{ square: Square | null } & XY> = createSignal({
-    square: null,
-  });
-  let tapTimeout: number | null = null;
-  let isTap: boolean | null = null;
-  let chessboardContainerRef: Element | undefined = undefined;
+  // const pan: Accessor<{ square: Square | null } & XY> = createSignal({
+  //   square: null,
+  // });
+  const tapTimeout: number | null = null;
+  const isTap: boolean | null = null;
+  const [chessboardContainerRef, setChessboardContainerRef] =
+    createSignal(null);
   const chessboardLayout = () =>
-    createElementBounds(() => chessboardContainerRef);
-  let didImmediatelyTap: boolean | null = null;
+    createElementBounds(() => chessboardContainerRef());
+  const didImmediatelyTap: boolean | null = null;
   const frozen = () => state.frozen;
   // const panResponders = () => {
   //   // @ts-ignore
@@ -332,12 +337,11 @@ export const ChessboardView = (
   const isMobile = useIsMobile();
   // const { width: windowWidth } = useWindowDimensions();
   const windowSize = createWindowSize();
-  let themeStyles = (light: boolean) =>
+  const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
-  let x = (
+  const x = (
     <>
       <div
-        // @ts-ignore
         ref={ref}
         style={s(
           c.pb("100%"),
@@ -369,7 +373,7 @@ export const ChessboardView = (
             c.brt(2),
             state.hideColors && c.border(hiddenColorsBorder)
           )}
-          ref={chessboardContainerRef}
+          ref={setChessboardContainerRef}
           {...dragProps}
         >
           <FadeInOut
@@ -379,15 +383,15 @@ export const ChessboardView = (
           >
             <For each={state.plans}>
               {(metaPlan, i) => {
-                let { plan } = metaPlan;
-                let from = getSquareOffset(plan.fromSquare, state.flipped);
-                let to = getSquareOffset(plan.toSquare, state.flipped);
-                let dx = Math.abs(from.x - to.x);
-                let dy = Math.abs(from.y - to.y);
-                let length =
+                const { plan } = metaPlan;
+                const from = getSquareOffset(plan.fromSquare, flipped());
+                const to = getSquareOffset(plan.toSquare, flipped());
+                const dx = Math.abs(from.x - to.x);
+                const dy = Math.abs(from.y - to.y);
+                const length =
                   Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) - (1 / 8) * 0.1;
-                var angle = Math.atan2(to.y - from.y, to.x - from.x);
-                var angleDeg = (angle * 180) / Math.PI;
+                const angle = Math.atan2(to.y - from.y, to.x - from.x);
+                const angleDeg = (angle * 180) / Math.PI;
                 let color = metaPlan.mine ? c.arrowColors[55] : c.grays[35];
                 let gradientColor = c.grays[100];
                 let focused = false;
@@ -401,15 +405,15 @@ export const ChessboardView = (
                   opacity = 100;
                   gradientColor = c.purples[30];
                 }
-                let duration = "1.0s";
-                let toSquareCenterX = to.x + 1 / 8 / 2;
-                let toSquareCenterY = to.y + 1 / 8 / 2;
-                let x1 = from.x + 1 / 8 / 2;
-                let x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
-                let y1 = from.y + 1 / 8 / 2;
-                let y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
-                let xDiff = x2 - x1;
-                let yDiff = y2 - y1;
+                const duration = "1.0s";
+                const toSquareCenterX = to.x + 1 / 8 / 2;
+                const toSquareCenterY = to.y + 1 / 8 / 2;
+                const x1 = from.x + 1 / 8 / 2;
+                const x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
+                const y1 = from.y + 1 / 8 / 2;
+                const y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
+                const xDiff = x2 - x1;
+                const yDiff = y2 - y1;
 
                 return (
                   <div
@@ -527,87 +531,68 @@ export const ChessboardView = (
               // c.bg("black"),
               // c.shadow(0, 0, 6, 6, state.ringColor),
               c.shadow(0, 0, 0, 4, state.ringColor),
-              // @ts-ignore
               c.opacity(state.ringIndicatorAnim)
             )}
             pointerEvents="none"
           ></Motion>
           {Object.keys(SQUARES).map((square) => {
-            let pos = () => state.previewPosition ?? position();
-            let piece: Accessor<Piece | null> = null;
-            if (pos) {
-              piece = () => pos().get(square);
-            }
+            const debug = () => square === "e4";
+            const pos = () => state.previewPosition ?? position();
+            const piece = createMemo(() => pos().get(square));
 
-            let animatedProps = () => {
+            const animatedProps = () => {
               let posStyles = s(
-                c.top(`${getSquareOffset(square, state.flipped).y * 100}%`),
-                c.left(`${getSquareOffset(square, state.flipped).x * 100}%`)
+                c.top(`${getSquareOffset(square, flipped()).y * 100}%`),
+                c.left(`${getSquareOffset(square, flipped()).x * 100}%`)
               );
+              let animated = false;
 
-              let animated =
-                state.animatedMove?.to && square == state.animatedMove?.to;
-              if (animated) {
-                posStyles = animatedXYToPercentage(state.pieceMoveAnim);
-              }
-              if (
-                square == state.previewedMove?.from ||
-                (state.previewedMove?.to && square == state.previewedMove?.to)
-              ) {
-                animated = true;
-                posStyles = animatedXYToPercentage(state.previewPieceMoveAnim);
-              }
+              // let animated =
+              //   state.animatedMove?.to && square == state.animatedMove?.to;
+              // if (animated) {
+              //   posStyles = animatedXYToPercentage(state.pieceMoveAnim);
+              // }
+              // if (
+              //   square == state.previewedMove?.from ||
+              //   (state.previewedMove?.to && square == state.previewedMove?.to)
+              // ) {
+              //   animated = true;
+              //   posStyles = animatedXYToPercentage(state.previewPieceMoveAnim);
+              // }
               return { animated, posStyles };
             };
             const { animated, posStyles } = destructure(animatedProps);
-            // todo: solid
+            const hiddenBecauseTake = createMemo(
+              () =>
+                state.previewedMove?.to === square &&
+                state.previewedMove?.color !== piece()?.color
+            );
 
-            let priority = () => state.activeFromSquare === square;
-            let containerViewStyles = () =>
+            const priority = () => state.activeFromSquare === square;
+            const containerViewStyles = () =>
               s(
                 c.absolute,
                 posStyles(),
                 c.zIndex(priority() ? 11 : 2),
                 c.size("12.5%")
               );
-            let pieceView = null;
-            if (piece()) {
-              let pieceViewInner = (
-                <div style={s(c.fullWidth, c.fullHeight)}>
-                  <PieceView
-                    piece={piece()}
-                    pieceSet={() => user()?.pieceSet ?? "cburnett"}
-                  />
-                </div>
-              );
-              if (animated()) {
-                pieceView = (
-                  <Motion style={s(containerViewStyles())} pointerEvents="none">
-                    {pieceViewInner}
-                  </Motion>
-                );
-              } else {
-                pieceView = (
-                  <Motion
-                    pointerEvents="none"
-                    style={s(containerViewStyles(), {
-                      // transform: [
-                      //   { translateX: pans[square].x },
-                      //   { translateY: pans[square].y },
-                      // ],
-                    })}
-                  >
-                    {pieceViewInner}
-                  </Motion>
-                );
+            createEffect(() => {
+              if (debug()) {
+                console.log("debug square", piece(), pos().ascii());
               }
-            }
-            if (
-              state.previewedMove?.to === square &&
-              state.previewedMove?.color !== piece?.color
-            ) {
-              pieceView = null;
-            }
+            });
+            return (
+              <Show when={piece() && !hiddenBecauseTake()}>
+                <Motion style={s(containerViewStyles())} pointerEvents="none">
+                  <div style={s(c.fullWidth, c.fullHeight)}>
+                    <PieceView
+                      piece={piece()}
+                      pieceSet={user()?.pieceSet ?? "cburnett"}
+                    />
+                  </div>
+                </Motion>
+              </Show>
+            );
             // let moveIndicatorView = null;
             // let availableMove = availableMoves.find((m) => m.to == square);
             // if (
@@ -645,38 +630,28 @@ export const ChessboardView = (
             //     </Motion>
             //   );
             // }
-
-            return (
-              <>
-                {pieceView}
-                {
-                  //moveIndicatorView
-                }
-              </>
-            );
           })}
           <div style={s(c.column, c.fullWidth, c.fullHeight)}>
             {times(8)((i) => {
               return (
                 <div
-                  key={i}
                   style={s(c.fullWidth, c.row, c.grow, c.flexible, c.relative)}
                 >
                   {times(8)((j) => {
-                    let light = (i + j) % 2 == 0;
+                    const light = (i + j) % 2 == 0;
                     let [color, inverseColor] = light
                       ? colors()
                       : [colors()[1], colors()[0]];
                     if (state.hideColors) {
                       color = c.grays[30];
                     }
-                    let tileLetter = () =>
-                      state.flipped ? COLUMNS[7 - j] : COLUMNS[j];
+                    const tileLetter = () =>
+                      flipped() ? COLUMNS[7 - j] : COLUMNS[j];
 
                     // Piece view / indicator view
-                    let tileNumber = () =>
-                      state.flipped ? ROWS[i] : ROWS[7 - i];
-                    let square = `${tileLetter}${tileNumber}` as Square;
+                    const tileNumber = () =>
+                      flipped() ? ROWS[i] : ROWS[7 - i];
+                    const square = `${tileLetter}${tileNumber}` as Square;
 
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;

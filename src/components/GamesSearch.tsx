@@ -133,7 +133,7 @@ export const GamesSearch = () => {
           <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
             <i
               style={s(c.fg(c.colors.textPrimary))}
-              className="fa-sharp fa-angle-left"
+              class="fa-sharp fa-angle-left"
             ></i>
             <Spacer width={8} />
             Modify search
@@ -151,7 +151,7 @@ export const GamesSearch = () => {
                 <a href={link} target="_blank">
                   <LichessGameCell game={game} />
                 </a>
-                {hasBetaAccess && (
+                <Show when={hasBetaAccess }>
                   <>
                     <Button
                       style={s(c.buttons.primary)}
@@ -164,7 +164,7 @@ export const GamesSearch = () => {
                       Add to memorized games
                     </Button>
                   </>
-                )}
+                  </Show>
               </div>
             );
           }),
@@ -303,7 +303,7 @@ export const GamesSearch = () => {
                     >
                       <i
                         style={s(c.fg(c.colors.textInverse))}
-                        className="fa-sharp fa-undo"
+                        class="fa-sharp fa-undo"
                       ></i>
                       <Spacer width={8} />
                       Undo
@@ -343,7 +343,7 @@ export const GamesSearch = () => {
                 state.quick((s) => {
                   s.loading = true;
                 });
-                let response = await client.post("/api/v1/games", {
+                const response = await client.post("/api/v1/games", {
                   whiteRating: state.whiteRating,
                   // whiteBlunders: state.whiteBlunders,
                   blackRating: state.blackRating,
@@ -363,7 +363,7 @@ export const GamesSearch = () => {
             <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
               <i
                 style={s(c.fg(c.colors.textPrimary))}
-                className="fa-sharp fa-search"
+                class="fa-sharp fa-search"
               ></i>
               <Spacer width={8} />
               Find Games
@@ -429,7 +429,7 @@ const ExampleGame = ({
       >
         <i
           style={s(c.fg(c.colors.textPrimary), c.mt(4))}
-          className="fa-sharp fa-angle-right"
+          class="fa-sharp fa-angle-right"
         ></i>
         <Spacer width={8} />
         <CMText

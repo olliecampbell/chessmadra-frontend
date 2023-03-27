@@ -3,13 +3,21 @@
   "scripts": {
     "dev": "solid-start dev",
     "build": "solid-start build",
+    "preview": "vite preview --port 8080",
     "start": "solid-start start"
   },
   "type": "module",
   "devDependencies": {
+    "@babel/eslint-parser": "^7.21.3",
+    "@hapi/eslint-plugin": "^6.0.0",
     "@motionone/solid": "^10.16.0",
     "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
     "esbuild": "^0.14.54",
+    "eslint": "^8.36.0",
+    "eslint-plugin-solid": "^0.11.0",
+    "eslint_d": "^12.2.1",
     "postcss": "^8.4.21",
     "solid-devtools": "^0.26.0",
     "solid-start-node": "^0.2.19",
@@ -25,21 +33,21 @@
     "@solid-primitives/bounds": "^0.0.110",
     "@solid-primitives/destructure": "^0.1.10",
     "@solid-primitives/resize-observer": "^2.0.13",
-    "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.8.1",
+    "@solidjs/meta": "^0.28.2",
     "@types/lodash-es": "^4.17.6",
     "axios": "^0.27.2",
     "axios-case-converter": "^0.9.0",
     "camel-case": "^4.1.2",
+    "global": "^4.4.0",
     "immer": "^9.0.21",
     "js-cookie": "^3.0.1",
     "lodash-es": "^4.17.21",
     "solid-js": "^1.6.11",
     "solid-spinner": "^0.1.9",
     "solid-start": "^0.2.23",
-    "solid-zustand": "^1.5.0",
-    "undici": "^5.15.1",
-    "zustand": "^4.3.6"
+    "typescript-language-server": "^3.3.0",
+    "undici": "^5.15.1"
   },
   "engines": {
     "node": ">=16.8"

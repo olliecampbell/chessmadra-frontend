@@ -24,7 +24,7 @@ import {
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
 import { View } from "./View";
-import { Accessor, Component, Show } from "solid-js";
+import { Component, For, Show } from "solid-js";
 
 export const SidebarSetting = () => {
   return (
@@ -36,36 +36,33 @@ export const SidebarSetting = () => {
 };
 type SidebarSettingView = "rating" | "coverage";
 
-export const SidebarSelectOneOf = <T,>({
-  choices,
-  onSelect,
-  description,
-  renderChoice,
-  activeChoice,
-  title,
-}: {
-  title: Accessor<string>;
-  description: Accessor<string>;
-  choices: Accessor<T[]>;
-  activeChoice: Accessor<T>;
-  onSelect: (_: T, i?: number) => void;
-  renderChoice: (x: T) => Component;
-}) => {
+export const SidebarSelectOneOf: Component<{
+  title: string;
+  description: string;
+  choices: any[];
+  activeChoice: any;
+  onSelect: (_: any, i?: number) => void;
+  renderChoice: (x: any) => Component;
+  // todo: typing is hard
+}> = (props) => {
   const responsive = useResponsive();
-  let actions = () => choices.map((choice, i) => {
-    const active = choice === activeChoice;
-    return {
-      style: active ? "primary" : ("secondary" as SidebarAction["style"]),
-      text: renderChoice(choice),
-      onPress: () => onSelect(choice, i),
-      right: active && (
-        <i className={`fa fa-check`} style={s(c.fg(c.colors.textPrimary))} />
-      ),
-    };
-  });
+  const actions = () =>
+    props.choices.map((choice, i) => {
+      const active = choice === props.activeChoice;
+      console.log("active", active, choice, props.activeChoice);
+      return {
+        style: active ? "primary" : ("secondary" as SidebarAction["style"]),
+        text: props.renderChoice(choice),
+        onPress: () => props.onSelect(choice, i),
+        right: () =>
+          active && (
+            <i class={`fa fa-check`} style={s(c.fg(c.colors.textPrimary))} />
+          ),
+      };
+    });
   return (
     <div style={s(c.column, c.fullWidth)}>
-    <Show when={title() }>
+      <Show when={props.title}>
         <>
           <CMText
             style={s(
@@ -75,32 +72,32 @@ export const SidebarSelectOneOf = <T,>({
               c.px(c.getSidebarPadding(responsive))
             )}
           >
-            {title()}
+            {props.title}
           </CMText>
           <Spacer height={12} />
         </>
-        </Show>
-      <Show when={description}>
       </Show>
-      {description && (
+      <Show when={props.description}>
         <>
           <CMText
             style={s(
               c.fontSize(12),
-              c.lineHeight(16),
+              c.lineHeight("1.5rem"),
               c.fg(c.colors.textSecondary),
               c.px(c.getSidebarPadding(responsive))
             )}
           >
-            {description}
+            {props.description}
           </CMText>
           <Spacer height={12} />
         </>
-      )}
+      </Show>
       <div style={s(c.fullWidth)}>
-        {actions.map((action, i) => {
-          return <SidebarFullWidthButton key={i} action={action} />;
-        })}
+        <For each={actions()}>
+          {(action, i) => {
+            return <SidebarFullWidthButton action={action} />;
+          }}
+        </For>
       </div>
     </div>
   );
@@ -113,16 +110,15 @@ export const CoverageSettings = ({}: {}) => {
     s.user,
     s.getCurrentThreshold(),
   ]);
-  const selected = missThreshold;
+  const selected = () => missThreshold();
   const onSelect = (t: number) => {
     quick((s) => {
       s.userState.setTargetDepth(t);
     });
   };
-  const responsive = useResponsive();
-  const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
+  const recommendedDepth = () => getRecommendedMissThreshold(user()?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
-  if (user.isAdmin) {
+  if (user().isAdmin) {
     thresholdOptions.push(0.25 / 100, 1 / 600);
   }
   return (
@@ -135,7 +131,7 @@ export const CoverageSettings = ({}: {}) => {
         choices={thresholdOptions}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={selected}
+        activeChoice={selected()}
         onSelect={onSelect}
         renderChoice={(r: number) => {
           return `1 in ${Math.round(1 / r)} games`;
@@ -156,7 +152,6 @@ export const RatingSettings = ({}: {}) => {
     });
   };
   const responsive = useResponsive();
-  const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
   if (user.isAdmin) {
     thresholdOptions.push(0.25 / 100, 1 / 600);
@@ -180,7 +175,7 @@ export const RatingSettings = ({}: {}) => {
         ]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user?.ratingRange}
+        activeChoice={user()?.ratingRange}
         onSelect={onSelect}
         renderChoice={(r: string) => {
           return r;
@@ -192,7 +187,7 @@ export const RatingSettings = ({}: {}) => {
         choices={["Lichess", "Chess.com", "FIDE", "USCF"]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user?.ratingSystem}
+        activeChoice={user()?.ratingSystem}
         onSelect={(t) => {
           quick((s) => {
             getAppState().userState.setRatingSystem(t);

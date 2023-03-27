@@ -8,7 +8,7 @@ export const Spacer = ({
   style = {},
   isMobile = null,
 }) => {
-  let styles: any = { "flex-grow": grow ? 1 : 0, ...style };
+  const styles: any = { "flex-grow": grow ? 1 : 0, ...style };
   if (block) {
     styles.display = "block";
   }

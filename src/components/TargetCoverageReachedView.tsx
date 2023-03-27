@@ -38,11 +38,11 @@ import { Intersperse } from "./Intersperse";
 import { createEffect, Show } from "solid-js";
 
 export const TargetCoverageReachedView = () => {
-  let [planSections, showPlansState] = useSidebarState(([s]) => [
+  const [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
-  let actions = () => {
+  const actions = () => {
     let acts = [];
     if (showPlansState().coverageReached) {
       acts = [
@@ -100,7 +100,7 @@ export const TargetCoverageReachedView = () => {
 
 export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
   const responsive = useResponsive();
-  let [planSections, showPlansState] = useSidebarState(([s]) => [
+  const [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);

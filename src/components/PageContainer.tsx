@@ -5,7 +5,8 @@ import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 import { View } from "./View";
 import { Helmet } from "~/mocks";
-import { Meta, Title } from "@solidjs/meta";
+import { Meta, Title } from "solid-start";
+import { Show } from "solid-js";
 
 export const PageContainer = ({
   children,
@@ -40,7 +41,7 @@ export const PageContainer = ({
       >
         {children}
       </div>
-      {!hideIcons && (
+      <Show when={!hideIcons}>
         <>
           <Spacer height={32} />
           <div
@@ -70,7 +71,7 @@ export const PageContainer = ({
             )}
           </div>
         </>
-      )}
+      </Show>
     </div>
   );
 };

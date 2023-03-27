@@ -27,7 +27,7 @@ export const getInitialNavigationState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn([s.navigationState, s]));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick<NavigationState>(setOnly),
     navigationUi: false,
     setNavigate: (navigate: NavigateFunction) => {

@@ -62,7 +62,7 @@ export const FeedbackView = () => {
       <Spacer height={12} />
       <Show when={!success }>
         <>
-          {isEmpty(user?.email) && (
+        <Show when={isEmpty(user?.email) }>
             <>
               <CMTextInput
                 value={email()}
@@ -71,7 +71,7 @@ export const FeedbackView = () => {
               />
               <Spacer height={8} />
             </>
-          )}
+            </Show>
           <CMTextInput
             value={feedback()}
             textInputProps={{ multiline: true, numberOfLines: 8 }}

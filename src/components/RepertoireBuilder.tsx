@@ -20,7 +20,7 @@ export const RepertoireBuilder = () => {
       <div style={s(c.column, c.center)}>
         {!isMobile && <Spacer height={48} />}
         <i
-          className="fa-sharp fa-hammer"
+          class="fa-sharp fa-hammer"
           style={s(c.fontSize(32), c.fg(c.grays[80]))}
         />
         <Spacer height={12} />

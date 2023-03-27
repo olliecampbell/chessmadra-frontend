@@ -13,10 +13,11 @@ import { useRepertoireState } from "~/utils/app_state";
 import { CMText } from "./CMText";
 import { s, c } from "~/utils/styles";
 import { PlayFromHere } from "./TargetCoverageReachedView";
+import { Show } from "solid-js";
 
 export const TransposedView = () => {
   const responsive = useResponsive();
-  let [planSections] = useSidebarState(([s]) => [s.planSections]);
+  const [planSections] = useSidebarState(([s]) => [s.planSections]);
   console.log({ planSections });
 
   return (
@@ -46,12 +47,12 @@ export const TransposedView = () => {
           You don't need to add anything else. All of your moves from this
           position will still apply
         </CMText>
-        {!isEmpty(planSections) && (
+        <Show when={!isEmpty(planSections)}>
           <>
             <Spacer height={24} />
             <PlayFromHere isolated />
           </>
-        )}
+        </Show>
       </>
     </SidebarTemplate>
   );

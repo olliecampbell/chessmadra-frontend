@@ -32,17 +32,17 @@ function createChessProxy(chess: Chess): Chess {
     get(target, prop, receiver) {
       track();
       if (typeof target[prop] === "function" && prop !== "get") {
-        let fen = chess.fen();
+        const fen = chess.fen();
         return (...args: any[]) => {
           const result = target[prop](...args);
-          let newFen = chess.fen();
+          const newFen = chess.fen();
           if (fen !== newFen) {
             trigger();
           }
           return result;
         };
       }
-      let x = Reflect.get(target, prop, receiver);
+      const x = Reflect.get(target, prop, receiver);
       return x;
     },
   };
@@ -150,7 +150,7 @@ const getAnimationTime = (
   start: { x: number; y: number },
   end: { x: number; y: number }
 ) => {
-  let distance =
+  const distance =
     Math.sqrt(
       Math.pow(Math.abs(end.x - start.x), 2) +
         Math.pow(Math.abs(end.y - start.y), 2)
@@ -176,7 +176,7 @@ export const createChessState = (
   get: StateGetter<ChessboardState, any>,
   initialize?: (c: ChessboardState) => void
 ): ChessboardState => {
-  let initialState = {
+  const initialState = {
     isColorTraining: false,
     plans: [],
     showPlans: false,
@@ -256,6 +256,7 @@ export const createChessState = (
         s.animationQueue = [];
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
+        console.log("setting new position");
         s.position = createChessProxy(new Chess());
         s.previewPosition = null;
         s.clearHighlightedSquares();
@@ -266,12 +267,12 @@ export const createChessState = (
     },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
       set((s) => {
-        let availableMove = s.availableMoves.find((m) => m.to == square);
+        const availableMove = s.availableMoves.find((m) => m.to == square);
         if (availableMove) {
           s.availableMoves = [];
           s.activeFromSquare = null;
           s.draggedOverSquare = null;
-          let makeMove = () => {
+          const makeMove = () => {
             if (skipAnimation) {
               s.makeMove(availableMove);
             } else {
@@ -292,7 +293,7 @@ export const createChessState = (
           }
           return;
         }
-        let availableMoves = s.availableMovesFrom(square);
+        const availableMoves = s.availableMovesFrom(square);
         if (isEmpty(availableMoves)) {
           s.availableMoves = [];
           s.activeFromSquare = null;
@@ -306,8 +307,8 @@ export const createChessState = (
     },
     availableMovesFrom: (square: Square) => {
       return set((s) => {
-        let position = s.futurePosition ?? s.position;
-        let moves = position?.moves({
+        const position = s.futurePosition ?? s.position;
+        const moves = position?.moves({
           square,
           verbose: true,
         });
@@ -329,7 +330,7 @@ export const createChessState = (
       }),
     highlightMoveSquares: (move: Move, duration?: number) =>
       set((s) => {
-        let highlightSquares = getHighlightSquares(move);
+        const highlightSquares = getHighlightSquares(move);
         highlightSquares.forEach((sq) => {
           s.currentHighlightedSquares.add(sq);
         });
@@ -347,11 +348,11 @@ export const createChessState = (
         s.previewPosition = null;
         s.isReversingPreviewMove = true;
         // @ts-ignore
-        let [start, end]: { x: number; y: number }[] = [
+        const [start, end]: { x: number; y: number }[] = [
           getSquareOffset(s.previewedMove.to, s.flipped),
           getSquareOffset(s.previewedMove.from, s.flipped),
         ];
-        let duration = getAnimationTime(start, end);
+        const duration = getAnimationTime(start, end);
         s.clearHighlightedSquares();
         // todo: solid
         // s.previewPieceMoveAnim.setValue(start);
@@ -385,7 +386,7 @@ export const createChessState = (
         if (isNil(s._animatePosition)) {
           return;
         }
-        let nextMove = s.animationQueue.shift();
+        const nextMove = s.animationQueue.shift();
         console.log("animating next move", logProxy(nextMove));
         s.animatePieceMove(nextMove, PlaybackSpeed.Fast, (completed) => {
           if (completed) {
@@ -421,7 +422,7 @@ export const createChessState = (
     },
     animatePreviewMove: () => {
       set((s: ChessboardState) => {
-        let move = s.nextPreviewMove;
+        const move = s.nextPreviewMove;
         s.previewPosition = createChessProxy(s.position.clone());
         s.previewPosition.move(s.nextPreviewMove);
         // s.nextPreviewMove = null;
@@ -433,14 +434,14 @@ export const createChessState = (
         s.activeFromSquare = null;
         s.draggedOverSquare = null;
         // s.makeMove(move);
-        let [start, end]: { x: number; y: number }[] = [
+        const [start, end]: { x: number; y: number }[] = [
           getSquareOffset(move.from, s.flipped),
           getSquareOffset(move.to, s.flipped),
         ];
-        let duration = getAnimationTime(start, end);
+        const duration = getAnimationTime(start, end);
         s.highlightMoveSquares(move, duration);
         // s.previewPieceMoveAnim.setValue(start);
-        let supplementaryMove = getSupplementaryMove(move);
+        const supplementaryMove = getSupplementaryMove(move);
         // todo: solid
         //   Animated.sequence([
         //     Animated.timing(s.previewPieceMoveAnim, {
@@ -479,10 +480,10 @@ export const createChessState = (
         s.animatedMove = move;
         s.makeMove(move);
         callback(false);
-        let { fadeDuration, moveDuration, stayDuration } =
+        const { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
-        let [start, end]: Square[] = [move.from, move.to];
+        const [start, end]: Square[] = [move.from, move.to];
         // todo: solid
         // s.pieceMoveAnim.setValue(getSquareOffset(start, s.flipped));
         //   Animated.sequence([
@@ -506,15 +507,15 @@ export const createChessState = (
       set((s) => {
         s.stopNotifyingDelegates();
         s.resetPosition();
-        let line = pgnToLine(pgn);
-        let animatePosition = null;
+        const line = pgnToLine(pgn);
+        const animatePosition = null;
         line.map((san) => {
           s.makeMove(san);
         });
         if (options?.animated) {
-          let fen = `${options.fromEpd} 0 1`;
+          const fen = `${options.fromEpd} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
-          let moves = s._animatePosition.validateMoves(options.animateLine);
+          const moves = s._animatePosition.validateMoves(options.animateLine);
           s.animationQueue = moves;
           s.stepAnimationQueue();
         }
@@ -526,7 +527,7 @@ export const createChessState = (
     previewMove: (m: string | null | Move) => {
       set((s) => {
         if (m) {
-          let [moveObject] = s.position.validateMoves([m]) ?? [];
+          const [moveObject] = s.position.validateMoves([m]) ?? [];
           s.nextPreviewMove = moveObject;
           s.stepPreviewMove();
         } else {
@@ -537,7 +538,7 @@ export const createChessState = (
     },
     clearHighlightedSquares: () => {
       set((s) => {
-        let squares = Array.from(s.currentHighlightedSquares);
+        const squares = Array.from(s.currentHighlightedSquares);
         if (squares) {
           squares.forEach((sq) => {
             s.currentHighlightedSquares.delete(sq);
@@ -575,10 +576,10 @@ export const createChessState = (
         s.clearHighlightedSquares();
         s.nextPreviewMove = null;
         s.previewedMove = null;
-        let pos = s.futurePosition ?? s.position;
-        let moveObject = pos.move(m);
+        const pos = s.futurePosition ?? s.position;
+        const moveObject = pos.move(m);
         if (moveObject) {
-          let epd = genEpd(pos);
+          const epd = genEpd(pos);
           s.positionHistory.push(epd);
           s.moveHistory.push(moveObject);
           s.highlightLastMove();
@@ -619,13 +620,13 @@ export const createChessState = (
 
     visualizeMove: (move: Move, speed: PlaybackSpeed, callback: () => void) => {
       set((s) => {
-        let { fadeDuration, moveDuration, stayDuration } =
+        const { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         s.indicatorColor =
           move.color == "b" ? c.hsl(180, 15, 10, 80) : c.hsl(180, 15, 100, 80);
-        let backwards = false;
+        const backwards = false;
         // @ts-ignore
-        let [start, end]: Square[] = backwards
+        const [start, end]: Square[] = backwards
           ? [move.to, move.from]
           : [move.from, move.to];
         s.moveIndicatorAnim.setValue(getSquareOffset(start, s.flipped));
@@ -664,10 +665,10 @@ export const createChessState = (
         }
         s.isVisualizingMoves = true;
         let i = 0;
-        let delay = getAnimationDurations(speed)[2];
-        let animateNextMove = () => {
+        const delay = getAnimationDurations(speed)[2];
+        const animateNextMove = () => {
           set((s) => {
-            let move = moves.shift();
+            const move = moves.shift();
 
             if (move && s.isVisualizingMoves) {
               s.visualizeMove(move, speed, () => {
@@ -718,13 +719,13 @@ export const createStaticChessState = ({
     }
     state.hideCoordinates = true;
     if (epd) {
-      let fen = `${epd} 0 1`;
+      const fen = `${epd} 0 1`;
       state.position = createChessProxy(new Chess(fen));
     } else if (line) {
       state.position.loadPgn(line);
     }
     if (nextMove) {
-      let [move] = state.position.validateMoves([nextMove]);
+      const [move] = state.position.validateMoves([nextMove]);
       [move.from, move.to].map((sq) => {
         state.squareHighlightAnims[sq].setValue(0.6);
       });

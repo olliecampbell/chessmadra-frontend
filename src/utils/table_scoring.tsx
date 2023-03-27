@@ -35,8 +35,8 @@ export const scoreTableResponses = (
     masterPlayrate: number;
   }
 ): TableResponse[] => {
-  let positionWinRate = report ? getWinRate(report?.results, side) : NaN;
-  let DEBUG_MOVE = null;
+  const positionWinRate = report ? getWinRate(report?.results, side) : NaN;
+  const DEBUG_MOVE = null;
   if (mode == "browse") {
     return sortBy(
       tableResponses,
@@ -63,25 +63,25 @@ export const scoreTableResponses = (
       //   tableResponse.suggestedMove?.sanPlus ??
       //   tableResponse.repertoireMove?.sanPlus;
       // return failOnAny(san);
-      let score = weights.startScore;
-      let scoreTable = { factors: [], notes: [] } as ScoreTable;
+      const score = weights.startScore;
+      const scoreTable = { factors: [], notes: [] } as ScoreTable;
       if (isNil(report)) {
         return score;
       }
-      let suggestedMove = tableResponse.suggestedMove;
+      const suggestedMove = tableResponse.suggestedMove;
       if (suggestedMove) {
         let evalOverride = false;
-        let masterPlayRate = getPlayRate(
+        const masterPlayRate = getPlayRate(
           tableResponse?.suggestedMove,
           report,
           true
         );
         if (!isNegligiblePlayrate(masterPlayRate)) {
-          let masterRateAdditionalWeight = Math.min(
+          const masterRateAdditionalWeight = Math.min(
             getTotalGames(tableResponse.suggestedMove?.masterResults) / 10,
             1
           );
-          let scoreForMasterPlayrate =
+          const scoreForMasterPlayrate =
             masterPlayRate * 100 * masterRateAdditionalWeight;
           scoreTable.factors.push({
             source: TableResponseScoreSource.MasterPlayrate,
@@ -91,7 +91,7 @@ export const scoreTableResponses = (
             evalOverride = true;
           }
         }
-        let stockfish = tableResponse.suggestedMove?.stockfish;
+        const stockfish = tableResponse.suggestedMove?.stockfish;
         if (stockfish && !evalOverride) {
           if (stockfish?.mate < 0 && side === "black") {
             scoreTable.factors.push({
@@ -106,7 +106,7 @@ export const scoreTableResponses = (
             });
           }
           if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
-            let eval_loss = Math.abs(
+            const eval_loss = Math.abs(
               Math.max(
                 (report.stockfish.eval - stockfish.eval) *
                   (side === "black" ? -1 : 1),
@@ -127,13 +127,13 @@ export const scoreTableResponses = (
             // score -= 400 * weights.eval;
           }
         }
-        let rateAdditionalWeight = Math.min(
+        const rateAdditionalWeight = Math.min(
           getTotalGames(tableResponse?.suggestedMove.results) / 100,
           1
         );
-        let playRate = getPlayRate(tableResponse.suggestedMove, report);
+        const playRate = getPlayRate(tableResponse.suggestedMove, report);
         if (!isNegligiblePlayrate(playRate)) {
-          let scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
+          const scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
           scoreTable.factors.push({
             source: TableResponseScoreSource.Playrate,
             value: scoreForPlayrate,
@@ -160,13 +160,13 @@ export const scoreTableResponses = (
             value: tableResponse.suggestedMove?.incidence,
           });
         }
-        let [winrateLowerBound, winrateUpperBound] = getWinRateRange(
+        const [winrateLowerBound, winrateUpperBound] = getWinRateRange(
           tableResponse.suggestedMove?.results,
           side
         );
-        let winrateChange = winrateLowerBound - positionWinRate;
+        const winrateChange = winrateLowerBound - positionWinRate;
         if (!isNaN(winrateChange) && !isNil(winrateChange)) {
-          let scoreForWinrate = winrateChange;
+          const scoreForWinrate = winrateChange;
           scoreTable.factors.push({
             source: TableResponseScoreSource.Winrate,
             value: scoreForWinrate,
@@ -207,7 +207,7 @@ export const scoreTableResponses = (
   );
 };
 
-export let EFFECTIVENESS_WEIGHTS_MASTERS = {
+export const EFFECTIVENESS_WEIGHTS_MASTERS = {
   startScore: 0.0,
   eval: 1.2,
   winrate: 4.0,
@@ -215,13 +215,13 @@ export let EFFECTIVENESS_WEIGHTS_MASTERS = {
   masterPlayrate: 8.0,
 };
 
-export let EFFECTIVENESS_WEIGHTS_PEERS = {
+export const EFFECTIVENESS_WEIGHTS_PEERS = {
   ...EFFECTIVENESS_WEIGHTS_MASTERS,
   playrate: 8.0,
   masterPlayrate: 0.0,
 };
 
-export let PLAYRATE_WEIGHTS = {
+export const PLAYRATE_WEIGHTS = {
   startScore: -3,
   eval: 0.0,
   winrate: 0.0,

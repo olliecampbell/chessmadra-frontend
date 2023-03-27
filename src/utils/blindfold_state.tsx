@@ -54,7 +54,7 @@ export const getInitialBlindfoldState = (
   const getPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
     return _get((s) => fn(s.blindfoldState.puzzleState));
   };
-  let initialState = {
+  const initialState = {
     progressMessage: null,
     isDone: false,
     ...createQuick(setOnly),
@@ -90,12 +90,12 @@ export const getInitialBlindfoldState = (
     setupForPuzzle: () =>
       set(([s]) => {
         console.log("SETTING UP");
-        let position = new Chess();
-        for (let move of s.puzzleState.puzzle.allMoves) {
+        const position = new Chess();
+        for (const move of s.puzzleState.puzzle.allMoves) {
           position.move(move);
           if (fensTheSame(position.fen(), s.puzzleState.puzzle.fen)) {
             position.move(s.puzzleState.puzzle.moves[0], { sloppy: true });
-            for (let solutionMove of s.puzzleState.puzzle.moves) {
+            for (const solutionMove of s.puzzleState.puzzle.moves) {
               position.move(solutionMove, { sloppy: true });
             }
             s.puzzleState.solutionMoves = takeRight(

@@ -61,7 +61,7 @@ export const CoverageGoal = ({
         </CMText>
         <Spacer width={4} />
         <i
-          className="fa fa-caret-down"
+          class="fa fa-caret-down"
           style={s(c.fontSize(14), c.fg(textColor), c.opacity(60))}
         />
       </div>

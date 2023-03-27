@@ -84,7 +84,7 @@ export const SidebarActions = () => {
         ?.plans
     ),
   ]);
-  let reviewCurrentLineAction: SidebarAction = {
+  const reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
       trackEvent(`${mode}.added_line_state.practice_line`);
       quick((s) => {
@@ -94,7 +94,7 @@ export const SidebarActions = () => {
     text: "Practice this line",
     style: "primary",
   };
-  let continueAddingToThisLineAction: SidebarAction = {
+  const continueAddingToThisLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
         trackEvent(`${mode}.added_line_state.contrinue_this_line`);
@@ -106,9 +106,9 @@ export const SidebarActions = () => {
     text: "Continue adding to this line",
     style: "primary",
   };
-  let buttonsSig = () => {
+  const buttonsSig = () => {
     let buttons = [];
-    let addBiggestMissAction = () => {
+    const addBiggestMissAction = () => {
       let miss = null;
       if (addedLineState().visible) {
         miss = nearestMiss() ?? lineMiss();
@@ -118,24 +118,24 @@ export const SidebarActions = () => {
       if (isNil(miss)) {
         return;
       }
-      let text = `Go to the next gap in your repertoire`;
-      let line = pgnToLine(miss.lines[0]);
-      let missPositions = lineToPositions(line);
-      let missPositionsSet = new Set(missPositions);
-      let currentOpeningName = last(
+      const text = `Go to the next gap in your repertoire`;
+      const line = pgnToLine(miss.lines[0]);
+      const missPositions = lineToPositions(line);
+      const missPositionsSet = new Set(missPositions);
+      const currentOpeningName = last(
         filter(
           map(positionHistory(), (epd) => {
-            let ecoCode = ecoCodeLookup()[epd];
+            const ecoCode = ecoCodeLookup()[epd];
             if (ecoCode) {
               return getNameEcoCodeIdentifier(ecoCode.fullName);
             }
           })
         )
       );
-      let openingNameOfMiss = last(
+      const openingNameOfMiss = last(
         filter(
           map(missPositions, (epd) => {
-            let ecoCode = ecoCodeLookup()[epd];
+            const ecoCode = ecoCodeLookup()[epd];
             if (ecoCode) {
               return getNameEcoCodeIdentifier(ecoCode.fullName);
             }
@@ -143,7 +143,7 @@ export const SidebarActions = () => {
         )
       );
 
-      let i = findLastIndex(positionHistory(), (epd) => {
+      const i = findLastIndex(positionHistory(), (epd) => {
         if (missPositionsSet.has(epd)) {
           return true;
         }
@@ -157,7 +157,7 @@ export const SidebarActions = () => {
               trackEvent(`${mode}.added_line_state.next_gap`);
               s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.dismissTransientSidebarState();
-              let lastMatchingEpd = positionHistory()[i];
+              const lastMatchingEpd = positionHistory()[i];
               s.repertoireState.browsingState.chessboardState.playPgn(
                 lineToPgn(line),
                 {
@@ -214,7 +214,7 @@ export const SidebarActions = () => {
       buttons.push({
         onPress: () => {
           quick((s) => {
-            let bs = s.repertoireState.browsingState;
+            const bs = s.repertoireState.browsingState;
             bs.moveSidebarState("right");
             bs.sidebarState.showPlansState.visible = true;
             bs.sidebarState.showPlansState.coverageReached = false;
@@ -239,7 +239,7 @@ export const SidebarActions = () => {
               });
             });
           },
-          text: `Practice ${numDue} moves which are due for review`,
+          text: `Practice ${numDue()} moves which are due for review`,
           style: "primary",
         });
       }
@@ -380,7 +380,7 @@ export const SidebarFullWidthButton = ({
         >
           {action.text}
         </CMText>
-        {action.subtext && (
+        <Show when={action.subtext}>
           <>
             <Spacer height={4} />
             <CMText
@@ -393,10 +393,10 @@ export const SidebarFullWidthButton = ({
               {action.subtext}
             </CMText>
           </>
-        )}
+        </Show>
       </div>
       <Spacer width={16} />
-      {action.right && (
+      <Show when={action.right}>
         <div style={s(c.row, c.center)}>
           {typeof action.right === "string" ? (
             <CMText
@@ -414,7 +414,7 @@ export const SidebarFullWidthButton = ({
             </CMText>
           )}
         </div>
-      )}
+      </Show>
     </Pressable>
   );
 };
@@ -447,7 +447,7 @@ export const SidebarSectionHeader = ({
 };
 
 const TogglePlansButton = () => {
-  let [showPlans] = useBrowsingState(([s, rs]) => [
+  const [showPlans] = useBrowsingState(([s, rs]) => [
     s.chessboardState.showPlans,
   ]);
   const responsive = useResponsive();
@@ -463,7 +463,7 @@ const TogglePlansButton = () => {
       )}
       onPress={() => {
         quick((s) => {
-          let cs = s.repertoireState.browsingState.chessboardState;
+          const cs = s.repertoireState.browsingState.chessboardState;
           cs.showPlans = !cs.showPlans;
         });
       }}
