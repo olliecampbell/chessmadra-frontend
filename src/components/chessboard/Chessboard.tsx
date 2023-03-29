@@ -343,6 +343,7 @@ export const ChessboardView = (props: {
           c.width("100%"),
           props.styles,
           props.shadow && c.cardShadow,
+          c.keyedProp("touch-action")("none"),
           {
             "webkit-touch-callout": "none",
             "webkit-user-select": "none",
@@ -648,7 +649,7 @@ export const ChessboardView = (props: {
                     return (
                       <div
                         style={s(
-                          c.keyedProp("touchAction")("none"),
+                          c.keyedProp("touch-action")("none"),
                           c.bg(color),
                           themeStyles(light),
                           c.center,

@@ -805,6 +805,7 @@ export const getInitialRepertoireState = (
     ) =>
       set(([s, gs]) => {
         if (isNil(responsive) || responsive.bp < BP.md) {
+          cb?.();
           // TODO solid
           // Animated.sequence([
           //   Animated.timing(s.browsingState.chessboardShownAnim, {
