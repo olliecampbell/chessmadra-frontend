@@ -7,5 +7,5 @@ RUN pnpm install
 COPY . .
 ENV NODE_ENV=production
 RUN pnpm run build
-CMD pnpm run start
+CMD pnpm run start --port=80
 
