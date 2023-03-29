@@ -268,6 +268,7 @@ export const createChessState = (
     onSquarePress: (square: Square, skipAnimation: boolean) => {
       set((s) => {
         const availableMove = s.availableMoves.find((m) => m.to == square);
+        console.log("onSquarePress", square, availableMove);
         if (availableMove) {
           s.availableMoves = [];
           s.activeFromSquare = null;
