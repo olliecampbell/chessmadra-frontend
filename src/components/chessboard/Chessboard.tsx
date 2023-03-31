@@ -1,14 +1,14 @@
 import { Chess, PieceSymbol, SQUARES } from "@lubert/chess.ts";
 import { getStatic } from "~/utils/assets";
 import { s, c } from "~/utils/styles";
-import { Piece, Square } from "@lubert/chess.ts/dist/types";
+import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "~/types/Chess";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
 import { ChessboardState } from "~/utils/chessboard_state";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
-import { forEach, isEmpty, isEqual, isNil, take } from "lodash-es";
+import { first, forEach, isEmpty, isEqual, isNil, map, take } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import {
   getAppState,
@@ -24,34 +24,29 @@ import {
   createMemo,
   createSignal,
   For,
+  onCleanup,
+  onMount,
   Show,
   splitProps,
 } from "solid-js";
 import { Motion } from "@motionone/solid";
 import { times } from "~/utils/times";
-import { createElementBounds, NullableBounds } from "@solid-primitives/bounds";
+import {
+  Bounds,
+  createElementBounds,
+  NullableBounds,
+} from "@solid-primitives/bounds";
 import { createWindowSize } from "@solid-primitives/resize-observer";
 import { destructure } from "@solid-primitives/destructure";
 import { logProxy } from "~/utils/state";
-
-const animatedXYToPercentage = (x) => {
-  return {};
-  // todo: solid
-  return s(
-    c.top(
-      x.y.interpolate({
-        inputRange: [0, 1],
-        outputRange: ["0%", "100%"],
-      })
-    ),
-    c.left(
-      x.x.interpolate({
-        inputRange: [0, 1],
-        outputRange: ["0%", "100%"],
-      })
-    )
-  );
-};
+import { kill } from "process";
+import { createStore, produce, SetStoreFunction, Store } from "solid-js/store";
+import {
+  ChessboardInterface,
+  ChessboardViewState,
+} from "~/utils/chessboard_interface";
+import anime from "animejs";
+import { createChessProxy } from "~/utils/chess_proxy";
 
 export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
   switch (ps) {
@@ -65,15 +60,6 @@ export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
       return "Ludicrous";
   }
 };
-
-enum ChessPiece {
-  Pawn = "p",
-  Rook = "r",
-  Knight = "n",
-  Bishop = "b",
-  Queen = "q",
-  King = "k",
-}
 
 const getSvgName = (piece: PieceSymbol, color: ChessColor) => {
   return `${color}${piece.toUpperCase()}`;
@@ -130,6 +116,7 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
       };
   }
 };
+
 interface XY {
   x: number;
   y: number;
@@ -143,33 +130,39 @@ export const ChessboardView = (props: {
   styles?: any;
   ref: (_: HTMLElement) => void;
 }) => {
-  console.log("rendering this again?");
-  const availableMoves = () => props.state.availableMoves;
-  createEffect(() => {
-    console.log("availableMoves", logProxy(availableMoves()));
+  let preview = true;
+  // testing preview move
+  const [chessboardStore, chessboardInterface, setChessboardStore] =
+    createChessboardInterface(() => props.state);
+  const availableMoves = () => chessboardStore.availableMoves;
+
+  // const interval = setInterval(() => {
+  //   if (preview) {
+  //     chessboardInterface.previewMove("e4");
+  //     setTimeout(() => {
+  //       chessboardInterface.previewMove(null);
+  //       chessboardInterface.previewMove("d4");
+  //     }, 300);
+  //   } else {
+  //     // clearInterval(interval);
+  //   }
+  // }, 6000);
+  // onCleanup(() => {
+  //   clearInterval(interval);
+  // });
+  onMount(() => {
+    props.state.quick((s) => {
+      s.chessboardView = chessboardInterface;
+    });
   });
-  const position = () => props.state._animatePosition ?? props.state.position;
+  const drag = () => chessboardStore.drag;
+  // const position = () => props.state._animatePosition ?? props.state.position;
   const userState = getAppState().userState;
   const user = () => userState.user;
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[user()?.theme] ?? BOARD_THEMES_BY_ID["lichess-brown"];
   const colors = () => [theme().light.color, theme().dark.color];
   const flipped = createMemo(() => !!props.state.flipped);
-  const [drag, setDrag] = createSignal({
-    square: null,
-    x: 0,
-    y: 0,
-    transform: { x: 0, y: 0 },
-  } as {
-    square: Square | null;
-    x: number;
-    y: number;
-    transform: {
-      x: number;
-      y: number;
-    };
-  });
-
   const getSquareFromLayoutAndGesture = (
     chessboardLayout,
     gesture: XY
@@ -203,9 +196,6 @@ export const ChessboardView = (props: {
   const [chessboardContainerRef, setChessboardContainerRef] =
     createSignal(null);
   const chessboardLayout = createElementBounds(chessboardContainerRef);
-  createEffect(() => {
-    console.log("chessboardLayout", chessboardLayout);
-  });
   const [didImmediatelyTap, setDidImmediatelyTap] = createSignal(false);
   const getTapOffset = (e: MouseEvent | TouchEvent, parent: NullableBounds) => {
     // @ts-ignore
@@ -223,15 +213,16 @@ export const ChessboardView = (props: {
     }
   };
   const frozen = () => props.state.frozen;
-  const onMouseDown = (evt: MouseEvent) => {
+  const onMouseDown = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
     const tap = getTapOffset(evt, chessboardLayout);
     const [square, centerX, centerY] = getSquareFromLayoutAndGesture(
       chessboardLayout,
       tap
     );
-    console.log({ tap });
-    setDrag((drag) => {
+    console.log("got square", square);
+    setChessboardStore((store) => {
+      const drag = store.drag;
       drag.square = square;
       drag.x = tap.x;
       drag.y = tap.y;
@@ -239,12 +230,14 @@ export const ChessboardView = (props: {
         x: tap.x - centerX,
         y: tap.y - centerY,
       };
-      return drag;
+      store.availableMoves = store.position.moves({
+        square: square,
+        verbose: true,
+      });
+      chessboardInterface.highlightSquares(
+        store.availableMoves.map((m) => m.to as Square)
+      );
     });
-
-    if (square !== props.state.activeFromSquare) {
-      props.state.onSquarePress(square, false);
-    }
 
     setIsTap(true);
     setTapTimeout(
@@ -253,79 +246,76 @@ export const ChessboardView = (props: {
       }, 100)
     );
   };
-  const onMouseOut = (evt: MouseEvent) => {
-    setDrag({
-      square: null,
-      x: 0,
-      y: 0,
-      transform: { x: 0, y: 0 },
-    });
-    props.state.quick((s) => {
-      s.draggedOverSquare = undefined;
-      s.activeFromSquare = undefined;
+  createEffect(() => {
+    console.log("availableMoves", logProxy(availableMoves()));
+  });
+  const onMouseOut = (evt: MouseEvent | TouchEvent) => {
+    setChessboardStore((store) => {
+      store.drag = {
+        square: null,
+        x: 0,
+        y: 0,
+        transform: { x: 0, y: 0 },
+      };
+      store.draggedOverSquare = undefined;
+      store.activeFromSquare = undefined;
     });
   };
-  const onMouseMove = (evt: MouseEvent) => {
+  const onMouseMove = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
     // if (evt.target != chessboardContainerRef()) return;
 
-    // console.log("onMouseMove", evt);
-    // if (evt.offsetX < 50) {
-    //   debugger;
-    // }
     if (!drag().square) {
       return;
     }
-    let newDrag = {
-      square: drag().square,
-      x: 0,
-      y: 0,
-      transform: { x: 0, y: 0 },
-    };
-    let tap = getTapOffset(evt, chessboardLayout);
-    const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, tap);
-    if (newSquare !== props.state.draggedOverSquare) {
-      // console.log("newSquare", newSquare, props.state.draggedOverSquare);
-      let isOverMovableSquare = props.state.availableMoves.find(
-        (m) => m.to == newSquare
-      );
-      // newDrag.square = newSquare;
-      // console.log("isOverMovableSquare", isOverMovableSquare);
-      props.state.quick((s) => {
+    setChessboardStore((s) => {
+      let newDrag = {
+        square: drag().square,
+        x: 0,
+        y: 0,
+        transform: { x: 0, y: 0 },
+      };
+      let tap = getTapOffset(evt, chessboardLayout);
+      const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, tap);
+      if (newSquare !== s.draggedOverSquare) {
+        let isOverMovableSquare = s.availableMoves.find(
+          (m) => m.to == newSquare
+        );
         if (isOverMovableSquare) {
           s.draggedOverSquare = newSquare;
         } else {
           s.draggedOverSquare = undefined;
         }
-      });
-    }
-    forEach(["x", "y"] as ("x" | "y")[], (key) => {
-      let prev = drag()[key];
+      }
+      forEach(["x", "y"] as ("x" | "y")[], (key) => {
+        let prev = drag()[key];
 
-      const curr = tap[key];
-      let delta = curr - prev;
-      newDrag[key] = curr;
-      newDrag.transform[key] = drag().transform[key] + delta;
+        const curr = tap[key];
+        let delta = curr - prev;
+        newDrag[key] = curr;
+        newDrag.transform[key] = drag().transform[key] + delta;
+      });
+      s.drag = newDrag;
     });
-    setDrag(newDrag);
   };
-  const onMouseUp = (evt: MouseEvent) => {
+  const onMouseUp = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
     const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, drag());
-    console.log("onMouseUp", newSquare, evt);
 
     if (isTap()) {
       // props.state.onSquarePress(drag().square, false);
       // if (stateRef.current.activeFromSquare) {
       // }
     } else {
-      props.state.onSquarePress(newSquare, true);
+      chessboardInterface.onSquarePress(newSquare, true);
     }
-    setDrag({
-      square: null,
-      x: 0,
-      y: 0,
-      transform: { x: 0, y: 0 },
+    setChessboardStore((s) => {
+      s.drag = {
+        square: null,
+        x: 0,
+        y: 0,
+        transform: { x: 0, y: 0 },
+      };
     });
   };
 
@@ -360,9 +350,6 @@ export const ChessboardView = (props: {
               width: "100%",
               height: "100%",
               position: "absolute",
-              // shadowColor: "black",
-              // shadowOpacity: 0.4,
-              // shadowRadius: 10,
             },
             c.brt(2),
             props.state.hideColors && c.border(hiddenColorsBorder)
@@ -509,8 +496,7 @@ export const ChessboardView = (props: {
               c.zIndex(5),
               c.absolute,
               c.center,
-              c.opacity(moveIndicatorOpacityAnim),
-              moveIndicatorAnim && animatedXYToPercentage(moveIndicatorAnim)
+              c.opacity(moveIndicatorOpacityAnim)
             )}
           >
             <div
@@ -537,8 +523,8 @@ export const ChessboardView = (props: {
           ></Motion>
           <For each={Object.keys(SQUARES)}>
             {(square) => {
-              let debug = "b5";
-              const pos = () => props.state.previewPosition ?? position();
+              let debug = "e2";
+              const pos = () => chessboardStore.position;
               const piece = createMemo(() => pos().get(square));
               createEffect(() => {
                 if (square === debug) {
@@ -550,14 +536,14 @@ export const ChessboardView = (props: {
                 return drag().square === square;
               });
               const animatedProps = () => {
+                // track
+                pos();
                 let posStyles = s(
                   c.top(`${getSquareOffset(square, flipped()).y * 100}%`),
                   c.left(`${getSquareOffset(square, flipped()).x * 100}%`)
                 );
                 let animated = false;
                 if (dragging()) {
-                  // console.log(drag());
-                  // todo: could be more efficient with deep equals
                   posStyles = s(
                     posStyles,
                     c.transform(
@@ -578,26 +564,36 @@ export const ChessboardView = (props: {
               );
 
               const priority = () => props.state.activeFromSquare === square;
-              const containerViewStyles = () =>
-                s(
+              const containerViewStyles = () => {
+                return s(
                   c.absolute,
                   posStyles(),
                   c.zIndex(priority() ? 11 : 2),
                   c.size("12.5%"),
                   c.noPointerEvents
                 );
+              };
               return (
                 <>
-                  <Show when={piece() && !hiddenBecauseTake()}>
-                    <div style={s(containerViewStyles(), c.noPointerEvents)}>
-                      <div style={s(c.fullWidth, c.fullHeight)}>
+                  <div
+                    style={s(containerViewStyles(), c.noPointerEvents)}
+                    id={`piece-${square}`}
+                    ref={(v) => {
+                      setChessboardStore((s) => {
+                        console.log("setting piece refs");
+                        s.pieceRefs[square] = v;
+                      });
+                    }}
+                  >
+                    <div style={s(c.fullWidth, c.fullHeight)}>
+                      <Show when={piece() && !hiddenBecauseTake()}>
                         <PieceView
                           piece={piece()}
                           pieceSet={user()?.pieceSet ?? "cburnett"}
                         />
-                      </div>
+                      </Show>
                     </div>
-                  </Show>
+                  </div>
                 </>
               );
             }}
@@ -631,18 +627,24 @@ export const ChessboardView = (props: {
                     let availableMove = createMemo(() => {
                       return availableMoves().find((m) => m.to == square());
                     });
-                    const showIndicator = createMemo(
+                    const isFromSquare = () =>
+                      chessboardStore.activeFromSquare === square();
+                    const isDraggedOverSquare = () =>
+                      chessboardStore.draggedOverSquare == square();
+                    const isJustIndicator = () =>
+                      availableMove() &&
+                      !isDraggedOverSquare() &&
+                      !isFromSquare();
+                    const isAvailableMoveIndicator = () =>
+                      availableMove() && isJustIndicator();
+                    const isPreviewSquare = () =>
+                      chessboardStore.previewedMove?.to === square() ||
+                      chessboardStore.previewedMove?.from === square();
+                    const isLastMoveSquare = createMemo(
                       () =>
-                        availableMove() ||
-                        props.state.activeFromSquare === square() ||
-                        props.state.draggedOverSquare === square()
+                        props.state.getLastMove()?.to == square() ||
+                        props.state.getLastMove()?.from == square()
                     );
-                    let isFromSquare = () =>
-                      props.state.activeFromSquare === square();
-                    let isDraggedOverSquare = () =>
-                      props.state.draggedOverSquare == square();
-                    let isJustIndicator = () =>
-                      !isDraggedOverSquare() && !isFromSquare();
 
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
@@ -656,52 +658,43 @@ export const ChessboardView = (props: {
                           !frozen() && c.clickable,
                           c.flexible,
                           c.relative
-                          // state.hideColors &&
-                          //   s(
-                          //     !isBottomEdge &&
-                          //       c.borderBottom(hiddenColorsBorder),
-                          //     !isRightEdge && c.borderRight(hiddenColorsBorder)
-                          //   )
                         )}
                       >
-                        <Show when={showIndicator()}>
+                        <div
+                          class="absolute inset-0 place-items-center rounded-full"
+                          style={s(c.zIndex(1))}
+                        >
                           <div
+                            class={`transition-opacity w-1/3 h-1/3 rounded-full ${
+                              isJustIndicator() ? "opacity-100" : "opacity-0"
+                            }`}
                             id={`indicator-${square()}`}
+                            classList={{
+                              hidden: !isJustIndicator(),
+                            }}
                             style={s(
-                              c.noPointerEvents,
-                              c.fullWidth,
-                              c.zIndex(6),
-                              c.center,
-                              c.absoluteFull
+                              c.bg(theme().highlightDark),
+                              c.absolute,
+                              c.zIndex(1)
                             )}
-                          >
-                            <div
-                              style={s(
-                                isJustIndicator()
-                                  ? c.size("30%")
-                                  : c.size("100%"),
-                                isJustIndicator()
-                                  ? c.bg(theme().highlightDark)
-                                  : c.bg(theme().highlight),
-                                isJustIndicator() && c.round,
-                                c.absolute,
-                                c.zIndex(4)
-                              )}
-                            />
-                          </div>
-                        </Show>
-                        <Motion
-                          animate={{
-                            opacity: props.state.squareHighlightAnims[square],
-                          }}
+                          />
+                        </div>
+                        <div
+                          class={`transition-opacity absolute top-0 left-0 bottom-0 right-0 w-full h-full ${
+                            isFromSquare() ||
+                            isDraggedOverSquare() ||
+                            isLastMoveSquare() ||
+                            isPreviewSquare()
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                          id={`highlight-${square()}`}
                           style={s(
-                            c.displayNone,
                             c.bg(theme().highlight),
                             c.absolute,
-                            c.size("100%"),
-                            c.zIndex(4)
+                            c.zIndex(1)
                           )}
-                        ></Motion>
+                        />
                         {isBottomEdge && !props.state.hideCoordinates && (
                           <CMText
                             style={s(
@@ -753,4 +746,493 @@ export const ChessboardView = (props: {
   );
   // console.timeEnd("chessboard");
   return x;
+};
+
+const createChessboardInterface = (
+  state: Accessor<ChessboardState>
+): [
+  Store<ChessboardViewState>,
+  ChessboardInterface,
+  (s: (s: ChessboardViewState) => void) => void
+] => {
+  const flipped = () => false;
+  const frozen = () => false;
+  const [chessboardStore, setChessboardStore] =
+    createStore<ChessboardViewState>({
+      pieceRefs: {},
+      position: createChessProxy(new Chess()),
+      currentHighlightedSquares: new Set(),
+      squareHighlightRefs: {},
+      moveIndicatorRef: null,
+      availableMoves: [],
+      drag: {
+        square: null,
+        x: 0,
+        y: 0,
+        transform: { x: 0, y: 0 },
+      },
+    });
+  let pendingState: ChessboardViewState | null = null;
+  const set = <T,>(s: (s: ChessboardViewState) => T) => {
+    if (pendingState) {
+      return s(pendingState);
+    } else {
+      let res = null;
+      setChessboardStore(
+        produce((state: ChessboardViewState) => {
+          pendingState = state;
+          try {
+            res = s(state as ChessboardViewState);
+          } finally {
+            pendingState = null;
+          }
+        })
+      );
+      return res;
+    }
+  };
+
+  const chessboardInterface: ChessboardInterface = {
+    makeMove: (m: Move) => {
+      set((s) => {
+        s.position.move(m);
+        console.log(s.position);
+        chessboardInterface.clearPending();
+        console.log("after setting");
+      });
+    },
+    reversePreviewMove: () => {
+      set((s: ChessboardViewState) => {
+        if (!s.previewedMove) {
+          return;
+        }
+        s.previewPosition = undefined;
+        s.isReversingPreviewMove = true;
+        // chessboardInterface.clearHighlightedSquares();
+        const [start, end]: { x: number; y: number }[] = [
+          getSquareOffset(s.previewedMove.to, flipped()),
+          getSquareOffset(s.previewedMove.from, flipped()),
+        ];
+        const duration = getAnimationTime(start, end);
+        const pieceRef = s.pieceRefs[s.previewedMove.from as Square];
+        const top = `${end.y * 100}%`;
+        const left = `${end.x * 100}%`;
+        const timeline = anime.timeline({
+          easing: "easeInOutSine",
+          duration: duration,
+        });
+        timeline.add({
+          targets: pieceRef,
+          top,
+          left,
+        });
+        const supplementaryMove = getSupplementaryMove(s.previewedMove);
+        if (supplementaryMove) {
+          const end = getSquareOffset(supplementaryMove.to, flipped());
+          const top = `${end.y * 100}%`;
+          const left = `${end.x * 100}%`;
+          const pieceRef = s.pieceRefs[supplementaryMove.from as Square];
+          timeline.add({
+            targets: pieceRef,
+            easing: "easeInOutSine",
+            duration: duration,
+            top,
+            left,
+          });
+        }
+        timeline.play();
+        timeline.finished.then(() => {
+          set((s) => {
+            s.previewedMove = undefined;
+            s.isReversingPreviewMove = false;
+            chessboardInterface.stepPreviewMove();
+          });
+        });
+        // s.previewPieceMoveAnim.setValue(start);
+        // Animated.sequence([
+        //   Animated.timing(s.previewPieceMoveAnim, {
+        //     toValue: end,
+        //     duration,
+        //     useNativeDriver: true,
+        //     easing: Easing.out(Easing.ease),
+        //   }),
+        // ]).start(({ finished }) => {
+        //   set((s) => {
+        //     s.previewedMove = null;
+        //     s.isReversingPreviewMove = false;
+        //     s.stepPreviewMove();
+        //   });
+        // });
+      });
+    },
+    stepAnimationQueue: () => {
+      set((s: ChessboardViewState) => {
+        if (!isEmpty(s.currentHighlightedSquares)) {
+          chessboardInterface.clearHighlightedSquares();
+        }
+        if (isEmpty(s.animationQueue)) {
+          s._animatePosition = null;
+        }
+        if (isNil(s._animatePosition)) {
+          return;
+        }
+        let nextMove = s.animationQueue.shift();
+        s.animatePieceMove(nextMove, PlaybackSpeed.Fast, (completed) => {
+          if (completed) {
+            set((s) => {
+              s.stepAnimationQueue();
+            });
+          }
+        });
+      });
+    },
+    stepPreviewMove: () => {
+      set((s: ChessboardViewState) => {
+        console.log("steppreviewmove");
+        if (s.isReversingPreviewMove || s.isAnimatingPreviewMove) {
+          console.log("steppreviewmove2");
+          return;
+        }
+        if (
+          s.previewedMove &&
+          s.nextPreviewMove &&
+          !isEqual(s.previewedMove, s.nextPreviewMove)
+        ) {
+          console.log("steppreviewmove4");
+          chessboardInterface.reversePreviewMove();
+        }
+        if (s.previewedMove && !s.nextPreviewMove) {
+          console.log("steppreviewmove5");
+          chessboardInterface.reversePreviewMove();
+        }
+        if (!s.previewedMove && s.nextPreviewMove) {
+          console.log("steppreviewmove6");
+          chessboardInterface.animatePreviewMove();
+        }
+      });
+    },
+    animatePreviewMove: () => {
+      set((s: ChessboardViewState) => {
+        if (!s.nextPreviewMove) {
+          return;
+        }
+        const move = s.nextPreviewMove;
+        s.previewPosition = s.position.clone();
+        s.previewPosition.move(s.nextPreviewMove);
+        // s.nextPreviewMove = null;
+        s.previewedMove = s.nextPreviewMove;
+        s.isAnimatingPreviewMove = true;
+        s.previewedMove = move;
+        // chessboardInterface.clearHighlightedSquares();
+        s.availableMoves = [];
+        s.activeFromSquare = undefined;
+        s.draggedOverSquare = undefined;
+        // s.makeMove(move);
+        const [start, end]: { x: number; y: number }[] = [
+          getSquareOffset(move.from, flipped()),
+          getSquareOffset(move.to, flipped()),
+        ];
+        const duration = getAnimationTime(start, end);
+        const pieceRef = s.pieceRefs[move.from as Square];
+        const top = `${end.y * 100}%`;
+        const left = `${end.x * 100}%`;
+        let timeline = anime.timeline({
+          easing: "easeInOutSine",
+          duration: duration,
+        });
+        timeline = timeline.add({
+          targets: pieceRef,
+          top,
+          left,
+        });
+        const supplementaryMove = getSupplementaryMove(move);
+        if (supplementaryMove) {
+          const end = getSquareOffset(supplementaryMove.to, flipped());
+          const top = `${end.y * 100}%`;
+          const left = `${end.x * 100}%`;
+          timeline.add(
+            {
+              targets: pieceRef,
+              easing: "easeInOutSine",
+              duration: duration,
+              top,
+              left,
+            },
+            0
+          );
+        }
+        timeline.play();
+        timeline.finished.then(() => {
+          set((s) => {
+            s.isAnimatingPreviewMove = false;
+            chessboardInterface.stepPreviewMove();
+          });
+        });
+        chessboardInterface.highlightMoveSquares(move, duration);
+      });
+    },
+    clearPending: () => {
+      set((s: ChessboardViewState) => {
+        s.availableMoves = [];
+        s.drag = {
+          square: null,
+
+          x: 0,
+          y: 0,
+          transform: { x: 0, y: 0 },
+        };
+        s.previewPosition = undefined;
+        s.nextPreviewMove = undefined;
+        s.previewedMove = undefined;
+      });
+    },
+    animatePieceMove: (
+      move: Move,
+      speed: PlaybackSpeed,
+      callback: (completed: boolean) => void
+    ) => {
+      set((s: ChessboardViewState) => {
+        chessboardInterface.clearPending();
+        let { fadeDuration, moveDuration, stayDuration } =
+          getAnimationDurations(speed);
+        // @ts-ignore
+        let [start, end]: Square[] = [move.from, move.to];
+        let { x, y } = getSquareOffset(start, flipped());
+        callback(true);
+        // Animated.sequence([
+        //   Animated.timing(s.pieceMoveAnim, {
+        //     toValue: getSquareOffset(end, s.flipped),
+        //     duration: moveDuration,
+        //     useNativeDriver: true,
+        //     easing: Easing.inOut(Easing.ease),
+        //   }),
+        // ]).start(() => {
+        //   set((s) => {
+        //     s.animatedMove = null;
+        //
+        //     callback(true);
+        //   });
+        // });
+      });
+    },
+    onSquarePress: (square: Square, skipAnimation: boolean) => {
+      set((s) => {
+        const availableMove = s.availableMoves.find((m) => m.to == square);
+        if (availableMove) {
+          s.availableMoves = [];
+          s.activeFromSquare = undefined;
+          s.draggedOverSquare = undefined;
+          state().makeMove(availableMove);
+        }
+      });
+    },
+    availableMovesFrom: (square: Square) => {
+      return set((s) => {
+        const position = s.position;
+        const moves = position?.moves({
+          square,
+          verbose: true,
+        });
+        if (
+          !isEmpty(s.availableMoves) &&
+          first(s.availableMoves).from == square
+        ) {
+          return [];
+        } else if (!frozen()) {
+          return moves;
+        }
+      });
+    },
+    highlightSquares: (squares: Square[]) => {
+      set((s) => {
+        const refs = squares.map((sq) => s.squareHighlightRefs[sq as Square]);
+        squares.forEach((sq) => {
+          s.currentHighlightedSquares.add(sq);
+        });
+        // anime({
+        //   targets: refs,
+        //   easing: "easeInOutSine",
+        //   duration: 150,
+        //   top: top,
+        //   opacity: 1.0,
+        // });
+      });
+    },
+    highlightMoveSquares: (move: Move) =>
+      set((s) => {
+        let highlightSquares = getHighlightSquares(move);
+        chessboardInterface.highlightSquares(highlightSquares);
+      }),
+    backOne: () => {
+      set((s) => {
+        console.log("back one");
+        // chessboardInterface.clearPending();
+        s.position.undo();
+        console.log("new position", s.position.ascii());
+      });
+    },
+    resetPosition: () => {
+      set((s) => {
+        // s.previewPosition = null;
+        // chessboardInterface.clearHighlightedSquares();
+        s.animationQueue = [];
+      });
+    },
+    visualizeMove: (move: Move, speed: PlaybackSpeed, callback: () => void) => {
+      set((s) => {
+        const { fadeDuration, moveDuration, stayDuration } =
+          getAnimationDurations(speed);
+        s.indicatorColor =
+          move.color == "b" ? c.hsl(180, 15, 10, 80) : c.hsl(180, 15, 100, 80);
+        const backwards = false;
+        // @ts-ignore
+        const [start, end]: Square[] = backwards
+          ? [move.to, move.from]
+          : [move.from, move.to];
+        s.moveIndicatorAnim.setValue(getSquareOffset(start, s.flipped));
+        Animated.sequence([
+          Animated.timing(s.moveIndicatorOpacityAnim, {
+            toValue: 1.0,
+            duration: fadeDuration,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.ease),
+          }),
+          Animated.delay(stayDuration),
+          Animated.timing(s.moveIndicatorAnim, {
+            toValue: getSquareOffset(end, s.flipped),
+            duration: moveDuration,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.ease),
+          }),
+          Animated.delay(stayDuration),
+          Animated.timing(s.moveIndicatorOpacityAnim, {
+            toValue: 0,
+            duration: fadeDuration,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.ease),
+          }),
+        ]).start(callback);
+      });
+    },
+    visualizeMoves: (
+      moves: Move[],
+      speed: PlaybackSpeed,
+      callback: () => void
+    ) => {
+      set((s) => {
+        if (s.isVisualizingMoves) {
+          return;
+        }
+        s.isVisualizingMoves = true;
+        let i = 0;
+        const delay = getAnimationDurations(speed)[2];
+        const animateNextMove = () => {
+          set((s) => {
+            const move = moves.shift();
+
+            if (move && s.isVisualizingMoves) {
+              s.visualizeMove(move, speed, () => {
+                window.setTimeout(() => {
+                  animateNextMove();
+                }, delay);
+              });
+              i++;
+            } else {
+              s.isVisualizingMoves = false;
+              callback?.();
+              // cb?.()
+            }
+          });
+        };
+        animateNextMove();
+      });
+    },
+    previewMove: (m: string | null | Move) => {
+      set((s) => {
+        if (m) {
+          const [moveObject] = s.position.validateMoves([m]) ?? [];
+          console.log("m", m, s.position.ascii(), moveObject);
+          s.nextPreviewMove = moveObject;
+          chessboardInterface.stepPreviewMove();
+        } else {
+          s.nextPreviewMove = undefined;
+          chessboardInterface.stepPreviewMove();
+        }
+      });
+    },
+    flashRing: (success: boolean) => {
+      set((state) => {
+        const animDuration = 200;
+        state.ringColor = success
+          ? c.colors.successColor
+          : c.colors.failureLight;
+        Animated.sequence([
+          Animated.timing(state.ringIndicatorAnim, {
+            toValue: 1,
+            duration: animDuration,
+            useNativeDriver: false,
+          }),
+
+          Animated.timing(state.ringIndicatorAnim, {
+            toValue: 0,
+            duration: animDuration,
+            useNativeDriver: false,
+          }),
+        ]).start((finished) => {
+          // TODO: better way to do this
+          set((s) => {
+            s.ringIndicatorAnim.setValue(0);
+          });
+        });
+      });
+    },
+    animatePgn: (fen: string, moves: Move[]) => {
+      set((s) => {
+        s._animatePosition = createChessProxy(new Chess(fen));
+        const moves = s._animatePosition.validateMoves(options.animateLine);
+        s.animationQueue = moves;
+        s.stepAnimationQueue();
+      });
+    },
+  };
+  return [chessboardStore, chessboardInterface, set];
+};
+
+const getAnimationTime = (
+  start: { x: number; y: number },
+  end: { x: number; y: number }
+) => {
+  let distance =
+    Math.sqrt(
+      Math.pow(Math.abs(end.x - start.x), 2) +
+        Math.pow(Math.abs(end.y - start.y), 2)
+    ) * 8;
+  return getAnimationTimeForDistance(distance);
+};
+
+export const getAnimationTimeForDistance = (distance: number) => {
+  return Math.log(distance + 6) * 80;
+};
+
+export const getHighlightSquares = (move: Move): Square[] => {
+  if (move.san === "O-O" || move.san === "O-O-O") {
+    return [];
+  } else {
+    return [move.to as Square, move.from as Square];
+  }
+};
+
+export const getSupplementaryMove = (move: Move): Move => {
+  if (move.san === "O-O" || move.san === "O-O-O") {
+    return {
+      to: "f1",
+      from: "h1",
+      piece: "r",
+      color: "w",
+      flags: "",
+      san: "",
+    };
+  } else {
+    return null;
+  }
 };

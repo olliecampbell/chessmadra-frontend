@@ -1,5 +1,4 @@
 import { VisualizationState } from "~/types/VisualizationState";
-import { OpDraft } from "./op_draft";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
 import { getInitialVisualizationState } from "./visualization_state";
 import {
@@ -25,7 +24,6 @@ import {
 } from "./game_search_state";
 import { every, isNil, isObject, keysIn, take, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
-import { immerable } from "immer";
 import { DebugState, getInitialDebugState } from "./debug_state";
 import { getInitialNavigationState, NavigationState } from "./navigation_state";
 import { AdminState, getInitialAdminState } from "./admin_state";
@@ -34,7 +32,6 @@ import { getInitialUserState, UserState } from "./user_state";
 import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "~/utils/styles";
 import { isDevelopment } from "./env";
-import { enableMapSet } from "immer";
 import {
   BrowsingState,
   SidebarState,
@@ -44,10 +41,7 @@ import { Accessor, createEffect, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { destructure } from "@solid-primitives/destructure";
 
-enableMapSet();
-
 const DEBUG_STATE = true;
-Chess[immerable] = true;
 
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;

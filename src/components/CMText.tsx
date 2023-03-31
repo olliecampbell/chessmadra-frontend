@@ -4,12 +4,11 @@ export const CMText = (props) => {
   const { children } = props;
   return (
     <p
+      class={props.class ?? ""}
       {...{
         props,
         style: s(
           {
-            border: "0px solid black",
-            "box-sizing": "border-box",
             display: "inline",
             "list-style": "none",
             margin: "0px",

@@ -55,7 +55,7 @@ import { shouldDebugEpd } from "./debug";
 import { BP, Responsive } from "./useResponsive";
 
 const TEST_LINE = isDevelopment ? [] : [];
-const TEST_MODE: BrowsingMode = isDevelopment ? null : null;
+const TEST_MODE: BrowsingMode | null = isDevelopment ? "build" : null;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -1041,9 +1041,10 @@ export const getInitialRepertoireState = (
               }
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
-                s.startBrowsing("white", "build");
-                s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                  [SidebarOnboardingStage.Initial];
+                // todo: re-enable onboarding
+                // s.startBrowsing("white", "build");
+                // s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+                //   [SidebarOnboardingStage.Initial];
               }
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);

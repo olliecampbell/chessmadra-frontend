@@ -16,7 +16,7 @@ import { BP, useResponsive } from "~/utils/useResponsive";
 import { shouldUsePeerRates } from "~/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
-import { createEffect, Show } from "solid-js";
+import { createEffect, createMemo, Show } from "solid-js";
 import { View } from "./View";
 import { destructure } from "@solid-primitives/destructure";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
@@ -50,18 +50,21 @@ export const Responses = function Responses() {
 
   const usePeerRates = () => shouldUsePeerRates(positionReport());
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  const yourMoves = () =>
+  const yourMoves = createMemo(() =>
     filter(tableResponses(), (tr) => {
       return !isNil(tr.repertoireMove) && activeSide === currentSide;
-    });
-  const otherMoves = () =>
+    })
+  );
+  const otherMoves = createMemo(() =>
     filter(tableResponses(), (tr) => {
       return isNil(tr.repertoireMove) && activeSide === currentSide;
-    });
-  const prepareFor = () =>
+    })
+  );
+  const prepareFor = createMemo(() =>
     filter(tableResponses(), (tr) => {
       return activeSide !== currentSide;
-    });
+    })
+  );
   // TODO: solid
   // createEffect(() => {
   //   const beforeUnloadListener = (event) => {
@@ -100,7 +103,7 @@ export const Responses = function Responses() {
               <RepertoireMovesTable
                 {...{
                   header: () =>
-                    reviewHeader ??
+                    reviewHeader() ??
                     getResponsesHeader(currentLine(), !isEmpty(yourMoves())),
                   usePeerRates,
                   activeSide,
@@ -115,7 +118,7 @@ export const Responses = function Responses() {
               <RepertoireMovesTable
                 {...{
                   header: () =>
-                    reviewHeader ??
+                    reviewHeader() ??
                     getResponsesHeader(currentLine(), !isEmpty(yourMoves())),
                   usePeerRates,
                   activeSide,
@@ -146,7 +149,7 @@ export const Responses = function Responses() {
           {!isEmpty(prepareFor()) && (
             <RepertoireMovesTable
               {...{
-                header: reviewHeader ?? prepareForHeader,
+                header: () => reviewHeader() ?? prepareForHeader(),
                 usePeerRates,
                 body: body,
                 activeSide,

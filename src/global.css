@@ -22,7 +22,7 @@ body {
   background-color: hsl(240, 12%, 7%);
 }
 div {
-  display: flex;
+  display: grid;
   flex-direction: column;
 }
 script {

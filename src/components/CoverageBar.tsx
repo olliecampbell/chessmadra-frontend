@@ -4,23 +4,19 @@ import { Side } from "~/utils/repertoire";
 import { useBrowsingState } from "~/utils/app_state";
 import { Animated, View } from "./View";
 
-export const CoverageBar = ({
-  side,
-  rounded,
-  isInSidebar: isInSidebar,
-}: {
+export const CoverageBar = (props: {
   side: Side;
   rounded?: boolean;
   isInSidebar?: boolean;
 }) => {
   const [progressState] = useBrowsingState(([s]) => {
-    const progressState = s.repertoireProgressState[side];
+    const progressState = s.repertoireProgressState[props.side];
     return [progressState];
   });
-  const inverse = side === "white";
-  const [backgroundColor, inProgressColor, completedColor] = isInSidebar
+  const inverse = () => props.side === "white";
+  const [backgroundColor, inProgressColor, completedColor] = props.isInSidebar
     ? [c.grays[30], c.greens[50], c.greens[50]]
-    : inverse
+    : inverse()
     ? [c.grays[80], c.oranges[55], c.greens[50]]
     : [c.grays[30], c.oranges[65], c.greens[50]];
   const overlap = 8;
@@ -31,11 +27,11 @@ export const CoverageBar = ({
         c.fullHeight,
         c.fullWidth,
         c.bg(backgroundColor),
-        c.br(rounded ? 999 : 2),
+        c.br(props.rounded ? 999 : 2),
         c.relative
       )}
     >
-      <Animated.View
+      <View
         style={s(
           c.absolute,
           c.br(2),
@@ -50,10 +46,10 @@ export const CoverageBar = ({
             //   outputRange: ["0%", "100%"],
             // })
           ),
-          c.bg(progressState.completed ? completedColor : inProgressColor),
+          c.bg(progressState().completed ? completedColor : inProgressColor),
           c.fullHeight
         )}
-      ></Animated.View>
+      ></View>
     </div>
   );
 };
