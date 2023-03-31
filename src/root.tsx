@@ -1,5 +1,5 @@
 // @refresh reload
-import { onMount, Suspense } from "solid-js";
+import { onMount, Show, Suspense } from "solid-js";
 import {
   A,
   Body,
@@ -19,6 +19,8 @@ import { BrowserTracing } from "@sentry/tracing";
 import { c, s } from "./utils/styles";
 import "~/global.css";
 import AuthHandler from "./components/AuthHandler";
+import { isServer } from "solid-js/web";
+import "virtual:uno.css";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -111,11 +113,13 @@ export default function Root() {
       >
         <Suspense>
           <ErrorBoundary>
-            <AuthHandler>
-              <Routes>
-                <FileRoutes />
-              </Routes>
-            </AuthHandler>
+            <Show when={!isServer} fallback={null}>
+              <AuthHandler>
+                <Routes>
+                  <FileRoutes />
+                </Routes>
+              </AuthHandler>
+            </Show>
           </ErrorBoundary>
         </Suspense>
         <Scripts />

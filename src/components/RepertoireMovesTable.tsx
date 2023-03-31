@@ -14,6 +14,7 @@ import {
   map,
   reverse,
   cloneDeep,
+  isEqual,
 } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
@@ -40,6 +41,7 @@ import {
   useDebugState,
   useRepertoireState,
   useUserState,
+  getAppState,
 } from "~/utils/app_state";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "~/utils/trackEvent";
@@ -57,7 +59,14 @@ import { BP, useResponsive } from "~/utils/useResponsive";
 import { TableMeta, useSections } from "~/utils/useSections";
 import { InstructiveGamesView } from "./InstructiveGamesView";
 import { useHovering } from "~/mocks";
-import { Accessor, createSignal, For, Show } from "solid-js";
+import {
+  Accessor,
+  createSignal,
+  createMemo,
+  For,
+  Show,
+  onMount,
+} from "solid-js";
 import { Pressable } from "./Pressable";
 import { View } from "./View";
 import { destructure } from "@solid-primitives/destructure";
@@ -112,59 +121,64 @@ export const RepertoireMovesTable = ({
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [expandedLength, setExpandedLength] = createSignal(0);
   const [editingAnnotations, setEditingAnnotations] = createSignal(false);
+  onMount(() => {
+    console.log("RepertoireMovesTable onMount");
+  });
   const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
-    destructure(() => {
-      const anyMine = some(responses(), (m) => m.repertoireMove?.mine);
-      const mine = filter(responses(), (m) => m.repertoireMove?.mine);
-      const anyNeeded = some(responses(), (m) => m.suggestedMove?.needed);
-      const myTurn = side() === activeSide();
-      const isMobile = useIsMobile();
-      // todo: solid, prob need to use accessors here
-      const sections = useSections({
-        myTurn,
-        usePeerRates: usePeerRates(),
-        isMobile,
-      });
-      const MIN_TRUNCATED = isMobile ? 1 : 1;
-      const trimmedResponses = filter(responses(), (r, i) => {
-        if (mode() == "browse") {
-          return r.repertoireMove;
-        }
-        if (i < expandedLength()) {
-          return true;
-        }
-        if (r.repertoireMove) {
-          return true;
-        }
-        if (anyNeeded && !r.suggestedMove?.needed) {
-          return false;
-        }
-        if (anyMine) {
-          return false;
-        }
-        if (r.suggestedMove?.needed && !myTurn) {
-          return true;
-        }
-        return (
-          i < MIN_TRUNCATED ||
-          r.repertoireMove ||
-          (myTurn && r.score > 0) ||
-          moveHasTag(r, MoveTag.RareDangerous) ||
-          (myTurn && moveHasTag(r, MoveTag.Transposes))
-        );
-      }) as TableResponse[];
-      const numTruncated = responses.length - trimmedResponses.length;
-      const truncated = numTruncated > 0;
-      console.log("returning sections", sections);
-      return {
-        trimmedResponses,
-        sections,
-        mine,
-        myTurn,
-        anyMine,
-        truncated,
-      };
-    });
+    destructure(
+      createMemo(() => {
+        const anyMine = some(responses(), (m) => m.repertoireMove?.mine);
+        const mine = filter(responses(), (m) => m.repertoireMove?.mine);
+        const anyNeeded = some(responses(), (m) => m.suggestedMove?.needed);
+        const myTurn = side() === activeSide();
+        const isMobile = useIsMobile();
+        // todo: solid, prob need to use accessors here
+        const sections = useSections({
+          myTurn,
+          usePeerRates: usePeerRates(),
+          isMobile,
+        });
+        const MIN_TRUNCATED = isMobile ? 1 : 1;
+        const trimmedResponses = filter(responses(), (r, i) => {
+          if (mode() == "browse") {
+            return r.repertoireMove;
+          }
+          if (i < expandedLength()) {
+            return true;
+          }
+          if (r.repertoireMove) {
+            return true;
+          }
+          if (anyNeeded && !r.suggestedMove?.needed) {
+            return false;
+          }
+          if (anyMine) {
+            return false;
+          }
+          if (r.suggestedMove?.needed && !myTurn) {
+            return true;
+          }
+          return (
+            i < MIN_TRUNCATED ||
+            r.repertoireMove ||
+            (myTurn && r.score > 0) ||
+            moveHasTag(r, MoveTag.RareDangerous) ||
+            (myTurn && moveHasTag(r, MoveTag.Transposes))
+          );
+        }) as TableResponse[];
+        const numTruncated = responses.length - trimmedResponses.length;
+        const truncated = numTruncated > 0;
+        console.log("returning sections", sections);
+        return {
+          trimmedResponses,
+          sections,
+          mine,
+          myTurn,
+          anyMine,
+          truncated,
+        };
+      })
+    );
   const widths: Record<string, number | null> = {};
 
   const [currentLine] = useSidebarState(([s, rs]) => [s.moveLog]);
@@ -204,7 +218,9 @@ export const RepertoireMovesTable = ({
           : [];
         const nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
         if (nextEcoCode) {
-          const [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
+          const [name, variations] = getAppropriateEcoName(
+            nextEcoCode.fullName
+          );
           if (name != currentOpeningName) {
             includeOpeningName = true;
             return name;
@@ -434,16 +450,14 @@ const Response = ({
   const { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
       () => {
-        quick((s) => {
-          s.repertoireState.browsingState.chessboardState.previewMove(
-            sanPlus()
-          );
-        });
+        getAppState().repertoireState.browsingState.chessboardState.chessboardView?.previewMove(
+          sanPlus()
+        );
       },
       () => {
-        quick((s) => {
-          s.repertoireState.browsingState.chessboardState.previewMove(null);
-        });
+        getAppState().repertoireState.browsingState.chessboardState.chessboardView?.previewMove(
+          null
+        );
       }
     );
   const [mode] = useSidebarState(([s]) => [s.mode]);

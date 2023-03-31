@@ -125,13 +125,14 @@ export const BrowserSidebar = function BrowserSidebar() {
           ref={setPreviousRef}
           style={s(
             c.keyedProp("grid-area")("1/1"),
+            c.displayFlex,
             c.noPointerEvents,
 
             c.opacity(100),
             isNil(direction()) && s(c.opacity(0))
             // TODO: solid
             // {
-            //   transform: [
+            //   transform: 
             //     {
             //       translateX: previousSidebarAnim.interpolate({
             //         inputRange: [0, 1],
@@ -153,6 +154,7 @@ export const BrowserSidebar = function BrowserSidebar() {
           ref={setCurrentRef}
           style={s(
             c.keyedProp("grid-area")("1/1"),
+            c.displayFlex,
             !isNil(direction) && s()
             // todo: solid
             // c.opacity(
@@ -466,13 +468,13 @@ const SavedLineView = function SavedLineView() {
               c.alignCenter,
               c.justifyBetween,
               c.fullWidth,
-              c.opacity(progressState().headerOpacityAnim),
+              c.opacity(100),
               c.relative,
               c.zIndex(2)
             )}
           >
             <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-              Your {activeSide} repertoire is now{" "}
+              Your {activeSide()} repertoire is now{" "}
               <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
                 {Math.round(progressState().percentComplete)}%
               </CMText>{" "}
@@ -481,7 +483,7 @@ const SavedLineView = function SavedLineView() {
           </Animated.View>
           <Spacer height={4} />
           <div style={s(c.height(24))}>
-            <CoverageBar isInSidebar side={activeSide} />
+            <CoverageBar isInSidebar side={activeSide()} />
           </div>
         </div>
         <Spacer height={12} />
