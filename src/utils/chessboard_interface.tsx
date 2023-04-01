@@ -4,6 +4,7 @@ import { Accessor } from "solid-js";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 
 export interface ChessboardInterface {
+  resetPosition: () => void;
   highlightSquares: (highlightSquares: Square[]) => void;
   makeMove: (_: Move) => void;
   clearPending: () => void;
@@ -38,9 +39,11 @@ export interface ChessboardInterface {
     duration?: number,
     unhighlight?: boolean
   ) => void;
+  animatePgn: (fen: string, moves: Move[]) => void;
 }
 
 export interface ChessboardViewState {
+  _animatePosition?: Chess;
   currentHighlightedSquares: Set<Square>;
   pieceRefs: Partial<Record<Square, HTMLDivElement>>;
   squareHighlightRefs: Partial<Record<Square, HTMLDivElement>>;

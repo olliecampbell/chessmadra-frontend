@@ -4,7 +4,7 @@ import { s, c } from "~/utils/styles";
 import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "~/types/Chess";
 import { PlaybackSpeed } from "~/types/VisualizationState";
-import { getSquareOffset } from "../../utils/chess";
+import { getSquareOffset, START_EPD } from "../../utils/chess";
 import { ChessboardState } from "~/utils/chessboard_state";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
@@ -47,6 +47,7 @@ import {
 } from "~/utils/chessboard_interface";
 import anime from "animejs";
 import { createChessProxy } from "~/utils/chess_proxy";
+import { pgnToLine } from "~/utils/repertoire";
 
 export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
   switch (ps) {
@@ -86,9 +87,9 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
   switch (playbackSpeed) {
     case PlaybackSpeed.DebugSlow:
       return {
-        moveDuration: 1000,
-        fadeDuration: 1000,
-        stayDuration: 1000,
+        moveDuration: 6000,
+        fadeDuration: 6000,
+        stayDuration: 6000,
       };
     case PlaybackSpeed.Slow:
       return {
@@ -121,31 +122,49 @@ interface XY {
   x: number;
   y: number;
 }
-//
-export const ChessboardView = (props: {
+let hasAnimateStarted = false;
+export function ChessboardView(props: {
   state: ChessboardState;
   shadow?: boolean;
   disableDrag?: boolean;
   onSquarePress?: any;
   styles?: any;
   ref: (_: HTMLElement) => void;
-}) => {
+}) {
   let preview = true;
   // testing preview move
   const [chessboardStore, chessboardInterface, setChessboardStore] =
     createChessboardInterface(() => props.state);
   const availableMoves = () => chessboardStore.availableMoves;
 
+  const pos = () =>
+    chessboardStore._animatePosition ?? chessboardStore.position;
+  createEffect(() => {
+    console.log("updated position", pos);
+  });
+  hasAnimateStarted = false;
+
+  onMount(() => {
+    setTimeout(() => {
+      hasAnimateStarted = true;
+      props.state.playPgn("1.e4 e5 2.f4 exf4", {
+        animateLine: pgnToLine("1.e4 e5 2.f4 exf4"),
+        animated: true,
+        fromEpd: START_EPD,
+      });
+    }, 1000);
+  });
   // const interval = setInterval(() => {
   //   if (preview) {
-  //     chessboardInterface.previewMove("e4");
-  //     setTimeout(() => {
-  //       chessboardInterface.previewMove(null);
-  //       chessboardInterface.previewMove("d4");
-  //     }, 300);
+  //     props.state.playPgn("1.e4 e5 2.f4 exf4", {
+  //       animateLine: pgnToLine("1.e4 e5 2.f4 exf4"),
+  //       animated: true,
+  //       fromEpd: START_EPD,
+  //     });
   //   } else {
-  //     // clearInterval(interval);
+  //     props.state.resetPosition();
   //   }
+  //   preview = !preview;
   // }, 6000);
   // onCleanup(() => {
   //   clearInterval(interval);
@@ -159,6 +178,9 @@ export const ChessboardView = (props: {
   // const position = () => props.state._animatePosition ?? props.state.position;
   const userState = getAppState().userState;
   const user = () => userState.user;
+  createEffect(() => {
+    console.log("new user?", user());
+  });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[user()?.theme] ?? BOARD_THEMES_BY_ID["lichess-brown"];
   const colors = () => [theme().light.color, theme().dark.color];
@@ -247,7 +269,7 @@ export const ChessboardView = (props: {
     );
   };
   createEffect(() => {
-    console.log("availableMoves", logProxy(availableMoves()));
+    // console.log("availableMoves", logProxy(availableMoves()));
   });
   const onMouseOut = (evt: MouseEvent | TouchEvent) => {
     setChessboardStore((store) => {
@@ -524,13 +546,12 @@ export const ChessboardView = (props: {
           <For each={Object.keys(SQUARES)}>
             {(square) => {
               let debug = "e2";
-              const pos = () => chessboardStore.position;
               const piece = createMemo(() => pos().get(square));
-              createEffect(() => {
-                if (square === debug) {
-                  console.log("piece", piece(), pos().ascii());
-                }
-              });
+              // createEffect(() => {
+              //   if (square === debug) {
+              //     console.log("piece", piece(), pos().ascii());
+              //   }
+              // });
 
               const dragging = createMemo(() => {
                 return drag().square === square;
@@ -556,15 +577,27 @@ export const ChessboardView = (props: {
 
                 return { animated, posStyles };
               };
+              createEffect(() => {
+                console.log("new piece?");
+              });
               const { animated, posStyles } = destructure(animatedProps);
               const hiddenBecauseTake = createMemo(
                 () =>
-                  props.state.previewedMove?.to === square &&
-                  props.state.previewedMove?.color !== piece()?.color
+                  chessboardStore.previewedMove?.to === square &&
+                  chessboardStore.previewedMove?.color !== piece()?.color
               );
 
-              const priority = () => props.state.activeFromSquare === square;
+              const priority = () =>
+                chessboardStore.activeFromSquare === square;
               const containerViewStyles = () => {
+                // track
+                pos();
+                if (hasAnimateStarted) {
+                  // debugger;
+                }
+                if (square === "e5") {
+                  console.log("re-computing containerViewStyles");
+                }
                 return s(
                   c.absolute,
                   posStyles(),
@@ -580,7 +613,6 @@ export const ChessboardView = (props: {
                     id={`piece-${square}`}
                     ref={(v) => {
                       setChessboardStore((s) => {
-                        console.log("setting piece refs");
                         s.pieceRefs[square] = v;
                       });
                     }}
@@ -637,6 +669,8 @@ export const ChessboardView = (props: {
                       !isFromSquare();
                     const isAvailableMoveIndicator = () =>
                       availableMove() && isJustIndicator();
+                    const highlightingPreviewMove = () =>
+                      chessboardStore.previewedMove;
                     const isPreviewSquare = () =>
                       chessboardStore.previewedMove?.to === square() ||
                       chessboardStore.previewedMove?.from === square();
@@ -665,7 +699,7 @@ export const ChessboardView = (props: {
                           style={s(c.zIndex(1))}
                         >
                           <div
-                            class={`transition-opacity w-1/3 h-1/3 rounded-full ${
+                            class={`transition-opacity duration-300 w-1/3 h-1/3 rounded-full ${
                               isJustIndicator() ? "opacity-100" : "opacity-0"
                             }`}
                             id={`indicator-${square()}`}
@@ -683,7 +717,8 @@ export const ChessboardView = (props: {
                           class={`transition-opacity absolute top-0 left-0 bottom-0 right-0 w-full h-full ${
                             isFromSquare() ||
                             isDraggedOverSquare() ||
-                            isLastMoveSquare() ||
+                            (isLastMoveSquare() &&
+                              !highlightingPreviewMove()) ||
                             isPreviewSquare()
                               ? "opacity-100"
                               : "opacity-0"
@@ -746,7 +781,7 @@ export const ChessboardView = (props: {
   );
   // console.timeEnd("chessboard");
   return x;
-};
+}
 
 const createChessboardInterface = (
   state: Accessor<ChessboardState>
@@ -795,10 +830,12 @@ const createChessboardInterface = (
   const chessboardInterface: ChessboardInterface = {
     makeMove: (m: Move) => {
       set((s) => {
+        if (s._animatePosition) {
+          s._animatePosition.move(m);
+          return;
+        }
         s.position.move(m);
-        console.log(s.position);
         chessboardInterface.clearPending();
-        console.log("after setting");
       });
     },
     reversePreviewMove: () => {
@@ -867,29 +904,33 @@ const createChessboardInterface = (
     },
     stepAnimationQueue: () => {
       set((s: ChessboardViewState) => {
-        if (!isEmpty(s.currentHighlightedSquares)) {
-          chessboardInterface.clearHighlightedSquares();
-        }
         if (isEmpty(s.animationQueue)) {
-          s._animatePosition = null;
+          s.position = s._animatePosition;
+          s._animatePosition = undefined;
         }
         if (isNil(s._animatePosition)) {
           return;
         }
-        let nextMove = s.animationQueue.shift();
-        s.animatePieceMove(nextMove, PlaybackSpeed.Fast, (completed) => {
-          if (completed) {
-            set((s) => {
-              s.stepAnimationQueue();
-            });
+        let nextMove = s.animationQueue?.shift() as Move;
+        chessboardInterface.animatePieceMove(
+          nextMove,
+          PlaybackSpeed.Fast,
+          (completed) => {
+            if (completed) {
+              chessboardInterface.stepAnimationQueue();
+            }
           }
-        });
+        );
       });
     },
     stepPreviewMove: () => {
       set((s: ChessboardViewState) => {
         console.log("steppreviewmove");
-        if (s.isReversingPreviewMove || s.isAnimatingPreviewMove) {
+        if (
+          s.isReversingPreviewMove ||
+          s.isAnimatingPreviewMove ||
+          s._animatePosition
+        ) {
           console.log("steppreviewmove2");
           return;
         }
@@ -984,6 +1025,7 @@ const createChessboardInterface = (
         s.previewPosition = undefined;
         s.nextPreviewMove = undefined;
         s.previewedMove = undefined;
+        s._animatePosition = undefined;
       });
     },
     animatePieceMove: (
@@ -997,22 +1039,20 @@ const createChessboardInterface = (
           getAnimationDurations(speed);
         // @ts-ignore
         let [start, end]: Square[] = [move.from, move.to];
-        let { x, y } = getSquareOffset(start, flipped());
-        callback(true);
-        // Animated.sequence([
-        //   Animated.timing(s.pieceMoveAnim, {
-        //     toValue: getSquareOffset(end, s.flipped),
-        //     duration: moveDuration,
-        //     useNativeDriver: true,
-        //     easing: Easing.inOut(Easing.ease),
-        //   }),
-        // ]).start(() => {
-        //   set((s) => {
-        //     s.animatedMove = null;
-        //
-        //     callback(true);
-        //   });
-        // });
+        let { x, y } = getSquareOffset(end, flipped());
+        console.log("animateing piece move", start, end, x, y);
+        anime({
+          targets: s.pieceRefs[start as Square],
+          top: `${y * 100}%`,
+          left: `${x * 100}%`,
+          duration: moveDuration,
+          easing: "easeInOutSine",
+          autoplay: true,
+        }).finished.then(() => {
+          chessboardInterface.makeMove(move);
+          s.animatedMove = undefined;
+          callback(true);
+        });
       });
     },
     onSquarePress: (square: Square, skipAnimation: boolean) => {
@@ -1065,17 +1105,15 @@ const createChessboardInterface = (
       }),
     backOne: () => {
       set((s) => {
-        console.log("back one");
-        // chessboardInterface.clearPending();
         s.position.undo();
-        console.log("new position", s.position.ascii());
+        console.log("position", s.position.ascii());
       });
     },
     resetPosition: () => {
       set((s) => {
-        // s.previewPosition = null;
-        // chessboardInterface.clearHighlightedSquares();
-        s.animationQueue = [];
+        console.log("resetting position");
+        s.position = createChessProxy(new Chess());
+        chessboardInterface.clearPending();
       });
     },
     visualizeMove: (move: Move, speed: PlaybackSpeed, callback: () => void) => {
@@ -1162,36 +1200,38 @@ const createChessboardInterface = (
     },
     flashRing: (success: boolean) => {
       set((state) => {
-        const animDuration = 200;
-        state.ringColor = success
-          ? c.colors.successColor
-          : c.colors.failureLight;
-        Animated.sequence([
-          Animated.timing(state.ringIndicatorAnim, {
-            toValue: 1,
-            duration: animDuration,
-            useNativeDriver: false,
-          }),
-
-          Animated.timing(state.ringIndicatorAnim, {
-            toValue: 0,
-            duration: animDuration,
-            useNativeDriver: false,
-          }),
-        ]).start((finished) => {
-          // TODO: better way to do this
-          set((s) => {
-            s.ringIndicatorAnim.setValue(0);
-          });
-        });
+        console.log("todo flash ring");
+        // const animDuration = 200;
+        // state.ringColor = success
+        //   ? c.colors.successColor
+        //   : c.colors.failureLight;
+        // Animated.sequence([
+        //   Animated.timing(state.ringIndicatorAnim, {
+        //     toValue: 1,
+        //     duration: animDuration,
+        //     useNativeDriver: false,
+        //   }),
+        //
+        //   Animated.timing(state.ringIndicatorAnim, {
+        //     toValue: 0,
+        //     duration: animDuration,
+        //     useNativeDriver: false,
+        //   }),
+        // ]).start((finished) => {
+        //   // TODO: better way to do this
+        //   set((s) => {
+        //     s.ringIndicatorAnim.setValue(0);
+        //   });
+        // });
       });
     },
-    animatePgn: (fen: string, moves: Move[]) => {
+    animatePgn: (fen: string, line: string[]) => {
       set((s) => {
+        // const line = pgnToLine(pgn);
         s._animatePosition = createChessProxy(new Chess(fen));
-        const moves = s._animatePosition.validateMoves(options.animateLine);
+        let moves = s._animatePosition.validateMoves(line);
         s.animationQueue = moves;
-        s.stepAnimationQueue();
+        chessboardInterface.stepAnimationQueue();
       });
     },
   };

@@ -438,7 +438,8 @@ export const getInitialBrowsingState = (
             const DEBUG = {
               epd: "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -",
             };
-            const epd = tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
+            const epd =
+              tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
             let dueBelow =
               rs.numMovesDueFromEpd[s.sidebarState.activeSide][epd];
             let earliestBelow =
@@ -759,7 +760,7 @@ export const getInitialBrowsingState = (
               i % 2 === (s.sidebarState.activeSide === "white" ? 0 : 1);
             if (
               !some(
-                rs.repertoire[s.sidebarState.activeSide]?.positionResponses[
+                rs.repertoire?.[s.sidebarState.activeSide]?.positionResponses[
                   position
                 ],
                 (m) => {
