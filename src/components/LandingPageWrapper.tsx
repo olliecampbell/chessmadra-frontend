@@ -1,7 +1,8 @@
-import Index from "~/landing_page/pages/index";
+import App from "~/landing_page/App";
 import React from "react";
 import ReactDOM from "react-dom";
 import { onMount } from "solid-js";
+import { quick } from "~/utils/app_state";
 
 const QAPI = {
   pages: {
@@ -36,10 +37,15 @@ export default function LandingPageWrapper() {
   onMount(() => {
     // @ts-ignore
     window.QAPI = QAPI;
+    console.log("Index", App);
     ReactDOM.render(
-      <>
-        <Index />
-      </>,
+      React.createElement(App, {
+        onClick: () => {
+          quick((s) => {
+            s.userState.pastLandingPage = true;
+          });
+        },
+      }),
       document.getElementById("root")
     );
   });

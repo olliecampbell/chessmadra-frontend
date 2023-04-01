@@ -130,16 +130,16 @@ export function ChessboardView(props: {
   });
   hasAnimateStarted = false;
 
-  onMount(() => {
-    setTimeout(() => {
-      hasAnimateStarted = true;
-      props.state.playPgn("1.e4 e5 2.f4 exf4", {
-        animateLine: pgnToLine("1.e4 e5 2.f4 exf4"),
-        animated: true,
-        fromEpd: START_EPD,
-      });
-    }, 1000);
-  });
+  // onMount(() => {
+  //   setTimeout(() => {
+  //     hasAnimateStarted = true;
+  //     props.state.playPgn("1.e4 e5 2.f4 exf4", {
+  //       animateLine: pgnToLine("1.e4 e5 2.f4 exf4"),
+  //       animated: true,
+  //       fromEpd: START_EPD,
+  //     });
+  //   }, 1000);
+  // });
   // const interval = setInterval(() => {
   //   if (preview) {
   //     props.state.playPgn("1.e4 e5 2.f4 exf4", {
@@ -157,7 +157,7 @@ export function ChessboardView(props: {
   // });
   onMount(() => {
     quick((s) => {
-      s.repertoireState.chessboardView = chessboardInterface;
+      s.repertoireState.setChessboardView(chessboardInterface);
     });
   });
   const drag = () => chessboardStore.drag;
