@@ -151,7 +151,7 @@ export const SidebarLayout = ({
               <Spacer height={60} />
             )}
           </div>
-          <Show when={!vertical }>
+          <Show when={!vertical}>
             <>
               <Spacer width={responsive.switch(24, [BP.lg, 48])} />
               <div
@@ -167,7 +167,7 @@ export const SidebarLayout = ({
                 <BrowserSidebar />
               </div>
             </>
-            </Show>
+          </Show>
         </div>
       </div>
     </RepertoirePageLayout>
@@ -269,14 +269,17 @@ export const ReviewFromHereButton = () => {
 
 // TODO: solid: ref stuff?
 const BrowsingChessboardView = function BrowsingChessboardView({ ref }) {
-  const chessboardState =
-    getAppState().repertoireState.browsingState.chessboardState;
+  const [mode] = useRepertoireState((s) => [s.browsingState.sidebarState.mode]);
+  const chessboardState = () =>
+    mode() === "review"
+      ? getAppState().repertoireState.reviewState.chessboardState
+      : getAppState().repertoireState.browsingState.chessboardState;
   // useRepertoireState((s) => [
   //   s.browsingState.sidebarState.mode == "review"
   //     ? s.reviewState.chessboardState
   //     : s.browsingState.chessboardState,
   // ]);
-  return <ChessboardView state={chessboardState} ref={ref} />;
+  return <ChessboardView state={chessboardState()} ref={ref} />;
 };
 
 const MobileTopBar = ({}) => {

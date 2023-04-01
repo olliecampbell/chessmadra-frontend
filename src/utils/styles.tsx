@@ -187,7 +187,7 @@ const fontFamily = keyedProp("font-family");
 
 const shadow = (x, y, blur, spread, color) => {
   return {
-    boxShadow: `${x}px ${y}px ${blur}px ${spread}px ${color}`,
+    "box-shadow": `${x}px ${y}px ${blur}px ${spread}px ${color}`,
   };
 };
 const cardShadow = shadow(0, 0, 4, 0, "rgba(0, 0, 0, 0.5)");
@@ -248,7 +248,8 @@ const genShades = (
     const lightness_y = easeInOutSine(i / 100);
     const saturation =
       minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;
-    const lightness = minLightness + (maxLightness - minLightness) * lightness_y;
+    const lightness =
+      minLightness + (maxLightness - minLightness) * lightness_y;
     shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
   return shades;

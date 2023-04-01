@@ -56,6 +56,7 @@ export interface ChessboardState extends QuickUpdate<ChessboardState> {
   getCurrentEpd: () => string;
   backOne: () => void;
   resetPosition: () => void;
+  setPosition: () => void;
   stopNotifyingDelegates: () => void;
   getDelegate: () => ChessboardDelegate;
   updateMoveLogPgn: () => void;
@@ -207,6 +208,9 @@ export const createChessState = (
         if (options?.animated) {
           const fen = `${options.fromEpd} 0 1`;
           s.chessboardView?.animatePgn(fen, options.animateLine);
+        } else {
+          s.chessboardView?.setPosition(s.position);
+          console.log("set position of chessboard view", s.position.ascii());
         }
         s.resumeNotifyingDelegates();
         s.getDelegate()?.onPositionUpdated?.();

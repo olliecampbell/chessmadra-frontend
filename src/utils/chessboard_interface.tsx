@@ -5,6 +5,7 @@ import { PlaybackSpeed } from "~/types/VisualizationState";
 
 export interface ChessboardInterface {
   resetPosition: () => void;
+  setPosition: (_: Chess) => void;
   highlightSquares: (highlightSquares: Square[]) => void;
   makeMove: (_: Move) => void;
   clearPending: () => void;
@@ -43,6 +44,8 @@ export interface ChessboardInterface {
 }
 
 export interface ChessboardViewState {
+  ringColor: string;
+  ringRef: HTMLDivElement;
   _animatePosition?: Chess;
   currentHighlightedSquares: Set<Square>;
   pieceRefs: Partial<Record<Square, HTMLDivElement>>;

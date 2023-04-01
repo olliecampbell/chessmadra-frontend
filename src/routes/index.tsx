@@ -1,5 +1,7 @@
-
+import { getAppState, useAppState } from "~/utils/app_state";
 import { SidebarLayout } from "~/components/SidebarLayout";
+import { createEffect, Match, Switch } from "solid-js";
+import LandingPageWrapper from "~/components/LandingPageWrapper";
 
 // export default function Home() {
 //   return (
@@ -18,5 +20,17 @@ import { SidebarLayout } from "~/components/SidebarLayout";
 //   );
 // }
 export default () => {
-  return <SidebarLayout />;
+  const [pastLandingPage] = useAppState((s) => [s.userState.pastLandingPage]);
+  const authState = () => getAppState().userState.authStatus;
+  const token = () => getAppState().userState.token;
+  createEffect(() => {
+    console.log("toven", token());
+  });
+  return (
+    <Switch fallback={<LandingPageWrapper></LandingPageWrapper>}>
+      <Match when={token() || pastLandingPage()}>
+        <SidebarLayout />
+      </Match>
+    </Switch>
+  );
 };
