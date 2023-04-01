@@ -1,5 +1,4 @@
 import { Color } from "@lubert/chess.ts";
-import { LichessGame } from "~/utils/models";
 import { flatten, forEach } from "lodash-es";
 
 export function sideOfLastmove(_line: string[] | string): Side {

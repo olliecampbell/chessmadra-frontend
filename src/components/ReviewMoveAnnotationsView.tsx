@@ -1,15 +1,15 @@
-import { View } from "react-native";
+
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isEmpty, isNil, capitalize, range } from "lodash-es";
+import { isEmpty, isNil, capitalize } from "lodash-es";
 import { Button } from "~/components/Button";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
 import { quick, useAdminState, useUserState } from "~/utils/app_state";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";

@@ -3,7 +3,6 @@ import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { createSignal } from "solid-js";
-import { View } from "./View";
 import { Pressable } from "./Pressable";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 

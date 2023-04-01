@@ -2,7 +2,6 @@ import { Spacer } from "~/components/Space";
 import { s, c } from "~/utils/styles";
 import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
-import { View } from "./View";
 import { Pressable } from "./Pressable";
 
 export const SelectOneOf = <T,>({

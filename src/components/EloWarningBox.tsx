@@ -1,7 +1,6 @@
 import { Spacer } from "~/components/Space";
 import { s, c } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { View } from "react-native";
 import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
 import { Button } from "./Button";
 import { useRepertoireState } from "~/utils/app_state";

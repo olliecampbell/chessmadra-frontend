@@ -1,22 +1,16 @@
-import { Modal } from "./Modal";
+
 import Cookies from "js-cookie";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "~/components/Space";
-import { AuthStatus, getRecommendedMissThreshold } from "~/utils/user_state";
+import { AuthStatus } from "~/utils/user_state";
 import {
-  getAppState,
   useAppState,
-  useUserState,
   quick,
   useSidebarState,
 } from "~/utils/app_state";
 import { BP, useResponsive } from "~/utils/useResponsive";
-import { cloneDeep } from "lodash-es";
-import { SidebarSetting } from "./SidebarSettings";
-import { clearCookies, JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
-import { View } from "./View";
+import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { useHovering } from "~/mocks";

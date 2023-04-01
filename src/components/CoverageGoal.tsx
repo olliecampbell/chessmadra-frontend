@@ -3,13 +3,12 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { quick, useUserState } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { useOutsideClick } from "~/components/useOutsideClick";
 import { SelectOneOf } from "./SelectOneOf";
 import { THRESHOLD_OPTIONS } from "./SidebarSettings";
 import { createSignal } from "solid-js";
-import { Animated, View } from "./View";
+import { Animated } from "./View";
 import { Pressable } from "./Pressable";
 
 export const CoverageGoal = ({

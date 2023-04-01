@@ -1,29 +1,13 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
 import {
-  some,
-  isNaN,
-  isEmpty,
-  filter,
   isNil,
-  last,
   clamp,
-  includes,
-  max,
-  map,
-  reverse,
-  cloneDeep,
 } from "lodash-es";
-import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
 import {
-  formatIncidence,
-  RepertoireMiss,
-  RepertoireMove,
   Side,
 } from "~/utils/repertoire";
-import { MoveTag, PositionReport, SuggestedMove } from "~/utils/models";
+import { PositionReport, SuggestedMove } from "~/utils/models";
 import { formatStockfishEval } from "~/utils/stockfish";
 import {
   formatPlayPercentage,
@@ -32,30 +16,16 @@ import {
   isNegligiblePlayrate,
 } from "~/utils/results_distribution";
 import {
-  useAppState,
-  useBrowsingState,
   useSidebarState,
   useDebugState,
   useRepertoireState,
   useUserState,
 } from "~/utils/app_state";
-import { trackEvent } from "~/utils/trackEvent";
-import { getAppropriateEcoName } from "~/utils/eco_codes";
-import {
-  getMoveRatingIcon,
-  getWinPercentage,
-  MoveRating,
-} from "~/utils/move_inaccuracy";
-import { quick } from "~/utils/app_state";
-import { TableResponseScoreSource } from "~/utils/table_scoring";
 import { getCoverageProgress } from "~/utils/browsing_state";
-import { useResponsive } from "~/utils/useResponsive";
 import { TableResponse } from "~/components/RepertoireMovesTable";
 import { CMText } from "~/components/CMText";
 import { GameResultsBar } from "~/components/GameResultsBar";
-import { pluralize } from "./pluralize";
 import { ReviewText } from "~/components/ReviewText";
-import { View } from "~/components/View";
 import { Accessor, Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 

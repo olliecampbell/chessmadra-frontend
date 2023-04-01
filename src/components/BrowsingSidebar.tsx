@@ -1,30 +1,25 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isEmpty, isNil, dropRight, cloneDeep } from "lodash-es";
+import { isEmpty, isNil, dropRight } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   quick,
   useBrowsingState,
-  useUserState,
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
 import { SidebarStateContext } from "~/utils/browsing_state";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { useResponsive } from "~/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
 import { SidebarActions } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { formatWinPercentage, getWinRate } from "~/utils/results_distribution";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
-import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
 import { FadeInOut } from "./FadeInOut";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
-import { lineToPgn } from "~/utils/repertoire";
-import { isDevelopment } from "~/utils/env";
 import { TransposedView } from "./TransposedView";
 import { RepertoireReview } from "./RepertoireReview";
 import { RepertoireOverview } from "./RepertoirtOverview";
@@ -32,11 +27,10 @@ import { SettingsButtons } from "./Settings";
 import { RepertoireHome } from "./RepertoireHome";
 import { useHovering } from "~/mocks";
 import { trackEvent } from "~/utils/trackEvent";
-import { Animated, View } from "./View";
-import { createEffect, createSignal, Show, useContext } from "solid-js";
+import { Animated } from "./View";
+import { createEffect, createSignal, Show } from "solid-js";
 import { Pressable } from "./Pressable";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
-import { Motion } from "@motionone/solid";
 
 export const BrowserSidebar = function BrowserSidebar() {
   const [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =

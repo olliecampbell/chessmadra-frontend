@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Pressable, View } from "react-native";
+
+import { Pressable } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";

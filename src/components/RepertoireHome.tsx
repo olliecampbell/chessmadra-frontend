@@ -2,56 +2,34 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import {
-  isEmpty,
   capitalize,
-  dropRight,
-  last,
-  isNil,
-  sortBy,
   upperFirst,
 } from "lodash-es";
-import { Button } from "~/components/Button";
-import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
-import { SIDES, Side, pgnToLine, lineToPgn } from "~/utils/repertoire";
-import { plural, pluralize } from "~/utils/pluralize";
+import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
   useRepertoireState,
-  useDebugState,
   quick,
-  useUserState,
   getAppState,
   useBrowsingState,
 } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
-import { BP, useResponsive } from "~/utils/useResponsive";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { CoverageBar } from "./CoverageBar";
-import { trackModule } from "~/utils/user_state";
-import { CoverageGoal } from "./CoverageGoal";
-import { CoverageAndBar } from "./RepertoirtOverview";
 import { START_EPD } from "~/utils/chess";
 import { ReviewText } from "./ReviewText";
-import { SettingButton, SettingsButtons } from "./Settings";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   SidebarAction,
-  SidebarActions,
   SidebarFullWidthButton,
   SidebarSectionHeader,
 } from "./SidebarActions";
-import { mapSides } from "~/utils/repertoire_state";
 import { bySide } from "~/utils/repertoire";
 import {
   CoverageSettings,
   RatingSettings,
-  SidebarSetting,
   ThemeSettings,
 } from "./SidebarSettings";
 import { BOARD_THEMES_BY_ID } from "~/utils/theming";
-import { View } from "./View";
-import { Accessor, createEffect, For, Show, splitProps } from "solid-js";
+import { Accessor, For, Show } from "solid-js";
 
 export const RepertoireHome = (props: {}) => {
   const userState = getAppState().userState;

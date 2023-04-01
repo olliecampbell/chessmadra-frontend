@@ -1,7 +1,6 @@
 // @refresh reload
 import { onMount, Show, Suspense } from "solid-js";
 import {
-  A,
   Body,
   ErrorBoundary,
   FileRoutes,

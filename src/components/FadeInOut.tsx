@@ -1,15 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { CMText } from "./CMText";
-import { quick, useUserState } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
-import { getRecommendedMissThreshold } from "~/utils/user_state";
-import { useOutsideClick } from "~/components/useOutsideClick";
-import { SelectOneOf } from "./SelectOneOf";
-import { Animated } from "./View";
 import { Motion } from "@motionone/solid";
-import { Accessor, createEffect } from "solid-js";
+import { Accessor } from "solid-js";
 
 export const FadeInOut = ({
   children,

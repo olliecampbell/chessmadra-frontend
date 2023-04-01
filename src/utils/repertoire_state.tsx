@@ -47,9 +47,6 @@ import {
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getInitialReviewState, ReviewState } from "./review_state";
 const NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
-// import pkceChallenge from "pkce-challenge";
-import { logProxy } from "./state";
-import { failOnAny } from "./test_settings";
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
 import { BP, Responsive } from "./useResponsive";

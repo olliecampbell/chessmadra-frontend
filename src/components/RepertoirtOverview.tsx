@@ -2,14 +2,11 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { capitalize, isNil } from "lodash-es";
-import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
 import {
   useRepertoireState,
   quick,
   useSidebarState,
-  useBrowsingState,
   getAppState,
 } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
@@ -21,10 +18,9 @@ import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
-import { Component, createEffect, createSignal, For, Show } from "solid-js";
+import { Component, createSignal, For, Show } from "solid-js";
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
-import { View } from "./View";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);

@@ -2,7 +2,7 @@
 import { c, s } from "~/utils/styles";
 import { Side } from "~/utils/repertoire";
 import { useBrowsingState } from "~/utils/app_state";
-import { Animated, View } from "./View";
+import { View } from "./View";
 
 export const CoverageBar = (props: {
   side: Side;

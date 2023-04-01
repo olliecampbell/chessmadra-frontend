@@ -4,9 +4,7 @@ import { quick, useRepertoireState } from "~/utils/app_state";
 import { HeadSiteMeta } from "./PageContainer";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { createEffect, Show } from "solid-js";
-import { GridLoader, Helmet } from "~/mocks";
 import { c, s } from "~/utils/styles";
-import { View } from "./View";
 import { Puff } from "solid-spinner";
 
 export const RepertoirePageLayout = ({

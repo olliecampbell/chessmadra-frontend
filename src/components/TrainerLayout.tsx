@@ -1,7 +1,6 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { useIsMobile } from "~/utils/isMobile";
-import { View } from "./View";
 
 export const TrainerLayout = ({
   chessboard,

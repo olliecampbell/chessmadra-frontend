@@ -1,39 +1,17 @@
 import { Spacer } from "~/components/Space";
 import {
-  capitalize,
-  filter,
   isEmpty,
-  some,
-  sortBy,
-  take,
-  find,
-  every,
-  reverse,
-  keyBy,
-  forEach,
-  map,
   cloneDeep,
-  mapValues,
 } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
-import { CMTextInput } from "./TextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   quick,
-  useBrowsingState,
   useSidebarState,
-  useUserState,
 } from "~/utils/app_state";
-import { useRepertoireState } from "~/utils/app_state";
 import { CMText } from "./CMText";
-import { intersperse } from "~/utils/intersperse";
-import { Side, toSide } from "~/utils/repertoire";
-import { getPlanPiece, MetaPlan } from "~/utils/plans";
-import { Chess, SQUARES } from "@lubert/chess.ts";
-import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
-import { View } from "./View";
 import { Intersperse } from "./Intersperse";
 import { createEffect, Show } from "solid-js";
 

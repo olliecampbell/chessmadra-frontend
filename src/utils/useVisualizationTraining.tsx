@@ -1,6 +1,6 @@
 /* eslint-disable */
-import React, { useEffect, useState } from "react";
-import { Pressable, View, Platform } from "react-native";
+import React, { useEffect } from "react";
+import { Pressable, Platform } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";

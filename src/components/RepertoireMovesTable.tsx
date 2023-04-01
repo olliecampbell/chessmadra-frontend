@@ -3,44 +3,29 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import {
   some,
-  isNaN,
   isEmpty,
   filter,
   isNil,
   last,
-  clamp,
   includes,
   max,
   map,
   reverse,
   cloneDeep,
-  isEqual,
 } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
 import {
-  formatIncidence,
   RepertoireMiss,
   RepertoireMove,
   Side,
 } from "~/utils/repertoire";
 import { CMText } from "./CMText";
-import { MoveTag, PositionReport, SuggestedMove } from "~/utils/models";
-import { formatStockfishEval } from "~/utils/stockfish";
-import { GameResultsBar } from "./GameResultsBar";
+import { MoveTag, SuggestedMove } from "~/utils/models";
 import {
-  formatPlayPercentage,
-  getPlayRate,
-  getTotalGames,
-  isNegligiblePlayrate,
-} from "~/utils/results_distribution";
-import {
-  useAppState,
   useBrowsingState,
   useSidebarState,
   useDebugState,
   useRepertoireState,
-  useUserState,
   getAppState,
 } from "~/utils/app_state";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
@@ -48,16 +33,13 @@ import { trackEvent } from "~/utils/trackEvent";
 import { getAppropriateEcoName } from "~/utils/eco_codes";
 import {
   getMoveRatingIcon,
-  getWinPercentage,
   MoveRating,
 } from "~/utils/move_inaccuracy";
 import { quick } from "~/utils/app_state";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "~/utils/table_scoring";
-import { getCoverageProgress } from "~/utils/browsing_state";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { TableMeta, useSections } from "~/utils/useSections";
-import { InstructiveGamesView } from "./InstructiveGamesView";
 import { useHovering } from "~/mocks";
 import {
   Accessor,
@@ -68,7 +50,6 @@ import {
   onMount,
 } from "solid-js";
 import { Pressable } from "./Pressable";
-import { View } from "./View";
 import { destructure } from "@solid-primitives/destructure";
 import { Intersperse } from "./Intersperse";
 

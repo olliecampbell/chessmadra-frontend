@@ -6,11 +6,10 @@ import { useIsMobile } from "~/utils/isMobile";
 import { Puff } from "solid-spinner";
 import { CMText } from "./CMText";
 import { quick, useAppState } from "~/utils/app_state";
-import React, { useState } from "react";
 import { AuthStatus } from "~/utils/user_state";
 import { CMTextInput } from "./TextInput";
 import { isNil } from "lodash-es";
-import { createSignal, Switch } from "solid-js";
+import { createSignal } from "solid-js";
 import { Link } from "solid-start";
 
 export const AdminPageLayout = ({ children }) => {

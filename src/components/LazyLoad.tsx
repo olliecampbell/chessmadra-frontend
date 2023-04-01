@@ -1,14 +1,6 @@
-import React, { useRef, useState } from "react";
-import { Animated, Easing, Pressable, View } from "react-native";
+import React, { useRef } from "react";
 // import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { CMText } from "./CMText";
-import { quick, useUserState } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
-import { getRecommendedMissThreshold } from "~/utils/user_state";
-import { useOutsideClick } from "~/components/useOutsideClick";
-import { SelectOneOf } from "./SelectOneOf";
+import { s } from "~/utils/styles";
 import { useOnScreen } from "~/utils/useIntersectionObserver";
 
 export const LazyLoad = ({

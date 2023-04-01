@@ -8,13 +8,10 @@ import { getSquareOffset, START_EPD } from "../../utils/chess";
 import { ChessboardState } from "~/utils/chessboard_state";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
-import { first, forEach, isEmpty, isEqual, isNil, map, take } from "lodash-es";
+import { first, forEach, isEmpty, isEqual, isNil } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import {
   getAppState,
-  quick,
-  useAdminState,
-  useUserState,
 } from "~/utils/app_state";
 import { BoardTheme, BOARD_THEMES_BY_ID, PieceSetId } from "~/utils/theming";
 import {
@@ -24,23 +21,17 @@ import {
   createMemo,
   createSignal,
   For,
-  onCleanup,
   onMount,
   Show,
-  splitProps,
 } from "solid-js";
 import { Motion } from "@motionone/solid";
 import { times } from "~/utils/times";
 import {
-  Bounds,
   createElementBounds,
   NullableBounds,
 } from "@solid-primitives/bounds";
-import { createWindowSize } from "@solid-primitives/resize-observer";
 import { destructure } from "@solid-primitives/destructure";
-import { logProxy } from "~/utils/state";
-import { kill } from "process";
-import { createStore, produce, SetStoreFunction, Store } from "solid-js/store";
+import { createStore, produce, Store } from "solid-js/store";
 import {
   ChessboardInterface,
   ChessboardViewState,

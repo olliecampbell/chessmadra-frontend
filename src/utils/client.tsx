@@ -1,7 +1,7 @@
 import axios from "axios";
 import applyCaseMiddleware from "axios-case-converter";
 import { camelCase } from "camel-case";
-import { getAppState, useAppStateInternal, quick } from "./app_state";
+import { getAppState, quick } from "./app_state";
 import { clearCookies } from "./auth";
 
 const EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;

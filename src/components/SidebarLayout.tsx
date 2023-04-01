@@ -1,27 +1,25 @@
 import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isEmpty, isNil } from "lodash-es";
+import { isEmpty } from "lodash-es";
 import { CMText } from "./CMText";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { BrowserSidebar } from "./BrowsingSidebar";
 import { FadeInOut } from "./FadeInOut";
 import { SettingsButtons } from "./Settings";
-import { Animated, View } from "./View";
+import { Animated } from "./View";
 import {
   useRepertoireState,
-  useAppState,
   useBrowsingState,
   useSidebarState,
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createEffect, createSignal, For } from "solid-js";
+import { createSignal } from "solid-js";
 import { Button } from "./Button";
 import { s, c } from "~/utils/styles";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { Spacer } from "~/components/Space";
 import { Pressable } from "./Pressable";
-import { intersperse } from "~/utils/intersperse";
 import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
 

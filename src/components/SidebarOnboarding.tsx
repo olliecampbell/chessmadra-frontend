@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, last } from "lodash-es";
+import { last } from "lodash-es";
 import { CMText } from "./CMText";
 import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
 import {
@@ -15,12 +15,8 @@ import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { CMTextInput } from "./TextInput";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { useOutsideClick } from "./useOutsideClick";
-import { DragAndDropInput } from "./DragAndDropInput";
-import { PlayerTemplate } from "~/utils/models";
-import { PlayerTemplates } from "./PlayerTemplates";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Component, createEffect, createSignal } from "solid-js";
-import { Animated, View } from "./View";
 import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";

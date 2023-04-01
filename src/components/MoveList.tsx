@@ -1,7 +1,6 @@
 
 import {
   Pressable,
-  View,
 } from "react-native";
 import { s, c } from "~/utils/styles";
 import { forEach, isEmpty } from "lodash-es";

@@ -2,7 +2,6 @@ import { c, s } from "~/utils/styles";
 import { useIsMobile } from "~/utils/isMobile";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
-import { View } from "./View";
 import { createSignal } from "solid-js";
 
 export const DragAndDropInput = ({
