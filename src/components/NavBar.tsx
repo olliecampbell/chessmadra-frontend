@@ -70,7 +70,7 @@ export const navItems = [
 export const NavBar = (props: {}) => {
   // const router = useRouter();
   const isMobile = useIsMobile();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = createSignal(false);
   const [authStatus, user] = useAppState((s) => [
     s.userState.authStatus,
     s.userState.user,

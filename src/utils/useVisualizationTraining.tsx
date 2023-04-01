@@ -59,7 +59,7 @@ const SettingsOption = <T,>({
             >
               <i
                 style={s(c.fg(c.colors.textPrimary))}
-                className={active ? `fas fa-circle` : `fa-sharp fa-circle`}
+                class={active ? `fas fa-circle` : `fa-sharp fa-circle`}
               ></i>
               <Spacer width={12} />
               <CMText style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>
@@ -114,7 +114,7 @@ export const useVisualizationTraining = ({
     c.fontSize(14)
   );
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = createSignal(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (
       <>
@@ -157,7 +157,7 @@ export const useVisualizationTraining = ({
         >
           <i
             style={s(c.fg(c.colors.textPrimary))}
-            className={`fa-sharp ${state.isPlaying ? "fa-pause" : "fa-play"}`}
+            class={`fa-sharp ${state.isPlaying ? "fa-pause" : "fa-play"}`}
           ></i>
         </Button>
       </div>
@@ -333,7 +333,7 @@ export const useVisualizationTraining = ({
                   c.opacity(30),
                   c.fontSize(16)
                 )}
-                className={
+                class={
                   state.showNotation.value
                     ? `fas fa-angle-up`
                     : `fas fa-angle-down`
@@ -348,7 +348,7 @@ export const useVisualizationTraining = ({
                   c.opacity(30),
                   c.fontSize(16)
                 )}
-                className={
+                class={
                   state.showNotation.value
                     ? `fas fa-angle-up`
                     : `fas fa-angle-down`

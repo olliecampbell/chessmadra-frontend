@@ -5,7 +5,7 @@ import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 
 export const useHelpModal = ({ copy }) => {
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = createSignal(false);
   return {
     helpOpen,
     setHelpOpen,

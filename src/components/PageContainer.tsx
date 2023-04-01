@@ -60,7 +60,7 @@ export const PageContainer = ({
                   <a href={icon.link} key={icon.link}>
                     <i
                       style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
-                      className={`fas ${icon.icon}`}
+                      class={`fas ${icon.icon}`}
                     ></i>
                   </a>
                 );

@@ -22,7 +22,7 @@ export const MoveAnnotationsDashboard = ({}) => {
   const isMobile = useIsMobile();
   const user = useUserState((s) => s.user);
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
-  const [activeTab, setActiveTab] = useState("Needed");
+  const [activeTab, setActiveTab] = createSignal("Needed");
   useEffect(() => {
     quick((s) => s.adminState.fetchMoveAnnotationDashboard());
   }, []);
@@ -121,9 +121,9 @@ export const MoveAnnotationRow = ({
 }) => {
   const fen = `${ann.previousEpd} 0 1`;
   const position = new Chess(fen);
-  const [annotation, setAnnotation] = useState(ann.annotation?.text ?? "");
-  const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [annotation, setAnnotation] = createSignal(ann.annotation?.text ?? "");
+  const [saved, setSaved] = createSignal(false);
+  const [loading, setLoading] = createSignal(false);
   return (
     <div style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
       <div style={s(c.row)}>

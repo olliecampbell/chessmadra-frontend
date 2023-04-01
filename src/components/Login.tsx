@@ -7,7 +7,7 @@ import { CMText } from "./CMText";
 import { createSignal, Match, Show, Switch } from "solid-js";
 import { PieceView } from "./chessboard/Chessboard";
 import { trackEvent } from "~/utils/trackEvent";
-import { Spinner, SpinnerType } from "solid-spinner";
+import { Puff } from "solid-spinner";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { CMTextInput } from "./TextInput";
 import { onEnter } from "~/utils/onEnter";
@@ -118,10 +118,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                     >
                       <Switch fallback={"Log in"}>
                         <Match when={loading()}>
-                          <Spinner
-                            type={SpinnerType.puff}
-                            color={c.primaries[65]}
-                          />
+                          <Puff color={c.primaries[65]} />
                         </Match>
                         <Match when={signup}>{"Sign up"}</Match>
                       </Switch>

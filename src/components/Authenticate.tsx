@@ -8,7 +8,7 @@ import { useAppState, quick } from "~/utils/app_state";
 import { A, useSearchParams } from "solid-start";
 import { trackEvent } from "~/utils/trackEvent";
 import { createEffect, createSignal } from "solid-js";
-import { Spinner, SpinnerType } from "solid-spinner";
+import { Puff } from "solid-spinner";
 
 enum AuthStatus {
   Initial,
@@ -62,7 +62,7 @@ const Authenticate = (props) => {
     <PageContainer centered>
       <div style={s(c.column, c.alignCenter)}>
         {authStatus() === AuthStatus.Failed ? null : (
-          <Spinner type={SpinnerType.puff} color={c.primaries[65]} />
+          <Puff color={c.primaries[65]} />
         )}
         <Spacer height={12} />
         <CMText

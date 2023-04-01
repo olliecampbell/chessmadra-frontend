@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 export function useOnScreen(ref, rootMargin = "0px") {
   // State and setter for storing whether element is visible
-  const [isIntersecting, setIntersecting] = useState(false);
+  const [isIntersecting, setIntersecting] = createSignal(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

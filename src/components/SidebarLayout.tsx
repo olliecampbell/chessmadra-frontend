@@ -253,7 +253,7 @@ export const ReviewFromHereButton = () => {
       }}
     >
       <CMText style={s(c.fg(c.grays[80]), c.fontSize(18))}>
-        <i className={"fa-duotone fa-cards-blank"} />
+        <i class={"fa-duotone fa-cards-blank"} />
       </CMText>
       <Spacer width={8} />
       <CMText

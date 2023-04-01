@@ -19,7 +19,7 @@ enum Stage {
 
 export const OauthCallback = ({ type }: { type: "lichess" }) => {
   const [searchParams] = useSearchParams();
-  const [stage, setStage] = useState(Stage.Initial);
+  const [stage, setStage] = createSignal(Stage.Initial);
   const oauthCode = searchParams.get("code");
   const lichessOauthData = useRef(
     JSON.parse(

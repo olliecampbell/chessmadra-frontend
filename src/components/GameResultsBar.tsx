@@ -159,7 +159,7 @@ export const MovementIndicator = ({
   }
   return (
     <div style={s()}>
-      <i className={icon} style={s(c.fg(color), c.fontSize(12))} />
+      <i class={icon} style={s(c.fg(color), c.fontSize(12))} />
     </div>
   );
 };

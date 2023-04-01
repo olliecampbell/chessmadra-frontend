@@ -15,7 +15,7 @@ const AuthHandler = ({ children }) => {
   //   s.userState.quick,
   // ]);
   const userState = getAppState().userState;
-  // let subscribeAfterSignup = AppStore.useState((s) => s.subscribeAfterSignup);
+  // let subscribeAfterSignup = AppStore.createSignal((s) => s.subscribeAfterSignup);
   createEffect(() => {
     if (userState.token) {
       Cookies.set(JWT_COOKIE_KEY, userState.token, { expires: 5000 });

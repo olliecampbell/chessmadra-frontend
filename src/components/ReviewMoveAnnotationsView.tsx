@@ -96,7 +96,7 @@ const MoveAnnotationsReview = ({
     s.acceptMoveAnnotation,
     s.rejectMoveAnnotations,
   ]);
-  const [reviewed, setReviewed] = useState(false);
+  const [reviewed, setReviewed] = createSignal(false);
   const ref = useRef(null);
   const onScreen = useOnScreen(ref, "-500px");
   return (
