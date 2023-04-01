@@ -197,7 +197,6 @@ export const createChessState = (
         s._animatePosition = null;
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
-        console.log("setting new position");
         s.position = createChessProxy(new Chess());
         s.updateMoveLogPgn();
         s.getDelegate()?.onPositionUpdated?.();
@@ -229,6 +228,7 @@ export const createChessState = (
     },
     makeMove: (m: Move | string) => {
       set((s) => {
+        console.log("state is making move?");
         const pos = s.position;
         const moveObject = pos.move(m);
         if (moveObject) {

@@ -168,7 +168,7 @@ export const RepertoireMovesTable = ({
         }) as TableResponse[];
         const numTruncated = responses.length - trimmedResponses.length;
         const truncated = numTruncated > 0;
-        console.log("returning sections", sections);
+        // console.log("returning sections", sections);
         return {
           trimmedResponses,
           sections,

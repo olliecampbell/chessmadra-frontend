@@ -37,7 +37,7 @@ export const Responses = function Responses() {
     ([s, rs]) => [rs.positionReports[activeSide()]?.[currentEpd()]]
   );
   createEffect(() => {
-    console.log("pos report", positionReport());
+    // console.log("pos report", positionReport());
   });
   const [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
     useSidebarState(([s]) => [
