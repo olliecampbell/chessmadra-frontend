@@ -29,6 +29,7 @@ export interface UserState {
     pieceSet?: PieceSetId;
   }) => void;
   isUpdatingEloRange: boolean;
+  pastLandingPage?: boolean
 }
 
 export enum AuthStatus {

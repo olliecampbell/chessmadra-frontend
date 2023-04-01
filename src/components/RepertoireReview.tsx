@@ -8,6 +8,9 @@ import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
+import { Show } from "solid-js";
+import { Intersperse } from "./Intersperse";
+import { RepertoireMove } from "~/utils/repertoire";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -36,13 +39,13 @@ export const RepertoireReview = (props: {}) => {
           }
         });
       },
-      style: showNext ? "focus" : "primary",
-      text: showNext ? "Next" : "I don't know, show me the answer",
+      style: showNext() ? "focus" : "primary",
+      text: showNext() ? "Next" : "I don't know, show me the answer",
     },
     {
       onPress: () => {
         quick((s) => {
-          trackEvent(`${mode}.inspect_line`);
+          trackEvent(`${mode()}.inspect_line`);
           const qm = s.repertoireState.reviewState.currentMove;
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(qm.moves[0].side, "build", {
@@ -57,14 +60,16 @@ export const RepertoireReview = (props: {}) => {
   return (
     <SidebarTemplate
       header={
-        currentMove?.moves.length === 1
+        currentMove()?.moves.length === 1
           ? "Play the correct move on the board"
-          : `You have ${currentMove?.moves.length} responses to this position in your repertoire. Play all your responses on the board`
+          : `You have ${
+              currentMove()?.moves.length
+            } responses to this position in your repertoire. Play all your responses on the board`
       }
       actions={actions}
       bodyPadding={true}
     >
-      {currentMove?.moves.length > 1 && (
+      <Show when={currentMove()?.moves?.length > 1}>
         <>
           <div
             style={s(
@@ -77,12 +82,23 @@ export const RepertoireReview = (props: {}) => {
               c.border(`1px solid ${c.grays[20]}`)
             )}
           >
-            {intersperse(
-              sortBy(currentMove.moves, (m) =>
-                isNil(completedReviewPositionMoves[m.sanPlus])
-              ).map((x, i) => {
+            <Intersperse
+              each={() =>
+                sortBy(currentMove()?.moves, (m) =>
+                  isNil(completedReviewPositionMoves()?.[m.sanPlus])
+                )
+              }
+              separator={() => {
+                return (
+                  <div
+                    style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
+                  ></div>
+                );
+              }}
+            >
+              {(x: RepertoireMove) => {
                 const hasCompleted = !isNil(
-                  completedReviewPositionMoves[x.sanPlus]
+                  completedReviewPositionMoves()?.[x.sanPlus]
                 );
                 return (
                   <div
@@ -92,19 +108,12 @@ export const RepertoireReview = (props: {}) => {
                     )}
                   ></div>
                 );
-              }),
-              (i) => {
-                return (
-                  <div
-                    style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
-                  ></div>
-                );
-              }
-            )}
+              }}
+            </Intersperse>
           </div>
           <Spacer height={12} />
         </>
-      )}
+      </Show>
     </SidebarTemplate>
   );
 };

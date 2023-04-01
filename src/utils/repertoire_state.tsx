@@ -50,9 +50,10 @@ const NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
 import { BP, Responsive } from "./useResponsive";
+import { ChessboardInterface } from "./chessboard_interface";
 
 const TEST_LINE = isDevelopment ? [] : [];
-const TEST_MODE: BrowsingMode | null = isDevelopment ? "build" : null;
+const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
 export interface LichessOauthData {
@@ -177,6 +178,7 @@ export interface RepertoireState {
   fetchDebugGames: () => void;
   // fetchDebugPawnStructureForPosition: () => void;
   selectDebugGame: (i: number) => void;
+  setChessboardView: (chessboard: ChessboardInterface) => void;
 }
 
 export interface NavBreadcrumb {
@@ -1108,6 +1110,11 @@ export const getInitialRepertoireState = (
           return isEmpty(s.repertoire[side].positionResponses);
         }
         return isEmpty(getAllRepertoireMoves(s.repertoire));
+      }),
+    setChessboardView: (chessboardView) =>
+      set(([s]) => {
+        s.browsingState.chessboardState.chessboardView = chessboardView;
+        s.reviewState.chessboardState.chessboardView = chessboardView;
       }),
     backOne: () =>
       set(([s]) => {

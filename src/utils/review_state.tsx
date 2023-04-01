@@ -44,7 +44,7 @@ export interface ReviewPositionResults {
 export interface ReviewState {
   buildQueue: (options: ReviewOptions) => QuizMove[];
   stopReviewing: () => void;
-  chessboardState?: ChessboardState;
+  chessboardState: ChessboardState;
   // getQueueLength: (side?: Side) => number;
   showNext?: boolean;
   failedReviewPositionMoves?: Record<string, RepertoireMove>;
@@ -190,11 +190,7 @@ export const getInitialReviewState = (
         if (lastOpponentMove) {
           window.setTimeout(() => {
             set(([s]) => {
-              s.chessboardState.animatePieceMove(
-                lastOpponentMove,
-                PlaybackSpeed.Normal,
-                (completed) => {}
-              );
+              s.chessboardState.makeMove(lastOpponentMove);
             });
           }, 300);
         }
@@ -335,12 +331,13 @@ export const getInitialReviewState = (
 
         shouldMakeMove: (move: Move) =>
           set(([s]) => {
+            console.log("should make move?");
             const matchingResponse = find(
               s.currentMove.moves,
               (m) => move.san == m.sanPlus
             );
             if (matchingResponse) {
-              s.chessboardState.flashRing(true);
+              s.chessboardState.chessboardView?.flashRing(true);
 
               s.completedReviewPositionMoves[matchingResponse.sanPlus] =
                 matchingResponse;
@@ -386,7 +383,7 @@ export const getInitialReviewState = (
               );
               return true;
             } else {
-              s.chessboardState.flashRing(false);
+              s.chessboardState.chessboardView?.flashRing(false);
               // TODO: reduce repetition
               s.getRemainingReviewPositionMoves().forEach((move) => {
                 s.failedReviewPositionMoves[move.sanPlus] = move;

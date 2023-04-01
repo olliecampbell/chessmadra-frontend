@@ -50,7 +50,17 @@
     "solid-spinner": "^0.1.9",
     "solid-start": "^0.2.24",
     "typescript-language-server": "^3.3.1",
-    "undici": "^5.8.0"
+    "undici": "^5.8.0",
+    "react-helmet": "latest",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "@quarkly/widgets": "0.2.73",
+    "@quarkly/components": "0.2.73",
+    "@quarkly/atomize": "1.0.20",
+    "styled-components": "^5.0.1",
+    "react-router-dom": "^5.1.2",
+    "react-router-hash-link": "^1.2.2",
+    "react-icons": "^3.9.0"
   },
   "engines": {
     "node": ">=16.8"

@@ -11,7 +11,8 @@
     "types": ["solid-start/env"],
     "baseUrl": "./",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "pages/*": ["./src/landing_page/pages/*"]
     }
   }
 }

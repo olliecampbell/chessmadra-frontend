@@ -10,9 +10,7 @@ import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
 import { first, forEach, isEmpty, isEqual, isNil } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
-import {
-  getAppState,
-} from "~/utils/app_state";
+import { getAppState, quick } from "~/utils/app_state";
 import { BoardTheme, BOARD_THEMES_BY_ID, PieceSetId } from "~/utils/theming";
 import {
   Accessor,
@@ -26,10 +24,7 @@ import {
 } from "solid-js";
 import { Motion } from "@motionone/solid";
 import { times } from "~/utils/times";
-import {
-  createElementBounds,
-  NullableBounds,
-} from "@solid-primitives/bounds";
+import { createElementBounds, NullableBounds } from "@solid-primitives/bounds";
 import { destructure } from "@solid-primitives/destructure";
 import { createStore, produce, Store } from "solid-js/store";
 import {
@@ -131,7 +126,7 @@ export function ChessboardView(props: {
   const pos = () =>
     chessboardStore._animatePosition ?? chessboardStore.position;
   createEffect(() => {
-    console.log("updated position", pos);
+    console.log("updated position", pos(), chessboardStore._animatePosition);
   });
   hasAnimateStarted = false;
 
@@ -161,8 +156,8 @@ export function ChessboardView(props: {
   //   clearInterval(interval);
   // });
   onMount(() => {
-    props.state.quick((s) => {
-      s.chessboardView = chessboardInterface;
+    quick((s) => {
+      s.repertoireState.chessboardView = chessboardInterface;
     });
   });
   const drag = () => chessboardStore.drag;
@@ -521,19 +516,24 @@ export function ChessboardView(props: {
               )}
             ></div>
           </Motion>
-          <Motion // Special animatable View
+          <div
+            id={"ring-indicator"}
+            ref={(x) => {
+              setChessboardStore((store) => {
+                store.ringRef = x;
+              });
+            }}
             style={s(
               c.absolute,
               c.fullWidth,
               c.fullHeight,
               c.zIndex(3),
-              // c.bg("black"),
-              // c.shadow(0, 0, 6, 6, state.ringColor),
-              c.shadow(0, 0, 0, 4, props.state.ringColor),
+              c.shadow(0, 0, 6, 6, chessboardStore.ringColor),
+              c.shadow(0, 0, 0, 4, chessboardStore.ringColor),
               c.opacity(props.state.ringIndicatorAnim),
               c.noPointerEvents
             )}
-          ></Motion>
+          ></div>
           <For each={Object.keys(SQUARES)}>
             {(square) => {
               let debug = "e2";
@@ -789,6 +789,8 @@ const createChessboardInterface = (
       position: createChessProxy(new Chess()),
       currentHighlightedSquares: new Set(),
       squareHighlightRefs: {},
+      ringRef: null,
+      ringColors: {},
       moveIndicatorRef: null,
       availableMoves: [],
       drag: {
@@ -1053,7 +1055,13 @@ const createChessboardInterface = (
           s.availableMoves = [];
           s.activeFromSquare = undefined;
           s.draggedOverSquare = undefined;
-          state().makeMove(availableMove);
+          let makeMove = () => {
+            state().makeMove(availableMove);
+          };
+          if (state().getDelegate()?.shouldMakeMove?.(availableMove)) {
+            state().getDelegate().madeManualMove?.();
+            makeMove();
+          }
         }
       });
     },
@@ -1098,6 +1106,12 @@ const createChessboardInterface = (
       set((s) => {
         s.position.undo();
         console.log("position", s.position.ascii());
+      });
+    },
+    setPosition: (chess: Chess) => {
+      set((s) => {
+        console.log("set position!");
+        s.position = createChessProxy(chess.clone());
       });
     },
     resetPosition: () => {
@@ -1191,11 +1205,20 @@ const createChessboardInterface = (
     },
     flashRing: (success: boolean) => {
       set((state) => {
-        console.log("todo flash ring");
+        const ringColor = success
+          ? c.colors.successColor
+          : c.colors.failureLight;
+        state.ringColor = ringColor;
+        state.ringRef.style.backgroundColor = ringColor;
+        anime({
+          targets: state.ringRef,
+          easing: "easeInOutSine",
+          duration: 200,
+          direction: "alternate",
+          opacity: 1.0,
+          autoplay: true,
+        });
         // const animDuration = 200;
-        // state.ringColor = success
-        //   ? c.colors.successColor
-        //   : c.colors.failureLight;
         // Animated.sequence([
         //   Animated.timing(state.ringIndicatorAnim, {
         //     toValue: 1,
