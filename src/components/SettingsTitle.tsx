@@ -1,5 +1,4 @@
 import { s, c } from "~/utils/styles";
-import { View } from "react-native";
 import { CMText } from "./CMText";
 
 export const SettingsTitle = ({ text }) => {

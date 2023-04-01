@@ -1,13 +1,6 @@
 // write a functional component called InstructiveGamesView
 // import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { useBrowsingState, useSidebarState } from "~/utils/app_state";
-import { intersperse } from "~/utils/intersperse";
-import { CMText } from "./CMText";
-import { SidebarSectionHeader } from "./SidebarActions";
-import { Pressable } from "./Pressable";
-import { View } from "./View";
+
 
 export const InstructiveGamesView = ({}: {}) => {
   return null;

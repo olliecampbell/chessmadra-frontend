@@ -14,17 +14,14 @@ import {
   sortBy,
   take,
   find,
-  every,
   reverse,
   keyBy,
   forEach,
-  map,
   mapValues,
   cloneDeep,
   uniqBy,
   isNil,
 } from "lodash-es";
-import { View } from "~/components/View";
 import { useHovering } from "~/mocks";
 import { JSXElement } from "solid-js";
 

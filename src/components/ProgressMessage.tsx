@@ -1,7 +1,6 @@
 
 import {
   Pressable,
-  View,
 } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";

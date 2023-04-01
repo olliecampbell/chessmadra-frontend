@@ -1,12 +1,10 @@
-import { View } from "react-native";
+
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isNil } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
-import { useRepertoireState, useDebugState } from "~/utils/app_state";
-import { RepertoireHome } from "./RepertoireHome";
+import { useDebugState } from "~/utils/app_state";
 
 export const RepertoireBuilder = () => {
   const isMobile = useIsMobile();

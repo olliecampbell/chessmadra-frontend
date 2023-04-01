@@ -1,6 +1,4 @@
-import { Title } from "solid-start";
-import AuthHandler from "~/components/AuthHandler";
-import Counter from "~/components/Counter";
+
 import { SidebarLayout } from "~/components/SidebarLayout";
 
 // export default function Home() {

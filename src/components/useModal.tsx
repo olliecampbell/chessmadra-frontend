@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { Modal } from "./Modal";
 
 export const useModal = ({ content, isOpen }) => {

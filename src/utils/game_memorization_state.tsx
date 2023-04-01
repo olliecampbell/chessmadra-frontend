@@ -13,7 +13,6 @@ import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { logProxy } from "./state";
 import { MoveIdentifier } from "./repertoire";
 
 export interface GameMemorizationState {

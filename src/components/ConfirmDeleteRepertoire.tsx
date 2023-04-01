@@ -1,12 +1,8 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { isNil } from "lodash-es";
 import { CMText } from "./CMText";
-import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
+import { quick, useSidebarState } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
-import { SidebarFullWidthButton } from "./SidebarActions";
-import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { trackEvent } from "~/utils/trackEvent";
 

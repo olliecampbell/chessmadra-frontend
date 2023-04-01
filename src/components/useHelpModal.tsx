@@ -1,6 +1,5 @@
-import { useState } from "react";
+
 import { Modal } from "./Modal";
-import { View } from "react-native";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 

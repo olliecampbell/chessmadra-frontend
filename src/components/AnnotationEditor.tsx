@@ -3,7 +3,6 @@ import { c, s } from "~/utils/styles";
 import { throttle } from "lodash-es";
 import { CMText } from "./CMText";
 import { Accessor, createSignal } from "solid-js";
-import { View } from "./View";
 
 export const MAX_ANNOTATION_LENGTH = 300;
 

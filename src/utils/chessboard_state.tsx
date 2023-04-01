@@ -1,21 +1,13 @@
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { Chess, Move, SQUARES } from "@lubert/chess.ts";
-import { first, isEmpty, isEqual, isNil, last, mapValues } from "lodash-es";
-import { getAnimationDurations } from "../components/chessboard/Chessboard";
+import { last, mapValues } from "lodash-es";
 import { Square } from "@lubert/chess.ts/dist/types";
-import { c } from "~/utils/styles";
-import { genEpd, getSquareOffset, START_EPD } from "./chess";
+import { genEpd, START_EPD } from "./chess";
 import { lineToPgn, Side } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick, QuickUpdate } from "./quick";
 import { pgnToLine } from "~/utils/repertoire";
-import { quick } from "./app_state";
-import { logProxy } from "./state";
-import { Plan } from "~/utils/models";
 import { MetaPlan } from "./plans";
-import { adjustOpacity } from "./theming";
-import { createSignal } from "solid-js";
-import anime from "animejs";
 import { ChessboardInterface } from "./chessboard_interface";
 import { createChessProxy } from "./chess_proxy";
 

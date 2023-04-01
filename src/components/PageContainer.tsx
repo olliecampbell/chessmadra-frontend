@@ -3,8 +3,6 @@ import { Spacer } from "~/components/Space";
 import { NavBar } from "~/components/NavBar";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
-import { View } from "./View";
-import { Helmet } from "~/mocks";
 import { Meta, Title } from "solid-start";
 import { Show } from "solid-js";
 

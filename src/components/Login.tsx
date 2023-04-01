@@ -1,5 +1,5 @@
 import client from "~/utils/client";
-import { HeadSiteMeta, PageContainer } from "./PageContainer";
+import { HeadSiteMeta } from "./PageContainer";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { Button } from "./Button";
@@ -10,7 +10,6 @@ import { trackEvent } from "~/utils/trackEvent";
 import { Puff } from "solid-spinner";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { CMTextInput } from "./TextInput";
-import { onEnter } from "~/utils/onEnter";
 
 export default function Login({ signup }: { signup?: boolean }) {
   const [email, setEmail] = createSignal("");

@@ -1,15 +1,11 @@
 import { Spacer } from "~/components/Space";
 import { isEmpty } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
-import { CMTextInput } from "./TextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   quick,
-  useBrowsingState,
   useSidebarState,
-  useUserState,
 } from "~/utils/app_state";
-import { useRepertoireState } from "~/utils/app_state";
 import { CMText } from "./CMText";
 import { s, c } from "~/utils/styles";
 import { PlayFromHere } from "./TargetCoverageReachedView";

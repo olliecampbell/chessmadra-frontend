@@ -7,7 +7,6 @@ import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { View } from "./View";
 
 export const DeleteLineView = function DeleteLineView() {
   const responsive = useResponsive();

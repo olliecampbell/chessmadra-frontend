@@ -1,22 +1,8 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isNil, sortBy } from "lodash-es";
-import { TrainerLayout } from "~/components/TrainerLayout";
-import { Button } from "~/components/Button";
-import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
-import { useRepertoireState, quick } from "~/utils/app_state";
-import { trackEvent } from "~/utils/trackEvent";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { pgnToLine } from "~/utils/repertoire";
-import { SidebarTemplate } from "./SidebarTemplate";
-import { SidebarAction } from "./SidebarActions";
 import { pluralize } from "~/utils/pluralize";
-import { View } from "./View";
 
 export const ReviewText = ({
   date: dateString,

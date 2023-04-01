@@ -4,7 +4,6 @@ import { c, s } from "~/utils/styles";
 // import { LoaderSizeMarginProps } from "react-spinners/interfaces";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
-import { View } from "./View";
 
 export const Button = ({
   onPress,

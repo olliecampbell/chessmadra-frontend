@@ -2,18 +2,14 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import {
-  forEachRight,
   isEmpty,
   findLastIndex,
-  findLast,
   filter,
   map,
   last,
   isNil,
-  dropRight,
   cloneDeep,
 } from "lodash-es";
-import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
 import {
   quick,
@@ -22,13 +18,12 @@ import {
   useSidebarState,
 } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
-import { lineToPgn, pgnToLine, RepertoireMiss } from "~/utils/repertoire";
+import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
 import { trackEvent } from "~/utils/trackEvent";
 import { Component, JSXElement } from "solid-js";
 import { useHovering } from "~/mocks";
-import { View } from "./View";
 import { Pressable } from "./Pressable";
 import { Intersperse } from "./Intersperse";
 

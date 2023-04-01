@@ -1,6 +1,5 @@
 
 import { s, c } from "~/utils/styles";
-import { View } from "react-native";
 import * as React from "react";
 import { Range, getTrackBackground } from "react-range";
 import { isNil } from "lodash-es";

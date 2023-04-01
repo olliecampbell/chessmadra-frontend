@@ -6,7 +6,7 @@ import {
   RepertoireAudit,
 } from "~/utils/admin_state";
 import React, { useEffect } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable } from "react-native";
 import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { useResponsive } from "~/utils/useResponsive";

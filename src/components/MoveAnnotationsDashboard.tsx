@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { Pressable } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
@@ -8,7 +8,7 @@ import { Button } from "~/components/Button";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
 import { quick, useAdminState, useUserState } from "~/utils/app_state";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
@@ -16,7 +16,6 @@ import { AnnotationEditor } from "./AnnotationEditor";
 import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
 import { Link } from "react-router-dom";
-import { formatIncidence } from "~/utils/repertoire";
 
 export const MoveAnnotationsDashboard = ({}) => {
   const isMobile = useIsMobile();

@@ -1,29 +1,24 @@
-import { Modal } from "./Modal";
+
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { SelectOneOf } from "./SelectOneOf";
 import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { useResponsive } from "~/utils/useResponsive";
 import { cloneDeep, keys, upperFirst } from "lodash-es";
 import {
   SidebarAction,
-  SidebarActions,
   SidebarFullWidthButton,
-  SidebarSectionHeader,
 } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   BoardThemeId,
-  BOARD_THEMES,
   BOARD_THEMES_BY_ID,
   PieceSetId,
   PIECE_SETS,
 } from "~/utils/theming";
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
-import { View } from "./View";
 import { Component, For, Show } from "solid-js";
 
 export const SidebarSetting = () => {

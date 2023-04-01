@@ -4,7 +4,7 @@ import { PageContainer } from "~/components/PageContainer";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "~/components/CMText";
-import { useAppState, quick } from "~/utils/app_state";
+import { quick } from "~/utils/app_state";
 import { A, useSearchParams } from "solid-start";
 import { trackEvent } from "~/utils/trackEvent";
 import { createEffect, createSignal } from "solid-js";

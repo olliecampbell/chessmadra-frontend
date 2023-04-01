@@ -7,7 +7,6 @@ import {
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Side } from "~/utils/repertoire";
-import { View } from "./View";
 
 export const GameResultsBar = ({
   gameResults,

@@ -5,7 +5,7 @@ import { CMText } from "./CMText";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { Accessor, Component, For, Show } from "solid-js";
+import { Component, For, Show } from "solid-js";
 
 export const SidebarTemplate: Component<{
   header: string;

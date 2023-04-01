@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
+import React, { useEffect, useRef } from "react";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";

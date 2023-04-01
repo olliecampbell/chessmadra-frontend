@@ -9,7 +9,6 @@ import {
   BlindfoldTrainingState,
   getInitialBlindfoldState,
 } from "./blindfold_state";
-import { createQuick } from "./quick";
 import {
   ColorTrainingState,
   getInitialColorState,
@@ -22,7 +21,7 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import { every, isNil, isObject, keysIn, take, zip } from "lodash-es";
+import { every, isObject, keysIn, take, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { DebugState, getInitialDebugState } from "./debug_state";
 import { getInitialNavigationState, NavigationState } from "./navigation_state";
@@ -37,7 +36,7 @@ import {
   SidebarState,
   SidebarStateContext,
 } from "./browsing_state";
-import { Accessor, createEffect, useContext } from "solid-js";
+import { Accessor, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { destructure } from "@solid-primitives/destructure";
 

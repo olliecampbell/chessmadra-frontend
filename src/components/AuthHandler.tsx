@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { User } from "~/utils/models";
 import { uuid4 } from "@sentry/utils";
-import { useUserState, quick, getAppState } from "~/utils/app_state";
+import { getAppState } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import { createEffect, onMount } from "solid-js";
 

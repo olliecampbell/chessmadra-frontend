@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 export function useOnScreen(ref, rootMargin = "0px") {
   // State and setter for storing whether element is visible

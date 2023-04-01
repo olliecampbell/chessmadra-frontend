@@ -1,8 +1,6 @@
 import { Move } from "@lubert/chess.ts/dist/types";
 import {
   EcoCode,
-  LineReport,
-  ModelGame,
   MoveTag,
   PositionReport,
   SuggestedMove,
@@ -21,9 +19,6 @@ import {
   some,
   findLast,
   every,
-  uniq,
-  sortBy,
-  take,
   forEach,
   uniqBy,
 } from "lodash-es";
@@ -34,7 +29,6 @@ import {
   SIDES,
   BySide,
   otherSide,
-  lineToPgn,
 } from "./repertoire";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState, quick } from "./app_state";
@@ -42,7 +36,6 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";
 import { START_EPD } from "./chess";
 import {
-  getPlayRate,
   getTotalGames,
   getWinRate,
   getWinRateRange,
@@ -59,7 +52,6 @@ import {
 import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "~/utils/trackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
-import { logProxy } from "./state";
 import { parsePlans } from "./plans";
 // solid TODO
 // import * as Sentry from "sentry-expo";

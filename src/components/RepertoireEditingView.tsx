@@ -6,18 +6,15 @@ import { Side } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import { StockfishReport } from "~/utils/models";
 import {
-  useDebugState,
   useUserState,
   useBrowsingState,
   useSidebarState,
 } from "~/utils/app_state";
 import { RepertoireMovesTable } from "./RepertoireMovesTable";
-import { BP, useResponsive } from "~/utils/useResponsive";
 import { shouldUsePeerRates } from "~/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
 import { createEffect, createMemo, Show } from "solid-js";
-import { View } from "./View";
 import { destructure } from "@solid-primitives/destructure";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
