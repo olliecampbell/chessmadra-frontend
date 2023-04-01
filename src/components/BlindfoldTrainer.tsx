@@ -43,7 +43,7 @@ export const BlindfoldTrainer = () => {
   useEffect(() => {
     trackModule("blindfold");
   }, []);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = createSignal(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (
       <>

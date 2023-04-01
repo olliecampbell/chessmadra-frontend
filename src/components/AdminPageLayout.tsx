@@ -1,47 +1,46 @@
-import { View } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { Button } from "~/components/Button";
 import { useIsMobile } from "~/utils/isMobile";
-import { BeatLoader } from "react-spinners";
+import { Puff } from "solid-spinner";
 import { CMText } from "./CMText";
-import { useAppState } from "~/utils/app_state";
+import { quick, useAppState } from "~/utils/app_state";
 import React, { useState } from "react";
 import { AuthStatus } from "~/utils/user_state";
 import { CMTextInput } from "./TextInput";
 import { isNil } from "lodash-es";
-import { Link } from "react-router-dom";
+import { createSignal, Switch } from "solid-js";
+import { Link } from "solid-start";
 
 export const AdminPageLayout = ({ children }) => {
   const isMobile = useIsMobile();
-  const [password, setPassword] = useState("");
-  const [authStatus, user, becomeAdmin] = useAppState((s) => [
+  const [password, setPassword] = createSignal("");
+  const [authStatus, user] = useAppState((s) => [
     s.userState.authStatus,
     s.userState.user,
-    s.adminState.becomeAdmin,
   ]);
   let inner = children;
   if (
-    authStatus === AuthStatus.Initial ||
-    authStatus === AuthStatus.Authenticating
+    authStatus() === AuthStatus.Initial ||
+    authStatus() === AuthStatus.Authenticating
   ) {
-    inner = <BeatLoader color={c.grays[100]} size={20} />;
+    inner = <Puff color={c.grays[100]} size={20} />;
   }
   console.log("user email", user);
-  if (user && isNil(user?.email)) {
+  if (user && isNil(user()?.email)) {
     inner = (
       <div style={s()}>
         <CMText style={s()}>
           Looks like you're not logged in, go
           <CMText style={s(c.fg(c.blues[55]), c.weightSemiBold, c.px(4))}>
-            <Link to="/login">log in</Link>
+            <Link href="/login">log in</Link>
           </CMText>
           first and then come back here:{" "}
         </CMText>
       </div>
     );
-  } else if (user && !user?.isAdmin) {
+  } else if (user && !user()?.isAdmin) {
     inner = (
       <div style={s(c.oldContainerStyles(isMobile))}>
         <CMText style={s()}>
@@ -49,7 +48,7 @@ export const AdminPageLayout = ({ children }) => {
         </CMText>
         <Spacer height={12} />
         <CMTextInput
-          value={password}
+          value={password()}
           setValue={setPassword}
           style={s()}
           placeholder="Password"
@@ -58,7 +57,9 @@ export const AdminPageLayout = ({ children }) => {
         <Button
           style={s(c.buttons.primary)}
           onPress={() => {
-            becomeAdmin(password);
+            quick((s) => {
+              s.adminState.becomeAdmin(password());
+            });
           }}
         >
           Become admin

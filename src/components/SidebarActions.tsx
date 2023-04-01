@@ -490,7 +490,7 @@ const TogglePlansButton = () => {
       </div>
       <Spacer width={12} grow />
       <i
-        className={`fa-solid fa-toggle-${showPlans ? "on" : "off"}`}
+        class={`fa-solid fa-toggle-${showPlans ? "on" : "off"}`}
         style={s(c.fg(c.grays[90]), c.fontSize(24))}
       />
     </Pressable>

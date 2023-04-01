@@ -637,7 +637,7 @@ const TrimRepertoireOnboarding = () => {
       can be a good option if you have a large repertoire from other software.
     </CMText>
   );
-  const [loading, setLoading] = useState(null as string);
+  const [loading, setLoading] = createSignal(null as string);
 
   const trimToThreshold = (threshold: number) => {
     trackEvent("onboarding.trim_repertoire", { threshold });

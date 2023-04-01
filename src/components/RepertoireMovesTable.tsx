@@ -873,7 +873,7 @@ const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
         c.alignCenter
       )}
     >
-      <i className={icon} style={s(style)} />
+      <i class={icon} style={s(style)} />
       <Spacer width={8} />
       {text}
     </CMText>

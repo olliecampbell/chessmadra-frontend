@@ -79,7 +79,7 @@ export const RepertoireTemplateWizard = ({
 };
 
 export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
-  const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
+  const [firstMove, setFirstMove] = createSignal("e4" as "e4" | "d4");
   return (
     <div style={s()}>
       <div style={s(c.row, c.fullWidth, c.justifyCenter)}>
@@ -132,7 +132,7 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
   );
 };
 export const BlackTemplates = ({ state }: { state: RepertoireState }) => {
-  const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
+  const [firstMove, setFirstMove] = createSignal("e4" as "e4" | "d4");
   return (
     <div style={s()}>
       <Spacer height={50} />
@@ -227,7 +227,7 @@ export const TemplateCell = ({
         )}
       >
         <i
-          className={
+          class={
             selected
               ? singular
                 ? "fas fa-circle-check"

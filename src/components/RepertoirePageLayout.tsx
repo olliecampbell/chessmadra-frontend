@@ -7,7 +7,7 @@ import { createEffect, Show } from "solid-js";
 import { GridLoader, Helmet } from "~/mocks";
 import { c, s } from "~/utils/styles";
 import { View } from "./View";
-import { Spinner, SpinnerType } from "solid-spinner";
+import { Puff } from "solid-spinner";
 
 export const RepertoirePageLayout = ({
   children,
@@ -63,7 +63,7 @@ export const RepertoirePageLayout = ({
       >
         <Show when={repertoireLoading()}>
           <div style={s(c.grow, c.center)}>
-            <Spinner type={SpinnerType.puff} color={c.primaries[65]} />
+            <Puff color={c.primaries[65]} />
           </div>
         </Show>
         <Show when={!repertoireLoading()}>

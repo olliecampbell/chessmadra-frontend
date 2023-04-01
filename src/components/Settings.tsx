@@ -95,7 +95,7 @@ export const SettingButton = ({ title, icon, onPress }) => {
       )}
       {...hoveringProps}
     >
-      <i style={s(c.fg(color), c.fontSize(12))} className={icon}></i>
+      <i style={s(c.fg(color), c.fontSize(12))} class={icon}></i>
       <Spacer width={responsive.switch(4, [BP.md, 8])} />
       <CMText style={s(c.fg(color), c.weightSemiBold)}>{title}</CMText>
     </Pressable>

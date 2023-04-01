@@ -210,7 +210,7 @@ export const BlunderRecognition = () => {
                 )}
               >
                 <i
-                  className={`fa ${
+                  class={`fa ${
                     state.wasCorrect ? "fa-check" : "fa-warning"
                   }`}
                 />

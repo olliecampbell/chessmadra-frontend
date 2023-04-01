@@ -140,7 +140,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
             }}
           >
             <CMText style={s(c.buttons.darkFloater.textStyles)}>
-              <i className={"fa-duotone fa-cards-blank"} />
+              <i class={"fa-duotone fa-cards-blank"} />
             </CMText>
           </Button>
         </>
