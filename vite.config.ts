@@ -14,6 +14,9 @@ const unoConfig = {
 
 // const plugins = [];
 export default defineConfig({
+  define: {
+    "process.env": JSON.stringify("production"),
+  },
   plugins: [
     devtools({
       /* additional options */
