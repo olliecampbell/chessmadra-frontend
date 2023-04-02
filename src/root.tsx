@@ -9,7 +9,9 @@ import {
   Meta,
   Routes,
   Scripts,
+  Style,
   Title,
+  useNavigate,
 } from "solid-start";
 import "./root.css";
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
@@ -20,6 +22,7 @@ import "~/global.css";
 import AuthHandler from "./components/AuthHandler";
 import { isServer } from "solid-js/web";
 import "virtual:uno.css";
+import { quick } from "~/utils/app_state";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -46,7 +49,6 @@ export default function Root() {
       dsn:
         SENTRY_DSN ||
         "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185",
-      enableInExpoDevelopment: false,
       integrations: [new BrowserTracing()],
 
       debug: !(!process.env.NODE_ENV || process.env.NODE_ENV === "development"),
@@ -103,6 +105,14 @@ export default function Root() {
           crossorigin="anonymous"
         ></script>
       </Head>
+      <Style>
+        {`
+    body {
+      color: ${c.colors.textPrimary}
+    }
+  `}
+      </Style>
+
       <Body
         style={s(
           c.bg(c.grays[7]),
@@ -112,6 +122,7 @@ export default function Root() {
       >
         <Suspense>
           <ErrorBoundary>
+            <RouteProvider />
             <Show when={!isServer} fallback={null}>
               <AuthHandler>
                 <Routes>
@@ -126,3 +137,13 @@ export default function Root() {
     </Html>
   );
 }
+
+const RouteProvider = () => {
+  let navigate = useNavigate();
+  onMount(() => {
+    quick((s) => {
+      s.navigationState.setNavigate(navigate);
+    });
+  });
+  return null;
+};

@@ -12,7 +12,7 @@ import { trackEvent } from "~/utils/trackEvent";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { CMTextInput } from "./TextInput";
+import { CMTextInput } from "./CMTextInput";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
