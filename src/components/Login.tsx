@@ -36,7 +36,7 @@ type LoginForm = {
 
 export default function Login({ signup }: { signup?: boolean }) {
   const loginForm = createForm<LoginForm>({
-    initialValues: { email: "marcusbuffett@me.com", password: "password123" },
+    initialValues: { email: "", password: "" },
   });
 
   const [loading, setLoading] = createSignal(false);
