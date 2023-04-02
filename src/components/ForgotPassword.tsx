@@ -35,7 +35,7 @@ type ForgotPasswordForm = {
 
 export default function ForgotPassword() {
   const loginForm = createForm<ForgotPasswordForm>({
-    initialValues: { email: "marcusbuffett@me.com" },
+    initialValues: { email: "" },
   });
 
   const [serverError, setServerError] = createSignal("");

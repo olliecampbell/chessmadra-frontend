@@ -35,7 +35,7 @@ type ResetPasswordForm = {
 
 export default function ResetPassword() {
   const loginForm = createForm<ResetPasswordForm>({
-    initialValues: { password: "mock_password" },
+    initialValues: { password: "" },
   });
 
   const [serverError, setServerError] = createSignal("");
