@@ -227,7 +227,7 @@ const genGrays = (
   }
   return grays;
 };
-const grays = genGrays(grayHue, 8, 5);
+export const grays = genGrays(grayHue, 8, 5);
 const trueGrays = genGrays(0, 0, 0);
 const chessboardGrays = genGrays(grayHue, 10, 3);
 
@@ -273,12 +273,24 @@ const oranges = genShades(40, 70, 70);
 const arrowColors = genShades(40, 100, 100);
 const pinks = genShades(308);
 const purples = genShades(271);
-const reds = genShades(340);
+const reds = genShades(340, 60, 80);
 const greens = genShades(109);
 const forestGreens = genShades(83);
 const failureShades = reds;
 const successShades = genShades(164);
-const colors = {
+export const colors = {
+  blues,
+  teals,
+  primaries,
+  yellows,
+  oranges,
+  pinks,
+  reds,
+  grays,
+  purples,
+  greens,
+  forestGreens,
+  successShades,
   textPrimary: grays[95],
   textSecondary: grays[80],
   textTertiary: grays[50],

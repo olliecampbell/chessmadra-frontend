@@ -1,7 +1,7 @@
 import { Spacer } from "~/components/Space";
 import { isEmpty } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
-import { CMTextInput } from "./TextInput";
+import { CMTextInput } from "./CMTextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { useUserState } from "~/utils/app_state";
 import { createSignal, Show } from "solid-js";
@@ -60,9 +60,9 @@ export const FeedbackView = () => {
       <Spacer height={12} />
 */}
       <Spacer height={12} />
-      <Show when={!success }>
+      <Show when={!success}>
         <>
-        <Show when={isEmpty(user?.email) }>
+          <Show when={isEmpty(user?.email)}>
             <>
               <CMTextInput
                 value={email()}
@@ -71,7 +71,7 @@ export const FeedbackView = () => {
               />
               <Spacer height={8} />
             </>
-            </Show>
+          </Show>
           <CMTextInput
             value={feedback()}
             textInputProps={{ multiline: true, numberOfLines: 8 }}
@@ -79,7 +79,7 @@ export const FeedbackView = () => {
             placeholder={"Your feedback here..."}
           />
         </>
-        </Show>
+      </Show>
     </SidebarTemplate>
   );
 };

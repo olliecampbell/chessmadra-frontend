@@ -89,7 +89,7 @@ export const BrowserSidebar = function BrowserSidebar() {
         c.minHeight("100%")
       )}
     >
-      <Show when={!vertical}>
+      <Show when={!vertical()}>
         <div
           style={s(
             c.absolute,
@@ -126,7 +126,7 @@ export const BrowserSidebar = function BrowserSidebar() {
             isNil(direction()) && s(c.opacity(0))
             // TODO: solid
             // {
-            //   transform: 
+            //   transform:
             //     {
             //       translateX: previousSidebarAnim.interpolate({
             //         inputRange: [0, 1],

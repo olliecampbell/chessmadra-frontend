@@ -4,15 +4,41 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { Button } from "./Button";
 import { CMText } from "./CMText";
-import { createSignal, Match, Show, Switch } from "solid-js";
+import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 import { PieceView } from "./chessboard/Chessboard";
 import { trackEvent } from "~/utils/trackEvent";
 import { Puff } from "solid-spinner";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { CMTextInput } from "./TextInput";
+import { TextInput } from "./TextInput";
+import { capitalize } from "lodash-es";
+type AuthType = "login" | "register";
+const AUTH_TYPES: AuthType[] = ["login", "register"];
+// import { createFormGroup, createFormControl } from "solid-forms";
+import { isServer } from "solid-js/web";
+import {
+  createForm,
+  email,
+  Field,
+  Form,
+  minLength,
+  required,
+  SubmitHandler,
+} from "@modular-forms/solid";
+import { InputError } from "./forms/InputError";
+import { A, Link } from "solid-start";
+import { quick } from "~/utils/app_state";
+import { AuthStatus } from "~/utils/user_state";
+
+type LoginForm = {
+  email: string;
+  password: string;
+};
 
 export default function Login({ signup }: { signup?: boolean }) {
-  const [email, setEmail] = createSignal("");
+  const loginForm = createForm<LoginForm>({
+    initialValues: { email: "marcusbuffett@me.com", password: "password123" },
+  });
+
   const [loading, setLoading] = createSignal(false);
   const [submitted, setSubmitted] = createSignal(false);
   const signIn = async () => {
@@ -27,26 +53,58 @@ export default function Login({ signup }: { signup?: boolean }) {
     setLoading(false);
     setSubmitted(true);
   };
+  const [authType, setAuthType] = createSignal("login");
+  const group = {};
+  const [serverError, setServerError] = createSignal("");
+
+  const handleSubmit: SubmitHandler<LoginForm> = (values, event) => {
+    setServerError("");
+    client
+      .post(authType() === "register" ? "/api/register" : "/api/login", {
+        email: values.email,
+        password: values.password,
+      })
+      .then((resp) => {
+        console.log("resp", resp);
+        const { token, user } = resp.data;
+        quick((s) => {
+          const userState = s.userState;
+          userState.token = token;
+          userState.setUser(user);
+          userState.authStatus = AuthStatus.Authenticated;
+          s.navigationState.push("/");
+          trackEvent(`auth.${authType()}.success`);
+        });
+      })
+      .catch((err) => {
+        console.log("error", err);
+        trackEvent(`auth.${authType()}.error`);
+        setServerError(err?.response?.data?.error ?? "Something went wrong");
+      });
+  };
+
+  // createEffect(() => {
+  //   console.log("errors", loginForm.internal.erro);
+  // });
   return (
     <>
-      <HeadSiteMeta
-        siteMeta={{
-          title: "Login",
-          description: "Login to Chess Madra",
-        }}
-      />
       <RepertoirePageLayout centered>
+        <HeadSiteMeta
+          siteMeta={{
+            title: "Login",
+            description: "Login to Chess Madra",
+          }}
+        />
         <div
           style={s(
             // c.bg(c.grays[80]),
-            c.maxWidth(300),
             c.selfCenter
             // c.br(4)
             // c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
           )}
         >
           <Show when={!submitted()}>
-            <div style={s(c.column, c.alignCenter, c.fullWidth)}>
+            <div class="col items-center">
               <div style={s(c.size(48))}>
                 <PieceView
                   piece={{ color: "w", type: "n" }}
@@ -54,97 +112,135 @@ export default function Login({ signup }: { signup?: boolean }) {
                 />
               </div>
               <Spacer height={12} />
-              <CMText
-                style={s(
-                  c.fg(c.colors.textPrimary),
-                  c.fontSize(24),
-                  c.selfCenter,
-                  c.weightBold
-                )}
-              >
-                Log in / Register
-              </CMText>
-              <Spacer height={12} />
-              <CMText
-                style={s(
-                  c.fg(c.colors.textSecondary),
-                  c.fontSize(14),
-                  c.weightRegular
-                  // c.textAlign("center")
-                )}
-              >
-                Just enter your email and you'll get a link to sign you in; no
-                password or sign-up needed.
-              </CMText>
-            </div>
-          </Show>
-          <Spacer height={24} />
-          <Show
-            when={submitted()}
-            fallback={
-              <div style={s(c.br(4), c.px(0), c.py(0))}>
-                <div style={s()}>
-                  <div style={s()}>
-                    <div>
-                      <div style={s()}>
-                        <CMTextInput
-                          // todo: enter to submit
-                          placeholder="E-mail"
-                          value={email()}
-                          setValue={setEmail}
-                          // @ts-ignore
-                          type="email"
-                          autoComplete="email"
-                          required
-                          style={s(
-                            c.bg(c.grays[100]),
-                            c.fg(c.colors.textInverse),
-                            c.br(2),
-                            c.px(8),
-                            c.py(8),
-                            c.fontSize(16)
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    <Spacer height={12} />
-                    <Button
-                      onPress={() => {
-                        signIn();
+              <div class={`row w-full gap-4`}>
+                <For each={AUTH_TYPES}>
+                  {(auth) => (
+                    <div
+                      onClick={() => {
+                        setAuthType(auth);
                       }}
-                      style={s(c.buttons.primary)}
+                      class={`text-primary p-4 font-semibold text-xl border-0 border-b-2 grow text-center cursor-pointer transition-all border-solid`}
+                      classList={{
+                        "border-gray-80 ": authType() === auth,
+                        "border-transparent hover:border-gray-600":
+                          authType() !== auth,
+                      }}
                     >
-                      <Switch fallback={"Log in"}>
-                        <Match when={loading()}>
-                          <Puff color={c.primaries[65]} />
-                        </Match>
-                        <Match when={signup}>{"Sign up"}</Match>
-                      </Switch>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            }
-          >
-            <div style={s()}>
-              <div style={s(c.column, c.alignCenter, c.textAlign("center"))}>
-                <div style={s()}>
-                  <i
-                    style={s(c.fg(c.colors.successColor), c.fontSize(28))}
-                    class={`fas fa-check`}
-                  ></i>
-                </div>
-                <Spacer height={12} />
-                <CMText
-                  style={s(
-                    c.fg(c.colors.textPrimary),
-                    c.fontSize(16),
-                    c.weightSemiBold
+                      {capitalize(auth)}
+                    </div>
                   )}
+                </For>
+              </div>
+              <div class={`p-4 bg-gray-16 self-stretch min-w-80 w-full`}>
+                <Show
+                  when={submitted()}
+                  fallback={
+                    <div style={s(c.br(4), c.px(0), c.py(0))}>
+                      <Form
+                        of={loginForm}
+                        class={`col gap-8`}
+                        onSubmit={handleSubmit}
+                      >
+                        <Field
+                          of={loginForm}
+                          name="email"
+                          validate={[
+                            required("Please enter your email."),
+                            email("The email address is badly formatted."),
+                          ]}
+                        >
+                          {(field) => (
+                            <TextInput
+                              value={field.value}
+                              error={field.error}
+                              placeholder="example@email.com"
+                              label="Email"
+                              {...field.props}
+                              type="email"
+                            />
+                          )}
+                        </Field>
+                        <Field
+                          of={loginForm}
+                          name="password"
+                          validate={[
+                            required("Please enter your password."),
+                            minLength(
+                              8,
+                              "You password must have 8 characters or more."
+                            ),
+                          ]}
+                        >
+                          {(field) => (
+                            <>
+                              <TextInput
+                                label="Password"
+                                value={field.value}
+                                error={field.error}
+                                {...field.props}
+                                type="password"
+                              />
+                              <Show when={authType() === "login"}>
+                                <A
+                                  href="/forgot-password"
+                                  class={
+                                    "text-blue-60 hover:text-blue-70 text-sm -mt-6"
+                                  }
+                                >
+                                  Forgot your password?
+                                </A>
+                              </Show>
+                            </>
+                          )}
+                        </Field>
+
+                        <div class={"max-w-min min-w-full"}>
+                          <InputError
+                            name={"Server error"}
+                            error={serverError()}
+                            class={"inline-block"}
+                          />
+                          <input
+                            type="submit"
+                            class="btn py-4 self-end w-fit px-8"
+                          >
+                            <Switch fallback={"Log in"}>
+                              <Match when={loading()}>
+                                <Puff color={c.primaries[65]} />
+                              </Match>
+                              <Match when={authType() === "register"}>
+                                {"Sign up"}
+                              </Match>
+                            </Switch>
+                          </input>
+                        </div>
+                      </Form>
+                    </div>
+                  }
                 >
-                  Success! Check your email and click the link to log in.
-                </CMText>
+                  <div style={s()}>
+                    <div
+                      style={s(c.column, c.alignCenter, c.textAlign("center"))}
+                    >
+                      <div style={s()}>
+                        <i
+                          style={s(c.fg(c.colors.successColor), c.fontSize(28))}
+                          class={`fas fa-check`}
+                        ></i>
+                      </div>
+                      <Spacer height={12} />
+                      <CMText
+                        style={s(
+                          c.fg(c.colors.textPrimary),
+                          c.fontSize(16),
+                          c.weightSemiBold
+                        )}
+                      >
+                        Success! Check your email and click the link to log in.
+                      </CMText>
+                    </div>
+                  </div>
+                </Show>
               </div>
             </div>
           </Show>
