@@ -6,13 +6,12 @@ import { Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { getAnimationDurations } from "~/components/chessboard/Chessboard";
 import { PlaybackSpeed } from "~/types/VisualizationState";
-import { getSquareOffset, START_EPD } from "./chess";
+import { genEpd, getSquareOffset, START_EPD } from "./chess";
 import { createChessProxy } from "./chess_proxy";
 import { MetaPlan } from "./plans";
 import { lineToPgn, pgnToLine, Side } from "./repertoire";
 import { c } from "./styles";
 import { Option } from "./optional";
-import { ChessboardState } from "./chessboard_state";
 
 interface PlayPgnOptions {
   animateLine: string[];
@@ -205,8 +204,22 @@ export const createChessboardInterface = (): [
           s._animatePosition.move(m);
           return;
         }
-        s.position.move(m);
         chessboardInterface.clearPending();
+        s.availableMoves = [];
+        let pos = s.position;
+        console.trace("position in here", pos.ascii());
+        let moveObject = pos.move(m);
+        console.log("moveObject in here", moveObject);
+        if (moveObject) {
+          let epd = genEpd(pos);
+          s.positionHistory.push(epd);
+          s.moveHistory.push(moveObject);
+          chessboardInterface.updateMoveLogPgn();
+          chessboardInterface.getDelegate()?.onPositionUpdated?.();
+          chessboardInterface.getDelegate()?.onMovePlayed?.();
+        } else {
+          console.log("This move wasn't valid!", m);
+        }
       });
     },
     reversePreviewMove: () => {
@@ -631,7 +644,9 @@ export const createChessboardInterface = (): [
         chessboardInterface.stopNotifyingDelegates();
         chessboardInterface.resetPosition();
         const line = pgnToLine(pgn);
+        console.log("playing pgn", s.position.ascii());
         line.map((san) => {
+          console.log(`playing san ${san}`, san);
           chessboardInterface.makeMove(san);
         });
         if (options?.animated) {
@@ -640,9 +655,6 @@ export const createChessboardInterface = (): [
           let moves = s._animatePosition.validateMoves(line);
           s.animationQueue = moves;
           chessboardInterface.stepAnimationQueue();
-        } else {
-          chessboardInterface.setPosition(s.position);
-          console.log("set position of chessboard view", s.position.ascii());
         }
         chessboardInterface.resumeNotifyingDelegates();
         chessboardInterface.getDelegate()?.onPositionUpdated?.();

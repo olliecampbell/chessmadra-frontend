@@ -5,7 +5,6 @@ import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "~/types/Chess";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getSquareOffset, START_EPD } from "../../utils/chess";
-import { ChessboardState } from "~/utils/chessboard_state";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
 import { first, forEach, isEmpty, isEqual, isNil, last } from "lodash-es";
