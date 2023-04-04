@@ -28,6 +28,7 @@ import { InputError } from "./forms/InputError";
 import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
+import clsx from "clsx";
 
 type ForgotPasswordForm = {
   email: string;
@@ -73,6 +74,18 @@ export default function ForgotPassword() {
             </div>
             <Spacer height={12} />
             <div class={`p-4 bg-gray-16 self-stretch min-w-80 w-full`}>
+              <p
+                class={clsx("mb-4 text-secondary cursor-pointer ")}
+                onClick={() => {
+                  quick((s) => {
+                    s.navigationState.push("/login");
+                    trackEvent("auth.forgot_password.back");
+                  });
+                }}
+              >
+                <i class="fa-solid fa-arrow-left pr-2"></i>
+                Back
+              </p>
               <p class="text-lg font-semibold">Forgot your password?</p>
               <Spacer height={12} />
               <div style={s(c.br(4), c.px(0), c.py(0))}>

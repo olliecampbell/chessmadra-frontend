@@ -30,7 +30,7 @@ import {
   BySide,
   otherSide,
 } from "./repertoire";
-import { ChessboardState, createChessState } from "./chessboard_state";
+import { ChessboardState } from "./chessboard_state";
 import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";
@@ -59,10 +59,15 @@ import { Responsive } from "./useResponsive";
 // solid TODO
 // import { Identify, identify } from "@amplitude/analytics-browser";
 import client from "./client";
-import { Component, createContext } from "solid-js";
+import { Component, createContext, JSXElement } from "solid-js";
 import { identify, Identify } from "@amplitude/analytics-browser";
 import { Animated } from "./animation";
 import { animateTo } from "./animation";
+import {
+  ChessboardInterface,
+  ChessboardViewState,
+  createChessboardInterface,
+} from "./chessboard_interface";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -107,7 +112,7 @@ export const modeToUI = (mode: BrowsingMode) => {
 };
 
 export interface SidebarState {
-  view?: Component;
+  view?: JSXElement;
   isPastCoverageGoal?: boolean;
   mode: BrowsingMode;
   tableResponses: TableResponse[];
@@ -165,7 +170,7 @@ export interface BrowsingState {
   checkShowTargetDepthReached: () => void;
 
   // Fields
-  chessboardState: ChessboardState;
+  chessboard: ChessboardInterface;
   sidebarState: SidebarState;
   previousSidebarState: SidebarState;
   sidebarDirection: "left" | "right";
@@ -184,11 +189,6 @@ interface RepertoireProgressState {
   showPopover: boolean;
   percentComplete: number;
   pendingMoves: number;
-  headerOpacityAnim: Animated.Value;
-  popoverOpacityAnim: Animated.Value;
-  savedProgressAnim: Animated.Value;
-  newProgressAnim: Animated.Value;
-  newProgressLeftAnim: Animated.Value;
 }
 
 export interface BrowserLine {
@@ -221,6 +221,7 @@ export const makeDefaultSidebarState = () => {
       visible: false,
     },
     showPlansState: {
+      coverageReached: false,
       visible: false,
       hasShown: false,
     },
@@ -334,7 +335,9 @@ export const getInitialBrowsingState = (
           s.sidebarState.showPlansState.visible = true;
           s.sidebarState.showPlansState.hasShown = true;
           s.sidebarState.showPlansState.coverageReached = true;
-          s.chessboardState.showPlans = true;
+          s.chessboard.set((c) => {
+            c.showPlans = true;
+          });
         }
         if (!s.sidebarState.isPastCoverageGoal) {
           s.sidebarState.showPlansState.hasShown = false;
@@ -350,9 +353,8 @@ export const getInitialBrowsingState = (
         const threshold = gs.userState.getCurrentThreshold();
         const eloRange = gs.userState.user?.eloRange;
         const mode = s.sidebarState.mode;
-        const currentSide: Side =
-          s.chessboardState.position.turn() === "b" ? "black" : "white";
-        const currentEpd = s.chessboardState.getCurrentEpd();
+        const currentSide: Side = s.chessboard.getTurn();
+        const currentEpd = s.chessboard.getCurrentEpd();
         const positionReport =
           rs.positionReports[s.sidebarState.activeSide][
             s.sidebarState.currentEpd
@@ -364,12 +366,12 @@ export const getInitialBrowsingState = (
             _tableResponses[sm.sanPlus] = {
               suggestedMove: cloneDeep(sm),
               tags: [],
-              side: s.sidebarState.activeSide,
+              side: s.sidebarState.activeSide as Side,
             };
           });
         const existingMoves =
           rs.repertoire[s.sidebarState.activeSide].positionResponses[
-            s.chessboardState.getCurrentEpd()
+            s.chessboard.getCurrentEpd()
           ];
         existingMoves?.map((r) => {
           if (_tableResponses[r.sanPlus]) {
@@ -378,7 +380,7 @@ export const getInitialBrowsingState = (
             _tableResponses[r.sanPlus] = {
               repertoireMove: r,
               tags: [],
-              side: s.sidebarState.activeSide,
+              side: s.sidebarState.activeSide as Side,
             };
           }
         });
@@ -400,15 +402,15 @@ export const getInitialBrowsingState = (
           if (ownSide && tr.suggestedMove && positionReport) {
             const positionWinRate = getWinRate(
               positionReport?.results,
-              s.sidebarState.activeSide
+              s.sidebarState.activeSide as Side
             );
             const [, , ci] = getWinRateRange(
               tr.suggestedMove.results,
-              s.sidebarState.activeSide
+              s.sidebarState.activeSide as Side
             );
             const moveWinRate = getWinRate(
               tr.suggestedMove.results,
-              s.sidebarState.activeSide
+              s.sidebarState.activeSide as Side
             );
             if (ci > 0.15 && Math.abs(positionWinRate - moveWinRate) > 0.02) {
               tr.lowConfidence = true;
@@ -567,7 +569,9 @@ export const getInitialBrowsingState = (
       }),
     dismissTransientSidebarState: () =>
       set(([s, rs]) => {
-        s.chessboardState.showPlans = false;
+        s.chessboard.set((c) => {
+          c.showPlans = false;
+        });
         if (s.sidebarState.submitFeedbackState.visible) {
           s.sidebarState.submitFeedbackState.visible = false;
           return true;
@@ -584,7 +588,9 @@ export const getInitialBrowsingState = (
           s.sidebarState.showPlansState.visible = false;
           s.sidebarState.showPlansState.hasShown = false;
           s.sidebarState.showPlansState.coverageReached = false;
-          s.chessboardState.showPlans = false;
+          s.chessboard.set((c) => {
+            c.showPlans = false;
+          });
           return true;
         }
         return false;
@@ -601,7 +607,7 @@ export const getInitialBrowsingState = (
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
-        return rs.positionReports[s.chessboardState.getCurrentEpd()];
+        return rs.positionReports[s.chessboard.getCurrentEpd()];
       }),
     getCurrentPositionReport: (sidebarState: SidebarState) =>
       get(([s, rs]) => {
@@ -628,7 +634,10 @@ export const getInitialBrowsingState = (
           const moveLog = [];
           const epdLog = [];
           forEach(
-            zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
+            zip(
+              s.chessboard.get((s) => s).positionHistory,
+              s.chessboard.get((s) => s).moveLog
+            ),
             ([epd, move], i) => {
               if (move) {
                 moveLog.push(move);
@@ -642,7 +651,7 @@ export const getInitialBrowsingState = (
               });
             }
           );
-          const currentEpd = s.chessboardState.getCurrentEpd();
+          const currentEpd = s.chessboard.getCurrentEpd();
           const currentReport =
             rs.positionReports[s.sidebarState.activeSide][currentEpd];
           if (currentReport) {
@@ -711,22 +720,26 @@ export const getInitialBrowsingState = (
         const consumer = parsePlans(
           cloneDeep(plans),
           s.sidebarState.activeSide,
-          s.chessboardState.position
+          s.chessboard.get((s) => s.position)
         );
-        s.chessboardState.focusedPlans = [];
-        s.chessboardState.plans = consumer.metaPlans.filter((p) =>
-          consumer.consumed.has(p.id)
-        );
-        s.sidebarState.planSections = consumer.planSections;
-        s.chessboardState.maxPlanOccurence = maxOccurence;
+        s.chessboard.set((c) => {
+          c.focusedPlans = [];
+          c.plans = consumer.metaPlans.filter((p) =>
+            consumer.consumed.has(p.id)
+          );
+          s.sidebarState.planSections = consumer.planSections;
+          c.maxPlanOccurence = maxOccurence;
+        });
       }),
     onPositionUpdate: () =>
       set(([s, rs]) => {
-        s.sidebarState.moveLog = s.chessboardState.moveLog;
-        s.sidebarState.currentEpd = s.chessboardState.getCurrentEpd();
+        s.sidebarState.moveLog = s.chessboard.get((s) => s.moveLog);
+        s.sidebarState.currentEpd = s.chessboard.getCurrentEpd();
         s.sidebarState.currentSide =
-          s.chessboardState.position.turn() === "b" ? "black" : "white";
-        s.sidebarState.positionHistory = s.chessboardState.positionHistory;
+          s.chessboard.getTurn() === "b" ? "black" : "white";
+        s.sidebarState.positionHistory = s.chessboard.get(
+          (s) => s.positionHistory
+        );
         s.sidebarState.pendingResponses = {};
 
         s.updatePlans();
@@ -735,15 +748,22 @@ export const getInitialBrowsingState = (
         if (rs.ecoCodeLookup) {
           s.sidebarState.lastEcoCode = last(
             filter(
-              map(s.chessboardState.positionHistory, (p) => {
-                return rs.ecoCodeLookup[p];
-              })
+              map(
+                s.chessboard.get((s) => s.positionHistory),
+                (p) => {
+                  return rs.ecoCodeLookup[p];
+                }
+              )
             )
           );
         }
-        const line = s.chessboardState.moveLog;
+        const line = s.chessboard.get((s) => s.moveLog);
         map(
-          zip(s.chessboardState.positionHistory, line, incidences),
+          zip(
+            s.chessboard.get((s) => s.positionHistory),
+            line,
+            incidences
+          ),
           ([position, san, incidence], i) => {
             if (!san) {
               return;
@@ -762,7 +782,7 @@ export const getInitialBrowsingState = (
             ) {
               s.sidebarState.pendingResponses[position] = {
                 epd: position,
-                epdAfter: s.chessboardState.positionHistory[i + 1],
+                epdAfter: s.chessboard.get((s) => s.positionHistory)[i + 1],
                 sanPlus: san,
                 side: s.sidebarState.activeSide,
                 pending: true,
@@ -798,7 +818,10 @@ export const getInitialBrowsingState = (
 
         let incidence = 1.0;
         return map(
-          zip(s.chessboardState.positionHistory, s.chessboardState.moveLog),
+          zip(
+            s.chessboard.get((s) => s.positionHistory),
+            s.chessboard.get((s) => s.moveLog)
+          ),
           ([position, san], i) => {
             const positionReport =
               rs.positionReports[s.sidebarState.activeSide][position];
@@ -821,7 +844,7 @@ export const getInitialBrowsingState = (
       get(([s, rs]) => {
         return last(s.getLineIncidences(options));
       }),
-    replaceView: (view: React.ReactNode, direction: "left" | "right") =>
+    replaceView: (view: JSXElement, direction: "left" | "right") =>
       set(([s, gs]) => {
         s.moveSidebarState(direction);
         s.sidebarState.view = view;
@@ -892,69 +915,53 @@ export const getInitialBrowsingState = (
             });
           });
       }),
-  } as BrowsingState;
+  } as Omit<BrowsingState, "chessboardState">;
 
-  const setChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _set((s) => fn(s.repertoireState.browsingState.chessboardState));
-  };
-  const getChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _get((s) => fn(s.repertoireState.browsingState.chessboardState));
-  };
-  initialState.chessboardState = createChessState(
-    setChess,
-    getChess,
-    (c: ChessboardState) => {
-      // c.frozen = true;
-      c.delegate = {
-        completedMoveAnimation: () => {},
-        onPositionUpdated: () => {
-          set(([s]) => {
-            s.onPositionUpdate();
-          });
-        },
+  initialState.chessboard = createChessboardInterface()[1];
+  initialState.chessboard.set((c) => {
+    c.delegate = {
+      completedMoveAnimation: () => {},
+      onPositionUpdated: () => {
+        set(([s]) => {
+          s.onPositionUpdate();
+        });
+      },
 
-        madeManualMove: () => {
-          get(([s]) => {
-            trackEvent(`${s.sidebarState.mode}.chessboard.played_move`);
-          });
-        },
-        onBack: () => {
-          set(([s]) => {});
-        },
-        onReset: () => {
-          set(([s]) => {
-            s.dismissTransientSidebarState();
-            s.sidebarState.showPlansState.hasShown = false;
-          });
-        },
-        onMovePlayed: () => {
-          set(([s]) => {
-            if (s.sidebarState.transposedState.visible) {
-              s.sidebarState.transposedState.visible = false;
-            }
+      madeManualMove: () => {
+        get(([s]) => {
+          trackEvent(`${s.sidebarState.mode}.chessboard.played_move`);
+        });
+      },
+      onBack: () => {
+        set(([s]) => {});
+      },
+      onReset: () => {
+        set(([s]) => {
+          s.dismissTransientSidebarState();
+          s.sidebarState.showPlansState.hasShown = false;
+        });
+      },
+      onMovePlayed: () => {
+        set(([s]) => {
+          if (s.sidebarState.transposedState.visible) {
+            s.sidebarState.transposedState.visible = false;
+          }
 
-            s.checkShowTargetDepthReached();
-          });
-        },
-        shouldMakeMove: (move: Move) =>
-          set(([s]) => {
-            s.moveSidebarState("right");
-            return true;
-          }),
-      };
-    }
-  );
+          s.checkShowTargetDepthReached();
+        });
+      },
+      shouldMakeMove: (move: Move) =>
+        set(([s]) => {
+          s.moveSidebarState("right");
+          return true;
+        }),
+    };
+  });
   return initialState;
 };
 
 function createEmptyRepertoireProgressState(): RepertoireProgressState {
   return {
-    // TODO: solid
-    newProgressAnim: 0,
-    newProgressLeftAnim: 0,
-    savedProgressAnim: 0,
-    popoverOpacityAnim: 0,
-    headerOpacityAnim: 0,
     pendingMoves: 0,
     completed: false,
     percentComplete: 0,

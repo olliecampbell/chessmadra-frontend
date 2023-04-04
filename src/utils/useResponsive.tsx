@@ -24,19 +24,19 @@ const BREAKPOINTS = [
 ];
 
 const getBreakpoint = (x: number): ResponsiveBreakpoint => {
-  if (x < 576) {
+  if (x < 640) {
     return ResponsiveBreakpoint.xsm;
   }
   if (x < 768) {
     return ResponsiveBreakpoint.sm;
   }
-  if (x < 1000) {
+  if (x < 1024) {
     return ResponsiveBreakpoint.md;
   }
-  if (x < 1200) {
+  if (x < 1280) {
     return ResponsiveBreakpoint.lg;
   }
-  if (x < 1400) {
+  if (x < 1536) {
     return ResponsiveBreakpoint.xl;
   }
   return ResponsiveBreakpoint.xxl;

@@ -14,11 +14,7 @@ import {
   cloneDeep,
 } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
-import {
-  RepertoireMiss,
-  RepertoireMove,
-  Side,
-} from "~/utils/repertoire";
+import { RepertoireMiss, RepertoireMove, Side } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import { MoveTag, SuggestedMove } from "~/utils/models";
 import {
@@ -31,10 +27,7 @@ import {
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "~/utils/trackEvent";
 import { getAppropriateEcoName } from "~/utils/eco_codes";
-import {
-  getMoveRatingIcon,
-  MoveRating,
-} from "~/utils/move_inaccuracy";
+import { getMoveRatingIcon, MoveRating } from "~/utils/move_inaccuracy";
 import { quick } from "~/utils/app_state";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "~/utils/table_scoring";
@@ -162,7 +155,9 @@ export const RepertoireMovesTable = ({
     );
   const widths: Record<string, number | null> = {};
 
-  const [currentLine] = useSidebarState(([s, rs]) => [s.moveLog]);
+  const [currentLine] = useBrowsingState(([s, rs]) => [
+    s.chessboard.get((v) => v).moveLog,
+  ]);
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const hideAnnotations = () => moveNumber() === 1;
   const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
@@ -431,12 +426,12 @@ const Response = ({
   const { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
       () => {
-        getAppState().repertoireState.browsingState.chessboardState.chessboardView?.previewMove(
+        getAppState().repertoireState.browsingState.chessboard?.previewMove(
           sanPlus()
         );
       },
       () => {
-        getAppState().repertoireState.browsingState.chessboardState.chessboardView?.previewMove(
+        getAppState().repertoireState.browsingState.chessboard?.previewMove(
           null
         );
       }

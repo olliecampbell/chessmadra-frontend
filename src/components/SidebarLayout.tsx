@@ -13,7 +13,7 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { Button } from "./Button";
 import { s, c } from "~/utils/styles";
 import { BrowsingMode } from "~/utils/browsing_state";
@@ -22,6 +22,7 @@ import { Spacer } from "~/components/Space";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
+import clsx from "clsx";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -103,9 +104,15 @@ export const SidebarLayout = ({
               <MobileTopBar />
             )}
             <Animated.View
+              class={clsx("")}
               style={s(
                 c.fullWidth,
-                vertical && s(c.selfCenter, c.maxWidth(480)),
+                vertical &&
+                  s(
+                    c.selfCenter,
+                    c.maxWidth(480),
+                    c.px(c.getSidebarPadding(responsive))
+                  ),
                 chessboardFrozen() && c.noPointerEvents
                 // todo: solid
                 // vertical &&
@@ -175,8 +182,6 @@ export const SidebarLayout = ({
 };
 
 export const ExtraChessboardActions = ({}: {}) => {
-  // TODO solid
-  return null;
   const responsive = useResponsive();
   const fgColor = c.colors.textTertiary;
   const textStyles = s(
@@ -190,18 +195,18 @@ export const ExtraChessboardActions = ({}: {}) => {
   );
   const padding = 8;
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const [currentLine] = useRepertoireState((s) => [
-    s.browsingState.chessboardState.moveLog,
+  const [currentLine] = useBrowsingState(([s, rs]) => [
+    s.chessboard.get((v) => v).moveLog,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
   return (
     <FadeInOut
       style={s(c.row, c.fullWidth, c.justifyCenter)}
-      open={
-        !isEmpty(currentLine) &&
-        (sideBarMode == "browse" ||
-          sideBarMode == "review" ||
-          sideBarMode == "build")
+      open={() =>
+        !isEmpty(currentLine()) &&
+        (sideBarMode() == "browse" ||
+          sideBarMode() == "review" ||
+          sideBarMode() == "build")
       }
     >
       <Pressable
@@ -209,10 +214,10 @@ export const ExtraChessboardActions = ({}: {}) => {
         onPress={() => {
           quick((s) => {
             trackEvent("chessboard.analyze_on_lichess", {
-              side: activeSide,
-              mode: sideBarMode,
+              side: activeSide(),
+              mode: sideBarMode(),
             });
-            s.repertoireState.analyzeLineOnLichess(currentLine, activeSide);
+            s.repertoireState.analyzeLineOnLichess(currentLine(), activeSide());
           });
         }}
       >
@@ -272,14 +277,14 @@ const BrowsingChessboardView = function BrowsingChessboardView({ ref }) {
   const [mode] = useRepertoireState((s) => [s.browsingState.sidebarState.mode]);
   const chessboardState = () =>
     mode() === "review"
-      ? getAppState().repertoireState.reviewState.chessboardState
-      : getAppState().repertoireState.browsingState.chessboardState;
+      ? getAppState().repertoireState.reviewState.chessboard
+      : getAppState().repertoireState.browsingState.chessboard;
   // useRepertoireState((s) => [
   //   s.browsingState.sidebarState.mode == "review"
   //     ? s.reviewState.chessboardState
   //     : s.browsingState.chessboardState,
   // ]);
-  return <ChessboardView state={chessboardState()} ref={ref} />;
+  return <ChessboardView chessboardInterface={chessboardState()} ref={ref} />;
 };
 
 const MobileTopBar = ({}) => {

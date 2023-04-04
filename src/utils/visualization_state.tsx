@@ -8,7 +8,6 @@ import {
 } from "~/types/VisualizationState";
 import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
-import { ChessboardState, createChessState } from "./chessboard_state";
 import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
@@ -20,6 +19,7 @@ import { cloneDeep, takeRight } from "lodash-es";
 import { fensTheSame } from "~/utils/fens";
 import { createQuick } from "./quick";
 import { times } from "~/utils/times";
+import { createChessboardInterface } from "./chessboard_interface";
 
 type Stack = [VisualizationState, AppState];
 
@@ -316,14 +316,11 @@ export const getInitialVisualizationState = (
       fn((isClimb ? s.climbState : s.visualizationState).chessboardState)
     );
   };
-  initialState.chessboardState = createChessState(
-    setChess,
-    getChess,
-    (c: ChessboardState) => {
-      c.frozen = false;
-      c.delegate = initialState.puzzleState;
-    }
-  );
+  initialState.chessboardState = createChessboardInterface()[1];
+  initialState.chessboardState.set((c) => {
+    c.frozen = false;
+    c.delegate = initialState.puzzleState;
+  });
   if (isClimb) {
     initialState = {
       ...initialState,
