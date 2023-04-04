@@ -30,7 +30,6 @@ import {
   BySide,
   otherSide,
 } from "./repertoire";
-import { ChessboardState } from "./chessboard_state";
 import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";

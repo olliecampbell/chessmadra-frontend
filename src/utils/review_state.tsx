@@ -18,7 +18,6 @@ import {
   Side,
   SIDES,
 } from "./repertoire";
-import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { RepertoireState } from "./repertoire_state";
