@@ -271,7 +271,9 @@ const BackSection = () => {
     s.activeSide,
     s.view,
   ]);
-  const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
+  const [moveLog] = useBrowsingState(([s, rs]) => [
+    s.chessboard.get((v) => v).moveLog,
+  ]);
   const responsive = useResponsive();
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
@@ -391,7 +393,7 @@ const BackSection = () => {
           quick((s) => {
             if (view()) {
               s.repertoireState.browsingState.replaceView(null, "left");
-            } else {
+            } else if (backButtonAction()) {
               s.repertoireState.browsingState.moveSidebarState("left");
               backButtonAction()?.();
             }
@@ -405,7 +407,7 @@ const BackSection = () => {
           c.px(c.getSidebarPadding(responsive))
         )}
       >
-        <CMText style={s(c.weightBold, c.fg(color), c.row)}>
+        <CMText style={s(c.weightBold, c.fg(color()), c.row)}>
           <i class="fa fa-arrow-left"></i>
           <Spacer width={8} />
           Back

@@ -178,7 +178,6 @@ export interface RepertoireState {
   fetchDebugGames: () => void;
   // fetchDebugPawnStructureForPosition: () => void;
   selectDebugGame: (i: number) => void;
-  setChessboardView: (chessboard: ChessboardInterface) => void;
 }
 
 export interface NavBreadcrumb {
@@ -229,7 +228,6 @@ export const getInitialRepertoireState = (
   };
   const initialState = {
     ...createQuick<RepertoireState>(setOnly),
-    chessboardState: null,
     expectedNumMoves: { white: 0, black: 0 },
     numMovesFromEpd: { white: {}, black: {} },
     numMovesDueFromEpd: { white: {}, black: {} },
@@ -387,7 +385,7 @@ export const getInitialRepertoireState = (
               : () => {
                   quick((s) => {
                     s.repertoireState.startBrowsing(side, mode);
-                    s.repertoireState.browsingState.chessboardState.resetPosition();
+                    s.repertoireState.browsingState.chessboard.resetPosition();
                   });
                 },
           });
@@ -792,7 +790,7 @@ export const getInitialRepertoireState = (
     startImporting: (side: Side) =>
       set(([s]) => {
         s.startBrowsing(side, "build", { import: true });
-        s.browsingState.chessboardState.resetPosition();
+        s.browsingState.chessboard.resetPosition();
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
           SidebarOnboardingStage.ChooseImportSource,
         ];
@@ -829,14 +827,15 @@ export const getInitialRepertoireState = (
         const currentMode = s.browsingState.sidebarState.mode;
 
         if (mode === "overview" || mode === "home") {
-          s.browsingState.chessboardState.resetPosition();
+          s.browsingState.chessboard.resetPosition();
         }
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
         s.browsingState.sidebarState.mode = mode;
         s.browsingState.sidebarState.activeSide = side;
         s.browsingState.onPositionUpdate();
-        s.browsingState.chessboardState.flipped =
-          s.browsingState.sidebarState.activeSide === "black";
+        s.browsingState.chessboard.set((c) => {
+          c.flipped = s.browsingState.sidebarState.activeSide === "black";
+        });
         if (options?.import) {
           // just don't show the chessboard
         } else if (s.getIsRepertoireEmpty(side) && mode === "build") {
@@ -851,22 +850,20 @@ export const getInitialRepertoireState = (
               s.repertoire?.[s.browsingState.sidebarState.activeSide]
                 ?.positionResponses[START_EPD];
             if (startResponses?.length === 1) {
-              s.browsingState.chessboardState.makeMove(
-                startResponses[0].sanPlus
-              );
+              s.browsingState.chessboard.makeMove(startResponses[0].sanPlus);
             }
           }
           if (options?.pgnToPlay) {
-            s.browsingState.chessboardState.playPgn(options.pgnToPlay);
+            s.browsingState.chessboard.playPgn(options.pgnToPlay);
           }
         } else if (mode === "overview" || mode === "home") {
           s.animateChessboardShown(false);
         }
-        if (mode === "home") {
-          gs.navigationState.push(`/`);
-        } else {
-          gs.navigationState.push(`/openings/${side}/${mode}`);
-        }
+        // if (mode === "home") {
+        //   gs.navigationState.push(`/`);
+        // } else {
+        //   gs.navigationState.push(`/openings/${side}/${mode}`);
+        // }
       }, "startBrowsing"),
     onRepertoireUpdate: () =>
       set(([s]) => {
@@ -1111,23 +1108,18 @@ export const getInitialRepertoireState = (
         }
         return isEmpty(getAllRepertoireMoves(s.repertoire));
       }),
-    setChessboardView: (chessboardView) =>
-      set(([s]) => {
-        s.browsingState.chessboardState.chessboardView = chessboardView;
-        s.reviewState.chessboardState.chessboardView = chessboardView;
-      }),
     backOne: () =>
       set(([s]) => {
         if (s.browsingState.sidebarState.mode === "build") {
           s.browsingState.sidebarState.addedLineState.visible = false;
-          s.browsingState.chessboardState.backOne();
+          s.browsingState.chessboard.backOne();
           return;
         }
       }),
     backToStartPosition: () =>
       set(([s]) => {
         if (s.browsingState.sidebarState.mode !== "review") {
-          s.browsingState.chessboardState.resetPosition();
+          s.browsingState.chessboard.resetPosition();
           return;
         }
       }),

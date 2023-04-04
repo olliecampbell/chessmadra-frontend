@@ -27,6 +27,11 @@ import client from "~/utils/client";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { START_EPD } from "./chess";
 import { logProxy } from "./state";
+import {
+  ChessboardInterface,
+  ChessboardViewState,
+  createChessboardInterface,
+} from "./chessboard_interface";
 
 export interface QuizMove {
   moves: RepertoireMove[];
@@ -44,7 +49,7 @@ export interface ReviewPositionResults {
 export interface ReviewState {
   buildQueue: (options: ReviewOptions) => QuizMove[];
   stopReviewing: () => void;
-  chessboardState: ChessboardState;
+  chessboard: ChessboardInterface;
   // getQueueLength: (side?: Side) => number;
   showNext?: boolean;
   failedReviewPositionMoves?: Record<string, RepertoireMove>;
@@ -92,7 +97,6 @@ export const getInitialReviewState = (
     );
   };
   const initialState = {
-    chessboardState: null,
     showNext: false,
     // queues: EMPTY_QUEUES,
     activeQueue: null,
@@ -138,7 +142,7 @@ export const getInitialReviewState = (
           s.updateQueue(options);
         }
         console.log(s.activeQueue);
-        gs.navigationState.push(`/openings/${side}/review`);
+        // gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
         rs.animateChessboardShown(true);
         // s.chessboardState.showMoveLog = true;
@@ -311,88 +315,79 @@ export const getInitialReviewState = (
       }),
   } as ReviewState;
 
-  const setChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _set((s) => fn(s.repertoireState.reviewState.chessboardState));
-  };
-  const getChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _get((s) => fn(s.repertoireState.reviewState.chessboardState));
-  };
-  initialState.chessboardState = createChessState(
-    setChess,
-    getChess,
-    (c: ChessboardState) => {
-      // c.frozen = true;
-      c.delegate = {
-        completedMoveAnimation: () => {},
-        onPositionUpdated: () => {
-          set(([s]) => {});
-        },
-        madeMove: () => {},
+  initialState.chessboard = createChessboardInterface()[1];
+  initialState.chessboard.set((c) => {
+    // c.frozen = true;
+    c.delegate = {
+      completedMoveAnimation: () => {},
+      onPositionUpdated: () => {
+        set(([s]) => {});
+      },
+      madeMove: () => {},
 
-        shouldMakeMove: (move: Move) =>
-          set(([s]) => {
-            console.log("should make move?");
-            const matchingResponse = find(
-              s.currentMove.moves,
-              (m) => move.san == m.sanPlus
+      shouldMakeMove: (move: Move) =>
+        set(([s]) => {
+          console.log("should make move?");
+          const matchingResponse = find(
+            s.currentMove.moves,
+            (m) => move.san == m.sanPlus
+          );
+          if (matchingResponse) {
+            s.chessboardState.chessboardView?.flashRing(true);
+
+            s.completedReviewPositionMoves[matchingResponse.sanPlus] =
+              matchingResponse;
+            // TODO: this is really dirty
+            const willUndoBecauseMultiple = !isEmpty(
+              s.getRemainingReviewPositionMoves()
             );
-            if (matchingResponse) {
-              s.chessboardState.chessboardView?.flashRing(true);
-
-              s.completedReviewPositionMoves[matchingResponse.sanPlus] =
-                matchingResponse;
-              // TODO: this is really dirty
-              const willUndoBecauseMultiple = !isEmpty(
-                s.getRemainingReviewPositionMoves()
-              );
-              if (willUndoBecauseMultiple) {
-                window.setTimeout(() => {
-                  set(([s]) => {
-                    s.chessboardState.backOne();
-                  });
-                }, 500);
-                return true;
-              }
-              const nextMove = s.activeQueue[1];
-              console.log(s.activeQueue);
-              // todo: make this actually work
-              const continuesCurrentLine =
-                nextMove?.line ==
-                lineToPgn([...pgnToLine(s.currentMove.line), move.san]);
-              // console.log(
-              //   "continuesCurrentLine",
-              //   continuesCurrentLine,
-              //   nextMove?.line,
-              //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
-              // );
-              window.setTimeout(
-                () => {
-                  set(([s]) => {
-                    if (s.currentMove?.moves.length > 1) {
-                      s.showNext = true;
-                    } else {
-                      if (isEmpty(s.failedReviewPositionMoves)) {
-                        s.setupNextMove();
-                      } else {
-                        s.showNext = true;
-                      }
-                    }
-                  });
-                },
-                continuesCurrentLine ? 200 : 200
-              );
+            if (willUndoBecauseMultiple) {
+              window.setTimeout(() => {
+                set(([s]) => {
+                  s.chessboardState.backOne();
+                });
+              }, 500);
               return true;
-            } else {
-              s.chessboardState.chessboardView?.flashRing(false);
-              // TODO: reduce repetition
-              s.getRemainingReviewPositionMoves().forEach((move) => {
-                s.failedReviewPositionMoves[move.sanPlus] = move;
-              });
-              return false;
             }
-          }),
-      };
-    }
-  );
+            const nextMove = s.activeQueue[1];
+            console.log(s.activeQueue);
+            // todo: make this actually work
+            const continuesCurrentLine =
+              nextMove?.line ==
+              lineToPgn([...pgnToLine(s.currentMove.line), move.san]);
+            // console.log(
+            //   "continuesCurrentLine",
+            //   continuesCurrentLine,
+            //   nextMove?.line,
+            //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
+            // );
+            window.setTimeout(
+              () => {
+                set(([s]) => {
+                  if (s.currentMove?.moves.length > 1) {
+                    s.showNext = true;
+                  } else {
+                    if (isEmpty(s.failedReviewPositionMoves)) {
+                      s.setupNextMove();
+                    } else {
+                      s.showNext = true;
+                    }
+                  }
+                });
+              },
+              continuesCurrentLine ? 200 : 200
+            );
+            return true;
+          } else {
+            s.chessboardState.chessboardView?.flashRing(false);
+            // TODO: reduce repetition
+            s.getRemainingReviewPositionMoves().forEach((move) => {
+              s.failedReviewPositionMoves[move.sanPlus] = move;
+            });
+            return false;
+          }
+        }),
+    };
+  });
   return initialState;
 };

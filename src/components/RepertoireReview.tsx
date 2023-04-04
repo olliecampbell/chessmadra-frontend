@@ -8,7 +8,7 @@ import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
-import { Show } from "solid-js";
+import { Accessor, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { RepertoireMove } from "~/utils/repertoire";
 
@@ -27,7 +27,7 @@ export const RepertoireReview = (props: {}) => {
     s.reviewState.showNext,
   ]);
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  const actions: SidebarAction[] = [
+  const actions: Accessor<SidebarAction[]> = () => [
     {
       onPress: () => {
         quick((s) => {
@@ -66,7 +66,7 @@ export const RepertoireReview = (props: {}) => {
               currentMove()?.moves.length
             } responses to this position in your repertoire. Play all your responses on the board`
       }
-      actions={actions}
+      actions={actions()}
       bodyPadding={true}
     >
       <Show when={currentMove()?.moves?.length > 1}>

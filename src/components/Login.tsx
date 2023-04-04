@@ -28,6 +28,7 @@ import { InputError } from "./forms/InputError";
 import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
+import clsx from "clsx";
 
 type LoginForm = {
   email: string;
@@ -119,7 +120,9 @@ export default function Login({ signup }: { signup?: boolean }) {
                       onClick={() => {
                         setAuthType(auth);
                       }}
-                      class={`text-primary p-4 font-semibold text-xl border-0 border-b-2 grow text-center cursor-pointer transition-all border-solid`}
+                      class={clsx(
+                        `text-primary grow cursor-pointer border-0 border-b-2 border-solid p-4 text-center text-xl font-semibold transition-all`
+                      )}
                       classList={{
                         "border-gray-80 ": authType() === auth,
                         "border-transparent hover:border-gray-600":
@@ -131,7 +134,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                   )}
                 </For>
               </div>
-              <div class={`p-4 bg-gray-16 self-stretch min-w-80 w-full`}>
+              <div class={`bg-gray-16 min-w-80 w-full self-stretch p-4`}>
                 <Show
                   when={submitted()}
                   fallback={
@@ -184,7 +187,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                                 <A
                                   href="/forgot-password"
                                   class={
-                                    "text-blue-60 hover:text-blue-70 text-sm -mt-6"
+                                    "text-blue-60 hover:text-blue-70 -mt-6 text-sm"
                                   }
                                 >
                                   Forgot your password?
@@ -194,7 +197,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                           )}
                         </Field>
 
-                        <div class={"max-w-min min-w-full"}>
+                        <div class={"min-w-full max-w-min"}>
                           <InputError
                             name={"Server error"}
                             error={serverError()}
@@ -202,7 +205,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                           />
                           <input
                             type="submit"
-                            class="btn py-4 self-end w-fit px-8"
+                            class="btn w-fit self-end px-8 py-4"
                           >
                             <Switch fallback={"Log in"}>
                               <Match when={loading()}>
