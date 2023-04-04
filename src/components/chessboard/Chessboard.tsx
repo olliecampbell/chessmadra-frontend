@@ -658,6 +658,16 @@ export function ChessboardView(props: {
                     const isPreviewSquare = () =>
                       chessboardStore.previewedMove?.to === square() ||
                       chessboardStore.previewedMove?.from === square();
+                    createEffect(() => {
+                      console.log(
+                        "is preview square?",
+                        square(),
+                        isPreviewSquare(),
+                        chessboardStore.previewedMove
+                      );
+                      if (square() === "d4") {
+                      }
+                    });
                     const isLastMoveSquare = createMemo(
                       () =>
                         props.chessboardInterface.getLastMove()?.to ==

@@ -502,8 +502,16 @@ export const createChessboardInterface = (): [
       }),
     backOne: () => {
       set((s) => {
-        s.position.undo();
-        console.log("position", s.position.ascii());
+        if (s.positionHistory.length > 1) {
+          chessboardInterface.clearPending();
+          s.positionHistory.pop();
+          s.moveHistory.pop();
+          s.previewPosition = undefined;
+          s.position.undo();
+          chessboardInterface.updateMoveLogPgn();
+          chessboardInterface.getDelegate()?.onPositionUpdated?.();
+          chessboardInterface.getDelegate()?.onBack?.();
+        }
       });
     },
     setPosition: (chess: Chess) => {
