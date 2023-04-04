@@ -310,7 +310,7 @@ const BackSection = () => {
       } else if (showPlansState().visible) {
         backButtonAction = () => {
           quick((s) => {
-            s.repertoireState.browsingState.chessboardState.backOne();
+            s.repertoireState.browsingState.chessboard.backOne();
             s.repertoireState.browsingState.dismissTransientSidebarState();
           });
         };
@@ -328,7 +328,7 @@ const BackSection = () => {
       } else if (!isEmpty(moveLog())) {
         backButtonAction = () => {
           quick((s) => {
-            s.repertoireState.browsingState.chessboardState.backOne();
+            s.repertoireState.browsingState.chessboard.backOne();
           });
         };
       } else if (isEmpty(moveLog())) {
@@ -344,7 +344,7 @@ const BackSection = () => {
       if (!isEmpty(moveLog())) {
         backButtonAction = () => {
           quick((s) => {
-            s.repertoireState.browsingState.chessboardState.backOne();
+            s.repertoireState.browsingState.chessboard.backOne();
           });
         };
       } else if (isEmpty(moveLog())) {
