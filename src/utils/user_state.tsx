@@ -29,7 +29,7 @@ export interface UserState {
     pieceSet?: PieceSetId;
   }) => void;
   isUpdatingEloRange: boolean;
-  pastLandingPage?: boolean
+  pastLandingPage?: boolean;
 }
 
 export enum AuthStatus {
@@ -59,9 +59,12 @@ export const getInitialUserState = (
   const initialState = {
     isUpdatingEloRange: false,
     setUser: (user: User) => {
-      set(([s]) => {
+      set(([s, appState]) => {
         s.user = user;
         s.tempUserUuid = user.id;
+        // because could be diff goal
+        appState.repertoireState.updateRepertoireStructures();
+
         if (user.email) {
           setUserId(user.email);
         }

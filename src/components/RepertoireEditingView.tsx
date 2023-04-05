@@ -49,17 +49,17 @@ export const Responses = function Responses() {
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const yourMoves = createMemo(() =>
     filter(tableResponses(), (tr) => {
-      return !isNil(tr.repertoireMove) && activeSide === currentSide;
+      return !isNil(tr.repertoireMove) && activeSide() === currentSide();
     })
   );
   const otherMoves = createMemo(() =>
     filter(tableResponses(), (tr) => {
-      return isNil(tr.repertoireMove) && activeSide === currentSide;
+      return isNil(tr.repertoireMove) && activeSide() === currentSide();
     })
   );
   const prepareFor = createMemo(() =>
     filter(tableResponses(), (tr) => {
-      return activeSide !== currentSide;
+      return activeSide() !== currentSide();
     })
   );
   // TODO: solid

@@ -14,11 +14,11 @@ export const ConfirmDeleteRepertoire = function DeleteLineView() {
       header="Are you sure?"
       actions={[
         {
-          text: `Yes, delete my ${side} repertoire`,
+          text: `Yes, delete my ${side()} repertoire`,
           style: "primary",
           onPress: () => {
             quick((s) => {
-              s.repertoireState.deleteRepertoire(side);
+              s.repertoireState.deleteRepertoire(side());
               s.repertoireState.browsingState.popView();
               trackEvent("repertoire.delete_side");
             });

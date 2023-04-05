@@ -38,14 +38,7 @@ export const CoverageBar = (props: {
           c.top(0),
           c.bottom(0),
           c.left(0),
-          c.width(
-            // TODO solid
-            "100%"
-            // progressState.savedProgressAnim.interpolate({
-            //   inputRange: [0, 100],
-            //   outputRange: ["0%", "100%"],
-            // })
-          ),
+          c.width(progressState().percentComplete + "%"),
           c.bg(progressState().completed ? completedColor : inProgressColor),
           c.fullHeight
         )}

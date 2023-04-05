@@ -67,6 +67,7 @@ import {
   ChessboardViewState,
   createChessboardInterface,
 } from "./chessboard_interface";
+import { unwrap } from "solid-js/store";
 
 export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
@@ -290,10 +291,15 @@ export const getInitialBrowsingState = (
           const completed = isNil(biggestMiss);
           progressState.completed = completed;
           const expectedNumMoves = rs.expectedNumMovesFromEpd[side][START_EPD];
+          console.log("expectedNumMoves, nummoves", expectedNumMoves, numMoves);
           const savedProgress = completed
             ? 100
             : getCoverageProgress(numMoves, expectedNumMoves);
           progressState.percentComplete = savedProgress;
+          console.log(
+            `updated progress state for ${side}`,
+            unwrap(progressState)
+          );
           // TODO: solid
           // Animated.timing(progressState.headerOpacityAnim, {
           //   toValue: progressState.showPopover ? 0 : 1,
@@ -372,6 +378,7 @@ export const getInitialBrowsingState = (
           rs.repertoire[s.sidebarState.activeSide].positionResponses[
             s.chessboard.getCurrentEpd()
           ];
+        console.log("existing moves", existingMoves);
         existingMoves?.map((r) => {
           if (_tableResponses[r.sanPlus]) {
             _tableResponses[r.sanPlus].repertoireMove = r;
@@ -734,8 +741,7 @@ export const getInitialBrowsingState = (
       set(([s, rs]) => {
         s.sidebarState.moveLog = s.chessboard.get((s) => s.moveLog);
         s.sidebarState.currentEpd = s.chessboard.getCurrentEpd();
-        s.sidebarState.currentSide =
-          s.chessboard.getTurn() === "b" ? "black" : "white";
+        s.sidebarState.currentSide = s.chessboard.getTurn();
         s.sidebarState.positionHistory = s.chessboard.get(
           (s) => s.positionHistory
         );

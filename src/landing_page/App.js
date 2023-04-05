@@ -3,7 +3,7 @@ import Index from "./pages/index";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 const GlobalStyles = createGlobalStyle`
-    body {
+    .landing-page {
         margin: 0;
         padding: 0;
         font-family: sans-serif;

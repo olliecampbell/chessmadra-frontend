@@ -28,7 +28,6 @@ export interface ChessboardInterface {
   getDelegate(): ChessboardDelegate | null;
   resetPosition: () => void;
   setPosition: (_: Chess) => void;
-  highlightSquares: (highlightSquares: Square[]) => void;
   makeMove: (_: Move | string) => void;
   clearPending: () => void;
   backOne: () => void;
@@ -62,6 +61,9 @@ export interface ChessboardInterface {
   stopNotifyingDelegates: () => void;
   updateMoveLogPgn: () => void;
   resumeNotifyingDelegates: () => void;
+
+  setFrozen: (_: boolean) => void;
+  setPerspective: (_: Side) => void;
 }
 
 export interface ChessboardDelegate {
@@ -81,12 +83,11 @@ export interface ChessboardViewState {
   delegate: any;
   notifyingDelegates: any;
   ringColor: string;
-  ringRef: HTMLDivElement | null;
+  refs: {
+    ringRef: HTMLDivElement | null;
+    pieceRefs: Partial<Record<Square, HTMLDivElement>>;
+  };
   _animatePosition?: Chess;
-  currentHighlightedSquares: Set<Square>;
-  pieceRefs: Partial<Record<Square, HTMLDivElement>>;
-  squareHighlightRefs: Partial<Record<Square, HTMLDivElement>>;
-  moveIndicatorRef: Accessor<HTMLDivElement> | null;
   position: Chess;
   previewPosition?: Chess;
   animatedMove?: Move;
@@ -132,17 +133,16 @@ export const createChessboardInterface = (): [
       delegate: null,
       plans: [],
       notifyingDelegates: true,
-      pieceRefs: {},
       moveLog: [],
       moveLogPgn: "",
       position: createChessProxy(new Chess()),
       positionHistory: [START_EPD],
       moveHistory: [],
-      currentHighlightedSquares: new Set(),
-      squareHighlightRefs: {},
-      ringRef: null,
+      refs: {
+        ringRef: null,
+        pieceRefs: {},
+      },
       ringColor: "red",
-      moveIndicatorRef: null,
       availableMoves: [],
       drag: {
         square: null,
@@ -177,8 +177,19 @@ export const createChessboardInterface = (): [
       return s ? s(chessboardStore) : chessboardStore;
     },
     getTurn: () => {
-      return chessboardStore.position.turn();
+      return chessboardStore.position.turn() === "w" ? "white" : "black";
     },
+    setFrozen: (x: boolean) => {
+      set((s) => {
+        s.frozen = x;
+      });
+    },
+    setPerspective: (x: Side) => {
+      set((s) => {
+        s.flipped = x === "black";
+      });
+    },
+
     updateMoveLogPgn: () => {
       set((s) => {
         s.moveLog = s.position.history();
@@ -207,9 +218,7 @@ export const createChessboardInterface = (): [
         chessboardInterface.clearPending();
         s.availableMoves = [];
         let pos = s.position;
-        console.trace("position in here", pos.ascii());
         let moveObject = pos.move(m);
-        console.log("moveObject in here", moveObject);
         if (moveObject) {
           let epd = genEpd(pos);
           s.positionHistory.push(epd);
@@ -235,7 +244,7 @@ export const createChessboardInterface = (): [
           getSquareOffset(s.previewedMove.from, s.flipped),
         ];
         const duration = getAnimationTime(start, end);
-        const pieceRef = s.pieceRefs[s.previewedMove.from as Square];
+        const pieceRef = s.refs.pieceRefs[s.previewedMove.from as Square];
         const top = `${end.y * 100}%`;
         const left = `${end.x * 100}%`;
         const timeline = anime.timeline({
@@ -252,7 +261,7 @@ export const createChessboardInterface = (): [
           const end = getSquareOffset(supplementaryMove.to, s.flipped);
           const top = `${end.y * 100}%`;
           const left = `${end.x * 100}%`;
-          const pieceRef = s.pieceRefs[supplementaryMove.from as Square];
+          const pieceRef = s.refs.pieceRefs[supplementaryMove.from as Square];
           timeline.add({
             targets: pieceRef,
             easing: "easeInOutSine",
@@ -308,13 +317,11 @@ export const createChessboardInterface = (): [
     },
     stepPreviewMove: () => {
       set((s: ChessboardViewState) => {
-        console.log("steppreviewmove");
         if (
           s.isReversingPreviewMove ||
           s.isAnimatingPreviewMove ||
           s._animatePosition
         ) {
-          console.log("steppreviewmove2");
           return;
         }
         if (
@@ -322,15 +329,12 @@ export const createChessboardInterface = (): [
           s.nextPreviewMove &&
           !isEqual(s.previewedMove, s.nextPreviewMove)
         ) {
-          console.log("steppreviewmove4");
           chessboardInterface.reversePreviewMove();
         }
         if (s.previewedMove && !s.nextPreviewMove) {
-          console.log("steppreviewmove5");
           chessboardInterface.reversePreviewMove();
         }
         if (!s.previewedMove && s.nextPreviewMove) {
-          console.log("steppreviewmove6");
           chessboardInterface.animatePreviewMove();
         }
       });
@@ -357,7 +361,7 @@ export const createChessboardInterface = (): [
           getSquareOffset(move.to, s.flipped),
         ];
         const duration = getAnimationTime(start, end);
-        const pieceRef = s.pieceRefs[move.from as Square];
+        const pieceRef = s.refs.pieceRefs[move.from as Square];
         const top = `${end.y * 100}%`;
         const left = `${end.x * 100}%`;
         let timeline = anime.timeline({
@@ -424,7 +428,7 @@ export const createChessboardInterface = (): [
         let { x, y } = getSquareOffset(end, s.flipped);
         console.log("animateing piece move", start, end, x, y);
         anime({
-          targets: s.pieceRefs[start as Square],
+          targets: s.refs.pieceRefs[start as Square],
           top: `${y * 100}%`,
           left: `${x * 100}%`,
           duration: moveDuration,
@@ -480,26 +484,6 @@ export const createChessboardInterface = (): [
         }
       });
     },
-    highlightSquares: (squares: Square[]) => {
-      set((s) => {
-        const refs = squares.map((sq) => s.squareHighlightRefs[sq as Square]);
-        squares.forEach((sq) => {
-          s.currentHighlightedSquares.add(sq);
-        });
-        // anime({
-        //   targets: refs,
-        //   easing: "easeInOutSine",
-        //   duration: 150,
-        //   top: top,
-        //   opacity: 1.0,
-        // });
-      });
-    },
-    highlightMoveSquares: (move: Move) =>
-      set((s) => {
-        let highlightSquares = getHighlightSquares(move);
-        chessboardInterface.highlightSquares(highlightSquares);
-      }),
     backOne: () => {
       set((s) => {
         if (s.positionHistory.length > 1) {
@@ -525,6 +509,12 @@ export const createChessboardInterface = (): [
         console.log("resetting position");
         s.position = createChessProxy(new Chess());
         chessboardInterface.clearPending();
+        s.positionHistory = [START_EPD];
+        s.moveHistory = [];
+        s.previewPosition = undefined;
+        chessboardInterface.updateMoveLogPgn();
+        chessboardInterface.getDelegate()?.onPositionUpdated?.();
+        chessboardInterface.getDelegate()?.onBack?.();
       });
     },
     // visualizeMove: (move: Move, speed: PlaybackSpeed, callback: () => void) => {
@@ -610,13 +600,14 @@ export const createChessboardInterface = (): [
     },
     flashRing: (success: boolean) => {
       set((state) => {
+        console.log("flashing the ring", state.refs.ringRef);
         const ringColor = success
           ? c.colors.successColor
           : c.colors.failureLight;
         state.ringColor = ringColor;
         // state.ringRef.style.backgroundColor = ringColor;
         anime({
-          targets: state.ringRef,
+          targets: state.refs.ringRef,
           easing: "easeInOutSine",
           duration: 300,
           direction: "alternate",

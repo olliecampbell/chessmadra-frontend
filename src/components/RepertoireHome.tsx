@@ -1,10 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import {
-  capitalize,
-  upperFirst,
-} from "lodash-es";
+import { capitalize, upperFirst } from "lodash-es";
 import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
@@ -29,7 +26,8 @@ import {
   ThemeSettings,
 } from "./SidebarSettings";
 import { BOARD_THEMES_BY_ID } from "~/utils/theming";
-import { Accessor, For, Show } from "solid-js";
+import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
+import { unwrap } from "solid-js/store";
 
 export const RepertoireHome = (props: {}) => {
   const userState = getAppState().userState;
@@ -43,9 +41,30 @@ export const RepertoireHome = (props: {}) => {
       bySide((side) => s.earliestReviewDueFromEpd[side][START_EPD]),
     ]
   );
-  const [progressState] = useBrowsingState(([s]) => {
-    return [bySide((side) => s.repertoireProgressState[side])];
+  // const [progressState] = useBrowsingState(([s]) => {
+  //   return [bySide((side) => s.repertoireProgressState[side])];
+  // });
+  const progressState = () =>
+    getAppState().repertoireState.browsingState.repertoireProgressState[
+      "white"
+    ];
+  createEffect(() => {
+    console.log("progress state", progressState()?.percentComplete);
   });
+  createEffect(() => {
+    console.log("num lines", numLines()["white"]);
+  });
+  // let interval = setInterval(() => {
+  //   console.log("num moves ", numLines()["white"]);
+  //   console.log(
+  //     "num moves ",
+  //     getAppState().repertoireState.getLineCount("white")
+  //   );
+  // }, 500);
+  // onCleanup(() => {
+  //   console.log("cleaning up");
+  //   clearInterval(interval);
+  // });
   const overallActions: Accessor<SidebarAction[]> = () => {
     const totalDue =
       numMovesDueBySide()?.white ?? 0 + numMovesDueBySide()?.black ?? 0;
@@ -79,41 +98,43 @@ export const RepertoireHome = (props: {}) => {
     <Show when={userState.user}>
       <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
         <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
-          {SIDES.map((side, i) => {
-            return (
-              <SidebarFullWidthButton
-                action={{
-                  style: "wide",
-                  text: `${capitalize(side)} repertoire`,
-                  right: (
-                    <CMText style={s(c.fg(c.colors.textSecondary))}>
-                      {numLines()[side] > 0
-                        ? `${Math.round(
-                            progressState()[side].percentComplete
-                          )}% complete`
-                        : "Not started"}
-                    </CMText>
-                  ),
-                  onPress: () => {
-                    quick((s) => {
-                      trackEvent("home.select_side", { side });
-                      if (numLines()[side] > 0) {
-                        s.repertoireState.browsingState.moveSidebarState(
-                          "right"
-                        );
-                        s.repertoireState.startBrowsing(side, "overview");
-                      } else {
-                        s.repertoireState.browsingState.moveSidebarState(
-                          "right"
-                        );
-                        s.repertoireState.startBrowsing(side, "overview");
-                      }
-                    });
-                  },
-                }}
-              />
-            );
-          })}
+          <For each={SIDES}>
+            {(side, i) => {
+              return (
+                <SidebarFullWidthButton
+                  action={{
+                    style: "wide",
+                    text: `${capitalize(side)} repertoire`,
+                    right: (
+                      <CMText style={s(c.fg(c.colors.textSecondary))}>
+                        {numLines()[side] > 0
+                          ? `${Math.round(
+                              progressState().percentComplete
+                            )}% complete`
+                          : "Not started"}
+                      </CMText>
+                    ),
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.select_side", { side });
+                        if (numLines()[side] > 0) {
+                          s.repertoireState.browsingState.moveSidebarState(
+                            "right"
+                          );
+                          s.repertoireState.startBrowsing(side, "overview");
+                        } else {
+                          s.repertoireState.browsingState.moveSidebarState(
+                            "right"
+                          );
+                          s.repertoireState.startBrowsing(side, "overview");
+                        }
+                      });
+                    },
+                  }}
+                />
+              );
+            }}
+          </For>
         </div>
         <Spacer height={46} />
         <Show when={overallActions}>

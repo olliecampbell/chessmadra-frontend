@@ -77,11 +77,11 @@ export interface RepertoireState {
   earliestReviewDueFromEpd: BySide<Record<string, string>>;
   expectedNumMovesFromEpd: BySide<Record<string, number>>;
   quick: (fn: (_: RepertoireState) => void) => void;
-  repertoire: Repertoire;
-  numResponsesAboveThreshold: BySide<number>;
+  repertoire: Repertoire | undefined;
+  numResponsesAboveThreshold?: BySide<number>;
   positionReports: BySide<Record<string, PositionReport>>;
   failedToFetchSharedRepertoire?: boolean;
-  repertoireGrades: BySide<RepertoireGrade>;
+  repertoireGrades: BySide<RepertoireGrade | null>;
   repertoireShareId?: string;
   fetchSharedRepertoire: (id: string) => void;
   fetchRepertoire: (initial?: boolean) => void;
@@ -244,7 +244,7 @@ export const getInitialRepertoireState = (
     debugPawnStructuresState: null,
     addedLineState: null,
     isAddingPendingLine: false,
-    numResponsesAboveThreshold: null,
+    numResponsesAboveThreshold: undefined,
     pawnStructures: [],
     isUpdatingEloRange: false,
     repertoire: undefined,
@@ -446,6 +446,9 @@ export const getInitialRepertoireState = (
       }, "onMove"),
     updateRepertoireStructures: () =>
       set(([s, gs]) => {
+        if (!s.repertoire) {
+          return;
+        }
         const threshold = gs.userState.getCurrentThreshold();
         mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
           const seenEpds: Set<string> = new Set();
@@ -1019,12 +1022,13 @@ export const getInitialRepertoireState = (
     //     window.location.href = url;
     //   }),
     fetchRepertoire: (initial?: boolean) =>
-      set(([s]) => {
+      set(([s, appState]) => {
+        let user = appState.userState.user;
         client
           .get("/api/v1/openings")
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s]) => {
-              console.log("setting repertoire");
+              console.log("setting repertoire for user");
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.repertoireShareId = data.shareId;

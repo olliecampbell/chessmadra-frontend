@@ -20,14 +20,11 @@ const AuthHandler = ({ children }) => {
     if (userState.token) {
       Cookies.set(JWT_COOKIE_KEY, userState.token, { expires: 5000 });
     }
-  });
-  createEffect(() => {
     if (userState.tempUserUuid) {
       Cookies.set(TEMP_USER_UUID, userState.tempUserUuid, { expires: 5000 });
     }
   });
-  createEffect;
-  createEffect(() => {
+  onMount(() => {
     userState.quick((s) => {
       const cookieToken = Cookies.get(JWT_COOKIE_KEY);
       if (cookieToken) {
@@ -35,10 +32,6 @@ const AuthHandler = ({ children }) => {
       } else {
         s.authStatus = AuthStatus.Unauthenticated;
       }
-    });
-  }, []);
-  onMount(() => {
-    userState.quick((s) => {
       const tempUserUuid = Cookies.get(TEMP_USER_UUID);
       if (tempUserUuid) {
         s.tempUserUuid = tempUserUuid;
