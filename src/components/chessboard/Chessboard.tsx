@@ -117,16 +117,15 @@ export function ChessboardView(props: {
   styles?: any;
   ref: (_: HTMLElement) => void;
 }) {
-  const chessboardStore = props.chessboardInterface.get((s) => s);
+  const chessboardStore = createMemo(() =>
+    props.chessboardInterface.get((s) => s)
+  );
   let preview = true;
   // testing preview move
-  const availableMoves = () => chessboardStore.availableMoves;
+  const availableMoves = () => chessboardStore().availableMoves;
 
   const pos = () =>
-    chessboardStore._animatePosition ?? chessboardStore.position;
-  createEffect(() => {
-    console.log("updated position", pos(), chessboardStore._animatePosition);
-  });
+    chessboardStore()._animatePosition ?? chessboardStore().position;
   hasAnimateStarted = false;
 
   // onMount(() => {
@@ -154,17 +153,14 @@ export function ChessboardView(props: {
   // onCleanup(() => {
   //   clearInterval(interval);
   // });
-  const drag = () => chessboardStore.drag;
+  const drag = () => chessboardStore().drag;
   // const position = () => props.state._animatePosition ?? props.state.position;
   const userState = getAppState().userState;
   const user = () => userState.user;
-  createEffect(() => {
-    console.log("new user?", user());
-  });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[user()?.theme] ?? BOARD_THEMES_BY_ID["lichess-brown"];
   const colors = () => [theme().light.color, theme().dark.color];
-  const flipped = createMemo(() => !!chessboardStore.flipped);
+  const flipped = createMemo(() => !!chessboardStore().flipped);
   const getSquareFromLayoutAndGesture = (
     chessboardLayout,
     gesture: XY
@@ -173,17 +169,24 @@ export function ChessboardView(props: {
     const rowPercent = gesture.y / chessboardLayout.height;
     let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
     let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
+    console.log("flipped?", flipped());
+    let square = `${COLUMNS[column]}${ROWS[7 - row]}`;
     if (flipped()) {
-      column = 7 - column;
-      row = 7 - row;
+      square = `${COLUMNS[7 - column]}${ROWS[row]}`;
     }
     // @ts-ignore
     return [
-      `${COLUMNS[column]}${ROWS[7 - row]}`,
+      square,
       (column + 0.5) * (chessboardLayout.width / 8),
       (row + 0.5) * (chessboardLayout.height / 8),
     ];
   };
+  const refs: ChessboardViewState["refs"] = { ringRef: null, pieceRefs: {} };
+  createEffect(() => {
+    props.chessboardInterface.set((s) => {
+      s.refs = refs;
+    });
+  });
 
   const moveIndicatorAnim = () => props.state.moveIndicatorAnim;
   const moveIndicatorOpacityAnim = () => props.state.moveIndicatorOpacityAnim;
@@ -214,7 +217,7 @@ export function ChessboardView(props: {
       };
     }
   };
-  const frozen = () => chessboardStore.frozen;
+  const frozen = () => chessboardStore().frozen;
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
     const tap = getTapOffset(evt, chessboardLayout);
@@ -222,7 +225,7 @@ export function ChessboardView(props: {
       chessboardLayout,
       tap
     );
-    console.log("got square", square);
+    console.log({ tap, centerX, chessboardLayout });
     props.chessboardInterface.set((store) => {
       const drag = store.drag;
       drag.square = square;
@@ -236,9 +239,6 @@ export function ChessboardView(props: {
         square: square,
         verbose: true,
       });
-      props.chessboardInterface.highlightSquares(
-        store.availableMoves.map((m) => m.to as Square)
-      );
     });
 
     setIsTap(true);
@@ -368,114 +368,112 @@ export function ChessboardView(props: {
           <FadeInOut
             maxOpacity={1.0}
             style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
-            open={() => !!chessboardStore.showPlans}
+            open={() => !!chessboardStore().showPlans}
           >
-            <For each={chessboardStore.plans}>
+            <For each={chessboardStore().plans}>
               {(metaPlan, i) => {
                 const { plan } = metaPlan;
-                const from = getSquareOffset(plan.fromSquare, flipped());
-                const to = getSquareOffset(plan.toSquare, flipped());
-                const dx = Math.abs(from.x - to.x);
-                const dy = Math.abs(from.y - to.y);
-                const length =
-                  Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) - (1 / 8) * 0.1;
-                const angle = Math.atan2(to.y - from.y, to.x - from.x);
-                const angleDeg = (angle * 180) / Math.PI;
-                let color = metaPlan.mine ? c.arrowColors[55] : c.grays[35];
-                let gradientColor = c.grays[100];
-                let focused = false;
-                let opacity = 80;
-                if (!metaPlan.mine) {
-                  opacity = 50;
-                }
-                if (chessboardStore.focusedPlans?.includes(metaPlan.id)) {
-                  focused = true;
-                  color = c.purples[65];
-                  opacity = 100;
-                  gradientColor = c.purples[30];
-                }
-                const duration = "1.0s";
-                const toSquareCenterX = to.x + 1 / 8 / 2;
-                const toSquareCenterY = to.y + 1 / 8 / 2;
-                const x1 = from.x + 1 / 8 / 2;
-                const x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
-                const y1 = from.y + 1 / 8 / 2;
-                const y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
-                const xDiff = x2 - x1;
-                const yDiff = y2 - y1;
+                const {
+                  focused,
+                  opacity,
+                  length,
+                  color,
+                  from,
+                  to,
+                  xDiff,
+                  yDiff,
+                  duration,
+                  toSquareCenterX,
+                  toSquareCenterY,
+                  angle,
+                  angleDeg,
+                } = destructure(() => {
+                  const from = getSquareOffset(plan.fromSquare, flipped());
+                  const to = getSquareOffset(plan.toSquare, flipped());
+                  const dx = Math.abs(from.x - to.x);
+                  const dy = Math.abs(from.y - to.y);
+                  const length =
+                    Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) -
+                    (1 / 8) * 0.1;
+                  const angle = Math.atan2(to.y - from.y, to.x - from.x);
+                  const angleDeg = (angle * 180) / Math.PI;
+                  let color = metaPlan.mine ? c.arrowColors[55] : c.grays[35];
+                  let gradientColor = c.grays[100];
+                  let focused = false;
+                  let opacity = 80;
+                  if (!metaPlan.mine) {
+                    opacity = 50;
+                  }
+                  if (chessboardStore().focusedPlans?.includes(metaPlan.id)) {
+                    focused = true;
+                    color = c.purples[65];
+                    opacity = 100;
+                    gradientColor = c.purples[30];
+                  }
+                  const duration = "1.0s";
+                  const toSquareCenterX = to.x + 1 / 8 / 2;
+                  const toSquareCenterY = to.y + 1 / 8 / 2;
+                  const x1 = from.x + 1 / 8 / 2;
+                  const x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
+                  const y1 = from.y + 1 / 8 / 2;
+                  const y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
+                  const xDiff = x2 - x1;
+                  const yDiff = y2 - y1;
+                  return {
+                    focused,
+                    opacity,
+                    from,
+                    to,
+                    color,
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    xDiff,
+                    yDiff,
+                    duration,
+                    length,
+                    toSquareCenterX,
+                    toSquareCenterY,
+                    angle,
+                    angleDeg,
+                  };
+                });
 
                 return (
                   <div
                     style={s(
                       c.absoluteFull,
                       c.noPointerEvents,
-                      c.zIndex(focused ? 101 : 100),
-                      c.opacity(opacity)
+                      c.zIndex(focused() ? 101 : 100),
+                      c.opacity(opacity())
                     )}
                   >
                     <svg width="100%" height="100%" viewBox="0 0 1 1">
-                      <linearGradient
-                        id={`plan-line-gradient-${i}`}
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop offset="0%" stop-color={color}></stop>
-                        <stop offset="25%" stop-color={gradientColor}></stop>
-                        <stop offset="50%" stop-color={color}></stop>
-                        <stop offset="75%" stop-color={gradientColor}></stop>
-                        <stop offset="100%" stop-color={color} />
-                        <animate
-                          attributeName="y2"
-                          values={`${y2};${y2 + yDiff}`}
-                          dur={duration}
-                          repeatCount="indefinite"
-                        />
-                        <animate
-                          attributeName="y1"
-                          values={`${y1 - yDiff};${y1}`}
-                          dur={duration}
-                          repeatCount="indefinite"
-                        />
-                        <animate
-                          attributeName="x2"
-                          values={`${x2};${x2 + xDiff}`}
-                          dur={duration}
-                          repeatCount="indefinite"
-                        />
-                        <animate
-                          attributeName="x1"
-                          values={`${x1 - xDiff};${x1}`}
-                          dur={duration}
-                          repeatCount="indefinite"
-                        />
-                      </linearGradient>
                       <line
                         // stroke={`url(#${`plan-line-gradient-${i}`})`}
-                        stroke={color}
+                        stroke={color()}
                         stroke-width={1.4 / 100}
                         stroke-linecap="round"
-                        x1={from.x + 1 / 8 / 2}
-                        y1={from.y + 1 / 8 / 2}
-                        x2={from.x + 1 / 8 / 2 + length * Math.cos(angle)}
-                        y2={from.y + 1 / 8 / 2 + length * Math.sin(angle)}
+                        x1={from().x + 1 / 8 / 2}
+                        y1={from().y + 1 / 8 / 2}
+                        x2={from().x + 1 / 8 / 2 + length() * Math.cos(angle())}
+                        y2={from().y + 1 / 8 / 2 + length() * Math.sin(angle())}
                       />
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width={(1 / 8) * 0.04}
-                        fill={color}
-                        stroke={color}
+                        fill={color()}
+                        stroke={color()}
                         transform={`rotate(${
-                          angleDeg - 90
-                        } ${toSquareCenterX} ${toSquareCenterY})`}
-                        d={`M ${toSquareCenterX - 2 / 100},${
-                          toSquareCenterY - 2.8 / 100
-                        } ${toSquareCenterX},${toSquareCenterY - 0.004} ${
-                          toSquareCenterX + 2 / 100
-                        },${toSquareCenterY - 2.8 / 100} Z`}
+                          angleDeg() - 90
+                        } ${toSquareCenterX()} ${toSquareCenterY()})`}
+                        d={`M ${toSquareCenterX() - 2 / 100},${
+                          toSquareCenterY() - 2.8 / 100
+                        } ${toSquareCenterX()},${toSquareCenterY() - 0.004} ${
+                          toSquareCenterX() + 2 / 100
+                        },${toSquareCenterY() - 2.8 / 100} Z`}
                       />
                       {/*<circle
                         cx={to.x + 1 / 8 / 2}
@@ -512,9 +510,7 @@ export function ChessboardView(props: {
           <div
             id={"ring-indicator"}
             ref={(x) => {
-              props.chessboardInterface.set((store) => {
-                store.ringRef = x;
-              });
+              refs.ringRef = x;
             }}
             class={clsx("opacity-0 shadow-white")}
             style={s(
@@ -523,7 +519,7 @@ export function ChessboardView(props: {
               c.shadow(0, 0, 0, 4, "var(--shadow-color)"),
               c.fullHeight,
               c.zIndex(3),
-              c.keyedProp("--shadow-color")(chessboardStore.ringColor),
+              c.keyedProp("--shadow-color")(chessboardStore().ringColor),
               c.noPointerEvents
             )}
           ></div>
@@ -561,27 +557,18 @@ export function ChessboardView(props: {
 
                 return { animated, posStyles };
               };
-              createEffect(() => {
-                console.log("new piece?");
-              });
               const { animated, posStyles } = destructure(animatedProps);
               const hiddenBecauseTake = createMemo(
                 () =>
-                  chessboardStore.previewedMove?.to === square &&
-                  chessboardStore.previewedMove?.color !== piece()?.color
+                  chessboardStore().previewedMove?.to === square &&
+                  chessboardStore().previewedMove?.color !== piece()?.color
               );
 
               const priority = () =>
-                chessboardStore.activeFromSquare === square;
+                chessboardStore().activeFromSquare === square ||
+                chessboardStore().drag.square === square;
               const containerViewStyles = () => {
-                // track
                 pos();
-                if (hasAnimateStarted) {
-                  // debugger;
-                }
-                if (square === "e5") {
-                  console.log("re-computing containerViewStyles");
-                }
                 return s(
                   c.absolute,
                   posStyles(),
@@ -597,7 +584,7 @@ export function ChessboardView(props: {
                     id={`piece-${square}`}
                     ref={(v) => {
                       props.chessboardInterface.set((s) => {
-                        s.pieceRefs[square] = v;
+                        refs.pieceRefs[square] = v;
                       });
                     }}
                   >
@@ -644,30 +631,15 @@ export function ChessboardView(props: {
                       return availableMoves().find((m) => m.to == square());
                     });
                     const isFromSquare = () =>
-                      chessboardStore.activeFromSquare === square();
+                      chessboardStore().activeFromSquare === square();
                     const isDraggedOverSquare = () =>
-                      chessboardStore.draggedOverSquare == square();
-                    const isJustIndicator = () =>
-                      availableMove() &&
-                      !isDraggedOverSquare() &&
-                      !isFromSquare();
-                    const isAvailableMoveIndicator = () =>
-                      availableMove() && isJustIndicator();
+                      chessboardStore().draggedOverSquare == square();
                     const highlightingPreviewMove = () =>
-                      chessboardStore.previewedMove;
+                      chessboardStore().previewedMove;
+                    const dragging = () => !!chessboardStore().drag.square;
                     const isPreviewSquare = () =>
-                      chessboardStore.previewedMove?.to === square() ||
-                      chessboardStore.previewedMove?.from === square();
-                    createEffect(() => {
-                      console.log(
-                        "is preview square?",
-                        square(),
-                        isPreviewSquare(),
-                        chessboardStore.previewedMove
-                      );
-                      if (square() === "d4") {
-                      }
-                    });
+                      chessboardStore().previewedMove?.to === square() ||
+                      chessboardStore().previewedMove?.from === square();
                     const isLastMoveSquare = createMemo(
                       () =>
                         props.chessboardInterface.getLastMove()?.to ==
@@ -678,6 +650,15 @@ export function ChessboardView(props: {
 
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
+                    const shouldHighlight = () =>
+                      isFromSquare() ||
+                      isDraggedOverSquare() ||
+                      (isLastMoveSquare() &&
+                        !highlightingPreviewMove() &&
+                        !availableMoves()) ||
+                      isPreviewSquare();
+                    const isJustIndicator = () =>
+                      availableMove() && !shouldHighlight();
                     return (
                       <div
                         style={s(
@@ -692,7 +673,7 @@ export function ChessboardView(props: {
                       >
                         <div
                           class="absolute inset-0 grid place-items-center rounded-full"
-                          style={s(c.zIndex(1))}
+                          style={s(c.zIndex(10))}
                         >
                           <div
                             class={`h-1/3 w-1/3 rounded-full transition-opacity duration-300 ${
@@ -711,13 +692,7 @@ export function ChessboardView(props: {
                         </div>
                         <div
                           class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity ${
-                            isFromSquare() ||
-                            isDraggedOverSquare() ||
-                            (isLastMoveSquare() &&
-                              !highlightingPreviewMove()) ||
-                            isPreviewSquare()
-                              ? "opacity-100"
-                              : "opacity-0"
+                            shouldHighlight() ? "opacity-100" : "opacity-0"
                           }`}
                           id={`highlight-${square()}`}
                           style={s(
@@ -726,7 +701,7 @@ export function ChessboardView(props: {
                             c.zIndex(1)
                           )}
                         />
-                        {isBottomEdge && !chessboardStore.hideCoordinates && (
+                        {isBottomEdge && !chessboardStore().hideCoordinates && (
                           <CMText
                             style={s(
                               c.fg(inverseColor),
@@ -741,7 +716,7 @@ export function ChessboardView(props: {
                             {tileLetter}
                           </CMText>
                         )}
-                        {isRightEdge && !chessboardStore.hideCoordinates && (
+                        {isRightEdge && !chessboardStore().hideCoordinates && (
                           <CMText
                             style={s(
                               c.fg(inverseColor),

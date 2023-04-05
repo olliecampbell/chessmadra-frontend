@@ -140,8 +140,14 @@ export const RepertoireMovesTable = ({
             (myTurn && moveHasTag(r, MoveTag.Transposes))
           );
         }) as TableResponse[];
-        const numTruncated = responses.length - trimmedResponses.length;
+        const numTruncated = responses().length - trimmedResponses.length;
         const truncated = numTruncated > 0;
+        console.log(
+          "numTruncated",
+          responses().length,
+          numTruncated,
+          truncated
+        );
         // console.log("returning sections", sections);
         return {
           trimmedResponses,
@@ -290,28 +296,26 @@ export const RepertoireMovesTable = ({
       </div>
       <Spacer height={12} />
       <div style={s(c.row, c.px(c.getSidebarPadding(responsive)))}>
-        {truncated() && mode() == "build" && (
-          <>
-            <Pressable
-              style={s(c.pb(2))}
-              onPress={() => {
-                setExpandedLength(trimmedResponses.length + 5);
-                trackEvent("browsing.moves_table.show_more");
-              }}
+        <Show when={truncated() && mode() == "build"}>
+          <Pressable
+            style={s(c.pb(2))}
+            onPress={() => {
+              setExpandedLength(trimmedResponses().length + 5);
+              trackEvent("browsing.moves_table.show_more");
+            }}
+          >
+            <CMText
+              style={s(
+                c.fontSize(12),
+                c.fg(c.colors.textTertiary),
+                c.weightSemiBold
+              )}
             >
-              <CMText
-                style={s(
-                  c.fontSize(12),
-                  c.fg(c.colors.textTertiary),
-                  c.weightSemiBold
-                )}
-              >
-                Show more moves
-              </CMText>
-            </Pressable>
-            <Spacer width={16} />
-          </>
-        )}
+              Show more moves
+            </CMText>
+          </Pressable>
+          <Spacer width={16} />
+        </Show>
         {!hideAnnotations && mode() == "build" && (
           <>
             <Pressable
@@ -578,15 +582,14 @@ const Response = ({
                 // If has transposition tag, quick make transposition state visible on browser state
 
                 if (tableResponse().transposes) {
-                  s.repertoireState.browsingState.chessboardState.makeMove(
+                  s.repertoireState.browsingState.chessboard.makeMove(
                     sanPlus()
                   );
                   s.repertoireState.browsingState.sidebarState.transposedState.visible =
                     true;
-                  s.repertoireState.browsingState.chessboardState.showPlans =
-                    true;
+                  s.repertoireState.browsingState.chessboard.showPlans = true;
                 } else {
-                  s.repertoireState.browsingState.chessboardState.makeMove(
+                  s.repertoireState.browsingState.chessboard.makeMove(
                     sanPlus()
                   );
                 }

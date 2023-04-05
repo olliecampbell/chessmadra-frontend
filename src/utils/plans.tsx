@@ -143,7 +143,7 @@ function getPieceDescription(plan: MetaPlan): string {
   return `${pieceSymbolToPieceName(plan.piece)} on ${plan.plan.fromSquare}`;
 }
 
-type PlanSection = JSXElement
+type PlanSection = JSXElement;
 
 class PlanConsumer {
   metaPlans: MetaPlan[];
@@ -592,17 +592,21 @@ const PlanMoveText = ({
   const { hovering, hoveringProps } = useHovering(
     () => {
       quick((s) => {
-        const chessboardState = s.repertoireState.browsingState.chessboardState;
-        if (plans) {
-          chessboardState.focusedPlans = plans.map((p) => p.id);
-        } else if (plan) {
-          chessboardState.focusedPlans = [plan.id];
-        }
+        const chessboard = s.repertoireState.browsingState.chessboard;
+        chessboard.set((c) => {
+          if (plans) {
+            c.focusedPlans = plans.map((p) => p.id);
+          } else if (plan) {
+            c.focusedPlans = [plan.id];
+          }
+        });
       });
     },
     () => {
       quick((s) => {
-        s.repertoireState.browsingState.chessboardState.focusedPlans = [];
+        s.repertoireState.browsingState.chessboard.set((c) => {
+          c.focusedPlans = [];
+        });
       });
     }
   );

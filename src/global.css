@@ -96,6 +96,9 @@ html {
 }
 
 body {
+  font-family: Inter, Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif !important;
+
   display: flex;
   /* Allows you to scroll below the viewport; default value is visible */
   overflow-y: auto;

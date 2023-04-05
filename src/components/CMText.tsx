@@ -1,7 +1,6 @@
 import { c, s } from "~/utils/styles";
 
 export const CMText = (props) => {
-  const { children } = props;
   return (
     <p
       class={props.class ?? ""}
@@ -25,7 +24,7 @@ export const CMText = (props) => {
         ),
       }}
     >
-      {children}
+      {props.children}
     </p>
   );
 };

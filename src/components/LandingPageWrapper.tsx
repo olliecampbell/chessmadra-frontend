@@ -49,5 +49,5 @@ export default function LandingPageWrapper() {
       document.getElementById("root")
     );
   });
-  return <div id="root"></div>;
+  return <div id="root" class={"landing-page"}></div>;
 }

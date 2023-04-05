@@ -22,7 +22,7 @@ import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
 import { trackEvent } from "~/utils/trackEvent";
-import { Component, JSXElement } from "solid-js";
+import { Component, JSXElement, Show } from "solid-js";
 import { useHovering } from "~/mocks";
 import { Pressable } from "./Pressable";
 import { Intersperse } from "./Intersperse";
@@ -31,7 +31,7 @@ export interface SidebarAction {
   rightText?: string;
   onPress: () => void;
   text: string;
-  right?: Component;
+  right?: JSXElement | string;
   subtext?: string;
   style: "primary" | "focus" | "secondary" | "tertiary" | "wide";
 }
@@ -81,7 +81,7 @@ export const SidebarActions = () => {
   ]);
   const reviewCurrentLineAction: SidebarAction = {
     onPress: () => {
-      trackEvent(`${mode}.added_line_state.practice_line`);
+      trackEvent(`${mode()}.added_line_state.practice_line`);
       quick((s) => {
         s.repertoireState.reviewState.reviewLine(currentLine(), activeSide());
       });
@@ -92,7 +92,7 @@ export const SidebarActions = () => {
   const continueAddingToThisLineAction: SidebarAction = {
     onPress: () => {
       quick((s) => {
-        trackEvent(`${mode}.added_line_state.contrinue_this_line`);
+        trackEvent(`${mode()}.added_line_state.contrinue_this_line`);
         s.repertoireState.browsingState.moveSidebarState("right");
         s.repertoireState.browsingState.sidebarState.addedLineState.visible =
           false;
@@ -149,11 +149,11 @@ export const SidebarActions = () => {
         buttons.push({
           onPress: () => {
             quick((s) => {
-              trackEvent(`${mode}.added_line_state.next_gap`);
+              trackEvent(`${mode()}.added_line_state.next_gap`);
               s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.dismissTransientSidebarState();
               const lastMatchingEpd = positionHistory()[i];
-              s.repertoireState.browsingState.chessboardState.playPgn(
+              s.repertoireState.browsingState.chessboard.playPgn(
                 lineToPgn(line),
                 {
                   animated: true,
@@ -193,8 +193,8 @@ export const SidebarActions = () => {
       buttons.push({
         onPress: () => {
           isPastCoverageGoal()
-            ? trackEvent(`${mode}.save_line`)
-            : trackEvent(`${mode}.save_line_premature`);
+            ? trackEvent(`${mode()}.save_line`)
+            : trackEvent(`${mode()}.save_line_premature`);
           quick((s) => {
             s.repertoireState.browsingState.requestToAddCurrentLine();
           });
@@ -225,7 +225,7 @@ export const SidebarActions = () => {
       if (numDue() > 0) {
         buttons.push({
           onPress: () => {
-            trackEvent(`${mode}.practice_due`);
+            trackEvent(`${mode()}.practice_due`);
             quick((s) => {
               s.repertoireState.reviewState.startReview(activeSide(), {
                 side: activeSide,
@@ -241,7 +241,7 @@ export const SidebarActions = () => {
       buttons.push({
         onPress: () => {
           quick((s) => {
-            trackEvent(`${mode}.practice_all`);
+            trackEvent(`${mode()}.practice_all`);
             s.repertoireState.reviewState.startReview(activeSide(), {
               side: activeSide,
               cram: true,
@@ -279,11 +279,7 @@ export const SidebarActions = () => {
     </div>
   );
 };
-export const SidebarFullWidthButton = ({
-  action,
-}: {
-  action: SidebarAction;
-}) => {
+export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
   const responsive = useResponsive();
   const { hovering, hoveringProps } = useHovering();
   let py = 12;
@@ -292,7 +288,7 @@ export const SidebarFullWidthButton = ({
       foregroundColor,
       subtextColor = null;
     let textStyles = s();
-    if (action.style === "focus") {
+    if (props.action.style === "focus") {
       foregroundColor = c.grays[10];
       subtextColor = c.grays[20];
       if (hovering()) {
@@ -301,7 +297,7 @@ export const SidebarFullWidthButton = ({
         backgroundColor = c.grays[82];
       }
     }
-    if (action.style === "wide") {
+    if (props.action.style === "wide") {
       textStyles = s(textStyles, c.fontSize(18), c.weightBold);
       foregroundColor = c.colors.textPrimary;
       // subtextColor = c.grays[20];
@@ -312,7 +308,7 @@ export const SidebarFullWidthButton = ({
         backgroundColor = c.grays[30];
       }
     }
-    if (action.style === "tertiary") {
+    if (props.action.style === "tertiary") {
       foregroundColor = c.colors.textTertiary;
       subtextColor = c.grays[20];
       if (hovering()) {
@@ -324,14 +320,14 @@ export const SidebarFullWidthButton = ({
       //   backgroundColor = c.grays[16];
       // }
     }
-    if (action.style === "secondary") {
+    if (props.action.style === "secondary") {
       foregroundColor = c.colors.textSecondary;
       subtextColor = c.grays[20];
       if (hovering()) {
         foregroundColor = c.colors.textPrimary;
       }
     }
-    if (action.style === "primary") {
+    if (props.action.style === "primary") {
       foregroundColor = c.colors.textPrimary;
       subtextColor = c.grays[70];
       if (hovering()) {
@@ -349,7 +345,7 @@ export const SidebarFullWidthButton = ({
   };
   return (
     <Pressable
-      onPress={action.onPress}
+      onPress={props.action.onPress}
       {...hoveringProps}
       style={s(
         c.fullWidth,
@@ -359,53 +355,56 @@ export const SidebarFullWidthButton = ({
         c.alignCenter,
         c.py(py),
         c.px(c.getSidebarPadding(responsive)),
-        action.style === "secondary" &&
+        props.action.style === "secondary" &&
           c.borderBottom(`1px solid ${c.colors.border}`)
       )}
-      key={action.text}
     >
       <div style={s(c.column)}>
         <CMText
           style={s(
             c.fg(styles().foregroundColor),
-            action.style === "focus" ? c.weightBold : c.weightSemiBold,
+            props.action.style === "focus" ? c.weightBold : c.weightSemiBold,
             c.fontSize(14),
             styles().textStyles
           )}
         >
-          {action.text}
+          {props.action.text}
         </CMText>
-        <Show when={action.subtext}>
+        <Show when={props.action.subtext}>
           <>
             <Spacer height={4} />
             <CMText
               style={s(
                 c.fg(styles().subtextColor),
-                action.style === "focus" ? c.weightBold : c.weightSemiBold,
+                props.action.style === "focus"
+                  ? c.weightBold
+                  : c.weightSemiBold,
                 c.fontSize(14)
               )}
             >
-              {action.subtext}
+              {props.action.subtext}
             </CMText>
           </>
         </Show>
       </div>
       <Spacer width={16} />
-      <Show when={action.right}>
+      <Show when={props.action.right}>
         <div style={s(c.row, c.center)}>
-          {typeof action.right === "string" ? (
+          {typeof props.action.right === "string" ? (
             <CMText
               style={s(
                 c.fg(c.colors.textTertiary),
-                action.style === "focus" ? c.weightBold : c.weightSemiBold,
+                props.action.style === "focus"
+                  ? c.weightBold
+                  : c.weightSemiBold,
                 c.fontSize(12)
               )}
             >
-              {action.right}
+              {props.action.right}
             </CMText>
           ) : (
             <CMText style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}>
-              {action.right}
+              {props.action.right}
             </CMText>
           )}
         </div>

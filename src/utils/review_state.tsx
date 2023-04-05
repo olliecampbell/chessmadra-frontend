@@ -144,12 +144,11 @@ export const getInitialReviewState = (
         // gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
         rs.animateChessboardShown(true);
-        // s.chessboardState.showMoveLog = true;
         s.setupNextMove();
       }),
     setupNextMove: () =>
       set(([s, rs]) => {
-        s.chessboardState.frozen = false;
+        s.chessboard.setFrozen(false);
         s.showNext = false;
         if (s.currentMove) {
           const failedMoves = values(s.failedReviewPositionMoves);
@@ -182,18 +181,18 @@ export const getInitialReviewState = (
         s.reviewSide = s.currentMove.side;
         s.failedReviewPositionMoves = {};
         s.completedReviewPositionMoves = {};
-        s.chessboardState.flipped = s.currentMove.moves[0].side === "black";
-        s.chessboardState.resetPosition();
-        s.chessboardState.playPgn(s.currentMove.line);
+        s.chessboard.setPerspective(s.currentMove.moves[0].side);
+        s.chessboard.resetPosition();
+        s.chessboard.playPgn(s.currentMove.line);
         const lastOpponentMove = last(
-          s.chessboardState.position.history({ verbose: true })
+          s.chessboard.get((s) => s.position).history({ verbose: true })
         );
-        s.chessboardState.backOne();
+        s.chessboard.backOne();
 
         if (lastOpponentMove) {
           window.setTimeout(() => {
             set(([s]) => {
-              s.chessboardState.makeMove(lastOpponentMove);
+              s.chessboard.makeMove(lastOpponentMove);
             });
           }, 300);
         }
@@ -202,21 +201,21 @@ export const getInitialReviewState = (
     giveUp: () =>
       set(([s]) => {
         const move = s.getNextReviewPositionMove();
-        const moveObj = s.chessboardState.position.validateMoves([
-          move.sanPlus,
-        ])?.[0];
+        const moveObj = s.chessboard
+          .get((s) => s.position)
+          .validateMoves([move.sanPlus])?.[0];
         if (!moveObj) {
           // todo : this should queue up instead of silently doing nothing
           console.error("Invalid move", logProxy(move));
           return;
         }
-        s.chessboardState.frozen = true;
+        s.chessboard.setFrozen(true);
         s.completedReviewPositionMoves[move.sanPlus] = move;
         s.getRemainingReviewPositionMoves().forEach((move) => {
           s.failedReviewPositionMoves[move.sanPlus] = move;
         });
         s.showNext = true;
-        s.chessboardState.animatePieceMove(
+        s.chessboard.animatePieceMove(
           moveObj,
           PlaybackSpeed.Normal,
           (completed) => {
@@ -332,7 +331,7 @@ export const getInitialReviewState = (
             (m) => move.san == m.sanPlus
           );
           if (matchingResponse) {
-            s.chessboardState.chessboardView?.flashRing(true);
+            s.chessboard.flashRing(true);
 
             s.completedReviewPositionMoves[matchingResponse.sanPlus] =
               matchingResponse;
@@ -343,7 +342,7 @@ export const getInitialReviewState = (
             if (willUndoBecauseMultiple) {
               window.setTimeout(() => {
                 set(([s]) => {
-                  s.chessboardState.backOne();
+                  s.chessboard.backOne();
                 });
               }, 500);
               return true;
@@ -378,7 +377,7 @@ export const getInitialReviewState = (
             );
             return true;
           } else {
-            s.chessboardState.chessboardView?.flashRing(false);
+            s.chessboard.flashRing(false);
             // TODO: reduce repetition
             s.getRemainingReviewPositionMoves().forEach((move) => {
               s.failedReviewPositionMoves[move.sanPlus] = move;

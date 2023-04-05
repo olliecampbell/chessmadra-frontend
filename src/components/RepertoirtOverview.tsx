@@ -54,7 +54,7 @@ export const RepertoireOverview = (props: {}) => {
   };
   const buildOptions = () => [
     {
-      hidden: empty() || isNil(biggestMiss),
+      hidden: empty() || isNil(biggestMiss()),
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.go_to_biggest_gap");
@@ -83,6 +83,7 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.browse_add_lines");
+          s.repertoireState.browsingState.moveSidebarState("right");
           startBrowsing("build", empty());
         });
       },
@@ -260,7 +261,7 @@ export const RepertoireOverview = (props: {}) => {
         }}
       </For>
       <div style={s(c.row, c.px(c.getSidebarPadding(responsive)), c.pt(8))}>
-      <Show when={!empty() }>
+        <Show when={!empty()}>
           <Pressable
             style={s(c.pb(2))}
             onPress={() => {
@@ -278,7 +279,7 @@ export const RepertoireOverview = (props: {}) => {
               {!expanded() ? "More options..." : "Hide "}
             </CMText>
           </Pressable>
-          </Show>
+        </Show>
       </div>
     </SidebarTemplate>
   );
@@ -326,24 +327,21 @@ const Option = ({
   );
 };
 
-export const CoverageAndBar = ({
-  side,
-  home,
-  hideBar,
-}: {
+export const CoverageAndBar = (props: {
   side: Side;
   home: boolean;
   hideBar?: boolean;
 }) => {
-  const inverse = home && side === "white";
-  const textStyles = s(
-    c.fg(inverse ? c.colors.textInverse : c.colors.textSecondary),
-    !home && c.fg(c.colors.textSecondary),
-    c.weightSemiBold,
-    c.fontSize(12)
-  );
+  const inverse = () => props.home && props.side === "white";
+  const textStyles = () =>
+    s(
+      c.fg(inverse() ? c.colors.textInverse : c.colors.textSecondary),
+      !props.home && c.fg(c.colors.textSecondary),
+      c.weightSemiBold,
+      c.fontSize(12)
+    );
   const [progressState] = useRepertoireState((s) => [
-    s.browsingState.repertoireProgressState[side],
+    s.browsingState.repertoireProgressState[props.side],
   ]);
 
   return (
@@ -355,16 +353,20 @@ export const CoverageAndBar = ({
           <>{Math.round(progressState().percentComplete)}% complete</>
         )}
       </CMText>
-      <Show when={!hideBar }>
+      <Show when={!props.hideBar}>
         <>
           <Spacer width={8} />
           <div
-            style={s(c.height(home ? 4 : 4), c.width(home ? 100 : 80), c.row)}
+            style={s(
+              c.height(props.home ? 4 : 4),
+              c.width(props.home ? 100 : 80),
+              c.row
+            )}
           >
-            <CoverageBar isInSidebar={!home} side={side} />
+            <CoverageBar isInSidebar={!props.home} side={props.side} />
           </div>
         </>
-        </Show>
+      </Show>
     </div>
   );
 };
