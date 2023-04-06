@@ -98,6 +98,7 @@ export interface ChessboardViewState {
   nextPreviewMove?: Move;
   drag: {
     square: Square | null;
+    enoughToDrag: boolean;
     x: number;
     y: number;
     transform: {
@@ -146,6 +147,7 @@ export const createChessboardInterface = (): [
       availableMoves: [],
       drag: {
         square: null,
+        enoughToDrag: false,
         x: 0,
         y: 0,
         transform: { x: 0, y: 0 },
@@ -403,7 +405,7 @@ export const createChessboardInterface = (): [
         s.availableMoves = [];
         s.drag = {
           square: null,
-
+          enoughToDrag: false,
           x: 0,
           y: 0,
           transform: { x: 0, y: 0 },

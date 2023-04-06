@@ -307,7 +307,7 @@ export const getInitialRepertoireState = (
         let lichessGames = [];
         const chessComGames = [];
         if (lichessUsername) {
-          const max = 200;
+          const max = 10;
           const { data }: { data: string } = await client.get(
             `https://lichess.org/api/games/user/${encodeURIComponent(
               lichessUsername

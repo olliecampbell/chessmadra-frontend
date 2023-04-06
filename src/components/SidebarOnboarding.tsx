@@ -562,6 +562,45 @@ const ImportOnboarding = () => {
     }
   });
 
+  const { header, actions, bodyPadding } = destructure(() => {
+    const bodyPadding = true;
+    let header = null;
+    let actions = [];
+    let body = null;
+    if (importType() === SidebarOnboardingImportType.PGN) {
+      header = "Please upload your PGN file";
+      body = (
+        <div style={s(c.pt(20))}>
+          <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
+        </div>
+      );
+    }
+    if (importType() === SidebarOnboardingImportType.LichessUsername) {
+      header = "What's your lichess username?";
+      body = (
+        <div style={s(c.pt(20))}>
+          <CMTextInput
+            placeholder="username"
+            value={username()}
+            setValue={setUsername}
+            style={s(c.maxWidth(200))}
+          />
+        </div>
+      );
+      actions.push({
+        text: "Submit",
+        onPress: () => {
+          importFromLichessUsername();
+        },
+        style: "primary",
+      });
+    }
+    if (loading()) {
+      actions = [];
+    }
+    return { body, header, bodyPadding, actions };
+  });
+
   const importFromPgn = (pgn) => {
     setLoading("Importing");
     quick((s) => {
@@ -588,25 +627,32 @@ const ImportOnboarding = () => {
   };
 
   return (
-    <Switch>
-      <Match when={importType() === SidebarOnboardingImportType.PGN}>
-        <div style={s(c.pt(20))}>
-          <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
-        </div>
-      </Match>
-      <Match
-        when={importType() === SidebarOnboardingImportType.LichessUsername}
-      >
-        <div style={s(c.pt(20))}>
-          <CMTextInput
-            placeholder="username"
-            value={username()}
-            setValue={setUsername}
-            style={s(c.maxWidth(200))}
-          />
-        </div>
-      </Match>
-    </Switch>
+    <SidebarTemplate
+      bodyPadding={bodyPadding()}
+      header={header()}
+      actions={actions()}
+      loading={loading()}
+    >
+      <Switch>
+        <Match when={importType() === SidebarOnboardingImportType.PGN}>
+          <div style={s(c.pt(20))}>
+            <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
+          </div>
+        </Match>
+        <Match
+          when={importType() === SidebarOnboardingImportType.LichessUsername}
+        >
+          <div style={s(c.pt(20))}>
+            <CMTextInput
+              placeholder="username"
+              value={username()}
+              setValue={setUsername}
+              style={s(c.maxWidth(200))}
+            />
+          </div>
+        </Match>
+      </Switch>
+    </SidebarTemplate>
   );
 };
 
@@ -617,7 +663,6 @@ const TrimRepertoireOnboarding = () => {
     s.getNumResponsesBelowThreshold,
   ]);
   const header = "Do you want to trim your repertoire?";
-  let actions = [];
   const body = (
     <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
       We can trim your repertoire to only the moves you're likely to see. This
@@ -635,37 +680,43 @@ const TrimRepertoireOnboarding = () => {
     });
   };
 
-  [1 / 25, 1 / 100, 1 / 200].forEach((threshold) => {
-    const numMoves = getNumResponsesBelowThreshold(threshold, activeSide);
-    if (numMoves > 0) {
-      actions.push({
-        text: `Trim lines that occur in less than 1 in ${1 / threshold} games`,
-        subtext: `${numMoves} responses`,
-        onPress: () => {
-          trimToThreshold(threshold);
-        },
-        style: "primary",
-      });
+  let actions = () => {
+    let actions = [];
+    [1 / 25, 1 / 100, 1 / 200].forEach((threshold) => {
+      const numMoves = getNumResponsesBelowThreshold(threshold, activeSide());
+      if (numMoves() > 0) {
+        actions.push({
+          text: `Trim lines that occur in less than 1 in ${
+            1 / threshold
+          } games`,
+          subtext: `${numMoves()} responses`,
+          onPress: () => {
+            trimToThreshold(threshold);
+          },
+          style: "primary",
+        });
+      }
+    });
+    actions.push({
+      text: `No thanks, I'll keep my whole repertoire`,
+      onPress: () => {
+        quick((s) => {
+          s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
+        });
+      },
+      style: "primary",
+    });
+    if (loading()) {
+      actions = [];
     }
-  });
-  actions.push({
-    text: `No thanks, I'll keep my whole repertoire`,
-    onPress: () => {
-      quick((s) => {
-        s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
-      });
-    },
-    style: "primary",
-  });
-  if (loading) {
-    actions = [];
-  }
+    return actions;
+  };
   return (
     <SidebarTemplate
       bodyPadding
       header={header}
-      actions={actions}
-      loading={loading}
+      actions={actions()}
+      loading={loading()}
     >
       {body}
     </SidebarTemplate>

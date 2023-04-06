@@ -29,7 +29,7 @@ import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import clsx from "clsx";
-import logo from "/public/logomark.png";
+import logo from "/logomark.png";
 
 type LoginForm = {
   email: string;
@@ -110,7 +110,7 @@ export default function Login({ signup }: { signup?: boolean }) {
               <div items-center row>
                 <img style={s(c.size(48))} src={logo} alt="logo" />
 
-                <p class={`pl-3 text-center text-xl font-bold`}>Chessbook</p>
+                <p class={`pl-3 text-center text-xl font-bold`}>Chess Madra</p>
               </div>
               <Spacer height={12} />
               <div class={`row w-full gap-4`}>
