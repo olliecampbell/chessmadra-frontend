@@ -64,14 +64,16 @@ export const SidebarLayout = (props: {
   // }, [mode, sideBarMode]);
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  let chessboardHidden = false;
+  // todo: solid
+  let chessboardHidden = () => {
+    if (vertical) {
+      if (props.mode === "overview") {
+        return true;
+      }
+    }
+  };
   const [chessboardHeight, setChessboardHeight] = createSignal(0);
 
-  if (vertical) {
-    if (mode === "overview") {
-      chessboardHidden = true;
-    }
-  }
   return (
     <RepertoirePageLayout flushTop bottom={null} fullHeight naked>
       <div
@@ -140,7 +142,11 @@ export const SidebarLayout = (props: {
               />
             </Animated.View>
             <Spacer height={12} />
-            <ExtraChessboardActions />
+            {!vertical && (
+              <>
+                <ExtraChessboardActions />
+              </>
+            )}
             {vertical ? (
               <>
                 <Animated.View
