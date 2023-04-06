@@ -1,12 +1,11 @@
 import { Chess } from "@lubert/chess.ts";
-import { PlaybackSpeed } from "app/types/VisualizationState";
+import { PlaybackSpeed } from "~/types/VisualizationState";
 import { fetchNewBlunderPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import { StorageItem } from "app/utils/storageItem";
-import { Animated } from "react-native";
-import { BlunderPuzzle } from "app/models";
+import { StorageItem } from "~/utils/storageItem";
+import { BlunderPuzzle } from "~/utils/models";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { createQuick } from "./quick";
 
@@ -29,6 +28,7 @@ export interface BlunderRecognitionState {
   currentPuzzle?: BlunderPuzzle;
   currentMove?: string;
   isBlunder?: boolean;
+  // TODO solid
   widthAnim: Animated.Value;
   roundDuration: number;
   remainingTime: number;
@@ -87,12 +87,12 @@ export const getInitialBlundersState = (
     return _get((s) => fn([s.blunderState, s]));
   };
 
-  let initialState = {
+  const initialState = {
     isPlaying: false,
     startTime: null,
     score: 0,
     lastRoundScore: null,
-    widthAnim: new Animated.Value(0.0),
+    widthAnim: 0,
     highScore: new StorageItem("high-score-blunder-recognition", {
       [BlunderRecognitionDifficulty.Easy]: 0,
       [BlunderRecognitionDifficulty.Medium]: 0,
@@ -120,7 +120,7 @@ export const getInitialBlundersState = (
     guess: (isBlunder: boolean) =>
       set(([s]) => {
         s.donePlaying = true;
-        let correct = isBlunder === s.isBlunder;
+        const correct = isBlunder === s.isBlunder;
         if (correct) {
           s.wasCorrect = true;
         } else {
@@ -130,7 +130,7 @@ export const getInitialBlundersState = (
       }),
     prefetchPuzzles: async () =>
       set(async ([s]) => {
-        let puzzles = await fetchNewBlunderPuzzle({
+        const puzzles = await fetchNewBlunderPuzzle({
           centipawn_loss_max: getBlunderRange(s.difficulty.value)[1],
           centipawn_loss_min: getBlunderRange(s.difficulty.value)[0],
           limit: 1,
@@ -142,7 +142,7 @@ export const getInitialBlundersState = (
       }),
     setupNextRound: () => {
       set(([s]) => {
-        let showBlunder = Math.random() < 0.5;
+        const showBlunder = Math.random() < 0.5;
         s.currentPuzzle = s.puzzles.shift();
         if (!s.currentPuzzle) {
           console.log("No current puzzle");
@@ -160,9 +160,9 @@ export const getInitialBlundersState = (
           ? s.currentPuzzle.blunder
           : s.currentPuzzle.bestMove;
         s.isBlunder = showBlunder;
-        let pos = new Chess(s.currentPuzzle.fen);
+        const pos = new Chess(s.currentPuzzle.fen);
         pos.move(s.currentMove);
-        let move = pos.undo();
+        const move = pos.undo();
         s.chessboardState.position = pos;
         s.chessboardState.flipped = pos.turn() === "b";
         s.chessboardState.visualizeMove(move, PlaybackSpeed.Normal, () => {});

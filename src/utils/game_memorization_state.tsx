@@ -1,6 +1,6 @@
 import { Move, Square } from "@lubert/chess.ts/dist/types";
-import client from "app/client";
-import { LichessGame } from "app/models";
+import client from "~/utils/client";
+import { LichessGame } from "~/utils/models";
 import { drop, filter, first, isEmpty, sample, shuffle, sortBy } from "lodash-es";
 import { StorageItem } from "./storageItem";
 import { Chess } from "@lubert/chess.ts";
@@ -8,12 +8,11 @@ import {
   PlaybackSpeed,
   ProgressMessage,
   ProgressMessageType,
-} from "app/types/VisualizationState";
+} from "~/types/VisualizationState";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { logProxy } from "./state";
 import { MoveIdentifier } from "./repertoire";
 
 export interface GameMemorizationState {
@@ -59,11 +58,11 @@ function getRandomWithStatus(
   f: (s: MemorizedGameStatus) => boolean
 ): LichessGame {
   console.log("Getting a random game w/ this check");
-  let filteredGames = filter(games, (game) => {
-    let status = gameStatuses[game.id];
+  const filteredGames = filter(games, (game) => {
+    const status = gameStatuses[game.id];
     return f(status);
   });
-  let randomGame = sample(filteredGames) as LichessGame;
+  const randomGame = sample(filteredGames) as LichessGame;
   return randomGame;
 }
 
@@ -82,7 +81,7 @@ export const getInitialGameMemorizationState = (
   const get = <T,>(fn: (stack: Stack) => T): T => {
     return _get((s) => fn([s.gameMemorizationState, s]));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick(setOnly),
     numReviewed: new StorageItem("memorized-games-review", 0),
     retryGame: () =>
@@ -119,7 +118,7 @@ export const getInitialGameMemorizationState = (
     newRandomGame: () =>
       set(([s]) => {
         console.log("Getting a new random game");
-        let game =
+        const game =
           getRandomWithStatus(
             s.games,
             s.gameStatuses,
@@ -142,16 +141,13 @@ export const getInitialGameMemorizationState = (
       }),
     _makeNextMove: (animate: boolean, onAnimationEnd: () => void) =>
       set(([s]) => {
-        let move = first(s.nextMoves);
+        const move = first(s.nextMoves);
         if (!move) {
           return;
         }
         s.moveNumber += 1;
-        console.log("Move is ", move);
         s.nextMoves = drop(s.nextMoves, 1);
-        console.log("next moves", logProxy(s.nextMoves));
-        let moveObj = s.chessboardState.position.validateMoves([move])?.[0];
-        console.log("Move obj", moveObj);
+        const moveObj = s.chessboardState.position.validateMoves([move])?.[0];
         if (animate) {
           s.chessboardState.animatePieceMove(
             moveObj,
@@ -189,7 +185,7 @@ export const getInitialGameMemorizationState = (
     fetchGames: () =>
       set(([s]) => {
         (async () => {
-          let { data: resp }: { data: MyGamesResponse } = await client.get(
+          const { data: resp }: { data: MyGamesResponse } = await client.get(
             "/api/v1/my_games"
           );
           // @ts-ignore

@@ -1,5 +1,5 @@
-import client from "app/client";
-import { MoveAnnotation, MoveAnnotationReview } from "app/models";
+import client from "~/utils/client";
+import { MoveAnnotation, MoveAnnotationReview } from "~/utils/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -84,7 +84,7 @@ export const getInitialAdminState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick<AdminState>(setOnly),
     moveAnnotationReviewQueue: null,
     spoofedEmail: new StorageItem("spoofed-email", undefined),

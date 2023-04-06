@@ -1,8 +1,8 @@
 import { first, forEach, forEachRight } from "lodash-es";
 
 export function getPawnOnlyEpd(epd: string) {
-  let setup = first(epd.split(" "));
-  let rows = setup.split("/");
+  const setup = first(epd.split(" "));
+  const rows = setup.split("/");
   let newEpd = "";
   rows.forEach((row, i) => {
     let number = 0;
@@ -33,7 +33,7 @@ export function getPawnOnlyEpd(epd: string) {
 }
 
 export function reversePawnEpd(epd: string) {
-  let rows = epd.split("/");
+  const rows = epd.split("/");
   let newEpd = "";
   forEachRight(rows, (row, i) => {
     let number = 0;

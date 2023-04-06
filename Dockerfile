@@ -1,14 +1,11 @@
-FROM node:16 AS base
+FROM node:18 AS base
+RUN npm install -g pnpm
 WORKDIR /base
 COPY package.json ./
-COPY yarn.lock ./
-RUN yarn install
+COPY pnpm-lock.yaml ./
+RUN pnpm install
 COPY . .
 ENV NODE_ENV=production
-RUN npx expo export:web
+RUN pnpm run build
+CMD pnpm run start --port=80
 
-FROM joseluisq/static-web-server:2-alpine
-COPY --from=base /base/web-build /public
-COPY ./entrypoint.sh /
-COPY ./static-web-server.toml /
-ENTRYPOINT ["/entrypoint.sh"]

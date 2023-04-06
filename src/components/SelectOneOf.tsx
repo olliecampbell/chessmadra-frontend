@@ -1,9 +1,8 @@
-import { Spacer } from "app/Space";
-import { s, c } from "app/styles";
-import { intersperse } from "app/utils/intersperse";
-import React from "react";
-import { View, Pressable } from "react-native";
+import { Spacer } from "~/components/Space";
+import { s, c } from "~/utils/styles";
+import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
+import { Pressable } from "./Pressable";
 
 export const SelectOneOf = <T,>({
   choices,
@@ -31,7 +30,7 @@ export const SelectOneOf = <T,>({
   textStyles?: any;
 }) => {
   return (
-    <View
+    <div
       style={s(
         c.overflowHidden,
         horizontal ? c.row : c.column,
@@ -44,7 +43,7 @@ export const SelectOneOf = <T,>({
             ? equality(choice, activeChoice)
             : choice === activeChoice;
           const isLast = i == choices.length - 1;
-          let rendered = renderChoice(choice, active, i);
+          const rendered = renderChoice(choice, active, i);
           if (typeof rendered === "string") {
             return (
               <Pressable
@@ -85,20 +84,16 @@ export const SelectOneOf = <T,>({
               </Pressable>
             );
           } else {
-            return (
-              <React.Fragment key={`space-${i}`}>{rendered}</React.Fragment>
-            );
+            return rendered;
           }
         }),
         (i) => {
           if (separator) {
-            return (
-              <React.Fragment key={`space-${i}`}>{separator()}</React.Fragment>
-            );
+            return separator();
           }
           return <Spacer key={`space-${i}`} height={0} />;
         }
       )}
-    </View>
+    </div>
   );
 };

@@ -1,5 +1,5 @@
 import { Move } from "@lubert/chess.ts/dist/types";
-import { LichessGame } from "app/models";
+import { LichessGame } from "~/utils/models";
 import { filter, sample } from "lodash-es";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { AppState } from "./app_state";
@@ -43,11 +43,11 @@ function getRandomWithStatus(
   f: (s: MemorizedGameStatus) => boolean
 ): LichessGame {
   console.log("Getting a random game w/ this check");
-  let filteredGames = filter(games, (game) => {
-    let status = gameStatuses[game.id];
+  const filteredGames = filter(games, (game) => {
+    const status = gameStatuses[game.id];
     return f(status);
   });
-  let randomGame = sample(filteredGames) as LichessGame;
+  const randomGame = sample(filteredGames) as LichessGame;
   return randomGame;
 }
 
@@ -69,7 +69,7 @@ export const getInitialGameSearchState = (
   const get = <T,>(fn: (stack: Stack) => T): T => {
     return _get((s) => fn([s.gameSearchState, s]));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick(setOnly),
 
     numberMoves: [2, 50],

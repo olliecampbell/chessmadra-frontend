@@ -1,10 +1,9 @@
-import { s, c } from "app/styles";
-import { View } from "react-native";
+import { s, c } from "~/utils/styles";
 import { CMText } from "./CMText";
 
 export const SettingsTitle = ({ text }) => {
   return (
-    <View
+    <div
       style={s(
         c.fullWidth,
         c.pr(12),
@@ -18,6 +17,6 @@ export const SettingsTitle = ({ text }) => {
       >
         {text}
       </CMText>
-    </View>
+    </div>
   );
 };

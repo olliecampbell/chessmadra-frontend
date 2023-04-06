@@ -1,14 +1,14 @@
-import { PositionReport, StockfishReport, SuggestedMove } from "app/models";
-import { c, s } from "app/styles";
+import { PositionReport, StockfishReport, SuggestedMove } from "~/utils/models";
+import { c, s } from "~/utils/styles";
 import { isNil } from "lodash-es";
-import { CMText } from "app/components/CMText";
+import { CMText } from "~/components/CMText";
 import { Side } from "./repertoire";
 
 export const getWinPercentage = (
   stockfish: StockfishReport,
   side: Side
 ): number => {
-  let p = getUnsidedWinPercentage(stockfish);
+  const p = getUnsidedWinPercentage(stockfish);
   if (side === "black") {
     return 100 - p;
   } else {
@@ -38,8 +38,8 @@ export const getMoveRating = (
   suggestedMove: SuggestedMove,
   side: Side
 ) => {
-  let before = positionReport?.stockfish;
-  let after = suggestedMove?.stockfish;
+  const before = positionReport?.stockfish;
+  const after = suggestedMove?.stockfish;
   // Modern
   if (
     positionReport?.epd ===
@@ -67,8 +67,8 @@ export const getMoveRating = (
   if (isNil(before) || isNil(after)) {
     return null;
   }
-  let winBefore = getWinPercentage(before, side);
-  let winAfter = getWinPercentage(after, side);
+  const winBefore = getWinPercentage(before, side);
+  const winAfter = getWinPercentage(after, side);
   if (winAfter < winBefore - 20) {
     return MoveRating.Blunder;
   }
@@ -81,7 +81,7 @@ export const getMoveRating = (
 };
 
 export const getMoveRatingIcon = (rating: MoveRating) => {
-  let styles = s(c.weightBold, c.fontSize(16));
+  const styles = s(c.weightBold, c.fontSize(16));
   switch (rating) {
     case MoveRating.Inaccuracy:
       return <CMText style={s(c.fg(c.grays[55]), styles)}>?!</CMText>;

@@ -1,65 +1,65 @@
 import Cookies from "js-cookie";
-import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "app/utils/auth";
-import { User } from "app/models";
+import { fetchUser, JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
+import { User } from "~/utils/models";
 import { uuid4 } from "@sentry/utils";
-import { useEffect } from "react";
-import { useAppState } from "app/utils/app_state";
-import { AuthStatus } from "app/utils/user_state";
+import { getAppState } from "~/utils/app_state";
+import { AuthStatus } from "~/utils/user_state";
+import { createEffect, onMount } from "solid-js";
 
 const AuthHandler = ({ children }) => {
-  let [user, authStatus, token, tempUserUuid, quick] = useAppState((s) => [
-    s.userState.user,
-    s.userState.authStatus,
-    s.userState.token,
-    s.userState.tempUserUuid,
-    s.userState.quick,
-  ]);
-  // let subscribeAfterSignup = AppStore.useState((s) => s.subscribeAfterSignup);
-  useEffect(() => {
-    if (token) {
-      Cookies.set(JWT_COOKIE_KEY, token, { expires: 5000 });
+  // let [user, authStatus, token, tempUserUuid, quick] = useAppState((s) => [
+  //   s.userState.user,
+  //   s.userState.authStatus,
+  //   s.userState.token,
+  //   s.userState.tempUserUuid,
+  //   s.userState.quick,
+  // ]);
+  const userState = getAppState().userState;
+  // let subscribeAfterSignup = AppStore.createSignal((s) => s.subscribeAfterSignup);
+  createEffect(() => {
+    if (userState.token) {
+      Cookies.set(JWT_COOKIE_KEY, userState.token, { expires: 5000 });
     }
-  }, [token]);
-  useEffect(() => {
-    if (tempUserUuid) {
-      Cookies.set(TEMP_USER_UUID, tempUserUuid, { expires: 5000 });
+    if (userState.tempUserUuid) {
+      Cookies.set(TEMP_USER_UUID, userState.tempUserUuid, { expires: 5000 });
     }
-  }, [tempUserUuid]);
-  useEffect(() => {
-    quick((s) => {
-      let cookieToken = Cookies.get(JWT_COOKIE_KEY);
+  });
+  onMount(() => {
+    userState.quick((s) => {
+      const cookieToken = Cookies.get(JWT_COOKIE_KEY);
       if (cookieToken) {
         s.token = cookieToken;
       } else {
         s.authStatus = AuthStatus.Unauthenticated;
       }
-    });
-  }, []);
-  useEffect(() => {
-    quick((s) => {
-      let tempUserUuid = Cookies.get(TEMP_USER_UUID);
+      const tempUserUuid = Cookies.get(TEMP_USER_UUID);
       if (tempUserUuid) {
         s.tempUserUuid = tempUserUuid;
       } else {
         s.tempUserUuid = uuid4();
       }
     });
-  }, []);
-  useEffect(() => {
+  });
+  createEffect(() => {
     (async () => {
-      if (authStatus === AuthStatus.Initial) {
+      if (
+        userState.authStatus === AuthStatus.Initial ||
+        userState.authStatus === AuthStatus.Unauthenticated
+      ) {
         fetchUser()
           .then((user: User) => {
-            quick((s) => {
-              s.token = token;
+            console.log("fetched user", user);
+            userState.quick((s) => {
+              s.token = userState.token;
               s.setUser(user);
               s.authStatus = AuthStatus.Authenticated;
             });
           })
           .catch((e) => {
-            let status = e?.response?.status || 0;
+            console.log("error fetching user", e);
+            const status = e?.response?.status || 0;
             if (status === 401 || status === 500) {
-              quick((s) => {
+              userState.quick((s) => {
                 s.token = undefined;
                 s.user = undefined;
                 s.authStatus = AuthStatus.Unauthenticated;
@@ -70,7 +70,7 @@ const AuthHandler = ({ children }) => {
           });
       }
     })();
-  }, [authStatus, token]);
+  });
   return children;
 };
 

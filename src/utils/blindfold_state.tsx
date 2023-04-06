@@ -1,11 +1,11 @@
 import { Chess, Move } from "@lubert/chess.ts";
-import { ProgressMessageType } from "app/types/VisualizationState";
+import { ProgressMessageType } from "~/types/VisualizationState";
 import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
 import { ChessboardState, createChessState } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { takeRight } from "lodash-es";
-import { LichessPuzzle } from "app/models";
+import { LichessPuzzle } from "~/utils/models";
 import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
 import { fensTheSame } from "./fens";
 import { createQuick } from "./quick";
@@ -54,7 +54,7 @@ export const getInitialBlindfoldState = (
   const getPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
     return _get((s) => fn(s.blindfoldState.puzzleState));
   };
-  let initialState = {
+  const initialState = {
     progressMessage: null,
     isDone: false,
     ...createQuick(setOnly),
@@ -90,12 +90,12 @@ export const getInitialBlindfoldState = (
     setupForPuzzle: () =>
       set(([s]) => {
         console.log("SETTING UP");
-        let position = new Chess();
-        for (let move of s.puzzleState.puzzle.allMoves) {
+        const position = new Chess();
+        for (const move of s.puzzleState.puzzle.allMoves) {
           position.move(move);
           if (fensTheSame(position.fen(), s.puzzleState.puzzle.fen)) {
             position.move(s.puzzleState.puzzle.moves[0], { sloppy: true });
-            for (let solutionMove of s.puzzleState.puzzle.moves) {
+            for (const solutionMove of s.puzzleState.puzzle.moves) {
               position.move(solutionMove, { sloppy: true });
             }
             s.puzzleState.solutionMoves = takeRight(

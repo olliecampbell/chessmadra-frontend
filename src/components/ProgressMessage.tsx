@@ -1,15 +1,14 @@
 
 import {
   Pressable,
-  View,
 } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
 import {
   ProgressMessage,
   ProgressMessageType,
-} from "app/types/VisualizationState";
-import { useIsMobile } from "app/utils/isMobile";
+} from "~/types/VisualizationState";
+import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
 
 export const ProgressMessageView = ({
@@ -19,7 +18,7 @@ export const ProgressMessageView = ({
 }) => {
   const isMobile = useIsMobile();
   return (
-    <View style={s(c.br(4), c.fullWidth)}>
+    <div style={s(c.br(4), c.fullWidth)}>
       <CMText
         style={s(
           c.fg(
@@ -33,7 +32,7 @@ export const ProgressMessageView = ({
       >
         {progressMessage.message}
       </CMText>
-      {progressMessage.prompt && (
+      <Show when={progressMessage.prompt }>
         <Pressable
           onPress={() => {
             progressMessage.onPromptPress();
@@ -55,7 +54,7 @@ export const ProgressMessageView = ({
             {progressMessage.prompt}
           </CMText>
         </Pressable>
-      )}
-    </View>
+        </Show>
+    </div>
   );
 };

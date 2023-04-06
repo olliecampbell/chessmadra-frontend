@@ -1,18 +1,18 @@
 import React, { useEffect } from "react";
 import { Animated, Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { TrainerLayout } from "app/components/TrainerLayout";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { ChessboardView } from "~/components/chessboard/Chessboard";
+import { TrainerLayout } from "~/components/TrainerLayout";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
 import { CMText } from "./CMText";
-import { useColorTrainingState } from "app/utils/app_state";
+import { useColorTrainingState } from "~/utils/app_state";
 import { COLOR_TRAINER_DESCRIPTION } from "./NavBar";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { trackModule } from "app/utils/user_state";
+import { trackEvent } from "~/utils/trackEvent";
+import { trackModule } from "~/utils/user_state";
 
 const Tile = ({ color, onPress }) => {
   return (
@@ -21,7 +21,7 @@ const Tile = ({ color, onPress }) => {
 };
 export const Score = ({ score, text }) => {
   return (
-    <View style={s(c.column, c.alignCenter)}>
+    <div style={s(c.column, c.alignCenter)}>
       <CMText
         style={s(c.fg(c.grays[70]), c.caps, c.weightBold, c.fontSize(12))}
       >
@@ -31,7 +31,7 @@ export const Score = ({ score, text }) => {
       <CMText style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(48))}>
         {score}
       </CMText>
-    </View>
+    </div>
   );
 };
 
@@ -77,14 +77,14 @@ export const ColorTraining = () => {
           />
         }
       >
-        <View style={s(!isMobile && s(c.width(300)))}>
+        <div style={s(!isMobile && s(c.width(300)))}>
           {state.isPlaying ? (
-            <View style={s(c.column, c.alignCenter)}>
-              <View style={s(c.row, c.alignCenter)}>
+            <div style={s(c.column, c.alignCenter)}>
+              <div style={s(c.row, c.alignCenter)}>
                 <Score score={state.score} text={"score"} />
-              </View>
+              </div>
               <Spacer height={24} />
-              <View style={s(c.row, c.alignCenter)}>
+              <div style={s(c.row, c.alignCenter)}>
                 <Tile
                   onPress={() => {
                     state.guessColor("light");
@@ -108,9 +108,9 @@ export const ColorTraining = () => {
                   }}
                   color={c.colors.darkTile}
                 />
-              </View>
+              </div>
               <Spacer height={24} />
-              <View
+              <div
                 style={s(
                   c.bg(c.grays[70]),
                   c.fullWidth,
@@ -131,13 +131,13 @@ export const ColorTraining = () => {
                     )
                   )}
                 />
-              </View>
-            </View>
+              </div>
+            </div>
           ) : (
-            <View style={s(c.column)}>
-              <View style={c.selfCenter}>
+            <div style={s(c.column)}>
+              <div style={c.selfCenter}>
                 <Score score={state.highScore.value} text={"High Score"} />
-              </View>
+              </div>
               <Spacer height={24} />
               <CMText style={s(c.fg(c.colors.textPrimary))}>
                 For each highlighted square, indicate whether it is light or
@@ -153,9 +153,9 @@ export const ColorTraining = () => {
               >
                 Start
               </Button>
-            </View>
+            </div>
           )}
-        </View>
+        </div>
       </TrainerLayout>
     </PageContainer>
   );

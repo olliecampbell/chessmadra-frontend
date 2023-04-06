@@ -1,24 +1,8 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { isNil, sortBy } from "lodash-es";
-import { TrainerLayout } from "app/components/TrainerLayout";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
-import { useRepertoireState, quick } from "app/utils/app_state";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import React, { useEffect } from "react";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { pgnToLine } from "app/utils/repertoire";
-import { SidebarLayout } from "./RepertoireBrowsingView";
-import { SidebarTemplate } from "./SidebarTemplate";
-import { SidebarAction } from "./SidebarActions";
-import { pluralize } from "app/utils/pluralize";
+import { pluralize } from "~/utils/pluralize";
 
 export const ReviewText = ({
   date: dateString,
@@ -31,7 +15,7 @@ export const ReviewText = ({
   overview?: boolean;
   numDue: number;
 }) => {
-  let textStyles = s(
+  const textStyles = s(
     c.fg(c.grays[80]),
     c.weightSemiBold,
     c.fontSize(12),
@@ -39,13 +23,13 @@ export const ReviewText = ({
   );
   const date = new Date(dateString);
   const numMovesDueFromHere = numDue;
-  let now = new Date();
-  let diff = date.getTime() - now.getTime();
+  const now = new Date();
+  const diff = date.getTime() - now.getTime();
   let dueString = "";
-  let seconds = diff / 1000;
-  let minutes = seconds / 60;
-  let hours = minutes / 60;
-  let days = hours / 24;
+  const seconds = diff / 1000;
+  const minutes = seconds / 60;
+  const hours = minutes / 60;
+  const days = hours / 24;
   let color = c.grays[50];
   const prefix = overview ? `Next review in` : `Due in`;
   if (diff < 0) {
@@ -61,14 +45,14 @@ export const ReviewText = ({
   return (
     <>
       {
-        <View style={s(c.row, c.alignCenter)}>
+        <div style={s(c.row, c.alignCenter)}>
           <i
             style={s(c.fg(color), c.fontSize(12))}
-            className="fa-regular fa-clock"
+            class="fa-regular fa-clock"
           ></i>
           <Spacer width={4} />
           <CMText style={s(textStyles, c.fg(color))}>{dueString}</CMText>
-        </View>
+        </div>
       }
     </>
   );

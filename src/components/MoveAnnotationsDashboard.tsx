@@ -1,28 +1,27 @@
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
+import { Pressable } from "react-native";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { isEmpty, isNil } from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
-import { quick, useAdminState, useUserState } from "app/utils/app_state";
-import React, { useEffect, useState } from "react";
-import { createStaticChessState } from "app/utils/chessboard_state";
+import { quick, useAdminState, useUserState } from "~/utils/app_state";
+import React, { useEffect } from "react";
+import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
-import { AdminMoveAnnotation } from "app/utils/admin_state";
+import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
 import { Link } from "react-router-dom";
-import { formatIncidence } from "app/utils/repertoire";
 
 export const MoveAnnotationsDashboard = ({}) => {
   const isMobile = useIsMobile();
   const user = useUserState((s) => s.user);
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
-  const [activeTab, setActiveTab] = useState("Needed");
+  const [activeTab, setActiveTab] = createSignal("Needed");
   useEffect(() => {
     quick((s) => s.adminState.fetchMoveAnnotationDashboard());
   }, []);
@@ -40,12 +39,12 @@ export const MoveAnnotationsDashboard = ({}) => {
           );
         }
         return (
-          <View style={s(c.column)}>
+          <div style={s(c.column)}>
             <CMText style={s(c.weightSemiBold, c.selfEnd)}>
               <Link to="/admin/move-annotations/community">
                 Go to community review queue
                 <Spacer width={8} />
-                <i className="fa fa-arrow-right" style={s()} />
+                <i class="fa fa-arrow-right" style={s()} />
               </Link>
             </CMText>
             <Spacer height={32} />
@@ -90,7 +89,7 @@ export const MoveAnnotationsDashboard = ({}) => {
                 );
               }}
             />
-            <View key={activeTab} style={s(c.gridColumn({ gap: 24 }))}>
+            <div key={activeTab} style={s(c.gridColumn({ gap: 24 }))}>
               <Spacer height={24} />
               {(activeTab === "Needed"
                 ? dashboard.needed
@@ -104,8 +103,8 @@ export const MoveAnnotationsDashboard = ({}) => {
                   />
                 );
               })}
-            </View>
-          </View>
+            </div>
+          </div>
         );
       })()}
     </AdminPageLayout>
@@ -119,15 +118,15 @@ export const MoveAnnotationRow = ({
   annotation: AdminMoveAnnotation;
   completed: boolean;
 }) => {
-  let fen = `${ann.previousEpd} 0 1`;
-  let position = new Chess(fen);
-  let [annotation, setAnnotation] = useState(ann.annotation?.text ?? "");
-  let [saved, setSaved] = useState(false);
-  let [loading, setLoading] = useState(false);
+  const fen = `${ann.previousEpd} 0 1`;
+  const position = new Chess(fen);
+  const [annotation, setAnnotation] = createSignal(ann.annotation?.text ?? "");
+  const [saved, setSaved] = createSignal(false);
+  const [loading, setLoading] = createSignal(false);
   return (
-    <View style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
-      <View style={s(c.row)}>
-        <View style={s(c.size(180))}>
+    <div style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
+      <div style={s(c.row)}>
+        <div style={s(c.size(180))}>
           <ChessboardView
             onSquarePress={() => {}}
             state={createStaticChessState({
@@ -136,23 +135,23 @@ export const MoveAnnotationRow = ({
               nextMove: ann.sanPlus,
             })}
           />
-        </View>
+        </div>
 
         <Spacer width={24} />
-        <View style={s(c.width(400))}>
+        <div style={s(c.width(400))}>
           <AnnotationEditor annotation={annotation} onUpdate={setAnnotation} />
-        </View>
-      </View>
-      {completed && (
+        </div>
+      </div>
+      <Show when={completed }>
         <>
           <Spacer height={8} />
           <CMText style={s()}>
             Reviewer: {ann.reviewerEmail ?? "me@mbuffett.com"}
           </CMText>
         </>
-      )}
+        </Show>
       <Spacer height={8} />
-      <View style={s(c.row, c.justifyEnd)}>
+      <div style={s(c.row, c.justifyEnd)}>
         <CMText style={s()}>{ann.games.toLocaleString()} games</CMText>
         <Spacer grow />
         <Button
@@ -185,16 +184,16 @@ export const MoveAnnotationRow = ({
           }}
         >
           <CMText style={s(c.buttons.primary.textStyles)}>
-            {saved && (
+          <Show when={saved }>
               <i
-                className="fa fa-check"
+                class="fa fa-check"
                 style={s(c.fg(c.grays[90]), c.mr(4))}
               />
-            )}
+              </Show>
             {loading ? "Loading.." : saved ? "Saved" : "Save"}
           </CMText>
         </Button>
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

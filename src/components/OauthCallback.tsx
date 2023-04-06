@@ -1,14 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+import React, { useEffect, useRef } from "react";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { SimplePageLayout } from "./SimplePageLayout";
 import { useSearchParams } from "react-router-dom";
 import { GridLoader } from "react-spinners";
-import client from "app/client";
-import { LichessOauthData } from "app/utils/repertoire_state";
+import client from "~/utils/client";
+import { LichessOauthData } from "~/utils/repertoire_state";
 
 enum Stage {
   Initial,
@@ -18,10 +17,10 @@ enum Stage {
 }
 
 export const OauthCallback = ({ type }: { type: "lichess" }) => {
-  let [searchParams] = useSearchParams();
-  let [stage, setStage] = useState(Stage.Initial);
-  let oauthCode = searchParams.get("code");
-  let lichessOauthData = useRef(
+  const [searchParams] = useSearchParams();
+  const [stage, setStage] = createSignal(Stage.Initial);
+  const oauthCode = searchParams.get("code");
+  const lichessOauthData = useRef(
     JSON.parse(
       window.sessionStorage.getItem("lichess-oauth-data") ?? "{}"
     ) as LichessOauthData
@@ -45,11 +44,11 @@ export const OauthCallback = ({ type }: { type: "lichess" }) => {
   }, [stage]);
   return (
     <SimplePageLayout>
-      <View style={s(c.maxWidth(600), c.column, c.center)}>
+      <div style={s(c.maxWidth(600), c.column, c.center)}>
         <CMText style={s(c.fontSize(18))}>Authenticating...</CMText>
         <Spacer height={24} />
         <GridLoader color={c.grays[80]} size={20} />
-      </View>
+      </div>
     </SimplePageLayout>
   );
 };

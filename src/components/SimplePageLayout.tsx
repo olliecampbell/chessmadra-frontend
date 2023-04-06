@@ -1,10 +1,10 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { useIsMobile } from "app/utils/isMobile";
-import { useAppState } from "app/utils/app_state";
+
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { useIsMobile } from "~/utils/isMobile";
+import { useAppState } from "~/utils/app_state";
 import React from "react";
-import { AuthStatus } from "app/utils/user_state";
+import { AuthStatus } from "~/utils/user_state";
 
 export const SimplePageLayout = ({ children }: { children: any }) => {
   const isMobile = useIsMobile();
@@ -16,7 +16,7 @@ export const SimplePageLayout = ({ children }: { children: any }) => {
     authStatus === AuthStatus.Unauthenticated ||
     (authStatus === AuthStatus.Authenticated && user?.temporary);
   return (
-    <View
+    <div
       style={s(
         c.column,
         c.fullWidth,
@@ -27,6 +27,6 @@ export const SimplePageLayout = ({ children }: { children: any }) => {
       )}
     >
       {children}
-    </View>
+    </div>
   );
 };

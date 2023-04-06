@@ -1,16 +1,16 @@
-import { useEffect } from "react";
+// import { useEffect } from "react";
+
+import { onCleanup } from "solid-js";
 
 export function useOutsideClick(ref, clicked) {
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        return clicked(event);
-      }
+  function handleClickOutside(event: MouseEvent) {
+    if (ref() && !ref().contains(event.target)) {
+      return clicked(event);
     }
+  }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, clicked]);
+  document.addEventListener("mousedown", handleClickOutside);
+  onCleanup(() => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  });
 }

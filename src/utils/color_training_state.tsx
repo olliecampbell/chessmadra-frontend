@@ -4,7 +4,6 @@ import { ChessboardState, createChessState } from "./chessboard_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { sample } from "lodash-es";
 import { StorageItem } from "./storageItem";
-import { Animated, Easing } from "react-native";
 import { Square } from "@lubert/chess.ts/dist/types";
 
 type Stack = [ColorTrainingState, AppState];
@@ -14,7 +13,8 @@ export interface ColorTrainingState {
   startTime: number;
   score: number;
   lastRoundScore: number;
-  widthAnim: Animated.Value;
+  // TODO: solid
+  widthAnim: number;
   highScore: StorageItem<number>;
   roundDuration: number;
   remainingTime: number;
@@ -38,12 +38,13 @@ export const getInitialColorState = (
   const get = <T,>(fn: (stack: Stack) => T): T => {
     return _get((s) => fn([s.colorTrainingState, s]));
   };
-  let initialState = {
+  const initialState = {
     isPlaying: false,
     startTime: null,
     score: 0,
     lastRoundScore: null,
-    widthAnim: new Animated.Value(0.0),
+    // TODO: solid
+    widthAnim: 0.0,
     highScore: new StorageItem("high-score-color-trainer", 0),
     roundDuration: 30 * 1000,
     remainingTime: null,
@@ -51,7 +52,7 @@ export const getInitialColorState = (
     currentSquare: null,
     calculateRemainingTime: () =>
       set(([s]) => {
-        let remainingTime =
+        const remainingTime =
           s.roundDuration -
           (performance.now() - s.startTime) -
           s.penalties * 5 * 1000;
@@ -97,7 +98,7 @@ export const getInitialColorState = (
       }),
     guessColor: (color: "light" | "dark") =>
       set(([s]) => {
-        let correct = new Chess().squareColor(s.currentSquare) == color;
+        const correct = new Chess().squareColor(s.currentSquare) == color;
         s.chessboardState.flashRing(correct);
         if (correct) {
           s.score = s.score + 1;
@@ -109,7 +110,7 @@ export const getInitialColorState = (
       }),
     clearHighlights: () =>
       set(([s]) => {
-        let animDuration = 200;
+        const animDuration = 200;
         if (s.currentSquare) {
           Animated.timing(
             s.chessboardState.squareHighlightAnims[s.currentSquare],
@@ -123,8 +124,8 @@ export const getInitialColorState = (
       }),
     highlightNewSquare: () =>
       set(([s]) => {
-        let randomSquare = algebraic(sample(SQUARES)) as Square;
-        let animDuration = 200;
+        const randomSquare = algebraic(sample(SQUARES)) as Square;
+        const animDuration = 200;
         s.clearHighlights();
         s.currentSquare = randomSquare;
         Animated.timing(

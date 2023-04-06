@@ -1,12 +1,12 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { intersperse } from "../utils/intersperse";
-import { LichessGame } from "app/models";
-import { lineToPgn } from "app/utils/repertoire";
+import { LichessGame } from "~/utils/models";
+import { lineToPgn } from "~/utils/repertoire";
 import { take } from "lodash-es";
-import { MemorizedGameStatus } from "app/utils/game_memorization_state";
+import { MemorizedGameStatus } from "~/utils/game_memorization_state";
 import { CMText } from "./CMText";
 
 export const LichessGameCellMini = ({
@@ -21,7 +21,7 @@ export const LichessGameCellMini = ({
   showFirstMoves?: boolean;
 }) => {
   return (
-    <View
+    <div
       style={s(
         c.py(12),
         c.bg(c.grays[15]),
@@ -31,8 +31,8 @@ export const LichessGameCellMini = ({
         c.relative
       )}
     >
-      {!hideLink && (
-        <View style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
+    <Show when={!hideLink }>
+        <div style={s(c.absolute, c.top(0), c.right(0), c.pr(12), c.pt(12))}>
           <CMText style={s()}>
             <i
               style={s(
@@ -40,24 +40,24 @@ export const LichessGameCellMini = ({
                 c.fontSize(18),
                 c.fg(c.grays[40])
               )}
-              className="fa-sharp fa-arrow-up-right-from-square"
+              class="fa-sharp fa-arrow-up-right-from-square"
             ></i>
           </CMText>
-        </View>
-      )}
+        </div>
+        </Show>
       <Spacer height={0} />
-      <View style={s(c.row, c.px(12))}>
+      <div style={s(c.row, c.px(12))}>
         {intersperse(
           ["white", "black"].map((color, i) => {
             // console.log(game);
             return (
-              <View style={s(c.column)} key={color}>
-                <View style={s(c.row, c.alignCenter)}>
+              <div style={s(c.column)} key={color}>
+                <div style={s(c.row, c.alignCenter)}>
                   <CMText style={s(c.fg(c.grays[70]), c.weightSemiBold)}>
                     {game[`${color}Name`]}
                   </CMText>
-                </View>
-              </View>
+                </div>
+              </div>
             );
           }),
           (i) => {
@@ -72,15 +72,15 @@ export const LichessGameCellMini = ({
           }
         )}
         <Spacer width={2} grow />
-      </View>
+      </div>
       <Spacer height={6} />
-      {showFirstMoves && (
-        <View style={s(c.px(12), c.row)}>
+      <Show when={showFirstMoves }>
+        <div style={s(c.px(12), c.row)}>
           <CMText style={s(c.fg(c.grays[60]), c.weightRegular, c.fontSize(12))}>
             {lineToPgn(take(game.moves, 4))} ...
           </CMText>
-        </View>
-      )}
-    </View>
+        </div>
+        </Show>
+    </div>
   );
 };

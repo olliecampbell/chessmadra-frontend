@@ -1,34 +1,34 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
+
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { isEmpty } from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
 import { chunked } from "../utils/intersperse";
 import { Chess, Piece } from "@lubert/chess.ts";
 import { SelectOneOf } from "./SelectOneOf";
 import { SelectRange } from "./SelectRange";
-import { LichessGame } from "app/models";
-import client from "app/client";
+import { LichessGame } from "~/utils/models";
+import client from "~/utils/client";
 import BeatLoader from "react-spinners/BeatLoader";
 import { PageContainer } from "./PageContainer";
 import { LichessGameCell } from "./LichessGameCell";
-import { formatGameResult } from "app/utils/formatGameResult";
-import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
+import { formatGameResult } from "~/utils/formatGameResult";
+import { useHasBetaAccess } from "~/utils/useHasBetaAccess";
 import { CMText } from "./CMText";
-import { useGameSearchState } from "app/utils/app_state";
+import { useGameSearchState } from "~/utils/app_state";
 import {
   GameSearchResult,
   GameSearchState,
   MAX_ELO,
   MIN_ELO,
-} from "app/utils/game_search_state";
-import { HeadSiteMeta } from "app/components/PageContainer";
+} from "~/utils/game_search_state";
+import { HeadSiteMeta } from "~/components/PageContainer";
 import { GAME_SEARCH_DESCRIPTION } from "./NavBar";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { trackModule } from "app/utils/user_state";
+import { trackEvent } from "~/utils/trackEvent";
+import { trackModule } from "~/utils/user_state";
 import { useEffect } from "react";
 
 const pieceToKey = (piece: Piece) => {
@@ -115,13 +115,13 @@ export const GamesSearch = () => {
   let inner = null;
   if (state.loading) {
     inner = (
-      <View style={s(c.center, c.minHeight("80vh"))}>
+      <div style={s(c.center, c.minHeight("80vh"))}>
         <BeatLoader color={c.grays[100]} size={20} />;
-      </View>
+      </div>
     );
   } else if (!isEmpty(state.returnedGames)) {
     inner = (
-      <View style={s(c.oldContainerStyles(isMobile), c.alignStart)}>
+      <div style={s(c.oldContainerStyles(isMobile), c.alignStart)}>
         <Button
           style={s(c.buttons.primary)}
           onPress={() => {
@@ -133,7 +133,7 @@ export const GamesSearch = () => {
           <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
             <i
               style={s(c.fg(c.colors.textPrimary))}
-              className="fa-sharp fa-angle-left"
+              class="fa-sharp fa-angle-left"
             ></i>
             <Spacer width={8} />
             Modify search
@@ -147,11 +147,11 @@ export const GamesSearch = () => {
               link += "/black";
             }
             return (
-              <View style={s(c.column)}>
+              <div style={s(c.column)}>
                 <a href={link} target="_blank">
                   <LichessGameCell game={game} />
                 </a>
-                {hasBetaAccess && (
+                <Show when={hasBetaAccess }>
                   <>
                     <Button
                       style={s(c.buttons.primary)}
@@ -164,8 +164,8 @@ export const GamesSearch = () => {
                       Add to memorized games
                     </Button>
                   </>
-                )}
-              </View>
+                  </Show>
+              </div>
             );
           }),
           (i) => {
@@ -176,15 +176,15 @@ export const GamesSearch = () => {
             return <Spacer height={12} key={i} />;
           },
           (children) => {
-            return <View style={s(c.row)}>{children}</View>;
+            return <div style={s(c.row)}>{children}</div>;
           }
         )}
-      </View>
+      </div>
     );
   } else {
     inner = (
       <>
-        <View
+        <div
           style={s(
             c.bg(c.grays[15]),
             c.br(4),
@@ -218,7 +218,7 @@ export const GamesSearch = () => {
             Some example searches:
             <br />
             <Spacer height={12} />
-            <View style={s(c.column)}>
+            <div style={s(c.column)}>
               <ExampleGame
                 {...{
                   name: "Games where White won against the Falkbeer Countergambit",
@@ -247,11 +247,11 @@ export const GamesSearch = () => {
                 }}
               />
               <Spacer height={8} />
-            </View>
+            </div>
           </CMText>
-        </View>
+        </div>
         <Spacer height={24} />
-        <View
+        <div
           style={s(
             c.bg(c.grays[15]),
             c.br(4),
@@ -273,7 +273,7 @@ export const GamesSearch = () => {
               opening.
             </CMText>
             <Spacer height={12} />
-            <View
+            <div
               style={s(
                 c.maxWidth(400),
                 c.column,
@@ -303,7 +303,7 @@ export const GamesSearch = () => {
                     >
                       <i
                         style={s(c.fg(c.colors.textInverse))}
-                        className="fa-sharp fa-undo"
+                        class="fa-sharp fa-undo"
                       ></i>
                       <Spacer width={8} />
                       Undo
@@ -311,15 +311,15 @@ export const GamesSearch = () => {
                   </Button>
                 </>
               )}
-            </View>
+            </div>
           </>
           <Spacer height={24} />
           {chunked(
             formSections.map((section, i) => {
               return (
-                <View style={s(c.column, c.flexible, c.alignStart)}>
+                <div style={s(c.column, c.flexible, c.alignStart)}>
                   {section}
-                </View>
+                </div>
               );
             }),
             (i) => {
@@ -330,7 +330,7 @@ export const GamesSearch = () => {
               return <Spacer height={48} key={i} />;
             },
             (children) => {
-              return <View style={s(c.row, c.fullWidth)}>{children}</View>;
+              return <div style={s(c.row, c.fullWidth)}>{children}</div>;
             }
           )}
           <Spacer height={48} />
@@ -343,7 +343,7 @@ export const GamesSearch = () => {
                 state.quick((s) => {
                   s.loading = true;
                 });
-                let response = await client.post("/api/v1/games", {
+                const response = await client.post("/api/v1/games", {
                   whiteRating: state.whiteRating,
                   // whiteBlunders: state.whiteBlunders,
                   blackRating: state.blackRating,
@@ -363,13 +363,13 @@ export const GamesSearch = () => {
             <CMText style={s(c.buttons.primary.textStyles, c.fontSize(18))}>
               <i
                 style={s(c.fg(c.colors.textPrimary))}
-                className="fa-sharp fa-search"
+                class="fa-sharp fa-search"
               ></i>
               <Spacer width={8} />
               Find Games
             </CMText>
           </Button>
-        </View>
+        </div>
       </>
     );
   }
@@ -408,7 +408,7 @@ const ExampleGame = ({
   state: GameSearchState;
 }) => {
   return (
-    <View style={s()}>
+    <div style={s()}>
       <Button
         onPress={() => {
           state.quick((s) => {
@@ -429,7 +429,7 @@ const ExampleGame = ({
       >
         <i
           style={s(c.fg(c.colors.textPrimary), c.mt(4))}
-          className="fa-sharp fa-angle-right"
+          class="fa-sharp fa-angle-right"
         ></i>
         <Spacer width={8} />
         <CMText
@@ -438,6 +438,6 @@ const ExampleGame = ({
           {name}
         </CMText>
       </Button>
-    </View>
+    </div>
   );
 };

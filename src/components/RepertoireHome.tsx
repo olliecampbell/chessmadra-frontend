@@ -1,70 +1,39 @@
-import React, { useEffect } from "react";
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import {
-  isEmpty,
-  capitalize,
-  dropRight,
-  last,
-  isNil,
-  sortBy,
-  upperFirst,
-} from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import { SIDES, Side, pgnToLine, lineToPgn } from "app/utils/repertoire";
-import { plural, pluralize } from "app/utils/pluralize";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { capitalize, upperFirst } from "lodash-es";
+import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
   useRepertoireState,
-  useDebugState,
   quick,
-  useUserState,
   getAppState,
   useBrowsingState,
-} from "app/utils/app_state";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { BP, useResponsive } from "app/utils/useResponsive";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { CoverageBar } from "./CoverageBar";
-import { trackModule } from "app/utils/user_state";
-import { CoverageGoal } from "./CoverageGoal";
-import { useHovering } from "app/hooks/useHovering";
-import { CoverageAndBar } from "./RepertoirtOverview";
-import { START_EPD } from "app/utils/chess";
+} from "~/utils/app_state";
+import { trackEvent } from "~/utils/trackEvent";
+import { START_EPD } from "~/utils/chess";
 import { ReviewText } from "./ReviewText";
-import { SettingButton, SettingsButtons } from "./Settings";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   SidebarAction,
-  SidebarActions,
   SidebarFullWidthButton,
   SidebarSectionHeader,
 } from "./SidebarActions";
-import { mapSides } from "app/utils/repertoire_state";
-import { bySide } from "app/utils/repertoire";
+import { bySide } from "~/utils/repertoire";
 import {
   CoverageSettings,
   RatingSettings,
-  SidebarSetting,
   ThemeSettings,
 } from "./SidebarSettings";
-import { BOARD_THEMES_BY_ID } from "app/utils/theming";
+import { BOARD_THEMES_BY_ID } from "~/utils/theming";
+import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
+import { unwrap } from "solid-js/store";
 
 export const RepertoireHome = (props: {}) => {
-  const isMobile = useIsMobile();
-  const buttonStyles = s(c.width("unset"), c.py(8));
-  const responsive = useResponsive();
-  const [user, missThreshold] = useUserState((s) => [
-    s.user,
-    s.getCurrentThreshold(),
-  ]);
-  let { theme: themeId, pieceSet } = user ?? {};
-  let theme = BOARD_THEMES_BY_ID[themeId];
+  const userState = getAppState().userState;
+  const themeId = () => userState.user?.theme;
+  const theme = () => BOARD_THEMES_BY_ID[themeId()];
+  const pieceSet = () => userState.user?.pieceSet;
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
       bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -72,163 +41,178 @@ export const RepertoireHome = (props: {}) => {
       bySide((side) => s.earliestReviewDueFromEpd[side][START_EPD]),
     ]
   );
-  const [progressState] = useBrowsingState(([s]) => {
-    return [bySide((side) => s.repertoireProgressState[side])];
+  // const [progressState] = useBrowsingState(([s]) => {
+  //   return [bySide((side) => s.repertoireProgressState[side])];
+  // });
+  const progressState = () =>
+    getAppState().repertoireState.browsingState.repertoireProgressState[
+      "white"
+    ];
+  createEffect(() => {
+    console.log("progress state", progressState()?.percentComplete);
   });
-  const totalDue =
-    numMovesDueBySide?.white ?? 0 + numMovesDueBySide?.black ?? 0;
-  const overallActions: SidebarAction[] = [];
-  if (totalDue > 0) {
-    overallActions.push({
-      text: "Practice all moves due for review",
-      right: (
-        <ReviewText
-          date={
-            earliestDueDate["white"] < earliestDueDate["black"]
-              ? earliestDueDate["white"]
-              : earliestDueDate["black"]
-          }
-          numDue={totalDue}
-        />
-      ),
-      style: "primary",
-      onPress: () => {
-        trackEvent("home.practice_all_due");
-        quick((s) => {
-          s.repertoireState.reviewState.startReview(null, {});
-        });
-      },
-    });
-  }
-  if (!user) {
-    return null;
-  }
+  createEffect(() => {
+    console.log("num lines", numLines()["white"]);
+  });
+  // let interval = setInterval(() => {
+  //   console.log("num moves ", numLines()["white"]);
+  //   console.log(
+  //     "num moves ",
+  //     getAppState().repertoireState.getLineCount("white")
+  //   );
+  // }, 500);
+  // onCleanup(() => {
+  //   console.log("cleaning up");
+  //   clearInterval(interval);
+  // });
+  const overallActions: Accessor<SidebarAction[]> = () => {
+    const totalDue =
+      numMovesDueBySide()?.white ?? 0 + numMovesDueBySide()?.black ?? 0;
+    const actions = [];
+
+    if (totalDue > 0) {
+      actions.push({
+        text: "Practice all moves due for review",
+        right: (
+          <ReviewText
+            date={
+              earliestDueDate()["white"] < earliestDueDate()["black"]
+                ? earliestDueDate()["white"]
+                : earliestDueDate()["black"]
+            }
+            numDue={totalDue}
+          />
+        ),
+        style: "primary",
+        onPress: () => {
+          trackEvent("home.practice_all_due");
+          quick((s) => {
+            s.repertoireState.reviewState.startReview(null, {});
+          });
+        },
+      } as SidebarAction);
+    }
+    return actions;
+  };
   return (
-    <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
-      <View style={s(c.column, c.fullWidth, c.gap(10))}>
-        {SIDES.map((side, i) => {
-          return (
-            <SidebarFullWidthButton
-              action={{
-                style: "wide",
-                text: `${capitalize(side)} repertoire`,
-                right: (
-                  <CMText style={s(c.fg(c.colors.textSecondary))}>
-                    {numLines[side] > 0
-                      ? `${Math.round(
-                          progressState[side].percentComplete
-                        )}% complete`
-                      : "Not started"}
-                  </CMText>
-                ),
+    <Show when={userState.user}>
+      <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
+        <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
+          <For each={SIDES}>
+            {(side, i) => {
+              return (
+                <SidebarFullWidthButton
+                  action={{
+                    style: "wide",
+                    text: `${capitalize(side)} repertoire`,
+                    right: (
+                      <CMText style={s(c.fg(c.colors.textSecondary))}>
+                        {numLines()[side] > 0
+                          ? `${Math.round(
+                              progressState().percentComplete
+                            )}% complete`
+                          : "Not started"}
+                      </CMText>
+                    ),
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.select_side", { side });
+                        if (numLines()[side] > 0) {
+                          s.repertoireState.browsingState.moveSidebarState(
+                            "right"
+                          );
+                          s.repertoireState.startBrowsing(side, "overview");
+                        } else {
+                          s.repertoireState.browsingState.moveSidebarState(
+                            "right"
+                          );
+                          s.repertoireState.startBrowsing(side, "overview");
+                        }
+                      });
+                    },
+                  }}
+                />
+              );
+            }}
+          </For>
+        </div>
+        <Spacer height={46} />
+        <Show when={overallActions}>
+          <div style={s(c.gridColumn({ gap: 12 }))}>
+            <For each={overallActions()}>
+              {(action, i) => <SidebarFullWidthButton action={action} />}
+            </For>
+          </div>
+          <Spacer height={46} />
+        </Show>
+        <>
+          <SidebarSectionHeader text="Repertoire settings" />
+          <div style={s()}>
+            {[
+              {
                 onPress: () => {
                   quick((s) => {
-                    trackEvent("home.select_side", { side });
-                    if (numLines[side] > 0) {
-                      s.repertoireState.browsingState.moveSidebarState("right");
-                      s.repertoireState.startBrowsing(side, "overview");
-                    } else {
-                      s.repertoireState.browsingState.moveSidebarState("right");
-                      s.repertoireState.startBrowsing(side, "overview");
-                    }
+                    trackEvent("home.settings.coverage");
+                    s.repertoireState.browsingState.replaceView(
+                      <CoverageSettings />,
+                      "right"
+                    );
                   });
                 },
-              }}
-            />
-          );
-        })}
-      </View>
-      <Spacer height={46} />
-      {!isEmpty(overallActions) && (
-        <>
-          {/*
-          <SidebarSectionHeader
-            text="It's time to review the moves you've added"
-            right={
-              <ReviewText
-                date={
-                  earliestDueDate["white"] < earliestDueDate["black"]
-                    ? earliestDueDate["white"]
-                    : earliestDueDate["black"]
-                }
-                numDue={totalDue}
-              />
-            }
-          />
-        */}
-          <View style={s(c.gridColumn({ gap: 12 }))}>
-            {overallActions.map((action, i) => {
+                text: "Cover lines seen in",
+                right: `1 in ${Math.round(
+                  1 / userState.getCurrentThreshold()
+                )} games`,
+                style: "secondary",
+              } as SidebarAction,
+              {
+                onPress: () => {
+                  quick((s) => {
+                    trackEvent("home.settings.rating");
+                    s.repertoireState.browsingState.replaceView(
+                      <RatingSettings />,
+                      "right"
+                    );
+                  });
+                },
+                text: "Your rating",
+                right: `${userState.user?.ratingRange} ${userState.user?.ratingSystem}`,
+                style: "secondary",
+              } as SidebarAction,
+              {
+                onPress: () => {
+                  quick((s) => {
+                    trackEvent("home.settings.theme");
+                    s.repertoireState.browsingState.replaceView(
+                      <ThemeSettings />,
+                      "right"
+                    );
+                  });
+                },
+                text: "Board appearance",
+                right:
+                  theme() && pieceSet()
+                    ? `${upperFirst(theme().name)} / ${upperFirst(pieceSet())}`
+                    : theme()
+                    ? `${upperFirst(theme().name)}`
+                    : pieceSet()
+                    ? `${pieceSet()}`
+                    : "No theme",
+                style: "secondary",
+              } as SidebarAction,
+            ].map((action: SidebarAction, i) => {
               return <SidebarFullWidthButton key={i} action={action} />;
             })}
-          </View>
+          </div>
           <Spacer height={46} />
         </>
-      )}
-      <>
-        <SidebarSectionHeader text="Repertoire settings" />
-        <View style={s()}>
-          {[
-            {
-              onPress: () => {
-                quick((s) => {
-                  trackEvent("home.settings.coverage");
-                  s.repertoireState.browsingState.replaceView(
-                    <CoverageSettings />,
-                    "right"
-                  );
-                });
-              },
-              text: "Cover lines seen in",
-              right: `1 in ${Math.round(1 / missThreshold)} games`,
-              style: "secondary",
-            } as SidebarAction,
-            {
-              onPress: () => {
-                quick((s) => {
-                  trackEvent("home.settings.rating");
-                  s.repertoireState.browsingState.replaceView(
-                    <RatingSettings />,
-                    "right"
-                  );
-                });
-              },
-              text: "Your rating",
-              right: `${user.ratingRange} ${user.ratingSystem}`,
-              style: "secondary",
-            } as SidebarAction,
-            {
-              onPress: () => {
-                quick((s) => {
-                  trackEvent("home.settings.theme");
-                  s.repertoireState.browsingState.replaceView(
-                    <ThemeSettings />,
-                    "right"
-                  );
-                });
-              },
-              text: "Board appearance",
-              right:
-                theme && pieceSet
-                  ? `${upperFirst(theme.name)} / ${upperFirst(pieceSet)}`
-                  : theme
-                  ? `${upperFirst(theme.name)}`
-                  : pieceSet
-                  ? `${pieceSet}`
-                  : "No theme",
-              style: "secondary",
-            } as SidebarAction,
-          ].map((action: SidebarAction, i) => {
-            return <SidebarFullWidthButton key={i} action={action} />;
-          })}
-        </View>
-        <Spacer height={46} />
-      </>
-    </SidebarTemplate>
+      </SidebarTemplate>
+    </Show>
   );
 };
 
 export const getExpectedNumberOfMovesForTarget = (target: number) => {
-  let [a, b] = [98.76334927, 137.34870497];
+  const [a, b] = [98.76334927, 137.34870497];
 
   return (1 / (target * a)) * b;
 };

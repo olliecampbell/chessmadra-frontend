@@ -1,5 +1,5 @@
 import { assign } from "lodash-es";
-import { BP, Responsive } from "./utils/useResponsive";
+import { BP, Responsive } from "./useResponsive";
 
 export const s = (...args) => assign({}, ...args);
 
@@ -51,94 +51,94 @@ const caps = {
   letterSpacing: "0.03rem",
 };
 const p = keyedPixelProp("padding");
-const pt = keyedPixelProp("paddingTop");
-const pb = keyedPixelProp("paddingBottom");
-const pl = keyedPixelProp("paddingLeft");
-const pr = keyedPixelProp("paddingRight");
+const pt = keyedPixelProp("padding-top");
+const pb = keyedPixelProp("padding-bottom");
+const pl = keyedPixelProp("padding-left");
+const pr = keyedPixelProp("padding-right");
 const px = (x) => s(pl(x), pr(x));
 const py = (x) => s(pt(x), pb(x));
 
 const m = keyedPixelProp("margin");
-const mt = keyedPixelProp("marginTop");
-const mb = keyedPixelProp("marginBottom");
-const ml = keyedPixelProp("marginLeft");
-const mr = keyedPixelProp("marginRight");
+const mt = keyedPixelProp("margin-top");
+const mb = keyedPixelProp("margin-bottom");
+const ml = keyedPixelProp("margin-left");
+const mr = keyedPixelProp("margin-right");
 const mx = (x) => s(ml(x), mr(x));
 const my = (x) => s(mt(x), mb(x));
 
-const weightThin = keyedProp("fontWeight")(300);
-const weightRegular = keyedProp("fontWeight")(400);
-const weightSemiBold = keyedProp("fontWeight")(500);
-const weightBold = keyedProp("fontWeight")(600);
-const weightHeavy = keyedProp("fontWeight")(700);
-const weightBlack = keyedProp("fontWeight")(800);
+const weightThin = keyedProp("font-weight")(300);
+const weightRegular = keyedProp("font-weight")(400);
+const weightSemiBold = keyedProp("font-weight")(500);
+const weightBold = keyedProp("font-weight")(600);
+const weightHeavy = keyedProp("font-weight")(700);
+const weightBlack = keyedProp("font-weight")(800);
 
-const flexGrow = keyedProp("flexGrow");
-const flexShrink = keyedProp("flexShrink");
-const flexStatic = s(keyedProp("flexGrow")(0), keyedProp("flexShrink")(0));
-const unshrinkable = keyedProp("flexShrink")(0);
-const grow = keyedProp("flexGrow")(1);
+const flexGrow = keyedProp("flex-grow");
+const flexShrink = keyedProp("flex-shrink");
+const flexStatic = s(keyedProp("flex-grow")(0), keyedProp("flex-shrink")(0));
+const unshrinkable = keyedProp("flex-shrink")(0);
+const grow = keyedProp("flex-grow")(1);
 const flex = keyedProp("flex");
-const textAlign = keyedProp("textAlign");
+const textAlign = keyedProp("text-align");
 
-const pageHeight = keyedProp("minHeight")("100vh");
-const constrainWidth = keyedProp("maxWidth")("100%");
-const constrainHeight = keyedProp("maxHeight")("100%");
+const pageHeight = keyedProp("min-height")("100vh");
+const constrainWidth = keyedProp("max-width")("100%");
+const constrainHeight = keyedProp("max-height")("100%");
 const fullHeight = keyedProp("height")("100%");
 const fullWidth = keyedProp("width")("100%");
 
 const height = keyedPixelProp("height");
 const width = keyedPixelProp("width");
-const minWidth = keyedPixelProp("minWidth");
-const minHeight = keyedPixelProp("minHeight");
+const minWidth = keyedPixelProp("min-width");
+const minHeight = keyedPixelProp("min-height");
 const size = (x: string | number) => {
   return s(height(x), width(x));
 };
 
-const selfStart = keyedProp("alignSelf")("flex-start");
-const selfCenter = keyedProp("alignSelf")("center");
-const selfStretch = keyedProp("alignSelf")("stretch");
-const selfEnd = keyedProp("alignSelf")("flex-end");
-const alignStart = keyedProp("alignItems")("flex-start");
-const alignEnd = keyedProp("alignItems")("flex-end");
-const justifyStart = keyedProp("justifyContent")("flex-start");
-const justifyEnd = keyedProp("justifyContent")("flex-end");
-const justifyBetween = keyedProp("justifyContent")("space-between");
-const alignCenter = keyedProp("alignItems")("center");
-const alignStretch = keyedProp("alignItems")("stretch");
-const justifyCenter = keyedProp("justifyContent")("center");
+const selfStart = keyedProp("align-self")("flex-start");
+const selfCenter = keyedProp("align-self")("center");
+const selfStretch = keyedProp("align-self")("stretch");
+const selfEnd = keyedProp("align-self")("flex-end");
+const alignStart = keyedProp("align-items")("flex-start");
+const alignEnd = keyedProp("align-items")("flex-end");
+const justifyStart = keyedProp("justify-content")("flex-start");
+const justifyEnd = keyedProp("justify-content")("flex-end");
+const justifyBetween = keyedProp("justify-content")("space-between");
+const alignCenter = keyedProp("align-items")("center");
+const alignStretch = keyedProp("align-items")("stretch");
+const justifyCenter = keyedProp("justify-content")("center");
 const fg = keyedProp("color");
-const bg = keyedProp("backgroundColor");
+const bg = keyedProp("background-color");
 
-const flexWrap = keyedProp("flexWrap")("wrap");
+const flexWrap = keyedProp("flex-wrap")("wrap");
 
 const display = keyedProp("display");
 const displayFlex = keyedProp("display")("flex");
 const displayNone = keyedProp("display")("none");
 const displayGrid = keyedProp("display")("grid");
 
-const row = s(displayFlex, keyedProp("flexDirection")("row"));
+const row = s(displayFlex, keyedProp("flex-direction")("row"));
 const gap = keyedProp("gap");
-const column = s(displayFlex, keyedProp("flexDirection")("column"));
+const column = s(displayFlex, keyedProp("flex-direction")("column"));
 const absolute = keyedProp("position")("absolute");
 const fixed = keyedProp("position")("fixed");
 const relative = keyedProp("position")("relative");
 const posStatic = keyedProp("position")("static");
 
 const border = keyedProp("border");
-const borderBottom = keyedProp("borderBottom");
-const borderTop = keyedProp("borderTop");
-const borderRight = keyedProp("borderRight");
-const borderLeft = keyedProp("borderLeft");
+const borderBottom = keyedProp("border-bottom");
+const borderTop = keyedProp("border-top");
+const borderRight = keyedProp("border-right");
+const borderLeft = keyedProp("border-left");
 
 const center = s(alignCenter, justifyCenter, displayFlex);
 
-const br = keyedPixelProp("borderRadius");
+const br = keyedPixelProp("border-radius");
 const rounded = br(2);
-const brtl = keyedPixelProp("borderTopLeftRadius");
-const brtr = keyedPixelProp("borderTopRightRadius");
-const brbl = keyedPixelProp("borderBottomLeftRadius");
-const brbr = keyedPixelProp("borderBottomRightRadius");
+const brtl = keyedPixelProp("border-top-left-radius");
+const brtr = keyedPixelProp("border-top-right-radius");
+const brbl = keyedPixelProp("border-bottom-left-radius");
+const brbr = keyedPixelProp("border-bottom-right-radius");
 const brt = (x) => {
   return s(brtl(x), brtr(x));
 };
@@ -149,19 +149,19 @@ const brl = (x) => {
   return s(brtl(x), brbl(x));
 };
 const brr = (x) => s(brtr(x), brbr(x));
-const maxWidth = keyedPixelProp("maxWidth");
-const maxHeight = keyedPixelProp("maxHeight");
+const maxWidth = keyedPixelProp("max-width");
+const maxHeight = keyedPixelProp("max-height");
 const clickable = keyedProp("cursor")("pointer");
 const unclickable = keyedProp("cursor")("default");
-const noBasis = keyedProp("flexBasis")(0);
-const round = keyedPixelProp("borderRadius")(999);
+const noBasis = keyedProp("flex-basis")(0);
+const round = keyedPixelProp("border-radius")(999);
 const flexible = s(
-  keyedProp("flexBasis")(0),
-  keyedProp("minWidth")(0),
-  keyedProp("minHeight")(0),
+  keyedProp("flex-basis")(0),
+  keyedProp("min-width")(0),
+  keyedProp("min-height")(0),
   grow
 );
-const fontSize = keyedPixelProp("fontSize");
+const fontSize = keyedPixelProp("font-size");
 
 const noResize = keyedProp("resize")("none");
 
@@ -176,18 +176,18 @@ const absoluteFull = s(absolute, top(0), left(0), fullWidth, fullHeight);
 
 // Compount style objects
 const dashboardTitle = s(fontSize(40), weightBold, fg("#2e2e3c"));
-const zIndex = keyedProp("zIndex");
+const zIndex = keyedProp("z-index");
 const overflowHidden = keyedProp("overflow")("hidden");
 const overflowY = keyedProp("overflow");
-const scrollY = keyedProp("overflowY")("scroll");
-const scrollX = keyedProp("overflowX")("scroll");
+const scrollY = keyedProp("overflow-y")("scroll");
+const scrollX = keyedProp("overflow-x")("scroll");
 const aircamBlue = "#1160d6";
-const lineHeight = keyedProp("lineHeight");
-const fontFamily = keyedProp("fontFamily");
+const lineHeight = keyedProp("line-height");
+const fontFamily = keyedProp("font-family");
 
 const shadow = (x, y, blur, spread, color) => {
   return {
-    boxShadow: `${x}px ${y}px ${blur}px ${spread}px ${color}`,
+    "box-shadow": `${x}px ${y}px ${blur}px ${spread}px ${color}`,
   };
 };
 const cardShadow = shadow(0, 0, 4, 0, "rgba(0, 0, 0, 0.5)");
@@ -215,15 +215,19 @@ export const grayHue = 200;
 function easeInOutSine(x: number): number {
   return -(Math.cos(Math.PI * x) - 1) / 2;
 }
-const genGrays = (hue, minSat, maxSat) => {
-  const grays = {};
+const genGrays = (
+  hue: number,
+  minSat: number,
+  maxSat: number
+): Record<number, string> => {
+  const grays: Record<number, string> = {};
   for (let i = 0; i <= 100; i = i + 1) {
-    let saturation = minSat + ((maxSat - minSat) * i) / 100;
+    const saturation = minSat + ((maxSat - minSat) * i) / 100;
     grays[i] = `hsl(${hue}, ${saturation}%, ${i}%)`;
   }
   return grays;
 };
-const grays = genGrays(grayHue, 8, 5);
+export const grays = genGrays(grayHue, 8, 5);
 const trueGrays = genGrays(0, 0, 0);
 const chessboardGrays = genGrays(grayHue, 10, 3);
 
@@ -234,17 +238,18 @@ const genShades = (
   hue: number,
   _minSaturation?: number,
   _maxSaturation?: number
-) => {
-  const shades = {};
-  let minSaturation = _minSaturation ?? 20;
-  let maxSaturation = _maxSaturation ?? 80;
-  let minLightness = 4;
-  let maxLightness = 80;
+): Record<number, string> => {
+  const shades: Record<number, string> = {};
+  const minSaturation = _minSaturation ?? 20;
+  const maxSaturation = _maxSaturation ?? 80;
+  const minLightness = 4;
+  const maxLightness = 80;
   for (let i = 0; i <= 100; i = i + 1) {
-    let lightness_y = easeInOutSine(i / 100);
-    let saturation =
+    const lightness_y = easeInOutSine(i / 100);
+    const saturation =
       minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;
-    let lightness = minLightness + (maxLightness - minLightness) * lightness_y;
+    const lightness =
+      minLightness + (maxLightness - minLightness) * lightness_y;
     shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
   return shades;
@@ -268,12 +273,24 @@ const oranges = genShades(40, 70, 70);
 const arrowColors = genShades(40, 100, 100);
 const pinks = genShades(308);
 const purples = genShades(271);
-const reds = genShades(340);
+const reds = genShades(340, 40, 60);
 const greens = genShades(109);
 const forestGreens = genShades(83);
 const failureShades = reds;
 const successShades = genShades(164);
-const colors = {
+export const colors = {
+  blues,
+  teals,
+  primaries,
+  yellows,
+  oranges,
+  pinks,
+  reds,
+  grays,
+  purples,
+  greens,
+  forestGreens,
+  successShades,
   textPrimary: grays[95],
   textSecondary: grays[80],
   textTertiary: grays[50],
@@ -438,7 +455,7 @@ export const chessboardColors = {
 
 const fillNoExpand = s(minWidth("100%"), width(0));
 
-const noPointerEvents = keyedProp("pointerEvents")("none");
+const noPointerEvents = keyedProp("pointer-events")("none");
 const transform = keyedProp("transform");
 const oldContainerStyles = (isMobile, customMaxWidth?: number) =>
   s(
@@ -483,24 +500,24 @@ const grid = ({
 }) => {
   return s(
     c.displayGrid,
-    c.keyedProp("gridTemplateColumns")(
+    c.keyedProp("grid-template-columns")(
       templateColumns ? templateColumns.join(" ") : "1fr"
     ),
-    c.keyedProp("gridTemplateRows")(
+    c.keyedProp("grid-template-rows")(
       templateRows ? templateRows.join(" ") : "1fr"
     ),
-    c.keyedProp("rowGap")(rowGap ?? 12),
-    c.keyedProp("columnGap")(columnGap ?? 12)
+    c.keyedProp("row-gap")(rowGap ?? 12),
+    c.keyedProp("column-gap")(columnGap ?? 12)
   );
 };
 
 const gridColumn = ({ gap }: { gap: number }) => {
   return s(
     c.displayGrid,
-    c.keyedProp("gridTemplateColumns")("1fr"),
-    // c.keyedProp("gridTemplateRows")("1fr"),
-    c.keyedProp("rowGap")(gap)
-    // c.keyedProp("columnGap")(columnGap ?? 12)
+    c.keyedProp("grid-template-columns")("1fr"),
+    // c.keyedProp("grid-template-rows")("1fr"),
+    c.keyedProp("row-gap")(pixelifyIfNeeded(gap))
+    // c.keyedProp("column-gap")(columnGap ?? 12)
   );
 };
 
@@ -520,7 +537,12 @@ const sidebarDescriptionStyles = (responsive: Responsive) => {
   return s(c.fg(c.grays[70]));
 };
 
+const getSidebarPadding = (responsive: Responsive) => {
+  return responsive.switch(12, [BP.md, 12], [BP.lg, 18]);
+};
+
 export const c = {
+  getSidebarPadding,
   keyedProp,
   overflowY,
   oldContainerStyles,
@@ -647,7 +669,7 @@ export const c = {
   fontFamily,
   block: display("-block"),
   inlineBlock: display("inline-block"),
-  whitespace: keyedProp("whiteSpace"),
+  whitespace: keyedProp("white-space"),
   shadow,
   cardShadow,
   lightCardShadow,

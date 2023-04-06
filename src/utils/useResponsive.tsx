@@ -1,4 +1,7 @@
-import { useWindowDimensions } from "react-native";
+// import { useWindowDimensions } from "react-native";
+
+import { useWindowSize } from "@solid-primitives/resize-observer";
+import { createEffect, on } from "solid-js";
 
 export enum ResponsiveBreakpoint {
   xsm = 0,
@@ -11,7 +14,7 @@ export enum ResponsiveBreakpoint {
 
 export { ResponsiveBreakpoint as BP };
 
-let BREAKPOINTS = [
+const BREAKPOINTS = [
   ResponsiveBreakpoint.xsm,
   ResponsiveBreakpoint.sm,
   ResponsiveBreakpoint.md,
@@ -20,20 +23,20 @@ let BREAKPOINTS = [
   ResponsiveBreakpoint.xxl,
 ];
 
-let getBreakpoint = (x: number): ResponsiveBreakpoint => {
-  if (x < 576) {
+const getBreakpoint = (x: number): ResponsiveBreakpoint => {
+  if (x < 640) {
     return ResponsiveBreakpoint.xsm;
   }
   if (x < 768) {
     return ResponsiveBreakpoint.sm;
   }
-  if (x < 1000) {
+  if (x < 1024) {
     return ResponsiveBreakpoint.md;
   }
-  if (x < 1200) {
+  if (x < 1280) {
     return ResponsiveBreakpoint.lg;
   }
-  if (x < 1400) {
+  if (x < 1536) {
     return ResponsiveBreakpoint.xl;
   }
   return ResponsiveBreakpoint.xxl;
@@ -60,20 +63,33 @@ export interface Responsive {
 }
 
 export const useResponsive = (): Responsive => {
-  const { width: windowWidth } = useWindowDimensions();
-  // const [isMobile, setIsMobile] = useState(true);
+  // solid TODO
+  const windowSize = useWindowSize();
+  // const [isMobile, setIsMobile] = createSignal(true);
   // useEffect(() => {
   //   setIsMobile(windowWidth < 1000);
   // }, []);
   // console.log({ windowWidth });
-  const breakpoint = getBreakpoint(windowWidth);
+  const breakpoint = () => getBreakpoint(windowSize.width);
+  createEffect(
+    on(
+      () => breakpoint(),
+      () => {
+        // todo: solid
+        window.location.reload();
+      },
+      {
+        defer: true,
+      }
+    )
+  );
   return {
-    isMobile: breakpoint <= ResponsiveBreakpoint.md,
-    bp: breakpoint,
+    isMobile: breakpoint() <= ResponsiveBreakpoint.md,
+    bp: breakpoint(),
     switch: <T,>(def: T, ...xs: [ResponsiveBreakpoint, T][]): T => {
       let result = def;
       xs.forEach(([bp, val]) => {
-        if (breakpoint >= bp) {
+        if (breakpoint() >= bp) {
           result = val;
         }
       });

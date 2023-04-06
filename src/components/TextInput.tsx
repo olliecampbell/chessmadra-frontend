@@ -1,53 +1,61 @@
-import { c, s } from "app/styles";
-import React, { useState } from "react";
-import { TextInput, TextInputProps } from "react-native";
+import clsx from "clsx";
+import { createRequire } from "module";
+import { createEffect, JSX, splitProps } from "solid-js";
+import { InputError } from "./forms/InputError";
+import { InputLabel } from "./forms/InputLabel";
 
-export const CMTextInput = ({
-  value,
-  placeholder,
-  setValue,
-  onKeyDown,
-  textInputProps,
-  style,
-}: {
-  value: string;
-  style?: any;
-  onKeyDown?: any;
-  textInputProps?: Partial<TextInputProps>;
-  placeholder: string;
-  setValue: (x: string) => void;
-}) => {
-  const [focus, setFocus] = useState(false);
-  return (
-    <TextInput
-      {...textInputProps}
-      // @ts-ignore
-      onKeyDown={onKeyDown}
-      // @ts-ignore
-      className="text-input"
-      style={s(
-        c.bg(c.grays[14]),
-        c.py(12),
-        c.px(12),
-        c.fontSize(14),
-        focus
-          ? c.border(`1px solid ${c.grays[30]}`)
-          : c.border(`1px solid ${c.grays[26]}`),
-        c.br(4),
-        c.keyedProp("outline")("none"),
-        c.fg(c.colors.textPrimary),
-        style ?? {}
-      )}
-      placeholder={placeholder}
-      placeholderTextColor={c.grays[60]}
-      onFocus={() => {
-        setFocus(true);
-      }}
-      onBlur={() => {
-        setFocus(false);
-      }}
-      value={value}
-      onChangeText={setValue}
-    />
-  );
+type TextInputProps = {
+  ref: (element: HTMLInputElement) => void;
+  type: "text" | "email" | "tel" | "password" | "url" | "number" | "date";
+  name: string;
+  value: string | number | undefined;
+  onInput: JSX.EventHandler<HTMLInputElement, InputEvent>;
+  onChange: JSX.EventHandler<HTMLInputElement, Event>;
+  onBlur: JSX.EventHandler<HTMLInputElement, FocusEvent>;
+  placeholder?: string;
+  required?: boolean;
+  class?: string;
+  label?: string;
+  error?: string;
+  padding?: "none";
 };
+
+/**
+ * Text input field that users can type into. Various decorations can be
+ * displayed in or around the field to communicate the entry requirements.
+ */
+export function TextInput(props: TextInputProps) {
+  const [, inputProps] = splitProps(props, [
+    "class",
+    "value",
+    "label",
+    "error",
+    "padding",
+  ]);
+  createEffect(() => {
+    console.log(`errors, ${props.name}`, props.error);
+  });
+  return (
+    <div class={clsx(!props.padding && "", props.class)}>
+      <InputLabel
+        name={props.name}
+        label={props.label}
+        required={props.required}
+      />
+      <input
+        {...inputProps}
+        class={clsx(
+          "p-4 w-full rounded border-2 bg-gray-12 placeholder:text-gray-50 md:text-md",
+          props.error
+            ? "border-red-600/50 dark:border-red-400/50"
+            : "border-slate-200 hover:border-slate-300 focus:border-sky-600/50 dark:border-slate-800 dark:hover:border-slate-700 dark:focus:border-sky-400/50"
+        )}
+        id={props.name}
+        value={props.value || ""}
+        aria-invalid={!!props.error}
+        aria-errormessage={`${props.name}-error`}
+      />
+      <InputError name={props.name} error={props.error} />
+    </div>
+  );
+}

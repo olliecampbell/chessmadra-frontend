@@ -1,44 +1,31 @@
-import React, { useRef, useState } from "react";
-import { Animated, Easing, Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { CMText } from "./CMText";
-import { quick, useUserState } from "app/utils/app_state";
-import { useResponsive } from "app/utils/useResponsive";
-import { getRecommendedMissThreshold } from "app/utils/user_state";
-import { useOutsideClick } from "app/components/useOutsideClick";
-import { SelectOneOf } from "./SelectOneOf";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Motion } from "@motionone/solid";
+import { Accessor } from "solid-js";
 
 export const FadeInOut = ({
   children,
+  id,
   open,
   maxOpacity: _maxOpacity,
   style,
 }: {
   children: any;
-  open: boolean;
+  open: Accessor<boolean>;
   maxOpacity?: number;
   style?: any;
+  id?: string;
 }) => {
-  let maxOpacity = _maxOpacity ?? 1;
-  const fadeAnim = React.useRef(
-    new Animated.Value(open ? maxOpacity : 0.0)
-  ).current;
-
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: open ? maxOpacity : 0,
-      duration: 200,
-      easing: Easing.quad,
-      useNativeDriver: false,
-    }).start();
-  }, [open, maxOpacity]);
+  const maxOpacity = _maxOpacity ?? 100;
+  const opacity = () => (open() ? maxOpacity : 0);
   return (
-    <Animated.View
-      style={s(c.opacity(fadeAnim), !open && c.noPointerEvents, style)}
+    <Motion
+      id={id}
+      initial={{ opacity: opacity() }}
+      animate={{ opacity: opacity() }}
+      style={s(!open && c.noPointerEvents, style)}
     >
       {children}
-    </Animated.View>
+    </Motion>
   );
 };

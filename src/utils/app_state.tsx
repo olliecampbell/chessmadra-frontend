@@ -1,8 +1,4 @@
-import create from "zustand";
-import { devtools } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
-import { VisualizationState } from "app/types/VisualizationState";
-import { OpDraft } from "./op_draft";
+import { VisualizationState } from "~/types/VisualizationState";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
 import { getInitialVisualizationState } from "./visualization_state";
 import {
@@ -13,7 +9,6 @@ import {
   BlindfoldTrainingState,
   getInitialBlindfoldState,
 } from "./blindfold_state";
-import { createQuick } from "./quick";
 import {
   ColorTrainingState,
   getInitialColorState,
@@ -26,29 +21,26 @@ import {
   GameSearchState,
   getInitialGameSearchState,
 } from "./game_search_state";
-import { every, isNil, isObject, keysIn, take, zip } from "lodash-es";
+import { every, isObject, keysIn, take, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
-import { immerable } from "immer";
-import { Animated } from "react-native";
 import { DebugState, getInitialDebugState } from "./debug_state";
 import { getInitialNavigationState, NavigationState } from "./navigation_state";
 import { AdminState, getInitialAdminState } from "./admin_state";
 import { getInitialUserState, UserState } from "./user_state";
+// TODO: solid
 import * as amplitude from "@amplitude/analytics-browser";
-import { c } from "app/styles";
+import { c } from "~/utils/styles";
 import { isDevelopment } from "./env";
-import { RefObject, useContext, useRef } from "react";
-import { enableMapSet } from "immer";
 import {
   BrowsingState,
   SidebarState,
   SidebarStateContext,
 } from "./browsing_state";
+import { Accessor, useContext } from "solid-js";
+import { createStore, produce } from "solid-js/store";
+import { destructure } from "@solid-primitives/destructure";
 
-enableMapSet();
-
-const DEBUG_STATE = false;
-Chess[immerable] = true;
+const DEBUG_STATE = true;
 
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
@@ -67,82 +59,79 @@ export interface AppState {
   trackEvent: (name: string, props?: Object) => void;
 }
 
-let pendingState: OpDraft<AppState> = null;
+let pendingState: AppState | null = null;
+const set = (fn: (state: AppState) => AppState) => {
+  if (pendingState) {
+    // @ts-ignore
+    return fn(pendingState);
+  } else {
+    let res = null;
+    if (pendingState) {
+      // @ts-ignore
+      return fn(pendingState);
+    } else {
+      setAppState(
+        produce((state: AppState) => {
+          pendingState = state;
+          try {
+            res = fn(state as AppState);
+          } finally {
+            pendingState = null;
+          }
+        })
+      );
+      return res;
+    }
+  }
+};
+const get = <T,>(s: (_: AppState) => T): T => {
+  return s(appState);
+};
+const initialState = {
+  // toJSON:
+  //   isDevelopment && DEBUG_STATE
+  //     ? undefined
+  //     : () => {
+  //         return get((s: AppState) => {
+  //           if (isDevelopment && DEBUG_STATE) {
+  //             return JSON.stringify(s);
+  //           }
+  //           // Redux devtools slows down with big states, undo this for debugging
+  //           return {};
+  //         });
+  //       },
+  repertoireState: getInitialRepertoireState(set, get),
+  adminState: getInitialAdminState(set, get),
+  // visualizationState: getInitialVisualizationState(set, get, false),
+  // climbState: getInitialVisualizationState(set, get, true),
+  // blunderState: getInitialBlundersState(set, get),
+  // blindfoldState: getInitialBlindfoldState(set, get),
+  // colorTrainingState: getInitialColorState(set, get),
+  // gameSearchState: getInitialGameSearchState(set, get),
+  // gameMemorizationState: getInitialGameMemorizationState(set, get),
+  debugState: getInitialDebugState(set, get),
+  navigationState: getInitialNavigationState(set, get),
+  userState: getInitialUserState(set, get),
+  trackEvent: (name: string, props?: Object) => {
+    get((s: AppState) => {
+      console.log(
+        `%c${name} %c ${Object.entries(props ?? {})
+          .map(([k, v]) => `${k}=${v}`)
+          .join(" | ")}`,
+        "color: salmon; font-weight: bold;",
+        "color: hsl(217, 92%, 76%); font-weight: bold;"
+      );
+      amplitude.track(name, props);
+    });
+  },
+  quick: set,
+};
+const [appState, setAppState] = createStore<AppState>(initialState);
 
-export const useAppStateInternal = create<AppState>()(
-  devtools(
-    // @ts-ignore for the set stuff
-    immer((_set, _get): AppState => {
-      const set = <T,>(fn: (state: AppState) => T) => {
-        if (pendingState) {
-          // @ts-ignore
-          return fn(pendingState);
-        } else {
-          let res = null;
-          _set((state) => {
-            pendingState = state;
-            try {
-              res = fn(state as AppState);
-            } finally {
-              pendingState = null;
-            }
-          });
-          return res;
-        }
-      };
-      const get = <T,>(fn: (state: AppState) => T) => {
-        if (pendingState) {
-          return fn(pendingState as AppState);
-        } else {
-          let s = _get();
-          return fn(s);
-        }
-      };
-      let initialState = {
-        toJSON:
-          isDevelopment && DEBUG_STATE
-            ? undefined
-            : () => {
-                return get((s) => {
-                  if (isDevelopment && DEBUG_STATE) {
-                    return JSON.stringify(s);
-                  }
-                  // Redux devtools slows down with big states, undo this for debugging
-                  return {};
-                });
-              },
-        repertoireState: getInitialRepertoireState(set, get),
-        adminState: getInitialAdminState(set, get),
-        visualizationState: getInitialVisualizationState(set, get, false),
-        climbState: getInitialVisualizationState(set, get, true),
-        blunderState: getInitialBlundersState(set, get),
-        blindfoldState: getInitialBlindfoldState(set, get),
-        colorTrainingState: getInitialColorState(set, get),
-        gameSearchState: getInitialGameSearchState(set, get),
-        gameMemorizationState: getInitialGameMemorizationState(set, get),
-        debugState: getInitialDebugState(set, get),
-        navigationState: getInitialNavigationState(set, get),
-        userState: getInitialUserState(set, get),
-        trackEvent: (name: string, props?: Object) => {
-          get((s) => {
-            console.log(
-              `%c${name} %c ${Object.entries(props ?? {})
-                .map(([k, v]) => `${k}=${v}`)
-                .join(" | ")}`,
-              "color: salmon; font-weight: bold;",
-              "color: hsl(217, 92%, 76%); font-weight: bold;"
-            );
-            amplitude.track(name, props);
-          });
-        },
-        ...createQuick<AppState>(set),
-      };
-      return initialState;
-    }),
-    { name: "AppState" }
-  )
-);
-const logUnequal = (a, b, path, config: RefObject<EqualityConfig>) => {
+export const useAppStateInternal = <T,>(selector: (state: AppState) => T) => {
+  return get((s) => selector(s));
+};
+const logUnequal = (a, b, path, config: EqualityConfig) => {
   console.log(
     `%c \n  Re-rendering, %c${path}%c used to be`,
     `padding: 12px; padding-top: 24px; padding-right: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}`,
@@ -153,17 +142,11 @@ const logUnequal = (a, b, path, config: RefObject<EqualityConfig>) => {
     "\n\nBut is now:\n\n",
     b,
     "\n\nStack trace:\n\n",
-    (take(config.current?.stackTrace, 5) ?? []).join("\n")
+    (take(config?.stackTrace, 5) ?? []).join("\n")
   );
 };
 
-const logExpensive = (
-  a,
-  b,
-  path,
-  keys: number,
-  config?: RefObject<EqualityConfig>
-) => {
+const logExpensive = (a, b, path, keys: number, config?: EqualityConfig) => {
   if (isDevelopment) {
     console.log(
       `%c ${path}%c is expensive, ${keys} keys`,
@@ -173,8 +156,8 @@ const logExpensive = (
       a,
       "\n\nBut is now:\n\n",
       b,
-      config.current,
-      (take(config.current?.stackTrace, 5) ?? []).join("\n")
+      config,
+      (take(config?.stackTrace, 5) ?? []).join("\n")
     );
   }
 };
@@ -185,38 +168,24 @@ interface EqualityConfig {
   referenceEquality: boolean;
 }
 
-let DEFAULT_EQUALITY_CONFIG = {
+const DEFAULT_EQUALITY_CONFIG = {
   debug: false,
   referenceEquality: false,
 } as EqualityConfig;
 
 const EXPENSIVE_CUTOFF = 100;
 
-const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
-  const debug = config.current.debug;
-  if (config.current.referenceEquality) {
-    let equal = a === b;
+const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
+  const debug = config.debug;
+  if (config.referenceEquality) {
+    const equal = a === b;
     if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
     return equal;
   }
   if (a instanceof Chess && b instanceof Chess) {
-    let equal = a.fen() === b.fen();
-    if (!equal && debug) {
-      logUnequal(a, b, path, config);
-    }
-    return equal;
-  }
-  if (a instanceof Animated.Value || b instanceof Animated.Value) {
-    let equal = a === b;
-    if (!equal && debug) {
-      logUnequal(a, b, path, config);
-    }
-    return equal;
-  }
-  if (a instanceof Animated.ValueXY || b instanceof Animated.ValueXY) {
-    let equal = a === b;
+    const equal = a.fen() === b.fen();
     if (!equal && debug) {
       logUnequal(a, b, path, config);
     }
@@ -224,7 +193,7 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
   }
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) {
-      if (config.current.debug) {
+      if (config.debug) {
         logUnequal(a, b, path, config);
       }
       return false;
@@ -232,7 +201,7 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
     if (a.length > EXPENSIVE_CUTOFF || b.length > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, Math.max(a.length, b.length), config);
     }
-    let arrayEqual = every(
+    const arrayEqual = every(
       zip(a, b).map(([a, b], i) => {
         let newPath = path;
         newPath = newPath + `[${i}]`;
@@ -243,44 +212,40 @@ const customEqualityCheck = (a, b, path, config: RefObject<EqualityConfig>) => {
   }
   if (isObject(a) && isObject(b)) {
     if (Object.keys(a).length !== Object.keys(b).length) {
-      if (config.current.debug) {
+      if (config.debug) {
         logUnequal(a, b, path, config);
       }
       return false;
     }
-    let allKeys = new Set([...keysIn(a), ...keysIn(b)]);
+    const allKeys = new Set([...keysIn(a), ...keysIn(b)]);
     if (allKeys.size > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, allKeys.size, config);
     }
     return every([...allKeys], (k) => {
       let newPath = path;
-      let a1 = a[k];
-      let b1 = b[k];
+      const a1 = a[k];
+      const b1 = b[k];
       newPath = newPath + `.${k}`;
       return customEqualityCheck(a1, b1, newPath, config);
     });
   }
-  let plainEquality = a == b;
-  if (!plainEquality && config.current.debug) {
+  const plainEquality = a == b;
+  if (!plainEquality && config.debug) {
     logUnequal(a, b, path, config);
   }
   return plainEquality;
 };
 
-export function equality(
-  a: any,
-  b: any,
-  config: RefObject<EqualityConfig>
-): boolean {
+export function equality(a: any, b: any, config: EqualityConfig): boolean {
   const t = performance.now();
-  let eq = customEqualityCheck(a, b, "", config);
+  const eq = customEqualityCheck(a, b, "", config);
   const t2 = performance.now();
   const duration = t2 - t;
   if (duration > 0.5 && false) {
     console.log(
       "slow equality",
       t2 - t,
-      (take(config.current?.stackTrace, 5) ?? []).join("\n")
+      (take(config?.stackTrace, 5) ?? []).join("\n")
     );
   }
   return eq;
@@ -288,7 +253,7 @@ export function equality(
 
 // Hooks for slices
 function getStackTrace() {
-  var stack;
+  let stack;
   try {
     throw new Error("");
   } catch (error) {
@@ -306,58 +271,79 @@ export const useStateSlice = <Y, T>(
   sliceSelector: (_: AppState) => Y,
   _config?: Partial<EqualityConfig>
 ) => {
-  let config = useRef({ ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) });
-  if (isDevelopment && isNil(config.current.stackTrace)) {
-    config.current.stackTrace = getStackTrace();
-  }
-  return useAppStateInternal(
-    (s) => selector(sliceSelector(s)),
-    (a, b) => equality(a, b, config)
-  );
+  const config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
+  config.stackTrace = getStackTrace();
+  return useAppStateInternal((s) => selector(sliceSelector(s)));
 };
 
-export const useRepertoireState = <T,>(
+export const useStateSliceDestructure = <Y, T extends any[]>(
+  selector: (_: Y) => T,
+  sliceSelector: (_: AppState) => Y,
+  _config?: Partial<EqualityConfig>
+): AccessorArray<T> => {
+  const config = { ...DEFAULT_EQUALITY_CONFIG, ...(_config ?? {}) };
+  config.stackTrace = getStackTrace();
+  const stateSlice = () =>
+    useAppStateInternal((s) => selector(sliceSelector(s)));
+  return destructure(stateSlice, { memo: true });
+};
+
+export const useRepertoireState = <T extends any[]>(
   fn: (_: RepertoireState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.repertoireState, config);
+  return useStateSliceDestructure(fn, (s) => s.repertoireState, config);
 };
 
-export const useBrowsingState = <T,>(
+export const useBrowsingState = <T extends any[]>(
   fn: (_: [BrowsingState, RepertoireState]) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(
+  return useStateSliceDestructure(
     fn,
-    (s) => [s.repertoireState.browsingState, s.repertoireState],
+    (s) =>
+      [s.repertoireState.browsingState, s.repertoireState] as [
+        BrowsingState,
+        RepertoireState
+      ],
     config
   );
 };
 
-export const useSidebarState = <T,>(
-  fn: (_: [SidebarState, BrowsingState, RepertoireState]) => T,
-  config?: Partial<EqualityConfig>
-) => {
+// type ReactiveSource = [] | any[] | Object;
+// type DeepDestructure<T extends ReactiveSource> = {
+//   readonly [K in keyof T]-?: T[K] extends ReactiveSource
+//     ? T[K] extends AnyFunction
+//       ? Accessor<T[K]>
+//       : DeepDestructure<T[K]>
+//     : Accessor<T[K]>;
+// };
+type AccessorArray<T extends any[]> = {
+  [K in keyof T]: Accessor<T[K]>;
+};
+
+export const useSidebarState = <T extends any[]>(
+  f: (s: [SidebarState, BrowsingState, RepertoireState]) => T
+): AccessorArray<T> => {
   const usePrevious = useContext(SidebarStateContext);
-  return useStateSlice(
-    fn,
-    (s) => {
-      if (usePrevious) {
-        return [
-          s.repertoireState.browsingState.previousSidebarState ||
-            s.repertoireState.browsingState.sidebarState,
-          s.repertoireState.browsingState,
-          s.repertoireState,
-        ];
-      } else {
-        return [
-          s.repertoireState.browsingState.sidebarState,
-          s.repertoireState.browsingState,
-          s.repertoireState,
-        ];
-      }
-    },
-    config
+  const sidebarState = () => {
+    if (usePrevious) {
+      return (
+        getAppState().repertoireState.browsingState.previousSidebarState ||
+        getAppState().repertoireState.browsingState.sidebarState
+      );
+    } else {
+      return getAppState().repertoireState.browsingState.sidebarState;
+    }
+  };
+  return destructure(
+    () =>
+      f([
+        sidebarState(),
+        getAppState().repertoireState.browsingState,
+        getAppState().repertoireState,
+      ]),
+    { memo: true }
   );
 };
 
@@ -407,43 +393,46 @@ export const useGameSearchState = <T,>(
   fn: (_: GameSearchState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.gameSearchState, config);
+  return useStateSliceDestructure(fn, (s) => s.gameSearchState, config);
 };
 
 export const useDebugState = <T,>(
   fn: (_: DebugState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.debugState, config);
+  return useStateSliceDestructure(fn, (s) => s.debugState, config);
 };
 
 export const useUserState = <T,>(
   fn: (_: UserState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.userState, config);
+  return useStateSliceDestructure(fn, (s) => s.userState, config);
 };
 
 export const useAdminState = <T,>(
   fn: (_: AdminState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.adminState, config);
+  return useStateSliceDestructure(fn, (s) => s.adminState, config);
 };
 
 export const useAppState = <T,>(
   fn: (_: AppState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s, config);
+  return useStateSliceDestructure(fn, (s) => s, config);
 };
 
 export const getAppState = () => {
-  return useAppStateInternal.getState();
+  return appState;
 };
 
 // @ts-ignore
-window.getAppState = getAppState;
+if (typeof window !== "undefined") {
+  // @ts-ignore
+  window.getAppState = getAppState;
+}
 
 export const quick = (fn: (_: AppState) => any) => {
   getAppState().quick(fn);

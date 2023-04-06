@@ -1,15 +1,13 @@
-import { s, c } from "app/styles";
-import { BP, useResponsive } from "app/utils/useResponsive";
-import React from "react";
+import { s, c } from "~/utils/styles";
+import { BP, useResponsive } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
 
 export const RepertoireEditingHeader = ({ children }: { children: any }) => {
   const responsive = useResponsive();
   return (
     <CMText
       style={s(
-        c.px(getSidebarPadding(responsive)),
+        c.px(c.getSidebarPadding(responsive)),
         c.fg(c.colors.textPrimary),
         c.fontSize(responsive.switch(18, [BP.lg, 24])),
         c.mt(responsive.switch(0, [BP.lg, -6])),

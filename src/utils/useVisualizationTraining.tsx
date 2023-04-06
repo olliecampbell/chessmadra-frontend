@@ -1,34 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { Pressable, View, Platform } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { getPlaybackSpeedDescription } from "app/components/chessboard/Chessboard";
+/* eslint-disable */
+import React, { useEffect } from "react";
+import { Pressable, Platform } from "react-native";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { getPlaybackSpeedDescription } from "~/components/chessboard/Chessboard";
 import { isNil } from "lodash-es";
-import { MoveList } from "app/components/MoveList";
+import { MoveList } from "~/components/MoveList";
 // import { Feather } from "@expo/vector-icons";
 // import Icon from 'react-native-vector-icons/MaterialIcons'
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import KingWhiteIcon from "app/components/chessboard/pieces/KingWhiteIcon";
-import KingBlackIcon from "app/components/chessboard/pieces/KingBlackIcon";
-import { Modal } from "app/components/Modal";
-import { intersperse } from "app/utils/intersperse";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
+import KingWhiteIcon from "~/components/chessboard/pieces/KingWhiteIcon";
+import KingBlackIcon from "~/components/chessboard/pieces/KingBlackIcon";
+import { Modal } from "~/components/Modal";
+import { intersperse } from "~/utils/intersperse";
 import AnimateNumber from "react-native-animate-number";
 import {
   PlaybackSpeed,
   PuzzleDifficulty,
   VisualizationState,
   ProgressMessageType,
-} from "app/types/VisualizationState";
-import { NewPuzzleButton } from "app/NewPuzzleButton";
-import { useHelpModal } from "app/components/useHelpModal";
-import { SettingsTitle } from "app/components/SettingsTitle";
-import { SelectOneOf } from "app/components/SelectOneOf";
-import { ProgressMessageView } from "app/components/ProgressMessage";
-import { SelectRange } from "app/components/SelectRange";
-import { CMText } from "app/components/CMText";
-import { trackEvent } from "app/hooks/useTrackEvent";
+} from "~/types/VisualizationState";
+import { NewPuzzleButton } from "~/NewPuzzleButton";
+import { useHelpModal } from "~/components/useHelpModal";
+import { SettingsTitle } from "~/components/SettingsTitle";
+import { SelectOneOf } from "~/components/SelectOneOf";
+import { ProgressMessageView } from "~/components/ProgressMessage";
+import { SelectRange } from "~/components/SelectRange";
+import { CMText } from "~/components/CMText";
+import { trackEvent } from "~/utils/trackEvent";
 
 const debugButtons = false;
 
@@ -44,7 +45,7 @@ const SettingsOption = <T,>({
   renderChoice: (_: T) => JSX.Element;
 }) => {
   return (
-    <View style={s(c.ml(12))}>
+    <div style={s(c.ml(12))}>
       {intersperse(
         choices.map((choice, i) => {
           const active = choice === activeChoice;
@@ -58,7 +59,7 @@ const SettingsOption = <T,>({
             >
               <i
                 style={s(c.fg(c.colors.textPrimary))}
-                className={active ? `fas fa-circle` : `fa-sharp fa-circle`}
+                class={active ? `fas fa-circle` : `fa-sharp fa-circle`}
               ></i>
               <Spacer width={12} />
               <CMText style={s(c.fg(c.colors.textPrimary), c.weightSemiBold)}>
@@ -71,7 +72,7 @@ const SettingsOption = <T,>({
           return <Spacer key={`space-${i}`} height={12} />;
         }
       )}
-    </View>
+    </div>
   );
 };
 
@@ -113,7 +114,7 @@ export const useVisualizationTraining = ({
     c.fontSize(14)
   );
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = createSignal(false);
   const { helpOpen, setHelpOpen, helpModal } = useHelpModal({
     copy: (
       <>
@@ -133,7 +134,7 @@ export const useVisualizationTraining = ({
   );
   const player = (
     <>
-      <View style={s(c.row, c.alignStretch, c.fullWidth)}>
+      <div style={s(c.row, c.alignStretch, c.fullWidth)}>
         <Button
           style={s(
             c.grow,
@@ -156,15 +157,15 @@ export const useVisualizationTraining = ({
         >
           <i
             style={s(c.fg(c.colors.textPrimary))}
-            className={`fa-sharp ${state.isPlaying ? "fa-pause" : "fa-play"}`}
+            class={`fa-sharp ${state.isPlaying ? "fa-pause" : "fa-play"}`}
           ></i>
         </Button>
-      </View>
+      </div>
       <Spacer height={12} />
     </>
   );
 
-  let ui = (
+  const ui = (
     <>
       {state.progressMessage && (
         <>
@@ -172,7 +173,7 @@ export const useVisualizationTraining = ({
           <Spacer height={12} />
         </>
       )}
-      {state.isDone && (
+      <Show when={state.isDone}>
         <>
           <NewPuzzleButton
             onPress={() => {
@@ -182,10 +183,10 @@ export const useVisualizationTraining = ({
           />
           <Spacer height={12} />
         </>
-      )}
+      </Show>
       {!state.showPuzzlePosition && !state.isDone && player}
       {
-        <View
+        <div
           style={s(
             c.overflowHidden,
             c.fullWidth,
@@ -195,9 +196,9 @@ export const useVisualizationTraining = ({
             c.mb(12)
           )}
         >
-          <View style={s(c.fullWidth, c.row)}>
-            <View style={s(c.column, c.alignStretch)}>
-              <View
+          <div style={s(c.fullWidth, c.row)}>
+            <div style={s(c.column, c.alignStretch)}>
+              <div
                 style={s(
                   c.bg(c.grays[20]),
                   c.height(isMobile ? 36 : 48),
@@ -208,29 +209,29 @@ export const useVisualizationTraining = ({
                 <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
                   Turn
                 </CMText>
-              </View>
-              <View style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))} />
-              <View style={s(c.size(40), c.selfCenter, c.my(12))}>
+              </div>
+              <div style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))} />
+              <div style={s(c.size(40), c.selfCenter, c.my(12))}>
                 {state.puzzleState.turn == "b" ? (
                   <KingBlackIcon />
                 ) : (
                   <KingWhiteIcon />
                 )}
-              </View>
-            </View>
-            {isNil(score) && (
+              </div>
+            </div>
+            <Show when={isNil(score)}>
               <>
-                <View
+                <div
                   style={s(
                     c.width(1),
                     c.bg(c.grays[30])
                     // c.height(isMobile ? 36 : 48)
                   )}
                 />
-                <View
+                <div
                   style={s(c.column, c.flexGrow(1), c.alignStretch, c.noBasis)}
                 >
-                  <View
+                  <div
                     style={s(
                       c.bg(c.grays[20]),
                       c.height(isMobile ? 36 : 48),
@@ -240,11 +241,11 @@ export const useVisualizationTraining = ({
                     <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
                       Moves hidden
                     </CMText>
-                  </View>
-                  <View
+                  </div>
+                  <div
                     style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))}
                   />
-                  <View style={s(c.selfCenter, c.my(12))}>
+                  <div style={s(c.selfCenter, c.my(12))}>
                     <CMText
                       style={s(
                         c.fg(c.colors.textPrimary),
@@ -255,15 +256,15 @@ export const useVisualizationTraining = ({
                     >
                       {state.getPly()}
                     </CMText>
-                  </View>
-                </View>
+                  </div>
+                </div>
               </>
-            )}
+            </Show>
             {!isNil(score) && (
               <>
-                <View style={s(c.width(1), c.bg(c.grays[30]))} />
-                <View style={s(c.column, c.grow, c.alignStretch, c.noBasis)}>
-                  <View
+                <div style={s(c.width(1), c.bg(c.grays[30]))} />
+                <div style={s(c.column, c.grow, c.alignStretch, c.noBasis)}>
+                  <div
                     style={s(
                       c.bg(c.grays[20]),
                       c.height(isMobile ? 36 : 48),
@@ -273,11 +274,11 @@ export const useVisualizationTraining = ({
                     <CMText style={s(c.fg(c.colors.textPrimary), c.weightBold)}>
                       Score
                     </CMText>
-                  </View>
-                  <View
+                  </div>
+                  <div
                     style={s(c.height(1), c.bg(c.grays[30]), c.flexGrow(0))}
                   />
-                  <View style={s(c.selfCenter, c.my(12))}>
+                  <div style={s(c.selfCenter, c.my(12))}>
                     <CMText
                       style={s(
                         c.fg(c.colors.textPrimary),
@@ -292,7 +293,7 @@ export const useVisualizationTraining = ({
                           return Math.floor(f);
                         }}
                       />
-                      <View
+                      <div
                         style={s(
                           c.absolute,
                           c.fullHeight,
@@ -302,13 +303,13 @@ export const useVisualizationTraining = ({
                         )}
                       >
                         {scoreChangeView}
-                      </View>
+                      </div>
                     </CMText>
-                  </View>
-                </View>
+                  </div>
+                </div>
               </>
             )}
-          </View>
+          </div>
           {state.showNotation.value && (
             <>
               <MoveList
@@ -318,7 +319,7 @@ export const useVisualizationTraining = ({
               />
             </>
           )}
-          <View style={s(c.height(1), c.fullWidth, c.bg(c.grays[30]))} />
+          <div style={s(c.height(1), c.fullWidth, c.bg(c.grays[30]))} />
           <Pressable
             style={s(c.center, c.selfCenter, c.fullWidth, c.py(12))}
             onPress={() => {
@@ -332,7 +333,7 @@ export const useVisualizationTraining = ({
                   c.opacity(30),
                   c.fontSize(16)
                 )}
-                className={
+                class={
                   state.showNotation.value
                     ? `fas fa-angle-up`
                     : `fas fa-angle-down`
@@ -347,7 +348,7 @@ export const useVisualizationTraining = ({
                   c.opacity(30),
                   c.fontSize(16)
                 )}
-                className={
+                class={
                   state.showNotation.value
                     ? `fas fa-angle-up`
                     : `fas fa-angle-down`
@@ -355,11 +356,9 @@ export const useVisualizationTraining = ({
               ></i>
             </CMText>
           </Pressable>
-        </View>
+        </div>
       }
-      <View
-        style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}
-      >
+      <div style={s(c.row, c.gap(12), c.fullWidth, c.height(48), c.justifyEnd)}>
         {state.mockPassFail && !state.isDone && (
           <>
             <Button
@@ -378,7 +377,7 @@ export const useVisualizationTraining = ({
               <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
-                  className="fa-sharp fa-times"
+                  class="fa-sharp fa-times"
                 ></i>
               </CMText>
             </Button>
@@ -398,7 +397,7 @@ export const useVisualizationTraining = ({
               <CMText style={s(c.buttons.basic.textStyles)}>
                 <i
                   style={s(c.fg(c.colors.textInverse))}
-                  className="fa-sharp fa-check"
+                  class="fa-sharp fa-check"
                 ></i>
               </CMText>
             </Button>
@@ -421,7 +420,7 @@ export const useVisualizationTraining = ({
           <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fa-sharp fa-search"
+              class="fa-sharp fa-search"
             ></i>
           </CMText>
         </Button>
@@ -435,7 +434,7 @@ export const useVisualizationTraining = ({
           <CMText style={s(c.buttons.basic.textStyles)}>
             <i
               style={s(c.fg(c.colors.textInverse))}
-              className="fa-sharp fa-circle-question"
+              class="fa-sharp fa-circle-question"
             ></i>
           </CMText>
         </Button>
@@ -450,13 +449,13 @@ export const useVisualizationTraining = ({
             >
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-gear"
+                class="fa-sharp fa-gear"
               ></i>
             </Button>
           </>
         }
-      </View>
-      {debugButtons && (
+      </div>
+      <Show when={debugButtons}>
         <>
           <Spacer height={12} />
           <Button style={c.buttons.basic} onPress={() => {}}>
@@ -471,7 +470,7 @@ export const useVisualizationTraining = ({
             Show future position
           </Button>
         </>
-      )}
+      </Show>
       {helpModal}
       <Modal
         onClose={() => {
@@ -479,12 +478,12 @@ export const useVisualizationTraining = ({
         }}
         visible={settingsOpen}
       >
-        <View style={s(c.px(12), c.pt(12), c.pb(24))}>
-          {!isClimb && (
+        <div style={s(c.px(12), c.pt(12), c.pb(24))}>
+          <Show when={!isClimb}>
             <>
               <SettingsTitle text={"Hidden moves"} />
               <Spacer height={24} />
-              <View style={s(c.row, c.alignCenter)}>
+              <div style={s(c.row, c.alignCenter)}>
                 <Button
                   onPress={() => {
                     state.updatePly(-1);
@@ -493,11 +492,11 @@ export const useVisualizationTraining = ({
                 >
                   <i
                     style={s(incrementDecrementTextStyles)}
-                    className="fa-sharp fa-minus"
+                    class="fa-sharp fa-minus"
                   ></i>
                 </Button>
                 <Spacer width={12} />
-                <View style={s(c.column, c.alignCenter, c.width(40))}>
+                <div style={s(c.column, c.alignCenter, c.width(40))}>
                   <CMText
                     style={s(
                       c.fg(c.colors.textPrimary),
@@ -507,7 +506,7 @@ export const useVisualizationTraining = ({
                   >
                     {state.plyUserSetting.value}
                   </CMText>
-                </View>
+                </div>
                 <Spacer width={12} />
                 <Button
                   onPress={() => {
@@ -517,13 +516,13 @@ export const useVisualizationTraining = ({
                 >
                   <i
                     style={s(incrementDecrementTextStyles)}
-                    className="fa-sharp fa-plus"
+                    class="fa-sharp fa-plus"
                   ></i>
                 </Button>
-              </View>
+              </div>
               <Spacer height={24} />
             </>
-          )}
+          </Show>
 
           <SettingsTitle text={"Playback speed"} />
           <Spacer height={24} />
@@ -543,11 +542,11 @@ export const useVisualizationTraining = ({
             }}
           />
           <Spacer height={24} />
-          {!isClimb && (
+          <Show when={!isClimb}>
             <>
               <SettingsTitle text={"Difficulty"} />
               <Spacer height={12} />
-              <View style={s(c.column, c.ml(0), c.fullWidth, c.alignStretch)}>
+              <div style={s(c.column, c.ml(0), c.fullWidth, c.alignStretch)}>
                 <SelectRange
                   min={0}
                   max={2500}
@@ -574,10 +573,10 @@ export const useVisualizationTraining = ({
                     });
                   }}
                 />
-              </View>
+              </div>
             </>
-          )}
-        </View>
+          </Show>
+        </div>
       </Modal>
     </>
   );

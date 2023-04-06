@@ -1,9 +1,8 @@
-import { c, s } from "app/styles";
-import { useIsMobile } from "app/utils/isMobile";
-import React, { useState } from "react";
-import { View } from "react-native";
-import { Spacer } from "app/Space";
+import { c, s } from "~/utils/styles";
+import { useIsMobile } from "~/utils/isMobile";
+import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
+import { createSignal } from "solid-js";
 
 export const DragAndDropInput = ({
   humanName,
@@ -17,11 +16,10 @@ export const DragAndDropInput = ({
   onUpload: (_: React.ChangeEvent<HTMLInputElement>) => Promise<boolean>;
 }) => {
   const isMobile = useIsMobile();
-  const [loading, setLoading] = useState(false);
-  const [uploaded, setUploaded] = useState(false);
-  console.log("rendering DragAndDropInput", uploaded, loading, isMobile);
+  const [loading, setLoading] = createSignal(false);
+  const [uploaded, setUploaded] = createSignal(false);
   return (
-    <View
+    <div
       style={s(
         c.border(`1px solid ${c.grays[50]}`),
         c.center,
@@ -45,14 +43,14 @@ export const DragAndDropInput = ({
         }}
         type="file"
       />
-      {uploaded ? (
+      {uploaded() ? (
         <>
           <CMText style={s(c.fg(c.colors.textPrimary))}>Uploaded</CMText>
         </>
       ) : (
         <>
           <CMText style={s(c.fontSize(14), c.fg(c.grays[70]))}>
-            <i className="fa-light fa-plus"></i>
+            <i class="fa-light fa-plus"></i>
           </CMText>
           <Spacer width={isMobile ? 4 : 12} />
           <CMText style={s(c.fg(c.colors.textSecondary), c.fontSize(14))}>
@@ -60,6 +58,6 @@ export const DragAndDropInput = ({
           </CMText>
         </>
       )}
-    </View>
+    </div>
   );
 };

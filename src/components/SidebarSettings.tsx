@@ -1,30 +1,25 @@
-import { Modal } from "./Modal";
-import { View, Pressable } from "react-native";
-import { c, s } from "app/styles";
+
+import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { SelectOneOf } from "./SelectOneOf";
-import { Spacer } from "app/Space";
-import { getRecommendedMissThreshold } from "app/utils/user_state";
-import { getAppState, useUserState, quick } from "app/utils/app_state";
-import { BP, useResponsive } from "app/utils/useResponsive";
+import { Spacer } from "~/components/Space";
+import { getRecommendedMissThreshold } from "~/utils/user_state";
+import { getAppState, useUserState, quick } from "~/utils/app_state";
+import { useResponsive } from "~/utils/useResponsive";
 import { cloneDeep, keys, upperFirst } from "lodash-es";
 import {
   SidebarAction,
-  SidebarActions,
   SidebarFullWidthButton,
-  SidebarSectionHeader,
 } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
 import {
   BoardThemeId,
-  BOARD_THEMES,
   BOARD_THEMES_BY_ID,
   PieceSetId,
   PIECE_SETS,
-} from "app/utils/theming";
+} from "~/utils/theming";
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
+import { Component, For, Show } from "solid-js";
 
 export const SidebarSetting = () => {
   return (
@@ -36,71 +31,70 @@ export const SidebarSetting = () => {
 };
 type SidebarSettingView = "rating" | "coverage";
 
-export const SidebarSelectOneOf = <T,>({
-  choices,
-  onSelect,
-  description,
-  renderChoice,
-  activeChoice,
-  title,
-}: {
-  title?: string;
-  description?: string;
-  choices: T[];
-  activeChoice: T;
-  onSelect: (_: T, i?: number) => void;
-  renderChoice: (x: T) => React.ReactNode;
-}) => {
+export const SidebarSelectOneOf: Component<{
+  title: string;
+  description: string;
+  choices: any[];
+  activeChoice: any;
+  onSelect: (_: any, i?: number) => void;
+  renderChoice: (x: any) => Component;
+  // todo: typing is hard
+}> = (props) => {
   const responsive = useResponsive();
-  let actions = choices.map((choice, i) => {
-    const active = choice === activeChoice;
-    return {
-      style: active ? "primary" : ("secondary" as SidebarAction["style"]),
-      text: renderChoice(choice),
-      onPress: () => onSelect(choice, i),
-      right: active && (
-        <i className={`fa fa-check`} style={s(c.fg(c.colors.textPrimary))} />
-      ),
-    };
-  });
+  const actions = () =>
+    props.choices.map((choice, i) => {
+      const active = choice === props.activeChoice;
+      console.log("active", active, choice, props.activeChoice);
+      return {
+        style: active ? "primary" : ("secondary" as SidebarAction["style"]),
+        text: props.renderChoice(choice),
+        onPress: () => props.onSelect(choice, i),
+        right: () =>
+          active && (
+            <i class={`fa fa-check`} style={s(c.fg(c.colors.textPrimary))} />
+          ),
+      };
+    });
   return (
-    <View style={s(c.column, c.fullWidth)}>
-      {title && (
+    <div style={s(c.column, c.fullWidth)}>
+      <Show when={props.title}>
         <>
           <CMText
             style={s(
               c.fontSize(16),
               c.weightSemiBold,
               c.fg(c.colors.textPrimary),
-              c.px(getSidebarPadding(responsive))
+              c.px(c.getSidebarPadding(responsive))
             )}
           >
-            {title}
+            {props.title}
           </CMText>
           <Spacer height={12} />
         </>
-      )}
-      {description && (
+      </Show>
+      <Show when={props.description}>
         <>
           <CMText
             style={s(
               c.fontSize(12),
-              c.lineHeight(16),
+              c.lineHeight("1.5rem"),
               c.fg(c.colors.textSecondary),
-              c.px(getSidebarPadding(responsive))
+              c.px(c.getSidebarPadding(responsive))
             )}
           >
-            {description}
+            {props.description}
           </CMText>
           <Spacer height={12} />
         </>
-      )}
-      <View style={s(c.fullWidth)}>
-        {actions.map((action, i) => {
-          return <SidebarFullWidthButton key={i} action={action} />;
-        })}
-      </View>
-    </View>
+      </Show>
+      <div style={s(c.fullWidth)}>
+        <For each={actions()}>
+          {(action, i) => {
+            return <SidebarFullWidthButton action={action} />;
+          }}
+        </For>
+      </div>
+    </div>
   );
 };
 
@@ -111,16 +105,15 @@ export const CoverageSettings = ({}: {}) => {
     s.user,
     s.getCurrentThreshold(),
   ]);
-  const selected = missThreshold;
+  const selected = () => missThreshold();
   const onSelect = (t: number) => {
     quick((s) => {
       s.userState.setTargetDepth(t);
     });
   };
-  const responsive = useResponsive();
-  const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
+  const recommendedDepth = () => getRecommendedMissThreshold(user()?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
-  if (user.isAdmin) {
+  if (user().isAdmin) {
     thresholdOptions.push(0.25 / 100, 1 / 600);
   }
   return (
@@ -133,7 +126,7 @@ export const CoverageSettings = ({}: {}) => {
         choices={thresholdOptions}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={selected}
+        activeChoice={selected()}
         onSelect={onSelect}
         renderChoice={(r: number) => {
           return `1 in ${Math.round(1 / r)} games`;
@@ -154,14 +147,13 @@ export const RatingSettings = ({}: {}) => {
     });
   };
   const responsive = useResponsive();
-  const recommendedDepth = getRecommendedMissThreshold(user?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
   if (user.isAdmin) {
     thresholdOptions.push(0.25 / 100, 1 / 600);
   }
   return (
     <SidebarTemplate actions={[]} header={"Your rating"}>
-      <CMText style={s(c.px(getSidebarPadding(responsive)))}>
+      <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
         We use this to determine which lines you'll commonly see at your level,
         so you can learn a response for those.
       </CMText>
@@ -178,7 +170,7 @@ export const RatingSettings = ({}: {}) => {
         ]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user?.ratingRange}
+        activeChoice={user()?.ratingRange}
         onSelect={onSelect}
         renderChoice={(r: string) => {
           return r;
@@ -190,7 +182,7 @@ export const RatingSettings = ({}: {}) => {
         choices={["Lichess", "Chess.com", "FIDE", "USCF"]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user?.ratingSystem}
+        activeChoice={user()?.ratingSystem}
         onSelect={(t) => {
           quick((s) => {
             getAppState().userState.setRatingSystem(t);
@@ -205,20 +197,18 @@ export const RatingSettings = ({}: {}) => {
 };
 
 export const ThemeSettings = ({}: {}) => {
-  let responsive = useResponsive();
-  const themes = BOARD_THEMES;
-  const [user] = useUserState((s) => [s.user]);
+  const user = () => getAppState().userState?.user;
   const height = 24;
   return (
     <SidebarTemplate actions={[]} header={null}>
       <Spacer height={12} />
       <SidebarSelectOneOf
-        description={null}
-        title={"Tiles"}
-        choices={keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
+        description={() => null}
+        title={() => "Tiles"}
+        choices={() => keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user.theme}
+        activeChoice={() => user()?.theme}
         onSelect={(t: BoardThemeId) => {
           quick((s) => {
             const params: any = { theme: t };
@@ -232,28 +222,28 @@ export const ThemeSettings = ({}: {}) => {
           const theme = BOARD_THEMES_BY_ID[themeId];
           console.log(theme, themeId);
           return (
-            <View style={s(c.row, c.center, c.height(height))}>
-              <View style={s(c.row)}>
-                <View
+            <div style={s(c.row, c.center, c.height(height))}>
+              <div style={s(c.row)}>
+                <div
                   style={s(
                     c.size(22),
                     c.bg(theme.light.color),
                     theme.light.styles
                   )}
-                ></View>
-                <View
+                ></div>
+                <div
                   style={s(
                     c.size(22),
                     c.bg(theme.dark.color),
                     theme.dark.styles
                   )}
-                ></View>
-              </View>
+                ></div>
+              </div>
               <Spacer width={22} />
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme.name}
               </CMText>
-            </View>
+            </div>
           );
         }}
       />
@@ -271,22 +261,22 @@ export const ThemeSettings = ({}: {}) => {
         }}
         renderChoice={(pieceSet: PieceSetId) => {
           return (
-            <View style={s(c.row, c.center, c.height(height))}>
+            <div style={s(c.row, c.center, c.height(height))}>
               {["q", "k"].map((p: PieceSymbol) => {
                 return (
-                  <View style={s(c.size(24), c.mr(4))}>
+                  <div style={s(c.size(24), c.mr(4))}>
                     <PieceView
-                      pieceSet={pieceSet}
+                      pieceSet={() => pieceSet}
                       piece={{ color: "w", type: p }}
                     />
-                  </View>
+                  </div>
                 );
               })}
               <Spacer width={12} />
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {upperFirst(pieceSet)}
               </CMText>
-            </View>
+            </div>
           );
         }}
       />

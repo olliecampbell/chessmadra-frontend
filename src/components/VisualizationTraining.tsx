@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
-import { TrainerLayout } from "app/components/TrainerLayout";
+import { ChessboardView } from "~/components/chessboard/Chessboard";
+import { TrainerLayout } from "~/components/TrainerLayout";
 import { useVisualizationTraining } from "../utils/useVisualizationTraining";
 import { HeadSiteMeta, PageContainer } from "./PageContainer";
-import { useVisualizationState } from "app/utils/app_state";
+import { useVisualizationState } from "~/utils/app_state";
 import { VISUALIZE_DESCRIPTION } from "./NavBar";
-import { trackModule } from "app/utils/user_state";
+import { trackModule } from "~/utils/user_state";
 
 export const VisualizationTraining = () => {
   const state = useVisualizationState((s) => s);

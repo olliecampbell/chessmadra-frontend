@@ -1,10 +1,5 @@
-
-import {
-  Pressable,
-  Modal as NativeModal,
-} from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
 
 export const Modal = ({
   onClose,
@@ -15,6 +10,8 @@ export const Modal = ({
   visible;
   children: any;
 }) => {
+  // TODO: solid
+  return null;
   return (
     <NativeModal
       animationType="fade"

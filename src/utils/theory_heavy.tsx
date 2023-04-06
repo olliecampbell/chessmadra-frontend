@@ -1,7 +1,7 @@
-import { TableResponse } from "app/components/RepertoireMovesTable";
+import { TableResponse } from "~/components/RepertoireMovesTable";
 
 export const isTheoryHeavy = (tr: TableResponse, epd: string) => {
-  let sanPlus = tr.repertoireMove?.sanPlus ?? tr.suggestedMove?.sanPlus;
+  const sanPlus = tr.repertoireMove?.sanPlus ?? tr.suggestedMove?.sanPlus;
   if (
     epd == "rnbqkb1r/pppppp1p/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR b KQkq -" &&
     sanPlus == "d5"

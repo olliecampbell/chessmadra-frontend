@@ -1,11 +1,10 @@
-import { useState } from "react";
+
 import { Modal } from "./Modal";
-import { View } from "react-native";
-import { c, s } from "app/styles";
+import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 
 export const useHelpModal = ({ copy }) => {
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = createSignal(false);
   return {
     helpOpen,
     setHelpOpen,
@@ -16,7 +15,7 @@ export const useHelpModal = ({ copy }) => {
         }}
         visible={helpOpen}
       >
-        <View style={s(c.row, c.px(12), c.py(12), c.alignCenter)}>
+        <div style={s(c.row, c.px(12), c.py(12), c.alignCenter)}>
           <CMText
             style={s(
               c.weightSemiBold,
@@ -26,7 +25,7 @@ export const useHelpModal = ({ copy }) => {
           >
             {copy}
           </CMText>
-        </View>
+        </div>
       </Modal>
     ),
   };

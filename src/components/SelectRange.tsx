@@ -1,6 +1,5 @@
 
-import { s, c } from "app/styles";
-import { View } from "react-native";
+import { s, c } from "~/utils/styles";
 import * as React from "react";
 import { Range, getTrackBackground } from "react-range";
 import { isNil } from "lodash-es";
@@ -86,7 +85,7 @@ export const SelectRange: React.FC<{
                 c.br(2)
               )}
             >
-              <View style={s(c.absolute, c.top(-20))}>
+              <div style={s(c.absolute, c.top(-20))}>
                 <CMText
                   style={s(
                     c.fg(c.colors.textSecondary),
@@ -96,7 +95,7 @@ export const SelectRange: React.FC<{
                 >
                   {formatted}
                 </CMText>
-              </View>
+              </div>
             </div>
           );
         }}

@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+
+import { Pressable } from "react-native";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { capitalize, filter, isEmpty } from "lodash-es";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import { RepertoireState } from "app/utils/repertoire_state";
-import { SIDES } from "app/utils/repertoire";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
+import { intersperse } from "~/utils/intersperse";
+import { RepertoireState } from "~/utils/repertoire_state";
+import { SIDES } from "~/utils/repertoire";
 import { SelectOneOf } from "./SelectOneOf";
-import { RepertoireTemplate } from "app/models";
+import { RepertoireTemplate } from "~/utils/models";
 import { CMText } from "./CMText";
-import { trackEvent } from "app/hooks/useTrackEvent";
+import { trackEvent } from "~/utils/trackEvent";
 
 const MOBILE_CUTOFF = 800;
 
@@ -23,8 +23,8 @@ export const RepertoireTemplateWizard = ({
 }) => {
   const isMobile = useIsMobile(MOBILE_CUTOFF);
   return (
-    <View style={s(c.column)}>
-      <View style={s(isMobile ? c.column : c.row, c.fullWidth)}>
+    <div style={s(c.column)}>
+      <div style={s(isMobile ? c.column : c.row, c.fullWidth)}>
         {intersperse(
           SIDES.map((side, i) => {
             let inner = null;
@@ -34,7 +34,7 @@ export const RepertoireTemplateWizard = ({
               inner = <BlackTemplates state={state} />;
             }
             return (
-              <View
+              <div
                 style={s(
                   c.bg(c.grays[20]),
                   c.px(12),
@@ -53,7 +53,7 @@ export const RepertoireTemplateWizard = ({
                 </CMText>
                 <Spacer height={12} />
                 {inner}
-              </View>
+              </div>
             );
           }),
           (i) => {
@@ -62,7 +62,7 @@ export const RepertoireTemplateWizard = ({
             );
           }
         )}
-      </View>
+      </div>
       <Spacer height={12} />
       <Button
         style={s(c.buttons.primary, c.selfEnd)}
@@ -74,15 +74,15 @@ export const RepertoireTemplateWizard = ({
       >
         Continue
       </Button>
-    </View>
+    </div>
   );
 };
 
 export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
-  const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
+  const [firstMove, setFirstMove] = createSignal("e4" as "e4" | "d4");
   return (
-    <View style={s()}>
-      <View style={s(c.row, c.fullWidth, c.justifyCenter)}>
+    <div style={s()}>
+      <div style={s(c.row, c.fullWidth, c.justifyCenter)}>
         <SelectOneOf
           tabStyle
           choices={["d4", "e4"] as ("e4" | "d4")[]}
@@ -96,7 +96,7 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
             return move;
           }}
         />
-      </View>
+      </div>
       <Spacer height={24} />
       {firstMove === "e4" ? (
         <>
@@ -121,20 +121,20 @@ export const WhiteTemplates = ({ state }: { state: RepertoireState }) => {
           )}
         </>
       ) : (
-        <View style={s(c.row)}>
+        <div style={s(c.row)}>
           <CMText style={s(c.fg(c.colors.textPrimary))}>
             Sorry, there aren't any templates for d4 yet. They should be added
             soon.
           </CMText>
-        </View>
+        </div>
       )}
-    </View>
+    </div>
   );
 };
 export const BlackTemplates = ({ state }: { state: RepertoireState }) => {
-  const [firstMove, setFirstMove] = useState("e4" as "e4" | "d4");
+  const [firstMove, setFirstMove] = createSignal("e4" as "e4" | "d4");
   return (
-    <View style={s()}>
+    <div style={s()}>
       <Spacer height={50} />
       <SelectTemplate line="1.e4" state={state} />
       <Spacer height={24} />
@@ -153,7 +153,7 @@ export const BlackTemplates = ({ state }: { state: RepertoireState }) => {
           return <Spacer height={4} key={i} />;
         }
       )}
-    </View>
+    </div>
   );
 };
 
@@ -167,15 +167,15 @@ export const SelectTemplate = ({
   const templates = filter(state.repertoireTemplates, (t) => t.line === line);
   const singular = templates.length === 1;
   return (
-    <View style={s(c.column)}>
-      {!singular && (
+    <div style={s(c.column)}>
+    <Show when={!singular }>
         <>
           <CMText style={s(c.fg(c.colors.textPrimary))}>
             How do you want to respond to <b>{line}</b>?
           </CMText>
           <Spacer height={8} />
         </>
-      )}
+        </Show>
       {singular ? (
         <TemplateCell singular state={state} template={templates[0]} />
       ) : (
@@ -188,7 +188,7 @@ export const SelectTemplate = ({
           }
         )
       )}
-    </View>
+    </div>
   );
 };
 
@@ -215,7 +215,7 @@ export const TemplateCell = ({
         });
       }}
     >
-      <View
+      <div
         style={s(
           c.row,
           c.alignCenter,
@@ -227,7 +227,7 @@ export const TemplateCell = ({
         )}
       >
         <i
-          className={
+          class={
             selected
               ? singular
                 ? "fas fa-circle-check"
@@ -237,8 +237,8 @@ export const TemplateCell = ({
           style={s(c.fontSize(14), c.fg(selected ? c.grays[80] : c.grays[50]))}
         />
         <Spacer width={12} />
-        <View style={s(c.column, c.mt(-1), c.grow)}>
-          <View style={s(c.row, c.fullWidth)}>
+        <div style={s(c.column, c.mt(-1), c.grow)}>
+          <div style={s(c.row, c.fullWidth)}>
             <CMText
               style={s(
                 c.fg(c.colors.textPrimary),
@@ -263,11 +263,11 @@ export const TemplateCell = ({
                 </CMText>
               </>
             )}
-          </View>
+          </div>
           {!isEmpty(template.tags) && (
             <>
               <Spacer height={4} />
-              <View style={s(c.row)}>
+              <div style={s(c.row)}>
                 {intersperse(
                   template.tags.map((x, i) => {
                     return (
@@ -289,11 +289,11 @@ export const TemplateCell = ({
                     return <Spacer width={4} key={i} />;
                   }
                 )}
-              </View>
+              </div>
             </>
           )}
-        </View>
-      </View>
+        </div>
+      </div>
     </Pressable>
   );
 };

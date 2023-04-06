@@ -1,25 +1,30 @@
-import { c, s } from "app/styles";
-import React from "react";
-import { Animated } from "react-native";
+import { c, s } from "~/utils/styles";
 
 export const CMText = (props) => {
-  let { children } = props;
   return (
-    <Animated.Text
+    <p
+      class={props.class ?? ""}
       {...{
         props,
         style: s(
           {
-            fontFamily: "Inter",
-            // fontVariationSettings: '"wdth" 112.5',
+            display: "inline",
+            "list-style": "none",
+            margin: "0px",
+            padding: "0px",
+            "text-align": "inherit",
+            "text-decoration": "none",
+            "white-space": "pre-wrap",
+            "overflow-wrap": "break-word",
           },
+          c.fontSize(14),
           c.weightRegular,
           c.fg(c.colors.textSecondary),
           props.style
         ),
       }}
     >
-      {children}
-    </Animated.Text>
+      {props.children}
+    </p>
   );
 };

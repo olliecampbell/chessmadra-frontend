@@ -1,65 +1,50 @@
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import {
   some,
-  isNaN,
   isEmpty,
   filter,
   isNil,
   last,
-  clamp,
   includes,
   max,
   map,
   reverse,
   cloneDeep,
 } from "lodash-es";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import {
-  formatIncidence,
-  RepertoireMiss,
-  RepertoireMove,
-  Side,
-} from "app/utils/repertoire";
+import { useIsMobile } from "~/utils/isMobile";
+import { RepertoireMiss, RepertoireMove, Side } from "~/utils/repertoire";
 import { CMText } from "./CMText";
-import { MoveTag, PositionReport, SuggestedMove } from "app/models";
-import { formatStockfishEval } from "app/utils/stockfish";
-import { GameResultsBar } from "./GameResultsBar";
+import { MoveTag, SuggestedMove } from "~/utils/models";
 import {
-  formatPlayPercentage,
-  getPlayRate,
-  getTotalGames,
-  isNegligiblePlayrate,
-} from "app/utils/results_distribution";
-import {
-  useAppState,
   useBrowsingState,
   useSidebarState,
   useDebugState,
   useRepertoireState,
-  useUserState,
-} from "app/utils/app_state";
-import React, { useRef, useState } from "react";
-import { useHovering } from "app/hooks/useHovering";
+  getAppState,
+} from "~/utils/app_state";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
-import {
-  getMoveRatingIcon,
-  getWinPercentage,
-  MoveRating,
-} from "app/utils/move_inaccuracy";
-import { quick } from "app/utils/app_state";
+import { trackEvent } from "~/utils/trackEvent";
+import { getAppropriateEcoName } from "~/utils/eco_codes";
+import { getMoveRatingIcon, MoveRating } from "~/utils/move_inaccuracy";
+import { quick } from "~/utils/app_state";
 import { AnnotationEditor } from "./AnnotationEditor";
-import { TableResponseScoreSource } from "app/utils/table_scoring";
-import { getCoverageProgress } from "app/utils/browsing_state";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
-import { BP, useResponsive } from "app/utils/useResponsive";
-import { TableMeta, useSections } from "app/utils/useSections";
-import { InstructiveGamesView } from "./InstructiveGamesView";
+import { TableResponseScoreSource } from "~/utils/table_scoring";
+import { BP, useResponsive } from "~/utils/useResponsive";
+import { TableMeta, useSections } from "~/utils/useSections";
+import { useHovering } from "~/mocks";
+import {
+  Accessor,
+  createSignal,
+  createMemo,
+  For,
+  Show,
+  onMount,
+} from "solid-js";
+import { Pressable } from "./Pressable";
+import { destructure } from "@solid-primitives/destructure";
+import { Intersperse } from "./Intersperse";
 
 const DELETE_WIDTH = 30;
 
@@ -96,71 +81,92 @@ export const RepertoireMovesTable = ({
   side,
   responses,
   usePeerRates,
-  setShouldShowOtherMoves,
-  showOtherMoves,
   body,
 }: {
-  header: string;
-  body?: string;
-  activeSide: Side;
-  showOtherMoves?: boolean;
-  usePeerRates?: boolean;
-  side: Side;
-  responses: TableResponse[];
-  setShouldShowOtherMoves?: (show: boolean) => void;
+  header: Accessor<string | undefined | null>;
+  body?: Accessor<string>;
+  activeSide: Accessor<Side>;
+  showOtherMoves?: Accessor<boolean>;
+  usePeerRates: Accessor<boolean>;
+  side: Accessor<Side>;
+  responses: Accessor<TableResponse[]>;
 }) => {
   const responsive = useResponsive();
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  let anyMine = some(responses, (m) => m.repertoireMove?.mine);
-  let mine = filter(responses, (m) => m.repertoireMove?.mine);
-  let anyNeeded = some(responses, (m) => m.suggestedMove?.needed);
-  let [currentThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let user = useAppState((s) => s.userState.user);
-  let myTurn = side === activeSide;
-  const isMobile = useIsMobile();
-  let sections = useSections({
-    myTurn,
-    usePeerRates,
-    isMobile,
+  const [expandedLength, setExpandedLength] = createSignal(0);
+  const [editingAnnotations, setEditingAnnotations] = createSignal(false);
+  onMount(() => {
+    console.log("RepertoireMovesTable onMount");
   });
-  let [expandedLength, setExpandedLength] = useState(0);
-  let MIN_TRUNCATED = isMobile ? 1 : 1;
-  const [editingAnnotations, setEditingAnnotations] = useState(false);
-  let trimmedResponses = filter(responses, (r, i) => {
-    if (mode == "browse") {
-      return r.repertoireMove;
-    }
-    if (i < expandedLength) {
-      return true;
-    }
-    if (r.repertoireMove) {
-      return true;
-    }
-    if (anyNeeded && !r.suggestedMove?.needed) {
-      return false;
-    }
-    if (anyMine) {
-      return false;
-    }
-    if (r.suggestedMove?.needed && !myTurn) {
-      return true;
-    }
-    return (
-      i < MIN_TRUNCATED ||
-      r.repertoireMove ||
-      (myTurn && r.score > 0) ||
-      moveHasTag(r, MoveTag.RareDangerous) ||
-      (myTurn && moveHasTag(r, MoveTag.Transposes))
+  const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
+    destructure(
+      createMemo(() => {
+        const anyMine = some(responses(), (m) => m.repertoireMove?.mine);
+        const mine = filter(responses(), (m) => m.repertoireMove?.mine);
+        const anyNeeded = some(responses(), (m) => m.suggestedMove?.needed);
+        const myTurn = side() === activeSide();
+        const isMobile = useIsMobile();
+        // todo: solid, prob need to use accessors here
+        const sections = useSections({
+          myTurn,
+          usePeerRates: usePeerRates(),
+          isMobile,
+        });
+        const MIN_TRUNCATED = isMobile ? 1 : 1;
+        const trimmedResponses = filter(responses(), (r, i) => {
+          if (mode() == "browse") {
+            return r.repertoireMove;
+          }
+          if (i < expandedLength()) {
+            return true;
+          }
+          if (r.repertoireMove) {
+            return true;
+          }
+          if (anyNeeded && !r.suggestedMove?.needed) {
+            return false;
+          }
+          if (anyMine) {
+            return false;
+          }
+          if (r.suggestedMove?.needed && !myTurn) {
+            return true;
+          }
+          return (
+            i < MIN_TRUNCATED ||
+            r.repertoireMove ||
+            (myTurn && r.score > 0) ||
+            moveHasTag(r, MoveTag.RareDangerous) ||
+            (myTurn && moveHasTag(r, MoveTag.Transposes))
+          );
+        }) as TableResponse[];
+        const numTruncated = responses().length - trimmedResponses.length;
+        const truncated = numTruncated > 0;
+        console.log(
+          "numTruncated",
+          responses().length,
+          numTruncated,
+          truncated
+        );
+        // console.log("returning sections", sections);
+        return {
+          trimmedResponses,
+          sections,
+          mine,
+          myTurn,
+          anyMine,
+          truncated,
+        };
+      })
     );
-  }) as TableResponse[];
-  let numTruncated = responses.length - trimmedResponses.length;
-  let truncated = numTruncated > 0;
-  let widths = useRef({});
+  const widths: Record<string, number | null> = {};
 
-  const [currentLine] = useSidebarState(([s, rs]) => [s.moveLog]);
-  let moveNumber = Math.floor(currentLine.length / 2) + 1;
-  let hideAnnotations = moveNumber === 1;
-  const [moveMaxWidth, setMoveMaxWidth] = useState(40);
+  const [currentLine] = useBrowsingState(([s, rs]) => [
+    s.chessboard.get((v) => v).moveLog,
+  ]);
+  const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
+  const hideAnnotations = () => moveNumber() === 1;
+  const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
   const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
     referenceEquality: true,
@@ -168,82 +174,99 @@ export const RepertoireMovesTable = ({
   const onMoveRender = (sanPlus, e) => {
     if (isNil(e)) {
       // TODO: better deletion, decrease widths
-      widths.current[sanPlus] = null;
+      widths[sanPlus] = null;
       return;
     }
-    let width = e.getBoundingClientRect().width;
-    widths.current[sanPlus] = width;
-    if (width > moveMaxWidth) {
+    const width = e.getBoundingClientRect().width;
+    widths[sanPlus] = width;
+    if (width > moveMaxWidth()) {
       setMoveMaxWidth(width);
     }
   };
-  let tableMeta = {
-    highestIncidence: max(
-      map(responses, (r) => r.suggestedMove?.incidence ?? 1.0)
-    ),
+  const tableMeta: Accessor<TableMeta> = () => {
+    return {
+      highestIncidence: max(
+        map(responses(), (r) => r.suggestedMove?.incidence ?? 1.0)
+      ),
+    };
   };
   let includeOpeningName = false;
-  const openingNames = reverse(
-    map(reverse(cloneDeep(trimmedResponses)), (tr) => {
-      let newOpeningName = null;
-      let [currentOpeningName, currentVariations] = currentEcoCode
-        ? getAppropriateEcoName(currentEcoCode.fullName)
-        : [];
-      let nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
-      if (nextEcoCode) {
-        let [name, variations] = getAppropriateEcoName(nextEcoCode.fullName);
-        if (name != currentOpeningName) {
-          includeOpeningName = true;
-          return name;
-        }
-        let lastVariation = last(variations);
+  const openingNames = () =>
+    reverse(
+      map(reverse(cloneDeep(trimmedResponses())), (tr) => {
+        const newOpeningName = null;
+        const [currentOpeningName, currentVariations] = currentEcoCode()
+          ? getAppropriateEcoName(currentEcoCode()?.fullName)
+          : [];
+        const nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
+        if (nextEcoCode) {
+          const [name, variations] = getAppropriateEcoName(
+            nextEcoCode.fullName
+          );
+          if (name != currentOpeningName) {
+            includeOpeningName = true;
+            return name;
+          }
+          const lastVariation = last(variations);
 
-        if (
-          name === currentOpeningName &&
-          lastVariation != last(currentVariations)
-        ) {
-          includeOpeningName = true;
-          return last(variations);
+          if (
+            name === currentOpeningName &&
+            lastVariation != last(currentVariations)
+          ) {
+            includeOpeningName = true;
+            return last(variations);
+          }
+          if (includeOpeningName) {
+            return last(variations);
+          }
         }
-        if (includeOpeningName) {
-          return last(variations);
-        }
-      }
-    })
-  );
+      })
+    );
   return (
-    <View style={s(c.column)}>
-      {header && (
+    <div style={s(c.column)}>
+      <Show when={header()}>
         <>
-          <RepertoireEditingHeader>{header}</RepertoireEditingHeader>
+          <RepertoireEditingHeader>{header()}</RepertoireEditingHeader>
           <Spacer height={responsive.switch(20, [BP.md, 24])} />
         </>
-      )}
-      {body && (
+      </Show>
+      <Show when={body}>
         <>
-          <CMText style={s(c.px(getSidebarPadding(responsive)))}>{body}</CMText>
+          <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
+            {body}
+          </CMText>
           <Spacer height={24} />
         </>
-      )}
-      <View style={s(c.height(16))}>
-        {!editingAnnotations && (
-          <TableHeader anyMine={anyMine} sections={sections} />
-        )}
-      </View>
+      </Show>
+      <div style={s(c.height(16))}>
+        <Show when={!editingAnnotations()}>
+          <TableHeader anyMine={anyMine()} sections={sections} />
+        </Show>
+      </div>
       <Spacer height={responsive.switch(6, [BP.md, 12])} />
-      <View
+      <div
         style={s(
           c.column,
-          !editingAnnotations &&
+          !editingAnnotations() &&
             s(
               c.borderTop(`1px solid ${c.colors.sidebarBorder}`),
               c.borderBottom(`1px solid ${c.colors.sidebarBorder}`)
             )
         )}
       >
-        {intersperse(
-          trimmedResponses.map((tableResponse, i) => {
-            let openingName = openingNames[i];
+        <Intersperse
+          each={trimmedResponses}
+          separator={(i) => (
+            <div
+              style={s(
+                c.height(editingAnnotations() ? 12 : 1),
+                !editingAnnotations() && c.bg(c.grays[30])
+              )}
+            ></div>
+          )}
+        >
+          {(tableResponse, i) => {
+            const openingName = () => openingNames()[i()];
             return (
               <Response
                 openingName={openingName}
@@ -257,7 +280,7 @@ export const RepertoireMovesTable = ({
                   tableResponse.repertoireMove?.sanPlus ||
                   tableResponse.suggestedMove?.sanPlus
                 }
-                tableResponse={tableResponse}
+                tableResponse={() => tableResponse}
                 moveMinWidth={moveMaxWidth}
                 moveRef={(e) => {
                   onMoveRender(
@@ -268,50 +291,38 @@ export const RepertoireMovesTable = ({
                 }}
               />
             );
-          }),
-          (i) => {
-            return (
-              <View
-                style={s(
-                  c.height(editingAnnotations ? 12 : 1),
-                  !editingAnnotations && c.bg(c.grays[30])
-                )}
-              ></View>
-            );
-          }
-        )}
-      </View>
+          }}
+        </Intersperse>
+      </div>
       <Spacer height={12} />
-      <View style={s(c.row, c.px(getSidebarPadding(responsive)))}>
-        {truncated && mode == "build" && (
-          <>
-            <Pressable
-              style={s(c.pb(2))}
-              onPress={() => {
-                setExpandedLength(trimmedResponses.length + 5);
-                trackEvent("browsing.moves_table.show_more");
-              }}
+      <div style={s(c.row, c.px(c.getSidebarPadding(responsive)))}>
+        <Show when={truncated() && mode() == "build"}>
+          <Pressable
+            style={s(c.pb(2))}
+            onPress={() => {
+              setExpandedLength(trimmedResponses().length + 5);
+              trackEvent("browsing.moves_table.show_more");
+            }}
+          >
+            <CMText
+              style={s(
+                c.fontSize(12),
+                c.fg(c.colors.textTertiary),
+                c.weightSemiBold
+              )}
             >
-              <CMText
-                style={s(
-                  c.fontSize(12),
-                  c.fg(c.colors.textTertiary),
-                  c.weightSemiBold
-                )}
-              >
-                Show more moves
-              </CMText>
-            </Pressable>
-            <Spacer width={16} />
-          </>
-        )}
-        {!hideAnnotations && mode == "build" && (
+              Show more moves
+            </CMText>
+          </Pressable>
+          <Spacer width={16} />
+        </Show>
+        {!hideAnnotations && mode() == "build" && (
           <>
             <Pressable
               style={s(c.pb(2))}
               onPress={() => {
                 if (!editingAnnotations) {
-                  trackEvent(`${mode}.moves_table.edit_annotations`);
+                  trackEvent(`${mode()}.moves_table.edit_annotations`);
                 }
                 setEditingAnnotations(!editingAnnotations);
               }}
@@ -323,7 +334,7 @@ export const RepertoireMovesTable = ({
                   c.weightSemiBold
                 )}
               >
-                {editingAnnotations
+                {editingAnnotations()
                   ? "Stop editing annotations"
                   : "Edit annotations"}
               </CMText>
@@ -331,7 +342,7 @@ export const RepertoireMovesTable = ({
             <Spacer width={16} />
           </>
         )}
-        {anyMine && mode == "build" && (
+        {anyMine() && mode() == "build" && (
           <>
             <Pressable
               style={s(c.pb(2))}
@@ -351,14 +362,14 @@ export const RepertoireMovesTable = ({
                   c.weightSemiBold
                 )}
               >
-                {`Remove ${mine.length > 1 ? "a" : "this"} move`}
+                {`Remove ${mine().length > 1 ? "a" : "this"} move`}
               </CMText>
             </Pressable>
             <Spacer width={12} />
           </>
         )}
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
 
@@ -374,33 +385,33 @@ const Response = ({
   tableMeta,
   openingName,
 }: {
-  tableResponse: TableResponse;
-  anyMine: boolean;
-  hideAnnotations: boolean;
-  sections: any[];
-  myTurn: boolean;
-  moveMinWidth: number;
-  moveRef: any;
-  openingName?: string;
-  editing;
-  tableMeta: TableMeta;
+  tableResponse: Accessor<TableResponse>;
+  anyMine: Accessor<boolean>;
+  hideAnnotations: Accessor<boolean>;
+  sections: Accessor<any[]>;
+  myTurn: Accessor<boolean>;
+  moveMinWidth: Accessor<number>;
+  moveRef: Accessor<any>;
+  openingName: Accessor<string | undefined>;
+  editing: Accessor<boolean>;
+  tableMeta: Accessor<TableMeta>;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const { hovering, hoveringProps } = useHovering();
-  const { suggestedMove, repertoireMove, moveRating } = tableResponse;
   const [currentEpd, activeSide] = useSidebarState(([s]) => [
     s.currentEpd,
     s.activeSide,
   ]);
-  const positionReport = useBrowsingState(
-    ([s, rs]) => rs.positionReports?.[activeSide]?.[currentEpd],
-    { referenceEquality: true }
-  );
+  const [positionReport] = useBrowsingState(([s, rs]) => [
+    rs.positionReports?.[activeSide()]?.[currentEpd()],
+  ]);
 
   const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
-    rs.numMovesDueFromEpd[activeSide][tableResponse.repertoireMove?.epdAfter],
-    rs.earliestReviewDueFromEpd[activeSide][
-      tableResponse.repertoireMove?.epdAfter
+    rs.numMovesDueFromEpd[activeSide()][
+      tableResponse().repertoireMove?.epdAfter
+    ],
+    rs.earliestReviewDueFromEpd[activeSide()][
+      tableResponse().repertoireMove?.epdAfter
     ],
   ]);
   const [currentLine, currentSide] = useSidebarState(([s, rs]) => [
@@ -408,363 +419,326 @@ const Response = ({
     s.currentSide,
   ]);
   const isMobile = useIsMobile();
-  let moveNumber = Math.floor(currentLine.length / 2) + 1;
-  let sanPlus = suggestedMove?.sanPlus ?? repertoireMove?.sanPlus;
-  let mine = repertoireMove?.mine;
+  const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
+  const sanPlus = () =>
+    tableResponse().suggestedMove?.sanPlus ??
+    tableResponse()?.repertoireMove?.sanPlus;
+  const mine = () => tableResponse().repertoireMove?.mine;
+  const moveRating = () => tableResponse().moveRating;
 
   const responsive = useResponsive();
-  let { hoveringProps: responseHoverProps, hovering: hoveringRow } =
+  const { hoveringProps: responseHoverProps, hovering: hoveringRow } =
     useHovering(
       () => {
-        quick((s) => {
-          s.repertoireState.browsingState.chessboardState.previewMove(sanPlus);
-        });
+        getAppState().repertoireState.browsingState.chessboard?.previewMove(
+          sanPlus()
+        );
       },
       () => {
-        quick((s) => {
-          s.repertoireState.browsingState.chessboardState.previewMove(null);
-        });
+        getAppState().repertoireState.browsingState.chessboard?.previewMove(
+          null
+        );
       }
     );
   const [mode] = useSidebarState(([s]) => [s.mode]);
+  const annotation = () => {
+    if (hideAnnotations()) {
+      return null;
+    }
+    return renderAnnotation(tableResponse().suggestedMove?.annotation);
+  };
+  const tags = () => {
+    const tags = [];
+    // newOpeningName = nextEcoCode?.fullName;
+    if (moveHasTag(tableResponse(), MoveTag.BestMove)) {
+      tags.push(
+        <MoveTagView
+          text="Clear best move"
+          icon="fa-duotone fa-trophy"
+          style={s(c.fg(c.yellows[60]), c.fontSize(14))}
+        />
+      );
+    }
+    if (moveHasTag(tableResponse(), MoveTag.Transposes)) {
+      tags.push(
+        <MoveTagView
+          text="Transposes to your repertoire"
+          icon="fa-solid fa-merge"
+          style={s(c.fg(c.greens[55]), c.fontSize(14), c.rotate(-90))}
+        />
+      );
+    }
+    if (moveHasTag(tableResponse(), MoveTag.TheoryHeavy)) {
+      tags.push(
+        <MoveTagView
+          text="Warning: heavy theory"
+          icon="fa-solid fa-triangle-exclamation"
+          style={s(c.fg(c.reds[60]), c.fontSize(14))}
+        />
+      );
+    }
+    if (moveHasTag(tableResponse(), MoveTag.RareDangerous)) {
+      tags.push(
+        <MoveTagView
+          text="Rare but dangerous"
+          icon="fa fa-radiation"
+          style={s(c.fg(c.reds[65]), c.fontSize(18))}
+        />
+      );
+    }
+    if (moveHasTag(tableResponse(), MoveTag.CommonMistake)) {
+      tags.push(
+        <MoveTagView
+          text="Common mistake"
+          icon="fa fa-person-falling"
+          style={s(c.fg(c.grays[80]), c.fontSize(14))}
+        />
+      );
+    }
+    return tags;
+  };
 
-  if (editing) {
-    return (
-      <View style={s(c.row, c.alignCenter)}>
-        <Pressable
-          onPress={() => {}}
-          style={s(
-            c.grow,
-            c.height(128),
-            c.lightCardShadow,
-            c.br(2),
-            // c.py(8),
-            // c.pl(14),
-            // c.pr(8),
-            c.clickable,
-            c.mx(getSidebarPadding(responsive)),
-            c.bg(c.grays[12]),
-            c.row
-          )}
-        >
-          <View
-            style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
+  const hasInlineAnnotationOrOpeningName = () =>
+    openingName() || (!isMobile && annotation());
+
+  const tagsRow = () =>
+    !isEmpty(tags()) && (
+      <div style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}>
+        <For each={tags()}>
+          {(tag, i) => {
+            return tag;
+          }}
+        </For>
+      </div>
+    );
+  return (
+    <>
+      <Show when={editing()}>
+        <div style={s(c.row, c.alignCenter)}>
+          <Pressable
+            onPress={() => {}}
+            style={s(
+              c.grow,
+              c.height(128),
+              c.lightCardShadow,
+              c.br(2),
+              // c.py(8),
+              // c.pl(14),
+              // c.pr(8),
+              c.clickable,
+              c.mx(c.getSidebarPadding(responsive)),
+              c.bg(c.grays[12]),
+              c.row
+            )}
           >
-            <CMText
-              style={s(
-                c.fg(c.colors.textSecondary),
-                c.weightSemiBold,
-                c.fontSize(18)
-              )}
+            <div
+              style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
             >
-              {moveNumber}
-              {currentSide === "black" ? "... " : "."}
-            </CMText>
-            <Spacer width={2} />
-            <CMText
-              key={sanPlus}
-              style={s(
-                c.fg(c.colors.textSecondary),
-                c.fontSize(18),
-                c.weightSemiBold,
-                c.keyedProp("letterSpacing")("0.04rem")
-              )}
-            >
-              {sanPlus}
-            </CMText>
-          </View>
-          <AnnotationEditor
-            annotation={suggestedMove?.annotation}
-            onUpdate={(annotation) => {
-              quick((s) => {
-                s.repertoireState.uploadMoveAnnotation({
-                  epd: currentEpd,
-                  san: sanPlus,
-                  text: annotation,
+              <CMText
+                style={s(
+                  c.fg(c.colors.textSecondary),
+                  c.weightSemiBold,
+                  c.fontSize(18)
+                )}
+              >
+                {moveNumber}
+                {currentSide() === "black" ? "... " : "."}
+              </CMText>
+              <Spacer width={2} />
+              <CMText
+                key={sanPlus}
+                style={s(
+                  c.fg(c.colors.textSecondary),
+                  c.fontSize(18),
+                  c.weightSemiBold,
+                  c.keyedProp("letter-spacing")("0.04rem")
+                )}
+              >
+                {sanPlus}
+              </CMText>
+            </div>
+            <AnnotationEditor
+              annotation={() => tableResponse().suggestedMove?.annotation ?? ""}
+              onUpdate={(annotation) => {
+                quick((s) => {
+                  s.repertoireState.uploadMoveAnnotation({
+                    epd: currentEpd(),
+                    san: sanPlus(),
+                    text: annotation,
+                  });
                 });
+              }}
+            />
+          </Pressable>
+        </div>
+      </Show>
+      <Show when={!editing()}>
+        <div style={s(c.row, c.alignStart)} {...responseHoverProps}>
+          <Pressable
+            onPress={() => {
+              quick((s) => {
+                trackEvent(`${mode}.moves_table.select_move`);
+                s.repertoireState.browsingState.moveSidebarState("right");
+                // If has transposition tag, quick make transposition state visible on browser state
+
+                if (tableResponse().transposes) {
+                  s.repertoireState.browsingState.chessboard.makeMove(
+                    sanPlus()
+                  );
+                  s.repertoireState.browsingState.sidebarState.transposedState.visible =
+                    true;
+                  s.repertoireState.browsingState.chessboard.showPlans = true;
+                } else {
+                  s.repertoireState.browsingState.chessboard.makeMove(
+                    sanPlus()
+                  );
+                }
               });
             }}
-          />
-        </Pressable>
-      </View>
-    );
-  }
-  let annotation = renderAnnotation(suggestedMove?.annotation);
-  if (hideAnnotations) {
-    annotation = null;
-  }
-  let tags = [];
-  // newOpeningName = nextEcoCode?.fullName;
-  if (moveHasTag(tableResponse, MoveTag.BestMove)) {
-    tags.push(
-      <MoveTagView
-        text="Clear best move"
-        icon="fa-duotone fa-trophy"
-        style={s(c.fg(c.yellows[60]), c.fontSize(14))}
-      />
-    );
-  }
-  if (moveHasTag(tableResponse, MoveTag.Transposes)) {
-    tags.push(
-      <MoveTagView
-        text="Transposes to your repertoire"
-        icon="fa-solid fa-merge"
-        style={s(c.fg(c.greens[55]), c.fontSize(14), c.rotate(-90))}
-      />
-    );
-  }
-  if (moveHasTag(tableResponse, MoveTag.TheoryHeavy)) {
-    tags.push(
-      <MoveTagView
-        text="Warning: heavy theory"
-        icon="fa-solid fa-triangle-exclamation"
-        style={s(c.fg(c.reds[60]), c.fontSize(14))}
-      />
-    );
-  }
-  if (moveHasTag(tableResponse, MoveTag.RareDangerous)) {
-    tags.push(
-      <MoveTagView
-        text="Rare but dangerous"
-        icon="fa fa-radiation"
-        style={s(c.fg(c.reds[65]), c.fontSize(18))}
-      />
-    );
-  }
-  if (moveHasTag(tableResponse, MoveTag.CommonMistake)) {
-    tags.push(
-      <MoveTagView
-        text="Common mistake"
-        icon="fa fa-person-falling"
-        style={s(c.fg(c.grays[80]), c.fontSize(14))}
-      />
-    );
-  }
+            style={s(
+              c.grow,
+              c.flexible,
+              // tableResponse.bestMove && c.border(`1px solid ${c.yellows[60]}`),
+              c.br(2),
 
-  const editingMyMoves = true;
+              c.px(c.getSidebarPadding(responsive)),
+              c.py(12),
+              hoveringRow() && c.bg(c.grays[18]),
 
-  let hasInlineAnnotationOrOpeningName =
-    openingName || (!isMobile && annotation);
-
-  const tagsRow = !isEmpty(tags) && (
-    <View style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}>
-      {tags.map((tag, i) => {
-        return <React.Fragment key={i}>{tag}</React.Fragment>;
-      })}
-    </View>
-  );
-
-  return (
-    <View style={s(c.row, c.alignStart)} {...responseHoverProps}>
-      <Pressable
-        onPress={() => {
-          quick((s) => {
-            trackEvent(`${mode}.moves_table.select_move`);
-            s.repertoireState.browsingState.moveSidebarState("right");
-            // If has transposition tag, quick make transposition state visible on browser state
-
-            if (tableResponse.transposes) {
-              s.repertoireState.browsingState.chessboardState.makeMove(sanPlus);
-              s.repertoireState.browsingState.sidebarState.transposedState.visible =
-                true;
-              s.repertoireState.browsingState.chessboardState.showPlans = true;
-            } else {
-              s.repertoireState.browsingState.chessboardState.makeMove(sanPlus);
-            }
-          });
-        }}
-        style={s(
-          c.grow,
-          c.flexible,
-          // tableResponse.bestMove && c.border(`1px solid ${c.yellows[60]}`),
-          c.br(2),
-
-          c.px(getSidebarPadding(responsive)),
-          c.py(12),
-          hoveringRow && c.bg(c.grays[18]),
-
-          // mine && c.border(`2px solid ${c.purples[60]}`),
-          c.clickable,
-          c.row
-        )}
-      >
-        <View style={s(c.column, c.grow, c.constrainWidth)}>
-          <View style={s(c.row, c.fullWidth, c.alignStart)}>
-            <View style={s(c.row, c.alignCenter)}>
-              <View style={s(c.minWidth(moveMinWidth))}>
-                <View
-                  style={s(c.row, c.alignCenter)}
-                  ref={(e) => {
-                    moveRef(e);
-                  }}
-                >
-                  {true && (
-                    <>
+              // mine && c.border(`2px solid ${c.purples[60]}`),
+              c.clickable,
+              c.row
+            )}
+          >
+            <div style={s(c.column, c.grow, c.constrainWidth)}>
+              <div style={s(c.row, c.fullWidth, c.alignStart)}>
+                <div style={s(c.row, c.alignCenter)}>
+                  <div style={s(c.minWidth(moveMinWidth))}>
+                    <div
+                      style={s(c.row, c.alignCenter)}
+                      ref={(e) => {
+                        moveRef(e);
+                      }}
+                    >
                       <CMText
                         style={s(
                           c.fg(c.grays[60]),
                           c.fontSize(14),
                           c.weightSemiBold,
                           c.lineHeight("1.3rem"),
-                          c.keyedProp("letterSpacing")("0.04rem")
+                          c.keyedProp("letter-spacing")("0.04rem")
                         )}
                       >
                         {moveNumber}
-                        {currentSide === "black" ? "…" : "."}
+                        {currentSide() === "black" ? "…" : "."}
                       </CMText>
                       <Spacer width={4} />
-                    </>
-                  )}
-                  <CMText
-                    key={sanPlus}
-                    style={s(
-                      c.fg(c.grays[85]),
-                      c.fontSize(14),
-                      c.lineHeight("1.3rem"),
-                      c.weightBold,
-                      c.keyedProp("letterSpacing")("0.04rem")
-                    )}
-                  >
-                    {sanPlus}
-                  </CMText>
-                  {!isNil(moveRating) && (
-                    <>
-                      <Spacer width={4} />
-                      {getMoveRatingIcon(moveRating)}
-                    </>
-                  )}
-                </View>
-              </View>
-            </View>
-            <Spacer width={12} />
-            {
-              <View
-                style={s(
-                  c.width(0),
-                  c.grow,
-                  c.pr(8),
-                  c.column,
-
-                  !hasInlineAnnotationOrOpeningName && c.selfCenter
-                )}
-              >
-                <CMText
-                  style={s(
-                    c.fg(c.grays[80]),
-                    c.fontSize(12),
-                    c.lineHeight("1.3rem")
-                  )}
-                >
-                  {openingName && (
-                    <>
-                      <b>{openingName}</b>
-                      {!isMobile && annotation && (
+                      <CMText
+                        key={sanPlus}
+                        style={s(
+                          c.fg(c.grays[85]),
+                          c.fontSize(14),
+                          c.lineHeight("1.3rem"),
+                          c.weightBold,
+                          c.keyedProp("letter-spacing")("0.04rem")
+                        )}
+                      >
+                        {sanPlus}
+                      </CMText>
+                      {!isNil(moveRating()) && (
                         <>
-                          . <Spacer width={2} />
+                          <Spacer width={4} />
+                          {() => getMoveRatingIcon(moveRating())}
                         </>
                       )}
-                    </>
+                    </div>
+                  </div>
+                </div>
+                <Spacer width={12} />
+
+                <div
+                  style={s(
+                    c.width(0),
+                    c.grow,
+                    c.pr(8),
+                    c.column,
+
+                    !hasInlineAnnotationOrOpeningName() && c.selfCenter
                   )}
-                  {!isMobile && annotation}
-                </CMText>
-                {tagsRow && (
-                  <>
-                    {hasInlineAnnotationOrOpeningName && <Spacer height={12} />}
-                    {tagsRow}
-                  </>
-                )}
-              </View>
-            }
-            <View style={s(c.row, c.alignCenter)}>
-              {intersperse(
-                sections.map((section, i) => {
-                  return (
-                    <View
-                      style={s(
-                        c.width(section.width),
-                        c.center,
-                        section.alignLeft && c.justifyStart,
-                        c.row
-                      )}
-                      key={i}
-                    >
-                      {section.content({
-                        numMovesDueFromHere,
-                        earliestDueDate,
-                        suggestedMove,
-                        positionReport,
-                        tableResponse,
-                        side: currentSide,
-                        tableMeta,
-                      })}
-                    </View>
-                  );
-                }),
-                (i) => {
-                  return (
-                    <Spacer
-                      width={getSpaceBetweenStats(isMobile)}
-                      key={`${i}-spacer`}
-                    />
-                  );
-                }
-              )}
-            </View>
-          </View>
-          <View style={s(c.column, c.maxWidth(400))}>
-            {isMobile && annotation && (
-              <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
-                <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
-                  {annotation}
-                </CMText>
-              </CMText>
-            )}
-          </View>
-          {debugUi && suggestedMove?.stockfish && (
-            <View style={s(c.row)}>
-              <View style={s(c.grow, c.pt(6), c.px(12), c.minWidth(0))}>
-                <CMText style={s(c.fg(c.colors.debugColor), c.fontSize(14))}>
-                  {tableResponse?.suggestedMove?.incidence
-                    ? formatIncidence(tableResponse?.suggestedMove?.incidence)
-                    : "No incidence"}
-                </CMText>
-              </View>
-              <Spacer width={4} />
-              <CMText style={s(c.fg(c.colors.debugColor))}>
-                {getTotalGames(suggestedMove?.results)} Games
-              </CMText>
-              <Spacer width={4} />
-              <CMText style={s(c.fg(c.colors.debugColor))}>
-                danger {suggestedMove.danger?.toFixed(3)}
-              </CMText>
-            </View>
-          )}
-          {debugUi && (
-            <View style={s(c.row)} {...hoveringProps}>
-              <CMText
-                style={s(c.fg(c.colors.debugColor), c.relative, c.px(12))}
-              >
-                (score: {tableResponse.score?.toFixed(1)})
-                {hovering && (
-                  <View
+                >
+                  <CMText
                     style={s(
-                      c.absolute,
-                      c.bottom(20),
-                      c.border(`1px solid ${c.colors.debugColor}`),
-                      c.px(12),
-                      c.py(12),
-                      c.bg(c.grays[20])
+                      c.fg(c.grays[80]),
+                      c.fontSize(12),
+                      c.lineHeight("1.3rem")
                     )}
                   >
-                    <DebugScoreView tableResponse={tableResponse} />
-                  </View>
-                )}
-              </CMText>
-            </View>
-          )}
-        </View>
-      </Pressable>
-    </View>
+                    {openingName() && (
+                      <>
+                        <b>{openingName()}</b>
+                        {!isMobile && annotation() && (
+                          <>
+                            . <Spacer width={2} />
+                          </>
+                        )}
+                      </>
+                    )}
+                    {!isMobile && annotation}
+                  </CMText>
+                  {tagsRow() && (
+                    <>
+                      {hasInlineAnnotationOrOpeningName() && (
+                        <Spacer height={12} />
+                      )}
+                      {tagsRow()}
+                    </>
+                  )}
+                </div>
+
+                <div style={s(c.row, c.alignCenter)}>
+                  <Intersperse
+                    separator={() => {
+                      return <Spacer width={getSpaceBetweenStats(isMobile)} />;
+                    }}
+                    each={sections}
+                  >
+                    {(section) => (
+                      <div
+                        style={s(
+                          c.width(section.width),
+                          c.center,
+                          section.alignLeft && c.justifyStart,
+                          c.row
+                        )}
+                      >
+                        {section.content({
+                          numMovesDueFromHere,
+                          earliestDueDate,
+                          suggestedMove: tableResponse().suggestedMove,
+                          positionReport: positionReport(),
+                          tableResponse: tableResponse(),
+                          side: currentSide,
+                          tableMeta,
+                        })}
+                      </div>
+                    )}
+                  </Intersperse>
+                </div>
+              </div>
+              <div style={s(c.column, c.maxWidth(400))}>
+                <Show when={isMobile && annotation()}>
+                  <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
+                    <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                      {annotation()}
+                    </CMText>
+                  </CMText>
+                </Show>
+              </div>
+            </div>
+          </Pressable>
+        </div>
+      </Show>
+    </>
   );
 };
 
@@ -772,33 +746,37 @@ const TableHeader = ({
   sections,
   anyMine,
 }: {
-  sections: any[];
+  sections: Accessor<any[]>;
   anyMine: boolean;
 }) => {
   const isMobile = useIsMobile();
   const responsive = useResponsive();
   return (
-    <View
+    <div
       style={s(
         c.row,
         c.fullWidth,
         c.pl(14),
-        c.px(getSidebarPadding(responsive))
+        c.px(c.getSidebarPadding(responsive))
       )}
     >
       <Spacer width={12} grow />
-      <View style={s(c.row, c.alignCenter)}>
-        {intersperse(
-          sections.map((section, i) => {
+      <div style={s(c.row, c.alignCenter)}>
+        <Intersperse
+          separator={() => {
+            return <Spacer width={getSpaceBetweenStats(isMobile)} />;
+          }}
+          each={sections}
+        >
+          {(section, i) => {
             return (
-              <View
+              <div
                 style={s(
                   c.width(section.width),
                   section.alignLeft ? c.justifyStart : c.center,
                   c.row,
                   c.textAlign("center")
                 )}
-                key={i}
               >
                 <CMText
                   style={s(
@@ -809,21 +787,13 @@ const TableHeader = ({
                 >
                   {section.header}
                 </CMText>
-              </View>
+              </div>
             );
-          }),
-          (i) => {
-            return (
-              <Spacer
-                width={getSpaceBetweenStats(isMobile)}
-                key={`${i}-spacer`}
-              />
-            );
-          }
-        )}
-      </View>
+          }}
+        </Intersperse>
+      </div>
       {anyMine && false && <Spacer width={DELETE_WIDTH} />}
-    </View>
+    </div>
   );
 };
 
@@ -833,8 +803,8 @@ export const DebugScoreView = ({
   tableResponse: TableResponse;
 }) => {
   return (
-    <View style={s()}>
-      <View style={s(c.row, c.textAlign("end"), c.weightBold)}>
+    <div style={s()}>
+      <div style={s(c.row, c.textAlign("end"), c.weightBold)}>
         <CMText style={s(c.width(120))}>Source</CMText>
         <Spacer width={12} />
         <CMText style={s(c.width(60))}>Value</CMText>
@@ -842,36 +812,16 @@ export const DebugScoreView = ({
         <CMText style={s(c.width(60))}>Weight</CMText>
         <Spacer width={12} grow />
         <CMText style={s(c.width(60))}>Total</CMText>
-      </View>
+      </div>
       <Spacer height={12} />
-      {intersperse(
-        tableResponse.scoreTable?.factors.map((factor, i) => {
-          return (
-            <View style={s(c.row, c.fullWidth, c.textAlign("end"))} key={i}>
-              <CMText style={s(c.width(120))}>{factor.source}</CMText>
-              <Spacer width={12} />
-              <CMText style={s(c.width(60))}>{factor.value?.toFixed(2)}</CMText>
-              <Spacer width={12} />
-              <CMText style={s(c.width(60))}>
-                {factor.weight?.toFixed(2)}
-              </CMText>
-              <Spacer width={12} grow />
-              <CMText style={s(c.width(60))}>{factor.total.toFixed(2)}</CMText>
-            </View>
-          );
-        }),
-        (i) => {
-          return <Spacer height={12} key={i} />;
-        }
-      )}
 
       <Spacer height={24} />
-      <View style={s(c.row)}>
+      <div style={s(c.row)}>
         <CMText style={s(c.weightBold)}>Total</CMText>
         <Spacer width={12} grow />
-        <CMText style={s()}>{tableResponse.score.toFixed(2)}</CMText>
-      </View>
-    </View>
+        <CMText style={s()}>{tableResponse.score?.toFixed(2)}</CMText>
+      </div>
+    </div>
   );
 };
 
@@ -880,8 +830,8 @@ const getSpaceBetweenStats = (isMobile: boolean) => {
 };
 
 function renderAnnotation(_annotation: string) {
-  let annotation = _annotation?.trim();
-  let stops = ["!", "?", "."];
+  const annotation = _annotation?.trim();
+  const stops = ["!", "?", "."];
   if (annotation) {
     if (some(stops, (stop) => annotation.endsWith(stop))) {
       return annotation;
@@ -902,7 +852,7 @@ const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
         c.alignCenter
       )}
     >
-      <i className={icon} style={s(style)} />
+      <i class={icon} style={s(style)} />
       <Spacer width={8} />
       {text}
     </CMText>

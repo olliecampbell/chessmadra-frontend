@@ -1,7 +1,7 @@
 
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { StockfishReport } from "app/models";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { StockfishReport } from "~/utils/models";
 
 export const StockfishEvalCircle = ({
   stockfish,

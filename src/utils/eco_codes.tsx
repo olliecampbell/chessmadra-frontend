@@ -4,10 +4,10 @@ export const getAppropriateEcoName = (fullName: string): [string, string[]] => {
   if (!fullName) {
     return null;
   }
-  let name = fullName.split(":")[0];
-  let isFirstTimeSeeing = true;
+  const name = fullName.split(":")[0];
+  const isFirstTimeSeeing = true;
 
-  let variations = map(fullName.split(":")?.[1]?.split(","), (s) => s.trim());
+  const variations = map(fullName.split(":")?.[1]?.split(","), (s) => s.trim());
   if (isFirstTimeSeeing) {
     return [name, variations];
   } else {

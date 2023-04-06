@@ -1,7 +1,7 @@
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { useIsMobile } from "app/utils/isMobile";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
 import { Link } from "react-router-dom";
 import { AdminPageLayout } from "./AdminPageLayout";

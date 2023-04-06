@@ -14,7 +14,7 @@ export function debugEquality(a: any[], b: any[]): boolean {
 }
 
 export function debugEqualityObj(a: any, b: any): boolean {
-  let keys: Set<string> = new Set();
+  const keys: Set<string> = new Set();
   Object.keys(a).forEach((k) => {
     keys.add(k);
   });
@@ -24,8 +24,8 @@ export function debugEqualityObj(a: any, b: any): boolean {
   return every(
     map(keys.keys, (k) => {
       console.log("Checking key", k);
-      let x = a[k];
-      let y = b[k];
+      const x = a[k];
+      const y = b[k];
       if (x === y) {
         return true;
       } else {

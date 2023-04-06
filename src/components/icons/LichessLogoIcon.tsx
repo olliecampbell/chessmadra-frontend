@@ -1,5 +1,3 @@
-import * as React from "react";
-
 export function LichessLogoIcon({ color }: { color: any }) {
   return (
     <svg

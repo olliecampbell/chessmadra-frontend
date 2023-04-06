@@ -1,17 +1,16 @@
-import { Spacer } from "app/Space";
-import { s, c } from "app/styles";
+import { Spacer } from "~/components/Space";
+import { s, c } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { View } from "react-native";
-import { DEFAULT_ELO_RANGE } from "app/utils/repertoire_state";
+import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
 import { Button } from "./Button";
-import { useRepertoireState } from "app/utils/app_state";
-import { trackEvent } from "app/hooks/useTrackEvent";
+import { useRepertoireState } from "~/utils/app_state";
+import { trackEvent } from "~/utils/trackEvent";
 
 export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
   let [] = useRepertoireState((s) => []);
-  let buttonStyles = s(c.fontSize(14));
+  const buttonStyles = s(c.fontSize(14));
   return (
-    <View
+    <div
       style={s(
         c.px(12),
         c.py(12),
@@ -35,7 +34,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
         your level.
       </CMText>
       <Spacer height={12} />
-      <View style={s(c.row, c.fullWidth, c.justifyEnd, c.alignCenter)}>
+      <div style={s(c.row, c.fullWidth, c.justifyEnd, c.alignCenter)}>
         <Button
           style={s(buttonStyles)}
           onPress={() => {
@@ -66,7 +65,7 @@ export const EloWarningBox = ({ onDismiss, onUpdateElo }) => {
             Update
           </CMText>
         </Button>
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };

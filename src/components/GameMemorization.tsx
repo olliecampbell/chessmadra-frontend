@@ -1,21 +1,21 @@
 import { PageContainer } from "./PageContainer";
 import React, { useEffect } from "react";
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
+import { Pressable } from "react-native";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { isEmpty } from "lodash-es";
-import { TrainerLayout } from "app/components/TrainerLayout";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { chunked } from "app/utils/intersperse";
-import { GameMemorizationState } from "app/utils/game_memorization_state";
+import { TrainerLayout } from "~/components/TrainerLayout";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
+import { chunked } from "~/utils/intersperse";
+import { GameMemorizationState } from "~/utils/game_memorization_state";
 import { LichessGameCell } from "./LichessGameCell";
-import { ProgressMessageView } from "app/components/ProgressMessage";
-import client from "app/client";
+import { ProgressMessageView } from "~/components/ProgressMessage";
+import client from "~/utils/client";
 import { CMText } from "./CMText";
-import { useGameMemorizationState } from "app/utils/app_state";
+import { useGameMemorizationState } from "~/utils/app_state";
 
 export const GameMemorization = () => {
   const state = useGameMemorizationState((s) => s);
@@ -83,12 +83,12 @@ export const GameMemorization = () => {
             <Spacer height={12} />
           </>
         )}
-        <View style={s(c.row, c.justifyEnd)}>
+        <div style={s(c.row, c.justifyEnd)}>
           <Button
             style={s(c.buttons.squareBasicButtons)}
             onPress={() => {
               (async () => {
-                let link = `https://lichess.org/${state.activeGame.id}/${
+                const link = `https://lichess.org/${state.activeGame.id}/${
                   state.activeGame.result == -1 ? "black" : ""
                 }#${state.moveNumber}`;
                 console.log({ link });
@@ -99,7 +99,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-search"
+                class="fa-sharp fa-search"
               ></i>
             </CMText>
           </Button>
@@ -115,7 +115,7 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-trash-can"
+                class="fa-sharp fa-trash-can"
               ></i>
             </CMText>
           </Button>
@@ -133,11 +133,11 @@ export const GameMemorization = () => {
             <CMText style={s(c.buttons.basic.textStyles)}>
               <i
                 style={s(c.fg(c.colors.textInverse))}
-                className="fa-sharp fa-grid"
+                class="fa-sharp fa-grid"
               ></i>
             </CMText>
           </Button>
-        </View>
+        </div>
       </TrainerLayout>
     );
   } else if (state.games) {
@@ -171,7 +171,7 @@ export const GameMemorization = () => {
               //   console.log(utf8Encode.encode("oQdmyYry"));
             }
             return (
-              <View style={s(c.relative)}>
+              <div style={s(c.relative)}>
                 <Button
                   style={s(
                     c.absolute,
@@ -188,7 +188,7 @@ export const GameMemorization = () => {
                   <CMText style={s(c.buttons.basic.textStyles)}>
                     <i
                       style={s(c.fg(c.colors.textInverse))}
-                      className="fa-sharp fa-trash-can"
+                      class="fa-sharp fa-trash-can"
                     ></i>
                   </CMText>
                 </Button>
@@ -204,7 +204,7 @@ export const GameMemorization = () => {
                     gameStatus={state.gameStatuses[game.id]}
                   />
                 </Pressable>
-              </View>
+              </div>
             );
           }),
           (i) => {
@@ -215,7 +215,7 @@ export const GameMemorization = () => {
             return <Spacer height={12} key={i} />;
           },
           (children) => {
-            return <View style={s(c.row)}>{children}</View>;
+            return <div style={s(c.row)}>{children}</div>;
           }
         )}
       </>
@@ -223,7 +223,7 @@ export const GameMemorization = () => {
   }
   return <PageContainer>{inner}</PageContainer>;
 };
-function removeGame(id: String, state: GameMemorizationState) {
+function removeGame(id: string, state: GameMemorizationState) {
   client.post("/api/v1/my_games/remove", {
     gameIds: [id],
   });

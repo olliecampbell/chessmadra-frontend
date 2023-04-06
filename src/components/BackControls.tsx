@@ -1,14 +1,14 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
+
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { Button } from "~/components/Button";
+import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
-import { useRepertoireState, quick, useSidebarState } from "app/utils/app_state";
+import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { useResponsive, BP } from "app/utils/useResponsive";
+import { trackEvent } from "~/utils/trackEvent";
+import { useResponsive, BP } from "~/utils/useResponsive";
 import { useRef } from "react";
 
 type BackControlsProps = {
@@ -26,7 +26,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
 }) => {
   const bp = useResponsive();
   const layout = useRef(null);
-  let [
+  const [
     // searchOnChessable,
     analyzeLineOnLichess,
     currentLine,
@@ -42,11 +42,11 @@ export const BackControls: React.FC<BackControlsProps> = ({
 
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const isMobile = useIsMobile();
-  let gap = isMobile ? 6 : 12;
-  let foreground = c.grays[90];
-  let textColor = c.fg(foreground);
+  const gap = isMobile ? 6 : 12;
+  const foreground = c.grays[90];
+  const textColor = c.fg(foreground);
   return (
-    <View
+    <div
       style={s(
         c.row,
         c.height(height ?? bp.switch(40, [BP.lg, 48])),
@@ -63,7 +63,7 @@ export const BackControls: React.FC<BackControlsProps> = ({
         }}
       >
         <i
-          className="fa-sharp fa-angles-left"
+          class="fa-sharp fa-angles-left"
           style={s(
             c.buttons.darkFloater.textStyles,
             c.px(0),
@@ -80,17 +80,17 @@ export const BackControls: React.FC<BackControlsProps> = ({
         }}
       >
         <i
-          className="fa-sharp fa-angle-left"
+          class="fa-sharp fa-angle-left"
           style={s(c.buttons.darkFloater.textStyles, c.fontSize(18), textColor)}
         />
       </Button>
-      {extraButton && (
+      <Show when={extraButton }>
         <>
           <Spacer width={gap} />
           {extraButton}
         </>
-      )}
-      {includeAnalyze && (
+        </Show>
+        <Show when={includeAnalyze }>
         <>
           <Spacer width={gap} />
           <Button
@@ -100,9 +100,9 @@ export const BackControls: React.FC<BackControlsProps> = ({
               analyzeLineOnLichess(currentLine);
             }}
           >
-            <View style={s(c.size(isMobile ? 20 : 22))}>
+            <div style={s(c.size(isMobile ? 20 : 22))}>
               <LichessLogoIcon color={foreground} />
-            </View>
+            </div>
             {layout.current?.width > 400 && (
               <>
                 <Spacer width={8} />
@@ -120,8 +120,8 @@ export const BackControls: React.FC<BackControlsProps> = ({
             )}
           </Button>
         </>
-      )}
-      {includeReview && (
+        </Show>
+        <Show when={includeReview }>
         <>
           <Spacer width={gap} />
           <Button
@@ -140,11 +140,11 @@ export const BackControls: React.FC<BackControlsProps> = ({
             }}
           >
             <CMText style={s(c.buttons.darkFloater.textStyles)}>
-              <i className={"fa-duotone fa-cards-blank"} />
+              <i class={"fa-duotone fa-cards-blank"} />
             </CMText>
           </Button>
         </>
-      )}
-    </View>
+        </Show>
+    </div>
   );
 };

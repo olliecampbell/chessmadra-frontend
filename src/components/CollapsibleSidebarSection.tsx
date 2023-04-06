@@ -1,10 +1,9 @@
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import React, { useState } from "react";
-import { BP, useResponsive } from "app/utils/useResponsive";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
+import { BP, useResponsive } from "~/utils/useResponsive";
+import { createSignal } from "solid-js";
+import { Pressable } from "./Pressable";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const CollapsibleSidebarSection = ({
@@ -15,20 +14,20 @@ export const CollapsibleSidebarSection = ({
   header: string;
 }) => {
   const responsive = useResponsive();
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = createSignal(true);
   return (
-    <View style={s()}>
+    <div style={s()}>
       <Pressable
         style={s(
           c.row,
           c.justifyBetween,
           c.py(8),
           c.alignCenter,
-          c.px(getSidebarPadding(responsive)),
+          c.px(c.getSidebarPadding(responsive)),
           c.clickable
         )}
         onPress={() => {
-          setCollapsed(!collapsed);
+          setCollapsed(!collapsed());
         }}
       >
         <CMText
@@ -39,16 +38,14 @@ export const CollapsibleSidebarSection = ({
         >
           {header}
         </CMText>
-        <View style={s()}>
+        <div style={s()}>
           <i
-            className={
-              !collapsed ? "fa fa-chevron-down" : "fa fa-chevron-right"
-            }
+            class={!collapsed() ? "fa fa-chevron-down" : "fa fa-chevron-right"}
             style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
           ></i>
-        </View>
+        </div>
       </Pressable>
-      <View style={s()}>{collapsed ? null : children}</View>
-    </View>
+      <div style={s()}>{collapsed() ? null : children}</div>
+    </div>
   );
 };

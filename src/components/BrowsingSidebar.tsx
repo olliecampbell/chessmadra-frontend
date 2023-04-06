@@ -1,58 +1,84 @@
-import React, { useContext, useEffect, useLayoutEffect, useRef } from "react";
-import { Animated, Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { isEmpty, isNil, dropRight, cloneDeep } from "lodash-es";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
+import { isEmpty, isNil, dropRight } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   quick,
   useBrowsingState,
-  useUserState,
   useRepertoireState,
   useSidebarState,
-} from "app/utils/app_state";
-import { SidebarStateContext } from "app/utils/browsing_state";
-import { BP, useResponsive } from "app/utils/useResponsive";
+} from "~/utils/app_state";
+import { SidebarStateContext } from "~/utils/browsing_state";
+import { useResponsive } from "~/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
 import { SidebarActions } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import {
-  formatWinPercentage,
-  getWinRate,
-} from "app/utils/results_distribution";
-import {
-  getSidebarPadding,
-  VERTICAL_BREAKPOINT,
-} from "./RepertoireBrowsingView";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
 import { SidebarOnboarding } from "./SidebarOnboarding";
-import { CoverageGoal } from "./CoverageGoal";
 import { FeedbackView } from "./FeedbackView";
 import { FadeInOut } from "./FadeInOut";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
-import { lineToPgn } from "app/utils/repertoire";
-import useKeypress from "react-use-keypress";
-import { isDevelopment } from "app/utils/env";
 import { TransposedView } from "./TransposedView";
 import { RepertoireReview } from "./RepertoireReview";
 import { RepertoireOverview } from "./RepertoirtOverview";
 import { SettingsButtons } from "./Settings";
-import { useHovering } from "app/hooks/useHovering";
 import { RepertoireHome } from "./RepertoireHome";
-import { trackEvent } from "app/hooks/useTrackEvent";
+import { useHovering } from "~/mocks";
+import { trackEvent } from "~/utils/trackEvent";
+import { Animated } from "./View";
+import { createEffect, createSignal, Show } from "solid-js";
+import { Pressable } from "./Pressable";
+import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 
-export const BrowserSidebar = React.memo(function BrowserSidebar() {
-  let [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
-    ([s]) => [s.previousSidebarAnim, s.currentSidebarAnim, s.sidebarDirection]
-  );
+export const BrowserSidebar = function BrowserSidebar() {
+  const [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =
+    useBrowsingState(([s]) => [
+      s.previousSidebarAnim,
+      s.currentSidebarAnim,
+      s.sidebarDirection,
+      s.sidebarIter,
+    ]);
+  createEffect(() => {
+    // to trigger
+    sidebarIter();
+    if (!previousRef() || !currentRef()) {
+      return;
+    }
+    const dir = direction();
+    const ms = 200;
+    const duration = `${ms}ms`;
+    previousRef().style.transform = "translateX(0px)";
+    currentRef().style.transform =
+      dir === "right" ? "translateX(40px)" : "translateX(-40px)";
+    previousRef().style.transition = null;
+    currentRef().style.transition = null;
+    previousRef().style.opacity = "1";
+    currentRef().style.opacity = "0";
+    previousRef().offsetHeight; /* trigger reflow */
+    previousRef().style.transition = `opacity ${duration}, transform ${duration}`;
+    currentRef().style.transition = `opacity ${duration}, transform ${duration}`;
+    previousRef().style.opacity = "0";
+    previousRef().style.transform =
+      dir === "left" ? "translateX(40px)" : "translateX(-40px)";
+    setTimeout(() => {
+      currentRef().style.opacity = "1";
+      currentRef().style.transform = "translateX(0px)";
+    }, ms);
+  });
+  // currentRef().style.opacity = "0";
+  // const previousRef: Element | null = null;
+  // @ts-ignore
+  const [previousRef, setPreviousRef] = createSignal<Element>(null);
+  // @ts-ignore
+  const [currentRef, setCurrentRef] = createSignal<Element>(null);
+
   const responsive = useResponsive();
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const vertical = () => responsive.bp < VERTICAL_BREAKPOINT;
 
-  const user = useUserState((s) => s.user);
   return (
-    <View
+    <div
       style={s(
         c.column,
         c.zIndex(4),
@@ -63,24 +89,22 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
         c.minHeight("100%")
       )}
     >
-      {!vertical && (
-        <View
+      <Show when={!vertical()}>
+        <div
           style={s(
             c.absolute,
             c.top(0),
             c.right(0),
             c.zIndex(15),
-            c.pr(getSidebarPadding(responsive)),
-            c.pt(getSidebarPadding(responsive))
+            c.pr(c.getSidebarPadding(responsive)),
+            c.pt(c.getSidebarPadding(responsive))
           )}
         >
           <SettingsButtons />
-        </View>
-      )}
-      {!vertical && <BackSection />}
-      <View
-        nativeID="body"
-        key="body"
+        </div>
+      </Show>
+      {!vertical() && <BackSection />}
+      <div
         style={s(
           c.column,
           // c.top(200),
@@ -90,139 +114,76 @@ export const BrowserSidebar = React.memo(function BrowserSidebar() {
           c.right(0)
         )}
       >
-        <Animated.View
-          nativeID="previous-sidebar"
+        <div
+          id="prev-sidebar"
+          ref={setPreviousRef}
           style={s(
-            c.keyedProp("gridArea")("1/1"),
+            c.keyedProp("grid-area")("1/1"),
+            c.displayFlex,
             c.noPointerEvents,
-            c.opacity(
-              previousSidebarAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              })
-            ),
-            isNil(direction) && s(c.opacity(0)),
-            {
-              transform: [
-                {
-                  translateX: previousSidebarAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [
-                      "0px",
-                      direction === "left" ? "40px" : "-40px",
-                    ],
-                  }),
-                },
-              ],
-            }
+
+            c.opacity(100),
+            isNil(direction()) && s(c.opacity(0))
+            // TODO: solid
+            // {
+            //   transform:
+            //     {
+            //       translateX: previousSidebarAnim.interpolate({
+            //         inputRange: [0, 1],
+            //         outputRange: [
+            //           "0px",
+            //           direction === "left" ? "40px" : "-40px",
+            //         ],
+            //       }),
+            //     },
+            //   ],
+            // }
           )}
         >
           <SidebarStateContext.Provider value={true}>
             <InnerSidebar />
           </SidebarStateContext.Provider>
-        </Animated.View>
-        <Animated.View
+        </div>
+        <div
+          ref={setCurrentRef}
           style={s(
-            c.keyedProp("gridArea")("1/1"),
-            !isNil(direction) &&
-              s(
-                c.opacity(
-                  currentSidebarAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 1],
-                  })
-                ),
-                {
-                  transform: [
-                    {
-                      translateX: currentSidebarAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [
-                          direction === "left" ? "-40px" : "40px",
-                          "0px",
-                        ],
-                      }),
-                    },
-                  ],
-                }
-              )
+            c.keyedProp("grid-area")("1/1"),
+            c.displayFlex,
+            !isNil(direction) && s()
+            // todo: solid
+            // c.opacity(
+            //   currentSidebarAnim.interpolate({
+            //     inputRange: [0, 1],
+            //     outputRange: [0, 1],
+            //   })
+            // ),
+            // {
+            //   transform: [
+            //     {
+            //       translateX: currentSidebarAnim.interpolate({
+            //         inputRange: [0, 1],
+            //         outputRange: [
+            //           direction === "left" ? "-40px" : "40px",
+            //           "0px",
+            //         ],
+            //       }),
+            //     },
+            //   ],
+            // }
           )}
         >
           <SidebarStateContext.Provider value={false}>
             <InnerSidebar />
           </SidebarStateContext.Provider>
-        </Animated.View>
-      </View>
-    </View>
+        </div>
+      </div>
+    </div>
   );
-});
+};
 
-export const InnerSidebar = React.memo(function InnerSidebar() {
-  const [view] = useSidebarState(([s]) => [s.view], {
-    referenceEquality: true,
-  });
-  const usePrevious = useContext(SidebarStateContext);
-
-  const [
-    addedLineState,
-    deleteLineState,
-    stageStack,
-    submitFeedbackState,
-    showPlansState,
-    transposedState,
-    mode,
-  ] = useSidebarState(([s]) => [
-    s.addedLineState,
-    s.deleteLineState,
-    s.sidebarOnboardingState.stageStack,
-    s.submitFeedbackState,
-    s.showPlansState,
-    s.transposedState,
-    s.mode,
-  ]);
-  let inner = null;
-  if (view) {
-    inner = cloneDeep(view);
-  } else if (submitFeedbackState.visible) {
-    inner = <FeedbackView />;
-  } else if (mode == "home") {
-    inner = <RepertoireHome />;
-  } else if (mode == "overview") {
-    inner = <RepertoireOverview />;
-  } else if (mode == "review") {
-    inner = <RepertoireReview />;
-  } else if (!isEmpty(stageStack)) {
-    inner = <SidebarOnboarding />;
-  } else if (deleteLineState.visible) {
-    inner = <DeleteLineView />;
-  } else if (transposedState.visible) {
-    inner = <TransposedView />;
-  } else if (showPlansState.visible) {
-    inner = <TargetCoverageReachedView />;
-  } else if (addedLineState.visible) {
-    inner = <SavedLineView />;
-  } else {
-    inner = <Responses />;
-  }
-  const responsive = useResponsive();
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  return (
-    <>
-      {vertical && <BackSection />}
-      <View style={s(c.relative, c.zIndex(100))}>{inner}</View>
-      <Spacer height={44} />
-      <SidebarActions />
-      <Spacer height={44} grow />
-      <FeedbackPrompt />
-    </>
-  );
-});
-
-const BackSection = () => {
-  const { hovering, hoveringProps } = useHovering();
-  const [view] = useSidebarState(([s]) => [s.view], {
-    referenceEquality: true,
-  });
+export const InnerSidebar = function InnerSidebar() {
+  const [sidebarState] = useSidebarState(([s]) => [s]);
+  const [view] = useSidebarState(([s]) => [s.view]);
   const [
     addedLineState,
     deleteLineState,
@@ -242,132 +203,216 @@ const BackSection = () => {
     s.mode,
     s.activeSide,
   ]);
-  const [moveLog] = useBrowsingState(([s, rs]) => [s.chessboardState.moveLog]);
+
+  // optimization opportunity
+  const inner = () => {
+    if (view()) {
+      return view();
+    } else if (submitFeedbackState().visible) {
+      return <FeedbackView />;
+    } else if (mode() == "home") {
+      return <RepertoireHome />;
+    } else if (mode() == "overview") {
+      return <RepertoireOverview />;
+    } else if (mode() == "review") {
+      return <RepertoireReview />;
+    } else if (!isEmpty(stageStack())) {
+      return <SidebarOnboarding />;
+    } else if (deleteLineState().visible) {
+      return <DeleteLineView />;
+    } else if (transposedState().visible) {
+      return <TransposedView />;
+    } else if (showPlansState().visible) {
+      return <TargetCoverageReachedView />;
+    } else if (addedLineState().visible) {
+      return <SavedLineView />;
+    } else {
+      return <Responses />;
+    }
+  };
+  const responsive = useResponsive();
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  return (
+    <>
+      <Show when={vertical}>
+        <BackSection />
+      </Show>
+      <div id="sidebar-inner" style={s(c.relative, c.zIndex(100))}>
+        {inner()}
+      </div>
+      <Spacer height={44} />
+      <SidebarActions />
+      <Spacer height={44} grow />
+      <FeedbackPrompt />
+    </>
+  );
+};
+
+const BackSection = () => {
+  const { hovering, hoveringProps } = useHovering();
+  const [
+    addedLineState,
+    deleteLineState,
+    stageStack,
+    submitFeedbackState,
+    showPlansState,
+    transposedState,
+    mode,
+    side,
+    view,
+  ] = useSidebarState(([s]) => [
+    s.addedLineState,
+    s.deleteLineState,
+    s.sidebarOnboardingState.stageStack,
+    s.submitFeedbackState,
+    s.showPlansState,
+    s.transposedState,
+    s.mode,
+    s.activeSide,
+    s.view,
+  ]);
+  const [moveLog] = useBrowsingState(([s, rs]) => [
+    s.chessboard.get((v) => v).moveLog,
+  ]);
   const responsive = useResponsive();
   const paddingTop = 140;
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  let backButtonAction: (() => void) | null = null;
   const backToOverview = () => {
     console.log("back to overview");
     quick((s) => {
       s.repertoireState.animateChessboardShown(false, responsive, () => {
         quick((s) => {
-          s.repertoireState.startBrowsing(side, "overview");
+          s.repertoireState.startBrowsing(side(), "overview");
         });
       });
     });
   };
-  if (mode === "build") {
-    if (
-      addedLineState.visible ||
-      deleteLineState.visible ||
-      transposedState.visible
-    ) {
-      backButtonAction = () => {
-        quick((s) => {
-          s.repertoireState.browsingState.dismissTransientSidebarState();
-        });
-      };
-    } else if (showPlansState.visible) {
-      backButtonAction = () => {
-        quick((s) => {
-          s.repertoireState.browsingState.dismissTransientSidebarState();
-        });
-      };
-    } else if (showPlansState.visible) {
-      backButtonAction = () => {
-        quick((s) => {
-          s.repertoireState.browsingState.chessboardState.backOne();
-          s.repertoireState.browsingState.dismissTransientSidebarState();
-        });
-      };
-    } else if (stageStack.length > 1) {
-      backButtonAction = () => {
-        quick((s) => {
-          s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-            dropRight(
-              s.repertoireState.browsingState.sidebarState
-                .sidebarOnboardingState.stageStack,
-              1
-            );
-        });
-      };
-    } else if (!isEmpty(moveLog)) {
-      backButtonAction = () => {
-        quick((s) => {
-          s.repertoireState.browsingState.chessboardState.backOne();
-        });
-      };
-    } else if (isEmpty(moveLog)) {
-      backButtonAction = () => {
-        backToOverview();
-      };
-    }
-  }
+  const backButtonAction = () => {
+    let backButtonAction: (() => void) | null = null;
 
-  if (mode == "review") {
-  }
-  if (mode == "browse") {
-    if (!isEmpty(moveLog)) {
+    if (mode() === "build") {
+      if (
+        addedLineState().visible ||
+        deleteLineState().visible ||
+        transposedState().visible
+      ) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.dismissTransientSidebarState();
+          });
+        };
+      } else if (showPlansState().visible) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.dismissTransientSidebarState();
+          });
+        };
+      } else if (showPlansState().visible) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.chessboard.backOne();
+            s.repertoireState.browsingState.dismissTransientSidebarState();
+          });
+        };
+      } else if (stageStack().length > 1) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+              dropRight(
+                s.repertoireState.browsingState.sidebarState
+                  .sidebarOnboardingState.stageStack,
+                1
+              );
+          });
+        };
+      } else if (!isEmpty(moveLog())) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.chessboard.backOne();
+          });
+        };
+      } else if (isEmpty(moveLog())) {
+        backButtonAction = () => {
+          backToOverview();
+        };
+      }
+    }
+
+    if (mode() == "review") {
+    }
+    if (mode() == "browse") {
+      if (!isEmpty(moveLog())) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.chessboard.backOne();
+          });
+        };
+      } else if (isEmpty(moveLog())) {
+        backButtonAction = () => {
+          backToOverview();
+        };
+      }
+    }
+    if (mode() == "overview") {
       backButtonAction = () => {
         quick((s) => {
-          s.repertoireState.browsingState.chessboardState.backOne();
+          s.repertoireState.backToOverview();
         });
       };
-    } else if (isEmpty(moveLog)) {
+    }
+    if (submitFeedbackState().visible) {
       backButtonAction = () => {
-        backToOverview();
+        quick((s) => {
+          s.repertoireState.browsingState.dismissTransientSidebarState();
+        });
       };
     }
-  }
-  if (mode == "overview") {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.backToOverview();
-      });
-    };
-  }
-  const color = hovering ? c.colors.textSecondary : c.colors.textTertiary;
-  if (submitFeedbackState.visible) {
-    backButtonAction = () => {
-      quick((s) => {
-        s.repertoireState.browsingState.dismissTransientSidebarState();
-      });
-    };
-  }
-  if (view) {
-    // this is terrible
-    backButtonAction = "bogus";
-  }
+    if (view()) {
+      // this is terrible
+      backButtonAction = "bogus";
+    }
+    return backButtonAction;
+  };
+
+  const color = () =>
+    hovering() ? c.colors.textSecondary : c.colors.textTertiary;
+
+  createEffect(() => {
+    console.log("back button action", backButtonAction(), !!view());
+  });
 
   return (
-    <FadeInOut style={s(c.column)} open={!isNil(backButtonAction) || !!view}>
+    <FadeInOut
+      id="back-button"
+      style={s(c.column)}
+      open={() => !isNil(backButtonAction()) || !!view()}
+    >
       <Pressable
         {...hoveringProps}
         onPress={() => {
           quick((s) => {
-            if (view) {
+            if (view()) {
               s.repertoireState.browsingState.replaceView(null, "left");
-            } else {
+            } else if (backButtonAction()) {
               s.repertoireState.browsingState.moveSidebarState("left");
-              backButtonAction?.();
+              backButtonAction()?.();
             }
           });
         }}
         style={s(
-          !vertical ? c.height(paddingTop) : c.pt(backButtonAction ? 16 : 0),
+          !vertical ? c.height(paddingTop) : c.pt(backButtonAction() ? 16 : 0),
           c.unshrinkable,
           c.column,
           c.justifyEnd,
-          c.px(getSidebarPadding(responsive))
+          c.px(c.getSidebarPadding(responsive))
         )}
       >
-        <CMText style={s(c.weightBold, c.fg(color))}>
-          <i className="fa fa-arrow-left"></i>
+        <CMText style={s(c.weightBold, c.fg(color()), c.row)}>
+          <i class="fa fa-arrow-left"></i>
           <Spacer width={8} />
           Back
         </CMText>
-        <Spacer height={!vertical ? 32 : backButtonAction ? 18 : 0} />
+        <Spacer height={!vertical ? 32 : backButtonAction() ? 18 : 0} />
       </Pressable>
     </FadeInOut>
   );
@@ -379,79 +424,66 @@ const FeedbackPrompt = () => {
     s.submitFeedbackState,
   ]);
 
-  if (submitFeedbackState.visible) {
+  if (submitFeedbackState().visible) {
     return null;
   }
   return (
-    <Pressable
-      style={s(c.selfEnd, c.clickable, c.px(getSidebarPadding(responsive)))}
-      onPress={() => {
-        quick((s) => {
-          trackEvent("give_feedback.clicked");
-          s.repertoireState.browsingState.moveSidebarState("right");
-          s.repertoireState.browsingState.sidebarState.submitFeedbackState.visible =
-            true;
-        });
-      }}
-    >
-      <CMText style={s(c.fg(c.grays[60]), c.fontSize(12))}>Feedback?</CMText>
-    </Pressable>
+    <Show when={submitFeedbackState().visible}>
+      <Pressable
+        style={s(c.selfEnd, c.clickable, c.px(c.getSidebarPadding(responsive)))}
+        onPress={() => {
+          quick((s) => {
+            trackEvent("give_feedback.clicked");
+            s.repertoireState.browsingState.moveSidebarState("right");
+            s.repertoireState.browsingState.sidebarState.submitFeedbackState.visible =
+              true;
+          });
+        }}
+      >
+        <CMText style={s(c.fg(c.grays[60]), c.fontSize(12))}>Feedback?</CMText>
+      </Pressable>
+    </Show>
   );
 };
 
-const SavedLineView = React.memo(function SavedLineView() {
-  const [currentEpd, activeSide] = useSidebarState(([s]) => [
-    s.currentEpd,
-    s.activeSide,
-  ]);
-  const [currentLine] = useSidebarState(([s]) => [lineToPgn(s.moveLog)]);
-  const [positionReport, lineReport] = useRepertoireState(
-    (s) => [
-      s.positionReports[activeSide][currentEpd],
-      s.lineReports[currentLine],
-    ],
-    { referenceEquality: true }
-  );
-  let [progressState] = useRepertoireState((s) => [
-    s.browsingState.repertoireProgressState[activeSide],
+const SavedLineView = function SavedLineView() {
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  const [progressState] = useRepertoireState((s) => [
+    s.browsingState.repertoireProgressState[activeSide()],
   ]);
   const responsive = useResponsive();
   return (
-    <View style={s(c.column)}>
+    <div style={s(c.column)}>
       <RepertoireEditingHeader>Line saved!</RepertoireEditingHeader>
-      <View style={s(c.px(getSidebarPadding(responsive)))}>
+      <div style={s(c.px(c.getSidebarPadding(responsive)))}>
         <Spacer height={24} />
-        <View style={s(c.fullWidth)}>
+        <div style={s(c.fullWidth)}>
           <Animated.View
             style={s(
               c.row,
               c.alignCenter,
               c.justifyBetween,
               c.fullWidth,
-              c.opacity(progressState.headerOpacityAnim),
+              c.opacity(100),
               c.relative,
               c.zIndex(2)
             )}
           >
             <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-              Your {activeSide} repertoire is now{" "}
+              Your {activeSide()} repertoire is now{" "}
               <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-                {Math.round(progressState.percentComplete)}%
+                {Math.round(progressState().percentComplete)}%
               </CMText>{" "}
               complete.
             </CMText>
-            <Spacer width={0} grow />
-            {responsive.bp >= BP.md && (
-              <CoverageGoal textColor={c.grays[90]} fromTop />
-            )}
           </Animated.View>
           <Spacer height={4} />
-          <View style={s(c.height(24))}>
-            <CoverageBar isInSidebar side={activeSide} />
-          </View>
-        </View>
+          <div style={s(c.height(24))}>
+            <CoverageBar isInSidebar side={activeSide()} />
+          </div>
+        </div>
         <Spacer height={12} />
-      </View>
-    </View>
+      </div>
+    </div>
   );
-});
+};

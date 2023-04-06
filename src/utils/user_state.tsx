@@ -1,12 +1,14 @@
-import { User } from "app/models";
+/* eslint-disable */
+import { User } from "~/utils/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
+// solid TODO
 import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
-import client from "app/client";
-import { trackEvent } from "app/hooks/useTrackEvent";
+import client from "~/utils/client";
 import { BoardThemeId, PieceSetId } from "./theming";
+import { trackEvent } from "~/utils/trackEvent";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -27,6 +29,7 @@ export interface UserState {
     pieceSet?: PieceSetId;
   }) => void;
   isUpdatingEloRange: boolean;
+  pastLandingPage?: boolean;
 }
 
 export enum AuthStatus {
@@ -53,12 +56,15 @@ export const getInitialUserState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn(selector(s)));
   };
-  let initialState = {
+  const initialState = {
     isUpdatingEloRange: false,
     setUser: (user: User) => {
-      set(([s]) => {
+      set(([s, appState]) => {
         s.user = user;
         s.tempUserUuid = user.id;
+        // because could be diff goal
+        appState.repertoireState.updateRepertoireStructures();
+
         if (user.email) {
           setUserId(user.email);
         }

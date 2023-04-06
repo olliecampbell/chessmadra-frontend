@@ -1,13 +1,12 @@
-import { GameResultsDistribution } from "app/models";
+import { GameResultsDistribution } from "~/utils/models";
 import {
   formatWinPercentage,
   getTotalGames,
   getWinRate,
-} from "app/utils/results_distribution";
-import { View } from "react-native";
-import { c, s } from "app/styles";
+} from "~/utils/results_distribution";
+import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { Side } from "app/utils/repertoire";
+import { Side } from "~/utils/repertoire";
 
 export const GameResultsBar = ({
   gameResults,
@@ -20,11 +19,11 @@ export const GameResultsBar = ({
   hideNumbers?: boolean;
   activeSide: Side;
 }) => {
-  let total = getTotalGames(gameResults);
-  let threshold = 0.2;
-  let fontSize = 10;
-  let whiteResults = (
-    <View
+  const total = getTotalGames(gameResults);
+  const threshold = 0.2;
+  const fontSize = 10;
+  const whiteResults = (
+    <div
       style={s(
         c.width(`${(gameResults.white / total) * 100}%`),
         c.bg(c.grays[90]),
@@ -55,10 +54,10 @@ export const GameResultsBar = ({
           )}
         </>
       )}
-    </View>
+    </div>
   );
-  let blackResults = (
-    <View
+  const blackResults = (
+    <div
       style={s(
         c.width(`${(gameResults.black / total) * 100}%`),
         c.bg(c.grays[6]),
@@ -89,14 +88,14 @@ export const GameResultsBar = ({
           )}
         </>
       )}
-    </View>
+    </div>
   );
-  let [first, last] =
+  const [first, last] =
     activeSide === "white"
       ? [whiteResults, blackResults]
       : [blackResults, whiteResults];
   return (
-    <View
+    <div
       style={s(
         c.row,
         c.fullWidth,
@@ -107,7 +106,7 @@ export const GameResultsBar = ({
       )}
     >
       {first}
-      <View
+      <div
         style={s(
           c.width(`${(gameResults.draw / total) * 100}%`),
           c.bg(c.grays[40]),
@@ -123,9 +122,9 @@ export const GameResultsBar = ({
               {formatWinPercentage(gameResults.draw / total)}
             </CMText>
           )}
-      </View>
+      </div>
       {last}
-    </View>
+    </div>
   );
 };
 
@@ -144,9 +143,9 @@ export const MovementIndicator = ({
 
   let icon = null;
   let color = null;
-  let threshold = 0.02;
-  let oldWr = getWinRate(previous, side);
-  let newWr = getWinRate(results, side);
+  const threshold = 0.02;
+  const oldWr = getWinRate(previous, side);
+  const newWr = getWinRate(results, side);
   if (newWr < oldWr - threshold) {
     icon = "fa-sharp fa-arrow-down-right";
     color = side === "white" ? c.reds[45] : c.reds[55];
@@ -158,8 +157,8 @@ export const MovementIndicator = ({
     return null;
   }
   return (
-    <View style={s()}>
-      <i className={icon} style={s(c.fg(color), c.fontSize(12))} />
-    </View>
+    <div style={s()}>
+      <i class={icon} style={s(c.fg(color), c.fontSize(12))} />
+    </div>
   );
 };

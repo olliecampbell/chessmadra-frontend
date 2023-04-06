@@ -1,9 +1,18 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "jsxImportSource": "solid-js",
+    "jsx": "preserve",
+    "strict": true,
+    "types": ["solid-start/env"],
+    "baseUrl": "./",
     "paths": {
-      "app/*": ["./src/*"]
-    },
-    "importHelpers": true
-  },
-  "extends": "expo/tsconfig.base"
+      "~/*": ["./src/*"],
+      "pages/*": ["./src/landing_page/pages/*"]
+    }
+  }
 }

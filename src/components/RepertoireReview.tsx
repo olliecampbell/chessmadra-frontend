@@ -1,27 +1,16 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
-import { ChessboardView } from "app/components/chessboard/Chessboard";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { isNil, sortBy } from "lodash-es";
-import { TrainerLayout } from "app/components/TrainerLayout";
-import { Button } from "app/components/Button";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
-import { CMText } from "./CMText";
-import {
-  useRepertoireState,
-  quick,
-  useSidebarState,
-} from "app/utils/app_state";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import React, { useEffect } from "react";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
-import { pgnToLine } from "app/utils/repertoire";
-import { SidebarLayout } from "./RepertoireBrowsingView";
+import { useIsMobile } from "~/utils/isMobile";
+import { intersperse } from "~/utils/intersperse";
+import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
+import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
+import { Accessor, createEffect, Show } from "solid-js";
+import { Intersperse } from "./Intersperse";
+import { RepertoireMove } from "~/utils/repertoire";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -38,7 +27,7 @@ export const RepertoireReview = (props: {}) => {
     s.reviewState.showNext,
   ]);
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  const actions: SidebarAction[] = [
+  const actions: Accessor<SidebarAction[]> = () => [
     {
       onPress: () => {
         quick((s) => {
@@ -50,14 +39,14 @@ export const RepertoireReview = (props: {}) => {
           }
         });
       },
-      style: showNext ? "focus" : "primary",
-      text: showNext ? "Next" : "I don't know, show me the answer",
+      style: showNext() ? "focus" : "primary",
+      text: showNext() ? "Next" : "I don't know, show me the answer",
     },
     {
       onPress: () => {
         quick((s) => {
-          trackEvent(`${mode}.inspect_line`);
-          let qm = s.repertoireState.reviewState.currentMove;
+          trackEvent(`${mode()}.inspect_line`);
+          const qm = s.repertoireState.reviewState.currentMove;
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(qm.moves[0].side, "build", {
             pgnToPlay: qm.line,
@@ -68,19 +57,24 @@ export const RepertoireReview = (props: {}) => {
       text: "View in repertoire builder",
     },
   ];
+  createEffect(() => {
+    console.log("current move", currentMove());
+  });
   return (
     <SidebarTemplate
       header={
-        currentMove?.moves.length === 1
+        currentMove()?.moves.length === 1
           ? "Play the correct move on the board"
-          : `You have ${currentMove?.moves.length} responses to this position in your repertoire. Play all your responses on the board`
+          : `You have ${
+              currentMove()?.moves.length
+            } responses to this position in your repertoire. Play all your responses on the board`
       }
-      actions={actions}
+      actions={actions()}
       bodyPadding={true}
     >
-      {currentMove?.moves.length > 1 && (
+      <Show when={currentMove()?.moves?.length > 1}>
         <>
-          <View
+          <div
             style={s(
               c.row,
               c.overflowHidden,
@@ -91,34 +85,38 @@ export const RepertoireReview = (props: {}) => {
               c.border(`1px solid ${c.grays[20]}`)
             )}
           >
-            {intersperse(
-              sortBy(currentMove.moves, (m) =>
-                isNil(completedReviewPositionMoves[m.sanPlus])
-              ).map((x, i) => {
-                let hasCompleted = !isNil(
-                  completedReviewPositionMoves[x.sanPlus]
+            <Intersperse
+              each={() =>
+                sortBy(currentMove()?.moves, (m) =>
+                  isNil(completedReviewPositionMoves()?.[m.sanPlus])
+                )
+              }
+              separator={() => {
+                return (
+                  <div
+                    style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
+                  ></div>
+                );
+              }}
+            >
+              {(x: RepertoireMove) => {
+                const hasCompleted = !isNil(
+                  completedReviewPositionMoves()?.[x.sanPlus]
                 );
                 return (
-                  <View
+                  <div
                     style={s(
                       hasCompleted ? c.bg(c.grays[80]) : c.bg(c.grays[10]),
                       c.grow
                     )}
-                  ></View>
+                  ></div>
                 );
-              }),
-              (i) => {
-                return (
-                  <View
-                    style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
-                  ></View>
-                );
-              }
-            )}
-          </View>
+              }}
+            </Intersperse>
+          </div>
           <Spacer height={12} />
         </>
-      )}
+      </Show>
     </SidebarTemplate>
   );
 };

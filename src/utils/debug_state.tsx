@@ -23,7 +23,7 @@ export const getInitialDebugState = (
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) => fn([s.debugState, s]));
   };
-  let initialState = {
+  const initialState = {
     ...createQuick<DebugState>(setOnly),
     debugUi: false,
     underConstruction: false,

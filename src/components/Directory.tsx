@@ -1,18 +1,18 @@
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+import { Pressable } from "react-native";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { times } from "lodash-es";
-import { useIsMobile } from "app/utils/isMobile";
+import { useIsMobile } from "~/utils/isMobile";
 import { navItems, OPENINGS_DESCRIPTION } from "./NavBar";
 import { PageContainer } from "./PageContainer";
-import { failOnTrue } from "app/utils/test_settings";
-import { useHasBetaAccess } from "app/utils/useHasBetaAccess";
+import { failOnTrue } from "~/utils/test_settings";
+import { useHasBetaAccess } from "~/utils/useHasBetaAccess";
 import { CMText } from "./CMText";
 import { Link } from "react-router-dom";
 import React from "react";
-import { HeadSiteMeta } from "app/components/PageContainer";
-import { BP, useResponsive } from "app/utils/useResponsive";
+import { HeadSiteMeta } from "~/components/PageContainer";
+import { BP, useResponsive } from "~/utils/useResponsive";
 
 export const Directory = () => {
   const isMobile = useIsMobile();
@@ -27,15 +27,15 @@ export const Directory = () => {
         }}
       />
 
-      {failOnTrue(false) && (
-        <View style={s(c.row)}>
+<Show when={failOnTrue(false) }>
+        <div style={s(c.row)}>
           <ColorSwatch colors={c.primaries} />
           <ColorSwatch colors={c.yellows} />
           <ColorSwatch colors={c.grays} />
-        </View>
-      )}
+        </div>
+        </Show>
       <Spacer height={44} />
-      <View style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
+      <div style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
         <CMText
           style={s(
             c.fg(c.colors.textPrimary),
@@ -63,7 +63,7 @@ export const Directory = () => {
           if you have any feedback, or just to say hi :)
         </CMText>
         <Spacer height={44} />
-        <View
+        <div
           style={s({
             display: "grid",
             gridTemplateColumns: responsive.switch("1fr", [BP.md, "1fr 1fr"]),
@@ -89,9 +89,9 @@ export const Directory = () => {
                   )}
                   to={path}
                 >
-                  <View>
-                    {isNew && (
-                      <View
+                  <div>
+                  <Show when={isNew }>
+                      <div
                         style={s(
                           c.absolute,
                           c.top(0),
@@ -106,7 +106,7 @@ export const Directory = () => {
                       >
                         <i
                           style={s(c.fg(c.grays[30]))}
-                          className="fa-solid fa-party-horn"
+                          class="fa-solid fa-party-horn"
                         ></i>
                         <Spacer width={12} />
                         <CMText
@@ -119,10 +119,10 @@ export const Directory = () => {
                         >
                           New
                         </CMText>
-                      </View>
-                    )}
-                    {beta && !isNew && (
-                      <View
+                      </div>
+                      </Show>
+                      <Show when={beta && !isNew }>
+                      <div
                         style={s(
                           c.absolute,
                           c.top(0),
@@ -144,8 +144,8 @@ export const Directory = () => {
                         >
                           Beta
                         </CMText>
-                      </View>
-                    )}
+                      </div>
+                      </Show>
                     <CMText
                       style={s(
                         c.fg(c.colors.textInverse),
@@ -168,25 +168,25 @@ export const Directory = () => {
                         Start
                       </CMText>
                     </Pressable>
-                  </View>
+                  </div>
                 </Link>
               );
             })}
-        </View>
-      </View>
+        </div>
+      </div>
     </PageContainer>
   );
 };
 
 export const ColorSwatch = ({ colors }) => {
   return (
-    <View style={s(c.column, c.width(100))}>
+    <div style={s(c.column, c.width(100))}>
       {times(20).map((i) => {
-        let color = colors[i * 5];
+        const color = colors[i * 5];
         return (
-          <View style={s(c.bg(color), c.selfStretch, c.height(20))}></View>
+          <div style={s(c.bg(color), c.selfStretch, c.height(20))}></div>
         );
       })}
-    </View>
+    </div>
   );
 };

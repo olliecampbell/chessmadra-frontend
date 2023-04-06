@@ -1,25 +1,25 @@
+/* eslint-disable */
 import { Chess, Move } from "@lubert/chess.ts";
 import {
   ProgressMessage,
   VisualizationState,
   ProgressMessageType,
   PlaybackSpeed,
-} from "app/types/VisualizationState";
+} from "~/types/VisualizationState";
 import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
-import { ChessboardState, createChessState } from "./chessboard_state";
 import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
   DEBUG_CLIMB_START_PLAYING,
   DEBUG_PASS_FAIL_BUTTONS,
 } from "./test_settings";
-import { StorageItem } from "app/utils/storageItem";
-import { Animated } from "react-native";
-import { times } from "../utils";
+import { StorageItem } from "~/utils/storageItem";
 import { cloneDeep, takeRight } from "lodash-es";
-import { fensTheSame } from "app/utils/fens";
+import { fensTheSame } from "~/utils/fens";
 import { createQuick } from "./quick";
+import { times } from "~/utils/times";
+import { createChessboardInterface } from "./chessboard_interface";
 
 type Stack = [VisualizationState, AppState];
 
@@ -28,7 +28,7 @@ const testProgress = false;
 const generateClimb = () => {
   let puzzleDifficulty = 1000;
   let hiddenMoves = 1;
-  let cutoff = 2400;
+  const cutoff = 2400;
   const climb = [{ puzzleDifficulty, hiddenMoves }];
   const addRampingPuzzleDifficulty = () => {
     times(80)((i) => {
@@ -90,7 +90,7 @@ export const getInitialVisualizationState = (
       : null) as ProgressMessage,
 
     isDone: false,
-    playButtonFlashAnim: new Animated.Value(0.0),
+    playButtonFlashAnim: 0,
     mockPassFail: DEBUG_PASS_FAIL_BUTTONS,
     showNotation: new StorageItem("show-notation-v2", true),
     plyUserSetting: new StorageItem("visualization-ply", 2),
@@ -116,7 +116,7 @@ export const getInitialVisualizationState = (
     showPuzzlePosition: false,
     getFetchOptions: () =>
       get(([s]) => {
-        let ply = s.step?.hiddenMoves ?? s.plyUserSetting.value;
+        const ply = s.step?.hiddenMoves ?? s.plyUserSetting.value;
         if (s.step) {
           return {
             ratingGte: s.step.puzzleDifficulty - 25,
@@ -178,22 +178,22 @@ export const getInitialVisualizationState = (
     setupForPuzzle: () =>
       set(([state]) => {
         state.focusedMoveIndex = null;
-        let currentPosition = new Chess();
-        let puzzlePosition = new Chess();
-        let puzzle = state.puzzleState.puzzle;
-        for (let move of puzzle.allMoves) {
+        const currentPosition = new Chess();
+        const puzzlePosition = new Chess();
+        const puzzle = state.puzzleState.puzzle;
+        for (const move of puzzle.allMoves) {
           currentPosition.move(move);
           puzzlePosition.move(move);
           if (fensTheSame(currentPosition.fen(), puzzle.fen)) {
             puzzlePosition.move(puzzle.moves[0], { sloppy: true });
             currentPosition.move(puzzle.moves[0], { sloppy: true });
-            let hiddenMoves = takeRight(
+            const hiddenMoves = takeRight(
               currentPosition.history({ verbose: true }),
               state.getPly()
             );
-            let boardForPuzzleMoves = puzzlePosition.clone();
+            const boardForPuzzleMoves = puzzlePosition.clone();
             boardForPuzzleMoves.undo();
-            for (let solutionMove of puzzle.moves) {
+            for (const solutionMove of puzzle.moves) {
               boardForPuzzleMoves.move(solutionMove, { sloppy: true });
             }
             state.puzzleState.solutionMoves = takeRight(
@@ -238,7 +238,7 @@ export const getInitialVisualizationState = (
       }),
     startLoopingPlayFlash: () =>
       set(([s]) => {
-        let animDuration = 1000;
+        const animDuration = 1000;
         Animated.loop(
           Animated.sequence([
             Animated.timing(s.playButtonFlashAnim, {
@@ -316,20 +316,17 @@ export const getInitialVisualizationState = (
       fn((isClimb ? s.climbState : s.visualizationState).chessboardState)
     );
   };
-  initialState.chessboardState = createChessState(
-    setChess,
-    getChess,
-    (c: ChessboardState) => {
-      c.frozen = false;
-      c.delegate = initialState.puzzleState;
-    }
-  );
+  initialState.chessboardState = createChessboardInterface()[1];
+  initialState.chessboardState.set((c) => {
+    c.frozen = false;
+    c.delegate = initialState.puzzleState;
+  });
   if (isClimb) {
     initialState = {
       ...initialState,
       ...{
         isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
-        scoreOpacityAnim: new Animated.Value(0.0),
+        scoreOpacityAnim: 0.0,
         // TODO: bring back intro screen
         score: new StorageItem("climb-score", 0),
         highScore: new StorageItem("climb-high-score", 0),
@@ -354,7 +351,7 @@ export const getInitialVisualizationState = (
           set(([s]) => {
             // TODO: fix repetition here
             if (!s.currentPuzzleFailed) {
-              let delta = -10;
+              const delta = -10;
               s.delta = delta;
               s.lastPuzzleSuccess = false;
               s.animatePointChange();
@@ -368,8 +365,8 @@ export const getInitialVisualizationState = (
             if (s.currentPuzzleFailed) {
               return;
             }
-            let timeTaken = performance.now() - s.puzzleStartTime;
-            let delta = Math.round(
+            const timeTaken = performance.now() - s.puzzleStartTime;
+            const delta = Math.round(
               Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
             );
             s.lastPuzzleSuccess = true;
@@ -385,7 +382,7 @@ export const getInitialVisualizationState = (
         currentPuzzleFailed: false,
         animatePointChange: () =>
           set(([s]) => {
-            let animDuration = 300;
+            const animDuration = 300;
             Animated.sequence([
               Animated.timing(s.scoreOpacityAnim, {
                 toValue: 1,

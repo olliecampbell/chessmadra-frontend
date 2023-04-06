@@ -1,68 +1,39 @@
-import { Pressable, View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
 import {
-  some,
-  isNaN,
-  isEmpty,
-  filter,
   isNil,
-  last,
   clamp,
-  includes,
-  max,
-  map,
-  reverse,
-  cloneDeep,
 } from "lodash-es";
-import { useIsMobile } from "app/utils/isMobile";
-import { intersperse } from "app/utils/intersperse";
 import {
-  formatIncidence,
-  RepertoireMiss,
-  RepertoireMove,
   Side,
-} from "app/utils/repertoire";
-import { MoveTag, PositionReport, SuggestedMove } from "app/models";
-import { formatStockfishEval } from "app/utils/stockfish";
+} from "~/utils/repertoire";
+import { PositionReport, SuggestedMove } from "~/utils/models";
+import { formatStockfishEval } from "~/utils/stockfish";
 import {
   formatPlayPercentage,
   getPlayRate,
   getTotalGames,
   isNegligiblePlayrate,
-} from "app/utils/results_distribution";
+} from "~/utils/results_distribution";
 import {
-  useAppState,
-  useBrowsingState,
   useSidebarState,
   useDebugState,
   useRepertoireState,
   useUserState,
-} from "app/utils/app_state";
-import React, { useRef, useState } from "react";
-import { useHovering } from "app/hooks/useHovering";
-import { trackEvent } from "app/hooks/useTrackEvent";
-import { getAppropriateEcoName } from "app/utils/eco_codes";
-import {
-  getMoveRatingIcon,
-  getWinPercentage,
-  MoveRating,
-} from "app/utils/move_inaccuracy";
-import { quick } from "app/utils/app_state";
-import { TableResponseScoreSource } from "app/utils/table_scoring";
-import { getCoverageProgress } from "app/utils/browsing_state";
-import { useResponsive } from "app/utils/useResponsive";
-import { TableResponse } from "app/components/RepertoireMovesTable";
-import { CMText } from "app/components/CMText";
-import { GameResultsBar } from "app/components/GameResultsBar";
-import { pluralize } from "./pluralize";
-import { ReviewText } from "app/components/ReviewText";
+} from "~/utils/app_state";
+import { getCoverageProgress } from "~/utils/browsing_state";
+import { TableResponse } from "~/components/RepertoireMovesTable";
+import { CMText } from "~/components/CMText";
+import { GameResultsBar } from "~/components/GameResultsBar";
+import { ReviewText } from "~/components/ReviewText";
+import { Accessor, Show } from "solid-js";
+import { destructure } from "@solid-primitives/destructure";
 
 interface Section {
   width: number;
   header: string;
   alignLeft?: boolean;
+  alignRight?: boolean;
   content: (_: {
     suggestedMove: SuggestedMove;
     positionReport: PositionReport;
@@ -89,10 +60,10 @@ export const useSections = ({
   isMobile,
 }: UseSectionProps) => {
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const debugUi = useDebugState((s) => s.debugUi);
+  const [debugUi] = useDebugState((s) => [s.debugUi]);
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let sections: Section[] = [];
-  let textStyles = s(
+  const textStyles = s(
     c.fg(c.grays[80]),
     c.weightSemiBold,
     c.fontSize(12),
@@ -100,16 +71,16 @@ export const useSections = ({
   );
 
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  if (mode == "browse") {
+  if (mode() == "browse") {
     sections = sections.concat(
       getReviewModeSections({
         myTurn,
         textStyles,
         usePeerRates,
         isMobile,
-        debugUi,
-        threshold,
-        activeSide,
+        debugUi: debugUi(),
+        threshold: threshold(),
+        activeSide: activeSide(),
       })
     );
   } else {
@@ -119,9 +90,9 @@ export const useSections = ({
         textStyles,
         usePeerRates,
         isMobile,
-        debugUi,
-        threshold,
-        activeSide,
+        debugUi: debugUi(),
+        threshold: threshold(),
+        activeSide: activeSide(),
       })
     );
   }
@@ -142,22 +113,22 @@ const getBuildModeSections = ({
   threshold,
   textStyles,
 }: SectionProps) => {
-  let sections = [];
-  let naStyles = s(textStyles, c.fg(c.grays[50]));
-  let na = <CMText style={s(naStyles)}>N/A</CMText>;
+  const sections = [];
+  const naStyles = s(textStyles, c.fg(c.grays[50]));
+  const na = <CMText style={s(naStyles)}>N/A</CMText>;
   if (!myTurn) {
     sections.push({
       width: 100,
       alignLeft: true,
       content: ({ suggestedMove, positionReport, tableResponse }) => {
-        let playRate =
+        const playRate =
           suggestedMove &&
           positionReport &&
           getPlayRate(suggestedMove, positionReport, false);
-        let denominator = Math.round(
+        const denominator = Math.round(
           1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
         );
-        let belowCoverageGoal =
+        const belowCoverageGoal =
           (tableResponse.suggestedMove?.incidence ?? 0) < threshold;
         let veryRare = false;
         let hideGamesText = false;
@@ -170,7 +141,7 @@ const getBuildModeSections = ({
         return (
           <>
             {
-              <View style={s(c.column)}>
+              <div style={s(c.column)}>
                 <CMText
                   style={s(
                     textStyles,
@@ -186,12 +157,12 @@ const getBuildModeSections = ({
                     </>
                   )}
                 </CMText>
-                {debugUi && (
+                <Show when={debugUi}>
                   <CMText style={s(c.fg(c.colors.debugColorDark))}>
                     {(playRate * 100).toFixed(2)}
                   </CMText>
-                )}
-              </View>
+                </Show>
+              </div>
             }
           </>
         );
@@ -224,7 +195,7 @@ const getBuildModeSections = ({
         suggestedMove: SuggestedMove;
         positionReport: PositionReport;
       }) => {
-        let playRate =
+        const playRate =
           suggestedMove &&
           positionReport &&
           getPlayRate(
@@ -252,14 +223,14 @@ const getBuildModeSections = ({
     sections.push({
       width: 40,
       content: ({ suggestedMove, positionReport }) => {
-        let whiteWinning =
+        const whiteWinning =
           suggestedMove?.stockfish?.eval >= 0 ||
           suggestedMove?.stockfish?.mate > 0;
         return (
           <>
-            {suggestedMove?.stockfish && (
+            <Show when={suggestedMove?.stockfish}>
               <>
-                <View
+                <div
                   style={s(
                     c.row,
                     c.bg(whiteWinning ? c.grays[90] : c.grays[4]),
@@ -279,9 +250,9 @@ const getBuildModeSections = ({
                   >
                     {formatStockfishEval(suggestedMove?.stockfish)}
                   </CMText>
-                </View>
+                </div>
               </>
-            )}
+            </Show>
           </>
         );
       },
@@ -305,15 +276,15 @@ const getBuildModeSections = ({
         }
         return (
           <>
-            {suggestedMove && (
-              <View style={s(c.fullWidth)}>
+            <Show when={suggestedMove}>
+              <div style={s(c.fullWidth)}>
                 <GameResultsBar
                   previousResults={positionReport?.results}
                   activeSide={activeSide}
                   gameResults={suggestedMove.results}
                 />
-              </View>
-            )}
+              </div>
+            </Show>
           </>
         );
       },
@@ -326,70 +297,42 @@ const getBuildModeSections = ({
 const CoverageProgressBar = ({
   tableResponse,
 }: {
-  tableResponse: TableResponse;
+  tableResponse: Accessor<TableResponse>;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
   const threshold = useUserState((s) => s.getCurrentThreshold());
-  let epdAfter =
+  const epdAfter =
     tableResponse.suggestedMove?.epdAfter ??
     tableResponse.repertoireMove?.epdAfter;
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
     useRepertoireState((s) => [
-      s.repertoire[activeSide]?.positionResponses[epdAfter]?.length > 0,
-      s.numMovesFromEpd[activeSide][epdAfter],
-      s.expectedNumMovesFromEpd[activeSide][epdAfter],
-      s.repertoireGrades[activeSide]?.biggestMisses[epdAfter],
+      s.repertoire[activeSide()]?.positionResponses[epdAfter]?.length > 0,
+      s.numMovesFromEpd[activeSide()][epdAfter],
+      s.expectedNumMovesFromEpd[activeSide()][epdAfter],
+      s.repertoireGrades[activeSide()]?.biggestMisses[epdAfter],
     ]);
 
   const backgroundColor = c.grays[28];
   const completedColor = c.greens[50];
-  // let incidence = tableResponse?.incidenceUpperBound ?? tableResponse.incidence;
-  // let coverage = tableResponse?.biggestMiss?.incidence ?? incidence;
-  let completed = isNil(missFromHere);
-  // if (!completed) {
-  //   console.log({
-  //     numMovesFromHere,
-  //     expectedNumMovesNeeded,
-  //     san: tableResponse.suggestedMove?.sanPlus,
-  //     incidence: tableResponse.repertoireMove?.incidence,
-  //   });
-  // }
-  let debugElements = debugUi && (
-    <View style={s(c.column)}>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        incidence: {(tableResponse?.suggestedMove?.incidence * 100).toFixed(2)}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        Moves from here: {numMovesFromHere}
-      </CMText>
-      <CMText style={s(c.fg(c.colors.debugColorDark), c.weightSemiBold)}>
-        Expected # from here: {expectedNumMovesNeeded}
-      </CMText>
-    </View>
-  );
-  // TODO: is this incorrect, to check whether the move is in your repertoire, and not whether a response is in your repertoire?
-  // if (incidence < threshold && !hasResponse) {
-  //   return (
-  //     <View style={s(c.column)}>
-  //       <CMText style={s(c.fontSize(12), c.fg(c.grays[60]))}>Not needed</CMText>
-  //       {debugElements}
-  //     </View>
-  //   );
-  // }
-  let progress = clamp(
-    getCoverageProgress(numMovesFromHere, expectedNumMovesNeeded),
-    5,
-    95
-  );
-  if (!hasResponse) {
-    progress = 0;
-    completed = false;
-  }
-  const inProgressColor = progress < 20 ? c.reds[65] : c.oranges[65];
+  const { completed, progress } = destructure(() => {
+    let completed = isNil(missFromHere());
+    let progress = clamp(
+      getCoverageProgress(numMovesFromHere(), expectedNumMovesNeeded()),
+      5,
+      95
+    );
+    if (!hasResponse()) {
+      progress = 0;
+      completed = false;
+    }
+    return { completed, progress };
+  });
+
+  const inProgressColor = () => (progress() < 20 ? c.reds[65] : c.oranges[65]);
   return (
-    <View style={s(c.column, c.fullWidth)}>
-      <View
+    <div style={s(c.column, c.fullWidth)}>
+      <div
         style={s(
           c.fullWidth,
           c.bg(backgroundColor),
@@ -398,17 +341,15 @@ const CoverageProgressBar = ({
           c.height(4)
         )}
       >
-        <View
+        <div
           style={s(
-            c.width(completed ? "100%" : `${progress}%`),
-            c.bg(completed ? completedColor : inProgressColor),
+            c.width(completed() ? "100%" : `${progress}%`),
+            c.bg(completed() ? completedColor : inProgressColor),
             c.fullHeight
           )}
-        ></View>
-      </View>
-
-      {debugElements}
-    </View>
+        ></div>
+      </div>
+    </div>
   );
 };
 const getReviewModeSections = ({
@@ -420,13 +361,13 @@ const getReviewModeSections = ({
   threshold,
   textStyles,
 }: SectionProps) => {
-  let sections: Section[] = [];
-  let naStyles = s(textStyles, c.fg(c.grays[50]));
-  let na = <CMText style={s(naStyles)}>N/A</CMText>;
+  const sections: Section[] = [];
+  const naStyles = s(textStyles, c.fg(c.grays[50]));
+  const na = <CMText style={s(naStyles)}>N/A</CMText>;
 
   sections.push({
     width: 120,
-    alignLeft: true,
+    alignRight: true,
     content: ({ suggestedMove, positionReport, tableResponse }) => {
       return (
         <ReviewText

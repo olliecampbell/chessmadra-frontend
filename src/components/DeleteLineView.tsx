@@ -1,21 +1,14 @@
-import { View } from "react-native";
-// import { ExchangeRates } from "app/ExchangeRate";
-import { c, s } from "app/styles";
-import { Spacer } from "app/Space";
+// import { ExchangeRates } from "~/ExchangeRate";
+import { c, s } from "~/utils/styles";
+import { Spacer } from "~/components/Space";
 import { isNil } from "lodash-es";
 import { CMText } from "./CMText";
-import {
-  quick,
-  useRepertoireState,
-  useSidebarState,
-} from "app/utils/app_state";
-import { useResponsive } from "app/utils/useResponsive";
+import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
+import { useResponsive } from "~/utils/useResponsive";
 import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { getSidebarPadding } from "./RepertoireBrowsingView";
-import React from "react";
 
-export const DeleteLineView = React.memo(function DeleteLineView() {
+export const DeleteLineView = function DeleteLineView() {
   const responsive = useResponsive();
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [responses, deleting] = useRepertoireState((s) => [
@@ -30,20 +23,20 @@ export const DeleteLineView = React.memo(function DeleteLineView() {
 
   const multiple = responses.length > 1;
   return (
-    <View style={s(c.column)}>
+    <div style={s(c.column)}>
       <RepertoireEditingHeader>
         {multiple ? "Which line do you want to delete?" : "Are you sure?"}
       </RepertoireEditingHeader>
       <Spacer height={24} />
-      <View style={s(c.px(getSidebarPadding(responsive)))}>
+      <div style={s(c.px(c.getSidebarPadding(responsive)))}>
         <CMText style={s()}>
           {multiple
             ? "Select the line you want to delete. This cannot be undone."
             : "This will also delete any moves past this one. This cannot be undone."}
         </CMText>
-      </View>
+      </div>
       <Spacer height={24} />
-      <View style={s(c.gridColumn({ gap: 12 }))}>
+      <div style={s(c.gridColumn({ gap: 12 }))}>
         {responses.map((response) => (
           <SidebarFullWidthButton
             action={{
@@ -81,7 +74,7 @@ export const DeleteLineView = React.memo(function DeleteLineView() {
             text: multiple ? `Nevermind, go back` : `No, I've changed my mind`,
           }}
         />
-      </View>
-    </View>
+      </div>
+    </div>
   );
-});
+};

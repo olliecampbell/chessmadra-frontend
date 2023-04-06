@@ -1,13 +1,13 @@
 
 import {
   Pressable,
-  View,
 } from "react-native";
-import { s, c } from "app/styles";
+import { s, c } from "~/utils/styles";
 import { forEach, isEmpty } from "lodash-es";
-import { Spacer } from "app/Space";
+import { Spacer } from "~/components/Space";
 import { Move } from "@lubert/chess.ts";
 import { CMText } from "./CMText";
+import { Show } from "solid-js";
 
 export const MoveList = ({
   moveList,
@@ -18,7 +18,7 @@ export const MoveList = ({
   focusedMoveIndex?: number;
   onMoveClick: (move: Move, _: number) => void;
 }) => {
-  let pairs = [];
+  const pairs = [];
   let currentPair = [];
   forEach(moveList, (move, i) => {
     if (move.color == "b" && isEmpty(currentPair)) {
@@ -50,16 +50,16 @@ export const MoveList = ({
     c.fg(c.colors.textPrimary)
   );
   return (
-    <View style={s(c.column, c.bg(c.grays[20]), c.br(2))}>
-      <View style={s(c.height(1), c.bg(c.grays[30]))} />
+    <div style={s(c.column, c.bg(c.grays[20]), c.br(2))}>
+      <div style={s(c.height(1), c.bg(c.grays[30]))} />
       {pairs.map((pair, i) => {
         const [{ move: whiteMove, i: whiteI }, { move: blackMove, i: blackI }] =
           pair;
         const activeMoveStyles = s(c.weightBlack, c.fontSize(20));
         return (
-          <View key={i} style={s(c.column, c.overflowHidden)}>
-            <View style={s(c.row, c.alignStretch, c.py(8))}>
-              <View
+          <div key={i} style={s(c.column, c.overflowHidden)}>
+            <div style={s(c.row, c.alignStretch, c.py(8))}>
+              <div
                 style={s(
                   c.width(48),
                   c.center,
@@ -75,7 +75,7 @@ export const MoveList = ({
                 >
                   {i + 1}
                 </CMText>
-              </View>
+              </div>
               <Spacer width={24} />
               <Pressable
                 onPress={() => {
@@ -105,13 +105,13 @@ export const MoveList = ({
                   {blackMove?.san ?? "..."}
                 </CMText>
               </Pressable>
-            </View>
-            {i != pairs.length - 1 && (
-              <View style={s(c.height(1), c.bg(c.grays[30]))} />
-            )}
-          </View>
+            </div>
+            <Show when={i != pairs.length - 1 }>
+              <div style={s(c.height(1), c.bg(c.grays[30]))} />
+              </Show>
+          </div>
         );
       })}
-    </View>
+    </div>
   );
 };

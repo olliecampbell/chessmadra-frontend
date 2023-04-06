@@ -1,10 +1,9 @@
 import { Chess, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
-import { CMText } from "app/components/CMText";
-import { quick } from "app/utils/app_state";
-import { Plan } from "app/models";
-import { s, c } from "app/styles";
-import React from "react";
+import { CMText } from "~/components/CMText";
+import { quick } from "~/utils/app_state";
+import { Plan } from "~/utils/models";
+import { s, c } from "~/utils/styles";
 import { intersperse } from "./intersperse";
 import { otherSide, Side, toSide } from "./repertoire";
 import {
@@ -15,18 +14,16 @@ import {
   sortBy,
   take,
   find,
-  every,
   reverse,
   keyBy,
   forEach,
-  map,
   mapValues,
   cloneDeep,
   uniqBy,
   isNil,
 } from "lodash-es";
-import { useHovering } from "app/hooks/useHovering";
-import { View } from "react-native";
+import { useHovering } from "~/mocks";
+import { JSXElement } from "solid-js";
 
 export interface MetaPlan {
   plan: Plan;
@@ -47,7 +44,7 @@ export const getMetaPlans = (
     plans = filter(plans, (p) => p.side === side);
 
     // @ts-ignore
-    let byFromSquare: Record<Square, Plan[]> = {};
+    const byFromSquare: Record<Square, Plan[]> = {};
     plans.forEach((p) => {
       if (byFromSquare[p.fromSquare]) {
         byFromSquare[p.fromSquare].push(p);
@@ -57,7 +54,7 @@ export const getMetaPlans = (
     });
     let metaPlans: MetaPlan[] = [];
     type SquareMove = string;
-    let recurse = (plan: Plan, seenMoves: Set<SquareMove>) => {
+    const recurse = (plan: Plan, seenMoves: Set<SquareMove>) => {
       metaPlans.push({
         plan,
         directionChanged: false,
@@ -76,7 +73,7 @@ export const getMetaPlans = (
       });
     };
     plans.forEach((plan) => {
-      let piece = board.get(plan.fromSquare);
+      const piece = board.get(plan.fromSquare);
       if (piece && toSide(piece.color) === side) {
         byFromSquare[plan.fromSquare].forEach((p) => {
           recurse(p, new Set());
@@ -146,7 +143,7 @@ function getPieceDescription(plan: MetaPlan): string {
   return `${pieceSymbolToPieceName(plan.piece)} on ${plan.plan.fromSquare}`;
 }
 
-type PlanSection = JSX.Element | JSX.Element[] | string;
+type PlanSection = JSXElement;
 
 class PlanConsumer {
   metaPlans: MetaPlan[];
@@ -185,7 +182,7 @@ class PlanConsumer {
       (p) => getPlanPiece(p)
     );
     forEach(SQUARES, (_, square) => {
-      let piece = position.get(square);
+      const piece = position.get(square);
       if (piece && toSide(piece.color) !== side) {
         this.capturePieces[square] = piece.type;
       }
@@ -195,7 +192,7 @@ class PlanConsumer {
   adverbIndex = 0;
 
   nextAdverb(): string {
-    let adverbs = ["typically", "generally", "usually", "often"];
+    const adverbs = ["typically", "generally", "usually", "often"];
     return adverbs[this.adverbIndex++ % adverbs.length];
   }
 
@@ -208,13 +205,13 @@ class PlanConsumer {
     return plan;
   }
   consumeCastles() {
-    let plans = this.remainingPlans();
-    let queenside = find(plans, (p) => p.plan.san === "O-O-O");
-    let kingside = find(plans, (p) => p.plan.san === "O-O");
+    const plans = this.remainingPlans();
+    const queenside = find(plans, (p) => p.plan.san === "O-O-O");
+    const kingside = find(plans, (p) => p.plan.san === "O-O");
     if (!(queenside || kingside)) {
       return null;
     } else if (queenside && kingside) {
-      let queensideMoreCommon =
+      const queensideMoreCommon =
         queenside.plan.occurences > kingside.plan.occurences;
       this.consume([queenside, kingside]);
       this.planSections.push(
@@ -251,12 +248,12 @@ class PlanConsumer {
       if (!plan.plan.san.includes("x")) {
         return;
       }
-      let capturedPiece = this.capturePieces[plan.plan.toSquare];
-      let pieceDescription = getPieceDescription(plan);
+      const capturedPiece = this.capturePieces[plan.plan.toSquare];
+      const pieceDescription = getPieceDescription(plan);
       if (!pieceDescription) {
         return;
       }
-      let allCapturers = filter(
+      const allCapturers = filter(
         this.remainingPlans(),
         (p) =>
           p.plan.toSquare === plan.plan.toSquare && p.plan.san.includes("x")
@@ -264,10 +261,10 @@ class PlanConsumer {
       if (!capturedPiece || isEmpty(allCapturers)) {
         return;
       }
-      let planBeforeCapture = this.planPrecedingCaptures[plan.plan.toSquare];
+      const planBeforeCapture = this.planPrecedingCaptures[plan.plan.toSquare];
       let recapture = false;
       if (planBeforeCapture) {
-        let opponentHasPieceOnCaptureSquare =
+        const opponentHasPieceOnCaptureSquare =
           toSide(this.position.get(plan.plan.toSquare)?.color) ==
           otherSide(plan.plan.side);
         if (
@@ -299,7 +296,7 @@ class PlanConsumer {
     });
   }
   pawnPlansConsumer() {
-    let plans = this.remainingPlans();
+    const plans = this.remainingPlans();
     let pawnPlans = filter(plans, (p) =>
       some(["a", "b", "c", "d", "e", "f", "g", "h"], (f) =>
         p.plan.san?.startsWith(f)
@@ -339,7 +336,7 @@ class PlanConsumer {
   }
 
   piecePlansConsumer() {
-    let piecePlans = sortBy(
+    const piecePlans = sortBy(
       filter(this.remainingPlans(), (p) => p.piece !== "p"),
       (p) => -p.plan.occurences
     );
@@ -364,9 +361,9 @@ class PlanConsumer {
       if (plan.plan.san.includes("x")) {
         return;
       }
-      let pieceDescription =
+      const pieceDescription =
         getDevelopmentPieceDescription(plan) || getPieceDescription(plan);
-      let finalDestination = find(
+      const finalDestination = find(
         this.remainingPlans(),
         (p) =>
           p.plan.fromSquare === plan.plan.toSquare && p.piece === plan.piece
@@ -393,13 +390,13 @@ class PlanConsumer {
       if (plan.plan.san.includes("x")) {
         return;
       }
-      let pairs = [
+      const pairs = [
         ["c8", "b7"],
         ["f8", "g7"],
         ["c1", "b2"],
         ["f1", "g2"],
       ];
-      let isFianchetto = some(
+      const isFianchetto = some(
         pairs,
         ([from, to]) =>
           plan.plan.fromSquare === from && plan.plan.toSquare === to
@@ -407,11 +404,11 @@ class PlanConsumer {
       if (!isFianchetto) {
         return;
       }
-      let developmentPieceDescription = getDevelopmentPieceDescription(plan);
+      const developmentPieceDescription = getDevelopmentPieceDescription(plan);
       if (!developmentPieceDescription) {
         return;
       }
-      let otherDevelopmentPlans = filter(
+      const otherDevelopmentPlans = filter(
         this.remainingPlans(),
         (p) =>
           p.plan.fromSquare === plan.plan.fromSquare &&
@@ -441,13 +438,13 @@ class PlanConsumer {
       if (plan.plan.san.includes("x")) {
         return;
       }
-      let pieceDescription =
+      const pieceDescription =
         getDevelopmentPieceDescription(plan) || getPieceDescription(plan);
-      let isDevelopment = !isNil(getDevelopmentPieceDescription(plan));
+      const isDevelopment = !isNil(getDevelopmentPieceDescription(plan));
       if (!pieceDescription) {
         return;
       }
-      let allDevelopmentPlans = filter(
+      const allDevelopmentPlans = filter(
         this.remainingPlans(),
         (p) =>
           p.plan.fromSquare === plan.plan.fromSquare &&
@@ -504,7 +501,7 @@ export const parsePlans = (
   side: Side,
   position: Chess
 ): PlanConsumer => {
-  let consumer = new PlanConsumer(plans, side, position);
+  const consumer = new PlanConsumer(plans, side, position);
   consumer.fianchettoConsumer();
   consumer.consumeCastles();
   consumer.consumeCaptures();
@@ -526,7 +523,7 @@ const PlanMoves = ({
   stripPieceSymbol?: boolean;
   customFormatter?: (plan: MetaPlan) => any;
 }) => {
-  let combinator = exclusive ? "or" : "and";
+  const combinator = exclusive ? "or" : "and";
   return (
     <CMText style={s(c.fg(c.colors.textPrimary))}>
       {intersperse(
@@ -564,7 +561,7 @@ const EnglishSeparator = ({
   exclusive?: boolean;
   items: any[];
 }) => {
-  let combinator = exclusive ? "or" : "and";
+  const combinator = exclusive ? "or" : "and";
 
   return (
     <CMText style={s(c.fg(c.colors.textPrimary))}>
@@ -595,31 +592,35 @@ const PlanMoveText = ({
   const { hovering, hoveringProps } = useHovering(
     () => {
       quick((s) => {
-        const chessboardState = s.repertoireState.browsingState.chessboardState;
-        if (plans) {
-          chessboardState.focusedPlans = plans.map((p) => p.id);
-        } else if (plan) {
-          chessboardState.focusedPlans = [plan.id];
-        }
+        const chessboard = s.repertoireState.browsingState.chessboard;
+        chessboard.set((c) => {
+          if (plans) {
+            c.focusedPlans = plans.map((p) => p.id);
+          } else if (plan) {
+            c.focusedPlans = [plan.id];
+          }
+        });
       });
     },
     () => {
       quick((s) => {
-        s.repertoireState.browsingState.chessboardState.focusedPlans = [];
+        s.repertoireState.browsingState.chessboard.set((c) => {
+          c.focusedPlans = [];
+        });
       });
     }
   );
   return (
-    <View style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
+    <div style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
       <CMText
         style={s(
           c.weightSemiBold,
-          c.fg(hovering ? c.purples[65] : c.arrowColors[55])
+          c.fg(hovering() ? c.purples[65] : c.arrowColors[55])
         )}
       >
         {children}
       </CMText>
-    </View>
+    </div>
   );
 };
 
@@ -638,9 +639,9 @@ const getDevelopmentPieceDescription = (plan: MetaPlan): string => {
     }
   }
   if (plan.piece === "b") {
-    let white = plan.plan.side === "white";
-    let isC = plan.plan.fromSquare.startsWith("c");
-    let isF = plan.plan.fromSquare.startsWith("f");
+    const white = plan.plan.side === "white";
+    const isC = plan.plan.fromSquare.startsWith("c");
+    const isF = plan.plan.fromSquare.startsWith("f");
     if ((white && isC) || (!white && isF)) {
       return "dark-squared bishop";
     } else if ((white && isF) || (!white && isC)) {
