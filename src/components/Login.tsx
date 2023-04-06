@@ -29,6 +29,7 @@ import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import clsx from "clsx";
+import logo from "/public/logomark.png";
 
 type LoginForm = {
   email: string;
@@ -106,11 +107,10 @@ export default function Login({ signup }: { signup?: boolean }) {
         >
           <Show when={!submitted()}>
             <div class="col items-center">
-              <div style={s(c.size(48))}>
-                <PieceView
-                  piece={{ color: "w", type: "n" }}
-                  pieceSet={"alpha"}
-                />
+              <div items-center row>
+                <img style={s(c.size(48))} src={logo} alt="logo" />
+
+                <p class={`pl-3 text-center text-xl font-bold`}>Chessbook</p>
               </div>
               <Spacer height={12} />
               <div class={`row w-full gap-4`}>

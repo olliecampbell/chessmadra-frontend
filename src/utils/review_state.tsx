@@ -31,6 +31,7 @@ import {
   ChessboardViewState,
   createChessboardInterface,
 } from "./chessboard_interface";
+import { unwrap } from "solid-js/store";
 
 export interface QuizMove {
   moves: RepertoireMove[];
@@ -125,8 +126,10 @@ export const getInitialReviewState = (
                 }
               );
             });
-            if (rs.browsingState.sidebarState.mode !== "review")
-              rs.updateRepertoireStructures();
+            // todo: this could be optimized in the future to only re-compute some stuff
+            rs.updateRepertoireStructures();
+            // if (rs.browsingState.sidebarState.mode !== "review")
+            //   rs.updateRepertoireStructures();
           });
         });
     },
@@ -140,7 +143,7 @@ export const getInitialReviewState = (
         } else {
           s.updateQueue(options);
         }
-        console.log(s.activeQueue);
+        console.log(unwrap(s.activeQueue));
         // gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
         rs.animateChessboardShown(true);
@@ -227,6 +230,7 @@ export const getInitialReviewState = (
       }, "giveUp"),
     stopReviewing: () =>
       set(([s, rs]) => {
+        console.log("stopping review");
         rs.updateRepertoireStructures();
         rs.browsingState.sidebarState.mode = null;
 

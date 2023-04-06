@@ -550,7 +550,7 @@ export const getInitialBrowsingState = (
           return null;
         }
         const miss =
-          rs.repertoireGrades[s.sidebarState.activeSide].biggestMisses?.[
+          rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
             sidebarState.currentEpd
           ];
         return miss;
@@ -564,7 +564,7 @@ export const getInitialBrowsingState = (
         return findLast(
           map(sidebarState.positionHistory, (epd) => {
             const miss =
-              rs.repertoireGrades[s.sidebarState.activeSide].biggestMisses?.[
+              rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
                 epd
               ];
             if (miss?.epd !== sidebarState.currentEpd) {
