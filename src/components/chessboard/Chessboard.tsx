@@ -32,7 +32,7 @@ import {
 } from "~/utils/chessboard_interface";
 import anime from "animejs";
 import { createChessProxy } from "~/utils/chess_proxy";
-import { pgnToLine } from "~/utils/repertoire";
+import { pgnToLine, toSide } from "~/utils/repertoire";
 import clsx from "clsx";
 
 export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
@@ -188,16 +188,13 @@ export function ChessboardView(props: {
     });
   });
 
-  const moveIndicatorAnim = () => props.state.moveIndicatorAnim;
-  const moveIndicatorOpacityAnim = () => props.state.moveIndicatorOpacityAnim;
-  const indicatorColor = () => props.state.indicatorColor;
-
   const hiddenColorsBorder = `1px solid ${c.grays[70]}`;
   // const pan: Accessor<{ square: Square | null } & XY> = createSignal({
   //   square: null,
   // });
   const [tapTimeout, setTapTimeout] = createSignal(null as number | null);
   const [isTap, setIsTap] = createSignal(null as boolean | null);
+  let tapSelectedSquare = false;
   const [chessboardContainerRef, setChessboardContainerRef] =
     createSignal(null);
   const chessboardLayout = createElementBounds(chessboardContainerRef);
@@ -225,20 +222,29 @@ export function ChessboardView(props: {
       chessboardLayout,
       tap
     );
-    console.log({ tap, centerX, chessboardLayout });
+    const piece = props.chessboardInterface.get((s) => s.position.get(square));
+    const turn = props.chessboardInterface.getTurn();
+    if (!piece?.color || toSide(piece.color) !== turn) return;
     props.chessboardInterface.set((store) => {
       const drag = store.drag;
       drag.square = square;
+      drag.enoughToDrag = false;
       drag.x = tap.x;
       drag.y = tap.y;
       drag.transform = {
         x: tap.x - centerX,
         y: tap.y - centerY,
       };
+      store.activeFromSquare = square;
       store.availableMoves = store.position.moves({
         square: square,
         verbose: true,
       });
+      if (store.availableMoves.length > 0) {
+        tapSelectedSquare = true;
+      } else {
+        tapSelectedSquare = false;
+      }
     });
 
     setIsTap(true);
@@ -255,12 +261,12 @@ export function ChessboardView(props: {
     props.chessboardInterface.set((store) => {
       store.drag = {
         square: null,
+        enoughToDrag: false,
         x: 0,
         y: 0,
         transform: { x: 0, y: 0 },
       };
       store.draggedOverSquare = undefined;
-      store.activeFromSquare = undefined;
     });
   };
   const onMouseMove = (evt: MouseEvent | TouchEvent) => {
@@ -273,6 +279,7 @@ export function ChessboardView(props: {
     props.chessboardInterface.set((s) => {
       let newDrag = {
         square: drag().square,
+        enoughToDrag: drag().enoughToDrag,
         x: 0,
         y: 0,
         transform: { x: 0, y: 0 },
@@ -297,6 +304,13 @@ export function ChessboardView(props: {
         newDrag[key] = curr;
         newDrag.transform[key] = drag().transform[key] + delta;
       });
+      if (!newDrag.enoughToDrag) {
+        const distance = Math.sqrt(
+          Math.pow(newDrag.transform.x, 2) + Math.pow(newDrag.transform.y, 2)
+        );
+        console.log("distance", distance);
+        newDrag.enoughToDrag = distance > 5;
+      }
       s.drag = newDrag;
     });
   };
@@ -305,6 +319,16 @@ export function ChessboardView(props: {
     const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, drag());
 
     if (isTap()) {
+      console.log("tap", chessboardStore().activeFromSquare);
+      if (
+        newSquare === chessboardStore().activeFromSquare &&
+        !tapSelectedSquare
+      ) {
+        props.chessboardInterface.set((s) => {
+          s.availableMoves = [];
+          s.activeFromSquare = undefined;
+        });
+      }
       // props.state.onSquarePress(drag().square, false);
       // if (stateRef.current.activeFromSquare) {
       // }
@@ -314,6 +338,7 @@ export function ChessboardView(props: {
     props.chessboardInterface.set((s) => {
       s.drag = {
         square: null,
+        enoughToDrag: false,
         x: 0,
         y: 0,
         transform: { x: 0, y: 0 },
@@ -495,14 +520,14 @@ export function ChessboardView(props: {
               c.zIndex(5),
               c.absolute,
               c.center,
-              c.opacity(moveIndicatorOpacityAnim)
+              c.opacity(0)
             )}
           >
             <div
               style={s(
                 c.size("50%"),
                 c.round,
-                c.bg(indicatorColor),
+                // c.bg(indicatorColor),
                 c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
               )}
             ></div>
@@ -544,7 +569,7 @@ export function ChessboardView(props: {
                   c.left(`${getSquareOffset(square, flipped()).x * 100}%`)
                 );
                 let animated = false;
-                if (dragging()) {
+                if (dragging() && drag().enoughToDrag) {
                   posStyles = s(
                     posStyles,
                     c.transform(
@@ -636,7 +661,6 @@ export function ChessboardView(props: {
                       chessboardStore().draggedOverSquare == square();
                     const highlightingPreviewMove = () =>
                       chessboardStore().previewedMove;
-                    const dragging = () => !!chessboardStore().drag.square;
                     const isPreviewSquare = () =>
                       chessboardStore().previewedMove?.to === square() ||
                       chessboardStore().previewedMove?.from === square();
@@ -647,6 +671,13 @@ export function ChessboardView(props: {
                         props.chessboardInterface.getLastMove()?.from ==
                           square()
                     );
+                    createEffect(() => {
+                      console.log(
+                        "is last move square",
+                        isLastMoveSquare(),
+                        highlightingPreviewMove()
+                      );
+                    });
 
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
@@ -655,7 +686,7 @@ export function ChessboardView(props: {
                       isDraggedOverSquare() ||
                       (isLastMoveSquare() &&
                         !highlightingPreviewMove() &&
-                        !availableMoves()) ||
+                        isEmpty(availableMoves())) ||
                       isPreviewSquare();
                     const isJustIndicator = () =>
                       availableMove() && !shouldHighlight();

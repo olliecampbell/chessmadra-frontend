@@ -41,15 +41,8 @@ export const RepertoireHome = (props: {}) => {
       bySide((side) => s.earliestReviewDueFromEpd[side][START_EPD]),
     ]
   );
-  // const [progressState] = useBrowsingState(([s]) => {
-  //   return [bySide((side) => s.repertoireProgressState[side])];
-  // });
-  const progressState = () =>
-    getAppState().repertoireState.browsingState.repertoireProgressState[
-      "white"
-    ];
-  createEffect(() => {
-    console.log("progress state", progressState()?.percentComplete);
+  const [progressState] = useBrowsingState(([s]) => {
+    return [bySide((side) => s.repertoireProgressState[side])];
   });
   createEffect(() => {
     console.log("num lines", numLines()["white"]);
@@ -109,7 +102,7 @@ export const RepertoireHome = (props: {}) => {
                       <CMText style={s(c.fg(c.colors.textSecondary))}>
                         {numLines()[side] > 0
                           ? `${Math.round(
-                              progressState().percentComplete
+                              progressState()[side].percentComplete
                             )}% complete`
                           : "Not started"}
                       </CMText>

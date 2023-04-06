@@ -1,4 +1,3 @@
-
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
@@ -6,10 +5,7 @@ import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { cloneDeep, keys, upperFirst } from "lodash-es";
-import {
-  SidebarAction,
-  SidebarFullWidthButton,
-} from "./SidebarActions";
+import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   BoardThemeId,
@@ -121,7 +117,7 @@ export const CoverageSettings = ({}: {}) => {
       <Spacer height={12} />
       <SidebarSelectOneOf
         description={`If you set this to 1 in 100, then you'll be aiming to build a repertoire that covers every position that happens in at least 1 in 100 games between players of your rating range. At your level we recommend a coverage target of 1 in ${Math.round(
-          1 / recommendedDepth
+          1 / recommendedDepth()
         )} games`}
         choices={thresholdOptions}
         // cellStyles={s(c.bg(c.grays[15]))}
@@ -203,12 +199,12 @@ export const ThemeSettings = ({}: {}) => {
     <SidebarTemplate actions={[]} header={null}>
       <Spacer height={12} />
       <SidebarSelectOneOf
-        description={() => null}
-        title={() => "Tiles"}
-        choices={() => keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
+        description={null}
+        title={"Tiles"}
+        choices={keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={() => user()?.theme}
+        activeChoice={user()?.theme}
         onSelect={(t: BoardThemeId) => {
           quick((s) => {
             const params: any = { theme: t };
@@ -253,7 +249,7 @@ export const ThemeSettings = ({}: {}) => {
         description={null}
         title={"Pieces"}
         choices={PIECE_SETS}
-        activeChoice={user.pieceSet}
+        activeChoice={user()?.pieceSet}
         onSelect={(t: PieceSetId) => {
           quick((s) => {
             s.userState.updateUserSettings({ pieceSet: t });
@@ -266,7 +262,7 @@ export const ThemeSettings = ({}: {}) => {
                 return (
                   <div style={s(c.size(24), c.mr(4))}>
                     <PieceView
-                      pieceSet={() => pieceSet}
+                      pieceSet={pieceSet}
                       piece={{ color: "w", type: p }}
                     />
                   </div>

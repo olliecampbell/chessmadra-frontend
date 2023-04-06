@@ -1,12 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import {
-  isNil,
-  clamp,
-} from "lodash-es";
-import {
-  Side,
-} from "~/utils/repertoire";
+import { isNil, clamp } from "lodash-es";
+import { Side } from "~/utils/repertoire";
 import { PositionReport, SuggestedMove } from "~/utils/models";
 import { formatStockfishEval } from "~/utils/stockfish";
 import {
@@ -26,7 +21,7 @@ import { TableResponse } from "~/components/RepertoireMovesTable";
 import { CMText } from "~/components/CMText";
 import { GameResultsBar } from "~/components/GameResultsBar";
 import { ReviewText } from "~/components/ReviewText";
-import { Accessor, Show } from "solid-js";
+import { Accessor, createEffect, Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 
 interface Section {
@@ -294,23 +289,19 @@ const getBuildModeSections = ({
   return sections;
 };
 
-const CoverageProgressBar = ({
-  tableResponse,
-}: {
-  tableResponse: Accessor<TableResponse>;
-}) => {
-  const debugUi = useDebugState((s) => s.debugUi);
-  const threshold = useUserState((s) => s.getCurrentThreshold());
-  const epdAfter =
-    tableResponse.suggestedMove?.epdAfter ??
-    tableResponse.repertoireMove?.epdAfter;
+const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
+  const [debugUi] = useDebugState((s) => [s.debugUi]);
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  const epdAfter = () =>
+    props.tableResponse.suggestedMove?.epdAfter ??
+    props.tableResponse.repertoireMove?.epdAfter;
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
     useRepertoireState((s) => [
-      s.repertoire[activeSide()]?.positionResponses[epdAfter]?.length > 0,
-      s.numMovesFromEpd[activeSide()][epdAfter],
-      s.expectedNumMovesFromEpd[activeSide()][epdAfter],
-      s.repertoireGrades[activeSide()]?.biggestMisses[epdAfter],
+      s.repertoire[activeSide()]?.positionResponses[epdAfter()]?.length > 0,
+      s.numMovesFromEpd[activeSide()][epdAfter()],
+      s.expectedNumMovesFromEpd[activeSide()][epdAfter()],
+      s.repertoireGrades[activeSide()]?.biggestMisses[epdAfter()],
     ]);
 
   const backgroundColor = c.grays[28];
@@ -328,8 +319,14 @@ const CoverageProgressBar = ({
     }
     return { completed, progress };
   });
-
   const inProgressColor = () => (progress() < 20 ? c.reds[65] : c.oranges[65]);
+  createEffect(() => {
+    console.log(
+      "progress",
+      props.tableResponse.suggestedMove?.sanPlus,
+      progress()
+    );
+  });
   return (
     <div style={s(c.column, c.fullWidth)}>
       <div
@@ -343,8 +340,8 @@ const CoverageProgressBar = ({
       >
         <div
           style={s(
-            c.width(completed() ? "100%" : `${progress}%`),
-            c.bg(completed() ? completedColor : inProgressColor),
+            c.width(completed() ? "100%" : `${progress()}%`),
+            c.bg(completed() ? completedColor : inProgressColor()),
             c.fullHeight
           )}
         ></div>

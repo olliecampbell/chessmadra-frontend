@@ -503,7 +503,10 @@ const Response = ({
 
   const tagsRow = () =>
     !isEmpty(tags()) && (
-      <div style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}>
+      <div
+        style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}
+        class="gap-4"
+      >
         <For each={tags()}>
           {(tag, i) => {
             return tag;

@@ -24,6 +24,7 @@ import {
 } from "lodash-es";
 import { useHovering } from "~/mocks";
 import { JSXElement } from "solid-js";
+let adverbIndex = 0;
 
 export interface MetaPlan {
   plan: Plan;
@@ -189,11 +190,9 @@ class PlanConsumer {
     });
   }
 
-  adverbIndex = 0;
-
   nextAdverb(): string {
     const adverbs = ["typically", "generally", "usually", "often"];
-    return adverbs[this.adverbIndex++ % adverbs.length];
+    return adverbs[adverbIndex++ % adverbs.length];
   }
 
   consume<T extends MetaPlan | MetaPlan[]>(plan: T): T {
