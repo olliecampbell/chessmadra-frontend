@@ -1,28 +1,29 @@
-
-
-export const Spacer = ({
-  width = null as number | null,
-  height = null as number | null,
-  block = false,
-  grow = false,
-  style = {},
-  isMobile = null,
+export const Spacer = (props: {
+  width?: number | null;
+  height?: number | null;
+  block?: boolean;
+  grow?: boolean;
+  style?: any;
+  isMobile?: boolean;
 }) => {
-  const styles: any = { "flex-grow": grow ? 1 : 0, ...style };
-  if (block) {
-    styles.display = "block";
-  }
-  if (isMobile === true) {
-    styles.height = `${height}px`;
-  }
-  if (isMobile === false) {
-    styles.width = `${width}px`;
-  }
-  if (height) {
-    styles.height = `${height}px`;
-  }
-  if (width) {
-    styles.width = `${width}px`;
-  }
-  return <div style={styles}></div>;
+  const _styles = () => {
+    const styles: any = { "flex-grow": props.grow ? 1 : 0, ...props.style };
+    if (props.block) {
+      styles.display = "block";
+    }
+    if (props.isMobile === true) {
+      styles.height = `${props.height}px`;
+    }
+    if (props.isMobile === false) {
+      styles.width = `${props.width}px`;
+    }
+    if (props.height) {
+      styles.height = `${props.height}px`;
+    }
+    if (props.width) {
+      styles.width = `${props.width}px`;
+    }
+    return styles;
+  };
+  return <div style={_styles()}></div>;
 };
