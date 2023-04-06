@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import devtools from "solid-devtools/vite";
 import UnoCSS from "unocss/vite";
-import { presetUno, presetAttributify } from "unocss";
+import { presetUno, presetAttributify, presetTagify } from "unocss";
 import { grays, colors as allShades } from "./src/utils/styles";
 const colorMapping = {
   gray: "grays",
@@ -50,7 +50,7 @@ const unoConfig = {
     ["text-secondary"]: "text-gray-80",
     ["text-tertiary"]: "text-gray-50",
   },
-  presets: [presetUno(), presetAttributify()],
+  presets: [presetUno(), presetAttributify(), presetTagify()],
 };
 
 // const plugins = [];

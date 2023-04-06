@@ -112,7 +112,9 @@ export const RepertoireOverview = (props: {}) => {
           trackEvent("side_overview.start_review");
           s.repertoireState.animateChessboardShown(true, responsive, () => {
             quick((s) => {
-              s.repertoireState.reviewState.startReview(side, { side });
+              s.repertoireState.reviewState.startReview(side(), {
+                side: side(),
+              });
             });
           });
         });
@@ -130,7 +132,7 @@ export const RepertoireOverview = (props: {}) => {
           s.repertoireState.animateChessboardShown(true, responsive, () => {
             quick((s) => {
               s.repertoireState.reviewState.startReview(side(), {
-                side,
+                side: side(),
                 cram: true,
               });
             });

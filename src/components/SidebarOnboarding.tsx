@@ -16,7 +16,7 @@ import { CMTextInput } from "./CMTextInput";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { Component, createEffect, createSignal } from "solid-js";
+import { Component, createEffect, createSignal, Match, Switch } from "solid-js";
 import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
@@ -27,28 +27,38 @@ export const SidebarOnboarding = function SidebarOnboarding() {
   ]);
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
-  const inner = () => {
-    const stage = last(onboardingState().stageStack);
 
-    let _inner = null;
-    if (stage === SidebarOnboardingStage.Initial) {
-      _inner = <OnboardingIntro />;
-    } else if (stage === SidebarOnboardingStage.ConnectAccount) {
-      _inner = <ConnectAccountOnboarding />;
-    } else if (stage === SidebarOnboardingStage.SetRating) {
-      _inner = <SetRatingOnboarding />;
-    } else if (stage === SidebarOnboardingStage.AskAboutExistingRepertoire) {
-      _inner = <AskAboutExistingRepertoireOnboarding />;
-    } else if (stage === SidebarOnboardingStage.ChooseImportSource) {
-      _inner = <ChooseImportSourceOnboarding />;
-    } else if (stage === SidebarOnboardingStage.Import) {
-      _inner = <ImportOnboarding />;
-    } else if (stage === SidebarOnboardingStage.TrimRepertoire) {
-      _inner = <TrimRepertoireOnboarding />;
-    }
-    return _inner;
-  };
-  return <div style={s(c.column)}>{inner()}</div>;
+  const stage = last(onboardingState().stageStack);
+
+  return (
+    <div style={s(c.column)}>
+      <Switch>
+        <Match when={stage === SidebarOnboardingStage.Initial}>
+          <OnboardingIntro />
+        </Match>
+        <Match when={stage === SidebarOnboardingStage.ConnectAccount}>
+          <ConnectAccountOnboarding />
+        </Match>
+        <Match when={stage === SidebarOnboardingStage.SetRating}>
+          <SetRatingOnboarding />
+        </Match>
+        <Match
+          when={stage === SidebarOnboardingStage.AskAboutExistingRepertoire}
+        >
+          <AskAboutExistingRepertoireOnboarding />
+        </Match>
+        <Match when={stage === SidebarOnboardingStage.ChooseImportSource}>
+          <ChooseImportSourceOnboarding />
+        </Match>
+        <Match when={stage === SidebarOnboardingStage.Import}>
+          <ImportOnboarding />
+        </Match>
+        <Match when={stage === SidebarOnboardingStage.TrimRepertoire}>
+          <TrimRepertoireOnboarding />
+        </Match>
+      </Switch>
+    </div>
+  );
 };
 
 const OnboardingIntro = () => {
@@ -67,7 +77,7 @@ const OnboardingIntro = () => {
         <CMText style={s()}>This site will help you:</CMText>
         <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
           {bullets.map((bullet, i) => (
-            <div style={s(c.row, c.alignCenter, c.pl(12))} key={i}>
+            <div style={s(c.row, c.alignCenter, c.pl(12))}>
               <i
                 class="fas fa-circle"
                 style={s(c.fg(c.grays[60]), c.fontSize(5))}
@@ -535,7 +545,7 @@ const ImportOnboarding = () => {
   // });
   createEffect(() => {
     const input = pgnUploadRef();
-    console.log("creating change watcher thing");
+    console.log("creating change watcher thing", input);
     if (input) {
       input.addEventListener("change", async (e) => {
         console.log("file upload");
@@ -550,45 +560,6 @@ const ImportOnboarding = () => {
         e.preventDefault();
       });
     }
-  });
-
-  const { body, header, actions, bodyPadding } = destructure(() => {
-    const bodyPadding = true;
-    let header = null;
-    let actions = [];
-    let body = null;
-    if (importType() === SidebarOnboardingImportType.PGN) {
-      header = "Please upload your PGN file";
-      body = (
-        <div style={s(c.pt(20))}>
-          <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
-        </div>
-      );
-    }
-    if (importType() === SidebarOnboardingImportType.LichessUsername) {
-      header = "What's your lichess username?";
-      body = (
-        <div style={s(c.pt(20))}>
-          <CMTextInput
-            placeholder="username"
-            value={username()}
-            setValue={setUsername}
-            style={s(c.maxWidth(200))}
-          />
-        </div>
-      );
-      actions.push({
-        text: "Submit",
-        onPress: () => {
-          importFromLichessUsername();
-        },
-        style: "primary",
-      });
-    }
-    if (loading()) {
-      actions = [];
-    }
-    return { body, header, bodyPadding, actions };
   });
 
   const importFromPgn = (pgn) => {
@@ -616,7 +587,27 @@ const ImportOnboarding = () => {
     });
   };
 
-  return body;
+  return (
+    <Switch>
+      <Match when={importType() === SidebarOnboardingImportType.PGN}>
+        <div style={s(c.pt(20))}>
+          <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
+        </div>
+      </Match>
+      <Match
+        when={importType() === SidebarOnboardingImportType.LichessUsername}
+      >
+        <div style={s(c.pt(20))}>
+          <CMTextInput
+            placeholder="username"
+            value={username()}
+            setValue={setUsername}
+            style={s(c.maxWidth(200))}
+          />
+        </div>
+      </Match>
+    </Switch>
+  );
 };
 
 const TrimRepertoireOnboarding = () => {

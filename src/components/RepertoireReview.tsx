@@ -8,7 +8,7 @@ import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
-import { Accessor, Show } from "solid-js";
+import { Accessor, createEffect, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { RepertoireMove } from "~/utils/repertoire";
 
@@ -57,6 +57,9 @@ export const RepertoireReview = (props: {}) => {
       text: "View in repertoire builder",
     },
   ];
+  createEffect(() => {
+    console.log("current move", currentMove());
+  });
   return (
     <SidebarTemplate
       header={

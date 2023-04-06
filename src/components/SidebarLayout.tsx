@@ -26,19 +26,25 @@ import clsx from "clsx";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
-export const SidebarLayout = ({
-  shared,
-  mode,
-}: {
+export const SidebarLayout = (props: {
   shared?: boolean;
   mode: BrowsingMode;
 }) => {
-  // TODO solid
-  const chessboardFrozen = () => false;
   // let chessboardFrozen = sideBarMode === "overview" || sideBarMode === "home";
   // if (onboardingStack.length > 0 || showingPlans) {
   //   chessboardFrozen = true;
   // }
+  const [onboardingStack, showingPlans] = useSidebarState(([s]) => [
+    s.sidebarOnboardingState.stageStack,
+    s.showPlansState.visible,
+  ]);
+  let chessboardFrozen = () => {
+    let frozen = props.mode === "overview" || props.mode === "home";
+    if (onboardingStack.length > 0 || showingPlans()) {
+      frozen = true;
+    }
+    return frozen;
+  };
   const [chessboardShownAnim] = useBrowsingState(([s]) => [
     s.chessboardShownAnim,
   ]);
