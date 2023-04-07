@@ -20,6 +20,9 @@ interface PlayPgnOptions {
 }
 
 type GetFn<T> = (s: ChessboardViewState) => T;
+type MakeMoveOptions = {
+  animate?: boolean;
+};
 
 export interface ChessboardInterface {
   set: <T>(s: (s: ChessboardViewState) => T) => T | null;
@@ -28,7 +31,7 @@ export interface ChessboardInterface {
   getDelegate(): ChessboardDelegate | null;
   resetPosition: () => void;
   setPosition: (_: Chess) => void;
-  makeMove: (_: Move | string) => void;
+  makeMove: (_: Move | string, options?: MakeMoveOptions) => void;
   clearPending: () => void;
   backOne: () => void;
   getTurn: () => Side;
@@ -211,7 +214,7 @@ export const createChessboardInterface = (): [
         s.notifyingDelegates = false;
       });
     },
-    makeMove: (m: Move | string) => {
+    makeMove: (m: Move | string, options?: MakeMoveOptions) => {
       set((s) => {
         if (s._animatePosition) {
           s._animatePosition.move(m);
@@ -219,6 +222,19 @@ export const createChessboardInterface = (): [
         }
         chessboardInterface.clearPending();
         s.availableMoves = [];
+        if (options?.animate) {
+          console.log("animating");
+          let moveObject = m;
+          if (typeof m === "string") {
+            moveObject = s.position.move(m);
+          }
+          chessboardInterface.animatePieceMove(
+            moveObject,
+            PlaybackSpeed.Normal,
+            () => {}
+          );
+          return;
+        }
         let pos = s.position;
         let moveObject = pos.move(m);
         if (moveObject) {

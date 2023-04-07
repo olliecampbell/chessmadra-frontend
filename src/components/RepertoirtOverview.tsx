@@ -146,6 +146,7 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         trackEvent("side_overview.choose_line_to_practice");
         quick((s) => {
+          s.repertoireState.browsingState.moveSidebarState("right");
           startBrowsing("browse");
         });
       },
@@ -348,7 +349,7 @@ export const CoverageAndBar = (props: {
 
   return (
     <div style={s(c.row, c.alignCenter)}>
-      <CMText style={s(textStyles)}>
+      <CMText style={s(textStyles())}>
         {progressState().completed ? (
           <>Completed</>
         ) : (

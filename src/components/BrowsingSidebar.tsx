@@ -407,7 +407,10 @@ const BackSection = () => {
           c.px(c.getSidebarPadding(responsive))
         )}
       >
-        <CMText style={s(c.weightBold, c.fg(color()), c.row)}>
+        <CMText
+          style={s(c.weightBold, c.fg(color()), c.row)}
+          class="place-items-center"
+        >
           <i class="fa fa-arrow-left"></i>
           <Spacer width={8} />
           Back

@@ -104,7 +104,7 @@ export const getInitialReviewState = (
       trackEvent(`reviewing.reviewed_move`);
       set(([s, rs]) => {
         results.forEach((r, i) => {
-          rs.repertoire[r.side].positionResponses[r.epd].forEach(
+          rs.repertoire[r.side].positionResponses[r.epd]?.forEach(
             (m: RepertoireMove) => {
               if (m.sanPlus === r.sanPlus) {
                 m.needed = r.correct;
@@ -195,7 +195,7 @@ export const getInitialReviewState = (
         if (lastOpponentMove) {
           window.setTimeout(() => {
             set(([s]) => {
-              s.chessboard.makeMove(lastOpponentMove);
+              s.chessboard.makeMove(lastOpponentMove, { animate: true });
             });
           }, 300);
         }

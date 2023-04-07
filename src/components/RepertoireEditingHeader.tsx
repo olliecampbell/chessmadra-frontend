@@ -2,7 +2,7 @@ import { s, c } from "~/utils/styles";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 
-export const RepertoireEditingHeader = ({ children }: { children: any }) => {
+export const RepertoireEditingHeader = (props: { children: any }) => {
   const responsive = useResponsive();
   return (
     <CMText
@@ -14,7 +14,7 @@ export const RepertoireEditingHeader = ({ children }: { children: any }) => {
         c.weightBold
       )}
     >
-      {children}
+      {props.children}
     </CMText>
   );
 };

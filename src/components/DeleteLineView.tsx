@@ -7,13 +7,14 @@ import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
+import { For } from "solid-js";
 
 export const DeleteLineView = function DeleteLineView() {
   const responsive = useResponsive();
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [responses, deleting] = useRepertoireState((s) => [
-    s.repertoire[activeSide].positionResponses[
-      s.browsingState.chessboardState.getCurrentEpd()
+    s.repertoire?.[activeSide()].positionResponses[
+      s.browsingState.chessboard.getCurrentEpd()
     ],
     s.deleteMoveState.isDeletingMove,
   ]);
@@ -37,30 +38,34 @@ export const DeleteLineView = function DeleteLineView() {
       </div>
       <Spacer height={24} />
       <div style={s(c.gridColumn({ gap: 12 }))}>
-        {responses.map((response) => (
-          <SidebarFullWidthButton
-            action={{
-              onPress: () => {
-                if (deleting) {
-                  return;
-                }
-                quick((s) => {
-                  s.repertoireState.deleteMove(response).then(() => {
-                    quick((s) => {
-                      s.repertoireState.browsingState.moveSidebarState("left");
-                      s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
-                        false;
+        <For each={responses()}>
+          {(response) => (
+            <SidebarFullWidthButton
+              action={{
+                onPress: () => {
+                  if (deleting()) {
+                    return;
+                  }
+                  quick((s) => {
+                    s.repertoireState.deleteMove(response).then(() => {
+                      quick((s) => {
+                        s.repertoireState.browsingState.moveSidebarState(
+                          "left"
+                        );
+                        s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
+                          false;
+                      });
                     });
                   });
-                });
-              },
-              style: "primary",
-              text: multiple
-                ? `Delete ${response.sanPlus} and subsequent moves`
-                : `Yes I'm sure, delete ${response.sanPlus}`,
-            }}
-          />
-        ))}
+                },
+                style: "primary",
+                text: multiple
+                  ? `Delete ${response.sanPlus} and subsequent moves`
+                  : `Yes I'm sure, delete ${response.sanPlus}`,
+              }}
+            />
+          )}
+        </For>
         <SidebarFullWidthButton
           action={{
             onPress: () => {
