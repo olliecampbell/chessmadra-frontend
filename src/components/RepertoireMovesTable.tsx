@@ -41,6 +41,7 @@ import {
   For,
   Show,
   onMount,
+  createEffect,
 } from "solid-js";
 import { Pressable } from "./Pressable";
 import { destructure } from "@solid-primitives/destructure";
@@ -142,12 +143,6 @@ export const RepertoireMovesTable = ({
         }) as TableResponse[];
         const numTruncated = responses().length - trimmedResponses.length;
         const truncated = numTruncated > 0;
-        console.log(
-          "numTruncated",
-          responses().length,
-          numTruncated,
-          truncated
-        );
         // console.log("returning sections", sections);
         return {
           trimmedResponses,
@@ -191,14 +186,17 @@ export const RepertoireMovesTable = ({
     };
   };
   let includeOpeningName = false;
-  const openingNames = () =>
+  const openingNames = createMemo(() =>
     reverse(
       map(reverse(cloneDeep(trimmedResponses())), (tr) => {
         const newOpeningName = null;
         const [currentOpeningName, currentVariations] = currentEcoCode()
           ? getAppropriateEcoName(currentEcoCode()?.fullName)
           : [];
-        const nextEcoCode = ecoCodeLookup[tr.suggestedMove?.epdAfter];
+        console.log("currentOpeningName", currentOpeningName);
+        console.log("eco code", currentEcoCode());
+        const nextEcoCode = ecoCodeLookup()[tr.suggestedMove?.epdAfter];
+        console.log("nextEcoCode", nextEcoCode, tr.suggestedMove?.epdAfter);
         if (nextEcoCode) {
           const [name, variations] = getAppropriateEcoName(
             nextEcoCode.fullName
@@ -221,7 +219,11 @@ export const RepertoireMovesTable = ({
           }
         }
       })
-    );
+    )
+  );
+  createEffect(() => {
+    console.log("opening names", openingNames());
+  });
   return (
     <div style={s(c.column)}>
       <Show when={header()}>
@@ -347,7 +349,7 @@ export const RepertoireMovesTable = ({
             <Pressable
               style={s(c.pb(2))}
               onPress={() => {
-                trackEvent(`${mode}.moves_table.delete_move`);
+                trackEvent(`${mode()}.moves_table.delete_move`);
                 quick((s) => {
                   s.repertoireState.browsingState.moveSidebarState("right");
                   s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
@@ -580,7 +582,7 @@ const Response = ({
           <Pressable
             onPress={() => {
               quick((s) => {
-                trackEvent(`${mode}.moves_table.select_move`);
+                trackEvent(`${mode()}.moves_table.select_move`);
                 s.repertoireState.browsingState.moveSidebarState("right");
                 // If has transposition tag, quick make transposition state visible on browser state
 

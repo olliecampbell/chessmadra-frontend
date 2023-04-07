@@ -1,27 +1,16 @@
+import clsx from "clsx";
 import { c, s } from "~/utils/styles";
 
 export const CMText = (props) => {
   return (
     <p
-      class={props.class ?? ""}
+      class={clsx(
+        props.class,
+        "white text-14px text-secondary inline whitespace-pre-wrap break-words font-normal "
+      )}
       {...{
         props,
-        style: s(
-          {
-            display: "inline",
-            "list-style": "none",
-            margin: "0px",
-            padding: "0px",
-            "text-align": "inherit",
-            "text-decoration": "none",
-            "white-space": "pre-wrap",
-            "overflow-wrap": "break-word",
-          },
-          c.fontSize(14),
-          c.weightRegular,
-          c.fg(c.colors.textSecondary),
-          props.style
-        ),
+        style: props.style,
       }}
     >
       {props.children}

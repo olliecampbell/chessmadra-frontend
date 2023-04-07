@@ -320,13 +320,6 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
     return { completed, progress };
   });
   const inProgressColor = () => (progress() < 20 ? c.reds[65] : c.oranges[65]);
-  createEffect(() => {
-    console.log(
-      "progress",
-      props.tableResponse.suggestedMove?.sanPlus,
-      progress()
-    );
-  });
   return (
     <div style={s(c.column, c.fullWidth)}>
       <div

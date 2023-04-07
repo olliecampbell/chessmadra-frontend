@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isNil, sortBy } from "lodash-es";
+import { isNil, sortBy, filter, range } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
 import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
@@ -11,6 +11,7 @@ import { SidebarAction } from "./SidebarActions";
 import { Accessor, createEffect, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { RepertoireMove } from "~/utils/repertoire";
+import clsx from "clsx";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -26,6 +27,9 @@ export const RepertoireReview = (props: {}) => {
     s.repertoire === undefined,
     s.reviewState.showNext,
   ]);
+  createEffect(() => {
+    console.log("current move", currentMove());
+  });
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const actions: Accessor<SidebarAction[]> = () => [
     {
@@ -60,6 +64,12 @@ export const RepertoireReview = (props: {}) => {
   createEffect(() => {
     console.log("current move", currentMove());
   });
+  const num = () => currentMove()?.moves.length ?? 0;
+  const numCompleted = () =>
+    filter(
+      currentMove()?.moves,
+      (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus])
+    ).length;
   return (
     <SidebarTemplate
       header={
@@ -72,7 +82,7 @@ export const RepertoireReview = (props: {}) => {
       actions={actions()}
       bodyPadding={true}
     >
-      <Show when={currentMove()?.moves?.length > 1}>
+      <Show when={num() > 1}>
         <>
           <div
             style={s(
@@ -85,30 +95,31 @@ export const RepertoireReview = (props: {}) => {
               c.border(`1px solid ${c.grays[20]}`)
             )}
           >
+            {(() => {
+              console.log("this gets re-rendered");
+              return null;
+            })()}
             <Intersperse
-              each={() =>
-                sortBy(currentMove()?.moves, (m) =>
-                  isNil(completedReviewPositionMoves()?.[m.sanPlus])
-                )
-              }
+              each={() => range(num())}
               separator={() => {
                 return (
                   <div
-                    style={s(c.width(1), c.bg(c.grays[20]), c.fullHeight)}
+                    class={clsx("bg-gray-20 w-0.5")}
+                    style={s(c.fullHeight)}
                   ></div>
                 );
               }}
             >
-              {(x: RepertoireMove) => {
-                const hasCompleted = !isNil(
-                  completedReviewPositionMoves()?.[x.sanPlus]
-                );
+              {(x: number) => {
+                const hasCompleted = () => x < numCompleted();
+                console.log("re-rendering", x, numCompleted(), hasCompleted());
                 return (
                   <div
-                    style={s(
-                      hasCompleted ? c.bg(c.grays[80]) : c.bg(c.grays[10]),
-                      c.grow
+                    class={clsx(
+                      hasCompleted() ? "bg-gray-80" : "bg-gray-40",
+                      "transition-colors"
                     )}
+                    style={s(c.grow)}
                   ></div>
                 );
               }}

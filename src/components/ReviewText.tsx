@@ -34,7 +34,7 @@ export const ReviewText = ({
   const prefix = overview ? `Next review in` : `Due in`;
   if (diff < 0) {
     color = inverse ? c.oranges[30] : c.oranges[70];
-    dueString = `${numMovesDueFromHere} Due`;
+    dueString = `${numMovesDueFromHere.toLocaleString()} Due`;
   } else if (minutes < 60) {
     dueString = `${prefix} ${pluralize(Math.round(minutes), "minute")}`;
   } else if (hours < 24) {

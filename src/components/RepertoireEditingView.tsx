@@ -16,6 +16,7 @@ import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
 import { createEffect, createMemo, Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
+import { Puff } from "solid-spinner";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 const desktopHeaderStyles = s(
@@ -91,6 +92,11 @@ export const Responses = function Responses() {
     }
     return { prepareForHeader, reviewHeader };
   });
+  const header = () => {
+    return (
+      reviewHeader() ?? getResponsesHeader(currentLine(), yourMoves().length)
+    );
+  };
   return (
     <div style={s(c.column, c.constrainWidth)}>
       <Show when={positionReport()}>
@@ -99,9 +105,7 @@ export const Responses = function Responses() {
             <div style={s()} key={`your-moves-play-${currentEpd}`}>
               <RepertoireMovesTable
                 {...{
-                  header: () =>
-                    reviewHeader() ??
-                    getResponsesHeader(currentLine(), !isEmpty(yourMoves())),
+                  header: header,
                   usePeerRates,
                   activeSide,
                   side: currentSide,
@@ -114,9 +118,7 @@ export const Responses = function Responses() {
             <div style={s()} key={`choose-next-move-${currentEpd}`}>
               <RepertoireMovesTable
                 {...{
-                  header: () =>
-                    reviewHeader() ??
-                    getResponsesHeader(currentLine(), !isEmpty(yourMoves())),
+                  header: header,
                   usePeerRates,
                   activeSide,
                   side: currentSide,
@@ -146,7 +148,7 @@ export const Responses = function Responses() {
           {!isEmpty(prepareFor()) && (
             <RepertoireMovesTable
               {...{
-                header: () => reviewHeader() ?? prepareForHeader(),
+                header: header,
                 usePeerRates,
                 body: body,
                 activeSide,
@@ -163,7 +165,7 @@ export const Responses = function Responses() {
         if (!positionReport()) {
           return (
             <div style={s(c.center, c.column, c.py(48))}>
-              <div>todo: solid</div>
+              <Puff color={c.primaries[60]} />
             </div>
           );
         } else if (
@@ -218,10 +220,16 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   return false;
 };
 
-function getResponsesHeader(currentLine: string[], hasMove?: boolean): string {
+function getResponsesHeader(currentLine: string[], myMoves?: number): string {
+  const hasMove = myMoves;
+  console.log("my moves", myMoves);
   // TODO: account for multiple moves, "These moves are"
-  if (hasMove && !isEmpty(currentLine)) {
-    return "This move is in your repertoire";
+  if (myMoves) {
+    if (myMoves == 1) {
+      return "This move is in your repertoire";
+    } else {
+      return "These moves are in your repertoire";
+    }
   }
   if (!hasMove && isEmpty(currentLine)) {
     return "Which first move do you play as white?";
