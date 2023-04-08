@@ -219,15 +219,7 @@ export const getInitialReviewState = (
           s.failedReviewPositionMoves[move.sanPlus] = move;
         });
         s.showNext = true;
-        s.chessboard.animatePieceMove(
-          moveObj,
-          PlaybackSpeed.Normal,
-          (completed) => {
-            set(([s]) => {
-              s.showNext = true;
-            });
-          }
-        );
+        s.chessboard.makeMove(moveObj, { animate: true });
       }, "giveUp"),
     stopReviewing: () =>
       set(([s, rs]) => {

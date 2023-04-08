@@ -7,7 +7,16 @@ import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getSquareOffset, START_EPD } from "../../utils/chess";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
-import { first, forEach, isEmpty, isEqual, isNil, last } from "lodash-es";
+import {
+  cloneDeep,
+  find,
+  first,
+  forEach,
+  isEmpty,
+  isEqual,
+  isNil,
+  last,
+} from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import { getAppState, quick } from "~/utils/app_state";
 import { BoardTheme, BOARD_THEMES_BY_ID, PieceSetId } from "~/utils/theming";
@@ -25,7 +34,7 @@ import { Motion } from "@motionone/solid";
 import { times } from "~/utils/times";
 import { createElementBounds, NullableBounds } from "@solid-primitives/bounds";
 import { destructure } from "@solid-primitives/destructure";
-import { createStore, produce, Store } from "solid-js/store";
+import { createStore, produce, Store, unwrap } from "solid-js/store";
 import {
   ChessboardInterface,
   ChessboardViewState,
@@ -33,7 +42,15 @@ import {
 import anime from "animejs";
 import { createChessProxy } from "~/utils/chess_proxy";
 import { pgnToLine, toSide } from "~/utils/repertoire";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
+
+export const EMPTY_DRAG = {
+  square: null,
+  enoughToDrag: false,
+  x: 0,
+  y: 0,
+  transform: { x: 0, y: 0 },
+};
 
 export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
   switch (ps) {
@@ -126,6 +143,13 @@ export function ChessboardView(props: {
 
   const pos = () =>
     chessboardStore()._animatePosition ?? chessboardStore().position;
+  createEffect(() => {
+    console.log(
+      "POS EFFECT",
+      pos()?.ascii(),
+      chessboardStore()._animatePosition
+    );
+  });
   hasAnimateStarted = false;
 
   // onMount(() => {
@@ -192,8 +216,7 @@ export function ChessboardView(props: {
   // const pan: Accessor<{ square: Square | null } & XY> = createSignal({
   //   square: null,
   // });
-  const [tapTimeout, setTapTimeout] = createSignal(null as number | null);
-  const [isTap, setIsTap] = createSignal(null as boolean | null);
+  const [tapAction, setTapAction] = createSignal(null as (() => void) | null);
   let tapSelectedSquare = false;
   const [chessboardContainerRef, setChessboardContainerRef] =
     createSignal(null);
@@ -216,6 +239,7 @@ export function ChessboardView(props: {
   };
   const frozen = () => chessboardStore().frozen;
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
+    console.log("frozen?", frozen());
     if (frozen()) return;
     const tap = getTapOffset(evt, chessboardLayout);
     const [square, centerX, centerY] = getSquareFromLayoutAndGesture(
@@ -223,8 +247,39 @@ export function ChessboardView(props: {
       tap
     );
     const piece = props.chessboardInterface.get((s) => s.position.get(square));
+    console.log("----", drag().square, square, piece);
+    let availableMove = find(
+      chessboardStore().availableMoves,
+      (m) => m.to == square
+    );
+    if (availableMove) {
+      console.log("there was an available move", availableMove);
+      setTapAction(() => () => {
+        props.chessboardInterface.requestToMakeMove(availableMove as Move, {
+          animate: true,
+        });
+      });
+    } else if (chessboardStore().activeFromSquare == square || !piece) {
+      console.log(
+        "should clear if tap, active square is",
+        chessboardStore().activeFromSquare
+      );
+      setTapAction(() => () => {
+        console.log("clear pending because this was the active from square");
+        props.chessboardInterface.clearPending();
+      });
+    } else {
+      setTapAction(() => () => {
+        console.log("this tap does nothing");
+      });
+    }
+    window.setTimeout(() => {
+      setTapAction(null);
+    }, 100);
     const turn = props.chessboardInterface.getTurn();
-    if (!piece?.color || toSide(piece.color) !== turn) return;
+    if (!piece?.color || toSide(piece.color) !== turn) {
+      return;
+    }
     props.chessboardInterface.set((store) => {
       const drag = store.drag;
       drag.square = square;
@@ -246,26 +301,15 @@ export function ChessboardView(props: {
         tapSelectedSquare = false;
       }
     });
-
-    setIsTap(true);
-    setTapTimeout(
-      window.setTimeout(() => {
-        setIsTap(false);
-      }, 100)
-    );
   };
   createEffect(() => {
     // console.log("availableMoves", logProxy(availableMoves()));
   });
+  // interaction/mouse stuff
   const onMouseOut = (evt: MouseEvent | TouchEvent) => {
+    console.log("mouse out");
     props.chessboardInterface.set((store) => {
-      store.drag = {
-        square: null,
-        enoughToDrag: false,
-        x: 0,
-        y: 0,
-        transform: { x: 0, y: 0 },
-      };
+      store.drag = cloneDeep(EMPTY_DRAG);
       store.draggedOverSquare = undefined;
     });
   };
@@ -316,33 +360,27 @@ export function ChessboardView(props: {
   };
   const onMouseUp = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
-    const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, drag());
 
-    if (isTap()) {
-      console.log("tap", chessboardStore().activeFromSquare);
-      if (
-        newSquare === chessboardStore().activeFromSquare &&
-        !tapSelectedSquare
-      ) {
-        props.chessboardInterface.set((s) => {
-          s.availableMoves = [];
-          s.activeFromSquare = undefined;
-        });
-      }
-      // props.state.onSquarePress(drag().square, false);
-      // if (stateRef.current.activeFromSquare) {
-      // }
+    if (tapAction()) {
+      tapAction()?.();
     } else {
-      props.chessboardInterface.onSquarePress(newSquare, true);
+      const [newSquare] = getSquareFromLayoutAndGesture(
+        chessboardLayout,
+        drag()
+      );
+
+      let availableMove = find(
+        chessboardStore().availableMoves,
+        (m) => m.to == newSquare
+      );
+      if (availableMove) {
+        props.chessboardInterface.requestToMakeMove(availableMove as Move);
+      } else {
+        props.chessboardInterface.clearPending();
+      }
     }
     props.chessboardInterface.set((s) => {
-      s.drag = {
-        square: null,
-        enoughToDrag: false,
-        x: 0,
-        y: 0,
-        transform: { x: 0, y: 0 },
-      };
+      s.drag = cloneDeep(EMPTY_DRAG);
     });
   };
 

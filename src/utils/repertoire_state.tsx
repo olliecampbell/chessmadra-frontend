@@ -835,6 +835,11 @@ export const getInitialRepertoireState = (
         if (mode === "overview" || mode === "home") {
           s.browsingState.chessboard.resetPosition();
         }
+        s.browsingState.sidebarState.showPlansState = {
+          visible: false,
+          coverageReached: false,
+          hasShown: false,
+        };
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
         s.browsingState.sidebarState.mode = mode;
         s.browsingState.sidebarState.activeSide = side;
@@ -851,11 +856,6 @@ export const getInitialRepertoireState = (
           //   SidebarOnboardingStage.AskAboutExistingRepertoire,
           // ];
         } else if (mode === "browse" || mode === "build") {
-          s.browsingState.sidebarState.showPlansState = {
-            visible: false,
-            coverageReached: false,
-            hasShown: false,
-          };
           s.browsingState.chessboardShownAnim = 1;
           if (s.browsingState.sidebarState.activeSide === "white") {
             const startResponses =

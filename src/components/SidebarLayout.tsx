@@ -22,7 +22,7 @@ import { Spacer } from "~/components/Space";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -41,6 +41,7 @@ export const SidebarLayout = (props: {
   let chessboardFrozen = () => {
     let frozen = props.mode === "overview" || props.mode === "home";
     if (onboardingStack.length > 0 || showingPlans()) {
+      console.log("chessboardFrozen");
       frozen = true;
     }
     return frozen;
