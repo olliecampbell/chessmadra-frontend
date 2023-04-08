@@ -11,7 +11,7 @@ import { SidebarAction } from "./SidebarActions";
 import { Accessor, createEffect, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { RepertoireMove } from "~/utils/repertoire";
-import clsx from "clsx";
+import {clsx} from "~/utils/classes"
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();

@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import {clsx} from "~/utils/classes"
 import { c, s } from "~/utils/styles";
 
 export const CMText = (props) => {

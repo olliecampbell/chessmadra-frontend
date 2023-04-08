@@ -46,6 +46,7 @@ import {
 import { Pressable } from "./Pressable";
 import { destructure } from "@solid-primitives/destructure";
 import { Intersperse } from "./Intersperse";
+import { clsx } from "~/utils/classes";
 
 const DELETE_WIDTH = 30;
 
@@ -167,6 +168,7 @@ export const RepertoireMovesTable = ({
     referenceEquality: true,
   });
   const onMoveRender = (sanPlus, e) => {
+    console.log("onMoveRender", sanPlus, e);
     if (isNil(e)) {
       // TODO: better deletion, decrease widths
       widths[sanPlus] = null;
@@ -174,9 +176,11 @@ export const RepertoireMovesTable = ({
     }
     const width = e.getBoundingClientRect().width;
     widths[sanPlus] = width;
+    console.log("width", width, e.getBoundingClientRect());
     if (width > moveMaxWidth()) {
       setMoveMaxWidth(width);
     }
+    console.log("max width", moveMaxWidth());
   };
   const tableMeta: Accessor<TableMeta> = () => {
     return {
@@ -268,23 +272,20 @@ export const RepertoireMovesTable = ({
           )}
         >
           {(tableResponse, i) => {
-            const openingName = () => openingNames()[i()];
+            const openingName = () => openingNames()[i];
             return (
               <Response
-                openingName={openingName}
-                tableMeta={tableMeta}
-                hideAnnotations={hideAnnotations}
-                myTurn={myTurn}
-                anyMine={anyMine}
-                sections={sections}
-                editing={editingAnnotations}
-                key={
-                  tableResponse.repertoireMove?.sanPlus ||
-                  tableResponse.suggestedMove?.sanPlus
-                }
-                tableResponse={() => tableResponse}
-                moveMinWidth={moveMaxWidth}
+                openingName={openingName()}
+                tableMeta={tableMeta()}
+                hideAnnotations={hideAnnotations()}
+                myTurn={myTurn()}
+                anyMine={anyMine()}
+                sections={sections()}
+                editing={editingAnnotations()}
+                tableResponse={tableResponse}
+                moveMinWidth={moveMaxWidth()}
                 moveRef={(e) => {
+                  console.log("e", e);
                   onMoveRender(
                     tableResponse.suggestedMove?.sanPlus ||
                       tableResponse.repertoireMove?.sanPlus,
@@ -307,11 +308,8 @@ export const RepertoireMovesTable = ({
             }}
           >
             <CMText
-              style={s(
-                c.fontSize(12),
-                c.fg(c.colors.textTertiary),
-                c.weightSemiBold
-              )}
+              class="text-tertiary hover:text-secondary transition-colors"
+              style={s(c.fontSize(12), c.weightSemiBold)}
             >
               Show more moves
             </CMText>
@@ -375,31 +373,19 @@ export const RepertoireMovesTable = ({
   );
 };
 
-const Response = ({
-  tableResponse,
-  sections,
-  anyMine,
-  hideAnnotations,
-  myTurn,
-  editing,
-  moveMinWidth,
-  moveRef,
-  tableMeta,
-  openingName,
-}: {
-  tableResponse: Accessor<TableResponse>;
-  anyMine: Accessor<boolean>;
-  hideAnnotations: Accessor<boolean>;
-  sections: Accessor<any[]>;
-  myTurn: Accessor<boolean>;
-  moveMinWidth: Accessor<number>;
-  moveRef: Accessor<any>;
-  openingName: Accessor<string | undefined>;
-  editing: Accessor<boolean>;
-  tableMeta: Accessor<TableMeta>;
+const Response = (props: {
+  tableResponse: TableResponse;
+  anyMine: boolean;
+  hideAnnotations: boolean;
+  sections: any[];
+  myTurn: boolean;
+  moveMinWidth: number;
+  moveRef: any;
+  openingName: string | undefined;
+  editing: boolean;
+  tableMeta: TableMeta;
 }) => {
   const debugUi = useDebugState((s) => s.debugUi);
-  const { hovering, hoveringProps } = useHovering();
   const [currentEpd, activeSide] = useSidebarState(([s]) => [
     s.currentEpd,
     s.activeSide,
@@ -407,13 +393,21 @@ const Response = ({
   const [positionReport] = useBrowsingState(([s, rs]) => [
     rs.positionReports?.[activeSide()]?.[currentEpd()],
   ]);
+  const [moveWidthRef, setMoveWidthRef] = createSignal(
+    null as HTMLElement | null
+  );
+  onMount(() => {
+    if (moveWidthRef) {
+      props.moveRef(moveWidthRef());
+    }
+  });
 
   const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
     rs.numMovesDueFromEpd[activeSide()][
-      tableResponse().repertoireMove?.epdAfter
+      props.tableResponse.repertoireMove?.epdAfter
     ],
     rs.earliestReviewDueFromEpd[activeSide()][
-      tableResponse().repertoireMove?.epdAfter
+      props.tableResponse.repertoireMove?.epdAfter
     ],
   ]);
   const [currentLine, currentSide] = useSidebarState(([s, rs]) => [
@@ -423,10 +417,10 @@ const Response = ({
   const isMobile = useIsMobile();
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const sanPlus = () =>
-    tableResponse().suggestedMove?.sanPlus ??
-    tableResponse()?.repertoireMove?.sanPlus;
-  const mine = () => tableResponse().repertoireMove?.mine;
-  const moveRating = () => tableResponse().moveRating;
+    props.tableResponse.suggestedMove?.sanPlus ??
+    props.tableResponse?.repertoireMove?.sanPlus;
+  const mine = () => props.tableResponse.repertoireMove?.mine;
+  const moveRating = () => props.tableResponse.moveRating;
 
   const responsive = useResponsive();
   const { hoveringProps: responseHoverProps, hovering: hoveringRow } =
@@ -444,15 +438,15 @@ const Response = ({
     );
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const annotation = () => {
-    if (hideAnnotations()) {
+    if (props.hideAnnotations) {
       return null;
     }
-    return renderAnnotation(tableResponse().suggestedMove?.annotation);
+    return renderAnnotation(props.tableResponse.suggestedMove?.annotation);
   };
   const tags = () => {
     const tags = [];
     // newOpeningName = nextEcoCode?.fullName;
-    if (moveHasTag(tableResponse(), MoveTag.BestMove)) {
+    if (moveHasTag(props.tableResponse, MoveTag.BestMove)) {
       tags.push(
         <MoveTagView
           text="Clear best move"
@@ -461,7 +455,7 @@ const Response = ({
         />
       );
     }
-    if (moveHasTag(tableResponse(), MoveTag.Transposes)) {
+    if (moveHasTag(props.tableResponse, MoveTag.Transposes)) {
       tags.push(
         <MoveTagView
           text="Transposes to your repertoire"
@@ -470,7 +464,7 @@ const Response = ({
         />
       );
     }
-    if (moveHasTag(tableResponse(), MoveTag.TheoryHeavy)) {
+    if (moveHasTag(props.tableResponse, MoveTag.TheoryHeavy)) {
       tags.push(
         <MoveTagView
           text="Warning: heavy theory"
@@ -479,7 +473,7 @@ const Response = ({
         />
       );
     }
-    if (moveHasTag(tableResponse(), MoveTag.RareDangerous)) {
+    if (moveHasTag(props.tableResponse, MoveTag.RareDangerous)) {
       tags.push(
         <MoveTagView
           text="Rare but dangerous"
@@ -488,7 +482,7 @@ const Response = ({
         />
       );
     }
-    if (moveHasTag(tableResponse(), MoveTag.CommonMistake)) {
+    if (moveHasTag(props.tableResponse, MoveTag.CommonMistake)) {
       tags.push(
         <MoveTagView
           text="Common mistake"
@@ -501,7 +495,7 @@ const Response = ({
   };
 
   const hasInlineAnnotationOrOpeningName = () =>
-    openingName() || (!isMobile && annotation());
+    props.openingName || (!isMobile && annotation());
 
   const tagsRow = () =>
     !isEmpty(tags()) && (
@@ -518,7 +512,7 @@ const Response = ({
     );
   return (
     <>
-      <Show when={editing()}>
+      <Show when={props.editing}>
         <div style={s(c.row, c.alignCenter)}>
           <Pressable
             onPress={() => {}}
@@ -563,7 +557,9 @@ const Response = ({
               </CMText>
             </div>
             <AnnotationEditor
-              annotation={() => tableResponse().suggestedMove?.annotation ?? ""}
+              annotation={() =>
+                props.tableResponse.suggestedMove?.annotation ?? ""
+              }
               onUpdate={(annotation) => {
                 quick((s) => {
                   s.repertoireState.uploadMoveAnnotation({
@@ -577,7 +573,7 @@ const Response = ({
           </Pressable>
         </div>
       </Show>
-      <Show when={!editing()}>
+      <Show when={!props.editing}>
         <div style={s(c.row, c.alignStart)} {...responseHoverProps}>
           <Pressable
             onPress={() => {
@@ -586,13 +582,15 @@ const Response = ({
                 s.repertoireState.browsingState.moveSidebarState("right");
                 // If has transposition tag, quick make transposition state visible on browser state
 
-                if (tableResponse().transposes) {
+                if (props.tableResponse.transposes) {
                   s.repertoireState.browsingState.chessboard.makeMove(
                     sanPlus()
                   );
                   s.repertoireState.browsingState.sidebarState.transposedState.visible =
                     true;
-                  s.repertoireState.browsingState.chessboard.showPlans = true;
+                  s.repertoireState.browsingState.chessboard.set((s) => {
+                    s.showPlans = true;
+                  });
                 } else {
                   s.repertoireState.browsingState.chessboard.makeMove(
                     sanPlus()
@@ -600,6 +598,7 @@ const Response = ({
                 }
               });
             }}
+            class={clsx("hover:bg-gray-18 transition-colors")}
             style={s(
               c.grow,
               c.flexible,
@@ -608,7 +607,6 @@ const Response = ({
 
               c.px(c.getSidebarPadding(responsive)),
               c.py(12),
-              hoveringRow() && c.bg(c.grays[18]),
 
               // mine && c.border(`2px solid ${c.purples[60]}`),
               c.clickable,
@@ -618,11 +616,11 @@ const Response = ({
             <div style={s(c.column, c.grow, c.constrainWidth)}>
               <div style={s(c.row, c.fullWidth, c.alignStart)}>
                 <div style={s(c.row, c.alignCenter)}>
-                  <div style={s(c.minWidth(moveMinWidth))}>
+                  <div style={s(c.minWidth(props.moveMinWidth))}>
                     <div
                       style={s(c.row, c.alignCenter)}
                       ref={(e) => {
-                        moveRef(e);
+                        setMoveWidthRef(e);
                       }}
                     >
                       <CMText
@@ -653,7 +651,7 @@ const Response = ({
                       {!isNil(moveRating()) && (
                         <>
                           <Spacer width={4} />
-                          {() => getMoveRatingIcon(moveRating())}
+                          {() => getMoveRatingIcon(props.moveRating)}
                         </>
                       )}
                     </div>
@@ -678,9 +676,9 @@ const Response = ({
                       c.lineHeight("1.3rem")
                     )}
                   >
-                    {openingName() && (
+                    {props.openingName && (
                       <>
-                        <b>{openingName()}</b>
+                        <b>{props.openingName}</b>
                         {!isMobile && annotation() && (
                           <>
                             . <Spacer width={2} />
@@ -705,7 +703,7 @@ const Response = ({
                     separator={() => {
                       return <Spacer width={getSpaceBetweenStats(isMobile)} />;
                     }}
-                    each={sections}
+                    each={() => props.sections}
                   >
                     {(section) => (
                       <div
@@ -719,11 +717,11 @@ const Response = ({
                         {section.content({
                           numMovesDueFromHere,
                           earliestDueDate,
-                          suggestedMove: tableResponse().suggestedMove,
+                          suggestedMove: props.tableResponse.suggestedMove,
                           positionReport: positionReport(),
-                          tableResponse: tableResponse(),
+                          tableResponse: props.tableResponse,
                           side: currentSide,
-                          tableMeta,
+                          tableMeta: props.tableMeta,
                         })}
                       </div>
                     )}

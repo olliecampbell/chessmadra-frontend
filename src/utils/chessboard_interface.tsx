@@ -1,5 +1,5 @@
 import { Chess, Move } from "@lubert/chess.ts";
-import { Square } from "@lubert/chess.ts/dist/types";
+import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import anime from "animejs";
 import { first, isEmpty, isEqual, isNil, last } from "lodash-es";
 import { Accessor } from "solid-js";
@@ -223,7 +223,7 @@ export const createChessboardInterface = (): [
         chessboardInterface.clearPending();
         s.availableMoves = [];
         if (options?.animate) {
-          console.log("animating");
+          console.log("animating", m);
           let moveObject = m;
           if (typeof m === "string") {
             moveObject = s.position.move(m);
@@ -275,18 +275,22 @@ export const createChessboardInterface = (): [
           left,
         });
         const supplementaryMove = getSupplementaryMove(s.previewedMove);
+        console.log("reversing preview move", supplementaryMove);
         if (supplementaryMove) {
-          const end = getSquareOffset(supplementaryMove.to, s.flipped);
+          const end = getSquareOffset(supplementaryMove.from, s.flipped);
           const top = `${end.y * 100}%`;
           const left = `${end.x * 100}%`;
           const pieceRef = s.refs.pieceRefs[supplementaryMove.from as Square];
-          timeline.add({
-            targets: pieceRef,
-            easing: "easeInOutSine",
-            duration: duration,
-            top,
-            left,
-          });
+          timeline.add(
+            {
+              targets: pieceRef,
+              easing: "easeInOutSine",
+              duration: duration,
+              top,
+              left,
+            },
+            0
+          );
         }
         timeline.play();
         timeline.finished.then(() => {
@@ -386,6 +390,7 @@ export const createChessboardInterface = (): [
           easing: "easeInOutSine",
           duration: duration,
         });
+        console.log("previewing move", move);
         timeline = timeline.add({
           targets: pieceRef,
           top,
@@ -396,9 +401,11 @@ export const createChessboardInterface = (): [
           const end = getSquareOffset(supplementaryMove.to, s.flipped);
           const top = `${end.y * 100}%`;
           const left = `${end.x * 100}%`;
+          const suppPieceRef =
+            s.refs.pieceRefs[supplementaryMove.from as Square];
           timeline.add(
             {
-              targets: pieceRef,
+              targets: suppPieceRef,
               easing: "easeInOutSine",
               duration: duration,
               top,
@@ -444,7 +451,7 @@ export const createChessboardInterface = (): [
         // @ts-ignore
         let [start, end]: Square[] = [move.from, move.to];
         let { x, y } = getSquareOffset(end, s.flipped);
-        console.log("animateing piece move", start, end, x, y);
+        console.log("animating", move, start, end, x, y);
         anime({
           targets: s.refs.pieceRefs[start as Square],
           top: `${y * 100}%`,
@@ -708,18 +715,44 @@ export const getHighlightSquares = (move: Move): Square[] => {
 };
 
 export const getSupplementaryMove = (move: Move): Move | null => {
-  if (move.san === "O-O" || move.san === "O-O-O") {
+  const newMove = {
+    piece: "r" as PieceSymbol,
+    color: move.color,
+    flags: "",
+    san: "",
+  };
+
+  if (move.san === "O-O" && move.color === "w") {
     return {
-      to: "f1",
+      ...newMove,
       from: "h1",
-      piece: "r",
+      to: "f1",
       color: "w",
-      flags: "",
-      san: "",
     };
-  } else {
-    return null;
+  } else if (move.san === "O-O-O" && move.color === "w") {
+    return {
+      ...newMove,
+      from: "a1",
+      to: "d1",
+      color: "w",
+    };
   }
+  if (move.san === "O-O" && move.color === "b") {
+    return {
+      ...newMove,
+      from: "h8",
+      to: "f8",
+      color: "w",
+    };
+  } else if (move.san === "O-O-O" && move.color === "b") {
+    return {
+      ...newMove,
+      from: "a8",
+      to: "d8",
+      color: "w",
+    };
+  }
+  return null;
 };
 
 export interface MoveArrow {

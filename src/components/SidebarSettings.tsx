@@ -16,6 +16,7 @@ import {
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
 import { Component, For, Show } from "solid-js";
+import {clsx} from "~/utils/classes"
 
 export const SidebarSetting = () => {
   return (
@@ -33,7 +34,7 @@ export const SidebarSelectOneOf: Component<{
   choices: any[];
   activeChoice: any;
   onSelect: (_: any, i?: number) => void;
-  renderChoice: (x: any) => Component;
+  renderChoice: (x: any, active: boolean) => Component;
   // todo: typing is hard
 }> = (props) => {
   const responsive = useResponsive();
@@ -42,8 +43,9 @@ export const SidebarSelectOneOf: Component<{
       const active = choice === props.activeChoice;
       console.log("active", active, choice, props.activeChoice);
       return {
-        style: active ? "primary" : ("secondary" as SidebarAction["style"]),
-        text: props.renderChoice(choice),
+        style: "secondary" as SidebarAction["style"],
+        text: props.renderChoice(choice, active),
+        class: active && "bg-gray-24 hover:bg-gray-32 text-primary",
         onPress: () => props.onSelect(choice, i),
         right: () =>
           active && (
@@ -113,19 +115,31 @@ export const CoverageSettings = ({}: {}) => {
     thresholdOptions.push(0.25 / 100, 1 / 600);
   }
   return (
-    <SidebarTemplate actions={[]} header={"Coverage"}>
+    <SidebarTemplate actions={[]} header={"Coverage goal"}>
       <Spacer height={12} />
       <SidebarSelectOneOf
-        description={`If you set this to 1 in 100, then you'll be aiming to build a repertoire that covers every position that happens in at least 1 in 100 games between players of your rating range. At your level we recommend a coverage target of 1 in ${Math.round(
-          1 / recommendedDepth()
-        )} games`}
+        description={`Your repertoire will be complete when you cover all lines seen in`}
         choices={thresholdOptions}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
         activeChoice={selected()}
         onSelect={onSelect}
-        renderChoice={(r: number) => {
-          return `1 in ${Math.round(1 / r)} games`;
+        renderChoice={(r: number, active: boolean) => {
+          return (
+            <div class="">
+              {`1 in ${Math.round(1 / r)} games`}
+              <Show when={r === recommendedDepth()}>
+                <div
+                  class={clsx(
+                    "border-1-white rounded-sm pt-1 text-xs",
+                    active ? "text-secondary" : "text-tertiary"
+                  )}
+                >
+                  Recommended for your level
+                </div>
+              </Show>
+            </div>
+          );
         }}
       />
     </SidebarTemplate>

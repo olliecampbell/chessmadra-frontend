@@ -54,7 +54,6 @@
     "axios": "^0.27.2",
     "axios-case-converter": "^0.9.0",
     "camel-case": "^4.1.2",
-    "clsx": "^1.2.1",
     "js-cookie": "^3.0.1",
     "lodash-es": "^4.17.21",
     "react": "^17.0.2",
@@ -67,6 +66,7 @@
     "solid-spinner": "^0.1.9",
     "solid-start": "^0.2.24",
     "styled-components": "^5.0.1",
+    "tailwind-merge": "^1.12.0",
     "typescript-language-server": "^3.3.1",
     "undici": "^5.8.0"
   },

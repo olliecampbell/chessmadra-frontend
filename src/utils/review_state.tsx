@@ -141,6 +141,7 @@ export const getInitialReviewState = (
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
+          console.log("generating queue");
           s.updateQueue(options);
         }
         console.log(unwrap(s.activeQueue));

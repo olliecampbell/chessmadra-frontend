@@ -68,6 +68,9 @@ a:active {
 a {
   color: unset;
 }
+b {
+  font-weight: 600;
+}
 
 html,
 body,

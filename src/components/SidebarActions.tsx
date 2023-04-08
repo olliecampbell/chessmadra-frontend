@@ -26,10 +26,12 @@ import { Component, JSXElement, Show } from "solid-js";
 import { useHovering } from "~/mocks";
 import { Pressable } from "./Pressable";
 import { Intersperse } from "./Intersperse";
+import {clsx} from "~/utils/classes"
 
 export interface SidebarAction {
   rightText?: string;
   onPress: () => void;
+  class?: string;
   text: string;
   right?: JSXElement | string;
   subtext?: string;
@@ -102,7 +104,7 @@ export const SidebarActions = () => {
     style: "primary",
   };
   const buttonsSig = () => {
-    let buttons = [];
+    let buttons: SidebarAction[] = [];
     const addBiggestMissAction = () => {
       let miss = null;
       if (addedLineState().visible) {
@@ -213,7 +215,7 @@ export const SidebarActions = () => {
             bs.moveSidebarState("right");
             bs.sidebarState.showPlansState.visible = true;
             bs.sidebarState.showPlansState.coverageReached = false;
-            bs.chessboardState.showPlans = true;
+            bs.chessboard.set((s) => (s.showPlans = true));
           });
         },
         text: "How to play from here",
@@ -228,9 +230,9 @@ export const SidebarActions = () => {
             trackEvent(`${mode()}.practice_due`);
             quick((s) => {
               s.repertoireState.reviewState.startReview(activeSide(), {
-                side: activeSide,
-                startLine: currentLine,
-                startPosition: currentEpd,
+                side: activeSide(),
+                startLine: currentLine(),
+                startPosition: currentEpd(),
               });
             });
           },
@@ -243,10 +245,10 @@ export const SidebarActions = () => {
           quick((s) => {
             trackEvent(`${mode()}.practice_all`);
             s.repertoireState.reviewState.startReview(activeSide(), {
-              side: activeSide,
+              side: activeSide(),
               cram: true,
-              startLine: currentLine,
-              startPosition: currentEpd,
+              startLine: currentLine(),
+              startPosition: currentEpd(),
             });
           });
         },
@@ -274,7 +276,7 @@ export const SidebarActions = () => {
           return <Spacer height={10} />;
         }}
       >
-        {(b, i) => <SidebarFullWidthButton key={i} action={b} />}
+        {(b, i) => <SidebarFullWidthButton action={b} />}
       </Intersperse>
     </div>
   );
@@ -347,6 +349,11 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
     <Pressable
       onPress={props.action.onPress}
       {...hoveringProps}
+      class={clsx(
+        props.action.class,
+        props.action.style !== "wide" && "min-h-12",
+        props.action.style === "secondary" && "hover:bg-gray-18"
+      )}
       style={s(
         c.fullWidth,
         c.bg(styles().backgroundColor),
@@ -437,56 +444,5 @@ export const SidebarSectionHeader = ({
       </CMText>
       {right}
     </div>
-  );
-};
-
-const TogglePlansButton = () => {
-  const [showPlans] = useBrowsingState(([s, rs]) => [
-    s.chessboardState.showPlans,
-  ]);
-  const responsive = useResponsive();
-  return (
-    <Pressable
-      style={s(
-        c.row,
-        c.fullWidth,
-        c.alignCenter,
-        c.bg(c.grays[10]),
-        c.py(8),
-        c.px(c.getSidebarPadding(responsive))
-      )}
-      onPress={() => {
-        quick((s) => {
-          const cs = s.repertoireState.browsingState.chessboardState;
-          cs.showPlans = !cs.showPlans;
-        });
-      }}
-    >
-      <div style={s(c.row, c.alignCenter)}>
-        <CMText style={s(c.fg(c.colors.textSecondary), c.weightSemiBold)}>
-          Show some common plans?
-        </CMText>
-        <Spacer width={8} />
-        <CMText
-          style={s(
-            c.bg(c.grays[80]),
-            c.fontSize(9),
-            c.px(5),
-            c.py(3),
-            c.round,
-            c.caps,
-            c.weightHeavy,
-            c.fg(c.colors.textInverse)
-          )}
-        >
-          Beta
-        </CMText>
-      </div>
-      <Spacer width={12} grow />
-      <i
-        class={`fa-solid fa-toggle-${showPlans ? "on" : "off"}`}
-        style={s(c.fg(c.grays[90]), c.fontSize(24))}
-      />
-    </Pressable>
   );
 };

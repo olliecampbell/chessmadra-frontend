@@ -25,6 +25,7 @@ import {
   BySide,
   getAllRepertoireMoves,
   lineToPgn,
+  pgnToLine,
   Repertoire,
   RepertoireGrade,
   RepertoireMove,
@@ -52,7 +53,9 @@ import { shouldDebugEpd } from "./debug";
 import { BP, Responsive } from "./useResponsive";
 import { ChessboardInterface } from "./chessboard_interface";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment
+  ? pgnToLine("1. Nf3 Nf6 2. g3 g6 3. Bg2 Bg7")
+  : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
@@ -835,6 +838,7 @@ export const getInitialRepertoireState = (
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
         s.browsingState.sidebarState.mode = mode;
         s.browsingState.sidebarState.activeSide = side;
+        s.browsingState.sidebarState.isPastCoverageGoal = false;
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboard.set((c) => {
           c.flipped = s.browsingState.sidebarState.activeSide === "black";
@@ -847,6 +851,11 @@ export const getInitialRepertoireState = (
           //   SidebarOnboardingStage.AskAboutExistingRepertoire,
           // ];
         } else if (mode === "browse" || mode === "build") {
+          s.browsingState.sidebarState.showPlansState = {
+            visible: false,
+            coverageReached: false,
+            hasShown: false,
+          };
           s.browsingState.chessboardShownAnim = 1;
           if (s.browsingState.sidebarState.activeSide === "white") {
             const startResponses =
@@ -1049,7 +1058,7 @@ export const getInitialRepertoireState = (
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("white", "browse", {
+                s.startBrowsing("white", "build", {
                   pgnToPlay: lineToPgn(TEST_LINE),
                 });
               }
