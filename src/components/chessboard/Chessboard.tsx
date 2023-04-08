@@ -33,7 +33,7 @@ import {
 import anime from "animejs";
 import { createChessProxy } from "~/utils/chess_proxy";
 import { pgnToLine, toSide } from "~/utils/repertoire";
-import clsx from "clsx";
+import {clsx} from "~/utils/classes"
 
 export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
   switch (ps) {
@@ -671,13 +671,6 @@ export function ChessboardView(props: {
                         props.chessboardInterface.getLastMove()?.from ==
                           square()
                     );
-                    createEffect(() => {
-                      console.log(
-                        "is last move square",
-                        isLastMoveSquare(),
-                        highlightingPreviewMove()
-                      );
-                    });
 
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;

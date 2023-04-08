@@ -22,7 +22,7 @@ import { Spacer } from "~/components/Space";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
-import clsx from "clsx";
+import {clsx} from "~/utils/classes"
 
 export const VERTICAL_BREAKPOINT = BP.md;
 

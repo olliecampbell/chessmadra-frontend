@@ -3,6 +3,7 @@ import {
   createEffect,
   createMemo,
   For,
+  Index,
   JSXElement,
   Show,
 } from "solid-js";
@@ -11,17 +12,17 @@ import {
 export const Intersperse = <T,>(props: {
   each: Accessor<T[]>;
   separator: () => JSXElement;
-  children: (item: T, index: Accessor<number>) => JSXElement;
+  children: (item: T, index: number) => JSXElement;
 }): JSXElement => {
   const length = () => props.each().length;
   return (
-    <For each={props.each()}>
+    <Index each={props.each()}>
       {(item, index) => (
         <>
-          {props.children(item, index)}
-          <Show when={index() !== length() - 1}>{props.separator()}</Show>
+          {props.children(item(), index)}
+          <Show when={index !== length() - 1}>{props.separator()}</Show>
         </>
       )}
-    </For>
+    </Index>
   );
 };

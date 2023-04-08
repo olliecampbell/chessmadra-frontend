@@ -28,7 +28,7 @@ import { InputError } from "./forms/InputError";
 import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
-import clsx from "clsx";
+import { clsx } from "~/utils/classes";
 
 type ForgotPasswordForm = {
   email: string;
@@ -73,9 +73,9 @@ export default function ForgotPassword() {
               <PieceView piece={{ color: "w", type: "n" }} pieceSet={"alpha"} />
             </div>
             <Spacer height={12} />
-            <div class={`p-4 bg-gray-16 self-stretch min-w-80 w-full`}>
+            <div class={`bg-gray-16 min-w-80 w-full self-stretch p-4`}>
               <p
-                class={clsx("mb-4 text-secondary cursor-pointer ")}
+                class={clsx("text-secondary mb-4 cursor-pointer ")}
                 onClick={() => {
                   quick((s) => {
                     s.navigationState.push("/login");
@@ -112,7 +112,7 @@ export default function ForgotPassword() {
                       />
                     )}
                   </Field>
-                  <div class={"max-w-min min-w-full"}>
+                  <div class={"min-w-full max-w-min"}>
                     <InputError
                       name={"Server error"}
                       error={serverError()}
@@ -121,7 +121,7 @@ export default function ForgotPassword() {
                     <input
                       type="submit"
                       value={"Get reset link"}
-                      class="btn py-4 self-end w-fit px-8"
+                      class="btn w-fit self-end px-8 py-4"
                     ></input>
                   </div>
                 </Form>

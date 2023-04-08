@@ -21,6 +21,7 @@ import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { Component, createSignal, For, Show } from "solid-js";
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
+import {clsx} from "~/utils/classes"
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -293,8 +294,8 @@ const Option = ({
 }: {
   option: {
     onPress: () => void;
-    right?: Component;
-    left?: Component;
+    right?: Component | null;
+    left?: Component | null;
     core?: boolean;
     icon?: string;
     disabled?: boolean;
@@ -312,6 +313,7 @@ const Option = ({
   return (
     <Pressable
       {...hoveringProps}
+      class={clsx("hover:bg-gray-18 h-12")}
       style={s(
         styles,
         option.disabled && c.noPointerEvents,

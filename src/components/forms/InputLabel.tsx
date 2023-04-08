@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import {clsx} from "~/utils/classes"
 import { Show } from "solid-js";
 
 type InputLabelProps = {
