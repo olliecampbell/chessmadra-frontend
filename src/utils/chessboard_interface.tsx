@@ -56,7 +56,7 @@ export interface ChessboardInterface {
   animatePreviewMove: () => void;
   stepPreviewMove: () => void;
   stepAnimationQueue: () => void;
-  onSquarePress: (square: Square, skipAnimation: boolean) => void;
+  requestToMakeMove: (move: Move) => void;
   availableMovesFrom: (square: Square) => Move[];
   getLastMove: () => Move | undefined;
   getCurrentEpd: () => string;
@@ -81,6 +81,7 @@ export interface ChessboardDelegate {
 }
 
 export interface ChessboardViewState {
+  animatingMoveSquare?: Square;
   flipped: boolean;
   frozen: boolean;
   delegate: any;
@@ -223,17 +224,11 @@ export const createChessboardInterface = (): [
         chessboardInterface.clearPending();
         s.availableMoves = [];
         if (options?.animate) {
-          console.log("animating", m);
-          let moveObject = m;
-          if (typeof m === "string") {
-            moveObject = s.position.move(m);
-          }
-          chessboardInterface.animatePieceMove(
-            moveObject,
-            PlaybackSpeed.Normal,
-            () => {}
-          );
-          return;
+          s._animatePosition = createChessProxy(new Chess(s.position.fen()));
+          let moves = s._animatePosition.validateMoves([m]);
+          s.animationQueue = moves;
+          chessboardInterface.stepAnimationQueue();
+          console.log("animating this");
         }
         let pos = s.position;
         let moveObject = pos.move(m);
@@ -326,9 +321,14 @@ export const createChessboardInterface = (): [
           return;
         }
         let nextMove = s.animationQueue?.shift() as Move;
+        console.log(
+          "in the step animat queue",
+          nextMove,
+          s._animatePosition.ascii()
+        );
         chessboardInterface.animatePieceMove(
           nextMove,
-          PlaybackSpeed.Fast,
+          PlaybackSpeed.Normal,
           (completed) => {
             if (completed) {
               chessboardInterface.stepAnimationQueue();
@@ -425,6 +425,7 @@ export const createChessboardInterface = (): [
     },
     clearPending: () => {
       set((s: ChessboardViewState) => {
+        s.activeFromSquare = undefined;
         s.availableMoves = [];
         s.drag = {
           square: null,
@@ -437,6 +438,17 @@ export const createChessboardInterface = (): [
         s.nextPreviewMove = undefined;
         s.previewedMove = undefined;
         s._animatePosition = undefined;
+        if (s.animatingMoveSquare) {
+          console.log("clearing pending animating move", s.animatingMoveSquare);
+          let pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
+          if (pieceRef) {
+            console.log("got a piece ref");
+            anime.remove(pieceRef);
+            let { x, y } = getSquareOffset(s.animatingMoveSquare, s.flipped);
+            pieceRef.style.top = `${y * 100}%`;
+            pieceRef.style.left = `${x * 100}%`;
+          }
+        }
       });
     },
     animatePieceMove: (
@@ -445,13 +457,13 @@ export const createChessboardInterface = (): [
       callback: (completed: boolean) => void
     ) => {
       set((s: ChessboardViewState) => {
-        chessboardInterface.clearPending();
         let { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
         let [start, end]: Square[] = [move.from, move.to];
         let { x, y } = getSquareOffset(end, s.flipped);
         console.log("animating", move, start, end, x, y);
+        s.animatingMoveSquare = start;
         anime({
           targets: s.refs.pieceRefs[start as Square],
           top: `${y * 100}%`,
@@ -460,8 +472,8 @@ export const createChessboardInterface = (): [
           easing: "easeInOutSine",
           autoplay: true,
         }).finished.then(() => {
-          chessboardInterface.makeMove(move);
           s.animatedMove = undefined;
+          s.animatingMoveSquare = undefined;
           callback(true);
         });
       });
@@ -473,19 +485,14 @@ export const createChessboardInterface = (): [
         return null;
       }
     },
-    onSquarePress: (square: Square, skipAnimation: boolean) => {
+    requestToMakeMove: (move: Move, options?: MakeMoveOptions) => {
       set((s) => {
-        const availableMove = s.availableMoves.find((m) => m.to == square);
-        if (availableMove) {
-          s.availableMoves = [];
-          s.activeFromSquare = undefined;
-          s.draggedOverSquare = undefined;
+        if (move) {
+          chessboardInterface.clearPending();
           let makeMove = () => {
-            chessboardInterface.makeMove(availableMove);
+            chessboardInterface.makeMove(move, options);
           };
-          if (
-            chessboardInterface.getDelegate()?.shouldMakeMove?.(availableMove)
-          ) {
+          if (chessboardInterface.getDelegate()?.shouldMakeMove?.(move)) {
             chessboardInterface.getDelegate()?.madeManualMove?.();
             makeMove();
           }

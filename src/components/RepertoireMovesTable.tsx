@@ -168,7 +168,6 @@ export const RepertoireMovesTable = ({
     referenceEquality: true,
   });
   const onMoveRender = (sanPlus, e) => {
-    console.log("onMoveRender", sanPlus, e);
     if (isNil(e)) {
       // TODO: better deletion, decrease widths
       widths[sanPlus] = null;
@@ -176,11 +175,9 @@ export const RepertoireMovesTable = ({
     }
     const width = e.getBoundingClientRect().width;
     widths[sanPlus] = width;
-    console.log("width", width, e.getBoundingClientRect());
     if (width > moveMaxWidth()) {
       setMoveMaxWidth(width);
     }
-    console.log("max width", moveMaxWidth());
   };
   const tableMeta: Accessor<TableMeta> = () => {
     return {
@@ -197,10 +194,7 @@ export const RepertoireMovesTable = ({
         const [currentOpeningName, currentVariations] = currentEcoCode()
           ? getAppropriateEcoName(currentEcoCode()?.fullName)
           : [];
-        console.log("currentOpeningName", currentOpeningName);
-        console.log("eco code", currentEcoCode());
         const nextEcoCode = ecoCodeLookup()[tr.suggestedMove?.epdAfter];
-        console.log("nextEcoCode", nextEcoCode, tr.suggestedMove?.epdAfter);
         if (nextEcoCode) {
           const [name, variations] = getAppropriateEcoName(
             nextEcoCode.fullName
