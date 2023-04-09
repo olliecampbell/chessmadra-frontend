@@ -18,6 +18,7 @@ specifiers:
   '@sentry/utils': ^7.46.0
   '@solid-primitives/bounds': ^0.0.110
   '@solid-primitives/destructure': ^0.1.11
+  '@solid-primitives/intersection-observer': ^2.0.11
   '@solid-primitives/resize-observer': ^2.0.14
   '@solidjs/meta': ^0.28.2
   '@solidjs/router': ^0.8.2
@@ -73,6 +74,7 @@ dependencies:
   '@sentry/utils': 7.46.0
   '@solid-primitives/bounds': 0.0.110_solid-js@1.7.0
   '@solid-primitives/destructure': 0.1.11_solid-js@1.7.0
+  '@solid-primitives/intersection-observer': 2.0.11_solid-js@1.7.0
   '@solid-primitives/resize-observer': 2.0.14_solid-js@1.7.0
   '@solidjs/meta': 0.28.2_solid-js@1.7.0
   '@solidjs/router': 0.8.2_solid-js@1.7.0
@@ -2186,6 +2188,15 @@ packages:
       '@solid-primitives/utils': 6.0.0_solid-js@1.7.0
       solid-js: 1.7.0
     dev: true
+
+  /@solid-primitives/intersection-observer/2.0.11_solid-js@1.7.0:
+    resolution: {integrity: sha512-GVJDooefKNUl482R6bnoYRlULeyVzGcLCVcGu3qCvvFoqa7YL5uXp/04pGN8CIPiwXnLnQBjfVXOV7+Affe9fw==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      '@solid-primitives/utils': 6.0.0_solid-js@1.7.0
+      solid-js: 1.7.0
+    dev: false
 
   /@solid-primitives/keyboard/1.0.12_solid-js@1.7.0:
     resolution: {integrity: sha512-MbuFr6fhRJLGNtXqw7IarNeJvajL1S7kMuZwNTI74jZz4jD1g6LVsniIkEMlMUDi42h8QIY3JsSF8MhqdIAKmQ==}

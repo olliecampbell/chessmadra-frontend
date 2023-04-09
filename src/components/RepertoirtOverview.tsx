@@ -21,7 +21,7 @@ import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { Component, createSignal, For, Show } from "solid-js";
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -264,7 +264,10 @@ export const RepertoireOverview = (props: {}) => {
           return <Option option={opt} />;
         }}
       </For>
-      <div style={s(c.row, c.px(c.getSidebarPadding(responsive)), c.pt(8))}>
+      <div
+        style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
+        class={clsx("pt-4")}
+      >
         <Show when={!empty()}>
           <Pressable
             style={s(c.pb(2))}
@@ -313,7 +316,7 @@ const Option = ({
   return (
     <Pressable
       {...hoveringProps}
-      class={clsx("hover:bg-gray-18 h-12")}
+      class={clsx("&hover:bg-gray-18 h-12")}
       style={s(
         styles,
         option.disabled && c.noPointerEvents,

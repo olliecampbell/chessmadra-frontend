@@ -1,37 +1,43 @@
-import { Pressable } from "react-native";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isEmpty, isNil } from "lodash-es";
+import { isEmpty, isNil, take } from "lodash-es";
 import { Button } from "~/components/Button";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
 import { quick, useAdminState, useUserState } from "~/utils/app_state";
-import React, { useEffect } from "react";
-import { createStaticChessState } from "~/utils/chessboard_state";
+// import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
-import { Link } from "react-router-dom";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Index,
+  Show,
+} from "solid-js";
+import { A } from "solid-start";
+import { createStaticChessState } from "~/utils/chessboard_interface";
+import { LazyLoad } from "./LazyLoad";
 
 export const MoveAnnotationsDashboard = ({}) => {
-  const isMobile = useIsMobile();
-  const user = useUserState((s) => s.user);
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
   const [activeTab, setActiveTab] = createSignal("Needed");
-  useEffect(() => {
+  createEffect(() => {
     quick((s) => s.adminState.fetchMoveAnnotationDashboard());
   }, []);
   return (
     <AdminPageLayout>
       {(() => {
-        if (isNil(dashboard)) {
+        if (isNil(dashboard())) {
           return <CMText style={s()}>Loading...</CMText>;
         }
-        if (isEmpty(dashboard)) {
+        if (isEmpty(dashboard())) {
           return (
             <CMText style={s()}>
               Looks like there's nothing left to review
@@ -41,24 +47,27 @@ export const MoveAnnotationsDashboard = ({}) => {
         return (
           <div style={s(c.column)}>
             <CMText style={s(c.weightSemiBold, c.selfEnd)}>
-              <Link to="/admin/move-annotations/community">
+              <A
+                href="/admin/move-annotations/community"
+                class="row place-items-center"
+              >
                 Go to community review queue
                 <Spacer width={8} />
                 <i class="fa fa-arrow-right" style={s()} />
-              </Link>
+              </A>
             </CMText>
             <Spacer height={32} />
             <SelectOneOf
               tabStyle
               containerStyles={s(c.fullWidth, c.justifyBetween)}
               choices={["Needed", "Completed"]}
-              activeChoice={activeTab}
+              activeChoice={activeTab()}
               horizontal
               onSelect={(tab) => {}}
               renderChoice={(tab, active) => {
                 return (
-                  <Pressable
-                    onPress={() => {
+                  <div
+                    onClick={() => {
                       quick((s) => {
                         setActiveTab(tab);
                       });
@@ -85,24 +94,26 @@ export const MoveAnnotationsDashboard = ({}) => {
                     >
                       {tab === "Needed" ? "Most needed" : "Completed"}
                     </CMText>
-                  </Pressable>
+                  </div>
                 );
               }}
             />
-            <div key={activeTab} style={s(c.gridColumn({ gap: 24 }))}>
+            <div style={s(c.gridColumn({ gap: 24 }))}>
               <Spacer height={24} />
-              {(activeTab === "Needed"
-                ? dashboard.needed
-                : dashboard.completed
-              ).map((ann) => {
-                return (
+              <Index
+                each={
+                  activeTab() === "Needed"
+                    ? take(dashboard().needed, 100)
+                    : dashboard().completed
+                }
+              >
+                {(ann) => (
                   <MoveAnnotationRow
-                    key={ann.previousEpd + ann.sanPlus + ann.epd ?? ""}
-                    completed={activeTab === "Completed"}
-                    annotation={ann}
+                    completed={activeTab() === "Completed"}
+                    annotation={ann()}
                   />
-                );
-              })}
+                )}
+              </Index>
             </div>
           </div>
         );
@@ -111,30 +122,31 @@ export const MoveAnnotationsDashboard = ({}) => {
   );
 };
 
-export const MoveAnnotationRow = ({
-  annotation: ann,
-  completed,
-}: {
+export const MoveAnnotationRow = (props: {
   annotation: AdminMoveAnnotation;
   completed: boolean;
 }) => {
-  const fen = `${ann.previousEpd} 0 1`;
+  console.log("re-rendering the row");
+  const ann = () => props.annotation;
+  const fen = `${ann().previousEpd} 0 1`;
   const position = new Chess(fen);
-  const [annotation, setAnnotation] = createSignal(ann.annotation?.text ?? "");
+  const [annotation, setAnnotation] = createSignal(
+    ann().annotation?.text ?? ""
+  );
   const [saved, setSaved] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
+  const chessState = createStaticChessState({
+    epd: props.annotation.previousEpd,
+    side: position.turn() === "b" ? "black" : "white",
+    nextMove: props.annotation.sanPlus,
+  });
   return (
     <div style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
       <div style={s(c.row)}>
         <div style={s(c.size(180))}>
-          <ChessboardView
-            onSquarePress={() => {}}
-            state={createStaticChessState({
-              epd: ann.previousEpd,
-              side: position.turn() === "b" ? "black" : "white",
-              nextMove: ann.sanPlus,
-            })}
-          />
+          <LazyLoad>
+            <ChessboardView chessboardInterface={chessState} />
+          </LazyLoad>
         </div>
 
         <Spacer width={24} />
@@ -142,17 +154,17 @@ export const MoveAnnotationRow = ({
           <AnnotationEditor annotation={annotation} onUpdate={setAnnotation} />
         </div>
       </div>
-      <Show when={completed }>
+      <Show when={props.completed}>
         <>
           <Spacer height={8} />
           <CMText style={s()}>
-            Reviewer: {ann.reviewerEmail ?? "me@mbuffett.com"}
+            Reviewer: {ann().reviewerEmail ?? "me@mbuffett.com"}
           </CMText>
         </>
-        </Show>
+      </Show>
       <Spacer height={8} />
       <div style={s(c.row, c.justifyEnd)}>
-        <CMText style={s()}>{ann.games.toLocaleString()} games</CMText>
+        <CMText style={s()}>{ann().games.toLocaleString()} games</CMText>
         <Spacer grow />
         <Button
           style={s(c.buttons.basic, c.selfEnd)}
@@ -160,7 +172,7 @@ export const MoveAnnotationRow = ({
             quick((s) =>
               s.repertoireState.analyzeMoveOnLichess(
                 fen,
-                ann.sanPlus,
+                ann().sanPlus,
                 position.turn() === "b" ? "black" : "white"
               )
             );
@@ -175,7 +187,11 @@ export const MoveAnnotationRow = ({
             setLoading(true);
             quick((s) =>
               s.adminState
-                .acceptMoveAnnotation(ann.previousEpd, ann.sanPlus, annotation)
+                .acceptMoveAnnotation(
+                  ann().previousEpd,
+                  ann().sanPlus,
+                  annotation()
+                )
                 .then(() => {
                   setSaved(true);
                   setLoading(false);
@@ -184,13 +200,10 @@ export const MoveAnnotationRow = ({
           }}
         >
           <CMText style={s(c.buttons.primary.textStyles)}>
-          <Show when={saved }>
-              <i
-                class="fa fa-check"
-                style={s(c.fg(c.grays[90]), c.mr(4))}
-              />
-              </Show>
-            {loading ? "Loading.." : saved ? "Saved" : "Save"}
+            <Show when={saved}>
+              <i class="fa fa-check" style={s(c.fg(c.grays[90]), c.mr(4))} />
+            </Show>
+            {loading() ? "Loading.." : saved() ? "Saved" : "Save"}
           </CMText>
         </Button>
       </div>

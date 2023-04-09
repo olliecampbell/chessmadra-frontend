@@ -1,4 +1,4 @@
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 import { createRequire } from "module";
 import { createEffect, JSX, splitProps } from "solid-js";
 import { InputError } from "./forms/InputError";
@@ -45,10 +45,10 @@ export function TextInput(props: TextInputProps) {
       <input
         {...inputProps}
         class={clsx(
-          "p-4 w-full rounded border-2 bg-gray-12 placeholder:text-gray-50 md:text-md",
+          "bg-gray-12 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
             ? "border-red-600/50 dark:border-red-400/50"
-            : "border-slate-200 hover:border-slate-300 focus:border-sky-600/50 dark:border-slate-800 dark:hover:border-slate-700 dark:focus:border-sky-400/50"
+            : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50"
         )}
         id={props.name}
         value={props.value || ""}

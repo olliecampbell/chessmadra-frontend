@@ -52,10 +52,10 @@ import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
 import { BP, Responsive } from "./useResponsive";
 import { ChessboardInterface } from "./chessboard_interface";
+import { Logo } from "~/components/icons/Logo";
+import { clsx } from "./classes";
 
-const TEST_LINE = isDevelopment
-  ? pgnToLine("1. Nf3 Nf6 2. g3 g6 3. Bg2 Bg7")
-  : [];
+const TEST_LINE = isDevelopment ? pgnToLine("1. d4 Nf6") : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
@@ -356,7 +356,11 @@ export const getInitialRepertoireState = (
     getBreadCrumbs: () =>
       get(([s]) => {
         const homeBreadcrumb = {
-          text: "Home",
+          text: (
+            <div class={clsx("square-5 col items-center justify-center")}>
+              <Logo />
+            </div>
+          ),
           onPress: () => {
             set(([s, appState]) => {
               s.startBrowsing(null, "home");

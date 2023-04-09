@@ -1,5 +1,3 @@
-
-// import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
@@ -9,8 +7,6 @@ import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
 import { quick, useAdminState, useUserState } from "~/utils/app_state";
-import React, { useEffect, useRef } from "react";
-import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
@@ -19,10 +15,12 @@ import { MoveAnnotationReview } from "~/utils/models";
 import { pluralize } from "~/utils/pluralize";
 import { useOnScreen } from "~/utils/useIntersectionObserver";
 import { LazyLoad } from "./LazyLoad";
+import { createEffect, createSignal, For, onMount, Show } from "solid-js";
+import { createStaticChessState } from "~/utils/chessboard_interface";
 
 export const ReviewMoveAnnotationsView = ({}) => {
   const isMobile = useIsMobile();
-  const user = useUserState((s) => s.user);
+  const [user] = useUserState((s) => [s.user]);
   const [
     moveAnnotationReviewQueue,
     fetchMoveAnnotationReviewQueue,
@@ -34,9 +32,9 @@ export const ReviewMoveAnnotationsView = ({}) => {
     s.acceptMoveAnnotation,
     s.rejectMoveAnnotations,
   ]);
-  useEffect(() => {
+  onMount(() => {
     fetchMoveAnnotationReviewQueue();
-  }, []);
+  });
 
   // TEST PERFORMANCE
   // if (!isEmpty(moveAnnotationReviewQueue)) {
@@ -60,14 +58,9 @@ export const ReviewMoveAnnotationsView = ({}) => {
         }
         return (
           <div style={s(c.gridColumn({ gap: 92 }))}>
-            {moveAnnotationReviewQueue.map((review) => {
-              return (
-                <MoveAnnotationsReview
-                  review={review}
-                  key={`${review.epd}-${review.san}`}
-                />
-              );
-            })}
+            <For each={moveAnnotationReviewQueue()}>
+              {(review) => <MoveAnnotationsReview review={review} />}
+            </For>
           </div>
         );
       })()}
@@ -84,7 +77,7 @@ const MoveAnnotationsReview = ({
   const fen = `${review.epd} 0 1`;
   const position = new Chess(fen);
   const isMobile = useIsMobile();
-  const user = useUserState((s) => s.user);
+  const [user] = useUserState((s) => [s.user]);
   const [
     moveAnnotationReviewQueue,
     fetchMoveAnnotationReviewQueue,
@@ -97,11 +90,9 @@ const MoveAnnotationsReview = ({
     s.rejectMoveAnnotations,
   ]);
   const [reviewed, setReviewed] = createSignal(false);
-  const ref = useRef(null);
-  const onScreen = useOnScreen(ref, "-500px");
   return (
     <div style={s(isMobile ? c.column : c.row, c.constrainWidth, c.relative)}>
-    <Show when={reviewed }>
+      <Show when={reviewed}>
         <div
           style={s(
             c.absoluteFull,
@@ -113,13 +104,15 @@ const MoveAnnotationsReview = ({
         >
           <CMText style={s()}>Reviewed!</CMText>
         </div>
-        </Show>
-      <div style={s(c.width(400), c.constrainWidth)} ref={ref}>
+      </Show>
+      <div style={s(c.width(400), c.constrainWidth)}>
         <LazyLoad style={s(c.pb("100%"), c.height(0), c.width("100%"))}>
           <ChessboardView
             onSquarePress={() => {}}
-            state={createStaticChessState({
+            chessboardInterface={createStaticChessState({
               epd: review.epd,
+              side: "white",
+              nextMove: undefined,
             })}
           />
         </LazyLoad>
@@ -127,7 +120,9 @@ const MoveAnnotationsReview = ({
           style={s(c.buttons.darkFloater)}
           onPress={() => {
             const windowReference = window.open("about:blank", "_blank");
-            windowReference.location = `https://lichess.org/analysis/${review.epd}`;
+            if (windowReference) {
+              windowReference.location = `https://lichess.org/analysis/${review.epd}`;
+            }
           }}
         >
           <div style={s(c.size(isMobile ? 20 : 22))}>
@@ -157,7 +152,6 @@ const MoveAnnotationsReview = ({
           review.annotations.map((x, i) => {
             return (
               <div
-                key={i}
                 style={s(
                   c.pb(12),
                   c.fullWidth,
@@ -167,8 +161,7 @@ const MoveAnnotationsReview = ({
               >
                 <div style={s(c.height(120))}>
                   <AnnotationEditor
-                    key={`${review.san}-${review.epd}`}
-                    annotation={x.text}
+                    annotation={() => x.text}
                     onUpdate={(v) => {
                       quick((s) => {
                         s.adminState.editMoveAnnotation({
@@ -183,7 +176,7 @@ const MoveAnnotationsReview = ({
                 </div>
                 <Spacer height={12} />
                 <div style={s(c.row, c.alignCenter, c.justifyBetween)}>
-                  {x?.userId === user?.id ? (
+                  {x?.userId === user()?.id ? (
                     <>
                       <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
                         mine
@@ -224,7 +217,7 @@ const MoveAnnotationsReview = ({
             );
           }),
           (i) => {
-            return <Spacer height={12} key={i} />;
+            return <Spacer height={12} />;
           }
         )}
         <Spacer height={14} />
@@ -244,7 +237,7 @@ const MoveAnnotationsReview = ({
             c.selfEnd
           )}
           onPress={() => {
-            rejectMoveAnnotations(review.epd, review.san);
+            rejectMoveAnnotations()(review.epd, review.san);
             setReviewed(true);
           }}
         >
