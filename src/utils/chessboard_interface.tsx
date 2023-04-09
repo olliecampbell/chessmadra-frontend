@@ -147,7 +147,7 @@ export const createChessboardInterface = (): [
         ringRef: null,
         pieceRefs: {},
       },
-      ringColor: "red",
+      ringColor: c.colors.successColor,
       availableMoves: [],
       drag: {
         square: null,
@@ -321,11 +321,6 @@ export const createChessboardInterface = (): [
           return;
         }
         let nextMove = s.animationQueue?.shift() as Move;
-        console.log(
-          "in the step animat queue",
-          nextMove,
-          s._animatePosition.ascii()
-        );
         chessboardInterface.animatePieceMove(
           nextMove,
           PlaybackSpeed.Normal,

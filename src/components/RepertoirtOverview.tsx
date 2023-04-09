@@ -45,11 +45,7 @@ export const RepertoireOverview = (props: {}) => {
       if (skipAnimation) {
         s.repertoireState.startBrowsing(side(), mode);
       } else {
-        s.repertoireState.animateChessboardShown(true, responsive, () => {
-          quick((s) => {
-            s.repertoireState.startBrowsing(side(), mode);
-          });
-        });
+        s.repertoireState.startBrowsing(side(), mode);
       }
     });
   };
@@ -60,12 +56,9 @@ export const RepertoireOverview = (props: {}) => {
         quick((s) => {
           trackEvent("side_overview.go_to_biggest_gap");
           const line = pgnToLine(biggestMiss().lines[0]);
-          s.repertoireState.animateChessboardShown(true, responsive, () => {
-            quick((s) => {
-              s.repertoireState.startBrowsing(side() as Side, "build", {
-                pgnToPlay: lineToPgn(line),
-              });
-            });
+          s.repertoireState.browsingState.moveSidebarState("right");
+          s.repertoireState.startBrowsing(side() as Side, "build", {
+            pgnToPlay: lineToPgn(line),
           });
         });
       },
@@ -111,12 +104,8 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.start_review");
-          s.repertoireState.animateChessboardShown(true, responsive, () => {
-            quick((s) => {
-              s.repertoireState.reviewState.startReview(side(), {
-                side: side(),
-              });
-            });
+          s.repertoireState.reviewState.startReview(side(), {
+            side: side(),
           });
         });
       },
@@ -130,13 +119,9 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         trackEvent("side_overview.practice_all_lines");
         quick((s) => {
-          s.repertoireState.animateChessboardShown(true, responsive, () => {
-            quick((s) => {
-              s.repertoireState.reviewState.startReview(side(), {
-                side: side(),
-                cram: true,
-              });
-            });
+          s.repertoireState.reviewState.startReview(side(), {
+            side: side(),
+            cram: true,
           });
         });
       },
@@ -171,11 +156,7 @@ export const RepertoireOverview = (props: {}) => {
         onPress: () => {
           trackEvent("side_overview.start_building");
           quick((s) => {
-            s.repertoireState.animateChessboardShown(true, responsive, () => {
-              quick((s) => {
-                s.repertoireState.startBrowsing(side() as Side, "build");
-              });
-            });
+            s.repertoireState.startBrowsing(side() as Side, "build");
             trackEvent("side_overview.start_building");
           });
         },

@@ -54,8 +54,9 @@ import { BP, Responsive } from "./useResponsive";
 import { ChessboardInterface } from "./chessboard_interface";
 import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
+import { LogoFull } from "~/components/icons/LogoFull";
 
-const TEST_LINE = isDevelopment ? pgnToLine("1. d4 Nf6") : [];
+const TEST_LINE = isDevelopment ? [] : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
@@ -118,11 +119,6 @@ export interface RepertoireState {
     mode: BrowsingMode,
     options?: { pgnToPlay?: string; import?: boolean }
   ) => void;
-  animateChessboardShown: (
-    animateIn: boolean,
-    responsive?: Responsive,
-    cb?: () => void
-  ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
   updateRepertoireStructures: () => void;
@@ -174,7 +170,7 @@ export interface RepertoireState {
 
   repertoireSettingsModalSide?: Side;
   // Nav bar stuff
-  getBreadCrumbs: () => NavBreadcrumb[];
+  getBreadCrumbs: (mobile: boolean) => NavBreadcrumb[];
 
   // Debug pawn structure stuff
   debugPawnStructuresState: any & {};
@@ -353,12 +349,20 @@ export const getInitialRepertoireState = (
           }
         }, "initializeRepertoire");
       }),
-    getBreadCrumbs: () =>
+    getBreadCrumbs: (mobile: boolean) =>
       get(([s]) => {
         const homeBreadcrumb = {
-          text: (
-            <div class={clsx("square-5 col items-center justify-center")}>
+          text: mobile ? (
+            <div
+              class={clsx(
+                "square-5 col -m-2 box-content items-center justify-center p-2 pr-3"
+              )}
+            >
               <Logo />
+            </div>
+          ) : (
+            <div class={clsx("col w-24 items-center justify-center ")}>
+              <LogoFull />
             </div>
           ),
           onPress: () => {
@@ -805,29 +809,6 @@ export const getInitialRepertoireState = (
           SidebarOnboardingStage.ChooseImportSource,
         ];
       }, "startImporting"),
-    animateChessboardShown: (
-      animateIn: boolean,
-      responsive: Responsive,
-      cb: () => void
-    ) =>
-      set(([s, gs]) => {
-        if (isNil(responsive) || responsive.bp < BP.md) {
-          cb?.();
-          // TODO solid
-          // Animated.sequence([
-          //   Animated.timing(s.browsingState.chessboardShownAnim, {
-          //     toValue: animateIn ? 1 : 0,
-          //     duration: 250,
-          //     useNativeDriver: true,
-          //     easing: Easing.inOut(Easing.ease),
-          //   }),
-          // ]).start((r) => {
-          //   cb?.();
-          // });
-        } else {
-          cb?.();
-        }
-      }),
     startBrowsing: (
       side: Side,
       mode: BrowsingMode,
@@ -874,8 +855,6 @@ export const getInitialRepertoireState = (
               animated: true,
             });
           }
-        } else if (mode === "overview" || mode === "home") {
-          s.animateChessboardShown(false);
         }
         // if (mode === "home") {
         //   gs.navigationState.push(`/`);

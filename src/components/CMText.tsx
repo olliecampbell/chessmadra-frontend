@@ -1,4 +1,4 @@
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 import { c, s } from "~/utils/styles";
 
 export const CMText = (props) => {
@@ -6,7 +6,7 @@ export const CMText = (props) => {
     <p
       class={clsx(
         props.class,
-        "white text-14px text-secondary inline whitespace-pre-wrap break-words font-normal "
+        "inline whitespace-pre-wrap break-words font-normal "
       )}
       {...{
         props,

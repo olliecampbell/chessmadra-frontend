@@ -304,7 +304,7 @@ export const RepertoireMovesTable = ({
             }}
           >
             <CMText
-              class="text-tertiary &hover:text-secondary transition-colors"
+              class="text-tertiary &hover:text-primary transition-colors"
               style={s(c.fontSize(12), c.weightSemiBold)}
             >
               Show more moves
