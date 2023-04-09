@@ -147,7 +147,6 @@ export const getInitialReviewState = (
         console.log(unwrap(s.activeQueue));
         // gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
-        rs.animateChessboardShown(true);
         s.setupNextMove();
       }),
     setupNextMove: () =>

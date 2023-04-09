@@ -143,13 +143,6 @@ export function ChessboardView(props: {
 
   const pos = () =>
     chessboardStore()._animatePosition ?? chessboardStore().position;
-  createEffect(() => {
-    console.log(
-      "POS EFFECT",
-      pos()?.ascii(),
-      chessboardStore()._animatePosition
-    );
-  });
   hasAnimateStarted = false;
 
   // onMount(() => {

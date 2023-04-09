@@ -44,9 +44,7 @@ export const RepertoireHome = (props: {}) => {
   const [progressState] = useBrowsingState(([s]) => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
-  createEffect(() => {
-    console.log("num lines", numLines()["white"]);
-  });
+  createEffect(() => {});
   // let interval = setInterval(() => {
   //   console.log("num moves ", numLines()["white"]);
   //   console.log(

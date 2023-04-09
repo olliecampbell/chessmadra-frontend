@@ -1,5 +1,5 @@
 import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isEmpty } from "lodash-es";
+import { includes, isEmpty } from "lodash-es";
 import { CMText } from "./CMText";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { BrowserSidebar } from "./BrowsingSidebar";
@@ -13,7 +13,7 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 import { Button } from "./Button";
 import { s, c } from "~/utils/styles";
 import { BrowsingMode } from "~/utils/browsing_state";
@@ -23,6 +23,7 @@ import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
+import { createElementBounds } from "@solid-primitives/bounds";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -46,9 +47,6 @@ export const SidebarLayout = (props: {
     }
     return frozen;
   };
-  const [chessboardShownAnim] = useBrowsingState(([s]) => [
-    s.chessboardShownAnim,
-  ]);
 
   // useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
   //   if (event.key === "ArrowLeft" && mode !== "review") {
@@ -65,15 +63,16 @@ export const SidebarLayout = (props: {
   // }, [mode, sideBarMode]);
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
-  // todo: solid
-  let chessboardHidden = () => {
+  const [chessboardContainerRef, setChessboardContainerRef] =
+    createSignal(null);
+  const chessboardLayout = createElementBounds(chessboardContainerRef);
+  const chessboardHeight = () => chessboardLayout.height;
+  const chessboardHidden = () => {
     if (vertical) {
-      if (props.mode === "overview") {
-        return true;
-      }
+      return includes(["overview", "home"], props.mode);
     }
+    return false;
   };
-  const [chessboardHeight, setChessboardHeight] = createSignal(0);
 
   return (
     <RepertoirePageLayout flushTop bottom={null} fullHeight naked>
@@ -112,8 +111,9 @@ export const SidebarLayout = (props: {
             ) : (
               <MobileTopBar />
             )}
-            <Animated.View
-              class={clsx("")}
+            <div
+              ref={setChessboardContainerRef}
+              class={clsx("duration-250 transition-opacity ease-in-out")}
               style={s(
                 c.fullWidth,
                 vertical &&
@@ -122,51 +122,27 @@ export const SidebarLayout = (props: {
                     c.maxWidth(480),
                     c.px(c.getSidebarPadding(responsive))
                   ),
-                chessboardFrozen() && c.noPointerEvents
-                // todo: solid
-                // vertical &&
-                //   c.opacity(
-                //     chessboardShownAnim.interpolate({
-                //       inputRange: [0, 1],
-                //       outputRange: [0.2, 1],
-                //     })
-                //   )
+                chessboardFrozen() && c.noPointerEvents,
+                chessboardHidden() ? c.opacity(20) : c.opacity(100)
               )}
             >
-              <BrowsingChessboardView
-                ref={(e) => {
-                  if (e) {
-                    // @ts-ignore
-                    setChessboardHeight(e.clientHeight);
-                  }
-                }}
-              />
-            </Animated.View>
+              <BrowsingChessboardView />
+            </div>
             <Spacer height={12} />
-            {!vertical && (
-              <>
-                <ExtraChessboardActions />
-              </>
-            )}
+            <ExtraChessboardActions />
             {vertical ? (
-              <>
-                <Animated.View
-                  style={s(
-                    c.grow
+              <div
+                class={clsx("transition-mt duration-250 ease-in-out")}
+                style={s(
+                  c.grow,
 
-                    // chessboardHeight
-                    //   ? c.mt(
-                    //       chessboardShownAnim.interpolate({
-                    //         inputRange: [0, 1],
-                    //         outputRange: [-chessboardHeight + 100, 16],
-                    //       })
-                    //     )
-                    //   : c.mt(16)
-                  )}
-                >
-                  <BrowserSidebar />
-                </Animated.View>
-              </>
+                  chessboardHeight()
+                    ? c.mt(!chessboardHidden() ? 16 : -chessboardHeight() + 100)
+                    : c.mt(16)
+                )}
+              >
+                <BrowserSidebar />
+              </div>
             ) : (
               <Spacer height={60} />
             )}
@@ -196,16 +172,11 @@ export const SidebarLayout = (props: {
 
 export const ExtraChessboardActions = ({}: {}) => {
   const responsive = useResponsive();
-  const fgColor = c.colors.textTertiary;
   const textStyles = s(
     c.fontSize(responsive.switch(12, [BP.md, 14])),
-    c.fg(c.colors.textTertiary),
     c.weightRegular
   );
-  const iconStyles = s(
-    c.fontSize(responsive.switch(12, [BP.md, 14])),
-    c.fg(fgColor)
-  );
+  const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
   const padding = 8;
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [currentLine] = useBrowsingState(([s, rs]) => [
@@ -224,6 +195,7 @@ export const ExtraChessboardActions = ({}: {}) => {
     >
       <Pressable
         style={s(c.row, c.alignCenter)}
+        class={clsx("text-tertiary &hover:text-primary pb-2 transition-colors")}
         onPress={() => {
           quick((s) => {
             trackEvent("chessboard.analyze_on_lichess", {
@@ -236,57 +208,14 @@ export const ExtraChessboardActions = ({}: {}) => {
       >
         <CMText style={s(textStyles)}>Analyze on Lichess</CMText>
         <Spacer width={padding} />
-        <i class="fa fa-up-right-from-square" style={s(iconStyles)}></i>
+        <i class="fa fa-up-right-from-square " style={s(iconStyles)}></i>
       </Pressable>
     </FadeInOut>
   );
 };
 
-export const ReviewFromHereButton = () => {
-  const responsive = useResponsive();
-  const buttonStyles = s(
-    c.buttons.darkFloater,
-    c.selfStretch,
-    // c.height(buttonHeight),
-    { textStyles: s(c.fg(c.colors.textPrimary)) },
-    c.px(8),
-    c.py(12)
-  );
-  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  return (
-    <Button
-      style={s(buttonStyles)}
-      onPress={() => {
-        quick((s) => {
-          s.repertoireState.reviewState.startReview(activeSide, {
-            side: activeSide,
-            cram: true,
-            startLine: s.repertoireState.browsingState.chessboardState.moveLog,
-            startPosition:
-              s.repertoireState.browsingState.chessboardState.getCurrentEpd(),
-          });
-        });
-      }}
-    >
-      <CMText style={s(c.fg(c.grays[80]), c.fontSize(18))}>
-        <i class={"fa-duotone fa-cards-blank"} />
-      </CMText>
-      <Spacer width={8} />
-      <CMText
-        style={s(
-          c.fg(c.colors.textPrimary),
-          c.fontSize(responsive.switch(16)),
-          c.weightBold
-        )}
-      >
-        Review all from here
-      </CMText>
-    </Button>
-  );
-};
-
 // TODO: solid: ref stuff?
-const BrowsingChessboardView = function BrowsingChessboardView({ ref }) {
+const BrowsingChessboardView = function BrowsingChessboardView() {
   const [mode] = useRepertoireState((s) => [s.browsingState.sidebarState.mode]);
   const chessboardState = () =>
     mode() === "review"
@@ -297,7 +226,7 @@ const BrowsingChessboardView = function BrowsingChessboardView({ ref }) {
   //     ? s.reviewState.chessboardState
   //     : s.browsingState.chessboardState,
   // ]);
-  return <ChessboardView chessboardInterface={chessboardState()} ref={ref} />;
+  return <ChessboardView chessboardInterface={chessboardState()} />;
 };
 
 const MobileTopBar = ({}) => {
@@ -320,9 +249,10 @@ const MobileTopBar = ({}) => {
 };
 
 export const NavBreadcrumbs = () => {
-  const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs()]);
-
   const responsive = useResponsive();
+  const mobile = () => responsive.isMobile;
+  const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs(mobile())]);
+
   const hidden = () => breadcrumbs().length == 1;
   const [mode] = useSidebarState(([s]) => [s.mode]);
   return (
@@ -361,7 +291,12 @@ export const NavBreadcrumbs = () => {
             }}
           >
             <div style={s()}>
-              <CMText style={s(c.weightBold, c.fg(c.colors.textTertiary))}>
+              <CMText
+                style={s(c.weightBold)}
+                class={clsx(
+                  "text-tertiary &hover:text-primary transition-colors"
+                )}
+              >
                 {breadcrumb.text}
               </CMText>
             </div>

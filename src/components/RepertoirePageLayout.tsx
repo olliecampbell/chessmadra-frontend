@@ -7,14 +7,7 @@ import { createEffect, Show } from "solid-js";
 import { c, s } from "~/utils/styles";
 import { Puff } from "solid-spinner";
 
-export const RepertoirePageLayout = ({
-  children,
-  bottom,
-  centered,
-  fullHeight,
-  flushTop,
-  naked,
-}: {
+export const RepertoirePageLayout = (props: {
   children: any;
   bottom?: any;
   flushTop?: boolean;
@@ -54,8 +47,8 @@ export const RepertoirePageLayout = ({
       <div
         style={s(
           isMobile ? s(c.grow) : c.flexShrink(1),
-          centered && c.grow,
-          fullHeight && c.grow,
+          props.centered && c.grow,
+          props.fullHeight && c.grow,
           repertoireLoading() && c.grow
         )}
       >
@@ -72,25 +65,25 @@ export const RepertoirePageLayout = ({
               c.center,
               c.justifyStart,
               c.flexShrink(1),
-              fullHeight && s(c.grow),
-              !flushTop && !naked && c.pt(isMobile ? 24 : 48),
-              centered && s(c.grow, c.justifyCenter)
+              props.fullHeight && s(c.grow),
+              !props.flushTop && !props.naked && c.pt(isMobile ? 24 : 48),
+              props.centered && s(c.grow, c.justifyCenter)
             )}
           >
             <div
               style={s(
-                !fullHeight && !naked && c.pb(isMobile ? 92 : 180),
+                !props.fullHeight && !props.naked && c.pb(isMobile ? 92 : 180),
                 c.center,
                 c.fullWidth,
-                fullHeight && c.grow
+                props.fullHeight && c.grow
               )}
             >
-              {children}
+              {props.children}
             </div>
           </div>
         </Show>
       </div>
-      <Show when={!repertoireLoading()}>{bottom}</Show>
+      <Show when={!repertoireLoading()}>{props.bottom}</Show>
     </div>
   );
 };

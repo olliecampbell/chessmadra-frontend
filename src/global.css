@@ -18,6 +18,7 @@ a:link {
 }
 body {
   background-color: hsl(240, 12%, 7%);
+  color: white;
 }
 div,
 form,

@@ -177,7 +177,7 @@ export interface BrowsingState {
   sidebarIter: number;
   previousSidebarAnim: Animated<number>;
   currentSidebarAnim: Animated<number>;
-  chessboardShownAnim: Animated<number>;
+  chessboardShown: boolean;
   repertoireProgressState: BySide<RepertoireProgressState>;
   showPlans: boolean;
 }
@@ -275,7 +275,7 @@ export const getInitialBrowsingState = (
     sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
     // TODO: solid
-    chessboardShownAnim: 0,
+    chessboardShown: false,
     plans: {},
     showPlans: false,
     repertoireProgressState: {
@@ -291,15 +291,10 @@ export const getInitialBrowsingState = (
           const completed = isNil(biggestMiss);
           progressState.completed = completed;
           const expectedNumMoves = rs.expectedNumMovesFromEpd[side][START_EPD];
-          console.log("expectedNumMoves, nummoves", expectedNumMoves, numMoves);
           const savedProgress = completed
             ? 100
             : getCoverageProgress(numMoves, expectedNumMoves);
           progressState.percentComplete = savedProgress;
-          console.log(
-            `updated progress state for ${side}`,
-            unwrap(progressState)
-          );
           // TODO: solid
           // Animated.timing(progressState.headerOpacityAnim, {
           //   toValue: progressState.showPopover ? 0 : 1,
@@ -603,12 +598,10 @@ export const getInitialBrowsingState = (
       }),
     finishSidebarOnboarding: (responsive: Responsive) =>
       set(([s, rs]) => {
-        rs.animateChessboardShown(true, responsive, () => {
-          quick((s) => {
-            s.repertoireState.browsingState.moveSidebarState("right");
-            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-              [];
-          });
+        quick((s) => {
+          s.repertoireState.browsingState.moveSidebarState("right");
+          s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+            [];
         });
       }),
     reviewFromCurrentLine: () =>

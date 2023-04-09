@@ -280,11 +280,7 @@ const BackSection = () => {
   const backToOverview = () => {
     console.log("back to overview");
     quick((s) => {
-      s.repertoireState.animateChessboardShown(false, responsive, () => {
-        quick((s) => {
-          s.repertoireState.startBrowsing(side(), "overview");
-        });
-      });
+      s.repertoireState.startBrowsing(side(), "overview");
     });
   };
   const backButtonAction = () => {

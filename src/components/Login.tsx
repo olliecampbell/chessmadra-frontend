@@ -28,7 +28,7 @@ import { InputError } from "./forms/InputError";
 import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 import logo from "/logomark.png";
 
 type LoginForm = {
@@ -75,6 +75,7 @@ export default function Login({ signup }: { signup?: boolean }) {
           userState.setUser(user);
           userState.authStatus = AuthStatus.Authenticated;
           s.navigationState.push("/");
+          s.repertoireState.initState();
           trackEvent(`auth.${authType()}.success`);
         });
       })
