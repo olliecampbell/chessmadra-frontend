@@ -356,8 +356,8 @@ const getReviewModeSections = ({
   const na = <CMText style={s(naStyles)}>N/A</CMText>;
 
   sections.push({
-    width: 120,
-    alignRight: true,
+    width: 80,
+    alignLeft: true,
     content: ({ suggestedMove, positionReport, tableResponse }) => {
       return (
         <ReviewText

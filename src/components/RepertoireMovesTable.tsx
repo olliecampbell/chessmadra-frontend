@@ -291,8 +291,10 @@ export const RepertoireMovesTable = ({
           }}
         </Intersperse>
       </div>
-      <Spacer height={12} />
-      <div style={s(c.row, c.px(c.getSidebarPadding(responsive)))}>
+      <div
+        style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
+        class={clsx("pt-4")}
+      >
         <Show when={truncated() && mode() == "build"}>
           <Pressable
             style={s(c.pb(2))}
@@ -302,7 +304,7 @@ export const RepertoireMovesTable = ({
             }}
           >
             <CMText
-              class="text-tertiary hover:text-secondary transition-colors"
+              class="text-tertiary &hover:text-secondary transition-colors"
               style={s(c.fontSize(12), c.weightSemiBold)}
             >
               Show more moves
@@ -409,6 +411,7 @@ const Response = (props: {
     s.currentSide,
   ]);
   const isMobile = useIsMobile();
+  console.log("is mobile? ", isMobile);
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const sanPlus = () =>
     props.tableResponse.suggestedMove?.sanPlus ??
@@ -592,7 +595,7 @@ const Response = (props: {
                 }
               });
             }}
-            class={clsx("hover:bg-gray-18 transition-colors")}
+            class={clsx("&hover:bg-gray-18 transition-colors")}
             style={s(
               c.grow,
               c.flexible,
@@ -654,10 +657,10 @@ const Response = (props: {
                 <Spacer width={12} />
 
                 <div
+                  class={clsx("pr-4")}
                   style={s(
                     c.width(0),
                     c.grow,
-                    c.pr(8),
                     c.column,
 
                     !hasInlineAnnotationOrOpeningName() && c.selfCenter
@@ -705,6 +708,7 @@ const Response = (props: {
                           c.width(section.width),
                           c.center,
                           section.alignLeft && c.justifyStart,
+                          section.alignRight && c.justifyEnd,
                           c.row
                         )}
                       >
@@ -770,7 +774,11 @@ const TableHeader = ({
               <div
                 style={s(
                   c.width(section.width),
-                  section.alignLeft ? c.justifyStart : c.center,
+                  section.alignRight
+                    ? c.justifyEnd
+                    : section.alignLeft
+                    ? c.justifyStart
+                    : c.center,
                   c.row,
                   c.textAlign("center")
                 )}

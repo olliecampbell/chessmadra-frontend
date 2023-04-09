@@ -42,14 +42,30 @@ const unoConfig = {
       ...colors,
     },
   },
-  shortcuts: {
-    row: "flex flex-row",
-    col: "flex",
-    btn: "bg-blue-50 hover:bg-blue-70 text-primary font-bold py-2 px-4 rounded cursor-pointer",
-    ["text-primary"]: "text-gray-95",
-    ["text-secondary"]: "text-gray-80",
-    ["text-tertiary"]: "text-gray-50",
-  },
+  variants: [
+    (matcher) => {
+      // The prefix cannot start with "-" or "hover", you can customize the prefix.
+      if (!matcher.startsWith("&hover:")) return matcher;
+      return {
+        // slice `hover:` prefix and passed to the next variants and rules
+        matcher: matcher.slice(7), // The 7 here represents the number of characters in the prefix.
+        parent: [`@media (hover: hover) and (pointer: fine)`],
+        selector: (s) => `${s}:hover`,
+      };
+    },
+  ],
+
+  shortcuts: [
+    {
+      row: "flex flex-row",
+      col: "flex",
+      btn: "bg-blue-50 &hover:bg-blue-70 text-primary font-bold py-2 px-4 rounded cursor-pointer",
+      ["text-primary"]: "text-gray-95",
+      ["text-secondary"]: "text-gray-80",
+      ["text-tertiary"]: "text-gray-50",
+    },
+    [/^square-(.*)$/, ([, c]) => `w-${c} h-${c}`],
+  ],
   presets: [presetUno(), presetAttributify(), presetTagify()],
 };
 

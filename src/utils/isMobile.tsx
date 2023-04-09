@@ -1,12 +1,8 @@
-export const useIsMobile = (cutoff?: number) => {
+import { useResponsive } from "./useResponsive";
+
+export const useIsMobile = () => {
   // solid TODO
   // const { width: windowWidth } = useWindowDimensions();
-  const windowWidth = 1600;
-  // const [isMobile, setIsMobile] = createSignal(true);
-  // useEffect(() => {
-  //   setIsMobile(windowWidth < 1000);
-  // }, []);
-  // console.log({ windowWidth });
-  const isMobile = windowWidth < (cutoff ?? 1000);
-  return isMobile;
+  const responsive = useResponsive();
+  return responsive.isMobile;
 };

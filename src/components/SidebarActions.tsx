@@ -352,7 +352,7 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
       class={clsx(
         props.action.class,
         props.action.style !== "wide" && "min-h-12",
-        props.action.style === "secondary" && "hover:bg-gray-18"
+        props.action.style === "secondary" && "&hover:bg-gray-18"
       )}
       style={s(
         c.fullWidth,

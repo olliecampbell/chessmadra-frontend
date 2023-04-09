@@ -45,7 +45,7 @@ export const SidebarSelectOneOf: Component<{
       return {
         style: "secondary" as SidebarAction["style"],
         text: props.renderChoice(choice, active),
-        class: active && "bg-gray-24 hover:bg-gray-32 text-primary",
+        class: active && "bg-gray-24 &hover:bg-gray-32 text-primary",
         onPress: () => props.onSelect(choice, i),
         right: () =>
           active && (

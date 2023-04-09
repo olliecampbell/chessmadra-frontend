@@ -765,3 +765,22 @@ export const getSupplementaryMove = (move: Move): Move | null => {
 export interface MoveArrow {
   move: Move;
 }
+export const createStaticChessState = ({
+  epd,
+  side,
+  nextMove,
+}: {
+  epd: string;
+  side: Side;
+  nextMove?: string | Move;
+}) => {
+  console.log("creating static chess state", epd, side, nextMove);
+  const [, chessboard] = createChessboardInterface();
+  const fen = `${epd} 0 1`;
+  chessboard.setPosition(createChessProxy(new Chess(fen)));
+  chessboard.setPerspective(side);
+  if (nextMove) {
+    chessboard.makeMove(nextMove);
+  }
+  return chessboard;
+};

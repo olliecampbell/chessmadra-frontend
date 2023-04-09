@@ -44,6 +44,7 @@
     "@sentry/utils": "^7.46.0",
     "@solid-primitives/bounds": "^0.0.110",
     "@solid-primitives/destructure": "^0.1.11",
+    "@solid-primitives/intersection-observer": "^2.0.11",
     "@solid-primitives/resize-observer": "^2.0.14",
     "@solidjs/meta": "^0.28.2",
     "@solidjs/router": "^0.8.2",

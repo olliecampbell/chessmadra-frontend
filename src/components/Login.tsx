@@ -125,7 +125,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                       )}
                       classList={{
                         "border-gray-80 ": authType() === auth,
-                        "border-transparent hover:border-gray-600":
+                        "border-transparent &hover:border-gray-600":
                           authType() !== auth,
                       }}
                     >
@@ -187,7 +187,7 @@ export default function Login({ signup }: { signup?: boolean }) {
                                 <A
                                   href="/forgot-password"
                                   class={
-                                    "text-blue-60 hover:text-blue-70 -mt-6 text-sm"
+                                    "text-blue-60 &hover:text-blue-70 -mt-6 text-sm"
                                   }
                                 >
                                   Forgot your password?
