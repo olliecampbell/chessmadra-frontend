@@ -681,7 +681,7 @@ export const createChessboardInterface = (): [
           chessboardInterface.makeMove(san);
         });
         if (options?.animated) {
-          const fen = `${options.fromEpd} 0 1`;
+          const fen = `${options.fromEpd ?? START_EPD} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
           let moves = s._animatePosition.validateMoves(line);
           s.animationQueue = moves;

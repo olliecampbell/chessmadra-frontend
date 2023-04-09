@@ -870,7 +870,9 @@ export const getInitialRepertoireState = (
             }
           }
           if (options?.pgnToPlay) {
-            s.browsingState.chessboard.playPgn(options.pgnToPlay);
+            s.browsingState.chessboard.playPgn(options.pgnToPlay, {
+              animated: true,
+            });
           }
         } else if (mode === "overview" || mode === "home") {
           s.animateChessboardShown(false);
