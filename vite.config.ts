@@ -41,6 +41,15 @@ const unoConfig = {
     colors: {
       ...colors,
     },
+    height: {
+      "sidebar-button": "45px",
+    },
+    minHeight: {
+      "sidebar-button": "45px",
+    },
+    spacing: {
+      // "sidebar-button": "45px",
+    },
   },
   variants: [
     (matcher) => {

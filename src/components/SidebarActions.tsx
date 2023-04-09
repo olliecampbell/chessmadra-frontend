@@ -26,7 +26,7 @@ import { Component, JSXElement, Show } from "solid-js";
 import { useHovering } from "~/mocks";
 import { Pressable } from "./Pressable";
 import { Intersperse } from "./Intersperse";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 
 export interface SidebarAction {
   rightText?: string;
@@ -351,7 +351,7 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
       {...hoveringProps}
       class={clsx(
         props.action.class,
-        props.action.style !== "wide" && "min-h-12",
+        props.action.style !== "wide" && "h-sidebar-button",
         props.action.style === "secondary" && "&hover:bg-gray-18"
       )}
       style={s(

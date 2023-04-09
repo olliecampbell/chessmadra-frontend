@@ -316,7 +316,7 @@ const Option = ({
   return (
     <Pressable
       {...hoveringProps}
-      class={clsx("&hover:bg-gray-18 h-12")}
+      class={clsx("&hover:bg-gray-18 h-sidebar-button")}
       style={s(
         styles,
         option.disabled && c.noPointerEvents,

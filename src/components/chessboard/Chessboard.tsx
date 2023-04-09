@@ -257,10 +257,11 @@ export function ChessboardView(props: {
     );
     if (availableMove) {
       console.log("there was an available move", availableMove);
+      props.chessboardInterface.requestToMakeMove(availableMove as Move, {
+        animate: true,
+      });
       setTapAction(() => () => {
-        props.chessboardInterface.requestToMakeMove(availableMove as Move, {
-          animate: true,
-        });
+        console.log("doing nothing because made move on mouse down");
       });
     } else if (chessboardStore().activeFromSquare == square || !piece) {
       console.log(
