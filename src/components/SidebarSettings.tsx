@@ -16,7 +16,7 @@ import {
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
 import { Component, For, Show } from "solid-js";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 
 export const SidebarSetting = () => {
   return (
@@ -164,8 +164,7 @@ export const RatingSettings = ({}: {}) => {
   return (
     <SidebarTemplate actions={[]} header={"Your rating"}>
       <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
-        We use this to determine which lines you'll commonly see at your level,
-        so you can learn a response for those.
+        Used to determine common moves and their win rates at your level
       </CMText>
       <Spacer height={24} />
       <SidebarSelectOneOf

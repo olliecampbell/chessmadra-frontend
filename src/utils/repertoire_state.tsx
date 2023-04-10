@@ -352,17 +352,13 @@ export const getInitialRepertoireState = (
     getBreadCrumbs: (mobile: boolean) =>
       get(([s]) => {
         const homeBreadcrumb = {
-          text: mobile ? (
+          text: (
             <div
               class={clsx(
                 "square-5 col -m-2 box-content items-center justify-center p-2 pr-3"
               )}
             >
               <Logo />
-            </div>
-          ) : (
-            <div class={clsx("col w-24 items-center justify-center ")}>
-              <LogoFull />
             </div>
           ),
           onPress: () => {

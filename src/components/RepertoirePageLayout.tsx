@@ -6,6 +6,8 @@ import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { createEffect, Show } from "solid-js";
 import { c, s } from "~/utils/styles";
 import { Puff } from "solid-spinner";
+import { LogoFull } from "./icons/LogoFull";
+import { clsx } from "~/utils/classes";
 
 export const RepertoirePageLayout = (props: {
   children: any;
@@ -54,7 +56,9 @@ export const RepertoirePageLayout = (props: {
       >
         <Show when={repertoireLoading()}>
           <div style={s(c.grow, c.center)}>
-            <Puff color={c.primaries[65]} />
+            <div class={clsx("w-30")}>
+              <LogoFull />
+            </div>
           </div>
         </Show>
         <Show when={!repertoireLoading()}>

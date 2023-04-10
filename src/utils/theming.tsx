@@ -142,8 +142,8 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "low-contrast",
     name: "Low Contrast",
-    highlight: adjustOpacity(c.grays[100], 30),
-    highlightDark: adjustOpacity(c.grays[100], 40),
+    highlight: adjustOpacity(c.grays[100], 20),
+    highlightDark: adjustOpacity(c.grays[100], 20),
     light: {
       color: c.grays[20],
     },
