@@ -383,6 +383,7 @@ export function ChessboardView(props: {
   };
 
   const isMobile = useIsMobile();
+  console.log("isMobile", isMobile);
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
   const x = (
@@ -765,11 +766,11 @@ export function ChessboardView(props: {
                           <CMText
                             style={s(
                               c.fg(inverseColor),
-                              c.weightBold,
+                              c.weightSemiBold,
                               c.absolute,
-                              c.fontSize(isMobile ? 8 : 10),
-                              c.left(isMobile ? 2 : 1),
-                              c.bottom(isMobile ? 0 : -1),
+                              c.fontSize(isMobile ? 8 : 8),
+                              c.left(isMobile ? 1 : 1),
+                              c.bottom(isMobile ? 1 : 0),
                               c.opacity(80)
                             )}
                           >
@@ -782,10 +783,10 @@ export function ChessboardView(props: {
                               c.fg(inverseColor),
                               c.weightBold,
                               c.absolute,
-                              c.fontSize(isMobile ? 8 : 10),
-                              c.right(isMobile ? 2 : 1),
+                              c.fontSize(8),
+                              c.right(2),
                               c.opacity(80),
-                              c.top(isMobile ? 0 : 0)
+                              c.top(0)
                             )}
                           >
                             {tileNumber}

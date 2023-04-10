@@ -65,6 +65,7 @@ export interface Responsive {
 export const useResponsive = (): Responsive => {
   // solid TODO
   const windowSize = useWindowSize();
+  console.log("windowSize", windowSize);
   // const [isMobile, setIsMobile] = createSignal(true);
   // useEffect(() => {
   //   setIsMobile(windowWidth < 1000);
@@ -84,7 +85,7 @@ export const useResponsive = (): Responsive => {
     )
   );
   return {
-    isMobile: breakpoint() <= ResponsiveBreakpoint.md,
+    isMobile: breakpoint() <= ResponsiveBreakpoint.sm,
     bp: breakpoint(),
     switch: <T,>(def: T, ...xs: [ResponsiveBreakpoint, T][]): T => {
       let result = def;

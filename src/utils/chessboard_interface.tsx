@@ -422,6 +422,7 @@ export const createChessboardInterface = (): [
       set((s: ChessboardViewState) => {
         s.activeFromSquare = undefined;
         s.availableMoves = [];
+        s.draggedOverSquare = undefined;
         s.drag = {
           square: null,
           enoughToDrag: false,
