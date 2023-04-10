@@ -126,12 +126,12 @@ export const CoverageSettings = ({}: {}) => {
         onSelect={onSelect}
         renderChoice={(r: number, active: boolean) => {
           return (
-            <div class="">
-              {`1 in ${Math.round(1 / r)} games`}
+            <div class="row items-end">
+              <div>{`1 in ${Math.round(1 / r)} games`}</div>
               <Show when={r === recommendedDepth()}>
                 <div
                   class={clsx(
-                    "border-1-white rounded-sm pt-1 text-xs",
+                    "pl-2 text-xs",
                     active ? "text-secondary" : "text-tertiary"
                   )}
                 >

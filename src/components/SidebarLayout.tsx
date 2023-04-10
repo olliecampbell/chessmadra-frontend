@@ -294,7 +294,7 @@ export const NavBreadcrumbs = () => {
               <CMText
                 style={s(c.weightBold)}
                 class={clsx(
-                  "text-tertiary &hover:text-primary transition-colors"
+                  "text-tertiary &hover:text-primary text-sm transition-colors"
                 )}
               >
                 {breadcrumb.text}
