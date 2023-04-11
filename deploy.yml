@@ -121,3 +121,27 @@ spec:
     - hosts:
         - staging.chessmadra.com
       secretName: chess-madra-cert-staging
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chessbook-local
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+    - host: local.chessmadra.com
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: chessbook-local
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - local.chessmadra.com
+      secretName: chess-madra-cert-local
