@@ -129,7 +129,9 @@ export const SidebarLayout = (props: {
               <BrowsingChessboardView />
             </div>
             <Spacer height={12} />
-            <ExtraChessboardActions />
+            <Show when={props.mode === "build" || props.mode === "browse"}>
+              <ExtraChessboardActions />
+            </Show>
             {vertical ? (
               <div
                 class={clsx("transition-mt duration-250 ease-in-out")}
@@ -137,8 +139,8 @@ export const SidebarLayout = (props: {
                   c.grow,
 
                   chessboardHeight()
-                    ? c.mt(!chessboardHidden() ? 16 : -chessboardHeight() + 100)
-                    : c.mt(16)
+                    ? c.mt(!chessboardHidden() ? 0 : -chessboardHeight() + 100)
+                    : c.mt(0)
                 )}
               >
                 <BrowserSidebar />
