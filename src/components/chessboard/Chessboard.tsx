@@ -186,6 +186,7 @@ export function ChessboardView(props: {
     const rowPercent = gesture.y / chessboardLayout.height;
     let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
     let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
+    console.log("flipped?", flipped());
     let square = `${COLUMNS[column]}${ROWS[7 - row]}`;
     if (flipped()) {
       square = `${COLUMNS[7 - column]}${ROWS[row]}`;
@@ -233,6 +234,7 @@ export function ChessboardView(props: {
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
     evt.preventDefault();
     if (frozen()) return;
+    if (!!("ontouchstart" in window) && evt.type == "mousedown") return;
 
     const tap = getTapOffset(evt, chessboardLayout);
     const [square, centerX, centerY] = getSquareFromLayoutAndGesture(
@@ -240,7 +242,7 @@ export function ChessboardView(props: {
       tap
     );
     const piece = props.chessboardInterface.get((s) => s.position.get(square));
-    console.log("----", drag().square, square, piece, evt);
+    console.log("----", drag().square, square, piece);
     let availableMove = find(
       chessboardStore().availableMoves,
       (m) => m.to == square
