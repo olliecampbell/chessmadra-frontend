@@ -9,6 +9,11 @@ const EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
 let baseURL = undefined;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://marcus.local:8040";
+  if (typeof window !== "undefined") {
+    if (window.location.host.includes("local")) {
+      baseURL = "http://staging.chessmadra.com";
+    }
+  }
 }
 if (process.env.API_ENV == "production") {
   baseURL = "https://chessmadra.com";

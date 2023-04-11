@@ -232,10 +232,8 @@ export function ChessboardView(props: {
   };
   const frozen = () => chessboardStore().frozen;
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
-    console.log("frozen?", frozen());
+    evt.preventDefault();
     if (frozen()) return;
-    if (typeof window.ontouchstart != "undefined" && evt.type == "mousedown")
-      return;
 
     const tap = getTapOffset(evt, chessboardLayout);
     const [square, centerX, centerY] = getSquareFromLayoutAndGesture(

@@ -56,7 +56,7 @@ export const RepertoirePageLayout = (props: {
       >
         <Show when={repertoireLoading()}>
           <div style={s(c.grow, c.center)}>
-            <div class={clsx("w-30")}>
+            <div class={clsx("w-40")}>
               <LogoFull />
             </div>
           </div>
