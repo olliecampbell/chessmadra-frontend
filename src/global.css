@@ -17,6 +17,7 @@ a:link {
   border-width: 0px;
 }
 body {
+  font-size: 14px;
   background-color: hsl(240, 12%, 7%);
   color: white;
 }

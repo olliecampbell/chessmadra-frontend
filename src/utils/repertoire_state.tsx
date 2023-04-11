@@ -355,7 +355,7 @@ export const getInitialRepertoireState = (
           text: (
             <div
               class={clsx(
-                "square-5 col -m-2 box-content items-center justify-center p-2 pr-3"
+                "square-5 col pr-10px -m-2 box-content items-center justify-center p-2"
               )}
             >
               <Logo />

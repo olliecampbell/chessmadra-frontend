@@ -45,7 +45,7 @@ export const SidebarTemplate: Component<{
           {props.children}
         </Show>
       </div>
-      <Spacer height={36} />
+      <Spacer height={responsive.isMobile ? 24 : 36} />
       <div style={s(c.gridColumn({ gap: 12 }))}>
         <For each={props.actions}>
           {(action) => <SidebarFullWidthButton action={action} />}
