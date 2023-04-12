@@ -31,7 +31,7 @@ export const ReviewText = ({
   const hours = minutes / 60;
   const days = hours / 24;
   let color = c.grays[50];
-  const prefix = overview ? `Next review in` : `Due in`;
+  const prefix = overview ? `Due in` : `Due in`;
   if (diff < 0) {
     color = inverse ? c.oranges[30] : c.oranges[70];
     dueString = `${numMovesDueFromHere.toLocaleString()} Due`;

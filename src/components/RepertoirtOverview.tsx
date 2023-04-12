@@ -18,16 +18,17 @@ import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
-import { Component, createSignal, For, Show } from "solid-js";
+import { Component, createSignal, For, Show, createEffect } from "solid-js";
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
 import { clsx } from "~/utils/classes";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
-  const textStyles = s(c.fg(c.colors.textPrimary), c.weightSemiBold);
+  const textStyles = s(c.weightSemiBold);
+  const textClasses = "text-primary";
   const appState = getAppState();
-  const { repertoireState, userState } = appState;
+  const { repertoireState } = appState;
   const { browsingState } = repertoireState;
   const progressState = () => browsingState.repertoireProgressState[side()];
   const biggestMiss = () =>
@@ -62,7 +63,11 @@ export const RepertoireOverview = (props: {}) => {
           });
         });
       },
-      left: <CMText style={s(textStyles)}>{"Go to biggest gap"}</CMText>,
+      left: (
+        <CMText style={s(textStyles)} class={clsx(textClasses)}>
+          {"Go to biggest gap"}
+        </CMText>
+      ),
       right: null,
       icon: empty() && "fa-sharp fa-plus",
     },
@@ -81,26 +86,26 @@ export const RepertoireOverview = (props: {}) => {
           startBrowsing("build", empty());
         });
       },
-      left: <CMText style={s(textStyles)}>Browse / add new line</CMText>,
+      left: (
+        <CMText style={s(textStyles)} class={clsx(textClasses)}>
+          Browse / add new line
+        </CMText>
+      ),
     },
   ];
   const reviewTimer = () => {
-    let reviewTimer = null;
-    if (numMovesDueFromHere() !== 0) {
-      // reviewStatus = "You have no moves due for review";
-      reviewTimer = (
-        <ReviewText
-          date={earliestDueDate()}
-          numDue={numMovesDueFromHere()}
-          overview={true}
-        />
-      );
-    }
+    let reviewTimer = (
+      <ReviewText
+        date={earliestDueDate()}
+        numDue={numMovesDueFromHere()}
+        overview={true}
+      />
+    );
     return reviewTimer;
   };
   const reviewOptions = () => [
     {
-      hidden: numMovesDueFromHere() === 0,
+      hidden: empty(),
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.start_review");
@@ -110,22 +115,18 @@ export const RepertoireOverview = (props: {}) => {
         });
       },
       right: reviewTimer,
+      disabled: numMovesDueFromHere() === 0,
       left: (
-        <CMText style={s(textStyles)}>Practice all moves due for review</CMText>
+        <CMText
+          style={s(textStyles)}
+          class={clsx(
+            textClasses,
+            numMovesDueFromHere() === 0 && "text-tertiary"
+          )}
+        >
+          Practice all moves due for review
+        </CMText>
       ),
-    },
-    {
-      hidden: numMovesDueFromHere() > 0,
-      onPress: () => {
-        trackEvent("side_overview.practice_all_lines");
-        quick((s) => {
-          s.repertoireState.reviewState.startReview(side(), {
-            side: side(),
-            cram: true,
-          });
-        });
-      },
-      left: <CMText style={s(textStyles)}>Practice all moves</CMText>,
     },
     {
       hidden: empty(),
@@ -137,7 +138,7 @@ export const RepertoireOverview = (props: {}) => {
         });
       },
       left: (
-        <CMText style={s(textStyles)}>
+        <CMText style={s(textStyles)} class={clsx(textClasses)}>
           Choose a specific opening to practice
         </CMText>
       ),
@@ -160,7 +161,11 @@ export const RepertoireOverview = (props: {}) => {
             trackEvent("side_overview.start_building");
           });
         },
-        left: <CMText style={s(textStyles)}>{"Start building"}</CMText>,
+        left: (
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            {"Start building"}
+          </CMText>
+        ),
         right: null,
         icon: empty() && "fa-sharp fa-plus",
       },
@@ -171,7 +176,11 @@ export const RepertoireOverview = (props: {}) => {
             s.repertoireState.startImporting(side());
           });
         },
-        left: <CMText style={s(textStyles)}>Import lines</CMText>,
+        left: (
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            Import lines
+          </CMText>
+        ),
         icon: "fa-sharp fa-file-import",
         right: null,
       },
@@ -183,7 +192,11 @@ export const RepertoireOverview = (props: {}) => {
           });
         },
         hidden: empty(),
-        left: <CMText style={s(textStyles)}>Export repertoire</CMText>,
+        left: (
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            Export repertoire
+          </CMText>
+        ),
         icon: "fa-sharp fa-arrow-down-to-line",
         right: null,
       },
@@ -198,7 +211,11 @@ export const RepertoireOverview = (props: {}) => {
             );
           });
         },
-        left: <CMText style={s(textStyles)}>Delete repertoire</CMText>,
+        left: (
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            Delete repertoire
+          </CMText>
+        ),
         icon: "fa-sharp fa-trash",
         right: null,
       },
