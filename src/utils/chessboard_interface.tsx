@@ -56,7 +56,7 @@ export interface ChessboardInterface {
   animatePreviewMove: () => void;
   stepPreviewMove: () => void;
   stepAnimationQueue: () => void;
-  requestToMakeMove: (move: Move) => void;
+  requestToMakeMove: (move: Move, options?: MakeMoveOptions) => void;
   availableMovesFrom: (square: Square) => Move[];
   getLastMove: () => Move | undefined;
   getCurrentEpd: () => string;

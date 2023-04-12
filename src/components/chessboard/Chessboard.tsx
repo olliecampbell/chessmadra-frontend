@@ -232,9 +232,9 @@ export function ChessboardView(props: {
   };
   const frozen = () => chessboardStore().frozen;
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
-    evt.preventDefault();
     if (frozen()) return;
     if (!!("ontouchstart" in window) && evt.type == "mousedown") return;
+    console.log("mouse down", evt);
 
     const tap = getTapOffset(evt, chessboardLayout);
     const [square, centerX, centerY] = getSquareFromLayoutAndGesture(
@@ -311,6 +311,8 @@ export function ChessboardView(props: {
   };
   const onMouseMove = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
+    evt.preventDefault();
+    console.log("mouse move", evt);
     // if (evt.target != chessboardContainerRef()) return;
 
     if (!drag().square) {
@@ -357,10 +359,13 @@ export function ChessboardView(props: {
   const onMouseUp = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
 
+    console.log("mouse up", evt);
+    evt.preventDefault();
     if (tapAction()) {
       console.log("doing tap");
       tapAction()?.();
     } else {
+      console.log("no tap action, was a drag");
       const [newSquare] = getSquareFromLayoutAndGesture(
         chessboardLayout,
         drag()
