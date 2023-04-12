@@ -117,7 +117,7 @@ export interface RepertoireState {
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,
-    options?: { pgnToPlay?: string; import?: boolean }
+    options?: { pgnToPlay?: string; import?: boolean; keepPosition?: boolean }
   ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
@@ -805,15 +805,14 @@ export const getInitialRepertoireState = (
           SidebarOnboardingStage.ChooseImportSource,
         ];
       }, "startImporting"),
-    startBrowsing: (
-      side: Side,
-      mode: BrowsingMode,
-      options?: { pgnToPlay?: string; import?: boolean }
-    ) =>
+    startBrowsing: (side: Side, mode: BrowsingMode, options) =>
       set(([s, gs]) => {
         const currentMode = s.browsingState.sidebarState.mode;
 
-        if (mode === "overview" || mode === "home") {
+        if (
+          (mode === "overview" || mode === "home") &&
+          !options?.keepPosition
+        ) {
           s.browsingState.chessboard.resetPosition();
         }
         s.browsingState.sidebarState.showPlansState = {

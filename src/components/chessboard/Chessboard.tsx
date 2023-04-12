@@ -312,7 +312,7 @@ export function ChessboardView(props: {
   const onMouseMove = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
     evt.preventDefault();
-    console.log("mouse move", evt);
+    // console.log("mouse move", evt);
     // if (evt.target != chessboardContainerRef()) return;
 
     if (!drag().square) {

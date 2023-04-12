@@ -148,7 +148,7 @@ export const Responses = function Responses() {
           {!isEmpty(prepareFor()) && (
             <RepertoireMovesTable
               {...{
-                header: header,
+                header: () => reviewHeader() ?? prepareForHeader(),
                 usePeerRates,
                 body: body,
                 activeSide,
@@ -222,7 +222,7 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
 
 function getResponsesHeader(currentLine: string[], myMoves?: number): string {
   const hasMove = myMoves;
-  console.log("my moves", myMoves);
+  console.log("getting header", currentLine, myMoves);
   // TODO: account for multiple moves, "These moves are"
   if (myMoves) {
     if (myMoves == 1) {

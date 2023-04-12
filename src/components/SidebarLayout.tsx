@@ -40,7 +40,7 @@ export const SidebarLayout = (props: {
     s.showPlansState.visible,
   ]);
   let chessboardFrozen = () => {
-    let frozen = props.mode === "overview" || props.mode === "home";
+    let frozen = false;
     if (onboardingStack.length > 0 || showingPlans()) {
       console.log("chessboardFrozen");
       frozen = true;

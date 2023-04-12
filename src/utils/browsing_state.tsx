@@ -21,6 +21,7 @@ import {
   every,
   forEach,
   uniqBy,
+  includes,
 } from "lodash-es";
 import {
   RepertoireMove,
@@ -940,7 +941,12 @@ export const getInitialBrowsingState = (
         });
       },
       onMovePlayed: () => {
-        set(([s]) => {
+        set(([s, rs]) => {
+          if (includes(["home", "overview"], s.sidebarState.mode)) {
+            rs.startBrowsing(s.sidebarState.activeSide ?? "white", "build", {
+              keepPosition: true,
+            });
+          }
           if (s.sidebarState.transposedState.visible) {
             s.sidebarState.transposedState.visible = false;
           }
