@@ -42,7 +42,7 @@ export const RepertoirePageLayout = (props: {
     >
       <HeadSiteMeta
         siteMeta={{
-          title: "Opening Builder",
+          title: "Chessbook",
           description: OPENINGS_DESCRIPTION,
         }}
       />

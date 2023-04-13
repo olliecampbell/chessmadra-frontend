@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import React from "react";
 import { HeadSiteMeta } from "~/components/PageContainer";
 import { BP, useResponsive } from "~/utils/useResponsive";
+import { Show } from "solid-js";
 
 export const Directory = () => {
   const isMobile = useIsMobile();
@@ -27,13 +28,13 @@ export const Directory = () => {
         }}
       />
 
-<Show when={failOnTrue(false) }>
+      <Show when={failOnTrue(false)}>
         <div style={s(c.row)}>
           <ColorSwatch colors={c.primaries} />
           <ColorSwatch colors={c.yellows} />
           <ColorSwatch colors={c.grays} />
         </div>
-        </Show>
+      </Show>
       <Spacer height={44} />
       <div style={s(c.oldContainerStyles(isMobile), c.grow, c.justifyCenter)}>
         <CMText
@@ -43,7 +44,7 @@ export const Directory = () => {
             c.weightSemiBold
           )}
         >
-          Chess Madra
+          Chessbook
         </CMText>
         <Spacer height={24} />
         <CMText
@@ -90,7 +91,7 @@ export const Directory = () => {
                   to={path}
                 >
                   <div>
-                  <Show when={isNew }>
+                    <Show when={isNew}>
                       <div
                         style={s(
                           c.absolute,
@@ -120,8 +121,8 @@ export const Directory = () => {
                           New
                         </CMText>
                       </div>
-                      </Show>
-                      <Show when={beta && !isNew }>
+                    </Show>
+                    <Show when={beta && !isNew}>
                       <div
                         style={s(
                           c.absolute,
@@ -145,7 +146,7 @@ export const Directory = () => {
                           Beta
                         </CMText>
                       </div>
-                      </Show>
+                    </Show>
                     <CMText
                       style={s(
                         c.fg(c.colors.textInverse),
@@ -183,9 +184,7 @@ export const ColorSwatch = ({ colors }) => {
     <div style={s(c.column, c.width(100))}>
       {times(20).map((i) => {
         const color = colors[i * 5];
-        return (
-          <div style={s(c.bg(color), c.selfStretch, c.height(20))}></div>
-        );
+        return <div style={s(c.bg(color), c.selfStretch, c.height(20))}></div>;
       })}
     </div>
   );

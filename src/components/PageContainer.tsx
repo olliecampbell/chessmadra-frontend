@@ -89,12 +89,12 @@ export const HeadSiteMeta = ({ siteMeta }: { siteMeta: SiteMetadata }) => {
       {/*
       // @ts-ignore */}
       <Meta name="description" content={siteMeta.description} />
-      <Meta name="twitter:site" content="chessmadra.com" />
+      <Meta name="twitter:site" content="chessbook.com" />
       <Meta name="twitter:title" content={siteMeta.title} />
       <Meta name="twitter:description" content={siteMeta.description} />
       <Meta property="og:title" content={siteMeta.title} />
       <Meta property="og:description" content={siteMeta.description} />
-      <Meta property="og:site_name" content="chessmadra.com" />
+      <Meta property="og:site_name" content="chessbook.com" />
       <Meta name="description" content={siteMeta.description} />
     </>
   );

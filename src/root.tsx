@@ -91,7 +91,7 @@ export default function Root() {
           name="viewport"
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
         />
-        <Title>Chess Madra</Title>
+        <Title>Chessbook</Title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link

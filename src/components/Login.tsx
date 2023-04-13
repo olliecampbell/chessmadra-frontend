@@ -95,7 +95,7 @@ export default function Login({ signup }: { signup?: boolean }) {
         <HeadSiteMeta
           siteMeta={{
             title: "Login",
-            description: "Login to Chess Madra",
+            description: "Login to Chessbook",
           }}
         />
         <div
@@ -111,7 +111,7 @@ export default function Login({ signup }: { signup?: boolean }) {
               <div items-center row>
                 <img style={s(c.size(48))} src={logo} alt="logo" />
 
-                <p class={`pl-3 text-center text-xl font-bold`}>Chess Madra</p>
+                <p class={`pl-3 text-center text-xl font-bold`}>Chessbook</p>
               </div>
               <Spacer height={12} />
               <div class={`row w-full gap-4`}>
