@@ -97,67 +97,65 @@ export const Responses = function Responses() {
       reviewHeader() ?? getResponsesHeader(currentLine(), yourMoves().length)
     );
   };
+  const responses = createMemo(() => {
+    if (!isEmpty(yourMoves())) {
+      return yourMoves();
+    } else if (!isEmpty(prepareFor())) {
+      return prepareFor();
+    } else {
+      return tableResponses();
+    }
+  });
+  console.log("rendering responses");
+  createEffect(() => {
+    console.log("new responses", responses());
+  });
   return (
     <div style={s(c.column, c.constrainWidth)}>
       <Show when={positionReport()}>
         <>
-          {!isEmpty(yourMoves()) && (
-            <div style={s()} key={`your-moves-play-${currentEpd}`}>
+          <Show
+            when={
+              !isEmpty(yourMoves()) ||
+              (isEmpty(yourMoves()) && !isEmpty(otherMoves())) ||
+              !isEmpty(prepareFor())
+            }
+          >
+            <div style={s()} id={`your-moves-play-${currentEpd}`}>
               <RepertoireMovesTable
                 {...{
                   header: header,
                   usePeerRates,
                   activeSide,
                   side: currentSide,
-                  responses: yourMoves,
+                  responses: responses,
                 }}
               />
             </div>
-          )}
-          {isEmpty(yourMoves()) && !isEmpty(otherMoves()) && (
-            <div style={s()} key={`choose-next-move-${currentEpd}`}>
-              <RepertoireMovesTable
-                {...{
-                  header: header,
-                  usePeerRates,
-                  activeSide,
-                  side: currentSide,
-                  responses: otherMoves,
-                }}
-              />
+          </Show>
+
+          <Show
+            when={
+              !isEmpty(yourMoves()) &&
+              !isEmpty(otherMoves()) &&
+              mode() == "build"
+            }
+          >
+            <div style={s(c.mt(36))} id={`alternate-moves-${currentEpd}`}>
+              <CollapsibleSidebarSection header="Add an alternative move">
+                <Spacer height={12} />
+                <RepertoireMovesTable
+                  {...{
+                    header: () => null,
+                    usePeerRates,
+                    activeSide,
+                    side: currentSide,
+                    responses: otherMoves,
+                  }}
+                />
+              </CollapsibleSidebarSection>
             </div>
-          )}
-          {!isEmpty(yourMoves()) &&
-            !isEmpty(otherMoves()) &&
-            mode() == "build" && (
-              <div style={s(c.mt(36))} key={`alternate-moves-${currentEpd}`}>
-                <CollapsibleSidebarSection header="Add an alternative move">
-                  <Spacer height={12} />
-                  <RepertoireMovesTable
-                    {...{
-                      header: () => null,
-                      usePeerRates,
-                      activeSide,
-                      side: currentSide,
-                      responses: otherMoves,
-                    }}
-                  />
-                </CollapsibleSidebarSection>
-              </div>
-            )}
-          {!isEmpty(prepareFor()) && (
-            <RepertoireMovesTable
-              {...{
-                header: () => reviewHeader() ?? prepareForHeader(),
-                usePeerRates,
-                body: body,
-                activeSide,
-                side: currentSide,
-                responses: prepareFor,
-                myMoves: false,
-              }}
-            />
-          )}
+          </Show>
         </>
       </Show>
       {user()?.isAdmin && <InstructiveGamesView />}
@@ -222,7 +220,6 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
 
 function getResponsesHeader(currentLine: string[], myMoves?: number): string {
   const hasMove = myMoves;
-  console.log("getting header", currentLine, myMoves);
   // TODO: account for multiple moves, "These moves are"
   if (myMoves) {
     if (myMoves == 1) {

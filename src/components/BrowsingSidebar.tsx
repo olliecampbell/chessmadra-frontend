@@ -28,7 +28,7 @@ import { RepertoireHome } from "./RepertoireHome";
 import { useHovering } from "~/mocks";
 import { trackEvent } from "~/utils/trackEvent";
 import { Animated } from "./View";
-import { createEffect, createSignal, Show } from "solid-js";
+import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
 import { Pressable } from "./Pressable";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 
@@ -204,32 +204,6 @@ export const InnerSidebar = function InnerSidebar() {
     s.activeSide,
   ]);
 
-  // optimization opportunity
-  const inner = () => {
-    if (view()) {
-      return view();
-    } else if (submitFeedbackState().visible) {
-      return <FeedbackView />;
-    } else if (mode() == "home") {
-      return <RepertoireHome />;
-    } else if (mode() == "overview") {
-      return <RepertoireOverview />;
-    } else if (mode() == "review") {
-      return <RepertoireReview />;
-    } else if (!isEmpty(stageStack())) {
-      return <SidebarOnboarding />;
-    } else if (deleteLineState().visible) {
-      return <DeleteLineView />;
-    } else if (transposedState().visible) {
-      return <TransposedView />;
-    } else if (showPlansState().visible) {
-      return <TargetCoverageReachedView />;
-    } else if (addedLineState().visible) {
-      return <SavedLineView />;
-    } else {
-      return <Responses />;
-    }
-  };
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   return (
@@ -238,7 +212,36 @@ export const InnerSidebar = function InnerSidebar() {
         <BackSection />
       </Show>
       <div id="sidebar-inner" style={s(c.relative, c.zIndex(100))}>
-        {inner()}
+        <Switch fallback={<Responses />}>
+          <Match when={view()}>{view()}</Match>
+          <Match when={submitFeedbackState().visible}>
+            <FeedbackView />
+          </Match>
+          <Match when={mode() == "home"}>
+            <RepertoireHome />
+          </Match>
+          <Match when={mode() == "overview"}>
+            <RepertoireOverview />
+          </Match>
+          <Match when={mode() == "review"}>
+            <RepertoireReview />
+          </Match>
+          <Match when={!isEmpty(stageStack())}>
+            <SidebarOnboarding />
+          </Match>
+          <Match when={deleteLineState().visible}>
+            <DeleteLineView />
+          </Match>
+          <Match when={transposedState().visible}>
+            <TransposedView />
+          </Match>
+          <Match when={showPlansState().visible}>
+            <TargetCoverageReachedView />
+          </Match>
+          <Match when={addedLineState().visible}>
+            <SavedLineView />
+          </Match>
+        </Switch>
       </div>
       <Spacer height={44} />
       <SidebarActions />
@@ -372,10 +375,6 @@ const BackSection = () => {
 
   const color = () =>
     hovering() ? c.colors.textSecondary : c.colors.textTertiary;
-
-  createEffect(() => {
-    console.log("back button action", backButtonAction(), !!view());
-  });
 
   return (
     <FadeInOut

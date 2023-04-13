@@ -277,18 +277,18 @@ export const NavBreadcrumbs = () => {
       >
         {(breadcrumb) => (
           <Pressable
-            style={s(breadcrumb.onPress ? c.clickable : c.unclickable)}
+            style={s(breadcrumb().onPress ? c.clickable : c.unclickable)}
             onPress={() => {
-              if (!breadcrumb.onPress) {
+              if (!breadcrumb().onPress) {
                 return;
               }
               quick((s) => {
                 trackEvent("breadcrumbs.clicked", {
                   mode,
-                  breadcrumb: breadcrumb.text,
+                  breadcrumb: breadcrumb().text,
                 });
                 s.repertoireState.browsingState.moveSidebarState("left");
-                breadcrumb.onPress?.();
+                breadcrumb().onPress?.();
               });
             }}
           >
@@ -299,7 +299,7 @@ export const NavBreadcrumbs = () => {
                   "text-tertiary &hover:text-primary text-sm transition-colors"
                 )}
               >
-                {breadcrumb.text}
+                {breadcrumb().text}
               </CMText>
             </div>
           </Pressable>

@@ -72,6 +72,7 @@ const unoConfig = {
       ["text-primary"]: "text-gray-95",
       ["text-secondary"]: "text-gray-80",
       ["text-tertiary"]: "text-gray-50",
+      ["flexible"]: "basis-0 min-w-0 min-h-0 grow",
     },
     [/^square-(.*)$/, ([, c]) => `w-${c} h-${c}`],
   ],

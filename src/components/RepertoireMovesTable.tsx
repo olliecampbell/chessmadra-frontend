@@ -97,9 +97,6 @@ export const RepertoireMovesTable = ({
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [expandedLength, setExpandedLength] = createSignal(0);
   const [editingAnnotations, setEditingAnnotations] = createSignal(false);
-  onMount(() => {
-    console.log("RepertoireMovesTable onMount");
-  });
   const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
     destructure(
       createMemo(() => {
@@ -219,9 +216,6 @@ export const RepertoireMovesTable = ({
       })
     )
   );
-  createEffect(() => {
-    console.log("opening names", openingNames());
-  });
   return (
     <div style={s(c.column)}>
       <Show when={header()}>
@@ -276,13 +270,12 @@ export const RepertoireMovesTable = ({
                 anyMine={anyMine()}
                 sections={sections()}
                 editing={editingAnnotations()}
-                tableResponse={tableResponse}
+                tableResponse={tableResponse()}
                 moveMinWidth={moveMaxWidth()}
                 moveRef={(e) => {
-                  console.log("e", e);
                   onMoveRender(
-                    tableResponse.suggestedMove?.sanPlus ||
-                      tableResponse.repertoireMove?.sanPlus,
+                    tableResponse().suggestedMove?.sanPlus ||
+                      tableResponse().repertoireMove?.sanPlus,
                     e
                   );
                 }}
@@ -297,11 +290,11 @@ export const RepertoireMovesTable = ({
       >
         <Show when={truncated() && mode() == "build"}>
           <Pressable
-            style={s(c.pb(2))}
             onPress={() => {
               setExpandedLength(trimmedResponses().length + 5);
               trackEvent("browsing.moves_table.show_more");
             }}
+            class={clsx("pb-1")}
           >
             <CMText
               class="text-tertiary &hover:text-primary transition-colors"
@@ -315,7 +308,7 @@ export const RepertoireMovesTable = ({
         {!hideAnnotations && mode() == "build" && (
           <>
             <Pressable
-              style={s(c.pb(2))}
+              class={clsx("pb-1")}
               onPress={() => {
                 if (!editingAnnotations) {
                   trackEvent(`${mode()}.moves_table.edit_annotations`);
@@ -338,32 +331,30 @@ export const RepertoireMovesTable = ({
             <Spacer width={16} />
           </>
         )}
-        {anyMine() && mode() == "build" && (
-          <>
-            <Pressable
-              style={s(c.pb(2))}
-              onPress={() => {
-                trackEvent(`${mode()}.moves_table.delete_move`);
-                quick((s) => {
-                  s.repertoireState.browsingState.moveSidebarState("right");
-                  s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
-                    true;
-                });
-              }}
+        <Show when={anyMine() && mode() == "build"}>
+          <Pressable
+            class={clsx("pb-1")}
+            onPress={() => {
+              trackEvent(`${mode()}.moves_table.delete_move`);
+              quick((s) => {
+                s.repertoireState.browsingState.moveSidebarState("right");
+                s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
+                  true;
+              });
+            }}
+          >
+            <CMText
+              style={s(
+                c.fontSize(12),
+                c.fg(c.colors.textTertiary),
+                c.weightSemiBold
+              )}
             >
-              <CMText
-                style={s(
-                  c.fontSize(12),
-                  c.fg(c.colors.textTertiary),
-                  c.weightSemiBold
-                )}
-              >
-                {`Remove ${mine().length > 1 ? "a" : "this"} move`}
-              </CMText>
-            </Pressable>
-            <Spacer width={12} />
-          </>
-        )}
+              {`Remove ${mine().length > 1 ? "a" : "this"} move`}
+            </CMText>
+          </Pressable>
+          <Spacer width={12} />
+        </Show>
       </div>
     </div>
   );
@@ -411,7 +402,6 @@ const Response = (props: {
     s.currentSide,
   ]);
   const isMobile = useIsMobile();
-  console.log("is mobile? ", isMobile);
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const sanPlus = () =>
     props.tableResponse.suggestedMove?.sanPlus ??
@@ -513,19 +503,10 @@ const Response = (props: {
         <div style={s(c.row, c.alignCenter)}>
           <Pressable
             onPress={() => {}}
-            style={s(
-              c.grow,
-              c.height(128),
-              c.lightCardShadow,
-              c.br(2),
-              // c.py(8),
-              // c.pl(14),
-              // c.pr(8),
-              c.clickable,
-              c.mx(c.getSidebarPadding(responsive)),
-              c.bg(c.grays[12]),
-              c.row
+            class={clsx(
+              "bg-gray-12 row h-[128px] grow cursor-pointer rounded-sm"
             )}
+            style={s(c.lightCardShadow, c.mx(c.getSidebarPadding(responsive)))}
           >
             <div
               style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
@@ -595,20 +576,10 @@ const Response = (props: {
                 }
               });
             }}
-            class={clsx("&hover:bg-gray-18 transition-colors")}
-            style={s(
-              c.grow,
-              c.flexible,
-              // tableResponse.bestMove && c.border(`1px solid ${c.yellows[60]}`),
-              c.br(2),
-
-              c.px(c.getSidebarPadding(responsive)),
-              c.py(12),
-
-              // mine && c.border(`2px solid ${c.purples[60]}`),
-              c.clickable,
-              c.row
+            class={clsx(
+              "&hover:bg-gray-18 flexible row cursor-pointer rounded-sm py-3 transition-colors"
             )}
+            style={s(c.px(c.getSidebarPadding(responsive)))}
           >
             <div style={s(c.column, c.grow, c.constrainWidth)}>
               <div style={s(c.row, c.fullWidth, c.alignStart)}>
@@ -702,27 +673,29 @@ const Response = (props: {
                     }}
                     each={() => props.sections}
                   >
-                    {(section) => (
-                      <div
-                        style={s(
-                          c.width(section.width),
-                          c.center,
-                          section.alignLeft && c.justifyStart,
-                          section.alignRight && c.justifyEnd,
-                          c.row
-                        )}
-                      >
-                        {section.content({
-                          numMovesDueFromHere,
-                          earliestDueDate,
-                          suggestedMove: props.tableResponse.suggestedMove,
-                          positionReport: positionReport(),
-                          tableResponse: props.tableResponse,
-                          side: currentSide,
-                          tableMeta: props.tableMeta,
-                        })}
-                      </div>
-                    )}
+                    {(section) => {
+                      return (
+                        <div
+                          style={s(
+                            c.width(section().width),
+                            c.center,
+                            section().alignLeft && c.justifyStart,
+                            section().alignRight && c.justifyEnd,
+                            c.row
+                          )}
+                        >
+                          {section().content({
+                            numMovesDueFromHere,
+                            earliestDueDate,
+                            suggestedMove: props.tableResponse.suggestedMove,
+                            positionReport: positionReport(),
+                            tableResponse: props.tableResponse,
+                            side: currentSide,
+                            tableMeta: props.tableMeta,
+                          })}
+                        </div>
+                      );
+                    }}
                   </Intersperse>
                 </div>
               </div>
@@ -773,10 +746,10 @@ const TableHeader = ({
             return (
               <div
                 style={s(
-                  c.width(section.width),
-                  section.alignRight
+                  c.width(section().width),
+                  section().alignRight
                     ? c.justifyEnd
-                    : section.alignLeft
+                    : section().alignLeft
                     ? c.justifyStart
                     : c.center,
                   c.row,
@@ -790,7 +763,7 @@ const TableHeader = ({
                     c.whitespace("nowrap")
                   )}
                 >
-                  {section.header}
+                  {section().header}
                 </CMText>
               </div>
             );

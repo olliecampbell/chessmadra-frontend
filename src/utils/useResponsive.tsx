@@ -65,7 +65,6 @@ export interface Responsive {
 export const useResponsive = (): Responsive => {
   // solid TODO
   const windowSize = useWindowSize();
-  console.log("windowSize", windowSize);
   // const [isMobile, setIsMobile] = createSignal(true);
   // useEffect(() => {
   //   setIsMobile(windowWidth < 1000);

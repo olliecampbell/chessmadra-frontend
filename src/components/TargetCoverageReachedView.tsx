@@ -1,14 +1,8 @@
 import { Spacer } from "~/components/Space";
-import {
-  isEmpty,
-  cloneDeep,
-} from "lodash-es";
+import { isEmpty, cloneDeep } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarTemplate } from "./SidebarTemplate";
-import {
-  quick,
-  useSidebarState,
-} from "~/utils/app_state";
+import { quick, useSidebarState } from "~/utils/app_state";
 import { CMText } from "./CMText";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
@@ -110,7 +104,9 @@ export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
                   style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
                 />
                 <Spacer width={8} />
-                <CMText style={s(c.fg(c.colors.textPrimary))}>{section}</CMText>
+                <CMText style={s(c.fg(c.colors.textPrimary))}>
+                  {section()}
+                </CMText>
               </div>
             );
           }}

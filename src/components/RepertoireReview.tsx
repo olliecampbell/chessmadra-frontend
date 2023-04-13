@@ -11,7 +11,7 @@ import { SidebarAction } from "./SidebarActions";
 import { Accessor, createEffect, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { RepertoireMove } from "~/utils/repertoire";
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -110,9 +110,8 @@ export const RepertoireReview = (props: {}) => {
                 );
               }}
             >
-              {(x: number) => {
-                const hasCompleted = () => x < numCompleted();
-                console.log("re-rendering", x, numCompleted(), hasCompleted());
+              {(x: Accessor<number>) => {
+                const hasCompleted = () => x() < numCompleted();
                 return (
                   <div
                     class={clsx(

@@ -12,14 +12,14 @@ import {
 export const Intersperse = <T,>(props: {
   each: Accessor<T[]>;
   separator: () => JSXElement;
-  children: (item: T, index: number) => JSXElement;
+  children: (item: Accessor<T>, index: number) => JSXElement;
 }): JSXElement => {
   const length = () => props.each().length;
   return (
     <Index each={props.each()}>
       {(item, index) => (
         <>
-          {props.children(item(), index)}
+          {props.children(item, index)}
           <Show when={index !== length() - 1}>{props.separator()}</Show>
         </>
       )}
