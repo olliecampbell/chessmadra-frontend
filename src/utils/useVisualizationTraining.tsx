@@ -102,11 +102,6 @@ export const useVisualizationTraining = ({
 }) => {
   const eventsIdentifier = isClimb ? "climb" : "visualization";
   const isMobile = useIsMobile();
-  useEffect(() => {
-    setTimeout(() => {
-      document.title = "chessmadra";
-    }, 100);
-  });
   // Styles
   const incrementDecrementStyles = s(c.buttons.basic, c.size(40));
   const incrementDecrementTextStyles = s(

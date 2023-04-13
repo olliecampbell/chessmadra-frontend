@@ -71,7 +71,7 @@ const OnboardingIntro = () => {
   ];
   return (
     <div style={s(c.column)}>
-      <RepertoireEditingHeader>Welcome to Chess Madra!</RepertoireEditingHeader>
+      <RepertoireEditingHeader>Welcome to Chessbook!</RepertoireEditingHeader>
       <Spacer height={12} />
       <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
         <CMText style={s()}>This site will help you:</CMText>
