@@ -290,9 +290,7 @@ export const RepertoireOverview = (props: {}) => {
   );
 };
 
-const Option = ({
-  option,
-}: {
+const Option = (props: {
   option: {
     onPress: () => void;
     right?: Component | null;
@@ -317,18 +315,18 @@ const Option = ({
       class={clsx("&hover:bg-gray-18 h-sidebar-button")}
       style={s(
         styles,
-        option.disabled && c.noPointerEvents,
+        props.option.disabled && c.noPointerEvents,
         c.borderBottom(`1px solid ${c.colors.border}`),
-        s(hovering() && !option.disabled && c.bg(c.grays[18]))
+        s(hovering() && !props.option.disabled && c.bg(c.grays[18]))
       )}
       onPress={() => {
-        if (!option.disabled) {
-          option.onPress();
+        if (!props.option.disabled) {
+          props.option.onPress();
         }
       }}
     >
-      {option.left}
-      {option.right}
+      {props.option.left}
+      {props.option.right}
     </Pressable>
   );
 };
