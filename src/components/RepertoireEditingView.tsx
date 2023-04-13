@@ -93,9 +93,13 @@ export const Responses = function Responses() {
     return { prepareForHeader, reviewHeader };
   });
   const header = () => {
-    return (
-      reviewHeader() ?? getResponsesHeader(currentLine(), yourMoves().length)
-    );
+    if (reviewHeader()) {
+      return reviewHeader();
+    }
+    if (!isEmpty(prepareFor())) {
+      return prepareForHeader();
+    }
+    return getResponsesHeader(currentLine(), yourMoves().length);
   };
   const responses = createMemo(() => {
     if (!isEmpty(yourMoves())) {
