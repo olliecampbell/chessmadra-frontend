@@ -276,7 +276,7 @@ export const SidebarActions = () => {
           return <Spacer height={10} />;
         }}
       >
-        {(b, i) => <SidebarFullWidthButton action={b} />}
+        {(b, i) => <SidebarFullWidthButton action={b()} />}
       </Intersperse>
     </div>
   );

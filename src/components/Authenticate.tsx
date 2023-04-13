@@ -51,7 +51,6 @@ const Authenticate = (props) => {
             }, 1000);
           })
           .catch((e) => {
-            console.log("e:", e);
             trackEvent("login.auth_failed");
             setAuthStatus(AuthStatus.Failed);
           });

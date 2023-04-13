@@ -186,7 +186,6 @@ export function ChessboardView(props: {
     const rowPercent = gesture.y / chessboardLayout.height;
     let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
     let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
-    console.log("flipped?", flipped());
     let square = `${COLUMNS[column]}${ROWS[7 - row]}`;
     if (flipped()) {
       square = `${COLUMNS[7 - column]}${ROWS[row]}`;
@@ -350,7 +349,6 @@ export function ChessboardView(props: {
         const distance = Math.sqrt(
           Math.pow(newDrag.transform.x, 2) + Math.pow(newDrag.transform.y, 2)
         );
-        console.log("distance", distance);
         newDrag.enoughToDrag = distance > 5;
       }
       s.drag = newDrag;
@@ -387,7 +385,6 @@ export function ChessboardView(props: {
   };
 
   const isMobile = useIsMobile();
-  console.log("isMobile", isMobile);
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
   const x = (

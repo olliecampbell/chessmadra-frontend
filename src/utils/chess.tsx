@@ -31,6 +31,7 @@ export const isCheckmate = (move: Move, position: Chess) => {
 };
 
 export function genEpd(position: Chess): string {
+  console.log("generating epd");
   const fen = position.fen();
   const fenParts = dropRight(fen.split(" "), 2);
 

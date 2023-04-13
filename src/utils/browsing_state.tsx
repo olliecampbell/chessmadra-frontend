@@ -374,7 +374,6 @@ export const getInitialBrowsingState = (
           rs.repertoire[s.sidebarState.activeSide].positionResponses[
             s.chessboard.getCurrentEpd()
           ];
-        console.log("existing moves", existingMoves);
         existingMoves?.map((r) => {
           if (_tableResponses[r.sanPlus]) {
             _tableResponses[r.sanPlus].repertoireMove = r;
