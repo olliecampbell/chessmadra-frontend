@@ -550,7 +550,6 @@ const ImportOnboarding = () => {
       input.addEventListener("change", async (e) => {
         console.log("file upload");
         const file = input.files?.[0];
-        debugger;
         console.log("file upload", file);
         if (file) {
           const body = await file.text();

@@ -42,7 +42,9 @@ export const BrowserSidebar = function BrowserSidebar() {
     ]);
   createEffect(() => {
     // to trigger
-    sidebarIter();
+    if (sidebarIter() === 0) {
+      return;
+    }
     if (!previousRef() || !currentRef()) {
       return;
     }
@@ -146,31 +148,7 @@ export const BrowserSidebar = function BrowserSidebar() {
         </div>
         <div
           ref={setCurrentRef}
-          style={s(
-            c.keyedProp("grid-area")("1/1"),
-            c.displayFlex,
-            !isNil(direction) && s()
-            // todo: solid
-            // c.opacity(
-            //   currentSidebarAnim.interpolate({
-            //     inputRange: [0, 1],
-            //     outputRange: [0, 1],
-            //   })
-            // ),
-            // {
-            //   transform: [
-            //     {
-            //       translateX: currentSidebarAnim.interpolate({
-            //         inputRange: [0, 1],
-            //         outputRange: [
-            //           direction === "left" ? "-40px" : "40px",
-            //           "0px",
-            //         ],
-            //       }),
-            //     },
-            //   ],
-            // }
-          )}
+          style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}
         >
           <SidebarStateContext.Provider value={false}>
             <InnerSidebar />
