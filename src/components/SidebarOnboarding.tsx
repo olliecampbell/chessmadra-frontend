@@ -28,32 +28,32 @@ export const SidebarOnboarding = function SidebarOnboarding() {
   // const isMobile = useIsMobile();
   const responsive = useResponsive();
 
-  const stage = last(onboardingState().stageStack);
+  const stage = () => last(onboardingState().stageStack);
 
   return (
     <div style={s(c.column)}>
       <Switch>
-        <Match when={stage === SidebarOnboardingStage.Initial}>
+        <Match when={stage() === SidebarOnboardingStage.Initial}>
           <OnboardingIntro />
         </Match>
-        <Match when={stage === SidebarOnboardingStage.ConnectAccount}>
+        <Match when={stage() === SidebarOnboardingStage.ConnectAccount}>
           <ConnectAccountOnboarding />
         </Match>
-        <Match when={stage === SidebarOnboardingStage.SetRating}>
+        <Match when={stage() === SidebarOnboardingStage.SetRating}>
           <SetRatingOnboarding />
         </Match>
         <Match
-          when={stage === SidebarOnboardingStage.AskAboutExistingRepertoire}
+          when={stage() === SidebarOnboardingStage.AskAboutExistingRepertoire}
         >
           <AskAboutExistingRepertoireOnboarding />
         </Match>
-        <Match when={stage === SidebarOnboardingStage.ChooseImportSource}>
+        <Match when={stage() === SidebarOnboardingStage.ChooseImportSource}>
           <ChooseImportSourceOnboarding />
         </Match>
-        <Match when={stage === SidebarOnboardingStage.Import}>
+        <Match when={stage() === SidebarOnboardingStage.Import}>
           <ImportOnboarding />
         </Match>
-        <Match when={stage === SidebarOnboardingStage.TrimRepertoire}>
+        <Match when={stage() === SidebarOnboardingStage.TrimRepertoire}>
           <TrimRepertoireOnboarding />
         </Match>
       </Switch>

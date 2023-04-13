@@ -15,7 +15,7 @@ const colorMapping = {
   purple: "purples",
   success: "successShades",
 };
-const colors = {};
+const colors = { border: allShades.border };
 // map color mpapins key and values
 const colorMap = Object.entries(colorMapping).forEach(([key, value]) => {
   colors[`${key}`] = {};

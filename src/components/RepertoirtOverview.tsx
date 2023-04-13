@@ -257,11 +257,13 @@ export const RepertoireOverview = (props: {}) => {
           </For>
         </div>
       </Show>
-      <For each={options()}>
-        {(opt) => {
-          return <Option option={opt} />;
-        }}
-      </For>
+      <div class={clsx("b-0 b-t b-solid border-border")}>
+        <For each={options()}>
+          {(opt) => {
+            return <Option option={opt} />;
+          }}
+        </For>
+      </div>
       <div
         style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
         class={clsx("pt-4")}

@@ -58,7 +58,7 @@ export const RepertoireHome = (props: {}) => {
   // });
   const overallActions: Accessor<SidebarAction[]> = () => {
     const totalDue =
-      numMovesDueBySide()?.white ?? 0 + numMovesDueBySide()?.black ?? 0;
+      (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
     const actions = [];
 
     if (totalDue > 0) {
