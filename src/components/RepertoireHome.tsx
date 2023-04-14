@@ -45,17 +45,6 @@ export const RepertoireHome = (props: {}) => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
   createEffect(() => {});
-  // let interval = setInterval(() => {
-  //   console.log("num moves ", numLines()["white"]);
-  //   console.log(
-  //     "num moves ",
-  //     getAppState().repertoireState.getLineCount("white")
-  //   );
-  // }, 500);
-  // onCleanup(() => {
-  //   console.log("cleaning up");
-  //   clearInterval(interval);
-  // });
   const overallActions: Accessor<SidebarAction[]> = () => {
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);

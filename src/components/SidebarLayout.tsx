@@ -128,9 +128,16 @@ export const SidebarLayout = (props: {
             >
               <BrowsingChessboardView />
             </div>
-            <Spacer height={12} />
-            <Show when={props.mode === "build" || props.mode === "browse"}>
-              <ExtraChessboardActions />
+            <Show when={!responsive.isMobile}>
+              <Spacer height={12} />
+              <Show when={props.mode === "build" || props.mode === "browse"}>
+                <div class="row w-full justify-center">
+                  <AnalyzeOnLichessButton />
+                </div>
+              </Show>
+            </Show>
+            <Show when={responsive.isMobile}>
+              <Spacer height={c.getSidebarPadding(responsive)} />
             </Show>
             {vertical ? (
               <div
@@ -172,12 +179,8 @@ export const SidebarLayout = (props: {
   );
 };
 
-export const ExtraChessboardActions = ({}: {}) => {
+export const AnalyzeOnLichessButton = ({}: {}) => {
   const responsive = useResponsive();
-  const textStyles = s(
-    c.fontSize(responsive.switch(12, [BP.md, 14])),
-    c.weightRegular
-  );
   const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
   const padding = 8;
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
@@ -185,9 +188,12 @@ export const ExtraChessboardActions = ({}: {}) => {
     s.chessboard.get((v) => v).moveLog,
   ]);
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
+  createEffect(() => {
+    console.log("debug", currentLine(), sideBarMode());
+  });
   return (
     <FadeInOut
-      style={s(c.row, c.fullWidth, c.justifyCenter)}
+      style={s(c.row)}
       open={() =>
         !isEmpty(currentLine()) &&
         (sideBarMode() == "browse" ||
@@ -197,7 +203,9 @@ export const ExtraChessboardActions = ({}: {}) => {
     >
       <Pressable
         style={s(c.row, c.alignCenter)}
-        class={clsx("text-tertiary &hover:text-primary pb-2 transition-colors")}
+        class={clsx(
+          "text-tertiary &hover:text-primary md:text-md text-xs font-semibold transition-colors"
+        )}
         onPress={() => {
           quick((s) => {
             trackEvent("chessboard.analyze_on_lichess", {
@@ -208,7 +216,7 @@ export const ExtraChessboardActions = ({}: {}) => {
           });
         }}
       >
-        <CMText style={s(textStyles)}>Analyze on Lichess</CMText>
+        <CMText>Analyze on Lichess</CMText>
         <Spacer width={padding} />
         <i class="fa fa-up-right-from-square " style={s(iconStyles)}></i>
       </Pressable>

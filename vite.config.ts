@@ -69,6 +69,7 @@ const unoConfig = {
       row: "flex flex-row",
       col: "flex",
       btn: "bg-blue-50 &hover:bg-blue-70 text-primary font-bold py-2 px-4 rounded cursor-pointer",
+      ["padding-sidebar"]: "px-3 lg:px-[18px]",
       ["text-primary"]: "text-gray-95",
       ["text-secondary"]: "text-gray-80",
       ["text-tertiary"]: "text-gray-50",

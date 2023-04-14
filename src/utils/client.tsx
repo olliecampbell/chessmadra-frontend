@@ -10,7 +10,7 @@ let baseURL = undefined;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://marcus.local:8040";
   if (typeof window !== "undefined") {
-    if (window.location.host.includes("local")) {
+    if (window.location.host.includes("local.chessbook")) {
       baseURL = "http://staging.chessmadra.com";
     }
   }
