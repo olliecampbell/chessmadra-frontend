@@ -104,7 +104,7 @@ export const modeToUI = (mode: BrowsingMode) => {
     case "build":
       return "Browse / add new";
     case "review":
-      return "Review";
+      return "Practice";
     case "overview":
       return "Overview";
     case "home":
