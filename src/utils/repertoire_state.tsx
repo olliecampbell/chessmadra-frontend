@@ -821,8 +821,10 @@ export const getInitialRepertoireState = (
           hasShown: false,
         };
         s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
+        // TODO: should just reset to a default state here, instead of doing it one by one
         s.browsingState.sidebarState.mode = mode;
         s.browsingState.sidebarState.activeSide = side;
+        s.browsingState.sidebarState.addedLineState.visible = false;
         s.browsingState.sidebarState.isPastCoverageGoal = false;
         s.browsingState.onPositionUpdate();
         s.browsingState.chessboard.set((c) => {

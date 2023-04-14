@@ -12,6 +12,7 @@ import { Accessor, createEffect, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { RepertoireMove } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
+import { START_EPD } from "~/utils/chess";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -74,7 +75,9 @@ export const RepertoireReview = (props: {}) => {
     <SidebarTemplate
       header={
         currentMove()?.moves.length === 1
-          ? "Play the correct move on the board"
+          ? currentMove()?.moves[0].epd === START_EPD
+            ? "Play your first move as white"
+            : "Play the correct move on the board"
           : `You have ${
               currentMove()?.moves.length
             } responses to this position in your repertoire. Play all your responses on the board`
