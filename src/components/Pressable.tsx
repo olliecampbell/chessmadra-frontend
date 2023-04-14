@@ -4,7 +4,7 @@ export const Pressable = (props) => {
   return (
     <div
       {...props}
-      style={s(props.style ?? {}, c.clickable)}
+      style={s(c.clickable, props.style ?? {})}
       onClick={() => {
         props.onPress();
       }}
