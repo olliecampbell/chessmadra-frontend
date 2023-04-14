@@ -238,7 +238,7 @@ export const getInitialReviewState = (
           return null;
         }
         const queue: QuizMove[] = [];
-        SIDES.forEach((side) => {
+        shuffle(SIDES).forEach((side) => {
           const seen_epds = new Set();
           if (options.side && options.side !== side) {
             return;
