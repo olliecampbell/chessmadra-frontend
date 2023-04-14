@@ -28,9 +28,16 @@ import { RepertoireHome } from "./RepertoireHome";
 import { useHovering } from "~/mocks";
 import { trackEvent } from "~/utils/trackEvent";
 import { Animated } from "./View";
-import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  Match,
+  Show,
+  Switch,
+  useContext,
+} from "solid-js";
 import { Pressable } from "./Pressable";
-import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
+import { AnalyzeOnLichessButton, VERTICAL_BREAKPOINT } from "./SidebarLayout";
 
 export const BrowserSidebar = function BrowserSidebar() {
   const [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =
@@ -264,6 +271,14 @@ const BackSection = () => {
       s.repertoireState.startBrowsing(side(), "overview");
     });
   };
+  const usePrevious = useContext(SidebarStateContext);
+  createEffect(() => {
+    if (usePrevious) {
+      console.log(
+        `This was previous, should open? ${isOpen()}, mode ${mode()} action ${backButtonAction()}`
+      );
+    }
+  });
   const backButtonAction = () => {
     let backButtonAction: (() => void) | null = null;
 
@@ -353,43 +368,50 @@ const BackSection = () => {
 
   const color = () =>
     hovering() ? c.colors.textSecondary : c.colors.textTertiary;
+  const isOpen = () => !isNil(backButtonAction()) || !!view();
+  createEffect(() => {
+    console.log("isOpen", isOpen());
+  });
 
   return (
     <FadeInOut
       id="back-button"
-      style={s(c.column)}
-      open={() => !isNil(backButtonAction()) || !!view()}
+      style={s(
+        c.column,
+        !vertical ? c.height(paddingTop) : c.height(isOpen() ? 42 : 12)
+      )}
+      open={() => isOpen()}
+      // className="transition-height"
     >
-      <Pressable
-        {...hoveringProps}
-        onPress={() => {
-          quick((s) => {
-            if (view()) {
-              s.repertoireState.browsingState.replaceView(null, "left");
-            } else if (backButtonAction()) {
-              s.repertoireState.browsingState.moveSidebarState("left");
-              backButtonAction()?.();
-            }
-          });
-        }}
-        style={s(
-          !vertical ? c.height(paddingTop) : c.pt(backButtonAction() ? 16 : 0),
-          c.unshrinkable,
-          c.column,
-          c.justifyEnd,
-          c.px(c.getSidebarPadding(responsive))
-        )}
-      >
-        <CMText
-          style={s(c.weightBold, c.fg(color()), c.row)}
-          class="place-items-center"
+      <div class={"row padding-sidebar h-full items-center justify-between "}>
+        <Pressable
+          {...hoveringProps}
+          onPress={() => {
+            quick((s) => {
+              if (view()) {
+                s.repertoireState.browsingState.replaceView(null, "left");
+              } else if (backButtonAction()) {
+                s.repertoireState.browsingState.moveSidebarState("left");
+                backButtonAction()?.();
+              }
+            });
+          }}
+          style={s(c.unshrinkable, c.column, c.justifyCenter)}
+          class="md:self-end md:pb-8"
         >
-          <i class="fa fa-arrow-left"></i>
-          <Spacer width={8} />
-          Back
-        </CMText>
-        <Spacer height={!vertical ? 32 : backButtonAction() ? 18 : 0} />
-      </Pressable>
+          <CMText
+            style={s(c.weightBold, c.fg(color()), c.row)}
+            class="md:text-md place-items-center text-xs"
+          >
+            <i class="fa fa-arrow-left"></i>
+            <Spacer width={8} />
+            Back
+          </CMText>
+        </Pressable>
+        <Show when={vertical}>
+          <AnalyzeOnLichessButton />
+        </Show>
+      </div>
     </FadeInOut>
   );
 };
