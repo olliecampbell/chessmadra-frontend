@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, upperFirst } from "lodash-es";
+import { capitalize, upperFirst, find } from "lodash-es";
 import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
@@ -25,14 +25,20 @@ import {
   RatingSettings,
   ThemeSettings,
 } from "./SidebarSettings";
-import { BOARD_THEMES_BY_ID } from "~/utils/theming";
+import {
+  BOARD_THEMES_BY_ID,
+  combinedThemes,
+  COMBINED_THEMES_BY_ID,
+} from "~/utils/theming";
 import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
 import { unwrap } from "solid-js/store";
 
 export const RepertoireHome = (props: {}) => {
   const userState = getAppState().userState;
   const themeId = () => userState.user?.theme;
-  const theme = () => BOARD_THEMES_BY_ID[themeId()];
+  const theme = () =>
+    find(combinedThemes, (theme) => theme.boardTheme == themeId()) ||
+    COMBINED_THEMES_BY_ID["default"];
   const pieceSet = () => userState.user?.pieceSet;
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
@@ -170,14 +176,7 @@ export const RepertoireHome = (props: {}) => {
                   });
                 },
                 text: "Board appearance",
-                right:
-                  theme() && pieceSet()
-                    ? `${upperFirst(theme().name)} / ${upperFirst(pieceSet())}`
-                    : theme()
-                    ? `${upperFirst(theme().name)}`
-                    : pieceSet()
-                    ? `${pieceSet()}`
-                    : "No theme",
+                right: `${upperFirst(theme().name)}`,
                 style: "secondary",
               } as SidebarAction,
             ].map((action: SidebarAction, i) => {

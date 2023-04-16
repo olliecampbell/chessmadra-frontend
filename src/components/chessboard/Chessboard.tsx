@@ -19,7 +19,14 @@ import {
 } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import { getAppState, quick } from "~/utils/app_state";
-import { BoardTheme, BOARD_THEMES_BY_ID, PieceSetId } from "~/utils/theming";
+import {
+  BoardTheme,
+  BOARD_THEMES_BY_ID,
+  CombinedTheme,
+  combinedThemes,
+  COMBINED_THEMES_BY_ID,
+  PieceSetId,
+} from "~/utils/theming";
 import {
   Accessor,
   Component,
@@ -174,8 +181,19 @@ export function ChessboardView(props: {
   // const position = () => props.state._animatePosition ?? props.state.position;
   const userState = getAppState().userState;
   const user = () => userState.user;
+  const combinedTheme: Accessor<CombinedTheme> = createMemo(
+    () =>
+      find(combinedThemes, (theme) => theme.boardTheme == user()?.theme) ||
+      COMBINED_THEMES_BY_ID["default"]
+  );
+  createEffect(() => {
+    console.log("user theme", user()?.theme);
+    console.log("combined theme", combinedTheme());
+  });
   const theme: Accessor<BoardTheme> = () =>
-    BOARD_THEMES_BY_ID[user()?.theme] ?? BOARD_THEMES_BY_ID["lichess-brown"];
+    BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
+  const pieceSet: Accessor<BoardTheme> = () =>
+    user()?.pieceSet ?? combinedTheme().pieceSet;
   const colors = () => [theme().light.color, theme().dark.color];
   const flipped = createMemo(() => !!chessboardStore().flipped);
   const getSquareFromLayoutAndGesture = (
@@ -653,10 +671,7 @@ export function ChessboardView(props: {
                   >
                     <div style={s(c.fullWidth, c.fullHeight)}>
                       <Show when={piece() && !hiddenBecauseTake()}>
-                        <PieceView
-                          piece={piece()}
-                          pieceSet={user()?.pieceSet ?? "cburnett"}
-                        />
+                        <PieceView piece={piece()} pieceSet={pieceSet()} />
                       </Show>
                     </div>
                   </div>

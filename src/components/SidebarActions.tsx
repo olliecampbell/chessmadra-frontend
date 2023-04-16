@@ -286,44 +286,26 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
   const { hovering, hoveringProps } = useHovering();
   let py = 12;
   const styles = () => {
-    let foregroundColor,
-      subtextColor = null;
+    let subtextColor = null;
     let textStyles = s();
     if (props.action.style === "focus") {
-      foregroundColor = c.grays[10];
       subtextColor = c.grays[20];
     }
     if (props.action.style === "wide") {
       textStyles = s(textStyles, c.fontSize(18), c.weightBold);
-      foregroundColor = c.colors.textPrimary;
       // subtextColor = c.grays[20];
       py = 20;
     }
     if (props.action.style === "tertiary") {
-      foregroundColor = c.colors.textTertiary;
       subtextColor = c.grays[20];
-      if (hovering()) {
-        foregroundColor = c.colors.textSecondary;
-      }
-      // if (hovering) {
-      //   backgroundColor = c.grays[8];
-      // } else {
-      //   backgroundColor = c.grays[16];
-      // }
     }
     if (props.action.style === "secondary") {
-      foregroundColor = c.colors.textSecondary;
       subtextColor = c.grays[20];
-      if (hovering()) {
-        foregroundColor = c.colors.textPrimary;
-      }
     }
     if (props.action.style === "primary") {
-      foregroundColor = c.colors.textPrimary;
       subtextColor = c.grays[70];
     }
     return {
-      foregroundColor,
       subtextColor,
       textStyles,
     };
@@ -333,14 +315,19 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
       onPress={props.action.onPress}
       {...hoveringProps}
       class={clsx(
-        props.action.class,
+        "transition-colors",
         props.action.style !== "wide" && "h-sidebar-button",
-        props.action.style === "secondary" && "&hover:bg-gray-18",
+        props.action.style === "secondary" &&
+          "text-secondary &hover:bg-gray-18 &hover:text-primary",
+        props.action.style === "tertiary" &&
+          "text-tertiary &hover:text-primary",
         props.action.style === "wide" &&
           "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover",
-        props.action.style === "focus" && "bg-gray-82 &hover:bg-gray-86",
+        props.action.style === "focus" &&
+          "bg-gray-82 &hover:bg-gray-86 text-gray-10",
         props.action.style === "primary" &&
-          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover"
+          "text-primary bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover",
+        props.action.class
       )}
       style={s(
         c.fullWidth,
@@ -356,7 +343,6 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
       <div style={s(c.column)}>
         <CMText
           style={s(
-            c.fg(styles().foregroundColor),
             props.action.style === "focus" ? c.weightBold : c.weightSemiBold,
             c.fontSize(14),
             styles().textStyles
