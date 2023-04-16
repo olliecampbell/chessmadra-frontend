@@ -38,6 +38,7 @@ import {
 } from "solid-js";
 import { Pressable } from "./Pressable";
 import { AnalyzeOnLichessButton, VERTICAL_BREAKPOINT } from "./SidebarLayout";
+import { clsx } from "~/utils/classes";
 
 export const BrowserSidebar = function BrowserSidebar() {
   const [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =
@@ -366,8 +367,6 @@ const BackSection = () => {
     return backButtonAction;
   };
 
-  const color = () =>
-    hovering() ? c.colors.textSecondary : c.colors.textTertiary;
   const isOpen = () => !isNil(backButtonAction()) || !!view();
   createEffect(() => {
     console.log("isOpen", isOpen());
@@ -383,7 +382,7 @@ const BackSection = () => {
       open={() => isOpen()}
       // className="transition-height"
     >
-      <div class={"row padding-sidebar h-full items-center justify-between "}>
+      <div class={"row padding-sidebar h-full items-center justify-between"}>
         <Pressable
           {...hoveringProps}
           onPress={() => {
@@ -397,12 +396,11 @@ const BackSection = () => {
             });
           }}
           style={s(c.unshrinkable, c.column, c.justifyCenter)}
-          class="md:self-end md:pb-8"
+          class={
+            "text-md text-tertiary &hover:text-secondary place-items-center py-2 md:self-end md:pb-8"
+          }
         >
-          <CMText
-            style={s(c.weightBold, c.fg(color()), c.row)}
-            class="md:text-md place-items-center text-xs"
-          >
+          <CMText style={s(c.weightBold, c.row)}>
             <i class="fa fa-arrow-left"></i>
             <Spacer width={8} />
             Back

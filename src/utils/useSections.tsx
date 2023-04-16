@@ -305,7 +305,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
     ]);
 
   const backgroundColor = c.grays[28];
-  const completedColor = c.greens[50];
+  const completedColor = c.colors.success;
   const { completed, progress } = destructure(() => {
     let completed = isNil(missFromHere());
     let progress = clamp(

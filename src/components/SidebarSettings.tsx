@@ -10,6 +10,9 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import {
   BoardThemeId,
   BOARD_THEMES_BY_ID,
+  CombinedThemeID,
+  combinedThemes,
+  COMBINED_THEMES_BY_ID,
   PieceSetId,
   PIECE_SETS,
 } from "~/utils/theming";
@@ -45,7 +48,9 @@ export const SidebarSelectOneOf: Component<{
       return {
         style: "secondary" as SidebarAction["style"],
         text: props.renderChoice(choice, active),
-        class: active && "bg-gray-24 &hover:bg-gray-32 text-primary",
+        class:
+          active &&
+          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover text-primary",
         onPress: () => props.onSelect(choice, i),
         right: () =>
           active && (
@@ -174,8 +179,8 @@ export const RatingSettings = ({}: {}) => {
           "1100-1300",
           "1300-1500",
           "1500-1700",
-          "1700-1900",
-          "1900+",
+          "1900-2100",
+          "2100+",
         ]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
@@ -214,76 +219,44 @@ export const ThemeSettings = ({}: {}) => {
       <SidebarSelectOneOf
         description={null}
         title={"Tiles"}
-        choices={keys(BOARD_THEMES_BY_ID) as BoardThemeId[]}
+        choices={combinedThemes.map((t) => t.id)}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
         activeChoice={user()?.theme}
-        onSelect={(t: BoardThemeId) => {
+        onSelect={(t: CombinedThemeID) => {
           quick((s) => {
-            const params: any = { theme: t };
-            if (t === "low-contrast") {
-              params.pieceSet = "monochrome";
-            }
-            s.userState.updateUserSettings(params);
+            const theme = COMBINED_THEMES_BY_ID[t];
+            s.userState.updateUserSettings({
+              theme: theme.boardTheme,
+              pieceSet: theme.pieceSet,
+            });
           });
         }}
-        renderChoice={(themeId: BoardThemeId) => {
-          const theme = BOARD_THEMES_BY_ID[themeId];
-          console.log(theme, themeId);
+        renderChoice={(themeId: CombinedThemeID) => {
+          const theme = COMBINED_THEMES_BY_ID[themeId];
+          const boardTheme = BOARD_THEMES_BY_ID[theme.boardTheme];
+          // console.log(theme, themeId);
           return (
             <div style={s(c.row, c.center, c.height(height))}>
               <div style={s(c.row)}>
                 <div
                   style={s(
                     c.size(22),
-                    c.bg(theme.light.color),
-                    theme.light.styles
+                    c.bg(boardTheme.light.color),
+                    boardTheme.light.styles
                   )}
                 ></div>
                 <div
                   style={s(
                     c.size(22),
-                    c.bg(theme.dark.color),
-                    theme.dark.styles
+                    c.bg(boardTheme.dark.color),
+                    boardTheme.dark.styles
                   )}
                 ></div>
               </div>
               <Spacer width={22} />
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme.name}
-              </CMText>
-            </div>
-          );
-        }}
-      />
-      <Spacer height={24} />
-
-      <SidebarSelectOneOf
-        description={null}
-        title={"Pieces"}
-        choices={PIECE_SETS}
-        activeChoice={user()?.pieceSet}
-        onSelect={(t: PieceSetId) => {
-          quick((s) => {
-            s.userState.updateUserSettings({ pieceSet: t });
-          });
-        }}
-        renderChoice={(pieceSet: PieceSetId) => {
-          return (
-            <div style={s(c.row, c.center, c.height(height))}>
-              {["q", "k"].map((p: PieceSymbol) => {
-                return (
-                  <div style={s(c.size(24), c.mr(4))}>
-                    <PieceView
-                      pieceSet={pieceSet}
-                      piece={{ color: "w", type: p }}
-                    />
-                  </div>
-                );
-              })}
-              <Spacer width={12} />
-              <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
-                {upperFirst(pieceSet)}
               </CMText>
             </div>
           );

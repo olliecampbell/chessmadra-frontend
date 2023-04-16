@@ -286,29 +286,18 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
   const { hovering, hoveringProps } = useHovering();
   let py = 12;
   const styles = () => {
-    let backgroundColor,
-      foregroundColor,
+    let foregroundColor,
       subtextColor = null;
     let textStyles = s();
     if (props.action.style === "focus") {
       foregroundColor = c.grays[10];
       subtextColor = c.grays[20];
-      if (hovering()) {
-        backgroundColor = c.grays[86];
-      } else {
-        backgroundColor = c.grays[82];
-      }
     }
     if (props.action.style === "wide") {
       textStyles = s(textStyles, c.fontSize(18), c.weightBold);
       foregroundColor = c.colors.textPrimary;
       // subtextColor = c.grays[20];
       py = 20;
-      if (hovering()) {
-        backgroundColor = c.grays[36];
-      } else {
-        backgroundColor = c.grays[30];
-      }
     }
     if (props.action.style === "tertiary") {
       foregroundColor = c.colors.textTertiary;
@@ -332,14 +321,8 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
     if (props.action.style === "primary") {
       foregroundColor = c.colors.textPrimary;
       subtextColor = c.grays[70];
-      if (hovering()) {
-        backgroundColor = c.grays[36];
-      } else {
-        backgroundColor = c.grays[30];
-      }
     }
     return {
-      backgroundColor,
       foregroundColor,
       subtextColor,
       textStyles,
@@ -352,11 +335,15 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
       class={clsx(
         props.action.class,
         props.action.style !== "wide" && "h-sidebar-button",
-        props.action.style === "secondary" && "&hover:bg-gray-18"
+        props.action.style === "secondary" && "&hover:bg-gray-18",
+        props.action.style === "wide" &&
+          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover",
+        props.action.style === "focus" && "bg-gray-82 &hover:bg-gray-86",
+        props.action.style === "primary" &&
+          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover"
       )}
       style={s(
         c.fullWidth,
-        c.bg(styles().backgroundColor),
         c.row,
         c.justifyBetween,
         c.alignCenter,

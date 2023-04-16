@@ -66,13 +66,13 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "default",
     name: "Default",
-    highlight: defaultHighlight,
-    highlightDark: defaultDarkHighlight,
+    highlight: adjustOpacity(c.grays[100], 20),
+    highlightDark: adjustOpacity(c.grays[100], 20),
     light: {
-      color: c.hsl(grayHue, 14, 60),
+      color: "hsl(207, 7%, 24%)",
     },
     dark: {
-      color: c.hsl(grayHue, 14, 40),
+      color: "hsl(210, 6%, 14%)",
     },
   },
   {
@@ -85,18 +85,6 @@ export const BOARD_THEMES: BoardTheme[] = [
     },
     dark: {
       color: `hsl(27, 36%, 55%)`,
-    },
-  },
-  {
-    id: "lichess-blue",
-    name: "Lichess blue",
-    highlight: defaultHighlight,
-    highlightDark: defaultDarkHighlight,
-    light: {
-      color: `hsl(200, 14%, 89%)`,
-    },
-    dark: {
-      color: `hsl(199, 16%, 61%)`,
     },
   },
   {
@@ -139,30 +127,6 @@ export const BOARD_THEMES: BoardTheme[] = [
       ),
     },
   },
-  {
-    id: "low-contrast",
-    name: "Low Contrast",
-    highlight: adjustOpacity(c.grays[100], 20),
-    highlightDark: adjustOpacity(c.grays[100], 20),
-    light: {
-      color: c.grays[20],
-    },
-    dark: {
-      color: c.grays[8],
-    },
-  },
-  {
-    id: "reddish",
-    name: "Reddish",
-    highlight: c.hsl(10, 34, 50, 40),
-    highlightDark: c.hsl(10, 24, 40, 80),
-    light: {
-      color: c.hsl(10, 14, 60),
-    },
-    dark: {
-      color: c.hsl(10, 14, 40),
-    },
-  },
 ];
 
 // @ts-ignore
@@ -170,3 +134,38 @@ export const BOARD_THEMES_BY_ID: Record<BoardThemeId, BoardTheme> = keyBy(
   BOARD_THEMES,
   "id"
 );
+export const combinedThemes = [
+  {
+    name: "Chessbook",
+    id: "default",
+    boardTheme: "default",
+    pieceSet: "chessbook",
+  },
+  {
+    name: "Lichess",
+    id: "lichess",
+    boardTheme: "lichess-brown",
+    pieceSet: "cburnett",
+  },
+  {
+    name: "That other chess site",
+    id: "chess.com",
+    boardTheme: "chess.com",
+    pieceSet: "staunty",
+  },
+  {
+    name: "Anarchy",
+    id: "anarchy",
+    boardTheme: "stripey",
+    pieceSet: "anarcandy",
+  },
+] as CombinedTheme[];
+export type CombinedThemeID = "default" | "lichess" | "chess.com" | "anarchy";
+export type CombinedTheme = {
+  name: "Anarchy";
+  id: "anarchy";
+  boardTheme: "stripey";
+  pieceSet: "anarcandy";
+};
+export const COMBINED_THEMES_BY_ID: Record<CombinedThemeID, CombinedTheme> =
+  keyBy(combinedThemes, "id");

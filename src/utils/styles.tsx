@@ -289,6 +289,7 @@ export const colors = {
   grays,
   purples,
   greens,
+  success: "#459B45",
   forestGreens,
   successShades,
   textPrimary: grays[95],

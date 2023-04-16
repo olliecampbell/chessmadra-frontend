@@ -4,6 +4,7 @@ import { CMText } from "./CMText";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { createSignal } from "solid-js";
 import { Pressable } from "./Pressable";
+import { clsx } from "~/utils/classes";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const CollapsibleSidebarSection = ({
@@ -26,6 +27,7 @@ export const CollapsibleSidebarSection = ({
           c.px(c.getSidebarPadding(responsive)),
           c.clickable
         )}
+        class={clsx("&hover:bg-gray-18 h-sidebar-button")}
         onPress={() => {
           setCollapsed(!collapsed());
         }}
@@ -40,7 +42,10 @@ export const CollapsibleSidebarSection = ({
         </CMText>
         <div style={s()}>
           <i
-            class={!collapsed() ? "fa fa-chevron-down" : "fa fa-chevron-right"}
+            class={clsx(
+              "fa fa-chevron-right rotate-0 transition-transform",
+              !collapsed() && "rotate-90"
+            )}
             style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
           ></i>
         </div>

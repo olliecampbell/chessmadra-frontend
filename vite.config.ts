@@ -15,7 +15,12 @@ const colorMapping = {
   purple: "purples",
   success: "successShades",
 };
-const colors = { border: allShades.border };
+const colors = {
+  border: allShades.border,
+  success: "#459B45",
+  ["sidebar_button_primary"]: grays[24],
+  ["sidebar_button_primary_hover"]: grays[32],
+};
 // map color mpapins key and values
 const colorMap = Object.entries(colorMapping).forEach(([key, value]) => {
   colors[`${key}`] = {};

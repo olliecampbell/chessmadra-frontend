@@ -117,8 +117,8 @@ export const RepertoireHome = (props: {}) => {
           </For>
         </div>
         <Spacer height={46} />
-        <Show when={overallActions}>
-          <div style={s(c.gridColumn({ gap: 12 }))}>
+        <Show when={overallActions()}>
+          <div style={s()}>
             <For each={overallActions()}>
               {(action, i) => <SidebarFullWidthButton action={action} />}
             </For>

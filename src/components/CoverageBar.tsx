@@ -15,10 +15,8 @@ export const CoverageBar = (props: {
   });
   const inverse = () => props.side === "white";
   const [backgroundColor, inProgressColor, completedColor] = props.isInSidebar
-    ? [c.grays[30], c.greens[50], c.greens[50]]
-    : inverse()
-    ? [c.grays[80], c.oranges[55], c.greens[50]]
-    : [c.grays[30], c.oranges[65], c.greens[50]];
+    ? [c.grays[30], c.colors.success, c.colors.success]
+    : [c.grays[30], c.oranges[65], c.colors.success];
   const overlap = 8;
   return (
     <div
