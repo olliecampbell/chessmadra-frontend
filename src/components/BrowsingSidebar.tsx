@@ -238,7 +238,6 @@ export const InnerSidebar = function InnerSidebar() {
 };
 
 const BackSection = () => {
-  const { hovering, hoveringProps } = useHovering();
   const [
     addedLineState,
     deleteLineState,
@@ -377,14 +376,13 @@ const BackSection = () => {
       id="back-button"
       style={s(
         c.column,
-        !vertical ? c.height(paddingTop) : c.height(isOpen() ? 42 : 12)
+        !vertical ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
       )}
       open={() => isOpen()}
       // className="transition-height"
     >
       <div class={"row padding-sidebar h-full items-center justify-between"}>
         <Pressable
-          {...hoveringProps}
           onPress={() => {
             quick((s) => {
               if (view()) {
@@ -400,9 +398,8 @@ const BackSection = () => {
             "text-md text-tertiary &hover:text-secondary place-items-center py-2 md:self-end md:pb-8"
           }
         >
-          <CMText style={s(c.weightBold, c.row)}>
-            <i class="fa fa-arrow-left"></i>
-            <Spacer width={8} />
+          <CMText style={s(c.weightBold, c.row, c.alignCenter)}>
+            <i class="fa fa-arrow-left pr-2"></i>
             Back
           </CMText>
         </Pressable>
