@@ -4,7 +4,7 @@ import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
-import { cloneDeep, keys, upperFirst } from "lodash-es";
+import { cloneDeep, find, keys, upperFirst } from "lodash-es";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
@@ -29,7 +29,6 @@ export const SidebarSetting = () => {
     </SidebarTemplate>
   );
 };
-type SidebarSettingView = "rating" | "coverage";
 
 export const SidebarSelectOneOf: Component<{
   title: string;
@@ -50,7 +49,7 @@ export const SidebarSelectOneOf: Component<{
         text: props.renderChoice(choice, active),
         class:
           active &&
-          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover text-primary",
+          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover !text-primary",
         onPress: () => props.onSelect(choice, i),
         right: () =>
           active && (
@@ -81,7 +80,7 @@ export const SidebarSelectOneOf: Component<{
             style={s(
               c.fontSize(12),
               c.lineHeight("1.5rem"),
-              c.fg(c.colors.textSecondary),
+              c.fg(c.colors.textPrimary),
               c.px(c.getSidebarPadding(responsive))
             )}
           >
@@ -137,7 +136,7 @@ export const CoverageSettings = ({}: {}) => {
                 <div
                   class={clsx(
                     "pl-2 text-xs",
-                    active ? "text-secondary" : "text-tertiary"
+                    active ? "text-primary" : "text-tertiary"
                   )}
                 >
                   Recommended for your level
@@ -218,27 +217,40 @@ export const ThemeSettings = ({}: {}) => {
       <Spacer height={12} />
       <SidebarSelectOneOf
         description={null}
-        title={"Tiles"}
-        choices={combinedThemes.map((t) => t.id)}
+        title={"Board appearance"}
+        choices={combinedThemes.map((t) => t.boardTheme)}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
         activeChoice={user()?.theme}
-        onSelect={(t: CombinedThemeID) => {
+        onSelect={(boardThemeId: BoardThemeId) => {
           quick((s) => {
-            const theme = COMBINED_THEMES_BY_ID[t];
+            const theme = find(
+              combinedThemes,
+              (t) => t.boardTheme === boardThemeId
+            );
+            console.log("selected", boardThemeId, theme);
             s.userState.updateUserSettings({
               theme: theme.boardTheme,
               pieceSet: theme.pieceSet,
             });
           });
         }}
-        renderChoice={(themeId: CombinedThemeID) => {
-          const theme = COMBINED_THEMES_BY_ID[themeId];
-          const boardTheme = BOARD_THEMES_BY_ID[theme.boardTheme];
+        renderChoice={(boardThemeId: BoardThemeId) => {
+          const theme = find(
+            combinedThemes,
+            (t) => t.boardTheme === boardThemeId
+          );
+          const boardTheme = BOARD_THEMES_BY_ID[boardThemeId];
           // console.log(theme, themeId);
           return (
             <div style={s(c.row, c.center, c.height(height))}>
-              <div style={s(c.row)}>
+              {/*
+              <div
+                style={s(c.row)}
+                class={clsx(
+                  "border-1 overflow-hidden rounded-sm border-solid border-white"
+                )}
+              >
                 <div
                   style={s(
                     c.size(22),
@@ -255,6 +267,7 @@ export const ThemeSettings = ({}: {}) => {
                 ></div>
               </div>
               <Spacer width={22} />
+            */}
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme.name}
               </CMText>
