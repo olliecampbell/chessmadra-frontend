@@ -148,7 +148,7 @@ export const combinedThemes = [
     pieceSet: "cburnett",
   },
   {
-    name: "That other chess site",
+    name: "Chess.com",
     id: "chess.com",
     boardTheme: "chess.com",
     pieceSet: "staunty",
