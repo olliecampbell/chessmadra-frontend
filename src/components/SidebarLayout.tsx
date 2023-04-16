@@ -200,9 +200,9 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
       }
     >
       <Pressable
-        style={s(c.row, c.alignCenter)}
+        style={s()}
         class={clsx(
-          "text-tertiary &hover:text-primary text-md font-semibold transition-colors"
+          "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors"
         )}
         onPress={() => {
           quick((s) => {
@@ -214,9 +214,10 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
           });
         }}
       >
-        <CMText>Analyze on Lichess</CMText>
-        <Spacer width={padding} />
-        <i class="fa fa-up-right-from-square " style={s(iconStyles)}></i>
+        <p>
+          Analyze on Lichess
+          <i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)}></i>
+        </p>
       </Pressable>
     </FadeInOut>
   );
