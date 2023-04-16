@@ -196,7 +196,8 @@ const SetRatingOnboarding = () => {
               "1300-1500",
               "1500-1700",
               "1700-1900",
-              "1900+",
+              "1900-2100",
+              "2100+",
             ]}
             choice={ratingRange()}
             renderChoice={(choice, inList, onPress) => {

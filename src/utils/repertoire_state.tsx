@@ -56,7 +56,7 @@ import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment ? ["e4", "e5", "f4"] : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
 

@@ -151,7 +151,7 @@ export const MovementIndicator = ({
     color = side === "white" ? c.reds[45] : c.reds[55];
   } else if (newWr > oldWr + threshold) {
     icon = "fa-sharp fa-arrow-up-right";
-    color = side === "white" ? c.greens[40] : c.greens[55];
+    color = side === "white" ? c.colors.success : c.colors.success;
   }
   if (!icon) {
     return null;

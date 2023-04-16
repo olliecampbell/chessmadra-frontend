@@ -15,7 +15,7 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
     }
   }
 }
-if (process.env.API_ENV == "production") {
+if (import.meta.env.VITE_API_ENV == "production") {
   baseURL = "https://chessmadra.com";
 }
 const client = applyCaseMiddleware(

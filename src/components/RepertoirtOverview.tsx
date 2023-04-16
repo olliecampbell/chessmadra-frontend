@@ -276,13 +276,7 @@ export const RepertoireOverview = (props: {}) => {
               setExpanded(!expanded());
             }}
           >
-            <CMText
-              style={s(
-                c.fontSize(12),
-                c.fg(c.colors.textTertiary),
-                c.weightSemiBold
-              )}
-            >
+            <CMText class="text-tertiary &hover:text-primary text-xs font-semibold transition-colors">
               {!expanded() ? "More options..." : "Hide "}
             </CMText>
           </Pressable>

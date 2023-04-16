@@ -27,10 +27,8 @@ import { createElementBounds } from "@solid-primitives/bounds";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
-export const SidebarLayout = (props: {
-  shared?: boolean;
-  mode: BrowsingMode;
-}) => {
+export const SidebarLayout = (props: { shared?: boolean }) => {
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   // let chessboardFrozen = sideBarMode === "overview" || sideBarMode === "home";
   // if (onboardingStack.length > 0 || showingPlans) {
   //   chessboardFrozen = true;
@@ -204,7 +202,7 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
       <Pressable
         style={s(c.row, c.alignCenter)}
         class={clsx(
-          "text-tertiary &hover:text-primary md:text-md text-xs font-semibold transition-colors"
+          "text-tertiary &hover:text-primary text-md font-semibold transition-colors"
         )}
         onPress={() => {
           quick((s) => {

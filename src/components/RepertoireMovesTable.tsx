@@ -344,11 +344,8 @@ export const RepertoireMovesTable = ({
             }}
           >
             <CMText
-              style={s(
-                c.fontSize(12),
-                c.fg(c.colors.textTertiary),
-                c.weightSemiBold
-              )}
+              style={s(c.fontSize(12), c.weightSemiBold)}
+              class="text-tertiary &hover:text-primary transition-colors"
             >
               {`Remove ${mine().length > 1 ? "a" : "this"} move`}
             </CMText>
@@ -424,12 +421,20 @@ const Response = (props: {
       }
     );
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  const annotation = () => {
+  const annotation = createMemo(() => {
     if (props.hideAnnotations) {
+      console.log("hiding annotations");
       return null;
     }
     return renderAnnotation(props.tableResponse.suggestedMove?.annotation);
-  };
+  });
+  createEffect(() => {
+    if (annotation()) {
+      console.log(
+        `${sanPlus()} annotation is ${annotation()} for ${sanPlus()}`
+      );
+    }
+  });
   const tags = () => {
     const tags = [];
     // newOpeningName = nextEcoCode?.fullName;
@@ -447,7 +452,7 @@ const Response = (props: {
         <MoveTagView
           text="Transposes to your repertoire"
           icon="fa-solid fa-merge"
-          style={s(c.fg(c.greens[55]), c.fontSize(14), c.rotate(-90))}
+          style={s(c.fg(c.colors.success), c.fontSize(14), c.rotate(-90))}
         />
       );
     }
@@ -644,17 +649,17 @@ const Response = (props: {
                       c.lineHeight("1.3rem")
                     )}
                   >
-                    {props.openingName && (
-                      <>
-                        <b>{props.openingName}</b>
-                        {!isMobile && annotation() && (
-                          <>
-                            . <Spacer width={2} />
-                          </>
-                        )}
-                      </>
-                    )}
-                    {!isMobile && annotation}
+                    <Show when={props.openingName}>
+                      <b>{props.openingName}</b>
+                      <Show when={!isMobile && annotation()}>
+                        <>
+                          . <Spacer width={2} />
+                        </>
+                      </Show>
+                    </Show>
+                    <Show when={!isMobile}>
+                      <p>{annotation()}</p>
+                    </Show>
                   </CMText>
                   {tagsRow() && (
                     <>

@@ -18,7 +18,7 @@ export const useHovering = (
   return {
     hovering,
     hoveringProps: {
-      onMouseEnter: () => {
+      onMouseEnter: (evt) => {
         onHover?.();
         setHovering(true);
       },
