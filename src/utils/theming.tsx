@@ -69,10 +69,10 @@ export const BOARD_THEMES: BoardTheme[] = [
     highlight: adjustOpacity(c.grays[100], 20),
     highlightDark: adjustOpacity(c.grays[100], 20),
     light: {
-      color: "hsl(207, 7%, 24%)",
+      color: c.grays[24],
     },
     dark: {
-      color: "hsl(210, 6%, 14%)",
+      color: c.grays[14],
     },
   },
   {
