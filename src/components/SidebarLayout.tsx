@@ -67,7 +67,7 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
   const chessboardHeight = () => chessboardLayout.height;
   const chessboardHidden = () => {
     if (vertical) {
-      return includes(["overview", "home"], props.mode);
+      return includes(["overview", "home"], mode());
     }
     return false;
   };
@@ -128,7 +128,7 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
             </div>
             <Show when={!responsive.isMobile}>
               <Spacer height={12} />
-              <Show when={props.mode === "build" || props.mode === "browse"}>
+              <Show when={mode() === "build" || mode() === "browse"}>
                 <div class="row w-full justify-center">
                   <AnalyzeOnLichessButton />
                 </div>
