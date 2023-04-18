@@ -32,6 +32,8 @@ import {
   createEffect,
   createSignal,
   Match,
+  onCleanup,
+  onMount,
   Show,
   Switch,
   useContext,
@@ -41,44 +43,53 @@ import { AnalyzeOnLichessButton, VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { clsx } from "~/utils/classes";
 
 export const BrowserSidebar = function BrowserSidebar() {
-  const [previousSidebarAnim, currentSidebarAnim, direction, sidebarIter] =
-    useBrowsingState(([s]) => [
-      s.previousSidebarAnim,
-      s.currentSidebarAnim,
-      s.sidebarDirection,
-      s.sidebarIter,
-    ]);
-  createEffect(() => {
-    // to trigger
-    if (sidebarIter() === 0) {
-      return;
-    }
-    if (!previousRef() || !currentRef()) {
-      return;
-    }
-    const dir = direction();
-    const ms = 200;
-    const duration = `${ms}ms`;
-    previousRef().style.transform = "translateX(0px)";
-    currentRef().style.transform =
-      dir === "right" ? "translateX(40px)" : "translateX(-40px)";
-    previousRef().style.transition = null;
-    currentRef().style.transition = null;
-    previousRef().style.opacity = "1";
-    currentRef().style.opacity = "0";
-    previousRef().offsetHeight; /* trigger reflow */
-    previousRef().style.transition = `opacity ${duration}, transform ${duration}`;
-    currentRef().style.transition = `opacity ${duration}, transform ${duration}`;
-    previousRef().style.opacity = "0";
-    previousRef().style.transform =
-      dir === "left" ? "translateX(40px)" : "translateX(-40px)";
-    setTimeout(() => {
-      currentRef().style.opacity = "1";
-      currentRef().style.transform = "translateX(0px)";
-    }, ms);
+  const [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
+    ([s]) => [s.previousSidebarAnim, s.currentSidebarAnim, s.sidebarDirection]
+  );
+  // createEffect(() => {});
+  // let interval = setInterval(() => {
+  //   quick((s) => {
+  //     console.log(" moving sidebar state");
+  //     s.repertoireState.browsingState.moveSidebarState("right");
+  //   });
+  // }, 2000);
+  // onCleanup(() => {
+  //   clearInterval(interval);
+  // });
+
+  onMount(() => {
+    quick((s) => {
+      s.repertoireState.animateSidebarState = (dir: "left" | "right") => {
+        if (!previousRef() || !currentRef()) {
+          return;
+        }
+        let clone = currentRef().cloneNode(true);
+        previousRef().replaceChildren(clone);
+        console.log("cloned", clone);
+        console.log("animateing sidebar", dir);
+        const ms = 200;
+        const duration = `${ms}ms`;
+        previousRef().style.transform = "translateX(0px)";
+        currentRef().style.transform =
+          dir === "right" ? "translateX(40px)" : "translateX(-40px)";
+        previousRef().style.transition = null;
+        currentRef().style.transition = null;
+        previousRef().style.opacity = "1";
+        currentRef().style.opacity = "0";
+        previousRef().offsetHeight; /* trigger reflow */
+        previousRef().style.transition = `opacity ${duration}, transform ${duration}`;
+        currentRef().style.transition = `opacity ${duration}, transform ${duration}`;
+        previousRef().style.opacity = "0";
+        previousRef().style.transform =
+          dir === "left" ? "translateX(40px)" : "translateX(-40px)";
+        setTimeout(() => {
+          currentRef().style.opacity = "1";
+          currentRef().style.transform = "translateX(0px)";
+          // previousRef().replaceChildren();
+        }, ms);
+      };
+    });
   });
-  // currentRef().style.opacity = "0";
-  // const previousRef: Element | null = null;
   // @ts-ignore
   const [previousRef, setPreviousRef] = createSignal<Element>(null);
   // @ts-ignore
@@ -130,30 +141,9 @@ export const BrowserSidebar = function BrowserSidebar() {
           style={s(
             c.keyedProp("grid-area")("1/1"),
             c.displayFlex,
-            c.noPointerEvents,
-
-            c.opacity(100),
-            isNil(direction()) && s(c.opacity(0))
-            // TODO: solid
-            // {
-            //   transform:
-            //     {
-            //       translateX: previousSidebarAnim.interpolate({
-            //         inputRange: [0, 1],
-            //         outputRange: [
-            //           "0px",
-            //           direction === "left" ? "40px" : "-40px",
-            //         ],
-            //       }),
-            //     },
-            //   ],
-            // }
+            c.noPointerEvents
           )}
-        >
-          <SidebarStateContext.Provider value={true}>
-            <InnerSidebar />
-          </SidebarStateContext.Provider>
-        </div>
+        ></div>
         <div
           ref={setCurrentRef}
           style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}

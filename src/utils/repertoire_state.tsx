@@ -75,6 +75,7 @@ export enum AddLineFromOption {
 }
 
 export interface RepertoireState {
+  animateSidebarState?: (dir: "left" | "right") => void;
   lineReports: Record<string, LineReport>;
   numMovesFromEpd: BySide<Record<string, number>>;
   numMovesDueFromEpd: BySide<Record<string, number>>;

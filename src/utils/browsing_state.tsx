@@ -175,7 +175,6 @@ export interface BrowsingState {
   sidebarState: SidebarState;
   previousSidebarState: SidebarState;
   sidebarDirection: "left" | "right";
-  sidebarIter: number;
   previousSidebarAnim: Animated<number>;
   currentSidebarAnim: Animated<number>;
   chessboardShown: boolean;
@@ -267,7 +266,6 @@ export const getInitialBrowsingState = (
     ...createQuick(setOnly),
     previousSidebarState: null,
     sidebarDirection: null,
-    sidebarIter: 0,
     // TODO: solid
     previousSidebarAnim: { value: 0, duration: 200 },
     // TODO: solid
@@ -854,9 +852,9 @@ export const getInitialBrowsingState = (
       }),
     moveSidebarState: (direction: "left" | "right") =>
       set(([s, gs]) => {
+        gs.animateSidebarState?.(direction);
         s.previousSidebarState = cloneDeep(s.sidebarState);
         s.sidebarDirection = direction;
-        s.sidebarIter += 1;
         const duration = 200;
         // TODO: solid
         // s.previousSidebarAnim.setValue(0.0);

@@ -223,15 +223,31 @@ export const createChessboardInterface = (): [
         }
         chessboardInterface.clearPending();
         s.availableMoves = [];
-        if (options?.animate) {
+        let pos = s.position;
+        let moveObject: Move | null = null;
+        let moves = pos.validateMoves([m]);
+        if (typeof m === "string") {
+          if (!moves) {
+            console.log("This move wasn't valid!", m);
+            return;
+          }
+          [moveObject] = moves;
+        } else {
+          moveObject = m;
+        }
+        if (
+          options?.animate &&
+          // if same as previewed move just make the move no animation
+          !(
+            s.previewedMove?.to === moveObject.to &&
+            s.previewedMove?.from === moveObject.from
+          )
+        ) {
           s._animatePosition = createChessProxy(new Chess(s.position.fen()));
-          let moves = s._animatePosition.validateMoves([m]);
           s.animationQueue = moves;
           chessboardInterface.stepAnimationQueue();
-          console.log("animating this");
         }
-        let pos = s.position;
-        let moveObject = pos.move(m);
+        pos.move(m);
         if (moveObject) {
           let epd = genEpd(pos);
           s.positionHistory.push(epd);

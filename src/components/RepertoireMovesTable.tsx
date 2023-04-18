@@ -567,7 +567,8 @@ const Response = (props: {
 
                 if (props.tableResponse.transposes) {
                   s.repertoireState.browsingState.chessboard.makeMove(
-                    sanPlus()
+                    sanPlus(),
+                    { animate: true }
                   );
                   s.repertoireState.browsingState.sidebarState.transposedState.visible =
                     true;
@@ -576,7 +577,8 @@ const Response = (props: {
                   });
                 } else {
                   s.repertoireState.browsingState.chessboard.makeMove(
-                    sanPlus()
+                    sanPlus(),
+                    { animate: true }
                   );
                 }
               });
