@@ -18,10 +18,19 @@ import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
-import { Component, createSignal, For, Show, createEffect } from "solid-js";
+import {
+  Component,
+  createSignal,
+  For,
+  Show,
+  createEffect,
+  Accessor,
+} from "solid-js";
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
 import { clsx } from "~/utils/classes";
+import { InstructiveGame, ModelGame } from "~/utils/models";
+import { SidebarInstructiveGames } from "./SidebarInstructiveGames";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -38,6 +47,10 @@ export const RepertoireOverview = (props: {}) => {
     repertoireState.numMovesDueFromEpd[side()][START_EPD];
   const earliestDueDate = () =>
     repertoireState.earliestReviewDueFromEpd[side()][START_EPD];
+  const modelGames: Accessor<InstructiveGame[]> = () => {
+    return repertoireState.positionReports[side() as Side][START_EPD]
+      ?.instructiveGames;
+  };
 
   const empty = () => numMoves() === 0;
   const responsive = useResponsive();
@@ -126,6 +139,32 @@ export const RepertoireOverview = (props: {}) => {
         >
           Practice all moves due for review
         </CMText>
+      ),
+    },
+    {
+      hidden: modelGames()?.length == 0,
+      onPress: () => {
+        trackEvent("side_overview.view_instructive_games");
+        quick((s) => {
+          s.repertoireState.browsingState.replaceView(
+            <SidebarInstructiveGames games={modelGames()} />,
+            "right"
+          );
+        });
+      },
+      left: (
+        <CMText
+          style={s(textStyles)}
+          class={clsx(textClasses, "row items-center")}
+        >
+          View model games
+        </CMText>
+      ),
+      right: (
+        <i
+          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
+          class={"fa fa-book-open"}
+        />
       ),
     },
     {

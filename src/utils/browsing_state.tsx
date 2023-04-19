@@ -165,7 +165,7 @@ export interface BrowsingState {
   quick: (fn: (_: BrowsingState) => void) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
   moveSidebarState: (direction: "left" | "right") => void;
-  replaceView: (view: Component, direction: "left" | "right") => void;
+  replaceView: (view: JSXElement, direction: "left" | "right") => void;
   popView: () => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
