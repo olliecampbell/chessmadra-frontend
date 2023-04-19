@@ -18,11 +18,23 @@ export const useHovering = (
   return {
     hovering,
     hoveringProps: {
-      onMouseEnter: (evt) => {
+      onMouseEnter: (e) => {
+        const isTouchDevice =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) {
+          console.log("touch device");
+          return;
+        }
         onHover?.();
         setHovering(true);
       },
-      onMouseLeave: () => {
+      onMouseLeave: (e) => {
+        const isTouchDevice =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) {
+          console.log("touch device");
+          return;
+        }
         onHoverLeave?.();
         setHovering(false);
       },

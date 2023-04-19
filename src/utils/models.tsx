@@ -98,6 +98,10 @@ export interface PositionReport {
 
 export interface InstructiveGame {
   gameLink: string;
+  whiteName: string;
+  blackName: string;
+  moves: string[];
+  numberMoves: number;
 }
 
 export interface PawnStructure {

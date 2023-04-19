@@ -4,7 +4,7 @@ export type BoardTheme = {
   light: TileTheme;
   dark: TileTheme;
   id: BoardThemeId;
-  highlight: string;
+  highlight: string | { dark: string; light: string };
   highlightDark: string;
   name: string;
 };
@@ -66,8 +66,12 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "default",
     name: "Default",
+    // highlight: {
+    //   dark: "#295929",
+    //   light: "#666666",
+    // },
     highlight: adjustOpacity(c.grays[100], 20),
-    highlightDark: adjustOpacity(c.grays[100], 20),
+    highlightDark: adjustOpacity(c.grays[100], 60),
     light: {
       color: c.grays[24],
     },

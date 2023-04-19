@@ -407,19 +407,16 @@ const Response = (props: {
   const moveRating = () => props.tableResponse.moveRating;
 
   const responsive = useResponsive();
-  const { hoveringProps: responseHoverProps, hovering: hoveringRow } =
-    useHovering(
-      () => {
-        getAppState().repertoireState.browsingState.chessboard?.previewMove(
-          sanPlus()
-        );
-      },
-      () => {
-        getAppState().repertoireState.browsingState.chessboard?.previewMove(
-          null
-        );
-      }
-    );
+  const { hoveringProps: responseHoverProps } = useHovering(
+    () => {
+      getAppState().repertoireState.browsingState.chessboard?.previewMove(
+        sanPlus()
+      );
+    },
+    () => {
+      getAppState().repertoireState.browsingState.chessboard?.previewMove(null);
+    }
+  );
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const annotation = createMemo(() => {
     if (props.hideAnnotations) {

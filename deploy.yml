@@ -46,7 +46,7 @@ metadata:
 spec:
   rules:
     - host: chessmadra.com
-      http:
+      http: &http_rules
         paths:
           - path: "/"
             pathType: Prefix
@@ -55,10 +55,13 @@ spec:
                 name: chess-frontend
                 port:
                   number: 80
+    - host: chessbook.com
+      http: *http_rules
   tls:
     - hosts:
         - chessmadra.com
-      secretName: chess-madra-cert-prod
+        - chessbook.com
+      secretName: chessbook-cert-prod
 ---
 apiVersion: v1
 kind: Service
@@ -108,7 +111,7 @@ metadata:
 spec:
   rules:
     - host: staging.chessmadra.com
-      http:
+      http: &http_rules
         paths:
           - path: "/"
             pathType: Prefix
@@ -117,31 +120,10 @@ spec:
                 name: chess-frontend-staging
                 port:
                   number: 80
+    - host: staging.chessbook.com
+      http: *http_rules
   tls:
     - hosts:
         - staging.chessmadra.com
-      secretName: chess-madra-cert-staging
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: chessbook-local
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-spec:
-  rules:
-    - host: local.chessmadra.com
-      http:
-        paths:
-          - path: "/"
-            pathType: Prefix
-            backend:
-              service:
-                name: chessbook-local
-                port:
-                  number: 80
-  tls:
-    - hosts:
-        - local.chessmadra.com
-      secretName: chess-madra-cert-local
+        - staging.chessbook.com
+      secretName: chessbook-cert-staging
