@@ -97,9 +97,9 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
   switch (playbackSpeed) {
     case PlaybackSpeed.DebugSlow:
       return {
-        moveDuration: 6000,
-        fadeDuration: 6000,
-        stayDuration: 6000,
+        moveDuration: 1000,
+        fadeDuration: 1000,
+        stayDuration: 1000,
       };
     case PlaybackSpeed.Slow:
       return {
@@ -418,11 +418,11 @@ export function ChessboardView(props: {
           props.shadow && c.cardShadow,
           c.keyedProp("touch-action")("none"),
           {
-            "webkit-touch-callout": "none",
-            "webkit-user-select": "none",
-            "khtml-user-select": "none",
-            "moz-user-select": "none",
-            "ms-user-select": "none",
+            "-webkit-touch-callout": "none",
+            "-webkit-user-select": "none",
+            "-khtml-user-select": "none",
+            "-moz-user-select": "none",
+            "-ms-user-select": "none",
             "user-select": "none",
           }
         )}
@@ -647,7 +647,8 @@ export function ChessboardView(props: {
 
               const priority = () =>
                 chessboardStore().activeFromSquare === square ||
-                chessboardStore().drag.square === square;
+                chessboardStore().drag.square === square ||
+                chessboardStore().animatingMoveSquare === square;
               const containerViewStyles = () => {
                 pos();
                 return s(

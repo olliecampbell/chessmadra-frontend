@@ -14,7 +14,7 @@ import { c } from "./styles";
 import { Option } from "./optional";
 
 interface PlayPgnOptions {
-  animateLine: string[];
+  animateLine?: string[];
   animated?: boolean;
   fromEpd?: string;
 }
@@ -339,9 +339,10 @@ export const createChessboardInterface = (): [
         let nextMove = s.animationQueue?.shift() as Move;
         chessboardInterface.animatePieceMove(
           nextMove,
-          PlaybackSpeed.Normal,
+          PlaybackSpeed.DebugSlow,
           (completed) => {
             if (completed) {
+              s._animatePosition?.move(nextMove);
               chessboardInterface.stepAnimationQueue();
             }
           }
@@ -472,12 +473,15 @@ export const createChessboardInterface = (): [
         let { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
-        let [start, end]: Square[] = [move.from, move.to];
-        let { x, y } = getSquareOffset(end, s.flipped);
-        console.log("animating", move, start, end, x, y);
+        const [start, end]: Square[] = [move.from, move.to];
+        const { x, y } = getSquareOffset(end, s.flipped);
+        const { x: startX, y: startY } = getSquareOffset(start, s.flipped);
         s.animatingMoveSquare = start;
+        const pieceRef = s.refs.pieceRefs[start as Square];
+        pieceRef.style.top = `${startY * 100}%`;
+        pieceRef.style.left = `${startX * 100}%`;
         anime({
-          targets: s.refs.pieceRefs[start as Square],
+          targets: pieceRef,
           top: `${y * 100}%`,
           left: `${x * 100}%`,
           duration: moveDuration,
