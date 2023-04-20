@@ -59,7 +59,7 @@ const unoConfig = {
   variants: [
     (matcher) => {
       // The prefix cannot start with "-" or "hover", you can customize the prefix.
-      if (!matcher.startsWith("&hover:")) return matcher;
+      if (!matcher.startsWith("&hoVer:")) return matcher;
       return {
         // slice `hover:` prefix and passed to the next variants and rules
         matcher: matcher.slice(7), // The 7 here represents the number of characters in the prefix.
@@ -81,6 +81,7 @@ const unoConfig = {
       ["flexible"]: "basis-0 min-w-0 min-h-0 grow",
     },
     [/^square-(.*)$/, ([, c]) => `w-${c} h-${c}`],
+    [/^&hover:(.*)$/, ([, c]) => `&hoVer:${c} active:${c}`],
   ],
   presets: [presetUno(), presetAttributify(), presetTagify()],
 };
