@@ -339,7 +339,7 @@ export const createChessboardInterface = (): [
         let nextMove = s.animationQueue?.shift() as Move;
         chessboardInterface.animatePieceMove(
           nextMove,
-          PlaybackSpeed.DebugSlow,
+          PlaybackSpeed.Fast,
           (completed) => {
             if (completed) {
               s._animatePosition?.move(nextMove);
