@@ -56,7 +56,8 @@ import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment ? ["e4", "d5", "exd5", "Qxd5"] : [];
+console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
 
@@ -551,13 +552,13 @@ export const getInitialRepertoireState = (
               );
             }
             if (seenEpds.has(epd)) {
-              return { dueMoves: 0, earliestDueDate: null };
+              return { dueMoves: new Set<string>(), earliestDueDate: null };
             }
             const newSeenEpds = new Set(seenEpds);
             newSeenEpds.add(epd);
-            let earliestDueDate = null;
+            let earliestDueDate: string | null = null;
             const allMoves = repertoireSide.positionResponses[epd] ?? [];
-            let dueMovesFromHere = 0;
+            let dueMovesFromHere = new Set<string>();
             allMoves.forEach((m) => {
               if (shouldDebugEpd(epd)) {
                 console.log("MOVES", m);
@@ -570,16 +571,19 @@ export const getInitialRepertoireState = (
               ) {
                 earliestDueDate = recursedEarliestDueDate;
               }
-              dueMovesFromHere += dueMoves;
+              dueMovesFromHere = new Set([...dueMovesFromHere, ...dueMoves]);
             });
-            s.numMovesDueFromEpd[side][epd] = dueMovesFromHere;
+            s.numMovesDueFromEpd[side][epd] = dueMovesFromHere.size;
             s.earliestReviewDueFromEpd[side][epd] = earliestDueDate;
             if (shouldDebugEpd(epd)) {
               console.log("earliestDueDate", earliestDueDate);
             }
             const due = lastMove?.srs?.needsReview;
+            if (due) {
+              dueMovesFromHere.add(`${lastMove.epd}-${lastMove.sanPlus}`);
+            }
             return {
-              dueMoves: dueMovesFromHere + (due ? 1 : 0),
+              dueMoves: dueMovesFromHere,
               earliestDueDate: earliestDueDate ?? lastMove?.srs?.dueAt,
             };
           };
@@ -833,11 +837,6 @@ export const getInitialRepertoireState = (
         });
         if (options?.import) {
           // just don't show the chessboard
-        } else if (s.getIsRepertoireEmpty(side) && mode === "build") {
-          // s.browsingState.chessboardShownAnim.setValue(0);
-          // s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
-          //   SidebarOnboardingStage.AskAboutExistingRepertoire,
-          // ];
         } else if (mode === "browse" || mode === "build") {
           s.browsingState.chessboardShownAnim = 1;
           if (s.browsingState.sidebarState.activeSide === "white") {
@@ -1025,12 +1024,6 @@ export const getInitialRepertoireState = (
               s.repertoireGrades = data.grades;
               s.repertoireShareId = data.shareId;
               s.hasCompletedRepertoireInitialization = true;
-              if (getAllRepertoireMoves(s.repertoire).length > 0) {
-              } else {
-                // if (!s.hasCompletedRepertoireInitialization) {
-                //   s.showImportView = false;
-                // }
-              }
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
                 // todo: re-enable onboarding
@@ -1041,9 +1034,11 @@ export const getInitialRepertoireState = (
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
-                s.startBrowsing("white", "build", {
-                  pgnToPlay: lineToPgn(TEST_LINE),
-                });
+                window.setTimeout(() => {
+                  s.startBrowsing("black", "build", {
+                    pgnToPlay: lineToPgn(TEST_LINE),
+                  });
+                }, 100);
               }
             });
           });

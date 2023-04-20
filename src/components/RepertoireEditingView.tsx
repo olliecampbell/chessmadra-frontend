@@ -110,10 +110,6 @@ export const Responses = function Responses() {
       return tableResponses();
     }
   });
-  console.log("rendering responses");
-  createEffect(() => {
-    console.log("new responses", responses());
-  });
   return (
     <div style={s(c.column, c.constrainWidth)}>
       <Show when={positionReport()}>

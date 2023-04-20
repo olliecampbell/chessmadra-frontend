@@ -72,6 +72,7 @@ export interface ScoreTable {
 
 export interface ScoreFactor {
   weight?: number;
+  max?: number;
   value: number;
   source: TableResponseScoreSource;
   total?: number;
@@ -420,18 +421,14 @@ const Response = (props: {
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const annotation = createMemo(() => {
     if (props.hideAnnotations) {
-      console.log("hiding annotations");
       return null;
     }
     return renderAnnotation(props.tableResponse.suggestedMove?.annotation);
   });
-  createEffect(() => {
-    if (annotation()) {
-      console.log(
-        `${sanPlus()} annotation is ${annotation()} for ${sanPlus()}`
-      );
-    }
-  });
+  // createEffect(() => {
+  //   if (annotation()) {
+  //   }
+  // });
   const tags = () => {
     const tags = [];
     // newOpeningName = nextEcoCode?.fullName;

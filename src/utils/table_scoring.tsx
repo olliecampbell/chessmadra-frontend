@@ -18,7 +18,7 @@ export enum TableResponseScoreSource {
   Playrate = "playrate",
   Needed = "needed",
   MasterPlayrate = "masterPlayrate",
-  Incidence = "Incidence",
+  Incidence = "incidence",
 }
 
 export const scoreTableResponses = (
@@ -33,6 +33,7 @@ export const scoreTableResponses = (
     winrate: number;
     playrate: number;
     masterPlayrate: number;
+    incidence: number;
   }
 ): TableResponse[] => {
   const positionWinRate = report ? getWinRate(report?.results, side) : NaN;
@@ -158,6 +159,7 @@ export const scoreTableResponses = (
           scoreTable.factors.push({
             source: TableResponseScoreSource.Incidence,
             value: tableResponse.suggestedMove?.incidence,
+            weight: weights[TableResponseScoreSource.Incidence] ?? 1,
           });
         }
         const [winrateLowerBound, winrateUpperBound] = getWinRateRange(
@@ -170,12 +172,16 @@ export const scoreTableResponses = (
           scoreTable.factors.push({
             source: TableResponseScoreSource.Winrate,
             value: scoreForWinrate,
+            max: 0.5,
           });
         }
       }
       scoreTable.factors.forEach((f) => {
         f.weight = weights[f.source] ?? 1.0;
         f.total = f.weight * f.value;
+        if (f.max) {
+          f.total = Math.min(f.total, f.max);
+        }
       });
       if (tableResponse.tags.includes(MoveTag.BestMove)) {
         scoreTable.factors.push({
@@ -217,7 +223,11 @@ export const EFFECTIVENESS_WEIGHTS_MASTERS = {
 
 export const EFFECTIVENESS_WEIGHTS_PEERS = {
   ...EFFECTIVENESS_WEIGHTS_MASTERS,
-  playrate: 8.0,
+  startScore: 1.0,
+  incidence: 0.0,
+  eval: 1 / 50,
+  winrate: 20.0,
+  playrate: 1 / 100,
   masterPlayrate: 0.0,
 };
 
@@ -227,7 +237,7 @@ export const PLAYRATE_WEIGHTS = {
   winrate: 0.0,
   playrate: 0.0,
   needed: 1.0,
-  incidence: 0.0,
+  incidence: 1.0,
   masterPlayrate: 0.0,
 };
 
