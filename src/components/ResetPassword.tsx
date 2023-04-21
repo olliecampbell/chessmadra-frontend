@@ -28,6 +28,8 @@ import { InputError } from "./forms/InputError";
 import { A, Link, useParams, useSearchParams } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
+import { AxiosResponse } from "axios";
+import { AuthResponse } from "~/utils/models";
 
 type ResetPasswordForm = {
   password: string;
@@ -45,14 +47,10 @@ export default function ResetPassword() {
     setServerError("");
     client
       .post("/api/reset_password", { password: values.password, id: params.id })
-      .then((resp) => {
+      .then((resp: AxiosResponse<AuthResponse>) => {
         trackEvent(`auth.reset_password.success`);
-        const { token, user } = resp.data;
         quick((s) => {
-          const userState = s.userState;
-          userState.token = token;
-          userState.setUser(user);
-          userState.authStatus = AuthStatus.Authenticated;
+          s.userState.handleAuthResponse(resp.data);
           s.navigationState.push("/");
         });
         // todo: actually log them in
@@ -81,7 +79,7 @@ export default function ResetPassword() {
               <PieceView piece={{ color: "w", type: "n" }} pieceSet={"alpha"} />
             </div>
             <Spacer height={12} />
-            <div class={`p-4 bg-gray-16 self-stretch min-w-80 w-full`}>
+            <div class={`bg-gray-16 min-w-80 w-full self-stretch p-4`}>
               <p class="text-lg font-semibold">Enter your new password</p>
               <Spacer height={12} />
               <div style={s(c.br(4), c.px(0), c.py(0))}>
@@ -112,7 +110,7 @@ export default function ResetPassword() {
                       </>
                     )}
                   </Field>
-                  <div class={"max-w-min min-w-full"}>
+                  <div class={"min-w-full max-w-min"}>
                     <InputError
                       name={"Server error"}
                       error={serverError()}
@@ -121,7 +119,7 @@ export default function ResetPassword() {
                     <input
                       type="submit"
                       value={"Reset password"}
-                      class="btn py-4 self-end w-fit px-8"
+                      class="btn w-fit self-end px-8 py-4"
                     ></input>
                   </div>
                 </Form>

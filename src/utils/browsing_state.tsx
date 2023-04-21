@@ -88,7 +88,7 @@ export enum SidebarOnboardingStage {
 
 export interface SidebarOnboardingState {
   stageStack: SidebarOnboardingStage[];
-  importType: SidebarOnboardingImportType;
+  importType?: SidebarOnboardingImportType | null;
 }
 
 export enum SidebarOnboardingImportType {
@@ -134,14 +134,14 @@ export interface SidebarState {
   };
   addedLineState: {
     visible: boolean;
+    loading: boolean;
   };
   pendingResponses?: Record<string, RepertoireMove>;
   currentSide: Side;
   hasPendingLineToAdd: boolean;
   sidebarOnboardingState: SidebarOnboardingState;
-  isAddingPendingLine: boolean;
   moveLog: string[];
-  positionHistory: string[];
+  positionHistory: string[] | null;
   currentEpd: string;
   lastEcoCode?: EcoCode;
   planSections?: any;
@@ -173,10 +173,7 @@ export interface BrowsingState {
   // Fields
   chessboard: ChessboardInterface;
   sidebarState: SidebarState;
-  previousSidebarState: SidebarState;
-  sidebarDirection: "left" | "right";
-  previousSidebarAnim: Animated<number>;
-  currentSidebarAnim: Animated<number>;
+  previousSidebarState: SidebarState | null;
   chessboardShown: boolean;
   repertoireProgressState: BySide<RepertoireProgressState>;
   showPlans: boolean;
@@ -233,6 +230,7 @@ export const makeDefaultSidebarState = () => {
     },
     addedLineState: {
       visible: false,
+      loading: false,
     },
     pendingResponses: {},
     currentSide: "white",
@@ -241,7 +239,6 @@ export const makeDefaultSidebarState = () => {
       stageStack: [],
       importType: null,
     },
-    isAddingPendingLine: false,
   } as SidebarState;
 };
 
@@ -265,7 +262,7 @@ export const getInitialBrowsingState = (
   const initialState = {
     ...createQuick(setOnly),
     previousSidebarState: null,
-    sidebarDirection: null,
+    chessboard: undefined as ChessboardInterface,
     // TODO: solid
     previousSidebarAnim: { value: 0, duration: 200 },
     // TODO: solid
@@ -573,26 +570,25 @@ export const getInitialBrowsingState = (
         });
         if (s.sidebarState.submitFeedbackState.visible) {
           s.sidebarState.submitFeedbackState.visible = false;
-          return true;
-        } else if (s.sidebarState.addedLineState.visible) {
+        }
+        if (s.sidebarState.addedLineState.visible) {
           s.sidebarState.addedLineState.visible = false;
-          return true;
-        } else if (s.sidebarState.deleteLineState.visible) {
+          s.sidebarState.addedLineState.loading = false;
+        }
+        if (s.sidebarState.deleteLineState.visible) {
           s.sidebarState.deleteLineState.visible = false;
-          return true;
-        } else if (s.sidebarState.transposedState.visible) {
+        }
+        if (s.sidebarState.transposedState.visible) {
           s.sidebarState.transposedState.visible = false;
-          return true;
-        } else if (s.sidebarState.showPlansState.visible) {
+        }
+        if (s.sidebarState.showPlansState.visible) {
           s.sidebarState.showPlansState.visible = false;
           s.sidebarState.showPlansState.hasShown = false;
           s.sidebarState.showPlansState.coverageReached = false;
           s.chessboard.set((c) => {
             c.showPlans = false;
           });
-          return true;
         }
-        return false;
       }),
     finishSidebarOnboarding: (responsive: Responsive) =>
       set(([s, rs]) => {
@@ -854,31 +850,16 @@ export const getInitialBrowsingState = (
       set(([s, gs]) => {
         gs.animateSidebarState?.(direction);
         s.previousSidebarState = cloneDeep(s.sidebarState);
-        s.sidebarDirection = direction;
-        const duration = 200;
-        // TODO: solid
-        // s.previousSidebarAnim.setValue(0.0);
-        // s.currentSidebarAnim.setValue(0.0);
-        // skipTo(s.previousSidebarAnim, 0)
-        // skipTo(s.currentSidebarAnim, 0)
-        animateTo(s.previousSidebarAnim, 1.0, { duration, initial: 0.0 });
-        // animateTo(s.currentSidebarAnim, 1.0, duration, duration);
       }),
     addPendingLine: (cfg) =>
       set(([s, gs]) => {
         const { replace } = cfg ?? { replace: false };
-        s.sidebarState.isAddingPendingLine = true;
         s.sidebarState.showPlansState.hasShown = false;
-        // let line = lineToPgn(s.sidebarState.moveLog);
-        // client
-        //   .post("/api/v1/openings/line_reports", {
-        //     lines: [line],
-        //   })
-        //   .then(({ data }: { data: LineReport[] }) => {
-        //     set(([s, rs]) => {
-        //       rs.lineReports[line] = data[0];
-        //     });
-        //   });
+        s.dismissTransientSidebarState();
+        s.sidebarState.addedLineState = {
+          visible: true,
+          loading: true,
+        };
         client
           .post("/api/v1/openings/add_moves", {
             moves: flatten(cloneDeep(values(s.sidebarState.pendingResponses))),
@@ -887,18 +868,14 @@ export const getInitialBrowsingState = (
           })
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s, rs]) => {
-              s.moveSidebarState("right");
-              s.dismissTransientSidebarState();
-              // s.backToStartPosition(s);
+              s.sidebarState.addedLineState = {
+                visible: true,
+                loading: false,
+              };
               rs.repertoire = data.repertoire;
               rs.repertoireGrades = data.grades;
               rs.onRepertoireUpdate();
               s.onPositionUpdate();
-              // s.showPlans = true;
-              // s.updateArrows();
-              s.sidebarState.addedLineState = {
-                visible: true,
-              };
             });
           })
           .catch((err) => {
@@ -907,7 +884,7 @@ export const getInitialBrowsingState = (
           })
           .finally(() => {
             set(([s]) => {
-              s.sidebarState.isAddingPendingLine = false;
+              s.sidebarState.addedLineState.loading = false;
             });
           });
       }),

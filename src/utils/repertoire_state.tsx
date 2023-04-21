@@ -56,7 +56,7 @@ import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
 
-const TEST_LINE = isDevelopment ? ["e4", "d5", "exd5", "Qxd5"] : [];
+const TEST_LINE = isDevelopment ? [] : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
@@ -244,7 +244,6 @@ export const getInitialRepertoireState = (
     ecoCodes: [],
     debugPawnStructuresState: null,
     addedLineState: null,
-    isAddingPendingLine: false,
     numResponsesAboveThreshold: undefined,
     pawnStructures: [],
     isUpdatingEloRange: false,
@@ -264,6 +263,8 @@ export const getInitialRepertoireState = (
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
       set(([s]) => {
+        s.repertoire = undefined;
+        s.updateRepertoireStructures();
         s.fetchRepertoire(true);
         s.fetchSupplementary();
       }, "initState"),

@@ -191,3 +191,9 @@ export interface ModelGame {
 export interface LineReport {
   modelGames: BySide<ModelGame[]>;
 }
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+  firstAuthentication?: boolean;
+}

@@ -12,7 +12,7 @@ import {
 import { SidebarStateContext } from "~/utils/browsing_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
-import { SidebarActions } from "./SidebarActions";
+import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
@@ -39,8 +39,14 @@ import {
   useContext,
 } from "solid-js";
 import { Pressable } from "./Pressable";
-import { AnalyzeOnLichessButton, VERTICAL_BREAKPOINT } from "./SidebarLayout";
+import {
+  AnalyzeOnLichessButton,
+  SidebarLayout,
+  VERTICAL_BREAKPOINT,
+} from "./SidebarLayout";
 import { clsx } from "~/utils/classes";
+import { Puff } from "solid-spinner";
+import { SidebarTemplate } from "./SidebarTemplate";
 
 export const BrowserSidebar = function BrowserSidebar() {
   const [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
@@ -65,8 +71,6 @@ export const BrowserSidebar = function BrowserSidebar() {
         }
         let clone = currentRef().cloneNode(true);
         previousRef().replaceChildren(clone);
-        console.log("cloned", clone);
-        console.log("animateing sidebar", dir);
         const ms = 200;
         const duration = `${ms}ms`;
         previousRef().style.transform = "translateX(0px)";
@@ -435,11 +439,45 @@ const SavedLineView = function SavedLineView() {
     s.browsingState.repertoireProgressState[activeSide()],
   ]);
   const responsive = useResponsive();
+  const [addedLineState] = useSidebarState(([s]) => [s.addedLineState]);
+
+  const [mode, currentLine] = useSidebarState(([s]) => [s.mode, s.moveLog]);
+  const reviewCurrentLineAction: SidebarAction = {
+    onPress: () => {
+      trackEvent(`${mode()}.added_line_state.practice_line`);
+      quick((s) => {
+        s.repertoireState.reviewState.reviewLine(currentLine(), activeSide());
+      });
+    },
+    text: "Practice this line",
+    style: "primary",
+  };
+  const continueAddingToThisLineAction: SidebarAction = {
+    onPress: () => {
+      quick((s) => {
+        trackEvent(`${mode()}.added_line_state.contrinue_this_line`);
+        s.repertoireState.browsingState.moveSidebarState("right");
+        s.repertoireState.browsingState.sidebarState.addedLineState.visible =
+          false;
+      });
+    },
+    text: "Continue adding to this line",
+    style: "primary",
+  };
   return (
-    <div style={s(c.column)}>
-      <RepertoireEditingHeader>Line saved!</RepertoireEditingHeader>
-      <div style={s(c.px(c.getSidebarPadding(responsive)))}>
-        <Spacer height={24} />
+    <Show
+      when={!addedLineState().loading}
+      fallback={
+        <div class="row w-full justify-center pt-12">
+          <Puff color={c.primaries[65]} />
+        </div>
+      }
+    >
+      <SidebarTemplate
+        header={"Line saved!"}
+        bodyPadding
+        actions={[reviewCurrentLineAction, continueAddingToThisLineAction]}
+      >
         <div style={s(c.fullWidth)}>
           <Animated.View
             style={s(
@@ -466,7 +504,7 @@ const SavedLineView = function SavedLineView() {
           </div>
         </div>
         <Spacer height={12} />
-      </div>
-    </div>
+      </SidebarTemplate>
+    </Show>
   );
 };

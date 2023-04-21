@@ -1,6 +1,6 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { useIsMobile } from "~/utils/isMobile";
-import { quick, useRepertoireState } from "~/utils/app_state";
+import { quick, useRepertoireState, useAppState } from "~/utils/app_state";
 import { HeadSiteMeta } from "./PageContainer";
 import { OPENINGS_DESCRIPTION } from "./NavBar";
 import { createEffect, Show } from "solid-js";
@@ -8,6 +8,8 @@ import { c, s } from "~/utils/styles";
 import { Puff } from "solid-spinner";
 import { LogoFull } from "./icons/LogoFull";
 import { clsx } from "~/utils/classes";
+import { AuthStatus } from "~/utils/user_state";
+import { createDebugStateEffect } from "~/utils/debug_effect";
 
 export const RepertoirePageLayout = (props: {
   children: any;
@@ -21,14 +23,16 @@ export const RepertoirePageLayout = (props: {
   const [repertoireLoading] = useRepertoireState((s) => [
     s.repertoire === undefined,
   ]);
+  const [authStatus] = useAppState((s) => [s.userState.authStatus]);
 
   createEffect(() => {
-    if (repertoireLoading()) {
+    if (repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       quick((s) => {
         s.repertoireState.initState();
       });
     }
   });
+  createDebugStateEffect();
   const backgroundColor = c.grays[8];
   return (
     <div

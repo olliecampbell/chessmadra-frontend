@@ -9,6 +9,8 @@ import { A, useSearchParams } from "solid-start";
 import { trackEvent } from "~/utils/trackEvent";
 import { createEffect, createSignal } from "solid-js";
 import { Puff } from "solid-spinner";
+import { AuthResponse } from "~/utils/models";
+import { AxiosResponse } from "axios";
 
 enum AuthStatus {
   Initial,
@@ -30,17 +32,12 @@ const Authenticate = (props) => {
           .post("/api/authenticate", {
             token: t,
           })
-          .then(({ data }) => {
-            const { token, user, firstAuthentication } = data as any;
+          .then((resp: AxiosResponse<AuthResponse>) => {
+            const { token, user, firstAuthentication } = resp.data;
 
-            if (firstAuthentication) {
-              trackEvent("login.first_login");
-            }
             quick((s) => {
               const userState = s.userState;
-              userState.token = token;
-              userState.setUser(user);
-              userState.authStatus = GlobalAuthStatus.Authenticated;
+              userState.handleAuthResponse(resp.data);
             });
             trackEvent("login.authenticated");
             setAuthStatus(AuthStatus.SuccessWaiting);

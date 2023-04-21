@@ -81,28 +81,6 @@ export const SidebarActions = () => {
         ?.plans
     ),
   ]);
-  const reviewCurrentLineAction: SidebarAction = {
-    onPress: () => {
-      trackEvent(`${mode()}.added_line_state.practice_line`);
-      quick((s) => {
-        s.repertoireState.reviewState.reviewLine(currentLine(), activeSide());
-      });
-    },
-    text: "Practice this line",
-    style: "primary",
-  };
-  const continueAddingToThisLineAction: SidebarAction = {
-    onPress: () => {
-      quick((s) => {
-        trackEvent(`${mode()}.added_line_state.contrinue_this_line`);
-        s.repertoireState.browsingState.moveSidebarState("right");
-        s.repertoireState.browsingState.sidebarState.addedLineState.visible =
-          false;
-      });
-    },
-    text: "Continue adding to this line",
-    style: "primary",
-  };
   const buttonsSig = () => {
     let buttons: SidebarAction[] = [];
     const addBiggestMissAction = () => {
@@ -186,9 +164,9 @@ export const SidebarActions = () => {
       showTogglePlansButton = false;
       // Taken care of by onboarding
     } else if (addedLineState().visible) {
-      addBiggestMissAction();
-      buttons.push(reviewCurrentLineAction);
-      buttons.push(continueAddingToThisLineAction);
+      if (!addedLineState().loading) {
+        addBiggestMissAction();
+      }
     } else if (!hasPendingLineToAdd()) {
       addBiggestMissAction();
     } else if (hasPendingLineToAdd()) {
