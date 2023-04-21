@@ -44,9 +44,14 @@ const InstructiveGameView: Component<{
           {Math.round(game.numberMoves / 2)} moves
         </p>
       </div>
-      <div class={clsx(``)}>
-        <i class={`fa fa-link-simple`} />
-      </div>
+      <p
+        class={
+          "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors"
+        }
+      >
+        Analyze on Lichess
+        <i class="fa fa-up-right-from-square pl-2"></i>
+      </p>
     </a>
   );
 };

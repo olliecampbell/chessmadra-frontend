@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { User } from "~/utils/models";
+import { AuthResponse, User } from "~/utils/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -16,6 +16,7 @@ export interface UserState {
   user?: User;
   profileModalOpen?: boolean;
   setUser: (user: User) => void;
+  handleAuthResponse: (response: AuthResponse) => void;
   setRatingSystem: (system: string) => void;
   setRatingRange: (range: string) => void;
   setTargetDepth: (t: number) => void;
@@ -58,6 +59,17 @@ export const getInitialUserState = (
   };
   const initialState = {
     isUpdatingEloRange: false,
+    handleAuthResponse: (response: AuthResponse) => {
+      set(([s, appState]) => {
+        const { token, user, firstAuthentication } = response;
+        if (firstAuthentication) {
+          trackEvent("login.first_login");
+        }
+        s.token = token;
+        s.setUser(user);
+        s.authStatus = AuthStatus.Authenticated;
+      });
+    },
     setUser: (user: User) => {
       set(([s, appState]) => {
         s.user = user;

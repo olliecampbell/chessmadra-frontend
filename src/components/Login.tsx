@@ -30,6 +30,8 @@ import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import { clsx } from "~/utils/classes";
 import logo from "/logomark.png";
+import { AuthResponse } from "~/utils/models";
+import { AxiosResponse } from "axios";
 
 type LoginForm = {
   email: string;
@@ -66,17 +68,12 @@ export default function Login({ signup }: { signup?: boolean }) {
         email: values.email,
         password: values.password,
       })
-      .then((resp) => {
-        console.log("resp", resp);
-        const { token, user } = resp.data;
+      .then((resp: AxiosResponse<AuthResponse>) => {
         quick((s) => {
-          const userState = s.userState;
-          userState.token = token;
-          userState.setUser(user);
-          userState.authStatus = AuthStatus.Authenticated;
+          s.userState.handleAuthResponse(resp.data);
           s.navigationState.push("/");
-          s.repertoireState.initState();
           trackEvent(`auth.${authType()}.success`);
+          s.repertoireState.initState();
         });
       })
       .catch((err) => {

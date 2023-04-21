@@ -157,7 +157,7 @@ export const RepertoireOverview = (props: {}) => {
           style={s(textStyles)}
           class={clsx(textClasses, "row items-center")}
         >
-          View model games
+          View model games in lines you play
         </CMText>
       ),
       right: (
