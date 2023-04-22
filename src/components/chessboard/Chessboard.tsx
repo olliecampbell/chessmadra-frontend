@@ -192,8 +192,7 @@ export function ChessboardView(props: {
   });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
-  const pieceSet: Accessor<BoardTheme> = () =>
-    user()?.pieceSet ?? combinedTheme().pieceSet;
+  const pieceSet: Accessor<BoardTheme> = () => combinedTheme().pieceSet;
   const colors = () => [theme().light.color, theme().dark.color];
   const flipped = createMemo(() => !!chessboardStore().flipped);
   const boardImage = () => theme().boardImage;

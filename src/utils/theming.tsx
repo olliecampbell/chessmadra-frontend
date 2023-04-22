@@ -148,7 +148,7 @@ export const combinedThemes = [
     name: "Chessbook",
     id: "default",
     boardTheme: "default",
-    pieceSet: "chessbook",
+    pieceSet: "chessbook_monochrome",
   },
   {
     name: "Lichess",
