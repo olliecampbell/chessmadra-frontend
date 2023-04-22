@@ -88,6 +88,7 @@ export const SettingButton = (props) => {
         c.row,
         c.alignCenter,
         c.px(responsive.switch(0, [BP.md, 8])),
+        c.mx(responsive.switch(0, [BP.md, -8])),
         c.py(8)
         // c.bg(hovering ? c.grays[14] : c.grays[6])
       )}

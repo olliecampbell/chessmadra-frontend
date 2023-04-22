@@ -1,8 +1,10 @@
 import { c, grayHue, s } from "~/utils/styles";
 import { keyBy } from "lodash-es";
+import chessbookBoard from "/boards/chessbook_board.png";
 export type BoardTheme = {
   light: TileTheme;
   dark: TileTheme;
+  boardImage?: string;
   id: BoardThemeId;
   highlight: string | { dark: string; light: string };
   highlightDark: string;
@@ -70,8 +72,11 @@ export const BOARD_THEMES: BoardTheme[] = [
     //   dark: "#295929",
     //   light: "#666666",
     // },
-    highlight: adjustOpacity(c.grays[100], 20),
-    highlightDark: adjustOpacity(c.grays[100], 60),
+    // highlight: "hsla(198, 100%, 63%, 0.30)",
+    // highlightDark: "hsla(198, 100%, 63%, 0.30)",
+    highlight: "hsla(198, 100%, 100%, 0.30)",
+    highlightDark: "hsla(198, 100%, 100%, 0.30)",
+    boardImage: chessbookBoard,
     light: {
       color: c.grays[24],
     },
