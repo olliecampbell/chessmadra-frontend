@@ -196,6 +196,7 @@ export function ChessboardView(props: {
     user()?.pieceSet ?? combinedTheme().pieceSet;
   const colors = () => [theme().light.color, theme().dark.color];
   const flipped = createMemo(() => !!chessboardStore().flipped);
+  const boardImage = () => theme().boardImage;
   const getSquareFromLayoutAndGesture = (
     chessboardLayout,
     gesture: XY
@@ -680,8 +681,15 @@ export function ChessboardView(props: {
               );
             }}
           </For>
+          <Show when={boardImage()}>
+            <img
+              src={boardImage()}
+              class={clsx("absolute left-0 top-0 z-0 h-full w-full")}
+            />
+          </Show>
           <div
             style={s(c.column, c.fullWidth, c.fullHeight, c.noPointerEvents)}
+            class={clsx("z-1")}
           >
             {times(8)((i) => {
               return (
@@ -741,7 +749,7 @@ export function ChessboardView(props: {
                       <div
                         style={s(
                           c.keyedProp("touch-action")("none"),
-                          c.bg(color),
+                          !boardImage() && c.bg(color),
                           themeStyles(light),
                           c.center,
                           !frozen() && c.clickable,
