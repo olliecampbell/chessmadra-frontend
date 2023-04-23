@@ -781,7 +781,7 @@ export function ChessboardView(props: {
                           }`}
                           id={`highlight-${square()}`}
                           style={s(
-                            c.bg(theme().highlight),
+                            c.bg(isLastMoveSquare() ? theme().highlightLastMove : theme().highlightNextMove),
                             c.absolute,
                             c.zIndex(1)
                           )}
