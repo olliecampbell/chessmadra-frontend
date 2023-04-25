@@ -1158,8 +1158,8 @@ export const getExpectedNumMovesBetween = (
     m = 1.5;
     distance_pow = 1.12;
   } else if (side === "black") {
-    m = 0.24;
-    distance_pow = 1.32;
+    m = 1.05;
+    distance_pow = 1.15;
   }
   const get_distance = (x, y) => {
     const distance = 1 / y / (1 / x);

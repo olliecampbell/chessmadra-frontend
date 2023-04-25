@@ -30,13 +30,13 @@ export const createDebugStateEffect = () => {
     //     };
     //   });
     // }
-    setTimeout(() => {
-      quick((s) => {
-        s.repertoireState.startBrowsing("white", "build", {
-          pgnToPlay: lineToPgn(["e4", "d5"]),
-        });
-      });
-    }, 100);
+    // setTimeout(() => {
+    //   quick((s) => {
+    //     s.repertoireState.startBrowsing("white", "build", {
+    //       pgnToPlay: lineToPgn(["e4", "d5"]),
+    //     });
+    //   });
+    // }, 100);
   });
   onCleanup(() => {});
 };
