@@ -6,8 +6,8 @@ export type BoardTheme = {
   dark: TileTheme;
   boardImage?: string;
   id: BoardThemeId;
-  highlight: string | { dark: string; light: string };
-  highlightDark: string;
+  highlightNextMove: string;
+  highlightLastMove: string;
   name: string;
 };
 export type TileTheme = {
@@ -77,7 +77,6 @@ export const BOARD_THEMES: BoardTheme[] = [
     boardImage: chessbookBoard,
     highlightLastMove: "hsla(198, 100%, 63%, 0.5)",
     highlightNextMove: "hsla(38, 74%, 55%, 0.5)",
-    highlightDark: "hsla(38, 74%, 55%, 0.5)",
     light: {
       color: c.grays[24],
     },
@@ -90,7 +89,6 @@ export const BOARD_THEMES: BoardTheme[] = [
     name: "Lichess brown",
     highlightLastMove: defaultHighlight,
     highlightNextMove: "hsla(129, 62%, 21%, 0.5)",
-    highlightDark: defaultDarkHighlight,
     light: {
       color: `hsl(37, 67%, 83%)`,
     },
@@ -103,7 +101,6 @@ export const BOARD_THEMES: BoardTheme[] = [
     name: "chess.com",
     highlightLastMove: defaultHighlight,
     highlightNextMove: defaultHighlight,
-    highlightDark: defaultDarkHighlight,
     light: {
       color: `hsl(60, 44%, 88%)`,
     },
@@ -116,7 +113,6 @@ export const BOARD_THEMES: BoardTheme[] = [
     name: "Stripey",
     highlightLastMove: defaultHighlight,
     highlightNextMove: defaultHighlight,
-    highlightDark: defaultDarkHighlight,
     light: {
       color: c.hsl(0, 0, 86),
       styles: c.keyedProp("box-shadow")(`inset 0px 0px 0px 0.5px black`),
