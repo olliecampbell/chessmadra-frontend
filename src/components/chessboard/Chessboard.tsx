@@ -696,6 +696,7 @@ export function ChessboardView(props: {
                   style={s(c.fullWidth, c.row, c.grow, c.flexible, c.relative)}
                 >
                   {times(8)((j) => {
+                    const debugSquare = "e4";
                     const light = (i + j) % 2 == 0;
                     const [color, inverseColor] = light
                       ? colors()
@@ -727,10 +728,11 @@ export function ChessboardView(props: {
                       chessboardStore().previewedMove?.from === square();
                     const isLastMoveSquare = createMemo(
                       () =>
-                        props.chessboardInterface.getLastMove()?.to ==
-                          square() ||
-                        props.chessboardInterface.getLastMove()?.from ==
-                          square()
+                        !(
+                          isDraggedOverSquare() ||
+                          availableMove() ||
+                          isFromSquare()
+                        )
                     );
 
                     const isBottomEdge = i == 7;
@@ -738,9 +740,9 @@ export function ChessboardView(props: {
                     const shouldHighlight = () =>
                       isFromSquare() ||
                       isDraggedOverSquare() ||
-                      (isLastMoveSquare() &&
-                        !highlightingPreviewMove() &&
-                        isEmpty(availableMoves())) ||
+                      props.chessboardInterface.getLastMove()?.to == square() ||
+                      props.chessboardInterface.getLastMove()?.from ==
+                        square() ||
                       isPreviewSquare();
                     const isJustIndicator = () =>
                       availableMove() && !shouldHighlight();
@@ -769,9 +771,9 @@ export function ChessboardView(props: {
                               hidden: !isJustIndicator(),
                             }}
                             style={s(
-                              c.bg(theme().highlightDark),
+                              c.bg(theme().highlightNextMove),
                               c.absolute,
-                              c.zIndex(1)
+                              c.zIndex(2)
                             )}
                           />
                         </div>
@@ -781,7 +783,11 @@ export function ChessboardView(props: {
                           }`}
                           id={`highlight-${square()}`}
                           style={s(
-                            c.bg(isLastMoveSquare() ? theme().highlightLastMove : theme().highlightNextMove),
+                            c.bg(
+                              isLastMoveSquare()
+                                ? theme().highlightLastMove
+                                : theme().highlightNextMove
+                            ),
                             c.absolute,
                             c.zIndex(1)
                           )}
