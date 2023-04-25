@@ -74,9 +74,10 @@ export const BOARD_THEMES: BoardTheme[] = [
     // },
     // highlight: "hsla(198, 100%, 63%, 0.30)",
     // highlightDark: "hsla(198, 100%, 63%, 0.30)",
-    highlight: "hsla(198, 100%, 100%, 0.30)",
-    highlightDark: "hsla(198, 100%, 100%, 0.30)",
     boardImage: chessbookBoard,
+    highlightLastMove: "hsla(198, 100%, 63%, 0.5)",
+    highlightNextMove: "hsla(38, 74%, 55%, 0.5)",
+    highlightDark: "hsla(38, 74%, 55%, 0.5)",
     light: {
       color: c.grays[24],
     },
@@ -87,7 +88,8 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "lichess-brown",
     name: "Lichess brown",
-    highlight: defaultHighlight,
+    highlightLastMove: defaultHighlight,
+    highlightNextMove: "hsla(129, 62%, 21%, 0.5)",
     highlightDark: defaultDarkHighlight,
     light: {
       color: `hsl(37, 67%, 83%)`,
@@ -99,7 +101,8 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "chess.com",
     name: "chess.com",
-    highlight: defaultHighlight,
+    highlightLastMove: defaultHighlight,
+    highlightNextMove: defaultHighlight,
     highlightDark: defaultDarkHighlight,
     light: {
       color: `hsl(60, 44%, 88%)`,
@@ -111,7 +114,8 @@ export const BOARD_THEMES: BoardTheme[] = [
   {
     id: "stripey",
     name: "Stripey",
-    highlight: defaultHighlight,
+    highlightLastMove: defaultHighlight,
+    highlightNextMove: defaultHighlight,
     highlightDark: defaultDarkHighlight,
     light: {
       color: c.hsl(0, 0, 86),
