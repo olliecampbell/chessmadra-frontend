@@ -53,7 +53,7 @@ client.interceptors.request.use(function (config) {
   }
   const { token, tempUserUuid } = getAppState().userState;
   const { spoofedEmail } = getAppState().adminState;
-  const spoofKey = process.env.SPOOF_KEY;
+  const spoofKey = import.meta.env.VITE_SPOOF_KEY;
   if (spoofedEmail.value) {
     config.headers["spoof-user-email"] = spoofedEmail.value;
     config.headers["spoof-key"] = spoofKey;
