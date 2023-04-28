@@ -296,7 +296,7 @@ export const colors = {
   textSecondary: grays[80],
   textTertiary: grays[50],
   sidebarBorder: grays[25],
-  border: grays[25],
+  border: grays[20],
   textInverse: grays[5],
   textInverseSecondary: grays[20],
   successColor: "hsl(164, 98%, 55%)",
