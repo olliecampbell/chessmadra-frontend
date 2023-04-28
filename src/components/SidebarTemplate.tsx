@@ -6,6 +6,7 @@ import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { Component, For, Show } from "solid-js";
+import { Puff } from "solid-spinner";
 
 export const SidebarTemplate: Component<{
   header: string;
@@ -36,7 +37,7 @@ export const SidebarTemplate: Component<{
               <CMText
                 style={s(c.fontSize(14), c.weightSemiBold, c.fg(c.grays[75]))}
               >
-                loading
+                <Puff color={c.primaries[65]} />
               </CMText>
             </div>
           }

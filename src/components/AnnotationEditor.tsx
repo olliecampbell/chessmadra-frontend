@@ -3,6 +3,8 @@ import { c, s } from "~/utils/styles";
 import { throttle } from "lodash-es";
 import { CMText } from "./CMText";
 import { Accessor, createSignal } from "solid-js";
+import { FadeInOut } from "./FadeInOut";
+import { clsx } from "~/utils/classes";
 
 export const MAX_ANNOTATION_LENGTH = 300;
 
@@ -18,7 +20,6 @@ export const AnnotationEditor = ({
   const [annotation, setAnnotation] = createSignal(_annotation());
   // TODO: solid
   // const { fadeStyling } = useFadeAnimation(loading(), { duration: 300 });
-  const fadeStyling = 100;
   let lastTimer: number | null = null;
   const updateDebounced = throttle(
     (annotation: string) => {
@@ -49,9 +50,11 @@ export const AnnotationEditor = ({
           c.opacity(focus() ? 100 : 0)
         )}
       >
-        <CMText style={s(c.fg(c.grays[50]), c.opacity(fadeStyling))}>
-          <i class="fas fa-circle-notch fa-spin"></i>
-        </CMText>
+        <FadeInOut open={loading}>
+          <CMText style={s(c.fg(c.grays[50]))}>
+            <i class="fas fa-circle-notch fa-spin"></i>
+          </CMText>
+        </FadeInOut>
         <CMText
           style={s(
             annotation()?.length > MAX_ANNOTATION_LENGTH && c.weightBold,
@@ -67,7 +70,6 @@ export const AnnotationEditor = ({
       </div>
       <div style={s(c.bg(c.grays[20]), c.py(12), c.grow)}>
         <input
-          multiline
           value={annotation() ?? ""}
           style={s(
             {
@@ -82,8 +84,8 @@ export const AnnotationEditor = ({
             c.fg(c.grays[90]),
             c.keyedProp("resize")("none")
           )}
+          class={clsx("placeholder-gray-50")}
           placeholder={'ex. "Intending Bg5 after d4"'}
-          placeholderTextColor={c.grays[50]}
           onFocus={() => {
             setFocus(true);
           }}

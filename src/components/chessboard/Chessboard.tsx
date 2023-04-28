@@ -731,7 +731,8 @@ export function ChessboardView(props: {
                         !(
                           isDraggedOverSquare() ||
                           availableMove() ||
-                          isFromSquare()
+                          isFromSquare() ||
+                          isPreviewSquare()
                         )
                     );
 

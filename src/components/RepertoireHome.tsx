@@ -32,6 +32,7 @@ import {
 } from "~/utils/theming";
 import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
 import { unwrap } from "solid-js/store";
+import { FeedbackView } from "./FeedbackView";
 
 export const RepertoireHome = (props: {}) => {
   const userState = getAppState().userState;
@@ -181,6 +182,39 @@ export const RepertoireHome = (props: {}) => {
               } as SidebarAction,
             ].map((action: SidebarAction, i) => {
               return <SidebarFullWidthButton key={i} action={action} />;
+            })}
+          </div>
+          <Spacer height={46} />
+        </>
+        <>
+          <SidebarSectionHeader text="Contact us" />
+          <div style={s()}>
+            {[
+              {
+                onPress: () => {
+                  quick((s) => {
+                    trackEvent("home.contact.feedback");
+                    s.repertoireState.browsingState.replaceView(
+                      <FeedbackView />,
+                      "right"
+                    );
+                  });
+                },
+                text: "Share your feedback",
+                style: "secondary",
+              } as SidebarAction,
+              {
+                onPress: () => {
+                  quick((s) => {
+                    trackEvent("home.contact.discord");
+                    // todo: discord link
+                  });
+                },
+                text: "Join our Discord",
+                style: "secondary",
+              } as SidebarAction,
+            ].map((action: SidebarAction, i) => {
+              return <SidebarFullWidthButton action={action} />;
             })}
           </div>
           <Spacer height={46} />
