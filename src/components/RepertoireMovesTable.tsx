@@ -306,23 +306,20 @@ export const RepertoireMovesTable = ({
           </Pressable>
           <Spacer width={16} />
         </Show>
-        {!hideAnnotations && mode() == "build" && (
+        {!hideAnnotations() && mode() == "build" && (
           <>
             <Pressable
               class={clsx("pb-1")}
               onPress={() => {
-                if (!editingAnnotations) {
+                if (!editingAnnotations()) {
                   trackEvent(`${mode()}.moves_table.edit_annotations`);
                 }
-                setEditingAnnotations(!editingAnnotations);
+                setEditingAnnotations(!editingAnnotations());
               }}
             >
               <CMText
-                style={s(
-                  c.fontSize(12),
-                  c.fg(c.colors.textTertiary),
-                  c.weightSemiBold
-                )}
+                style={s(c.fontSize(12), c.weightSemiBold)}
+                class="text-tertiary &hover:text-primary transition-colors"
               >
                 {editingAnnotations()
                   ? "Stop editing annotations"
@@ -502,9 +499,7 @@ const Response = (props: {
         <div style={s(c.row, c.alignCenter)}>
           <Pressable
             onPress={() => {}}
-            class={clsx(
-              "bg-gray-12 row h-[128px] grow cursor-pointer rounded-sm"
-            )}
+            class={clsx("bg-gray-12 row h-[128px] grow rounded-sm")}
             style={s(c.lightCardShadow, c.mx(c.getSidebarPadding(responsive)))}
           >
             <div

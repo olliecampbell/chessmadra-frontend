@@ -4,32 +4,35 @@ import { useResponsive } from "~/utils/useResponsive";
 import { CMTextInput } from "./CMTextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { useUserState } from "~/utils/app_state";
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 import { trackEvent } from "~/utils/trackEvent";
 import client from "~/utils/client";
 
 export const FeedbackView = () => {
   const responsive = useResponsive();
-  const user = useUserState((s) => s.user);
+  const [user] = useUserState((s) => [s.user]);
   const [feedback, setFeedback] = createSignal("");
   const [email, setEmail] = createSignal("");
   const [loading, setLoading] = createSignal(false);
   const [success, setSuccess] = createSignal(false);
   const submitFeedback = () => {
-    if (isEmpty(feedback)) {
+    if (isEmpty(feedback())) {
       return;
     }
     setLoading(true);
     client
       .post("/api/v1/submit-feedback", {
-        feedback,
-        email: user?.email ?? email ?? null,
+        feedback: feedback(),
+        email: user()?.email ?? email() ?? null,
       })
       .then(() => {
         setSuccess(true);
         setLoading(false);
       });
   };
+  createEffect(() => {
+    console.log("loading", loading());
+  });
   return (
     <SidebarTemplate
       header={
@@ -54,15 +57,10 @@ export const FeedbackView = () => {
       loading={loading() && "Submitting feedback..."}
       bodyPadding={true}
     >
-      {/*<CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-        Feature request? Bug report? Etc? Let us know
-      </CMText>
       <Spacer height={12} />
-*/}
-      <Spacer height={12} />
-      <Show when={!success}>
+      <Show when={!success()}>
         <>
-          <Show when={isEmpty(user?.email)}>
+          <Show when={isEmpty(user()?.email)}>
             <>
               <CMTextInput
                 value={email()}

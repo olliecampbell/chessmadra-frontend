@@ -1,5 +1,6 @@
 import { c, s } from "~/utils/styles";
 import { Component, createSignal } from "solid-js";
+import { clsx } from "~/utils/classes";
 
 export const CMTextInput: Component<{
   value: string;
@@ -12,7 +13,7 @@ export const CMTextInput: Component<{
   const [focus, setFocus] = createSignal(false);
   return (
     <input
-      class="text-input"
+      class={clsx("text-input placeholder-gray-50")}
       style={s(
         c.bg(c.grays[14]),
         c.py(12),
