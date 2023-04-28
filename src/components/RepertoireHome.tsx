@@ -207,7 +207,7 @@ export const RepertoireHome = (props: {}) => {
                 onPress: () => {
                   quick((s) => {
                     trackEvent("home.contact.discord");
-                    // todo: discord link
+                    window.open("https://discord.gg/vNzfu5VetQ", "_blank");
                   });
                 },
                 text: "Join our Discord",
