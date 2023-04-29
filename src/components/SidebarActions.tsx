@@ -56,6 +56,7 @@ export const SidebarActions = () => {
     transposedState,
     mode,
     numDue,
+    view,
   ] = useSidebarState(([s, bs, rs]) => [
     s.hasPendingLineToAdd,
     s.isPastCoverageGoal,
@@ -72,6 +73,7 @@ export const SidebarActions = () => {
     s.transposedState,
     s.mode,
     rs.numMovesDueFromEpd?.[s.activeSide]?.[s.currentEpd],
+    s.view,
   ]);
   positionHistory = positionHistory ?? [];
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
@@ -82,6 +84,7 @@ export const SidebarActions = () => {
     ),
   ]);
   const buttonsSig = () => {
+    console.log("view is ", view(), hasPendingLineToAdd());
     let buttons: SidebarAction[] = [];
     const addBiggestMissAction = () => {
       let miss = null;
@@ -169,7 +172,7 @@ export const SidebarActions = () => {
       }
     } else if (!hasPendingLineToAdd()) {
       addBiggestMissAction();
-    } else if (hasPendingLineToAdd()) {
+    } else if (hasPendingLineToAdd() && !view()) {
       buttons.push({
         onPress: () => {
           isPastCoverageGoal()
@@ -294,7 +297,7 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
       {...hoveringProps}
       class={clsx(
         "transition-colors",
-        props.action.style !== "wide" && "h-sidebar-button",
+        props.action.style !== "wide" && "min-h-sidebar-button",
         props.action.style === "secondary" &&
           "text-secondary &hover:bg-gray-18 &hover:text-primary",
         props.action.style === "tertiary" &&

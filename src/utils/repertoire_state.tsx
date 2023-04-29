@@ -55,6 +55,7 @@ import { ChessboardInterface } from "./chessboard_interface";
 import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
+import { MAX_MOVES_FREE_TIER } from "./payment";
 
 const TEST_LINE = isDevelopment ? [] : [];
 console.log("TEST_LINE", TEST_LINE);
@@ -179,6 +180,7 @@ export interface RepertoireState {
   fetchDebugGames: () => void;
   // fetchDebugPawnStructureForPosition: () => void;
   selectDebugGame: (i: number) => void;
+  pastFreeTier: (side: Side) => boolean;
 }
 
 export interface NavBreadcrumb {
@@ -1043,6 +1045,14 @@ export const getInitialRepertoireState = (
               }
             });
           });
+      }),
+    pastFreeTier: (side: Side) =>
+      get(([s]) => {
+        if (!s.repertoire) {
+          return false;
+        }
+        const numMoves = s.numMovesFromEpd[side][START_EPD];
+        return numMoves > MAX_MOVES_FREE_TIER;
       }),
     getLineCount: (side?: Side) =>
       get(([s]) => {

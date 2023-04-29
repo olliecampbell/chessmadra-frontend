@@ -3,6 +3,7 @@ import { createEffect, createSignal, onCleanup } from "solid-js";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { lineToPgn } from "./repertoire";
+import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -18,8 +19,12 @@ export const createDebugStateEffect = () => {
     if (repertoireLoading() || authStatus() !== AuthStatus.Authenticated) {
       return;
     }
-    setHasCalled(true);
+    // setHasCalled(true);
     console.log("debug effect", repertoireLoading(), authStatus());
+    // quick((s) => {
+    //   s.repertoireState.browsingState.replaceView(<UpgradeSubscripitionView />);
+    // });
+
     // if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
     //   setHasCalled(true);
     //   quick((s) => {

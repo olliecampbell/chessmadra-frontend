@@ -69,8 +69,10 @@ import {
   createChessboardInterface,
 } from "./chessboard_interface";
 import { unwrap } from "solid-js/store";
+import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 
 export interface GetIncidenceOptions {
+  placeholder: void;
   // onlyCovered?: boolean;
 }
 
@@ -156,7 +158,7 @@ export interface BrowsingState {
   finishSidebarOnboarding: (responsive: Responsive) => void;
   getIncidenceOfCurrentLine: () => number;
   getLineIncidences: (_: GetIncidenceOptions) => number[];
-  dismissTransientSidebarState: () => boolean;
+  dismissTransientSidebarState: () => void;
   getNearestMiss: (sidebarState: SidebarState) => RepertoireMiss;
   getMissInThisLine: (sidebarState: SidebarState) => RepertoireMiss;
   onPositionUpdate: () => void;
@@ -693,7 +695,13 @@ export const getInitialBrowsingState = (
           });
       }),
     requestToAddCurrentLine: () =>
-      set(([s, rs]) => {
+      set(([s, rs, gs]) => {
+        const subscribed = gs.userState.isSubscribed();
+
+        if (!subscribed && rs.pastFreeTier(s.sidebarState.activeSide)) {
+          s.replaceView(<UpgradeSubscriptionView />, "right");
+          return;
+        }
         if (s.sidebarState.hasPendingLineToAdd) {
           s.addPendingLine();
         }
@@ -838,7 +846,7 @@ export const getInitialBrowsingState = (
       }),
     replaceView: (view: JSXElement, direction: "left" | "right") =>
       set(([s, gs]) => {
-        s.moveSidebarState(direction);
+        s.moveSidebarState(direction ?? "right");
         s.sidebarState.view = view;
       }),
     popView: () =>

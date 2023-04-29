@@ -31,6 +31,8 @@ export interface UserState {
   }) => void;
   isUpdatingEloRange: boolean;
   pastLandingPage?: boolean;
+  isSubscribed: () => boolean;
+  getCheckoutLink: (annual: boolean) => Promise<string>;
 }
 
 export enum AuthStatus {
@@ -88,6 +90,11 @@ export const getInitialUserState = (
         //   (appState.repertoireState.repertoireGrades[side]?.biggestMiss
         //     ?.incidence ?? 1.0) * 100;
         return (s.user?.missThreshold ?? DEFAULT_THRESHOLD) / 100;
+      });
+    },
+    isSubscribed: () => {
+      return get(([s]) => {
+        return s.user?.subscribed ?? false;
       });
     },
     getUserRatingDescription: () => {
@@ -160,6 +167,19 @@ export const getInitialUserState = (
             });
           });
       }),
+    getCheckoutLink: (annual: boolean) => {
+      return get(([s]) => {
+        return client
+          .post("/stripe/create-checkout-session", {
+            annual,
+          })
+          .then(({ data }: { data: { url: string } }) => {
+            window.location.href = data.url;
+            return data.url;
+          })
+          .finally(() => {});
+      });
+    },
     setTargetDepth: (t: number) => {
       set(([s]) => {
         s.user.missThreshold = t * 100;
