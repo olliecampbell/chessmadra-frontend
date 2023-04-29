@@ -100,7 +100,14 @@ export const SidebarSelectOneOf: Component<{
   );
 };
 
-export const THRESHOLD_OPTIONS = [4, 2, 1, 0.8, 0.5].map((x) => x / 100);
+export const THRESHOLD_OPTIONS = [
+  1 / 25,
+  1 / 50,
+  1 / 100,
+  1 / 200,
+  1 / 300,
+  1 / 400,
+];
 
 export const CoverageSettings = ({}: {}) => {
   const [user, missThreshold] = useUserState((s) => [
@@ -115,9 +122,6 @@ export const CoverageSettings = ({}: {}) => {
   };
   const recommendedDepth = () => getRecommendedMissThreshold(user()?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
-  if (user().isAdmin) {
-    thresholdOptions.push(0.25 / 100, 1 / 600);
-  }
   return (
     <SidebarTemplate actions={[]} header={"Coverage goal"}>
       <Spacer height={12} />
