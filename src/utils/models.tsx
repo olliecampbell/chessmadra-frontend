@@ -40,6 +40,7 @@ export interface User {
   ratingSystem: string;
   theme?: string;
   pieceSet?: string;
+  subscribed: boolean;
 }
 
 export interface LichessGame {
