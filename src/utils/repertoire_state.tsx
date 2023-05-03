@@ -1028,15 +1028,15 @@ export const getInitialRepertoireState = (
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
                 // todo: re-enable onboarding
-                // s.startBrowsing("white", "build");
-                // s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                //   [SidebarOnboardingStage.Initial];
+                s.startBrowsing("white", "build");
+                s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+                  [SidebarOnboardingStage.Initial];
               }
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
                 window.setTimeout(() => {
-                  s.startBrowsing("black", "build", {
+                  s.startBrowsing("white", "build", {
                     pgnToPlay: lineToPgn(TEST_LINE),
                   });
                 }, 100);
