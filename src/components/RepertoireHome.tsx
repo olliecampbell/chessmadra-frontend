@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, upperFirst, find } from "lodash-es";
+import { capitalize, upperFirst, find, isEmpty } from "lodash-es";
 import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
@@ -34,7 +34,7 @@ import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
 import { unwrap } from "solid-js/store";
 import { FeedbackView } from "./FeedbackView";
 
-export const RepertoireHome = (props: {}) => {
+export const RepertoireHome = () => {
   const userState = getAppState().userState;
   const themeId = () => userState.user?.theme;
   const theme = () =>
@@ -51,7 +51,6 @@ export const RepertoireHome = (props: {}) => {
   const [progressState] = useBrowsingState(([s]) => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
-  createEffect(() => {});
   const overallActions: Accessor<SidebarAction[]> = () => {
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
@@ -86,7 +85,7 @@ export const RepertoireHome = (props: {}) => {
       <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
         <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
           <For each={SIDES}>
-            {(side, i) => {
+            {(side) => {
               return (
                 <SidebarFullWidthButton
                   action={{
@@ -124,10 +123,10 @@ export const RepertoireHome = (props: {}) => {
           </For>
         </div>
         <Spacer height={46} />
-        <Show when={overallActions()}>
+        <Show when={!isEmpty(overallActions())}>
           <div style={s()}>
             <For each={overallActions()}>
-              {(action, i) => <SidebarFullWidthButton action={action} />}
+              {(action) => <SidebarFullWidthButton action={action} />}
             </For>
           </div>
           <Spacer height={46} />
@@ -135,87 +134,91 @@ export const RepertoireHome = (props: {}) => {
         <>
           <SidebarSectionHeader text="Repertoire settings" />
           <div style={s()}>
-            {[
-              {
-                onPress: () => {
-                  quick((s) => {
-                    trackEvent("home.settings.coverage");
-                    s.repertoireState.browsingState.replaceView(
-                      <CoverageSettings />,
-                      "right"
-                    );
-                  });
-                },
-                text: "Cover lines seen in",
-                right: `1 in ${Math.round(
-                  1 / userState.getCurrentThreshold()
-                )} games`,
-                style: "secondary",
-              } as SidebarAction,
-              {
-                onPress: () => {
-                  quick((s) => {
-                    trackEvent("home.settings.rating");
-                    s.repertoireState.browsingState.replaceView(
-                      <RatingSettings />,
-                      "right"
-                    );
-                  });
-                },
-                text: "Your rating",
-                right: `${userState.user?.ratingRange} ${userState.user?.ratingSystem}`,
-                style: "secondary",
-              } as SidebarAction,
-              {
-                onPress: () => {
-                  quick((s) => {
-                    trackEvent("home.settings.theme");
-                    s.repertoireState.browsingState.replaceView(
-                      <ThemeSettings />,
-                      "right"
-                    );
-                  });
-                },
-                text: "Board appearance",
-                right: `${upperFirst(theme().name)}`,
-                style: "secondary",
-              } as SidebarAction,
-            ].map((action: SidebarAction, i) => {
-              return <SidebarFullWidthButton key={i} action={action} />;
-            })}
+            <For
+              each={[
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.settings.coverage");
+                      s.repertoireState.browsingState.replaceView(
+                        <CoverageSettings />,
+                        "right"
+                      );
+                    });
+                  },
+                  text: "Cover lines seen in",
+                  right: `1 in ${Math.round(
+                    1 / userState.getCurrentThreshold()
+                  )} games`,
+                  style: "secondary",
+                } as SidebarAction,
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.settings.rating");
+                      s.repertoireState.browsingState.replaceView(
+                        <RatingSettings />,
+                        "right"
+                      );
+                    });
+                  },
+                  text: "Your rating",
+                  right: `${userState.user?.ratingRange} ${userState.user?.ratingSystem}`,
+                  style: "secondary",
+                } as SidebarAction,
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.settings.theme");
+                      s.repertoireState.browsingState.replaceView(
+                        <ThemeSettings />,
+                        "right"
+                      );
+                    });
+                  },
+                  text: "Board appearance",
+                  right: `${upperFirst(theme().name)}`,
+                  style: "secondary",
+                } as SidebarAction,
+              ]}
+            >
+              {(action, i) => <SidebarFullWidthButton action={action} />}
+            </For>
           </div>
           <Spacer height={46} />
         </>
         <>
           <SidebarSectionHeader text="Contact us" />
           <div style={s()}>
-            {[
-              {
-                onPress: () => {
-                  quick((s) => {
-                    trackEvent("home.contact.feedback");
-                    s.repertoireState.browsingState.replaceView(
-                      <FeedbackView />,
-                      "right"
-                    );
-                  });
-                },
-                text: "Share your feedback",
-                style: "secondary",
-              } as SidebarAction,
-              {
-                onPress: () => {
-                  quick((s) => {
-                    trackEvent("home.contact.discord");
-                    window.open("https://discord.gg/vNzfu5VetQ", "_blank");
-                  });
-                },
-                text: "Join our Discord",
-                style: "secondary",
-              } as SidebarAction,
-            ].map((action: SidebarAction, i) => {
-              return <SidebarFullWidthButton action={action} />;
-            })}
+            <For
+              each={[
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.contact.feedback");
+                      s.repertoireState.browsingState.replaceView(
+                        <FeedbackView />,
+                        "right"
+                      );
+                    });
+                  },
+                  text: "Share your feedback",
+                  style: "secondary",
+                } as SidebarAction,
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.contact.discord");
+                      window.open("https://discord.gg/vNzfu5VetQ", "_blank");
+                    });
+                  },
+                  text: "Join our Discord",
+                  style: "secondary",
+                } as SidebarAction,
+              ]}
+            >
+              {(action) => <SidebarFullWidthButton action={action} />}
+            </For>
           </div>
           <Spacer height={46} />
         </>

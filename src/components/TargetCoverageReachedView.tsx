@@ -25,7 +25,7 @@ export const TargetCoverageReachedView = () => {
               s.repertoireState.browsingState.addPendingLine();
             });
           },
-          style: "primary",
+          style: "focus",
           text: "I'm done, save this line to my repertoire",
         },
         {

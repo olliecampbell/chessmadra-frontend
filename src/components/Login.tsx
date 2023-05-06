@@ -73,7 +73,6 @@ export default function Login({ signup }: { signup?: boolean }) {
           s.userState.handleAuthResponse(resp.data);
           s.navigationState.push("/");
           trackEvent(`auth.${authType()}.success`);
-          s.repertoireState.initState();
         });
       })
       .catch((err) => {

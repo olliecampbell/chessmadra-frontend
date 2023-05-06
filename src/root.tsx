@@ -107,6 +107,11 @@ export default function Root() {
         />
 
         <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link
+          id="apple-touch-icon"
+          rel="apple-touch-icon"
+          href="/apple-touch-icon.png"
+        />
 
         <script
           src="https://kit.fontawesome.com/b1f0634f74.js"

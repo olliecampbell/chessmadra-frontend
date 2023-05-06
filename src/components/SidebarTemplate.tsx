@@ -9,7 +9,7 @@ import { Component, For, Show } from "solid-js";
 import { Puff } from "solid-spinner";
 
 export const SidebarTemplate: Component<{
-  header: string;
+  header: string | null;
   children: any;
   loading?: string;
   bodyPadding?: boolean;

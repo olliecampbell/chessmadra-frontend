@@ -34,7 +34,7 @@ import {
 import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";
-import { START_EPD } from "./chess";
+import { genEpd, START_EPD } from "./chess";
 import {
   getTotalGames,
   getWinRate,
@@ -70,6 +70,7 @@ import {
 } from "./chessboard_interface";
 import { unwrap } from "solid-js/store";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
+import { Chess } from "@lubert/chess.ts";
 
 export interface GetIncidenceOptions {
   placeholder: void;
@@ -410,7 +411,7 @@ export const getInitialBrowsingState = (
               tr.suggestedMove.results,
               s.sidebarState.activeSide as Side
             );
-            if (ci > 0.15 && Math.abs(positionWinRate - moveWinRate) > 0.02) {
+            if (ci > 0.12 && Math.abs(positionWinRate - moveWinRate) > 0.02) {
               tr.lowConfidence = true;
             }
           }
@@ -687,6 +688,18 @@ export const getInitialBrowsingState = (
           .then(({ data: reports }: { data: PositionReport[] }) => {
             set(([s, rs]) => {
               reports.forEach((report) => {
+                if (report.instructiveGames) {
+                  report.instructiveGames.forEach((game) => {
+                    const chess = new Chess();
+                    const epds: string[] = [];
+                    game.moves.forEach((move) => {
+                      chess.move(move);
+                      let epd = genEpd(chess);
+                      epds.push(epd);
+                    });
+                    game.epds = epds;
+                  });
+                }
                 rs.positionReports[report.side][report.epd] = report;
               });
               s.updateTableResponses();

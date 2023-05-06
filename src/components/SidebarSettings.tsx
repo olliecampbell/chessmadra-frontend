@@ -20,6 +20,7 @@ import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
 import { Component, For, Show } from "solid-js";
 import { clsx } from "~/utils/classes";
+import { compareFloats } from "~/utils/utils";
 
 export const SidebarSetting = () => {
   return (
@@ -33,6 +34,7 @@ export const SidebarSetting = () => {
 export const SidebarSelectOneOf: Component<{
   title: string;
   description: string;
+  equality: (a: any, b: any) => boolean;
   choices: any[];
   activeChoice: any;
   onSelect: (_: any, i?: number) => void;
@@ -42,8 +44,9 @@ export const SidebarSelectOneOf: Component<{
   const responsive = useResponsive();
   const actions = () =>
     props.choices.map((choice, i) => {
-      const active = choice === props.activeChoice;
-      console.log("active", active, choice, props.activeChoice);
+      const active = props.equality
+        ? props.equality(choice, props.activeChoice)
+        : choice === props.activeChoice;
       return {
         style: "secondary" as SidebarAction["style"],
         text: props.renderChoice(choice, active),
@@ -133,6 +136,7 @@ export const CoverageSettings = ({}: {}) => {
         // horizontal={true}
         activeChoice={selected()}
         onSelect={onSelect}
+        equality={compareFloats}
         renderChoice={(r: number, active: boolean) => {
           return (
             <div class="row items-end">

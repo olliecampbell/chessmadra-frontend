@@ -70,6 +70,7 @@ export const getInitialUserState = (
         s.token = token;
         s.setUser(user);
         s.authStatus = AuthStatus.Authenticated;
+        appState.repertoireState.initState();
       });
     },
     setUser: (user: User) => {
