@@ -5,3 +5,7 @@ export const times = (x) => (f) => {
   }
   return results;
 };
+
+export const compareFloats = (a, b) => {
+  return Math.abs(a - b) < Number.EPSILON;
+};

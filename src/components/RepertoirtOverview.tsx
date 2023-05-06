@@ -142,32 +142,6 @@ export const RepertoireOverview = (props: {}) => {
       ),
     },
     {
-      hidden: modelGames()?.length == 0,
-      onPress: () => {
-        trackEvent("side_overview.view_instructive_games");
-        quick((s) => {
-          s.repertoireState.browsingState.replaceView(
-            <SidebarInstructiveGames games={modelGames()} />,
-            "right"
-          );
-        });
-      },
-      left: (
-        <CMText
-          style={s(textStyles)}
-          class={clsx(textClasses, "row items-center")}
-        >
-          View model games in lines you play
-        </CMText>
-      ),
-      right: (
-        <i
-          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
-          class={"fa fa-book-open"}
-        />
-      ),
-    },
-    {
       hidden: empty(),
       onPress: () => {
         trackEvent("side_overview.choose_line_to_practice");
@@ -185,6 +159,38 @@ export const RepertoireOverview = (props: {}) => {
         <i
           style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
           class={"fa fa-arrow-right"}
+        />
+      ),
+    },
+    {
+      hidden: modelGames()?.length == 0,
+      onPress: () => {
+        trackEvent("side_overview.view_instructive_games");
+        quick((s) => {
+          s.repertoireState.browsingState.replaceView(
+            <SidebarInstructiveGames games={modelGames()} />,
+            "right"
+          );
+        });
+      },
+      left: (
+        <div class={clsx("row items-center")}>
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            View model games in lines you play
+          </CMText>
+          <span
+            class={clsx(
+              "bg-gray-85 ml-2 rounded-sm px-1 py-0.5 text-xs text-black"
+            )}
+          >
+            Beta
+          </span>
+        </div>
+      ),
+      right: (
+        <i
+          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
+          class={"fa fa-book-open"}
         />
       ),
     },

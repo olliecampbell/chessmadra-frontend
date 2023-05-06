@@ -1,13 +1,10 @@
-// import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { A } from "solid-start";
 
-export const AdminView = ({}) => {
-  const isMobile = useIsMobile();
+export const AdminView = () => {
   return (
     <AdminPageLayout>
       <CMText style={s(c.fontSize(48))}>Admin</CMText>

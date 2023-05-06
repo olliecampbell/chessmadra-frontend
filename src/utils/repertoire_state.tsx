@@ -19,13 +19,11 @@ import {
   values,
   sortBy,
   capitalize,
-  isNil,
 } from "lodash-es";
 import {
   BySide,
   getAllRepertoireMoves,
   lineToPgn,
-  pgnToLine,
   Repertoire,
   RepertoireGrade,
   RepertoireMove,
@@ -70,13 +68,6 @@ export interface LichessOauthData {
   codeChallenge: string;
 }
 
-export enum AddLineFromOption {
-  Initial = "Start Position",
-  Current = "Current Position",
-  BiggestMiss = "Biggest Gap in Repertoire",
-  BiggestMissOpening = "Biggest Gap in Opening",
-}
-
 export interface RepertoireState {
   animateSidebarState?: (dir: "left" | "right") => void;
   lineReports: Record<string, LineReport>;
@@ -109,15 +100,7 @@ export interface RepertoireState {
   // TODO: move review state stuff to its own module
   usePlayerTemplate: (id: string, responsive: Responsive) => void;
   backToOverview: () => void;
-  uploadMoveAnnotation: ({
-    epd,
-    san,
-    text,
-  }: {
-    epd: string;
-    san: string;
-    text: string;
-  }) => void;
+  uploadMoveAnnotation: (_: { epd: string; san: string; text: string }) => void;
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,

@@ -1,10 +1,10 @@
-import { useResponsive } from "~/utils/useResponsive";
 import { Component, For, Show } from "solid-js";
 import { clsx } from "~/utils/classes";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { InstructiveGame } from "~/utils/models";
+import { EcoCode, InstructiveGame } from "~/utils/models";
 import { Side } from "~/utils/repertoire";
-import { useSidebarState } from "~/utils/app_state";
+import { useSidebarState, useRepertoireState } from "~/utils/app_state";
+import { forEachRight } from "lodash-es";
 
 export const SidebarInstructiveGames = (props: {
   games: InstructiveGame[];
@@ -17,7 +17,7 @@ export const SidebarInstructiveGames = (props: {
         you play
       </p>
       <div class={"h-4"} />
-      <div class={"space-y-2"}>
+      <div class={"space-y-4"}>
         <For each={props.games}>
           {(game) => {
             return (
@@ -34,6 +34,17 @@ const InstructiveGameView: Component<{
   game: InstructiveGame;
   side: Side;
 }> = (props) => {
+  const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
+  const lastEcoCode = () => {
+    let lastEco: EcoCode | null = null;
+    forEachRight(props.game.epds, (epd) => {
+      const eco = ecoCodeLookup()[epd];
+      if (eco && !lastEco) {
+        lastEco = eco;
+      }
+    });
+    return lastEco as EcoCode | null;
+  };
   const link = () => {
     if (props.side === "black") {
       return `${props.game.gameLink}/black`;
@@ -45,12 +56,13 @@ const InstructiveGameView: Component<{
       href={link()}
       target="_blank"
       class={clsx(
-        "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover padding-sidebar min-h-sidebar-button row items-center justify-between py-2"
+        "bg-gray-18 &hover:bg-gray-24 padding-sidebar min-h-sidebar-button row items-center justify-between py-2"
       )}
     >
       <div>
-        <p class={clsx("")}>
-          <b>{props.game.whiteName}</b> vs <b>{props.game.blackName}</b>
+        <p class={clsx("font-bold")}>{lastEcoCode()?.fullName}</p>
+        <p class={clsx("text-secondary pt-1")}>
+          {props.game.whiteName} vs {props.game.blackName}
         </p>
         <p class={clsx("text-secondary pt-1")}>
           {Math.round(props.game.numberMoves / 2)} moves
@@ -58,11 +70,10 @@ const InstructiveGameView: Component<{
       </div>
       <p
         class={
-          "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors"
+          "text-secondary &hover:text-primary text-md py-2 font-semibold transition-colors"
         }
       >
-        View on Lichess
-        <i class="fa fa-up-right-from-square pl-2"></i>
+        <i class="fa fa-up-right-from-square pl-2" />
       </p>
     </a>
   );

@@ -103,6 +103,8 @@ export interface InstructiveGame {
   blackName: string;
   moves: string[];
   numberMoves: number;
+  // added client-side
+  epds: string[];
 }
 
 export interface PawnStructure {
