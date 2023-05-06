@@ -71,6 +71,7 @@ import {
 import { unwrap } from "solid-js/store";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 import { Chess } from "@lubert/chess.ts";
+import { PAYMENT_ENABLED } from "./payment";
 
 export interface GetIncidenceOptions {
   placeholder: void;
@@ -715,8 +716,12 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         const subscribed = gs.userState.isSubscribed();
 
-        if (!subscribed && rs.pastFreeTier(s.sidebarState.activeSide)) {
-          s.replaceView(<UpgradeSubscriptionView />, "right");
+        if (
+          !subscribed &&
+          rs.pastFreeTier(s.sidebarState.activeSide) &&
+          PAYMENT_ENABLED
+        ) {
+          s.replaceView(<UpgradeSubscriptionView pastLimit={true} />, "right");
           return;
         }
         if (s.sidebarState.hasPendingLineToAdd) {
