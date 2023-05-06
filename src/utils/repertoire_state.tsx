@@ -1077,9 +1077,12 @@ export const getInitialRepertoireState = (
       }),
     getNumResponsesBelowThreshold: (threshold: number, side: Side) =>
       get(([s]) => {
-        return filter(getAllRepertoireMoves(s.repertoire), (m) => {
-          return m.needed;
-        }).length;
+        return filter(
+          flatten(values(s.repertoire?.[side].positionResponses)),
+          (m) => {
+            return m.incidence < threshold;
+          }
+        ).length;
       }),
     getMyResponsesLength: (side?: Side) =>
       get(([s]) => {

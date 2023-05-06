@@ -681,16 +681,16 @@ const TrimRepertoireOnboarding = () => {
     });
   };
 
-  let actions = () => {
+  const actions = () => {
     let actions = [];
     THRESHOLD_OPTIONS.forEach((threshold) => {
-      const numMoves = getNumResponsesBelowThreshold(threshold, activeSide());
-      if (numMoves() > 0) {
+      const numMoves = getNumResponsesBelowThreshold()(threshold, activeSide());
+      if (numMoves > 0) {
         actions.push({
           text: `Trim lines that occur in less than 1 in ${
             1 / threshold
           } games`,
-          subtext: `${numMoves()} responses`,
+          subtext: `${numMoves} responses`,
           onPress: () => {
             trimToThreshold(threshold);
           },
