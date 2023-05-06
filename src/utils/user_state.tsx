@@ -214,28 +214,28 @@ export const getInitialUserState = (
 
 export const getRecommendedMissThreshold = (range: string) => {
   if (range == "0-1100") {
-    return 0.04;
+    return 1 / 50;
   }
   if (range == "1100-1300") {
-    return 0.02;
+    return 1 / 50;
   }
   if (range == "1300-1500") {
-    return 0.02;
+    return 1 / 75;
   }
   if (range == "1500-1700") {
-    return 0.01;
+    return 1 / 100;
   }
   if (range == "1700-1900") {
-    return 0.01;
+    return 1 / 150;
   }
   if (range == "1900-2100") {
-    return 0.008;
+    return 1 / 200;
   }
   if (range == "2100-2800") {
-    return 0.008;
+    return 1 / 200;
   }
   if (range == "1900-2800") {
-    return 0.008;
+    return 1 / 200;
   }
 };
 

@@ -56,6 +56,7 @@ import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
 import { MAX_MOVES_FREE_TIER } from "./payment";
+import dedent from "dedent-js";
 
 const TEST_LINE = isDevelopment ? [] : [];
 console.log("TEST_LINE", TEST_LINE);
@@ -684,7 +685,16 @@ export const getInitialRepertoireState = (
     exportPgns: () => set(([s]) => {}),
     exportPgn: (side: Side) =>
       set(([s]) => {
-        let pgn = "";
+        let pgn = dedent`
+        [Event "${side} Repertoire"]
+        [Site "chessbook.com"]
+        [Date ""]
+        [Round "N/A"]
+        [White "N/A"]
+        [Black "N/A"]
+        [Result "*"]
+        `;
+        pgn += "\n\n";
 
         const seenEpds = new Set();
         const recurse = (epd, line, seenEpds) => {
@@ -733,7 +743,8 @@ export const getInitialRepertoireState = (
           recurse(mainMove.epdAfter, mainLine, seenEpds);
         };
         recurse(START_EPD, [], seenEpds);
-        pgn = pgn.trim();
+        pgn = pgn.trim() + " *";
+        console.log("pgn", pgn);
 
         const downloadLink = document.createElement("a");
 
@@ -1030,15 +1041,15 @@ export const getInitialRepertoireState = (
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
                 // todo: re-enable onboarding
-                // s.startBrowsing("white", "build");
-                // s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                //   [SidebarOnboardingStage.Initial];
+                s.startBrowsing("white", "build");
+                s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+                  [SidebarOnboardingStage.Initial];
               }
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
                 window.setTimeout(() => {
-                  s.startBrowsing("black", "build", {
+                  s.startBrowsing("white", "build", {
                     pgnToPlay: lineToPgn(TEST_LINE),
                   });
                 }, 100);
