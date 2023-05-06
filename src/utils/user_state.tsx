@@ -87,10 +87,7 @@ export const getInitialUserState = (
     },
     getCurrentThreshold: () => {
       return get(([s, appState]) => {
-        // let biggestMissIncidence =
-        //   (appState.repertoireState.repertoireGrades[side]?.biggestMiss
-        //     ?.incidence ?? 1.0) * 100;
-        return (s.user?.missThreshold ?? DEFAULT_THRESHOLD) / 100;
+        return (s.user?.missThreshold ?? DEFAULT_THRESHOLD * 100) / 100;
       });
     },
     isSubscribed: () => {
