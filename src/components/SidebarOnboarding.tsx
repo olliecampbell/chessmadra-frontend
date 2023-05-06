@@ -705,7 +705,7 @@ const TrimRepertoireOnboarding = () => {
           s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
         });
       },
-      style: "primary",
+      style: "focus",
     });
     if (loading()) {
       actions = [];
