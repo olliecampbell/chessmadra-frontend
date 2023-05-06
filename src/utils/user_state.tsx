@@ -171,7 +171,7 @@ export const getInitialUserState = (
     getCheckoutLink: (annual: boolean) => {
       return get(([s]) => {
         return client
-          .post("/stripe/create-checkout-session", {
+          .post("/api/stripe/create-checkout-session", {
             annual,
           })
           .then(({ data }: { data: { url: string } }) => {
