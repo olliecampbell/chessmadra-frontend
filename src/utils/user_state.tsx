@@ -240,7 +240,7 @@ export const getRecommendedMissThreshold = (range: string) => {
   }
 };
 
-export const DEFAULT_THRESHOLD = 4.0;
+export const DEFAULT_THRESHOLD = 1 / 50;
 export const trackModule = (module: string) => {
   const identifyObj = new Identify();
   identifyObj.set("last_module", module);
