@@ -159,8 +159,6 @@ export interface RepertoireState {
   // Nav bar stuff
   getBreadCrumbs: (mobile: boolean) => NavBreadcrumb[];
 
-  // Debug pawn structure stuff
-  debugPawnStructuresState: any & {};
   fetchDebugGames: () => void;
   // fetchDebugPawnStructureForPosition: () => void;
   selectDebugGame: (i: number) => void;
@@ -228,7 +226,6 @@ export const getInitialRepertoireState = (
       isDeletingMove: false,
     },
     ecoCodes: [],
-    debugPawnStructuresState: null,
     addedLineState: null,
     numResponsesAboveThreshold: undefined,
     pawnStructures: [],
@@ -436,9 +433,9 @@ export const getInitialRepertoireState = (
       }),
     onMove: () =>
       set(([s]) => {
-        if (s.debugPawnStructuresState) {
-          // s.fetchDebugPawnStructureForPosition();
-        }
+        // if (s.debugPawnStructuresState) {
+        //   // s.fetchDebugPawnStructureForPosition();
+        // }
       }, "onMove"),
     updateRepertoireStructures: () =>
       set(([s, gs]) => {
@@ -922,42 +919,42 @@ export const getInitialRepertoireState = (
       }),
     fetchDebugGames: () =>
       set(([s]) => {
-        s.debugPawnStructuresState = {
-          games: [],
-          loadingGames: true,
-          byPosition: {},
-          mode: "games",
-          i: 0,
-        };
-        client
-          .post("/api/v1/debug/master_games", {
-            move_number: NUM_MOVES_DEBUG_PAWN_STRUCTURES,
-          })
-          .then(({ data }: { data: any }) => {
-            set(([s]) => {
-              s.debugPawnStructuresState.i = 0;
-              s.debugPawnStructuresState.loadingGames = false;
-              s.debugPawnStructuresState.games = sortBy(data.games, (g) => {
-                return !some(g.pawnStructures, (s) => s.passed);
-              });
-              if (s.debugPawnStructuresState.mode === "games") {
-                s.selectDebugGame(0);
-              }
-            });
-          });
+        // s.debugPawnStructuresState = {
+        //   games: [],
+        //   loadingGames: true,
+        //   byPosition: {},
+        //   mode: "games",
+        //   i: 0,
+        // };
+        // client
+        //   .post("/api/v1/debug/master_games", {
+        //     move_number: NUM_MOVES_DEBUG_PAWN_STRUCTURES,
+        //   })
+        //   .then(({ data }: { data: any }) => {
+        //     set(([s]) => {
+        //       s.debugPawnStructuresState.i = 0;
+        //       s.debugPawnStructuresState.loadingGames = false;
+        //       s.debugPawnStructuresState.games = sortBy(data.games, (g) => {
+        //         return !some(g.pawnStructures, (s) => s.passed);
+        //       });
+        //       if (s.debugPawnStructuresState.mode === "games") {
+        //         s.selectDebugGame(0);
+        //       }
+        //     });
+        //   });
       }),
     selectDebugGame: (i: number) =>
       set(([s]) => {
-        const { game, pawnStructures } = s.debugPawnStructuresState.games[i];
-        s.debugPawnStructuresState.i = i;
-        s.debugPawnStructuresState.game = game;
-        s.debugPawnStructuresState.moves = NUM_MOVES_DEBUG_PAWN_STRUCTURES;
-        s.debugPawnStructuresState.pawnStructures = sortBy(
-          pawnStructures,
-          (p) => {
-            return !p.passed;
-          }
-        );
+        // const { game, pawnStructures } = s.debugPawnStructuresState.games[i];
+        // s.debugPawnStructuresState.i = i;
+        // s.debugPawnStructuresState.game = game;
+        // s.debugPawnStructuresState.moves = NUM_MOVES_DEBUG_PAWN_STRUCTURES;
+        // s.debugPawnStructuresState.pawnStructures = sortBy(
+        //   pawnStructures,
+        //   (p) => {
+        //     return !p.passed;
+        //   }
+        // );
         // s.debugPawnStructuresState.r
         // s.chessboardState.playPgn(
         //   lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
