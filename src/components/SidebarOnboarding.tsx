@@ -20,6 +20,7 @@ import { Component, createEffect, createSignal, Match, Switch } from "solid-js";
 import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
+import { THRESHOLD_OPTIONS } from "./SidebarSettings";
 
 export const SidebarOnboarding = function SidebarOnboarding() {
   const [onboardingState] = useSidebarState(([s]) => [
@@ -682,7 +683,7 @@ const TrimRepertoireOnboarding = () => {
 
   let actions = () => {
     let actions = [];
-    [1 / 25, 1 / 100, 1 / 200].forEach((threshold) => {
+    THRESHOLD_OPTIONS.forEach((threshold) => {
       const numMoves = getNumResponsesBelowThreshold(threshold, activeSide());
       if (numMoves() > 0) {
         actions.push({
