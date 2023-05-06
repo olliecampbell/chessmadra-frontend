@@ -1,1 +1,1 @@
-export const MAX_MOVES_FREE_TIER = 100;
+export const MAX_MOVES_FREE_TIER = 75;
