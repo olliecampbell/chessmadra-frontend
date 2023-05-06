@@ -39,7 +39,7 @@ export const RepertoireReview = (props: {}) => {
           if (s.repertoireState.reviewState.showNext) {
             s.repertoireState.reviewState.setupNextMove();
           } else {
-            trackEvent(`${mode}.give_up`);
+            trackEvent(`${mode()}.give_up`);
             s.repertoireState.reviewState.giveUp();
           }
         });

@@ -101,9 +101,10 @@ export const SidebarSelectOneOf: Component<{
 };
 
 export const THRESHOLD_OPTIONS = [
-  1 / 25,
   1 / 50,
+  1 / 75,
   1 / 100,
+  1 / 150,
   1 / 200,
   1 / 300,
   1 / 400,
