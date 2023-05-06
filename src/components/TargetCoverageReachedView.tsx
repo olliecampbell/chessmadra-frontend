@@ -20,7 +20,7 @@ export const TargetCoverageReachedView = () => {
       acts = [
         {
           onPress: () => {
-            trackEvent(`${mode}.save_line`);
+            trackEvent(`${mode()}.save_line`);
             quick((s) => {
               s.repertoireState.browsingState.addPendingLine();
             });
@@ -31,7 +31,7 @@ export const TargetCoverageReachedView = () => {
         {
           onPress: () => {
             quick((s) => {
-              trackEvent(`${mode}.plans_view.keep_adding`);
+              trackEvent(`${mode()}.plans_view.keep_adding`);
               s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.dismissTransientSidebarState();
             });

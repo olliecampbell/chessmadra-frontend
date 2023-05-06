@@ -498,7 +498,11 @@ export const getInitialBrowsingState = (
             const allOthersInaccurate = every(tableResponses, (tr, j) => {
               return !isNil(tr.moveRating) || j === i;
             });
-            if (allOthersInaccurate && isNil(tr.moveRating)) {
+            const playedEnough =
+              getTotalGames(tr.suggestedMove?.results) /
+                getTotalGames(positionReport?.results) >
+              0.02;
+            if (allOthersInaccurate && isNil(tr.moveRating) && playedEnough) {
               tr.tags.push(MoveTag.BestMove);
             }
           });
