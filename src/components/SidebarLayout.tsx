@@ -96,10 +96,11 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
             style={s(
               c.column,
               !vertical && s(c.grow, c.noBasis, c.flexShrink),
-              vertical ? c.width("min(480px, 100%)") : c.maxWidth(440),
+              vertical && c.width("min(480px, 100%)"),
               vertical && c.grow,
               vertical ? c.selfCenter : c.selfStretch
             )}
+            class={clsx("xxl:max-w-[800px] lg:max-w-[440px] xl:max-w-[600px]")}
           >
             {!vertical ? (
               <div style={s(c.height(140), c.column, c.justifyEnd)}>
