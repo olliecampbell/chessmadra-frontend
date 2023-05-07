@@ -31,10 +31,7 @@ import { getInitialUserState, UserState } from "./user_state";
 import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "~/utils/styles";
 import { isDevelopment } from "./env";
-import {
-  BrowsingState,
-  SidebarState,
-} from "./browsing_state";
+import { BrowsingState, SidebarState } from "./browsing_state";
 import { Accessor, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { destructure } from "@solid-primitives/destructure";
@@ -325,7 +322,7 @@ export const useSidebarState = <T extends any[]>(
   f: (s: [SidebarState, BrowsingState, RepertoireState]) => T
 ): AccessorArray<T> => {
   const sidebarState = () => {
-      return getAppState().repertoireState.browsingState.sidebarState;
+    return getAppState().repertoireState.browsingState.sidebarState;
   };
   return destructure(
     () =>
@@ -394,7 +391,7 @@ export const useDebugState = <T,>(
   return useStateSliceDestructure(fn, (s) => s.debugState, config);
 };
 
-export const useUserState = <T,>(
+export const useUserState = <T extends any[]>(
   fn: (_: UserState) => T,
   config?: Partial<EqualityConfig>
 ) => {

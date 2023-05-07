@@ -183,7 +183,7 @@ export const RatingSettings = ({}: {}) => {
         Used to determine common moves and their win rates at your level
       </CMText>
       <Spacer height={24} />
-      <RatingSelection onUpdate={(ratingSource, ratingRange) => {}} />
+      <RatingSelection />
     </SidebarTemplate>
   );
 };
@@ -259,30 +259,20 @@ export const ThemeSettings = ({}: {}) => {
 };
 
 export const RatingSelection = (props: {}) => {
+  console.log("rendering rating selection");
   const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
-  const [ratingRange, setRatingRange] = createSignal(user().ratingRange);
-  const [ratingSource, setRatingSource] = createSignal(
-    user().ratingSource ?? RatingSource.Lichess
-  );
-  createEffect(
-    on(
-      () => [ratingRange(), ratingSource()],
-      () => {
-        quick((s) => {
-          s.userState.setRatingRange(ratingRange());
-          s.userState.setRatingSystem(ratingSource());
-        });
-      },
-      { defer: true }
-    )
-  );
+  createEffect(() => {
+    console.log("rating system ", user()?.ratingSystem);
+  });
   return (
     <div style={s(c.row, c.alignCenter)} class={"space-x-2"}>
       <Dropdown
         title={"Rating range"}
         onSelect={(range) => {
-          setRatingRange(range);
+          quick((s) => {
+            s.userState.setRatingRange(range);
+          });
         }}
         choices={[
           "0-1100",
@@ -293,7 +283,7 @@ export const RatingSelection = (props: {}) => {
           "1900-2100",
           "2100+",
         ]}
-        choice={ratingRange()}
+        choice={user().ratingRange}
         renderChoice={(choice, inList, onPress) => {
           const textColor = c.grays[80];
           const textStyles = s(c.fg(textColor), c.fontSize(14));
@@ -333,7 +323,9 @@ export const RatingSelection = (props: {}) => {
           title={"Platform"}
           onSelect={(choice) => {
             console.log("On select", choice);
-            setRatingSource(choice);
+            quick((s) => {
+              s.userState.setRatingSystem(choice);
+            });
           }}
           choices={[
             RatingSource.Lichess,
@@ -341,7 +333,7 @@ export const RatingSelection = (props: {}) => {
             RatingSource.FIDE,
             RatingSource.USCF,
           ]}
-          choice={ratingSource()}
+          choice={user()?.ratingSystem ?? RatingSource.Lichess}
           renderChoice={(choice, inList, onPress) => {
             const textColor = c.grays[80];
             const textStyles = s(
