@@ -1,16 +1,21 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { last } from "lodash-es";
+import { capitalize, last } from "lodash-es";
 import { CMText } from "./CMText";
-import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
+import {
+  quick,
+  useRepertoireState,
+  useSidebarState,
+  useUserState,
+} from "~/utils/app_state";
 import {
   SidebarOnboardingImportType,
   SidebarOnboardingStage,
 } from "~/utils/browsing_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { useResponsive } from "~/utils/useResponsive";
-import { SidebarFullWidthButton } from "./SidebarActions";
+import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { CMTextInput } from "./CMTextInput";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
@@ -20,7 +25,16 @@ import { Component, createEffect, createSignal, Match, Switch } from "solid-js";
 import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
-import { THRESHOLD_OPTIONS } from "./SidebarSettings";
+import {
+  RatingSelection,
+  RatingSource,
+  THRESHOLD_OPTIONS,
+} from "./SidebarSettings";
+import { clsx } from "~/utils/classes";
+import { TextArea, TextInput } from "./TextInput";
+import { Side } from "~/utils/repertoire";
+import { getRecommendedMissThreshold } from "~/utils/user_state";
+import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
 
 export const SidebarOnboarding = function SidebarOnboarding() {
   const [onboardingState] = useSidebarState(([s]) => [
@@ -42,6 +56,9 @@ export const SidebarOnboarding = function SidebarOnboarding() {
         </Match>
         <Match when={stage() === SidebarOnboardingStage.SetRating}>
           <SetRatingOnboarding />
+        </Match>
+        <Match when={stage() === SidebarOnboardingStage.CoverageGoalFyi}>
+          <CoverageGoalOnboarding />
         </Match>
         <Match
           when={stage() === SidebarOnboardingStage.AskAboutExistingRepertoire}
@@ -95,8 +112,9 @@ const OnboardingIntro = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                [SidebarOnboardingStage.SetRating];
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+                SidebarOnboardingStage.SetRating
+              );
             });
           },
           style: "primary",
@@ -150,8 +168,9 @@ const ConnectAccountOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
-                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                  [SidebarOnboardingStage.SetRating];
+                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+                  SidebarOnboardingStage.SetRating
+                );
               });
             },
             style: "primary",
@@ -163,10 +182,41 @@ const ConnectAccountOnboarding = () => {
   );
 };
 
+const CoverageGoalOnboarding = () => {
+  const responsive = useResponsive();
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  return (
+    <SidebarTemplate
+      bodyPadding={true}
+      header={`Your coverage goal has been set to 1 in ${Math.round(
+        1 / threshold()
+      )} games`}
+      actions={[
+        {
+          onPress: () => {
+            quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+                SidebarOnboardingStage.AskAboutExistingRepertoire
+              );
+            });
+          },
+          text: "Got it!",
+          style: "primary",
+        },
+      ]}
+    >
+      <CMText style={s()} class={"text-secondary leading-5"}>
+        This would give you a solid repertoire for your rating. You can alway
+        increase this in the future.
+      </CMText>
+    </SidebarTemplate>
+  );
+};
+
 const SetRatingOnboarding = () => {
   const responsive = useResponsive();
-  const [ratingRange, setRatingRange] = createSignal("1300-1500");
-  const [ratingSource, setRatingSource] = createSignal(RatingSource.Lichess);
+  const [user] = useUserState((s) => [s.user]);
   return (
     <div style={s(c.column)}>
       <RepertoireEditingHeader>
@@ -181,136 +231,12 @@ const SetRatingOnboarding = () => {
           c.relative
         )}
       >
-        <CMText style={s()}>
+        <CMText style={s()} class={"text-secondary"}>
           This will be used to prepare you for common lines you'll encounter at
           your level.
         </CMText>
         <Spacer height={12} />
-        <div style={s(c.row, c.alignCenter)}>
-          <Dropdown
-            onSelect={(range) => {
-              setRatingRange(range);
-            }}
-            choices={[
-              "0-1100",
-              "1100-1300",
-              "1300-1500",
-              "1500-1700",
-              "1700-1900",
-              "1900-2100",
-              "2100+",
-            ]}
-            choice={ratingRange()}
-            renderChoice={(choice, inList, onPress) => {
-              const textColor = c.grays[80];
-              const textStyles = s(c.fg(textColor), c.fontSize(16));
-              const containerStyles = s(
-                c.py(12),
-                inList && c.px(16),
-                c.row,
-                c.clickable,
-                c.justifyBetween,
-                c.alignCenter,
-                c.width("fit-content"),
-                c.minWidth(80)
-              );
-              const inner = (
-                <CMText
-                  style={s(
-                    textStyles,
-                    !inList && s(c.textAlign("end"), c.fullWidth)
-                  )}
-                >
-                  {choice}
-                </CMText>
-              );
-              return (
-                <Pressable
-                  style={s(containerStyles)}
-                  onPress={() => {
-                    onPress();
-                  }}
-                >
-                  {inner}
-                </Pressable>
-              );
-            }}
-          ></Dropdown>
-          <Spacer width={32} />
-          <div style={s(c.row)}>
-            <Dropdown
-              onSelect={(choice) => {
-                console.log("On select", choice);
-                setRatingSource(choice);
-              }}
-              choices={[
-                RatingSource.Lichess,
-                RatingSource.ChessCom,
-                RatingSource.FIDE,
-                RatingSource.USCF,
-              ]}
-              choice={ratingSource()}
-              renderChoice={(choice, inList, onPress) => {
-                const textColor = c.grays[80];
-                const textStyles = s(
-                  c.fg(textColor),
-                  c.fontSize(16),
-                  c.weightSemiBold
-                );
-                const containerStyles = s(
-                  c.py(12),
-                  inList && c.px(16),
-                  c.row,
-                  c.clickable,
-                  !inList && c.justifyEnd,
-                  c.fullWidth,
-                  c.selfEnd,
-                  c.alignCenter,
-                  c.width("fit-content"),
-                  c.minWidth(80)
-                );
-                if (choice === RatingSource.Lichess) {
-                  return (
-                    <Pressable style={s(containerStyles)} onPress={onPress}>
-                      <CMText style={s(textStyles)}>Lichess</CMText>
-                      <Spacer width={8} />
-                      <div style={s(c.size(20))}>
-                        <LichessLogoIcon color={textColor} />
-                      </div>
-                    </Pressable>
-                  );
-                } else if (choice === RatingSource.USCF) {
-                  return (
-                    <Pressable style={s(containerStyles)} onPress={onPress}>
-                      <CMText style={s(textStyles)}>USCF</CMText>
-                    </Pressable>
-                  );
-                } else if (choice === RatingSource.FIDE) {
-                  return (
-                    <Pressable style={s(containerStyles)} onPress={onPress}>
-                      <CMText style={s(textStyles)}>FIDE</CMText>
-                    </Pressable>
-                  );
-                } else if (choice === RatingSource.ChessCom) {
-                  return (
-                    <Pressable style={s(containerStyles)} onPress={onPress}>
-                      <CMText style={s(textStyles)}>Chess.com</CMText>
-                      <Spacer width={8} />
-                      <div style={s(c.size(20))}>
-                        <LichessLogoIcon color={textColor} />
-
-                        <img
-                          src={"/chess_com_logo.png"}
-                          style={s(c.size(24))}
-                        />
-                      </div>
-                    </Pressable>
-                  );
-                }
-              }}
-            ></Dropdown>
-          </div>
-        </div>
+        <RatingSelection />
       </div>
       <Spacer height={36} />
       <div style={s(c.gridColumn({ gap: 12 }))}>
@@ -319,10 +245,22 @@ const SetRatingOnboarding = () => {
             onPress: () => {
               quick((s) => {
                 s.repertoireState.browsingState.moveSidebarState("right");
-                s.userState.setRatingRange(ratingRange());
-                s.userState.setRatingSystem(ratingSource());
-                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                  [SidebarOnboardingStage.AskAboutExistingRepertoire];
+                Promise.all([
+                  // this is dumb, but just so we get the latest elo range from the backend
+                  s.userState.setRatingRange(
+                    s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-")
+                  ),
+                ]).then(() => {
+                  quick((s) => {
+                    let recommendedThreshold = getRecommendedMissThreshold(
+                      s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+                    );
+                    s.userState.setTargetDepth(recommendedThreshold);
+                    s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+                      SidebarOnboardingStage.CoverageGoalFyi
+                    );
+                  });
+                });
               });
             },
             style: "primary",
@@ -334,8 +272,9 @@ const SetRatingOnboarding = () => {
             onPress: () => {
               quick((s) => {
                 s.repertoireState.browsingState.moveSidebarState("right");
-                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                  [SidebarOnboardingStage.AskAboutExistingRepertoire];
+                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+                  SidebarOnboardingStage.AskAboutExistingRepertoire
+                );
               });
             },
             style: "primary",
@@ -347,19 +286,13 @@ const SetRatingOnboarding = () => {
   );
 };
 
-enum RatingSource {
-  Lichess = "Lichess",
-  ChessCom = "Chess.com",
-  USCF = "USCF",
-  FIDE = "FIDE",
-}
-
 type TFake = any;
 export const Dropdown: Component<{
   choice: TFake;
   choices: TFake[];
+  title?: string;
   onSelect: (_: TFake) => void;
-  renderChoice: (_: TFake, inDropdown: boolean, onPress: () => void) => any;
+  renderChoice: (_: TFake, inDropdown: boolean, onPress: (e) => void) => any;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [ref, setRef] = createSignal(null);
@@ -373,45 +306,57 @@ export const Dropdown: Component<{
     }
   });
   return (
-    <Pressable
-      ref={setRef}
-      style={s(c.row, c.alignCenter, c.zIndex(10), c.relative)}
-      onPress={() => {
-        setIsOpen(!isOpen());
-      }}
-    >
-      {props.renderChoice(props.choice, false, () => {
-        setIsOpen(!isOpen());
-      })}
-      <Spacer width={8} />
-      <i
-        class="fas fa-angle-down"
-        style={s(c.fontSize(18), c.fg(c.grays[80]))}
-      />
-      <Motion
-        animate={{ opacity: isOpen() ? 1 : 0 }}
-        style={s(
-          c.absolute,
-          c.minWidth("fit-content"),
-          !isOpen() && c.noPointerEvents,
-          c.zIndex(100),
-          c.right(-20),
-          c.top("calc(100% + 8px)"),
-          c.bg(c.grays[10]),
-          c.br(4),
-          c.border(`1px solid ${c.grays[40]}`),
-          c.gridColumn({ gap: 0 }),
-          c.alignStretch
+    <div style={s(c.zIndex(10), c.relative)} class={"col"}>
+      <p class={"text-secondary pb-2 text-sm font-bold"}>{props.title}</p>
+      <div
+        class={clsx(
+          "bg-gray-4 row cursor-pointer items-center rounded-sm px-4"
         )}
+        ref={setRef}
+        onClick={() => {
+          setIsOpen(!isOpen());
+        }}
       >
-        {props.choices.map((c) =>
-          props.renderChoice(c, true, () => {
-            props.onSelect(c);
-            setIsOpen(false);
-          })
-        )}
-      </Motion>
-    </Pressable>
+        <div class={clsx("pointer-events-none")}>
+          {props.renderChoice(props.choice, false, () => {})}
+        </div>
+        <Spacer width={8} />
+        <i
+          class="fas fa-angle-down"
+          style={s(c.fontSize(18), c.fg(c.grays[80]))}
+        />
+        <Motion
+          animate={{ opacity: isOpen() ? 1 : 0 }}
+          style={s(
+            c.absolute,
+            c.minWidth("fit-content"),
+            !isOpen() && c.noPointerEvents,
+            c.zIndex(100),
+            c.top("calc(100% + 8px)"),
+            c.right(0),
+            c.left(0),
+            c.bg(c.grays[10]),
+            c.br(4),
+            c.border(`1px solid ${c.grays[26]}`),
+            c.overflowHidden,
+            c.gridColumn({ gap: 0 }),
+            c.alignStretch
+          )}
+          class={clsx("rounded-sm p-2 ")}
+        >
+          {props.choices.map((c) => (
+            <div class={clsx("&hover:bg-gray-16 ")}>
+              {props.renderChoice(c, true, (e) => {
+                props.onSelect(c);
+                setIsOpen(false);
+                e?.preventDefault();
+                e?.stopPropagation();
+              })}
+            </div>
+          ))}
+        </Motion>
+      </div>
+    </div>
   );
 };
 
@@ -426,8 +371,9 @@ const AskAboutExistingRepertoireOnboarding = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                [SidebarOnboardingStage.ChooseImportSource];
+              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+                SidebarOnboardingStage.ChooseImportSource
+              );
             });
           },
           text: "Yes, import an existing repertoire",
@@ -446,7 +392,12 @@ const AskAboutExistingRepertoireOnboarding = () => {
           style: "primary",
         },
       ]}
-    ></SidebarTemplate>
+    >
+      <CMText style={s()} class={"text-secondary"}>
+        You'll be able to import your repertoire from a PGN file, or from your
+        Lichess games.
+      </CMText>
+    </SidebarTemplate>
   );
 };
 
@@ -529,9 +480,6 @@ const ImportOnboarding = () => {
   }, []);
   const [username, setUsername] = createSignal("");
   const [loading, setLoading] = createSignal(null as string | null);
-  const [pgnUploadRef, setPgnUploadRef] = createSignal(
-    null as HTMLInputElement | null
-  );
   // createEffect(() => {
   //   let dropContainer = pgnUploadRef();
   //   console.log("dropContainer", dropContainer);
@@ -545,36 +493,25 @@ const ImportOnboarding = () => {
   //     dropContainer.ondrop = onFileUpoad;
   //   }
   // });
-  createEffect(() => {
-    const input = pgnUploadRef();
-    console.log("creating change watcher thing", input);
-    if (input) {
-      input.addEventListener("change", async (e) => {
-        console.log("file upload");
-        const file = input.files?.[0];
-        console.log("file upload", file);
-        if (file) {
-          const body = await file.text();
-          importFromPgn(body);
-          return true;
-        }
-        e.preventDefault();
-      });
-    }
-  });
 
+  let [whitePgn, setWhitePgn] = createSignal("");
+  let [blackPgn, setBlackPgn] = createSignal("");
   const { header, actions, bodyPadding } = destructure(() => {
     const bodyPadding = true;
     let header = null;
-    let actions = [];
+    let actions: SidebarAction[] = [];
     let body = null;
     if (importType() === SidebarOnboardingImportType.PGN) {
-      header = "Please upload your PGN file";
-      body = (
-        <div style={s(c.pt(20))}>
-          <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
-        </div>
-      );
+      header = "Please upload your PGN files";
+      if (blackPgn() || whitePgn()) {
+        actions.push({
+          text: "Submit",
+          onPress: () => {
+            importFromPgn();
+          },
+          style: "primary",
+        });
+      }
     }
     if (importType() === SidebarOnboardingImportType.LichessUsername) {
       header = "What's your lichess username?";
@@ -602,15 +539,12 @@ const ImportOnboarding = () => {
     return { body, header, bodyPadding, actions };
   });
 
-  const importFromPgn = (pgn) => {
+  const importFromPgn = () => {
     setLoading("Importing");
     quick((s) => {
       const params = {} as any;
-      if (activeSide() === "white") {
-        params.whitePgn = pgn;
-      } else {
-        params.blackPgn = pgn;
-      }
+      params.whitePgn = whitePgn();
+      params.blackPgn = blackPgn();
       s.repertoireState.initializeRepertoire({ ...params, responsive });
       trackEvent("import.from_pgns");
     });
@@ -636,8 +570,9 @@ const ImportOnboarding = () => {
     >
       <Switch>
         <Match when={importType() === SidebarOnboardingImportType.PGN}>
-          <div style={s(c.pt(20))}>
-            <input type="file" ref={setPgnUploadRef} style={s(c.height(80))} />
+          <div style={s(c.pt(20))} class={"flex flex-col space-y-8"}>
+            <PGNUpload onChange={setWhitePgn} side={"white"} />
+            <PGNUpload onChange={setBlackPgn} side={"black"} />
           </div>
         </Match>
         <Match
@@ -687,7 +622,7 @@ const TrimRepertoireOnboarding = () => {
       const numMoves = getNumResponsesBelowThreshold()(threshold, activeSide());
       if (numMoves > 0) {
         actions.push({
-          text: `Trim lines that occur in less than 1 in ${
+          text: `Trim responses that occur in less than 1 in ${
             1 / threshold
           } games`,
           subtext: `${numMoves} responses`,
@@ -721,5 +656,75 @@ const TrimRepertoireOnboarding = () => {
     >
       {body}
     </SidebarTemplate>
+  );
+};
+
+const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
+  const [pgn, setPgn] = createSignal("");
+  const [textInputPgn, setTextInputPgn] = createSignal<string | null>("");
+  const [pgnUploadRef, setPgnUploadRef] = createSignal(
+    null as HTMLInputElement | null
+  );
+  const [hasUploaded, setHasUploaded] = createSignal(false);
+  createEffect(() => {
+    const input = pgnUploadRef();
+    console.log("creating change watcher thing", input);
+    if (input) {
+      input.addEventListener("change", async (e) => {
+        console.log("file upload");
+        const file = input.files?.[0];
+        console.log("file upload", file);
+        if (file) {
+          const body = await file.text();
+          setPgn(body);
+          setTextInputPgn(null);
+          props.onChange(body);
+          setHasUploaded(true);
+          return true;
+        }
+        e.preventDefault();
+      });
+    }
+  });
+  return (
+    <div style={s()}>
+      <p class={"text-secondary font-semibold"}>
+        {capitalize(props.side)} repertoire
+      </p>
+
+      <div class={"bg-gray-6 mt-4 rounded-sm p-4"}>
+        <div
+          class={
+            "border-gray-24 border-1 &hover:bg-gray-12 row relative h-20 w-full items-center justify-center rounded-sm border-dashed transition-colors"
+          }
+        >
+          <i
+            class={clsx("fas mr-2", hasUploaded() ? "fa-check" : "fa-upload")}
+          ></i>
+          {hasUploaded() ? "Uploaded" : "Upload"}
+          <input
+            type="file"
+            ref={setPgnUploadRef}
+            class={"absolute z-10 h-24 h-full w-full cursor-pointer opacity-0"}
+          ></input>
+        </div>
+        <div class={"row my-4 items-center space-x-2"}>
+          <div class={"bg-gray-18 h-1px grow"}></div>
+          <p class={"text-secondary  ext-xs font-semibold"}>Or</p>
+          <div class={"bg-gray-18 h-1px grow"}></div>
+        </div>
+        <TextArea
+          placeholder="Paste your PGN here"
+          onInput={(v) => {
+            setTextInputPgn(v.target.value);
+            setPgn(null);
+            setHasUploaded(false);
+          }}
+          class=" mt-2 w-full rounded-sm border border-gray-400"
+          inputClass={"bg-gray-16"}
+          value={textInputPgn()}
+        />
+      </div>
+    </div>
   );
 };

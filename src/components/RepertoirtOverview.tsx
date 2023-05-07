@@ -180,7 +180,7 @@ export const RepertoireOverview = (props: {}) => {
           </CMText>
           <span
             class={clsx(
-              "bg-gray-85 ml-2 rounded-sm px-1 py-0.5 text-xs text-black"
+              "bg-gray-30 text-primary ml-2 rounded-sm px-1 py-0.5 text-xs font-semibold"
             )}
           >
             Beta
@@ -302,7 +302,7 @@ export const RepertoireOverview = (props: {}) => {
           </For>
         </div>
       </Show>
-      <div class={clsx("b-0 b-t b-solid border-border")}>
+      <div class={clsx("b-0 ")}>
         <For each={options()}>
           {(opt) => {
             return <Option option={opt} />;

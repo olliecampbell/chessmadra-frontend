@@ -5,8 +5,8 @@ export const Pressable = (props) => {
     <div
       {...props}
       style={s(c.clickable, props.style ?? {})}
-      onClick={() => {
-        props.onPress();
+      onClick={(e) => {
+        props.onPress(e);
       }}
     />
   );

@@ -14,9 +14,9 @@ export const FadeInOut = (props: {
 }) => {
   const maxOpacity = props.maxOpacity ?? 100;
   const opacity = () => (props.open() ? maxOpacity : 0);
-  createEffect(() => {
-    console.log(`opacity is ${opacity()}, open is ${props.open()}`);
-  });
+  // createEffect(() => {
+  //   console.log(`opacity is ${opacity()}, open is ${props.open()}`);
+  // });
   return (
     <div
       id={props.id}

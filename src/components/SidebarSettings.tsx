@@ -18,9 +18,12 @@ import {
 } from "~/utils/theming";
 import { PieceView } from "./chessboard/Chessboard";
 import { PieceSymbol } from "@lubert/chess.ts";
-import { Component, For, Show } from "solid-js";
+import { Component, createSignal, createEffect, For, on, Show } from "solid-js";
 import { clsx } from "~/utils/classes";
 import { compareFloats } from "~/utils/utils";
+import { Dropdown } from "./SidebarOnboarding";
+import { Pressable } from "./Pressable";
+import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 
 export const SidebarSetting = () => {
   return (
@@ -175,46 +178,12 @@ export const RatingSettings = ({}: {}) => {
     thresholdOptions.push(0.25 / 100, 1 / 600);
   }
   return (
-    <SidebarTemplate actions={[]} header={"Your rating"}>
-      <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
+    <SidebarTemplate actions={[]} header={"Your rating"} bodyPadding={true}>
+      <CMText>
         Used to determine common moves and their win rates at your level
       </CMText>
       <Spacer height={24} />
-      <SidebarSelectOneOf
-        title="Elo range"
-        choices={[
-          "0-1100",
-          "1100-1300",
-          "1300-1500",
-          "1500-1700",
-          "1700-1900",
-          "1900-2100",
-          "2100+",
-        ]}
-        // cellStyles={s(c.bg(c.grays[15]))}
-        // horizontal={true}
-        activeChoice={user()?.ratingRange}
-        onSelect={onSelect}
-        renderChoice={(r: string) => {
-          return r;
-        }}
-      />
-      <Spacer height={24} />
-      <SidebarSelectOneOf
-        title="Rating system"
-        choices={["Lichess", "Chess.com", "FIDE", "USCF"]}
-        // cellStyles={s(c.bg(c.grays[15]))}
-        // horizontal={true}
-        activeChoice={user()?.ratingSystem}
-        onSelect={(t) => {
-          quick((s) => {
-            getAppState().userState.setRatingSystem(t);
-          });
-        }}
-        renderChoice={(r: string) => {
-          return r;
-        }}
-      />
+      <RatingSelection onUpdate={(ratingSource, ratingRange) => {}} />
     </SidebarTemplate>
   );
 };
@@ -288,3 +257,146 @@ export const ThemeSettings = ({}: {}) => {
     </SidebarTemplate>
   );
 };
+
+export const RatingSelection = (props: {}) => {
+  const responsive = useResponsive();
+  const [user] = useUserState((s) => [s.user]);
+  const [ratingRange, setRatingRange] = createSignal(user().ratingRange);
+  const [ratingSource, setRatingSource] = createSignal(
+    user().ratingSource ?? RatingSource.Lichess
+  );
+  createEffect(
+    on(
+      () => [ratingRange(), ratingSource()],
+      () => {
+        quick((s) => {
+          s.userState.setRatingRange(ratingRange());
+          s.userState.setRatingSystem(ratingSource());
+        });
+      },
+      { defer: true }
+    )
+  );
+  return (
+    <div style={s(c.row, c.alignCenter)} class={"space-x-2"}>
+      <Dropdown
+        title={"Rating range"}
+        onSelect={(range) => {
+          setRatingRange(range);
+        }}
+        choices={[
+          "0-1100",
+          "1100-1300",
+          "1300-1500",
+          "1500-1700",
+          "1700-1900",
+          "1900-2100",
+          "2100+",
+        ]}
+        choice={ratingRange()}
+        renderChoice={(choice, inList, onPress) => {
+          const textColor = c.grays[80];
+          const textStyles = s(c.fg(textColor), c.fontSize(14));
+          const containerStyles = s(
+            c.py(12),
+            inList && c.px(16),
+            c.row,
+            c.clickable,
+            c.justifyStart,
+            c.selfStart,
+            c.alignCenter,
+            c.width("fit-content"),
+            c.minWidth(100)
+          );
+          const inner = (
+            <CMText
+              style={s(textStyles, !inList && s(c.fullWidth))}
+              class={clsx("whitespace-nowrap break-keep")}
+            >
+              {choice}
+            </CMText>
+          );
+          return (
+            <Pressable
+              style={s(containerStyles)}
+              onPress={(e) => {
+                onPress(e);
+              }}
+            >
+              {inner}
+            </Pressable>
+          );
+        }}
+      ></Dropdown>
+      <div style={s(c.row)}>
+        <Dropdown
+          title={"Platform"}
+          onSelect={(choice) => {
+            console.log("On select", choice);
+            setRatingSource(choice);
+          }}
+          choices={[
+            RatingSource.Lichess,
+            RatingSource.ChessCom,
+            RatingSource.FIDE,
+            RatingSource.USCF,
+          ]}
+          choice={ratingSource()}
+          renderChoice={(choice, inList, onPress) => {
+            const textColor = c.grays[80];
+            const textStyles = s(
+              c.fg(textColor),
+              c.fontSize(14),
+              c.weightSemiBold
+            );
+            const containerStyles = s(
+              c.py(12),
+              inList && c.px(16),
+              c.row,
+              c.clickable,
+              !inList && c.justifyEnd,
+              c.fullWidth,
+              c.selfStart,
+              c.justifyStart,
+              c.alignEnd,
+              c.width("fit-content"),
+              c.minWidth(90)
+            );
+            if (choice === RatingSource.Lichess) {
+              return (
+                <Pressable style={s(containerStyles)} onPress={onPress}>
+                  <CMText style={s(textStyles)}>Lichess</CMText>
+                </Pressable>
+              );
+            } else if (choice === RatingSource.USCF) {
+              return (
+                <Pressable style={s(containerStyles)} onPress={onPress}>
+                  <CMText style={s(textStyles)}>USCF</CMText>
+                </Pressable>
+              );
+            } else if (choice === RatingSource.FIDE) {
+              return (
+                <Pressable style={s(containerStyles)} onPress={onPress}>
+                  <CMText style={s(textStyles)}>FIDE</CMText>
+                </Pressable>
+              );
+            } else if (choice === RatingSource.ChessCom) {
+              return (
+                <Pressable style={s(containerStyles)} onPress={onPress}>
+                  <CMText style={s(textStyles)}>Chess.com</CMText>
+                </Pressable>
+              );
+            }
+          }}
+        ></Dropdown>
+      </div>
+    </div>
+  );
+};
+
+export enum RatingSource {
+  Lichess = "Lichess",
+  ChessCom = "Chess.com",
+  USCF = "USCF",
+  FIDE = "FIDE",
+}

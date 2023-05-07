@@ -39,7 +39,7 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
   ]);
   let chessboardFrozen = () => {
     let frozen = false;
-    if (onboardingStack.length > 0 || showingPlans()) {
+    if (mode() === "onboarding" || showingPlans()) {
       console.log("chessboardFrozen");
       frozen = true;
     }

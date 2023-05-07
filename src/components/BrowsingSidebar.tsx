@@ -9,7 +9,6 @@ import {
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import { SidebarStateContext } from "~/utils/browsing_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
 import { SidebarAction, SidebarActions } from "./SidebarActions";
@@ -152,9 +151,7 @@ export const BrowserSidebar = function BrowserSidebar() {
           ref={setCurrentRef}
           style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}
         >
-          <SidebarStateContext.Provider value={false}>
-            <InnerSidebar />
-          </SidebarStateContext.Provider>
+          <InnerSidebar />
         </div>
       </div>
     </div>
@@ -183,6 +180,9 @@ export const InnerSidebar = function InnerSidebar() {
     s.mode,
     s.activeSide,
   ]);
+  createEffect(() => {
+    console.log("stageStack", stageStack());
+  });
 
   const responsive = useResponsive();
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
@@ -253,6 +253,9 @@ const BackSection = () => {
     s.activeSide,
     s.view,
   ]);
+  const [onboardingStageStack] = useSidebarState(([s]) => [
+    s.sidebarOnboardingState.stageStack,
+  ]);
   const [moveLog] = useBrowsingState(([s, rs]) => [
     s.chessboard.get((v) => v).moveLog,
   ]);
@@ -265,14 +268,6 @@ const BackSection = () => {
       s.repertoireState.startBrowsing(side(), "overview");
     });
   };
-  const usePrevious = useContext(SidebarStateContext);
-  createEffect(() => {
-    if (usePrevious) {
-      console.log(
-        `This was previous, should open? ${isOpen()}, mode ${mode()} action ${backButtonAction()}`
-      );
-    }
-  });
   const backButtonAction = () => {
     let backButtonAction: (() => void) | null = null;
 
@@ -345,6 +340,16 @@ const BackSection = () => {
           s.repertoireState.backToOverview();
         });
       };
+    }
+    console.log("mode?", mode(), onboardingStageStack());
+    if (mode() == "onboarding") {
+      if (onboardingStageStack().length > 1) {
+        backButtonAction = () => {
+          quick((s) => {
+            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.pop();
+          });
+        };
+      }
     }
     if (submitFeedbackState().visible) {
       backButtonAction = () => {

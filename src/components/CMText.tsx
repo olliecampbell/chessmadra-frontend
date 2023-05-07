@@ -4,7 +4,7 @@ import { c, s } from "~/utils/styles";
 export const CMText = (props) => {
   return (
     <p
-      class={clsx("inline whitespace-pre-wrap break-words ", props.class)}
+      class={clsx("inline break-words ", props.class)}
       {...{
         props,
         style: props.style,

@@ -55,11 +55,11 @@ import { isTheoryHeavy } from "./theory_heavy";
 import { parsePlans } from "./plans";
 // solid TODO
 // import * as Sentry from "sentry-expo";
-import { Responsive } from "./useResponsive";
+import { Responsive, useResponsive } from "./useResponsive";
 // solid TODO
 // import { Identify, identify } from "@amplitude/analytics-browser";
 import client from "./client";
-import { Component, createContext, JSXElement } from "solid-js";
+import { Component, createContext, createSignal, JSXElement } from "solid-js";
 import { identify, Identify } from "@amplitude/analytics-browser";
 import { Animated } from "./animation";
 import { animateTo } from "./animation";
@@ -72,6 +72,12 @@ import { unwrap } from "solid-js/store";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 import { Chess } from "@lubert/chess.ts";
 import { PAYMENT_ENABLED } from "./payment";
+import { Dropdown } from "~/components/SidebarOnboarding";
+import { c, s } from "./styles";
+import { CMText } from "~/components/CMText";
+import { Spacer } from "~/components/Space";
+import { Pressable } from "~/components/Pressable";
+import { LichessLogoIcon } from "~/components/icons/LichessLogoIcon";
 
 export interface GetIncidenceOptions {
   placeholder: void;
@@ -82,6 +88,7 @@ export enum SidebarOnboardingStage {
   Initial,
   ConnectAccount,
   SetRating,
+  CoverageGoalFyi,
   GoalSet,
   // Probably skip this for now
   Import,
@@ -100,7 +107,13 @@ export enum SidebarOnboardingImportType {
   PGN,
   PlayerTemplates,
 }
-export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
+export type BrowsingMode =
+  | "browse"
+  | "build"
+  | "review"
+  | "overview"
+  | "home"
+  | "onboarding";
 export const modeToUI = (mode: BrowsingMode) => {
   switch (mode) {
     case "browse":
@@ -169,7 +182,7 @@ export interface BrowsingState {
   quick: (fn: (_: BrowsingState) => void) => void;
   addPendingLine: (_?: { replace: boolean }) => void;
   moveSidebarState: (direction: "left" | "right") => void;
-  replaceView: (view: JSXElement, direction: "left" | "right") => void;
+  replaceView: (view: JSXElement, direction?: "left" | "right") => void;
   popView: () => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
@@ -206,8 +219,6 @@ export interface BrowserSection {
 }
 
 type Stack = [BrowsingState, RepertoireState, AppState];
-
-export const SidebarStateContext = createContext(false);
 
 export const makeDefaultSidebarState = () => {
   return {
@@ -602,8 +613,8 @@ export const getInitialBrowsingState = (
       set(([s, rs]) => {
         quick((s) => {
           s.repertoireState.browsingState.moveSidebarState("right");
-          s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-            [];
+          s.repertoireState.browsingState.sidebarState =
+            makeDefaultSidebarState();
         });
       }),
     reviewFromCurrentLine: () =>
@@ -1022,12 +1033,4 @@ export const getCoverageProgress = (
   // return (
   //   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
   // );
-};
-
-const isDangerous = (suggestedMove: SuggestedMove, activeSide: Side) => {
-  if (getWinRate(suggestedMove.results, otherSide(activeSide)) > 0.53) {
-    return true;
-  } else {
-    return false;
-  }
 };

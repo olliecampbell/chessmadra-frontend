@@ -62,9 +62,6 @@ const InstructiveGameView: Component<{
       <div>
         <p class={clsx("font-bold")}>{lastEcoCode()?.fullName}</p>
         <p class={clsx("text-secondary pt-1")}>
-          {props.game.whiteName} vs {props.game.blackName}
-        </p>
-        <p class={clsx("text-secondary pt-1")}>
           {Math.round(props.game.numberMoves / 2)} moves
         </p>
       </div>

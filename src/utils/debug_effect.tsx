@@ -4,6 +4,11 @@ import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { lineToPgn } from "./repertoire";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
+import { RatingSettings } from "~/components/SidebarSettings";
+import {
+  SidebarOnboardingImportType,
+  SidebarOnboardingStage,
+} from "./browsing_state";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -22,7 +27,17 @@ export const createDebugStateEffect = () => {
     // setHasCalled(true);
     console.log("debug effect", repertoireLoading(), authStatus());
     // quick((s) => {
+    //   s.repertoireState.startBrowsing(null, "onboarding");
+    //   s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
+    //     [SidebarOnboardingStage.SetRating];
+    //   // s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
+    //   //   SidebarOnboardingImportType.PGN;
+    // });
+    // quick((s) => {
     //   s.repertoireState.browsingState.replaceView(<UpgradeSubscripitionView />);
+    // });
+    // quick((s) => {
+    //   s.repertoireState.browsingState.replaceView(<RatingSettings />, "right");
     // });
 
     // if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {

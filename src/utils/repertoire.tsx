@@ -62,7 +62,9 @@ export interface RepertoireSide {
   positionResponses: Record<string, RepertoireMove[]>;
 }
 
-export function getAllRepertoireMoves(r: Repertoire): RepertoireMove[] {
+export function getAllRepertoireMoves(
+  r: Repertoire | undefined
+): RepertoireMove[] {
   if (!r) {
     return [];
   }
