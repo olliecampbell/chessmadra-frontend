@@ -27,6 +27,9 @@ import { LazyLoad } from "./LazyLoad";
 
 export const MoveAnnotationsDashboard = ({}) => {
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
+  createEffect(() => {
+    console.log("dashboard", dashboard());
+  });
   const [activeTab, setActiveTab] = createSignal("Needed");
   createEffect(() => {
     quick((s) => s.adminState.fetchMoveAnnotationDashboard());
@@ -104,7 +107,7 @@ export const MoveAnnotationsDashboard = ({}) => {
                 each={
                   activeTab() === "Needed"
                     ? take(dashboard().needed, 100)
-                    : dashboard().completed
+                    : take(dashboard().completed, 100)
                 }
               >
                 {(ann) => (

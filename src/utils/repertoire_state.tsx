@@ -113,7 +113,10 @@ export interface RepertoireState {
   epdNodes: BySide<Record<string, boolean>>;
   onMove: () => void;
   getMyResponsesLength: (side?: Side) => number;
-  getNumResponsesBelowThreshold: (threshold: number, side: Side) => number;
+  getNumResponsesBelowThreshold: (
+    threshold: number,
+    side: Side | null
+  ) => number;
   getLineCount: (side?: Side) => number;
   getIsRepertoireEmpty: (side?: Side) => boolean;
   analyzeLineOnLichess: (line: string[], side?: Side) => void;
@@ -246,6 +249,7 @@ export const getInitialRepertoireState = (
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
       set(([s]) => {
+        s.browsingState.sidebarState = makeDefaultSidebarState();
         s.repertoire = undefined;
         s.updateRepertoireStructures();
         s.fetchRepertoire(true);
@@ -324,7 +328,7 @@ export const getInitialRepertoireState = (
           const side: Side = blackPgn ? "black" : "white";
           const numBelowThreshold = s.getNumResponsesBelowThreshold(
             1 / 100,
-            side
+            null
           );
           if (side && numBelowThreshold > minimumToTrim) {
             s.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
@@ -368,7 +372,12 @@ export const getInitialRepertoireState = (
           });
         }
         const unclickableModes: BrowsingMode[] = ["review"];
-        if (mode && mode !== "overview" && mode !== "home") {
+        if (
+          mode &&
+          mode !== "overview" &&
+          mode !== "home" &&
+          mode !== "onboarding"
+        ) {
           const unclickable = unclickableModes.includes(mode);
           breadcrumbs.push({
             text: capitalize(modeToUI(mode)),
@@ -1020,8 +1029,8 @@ export const getInitialRepertoireState = (
               s.hasCompletedRepertoireInitialization = true;
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
-                // todo: re-enable onboarding
-                s.startBrowsing("white", "build");
+                s.startBrowsing("white", "onboarding");
+                s.browsingState.sidebarState.activeSide = undefined;
                 s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
                   [SidebarOnboardingStage.Initial];
               }
@@ -1077,12 +1086,15 @@ export const getInitialRepertoireState = (
       }),
     getNumResponsesBelowThreshold: (threshold: number, side: Side) =>
       get(([s]) => {
-        return filter(
-          flatten(values(s.repertoire?.[side].positionResponses)),
-          (m) => {
-            return m.incidence < threshold;
+        return filter(getAllRepertoireMoves(s.repertoire), (m) => {
+          const belowThreshold =
+            m.incidence && m.incidence < threshold && m.mine;
+          if (side) {
+            return belowThreshold && m.side === side;
+          } else {
+            return belowThreshold;
           }
-        ).length;
+        }).length;
       }),
     getMyResponsesLength: (side?: Side) =>
       get(([s]) => {

@@ -34,7 +34,6 @@ import { isDevelopment } from "./env";
 import {
   BrowsingState,
   SidebarState,
-  SidebarStateContext,
 } from "./browsing_state";
 import { Accessor, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
@@ -325,16 +324,8 @@ type AccessorArray<T extends any[]> = {
 export const useSidebarState = <T extends any[]>(
   f: (s: [SidebarState, BrowsingState, RepertoireState]) => T
 ): AccessorArray<T> => {
-  const usePrevious = useContext(SidebarStateContext);
   const sidebarState = () => {
-    if (usePrevious) {
-      return (
-        getAppState().repertoireState.browsingState.previousSidebarState ||
-        getAppState().repertoireState.browsingState.sidebarState
-      );
-    } else {
       return getAppState().repertoireState.browsingState.sidebarState;
-    }
   };
   return destructure(
     () =>

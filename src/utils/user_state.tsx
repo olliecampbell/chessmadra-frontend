@@ -17,14 +17,20 @@ export interface UserState {
   profileModalOpen?: boolean;
   setUser: (user: User) => void;
   handleAuthResponse: (response: AuthResponse) => void;
-  setRatingSystem: (system: string) => void;
-  setRatingRange: (range: string) => void;
+  setRatingSystem: (system: string) => Promise<void>;
+  setRatingRange: (range: string) => Promise<void>;
   setTargetDepth: (t: number) => void;
   getUserRatingDescription: () => string;
   getCurrentThreshold: () => number;
   authStatus: AuthStatus;
   tempUserUuid?: string;
-  updateUserRatingSettings: () => void;
+  updateUserRatingSettings: (
+    params: Partial<{
+      ratingSystem: string;
+      ratingRange: string;
+      missThreshold: number;
+    }>
+  ) => Promise<void>;
   updateUserSettings: (_: {
     theme?: BoardThemeId;
     pieceSet?: PieceSetId;
@@ -129,15 +135,11 @@ export const getInitialUserState = (
             // });
           });
       }),
-    updateUserRatingSettings: () =>
+    updateUserRatingSettings: (params) =>
       set(([s]) => {
         s.isUpdatingEloRange = true;
-        client
-          .post("/api/v1/user/elo_range", {
-            ratingSystem: s.user.ratingSystem,
-            ratingRange: s.user.ratingRange,
-            missThreshold: s.user.missThreshold,
-          })
+        return client
+          .post("/api/v1/user/elo_range", params)
           .then(({ data }: { data: User }) => {
             set(([s, appState]) => {
               s.setUser(data);
@@ -184,21 +186,21 @@ export const getInitialUserState = (
         trackEvent(`user.update_coverage_target`, {
           target: `1 in ${Math.round(1 / t)} games`,
         });
-        s.updateUserRatingSettings();
+        s.updateUserRatingSettings({ missThreshold: s.user.missThreshold });
       });
     },
     setRatingSystem: (system: string) => {
       set(([s]) => {
         trackEvent(`user.update_rating_system`, { rating_system: system });
         s.user.ratingSystem = system;
-        s.updateUserRatingSettings();
+        return s.updateUserRatingSettings({ ratingSystem: system });
       });
     },
     setRatingRange: (range: string) => {
       set(([s]) => {
         trackEvent(`user.update_rating_range`, { rating_range: range });
         s.user.ratingRange = range;
-        s.updateUserRatingSettings();
+        return s.updateUserRatingSettings({ ratingRange: range });
       });
     },
     token: undefined,
@@ -235,6 +237,7 @@ export const getRecommendedMissThreshold = (range: string) => {
   if (range == "1900-2800") {
     return 1 / 200;
   }
+  return 1 / 50;
 };
 
 export const DEFAULT_THRESHOLD = 1 / 50;
