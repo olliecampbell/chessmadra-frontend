@@ -120,10 +120,27 @@ export default function Root() {
       </Head>
       <Style>
         {`
-    body {
-      color: ${c.colors.textPrimary}
-    }
-  `}
+          body {
+            color: ${c.colors.textPrimary}
+          }
+
+          body::-webkit-scrollbar {
+            width: 8px;
+          }
+
+          body::-webkit-scrollbar-track {
+          }
+
+          body::-webkit-scrollbar-thumb {
+            background-color: ${c.grays[24]};
+            border-radius: 20px;
+          }
+
+          body::-webkit-scrollbar-thumb:hover {
+            background-color: ${c.grays[32]};
+          }
+
+      `}
       </Style>
 
       <Body
