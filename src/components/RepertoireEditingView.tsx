@@ -83,7 +83,7 @@ export const Responses = function Responses() {
   const body = null;
   const { prepareForHeader, reviewHeader } = destructure(() => {
     let reviewHeader = null;
-    let prepareForHeader: any = "You need to prepare for these moves";
+    let prepareForHeader: any = "Choose a move to prepare for";
     if (isPastCoverageGoal()) {
       prepareForHeader = "Most common responses";
     }

@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import devtools from "solid-devtools/vite";
 import UnoCSS from "unocss/vite";
 import { presetUno, presetAttributify, presetTagify } from "unocss";
-import { grays, colors as allShades } from "./src/utils/styles";
+import { grays, colors as allShades, c as styles } from "./src/utils/styles";
 const colorMapping = {
   gray: "grays",
   blue: "blues",
@@ -34,7 +34,7 @@ const colorMap = Object.entries(colorMapping).forEach(([key, value]) => {
 const unoConfig = {
   rules: [
     ["custom-rule", { color: "red" }],
-    ["custom-rule", { color: "blue" }],
+    ["text-highlight", { color: styles.arrowColors[55] }],
     [
       /^text-(.*)$/,
       ([, c], { theme }) => {
@@ -79,6 +79,7 @@ const unoConfig = {
       ["text-secondary"]: "text-gray-80",
       ["text-tertiary"]: "text-gray-50",
       ["flexible"]: "basis-0 min-w-0 min-h-0 grow",
+      ["body-text"]: "text-secondary leading-5",
     },
     [/^square-(.*)$/, ([, c]) => `w-${c} h-${c}`],
     [/^&hover:(.*)$/, ([, c]) => `&hoVer:${c} active:${c}`],

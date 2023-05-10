@@ -23,7 +23,7 @@ import {
   isNil,
 } from "lodash-es";
 import { useHovering } from "~/mocks";
-import { JSXElement } from "solid-js";
+import { createEffect, JSXElement } from "solid-js";
 let adverbIndex = 0;
 
 export interface MetaPlan {
@@ -579,24 +579,23 @@ const EnglishSeparator = ({
   );
 };
 
-const PlanMoveText = ({
-  plan,
-  plans,
-  children,
-}: {
+const PlanMoveText = (props: {
   plan?: MetaPlan;
   plans?: MetaPlan[];
   children: any;
 }) => {
+  createEffect(() => {
+    console.log("plan is", props.plan, props.children);
+  });
   const { hovering, hoveringProps } = useHovering(
     () => {
       quick((s) => {
         const chessboard = s.repertoireState.browsingState.chessboard;
         chessboard.set((c) => {
-          if (plans) {
-            c.focusedPlans = plans.map((p) => p.id);
-          } else if (plan) {
-            c.focusedPlans = [plan.id];
+          if (props.plans) {
+            c.focusedPlans = props.plans.map((p) => p.id);
+          } else if (props.plan) {
+            c.focusedPlans = [props.plan.id];
           }
         });
       });
@@ -617,7 +616,7 @@ const PlanMoveText = ({
           c.fg(hovering() ? c.purples[65] : c.arrowColors[55])
         )}
       >
-        {children}
+        {props.children}
       </CMText>
     </div>
   );

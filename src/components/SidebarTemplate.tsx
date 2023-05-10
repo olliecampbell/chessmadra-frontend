@@ -20,7 +20,7 @@ export const SidebarTemplate: Component<{
     <div style={s(c.column)}>
       <Show when={props.header}>
         <RepertoireEditingHeader>{props.header}</RepertoireEditingHeader>
-        <Spacer height={12} />
+        <Spacer height={32} />
       </Show>
       <div
         style={s(
@@ -46,7 +46,7 @@ export const SidebarTemplate: Component<{
           {props.children}
         </Show>
       </div>
-      <Spacer height={responsive.isMobile ? 24 : 36} />
+      <Spacer height={props.children ? (responsive.isMobile ? 24 : 36) : 0} />
       <div style={s(c.gridColumn({ gap: 12 }))}>
         <For each={props.actions}>
           {(action) => <SidebarFullWidthButton action={action} />}

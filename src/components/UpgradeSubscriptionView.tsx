@@ -16,6 +16,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
       });
     });
   };
+  console.log("re-rendering!");
   return (
     <SidebarTemplate
       actions={
@@ -42,7 +43,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
       header={
         props.pastLimit
           ? `You've reached the free tier limit for your ${side()} repertoire`
-          : "Upgrade to Pro"
+          : "test blahd"
       }
       bodyPadding={true}
       loading={loading()}

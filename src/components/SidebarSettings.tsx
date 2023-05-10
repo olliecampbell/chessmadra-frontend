@@ -179,8 +179,9 @@ export const RatingSettings = ({}: {}) => {
   }
   return (
     <SidebarTemplate actions={[]} header={"Your rating"} bodyPadding={true}>
-      <CMText>
-        Used to determine common moves and their win rates at your level
+      <CMText style={s()} class={"text-secondary"}>
+        This is used to determine common moves and their win rates at your
+        level.
       </CMText>
       <Spacer height={24} />
       <RatingSelection />

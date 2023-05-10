@@ -73,8 +73,9 @@ export const SidebarActions = () => {
     s.transposedState,
     s.mode,
     rs.numMovesDueFromEpd?.[s.activeSide]?.[s.currentEpd],
-    s.view,
+    rs.browsingState.currentView(),
   ]);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   positionHistory = positionHistory ?? [];
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
   const [hasPlans] = useBrowsingState(([s, rs]) => [
@@ -157,15 +158,14 @@ export const SidebarActions = () => {
       // This is taken care of by the delete line view, maybe bad though
     } else if (transposedState().visible) {
       showTogglePlansButton = false;
+    } else if (onboarding().isOnboarding) {
+      showTogglePlansButton = false;
     } else if (showPlansState().visible) {
       showTogglePlansButton = false;
       // This is taken care of by the delete line view, maybe bad though
     } else if (deleteLineState().visible) {
       showTogglePlansButton = false;
       // This is taken care of by the delete line view, maybe bad though
-    } else if (!isEmpty(stageStack())) {
-      showTogglePlansButton = false;
-      // Taken care of by onboarding
     } else if (addedLineState().visible) {
       if (!addedLineState().loading) {
         addBiggestMissAction();
@@ -173,6 +173,7 @@ export const SidebarActions = () => {
     } else if (!hasPendingLineToAdd()) {
       addBiggestMissAction();
     } else if (hasPendingLineToAdd() && !view()) {
+      console.log("has pending line and stuff");
       buttons.push({
         onPress: () => {
           isPastCoverageGoal()

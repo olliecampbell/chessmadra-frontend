@@ -4,6 +4,7 @@ import { Spacer } from "~/components/Space";
 import { capitalize, last } from "lodash-es";
 import { CMText } from "./CMText";
 import {
+  getAppState,
   quick,
   useRepertoireState,
   useSidebarState,
@@ -21,7 +22,14 @@ import { CMTextInput } from "./CMTextInput";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { Component, createEffect, createSignal, Match, Switch } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  Match,
+  Switch,
+  For,
+} from "solid-js";
 import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
@@ -32,77 +40,34 @@ import {
 } from "./SidebarSettings";
 import { clsx } from "~/utils/classes";
 import { TextArea, TextInput } from "./TextInput";
-import { Side } from "~/utils/repertoire";
+import { Side, SIDES } from "~/utils/repertoire";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
+import { CoverageBar } from "./CoverageBar";
+import { CoverageAndBar } from "./RepertoirtOverview";
+import { Bullet } from "./Bullet";
 
-export const SidebarOnboarding = function SidebarOnboarding() {
-  const [onboardingState] = useSidebarState(([s]) => [
-    s.sidebarOnboardingState,
-  ]);
-  // const isMobile = useIsMobile();
-  const responsive = useResponsive();
-
-  const stage = () => last(onboardingState().stageStack);
-
-  return (
-    <div style={s(c.column)}>
-      <Switch>
-        <Match when={stage() === SidebarOnboardingStage.Initial}>
-          <OnboardingIntro />
-        </Match>
-        <Match when={stage() === SidebarOnboardingStage.ConnectAccount}>
-          <ConnectAccountOnboarding />
-        </Match>
-        <Match when={stage() === SidebarOnboardingStage.SetRating}>
-          <SetRatingOnboarding />
-        </Match>
-        <Match when={stage() === SidebarOnboardingStage.CoverageGoalFyi}>
-          <CoverageGoalOnboarding />
-        </Match>
-        <Match
-          when={stage() === SidebarOnboardingStage.AskAboutExistingRepertoire}
-        >
-          <AskAboutExistingRepertoireOnboarding />
-        </Match>
-        <Match when={stage() === SidebarOnboardingStage.ChooseImportSource}>
-          <ChooseImportSourceOnboarding />
-        </Match>
-        <Match when={stage() === SidebarOnboardingStage.Import}>
-          <ImportOnboarding />
-        </Match>
-        <Match when={stage() === SidebarOnboardingStage.TrimRepertoire}>
-          <TrimRepertoireOnboarding />
-        </Match>
-      </Switch>
-    </div>
-  );
-};
-
-const OnboardingIntro = () => {
+export const OnboardingIntro = () => {
   const responsive = useResponsive();
   const bullets = [
-    "Build an opening repertoire based on lines that score well at your level",
-    "Focus your time & effort on the moves you’re actually likely to see",
-    "Understand every move you play, through community annotations",
-    "Thoroughly learn your lines using next-gen spaced repetition",
+    "Adding your first opening line",
+    "Practicing it using spaced repetition",
   ];
   return (
     <div style={s(c.column)}>
-      <RepertoireEditingHeader>Welcome to Chessbook!</RepertoireEditingHeader>
+      <RepertoireEditingHeader>
+        Let's start creating your repertoire!
+      </RepertoireEditingHeader>
       <Spacer height={12} />
       <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
-        <CMText style={s()}>This site will help you:</CMText>
+        <CMText class={"body-text"}>
+          This setup process will help you get started and introduce some of the
+          key ideas behind Chessbook. It should only take a few minutes to
+          complete.
+        </CMText>
         <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
           {bullets.map((bullet, i) => (
-            <div style={s(c.row, c.alignCenter, c.pl(12))}>
-              <i
-                class="fas fa-circle"
-                style={s(c.fg(c.grays[60]), c.fontSize(5))}
-              />
-              <Spacer width={8} />
-              <CMText style={s()}>{bullet}</CMText>
-            </div>
+            <Bullet>{bullet}</Bullet>
           ))}
         </div>
       </div>
@@ -111,7 +76,7 @@ const OnboardingIntro = () => {
         action={{
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
+              s.repertoireState.browsingState.pushView(SetRatingOnboarding);
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.SetRating
               );
@@ -125,7 +90,7 @@ const OnboardingIntro = () => {
   );
 };
 
-const ConnectAccountOnboarding = () => {
+export const ConnectAccountOnboarding = () => {
   const responsive = useResponsive();
   return (
     <div style={s(c.column)}>
@@ -134,7 +99,7 @@ const ConnectAccountOnboarding = () => {
       </RepertoireEditingHeader>
       <Spacer height={12} />
       <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
-        <CMText style={s()}>
+        <CMText class={"body-text"}>
           We'll use your rating to prepare you for common lines you'll encounter
           at your level. This will also let you save your repertoire. Chess.com
           integration coming soon.
@@ -182,39 +147,39 @@ const ConnectAccountOnboarding = () => {
   );
 };
 
-const CoverageGoalOnboarding = () => {
-  const responsive = useResponsive();
-  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  return (
-    <SidebarTemplate
-      bodyPadding={true}
-      header={`Your coverage goal has been set to 1 in ${Math.round(
-        1 / threshold()
-      )} games`}
-      actions={[
-        {
-          onPress: () => {
-            quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                SidebarOnboardingStage.AskAboutExistingRepertoire
-              );
-            });
-          },
-          text: "Got it!",
-          style: "primary",
-        },
-      ]}
-    >
-      <CMText style={s()} class={"text-secondary leading-5"}>
-        This would give you a solid repertoire for your rating. You can alway
-        increase this in the future.
-      </CMText>
-    </SidebarTemplate>
-  );
-};
+// const CoverageGoalOnboarding = () => {
+//   const responsive = useResponsive();
+//   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+//   return (
+//     <SidebarTemplate
+//       bodyPadding={true}
+//       header={`Your coverage goal has been set to 1 in ${Math.round(
+//         1 / threshold()
+//       )} games`}
+//       actions={[
+//         {
+//           onPress: () => {
+//             quick((s) => {
+//               s.repertoireState.browsingState.moveSidebarState("right");
+//               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
+//                 SidebarOnboardingStage.AskAboutExistingRepertoire
+//               );
+//             });
+//           },
+//           text: "Got it!",
+//           style: "primary",
+//         },
+//       ]}
+//     >
+//       <CMText style={s()} class={"text-secondary leading-5"}>
+//         This would give you a solid repertoire for your rating. You can alway
+//         increase this in the future.
+//       </CMText>
+//     </SidebarTemplate>
+//   );
+// };
 
-const SetRatingOnboarding = () => {
+export const SetRatingOnboarding = () => {
   const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
   return (
@@ -231,9 +196,9 @@ const SetRatingOnboarding = () => {
           c.relative
         )}
       >
-        <CMText style={s()} class={"text-secondary"}>
-          This will be used to prepare you for common lines you'll encounter at
-          your level.
+        <CMText class={"body-text"}>
+          This is used to determine common moves and their win rates at your
+          level.
         </CMText>
         <Spacer height={12} />
         <RatingSelection />
@@ -244,7 +209,6 @@ const SetRatingOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
-                s.repertoireState.browsingState.moveSidebarState("right");
                 Promise.all([
                   // this is dumb, but just so we get the latest elo range from the backend
                   s.userState.setRatingRange(
@@ -256,8 +220,8 @@ const SetRatingOnboarding = () => {
                       s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
                     );
                     s.userState.setTargetDepth(recommendedThreshold);
-                    s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                      SidebarOnboardingStage.CoverageGoalFyi
+                    s.repertoireState.browsingState.pushView(
+                      ChooseColorOnboarding
                     );
                   });
                 });
@@ -271,10 +235,11 @@ const SetRatingOnboarding = () => {
           action={{
             onPress: () => {
               quick((s) => {
-                s.repertoireState.browsingState.moveSidebarState("right");
-                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                  SidebarOnboardingStage.AskAboutExistingRepertoire
+                let recommendedThreshold = getRecommendedMissThreshold(
+                  s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
                 );
+                s.userState.setTargetDepth(recommendedThreshold);
+                s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
               });
             },
             style: "primary",
@@ -360,8 +325,158 @@ export const Dropdown: Component<{
   );
 };
 
+const ChooseColorOnboarding = () => {
+  const responsive = useResponsive();
+  return (
+    <SidebarTemplate
+      bodyPadding={true}
+      header="Which color would you like to start with?"
+      actions={SIDES.map((side) => ({
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.onboarding.side = side;
+            s.repertoireState.browsingState.pushView(
+              AskAboutExistingRepertoireOnboarding
+            );
+          });
+        },
+        text: capitalize(side),
+        style: "primary",
+      }))}
+    ></SidebarTemplate>
+  );
+};
+
+export const OnboardingComplete = () => {
+  const responsive = useResponsive();
+  const bullets = () => {
+    const bullets = [];
+    bullets.push(<>Keep adding moves to your repertoire to get to 100%</>);
+    bullets.push(
+      <>
+        Practice your moves every day{" "}
+        {!responsive.isMobile &&
+          `(visit Chessbook.com on your mobile phone to practice on the go)`}
+      </>
+    );
+
+    return bullets;
+  };
+  return (
+    <SidebarTemplate
+      bodyPadding={true}
+      header="Your Chessbook is ready to go!"
+      actions={[
+        {
+          text: "Continue",
+          style: "primary",
+          onPress: () => {
+            quick((s) => {
+              s.repertoireState.backToOverview();
+            });
+          },
+        },
+      ]}
+    >
+      <p class={"body-text"}>
+        You've made a great start towards mastering the opening! Make sure you
+        spend a little bit of time on your openings every day.
+      </p>
+      <Spacer height={8} />
+      <p class={"body-text"}>Recommended next steps:</p>
+      <Spacer height={8} />
+      <div class={"space-y-2"}>
+        <For each={bullets()}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
+      </div>
+    </SidebarTemplate>
+  );
+};
+
+export const FirstLineSavedOnboarding = () => {
+  const responsive = useResponsive();
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  const [progressState] = useRepertoireState((s) => [
+    s.browsingState.repertoireProgressState[onboarding().side as Side],
+  ]);
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  return (
+    <SidebarTemplate
+      bodyPadding={true}
+      header="You've added your first line!"
+      actions={[
+        {
+          onPress: () => {
+            console.log("test?");
+            quick((s) => {
+              s.repertoireState.browsingState.pushView(PracticeIntroOnboarding);
+            });
+          },
+          text: "Ok, got it",
+          style: "primary",
+        },
+      ]}
+    >
+      <CMText class={"body-text"}>
+        Your {onboarding().side} repertoire is now{" "}
+        <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
+          {Math.round(progressState().percentComplete)}%
+        </CMText>{" "}
+        complete.
+      </CMText>
+      <Spacer height={8} />
+      <div style={s(c.height(24))}>
+        <CoverageBar isInSidebar side={onboarding().side as Side} />
+      </div>
+      <Spacer height={16} />
+      <CMText class={"body-text font-bold"}>
+        How to complete your repertoire
+      </CMText>
+      <Spacer height={8} />
+      <CMText class={"body-text"}>
+        Your goal is to cover any lines which occur in at least 1 in{" "}
+        {Math.round(1 / threshold())} games.
+      </CMText>
+      <Spacer height={8} />
+      <CMText class={"body-text"}>
+        This was set based on your rating, you can always change it later.
+      </CMText>
+    </SidebarTemplate>
+  );
+};
+
+const PracticeIntroOnboarding = () => {
+  const [currentLine] = useSidebarState(([s]) => [s.moveLog]);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  return (
+    <SidebarTemplate
+      bodyPadding={true}
+      header="Now let's see how practice works"
+      actions={[
+        {
+          onPress: () => {
+            quick((s) => {
+              s.repertoireState.reviewState.reviewLine(
+                currentLine(),
+                onboarding().side
+              );
+            });
+          },
+          text: "Practice this line",
+          style: "primary",
+        },
+      ]}
+    >
+      <CMText class="body-text">
+        Chessbook uses spaced repetition, a scientifically proven technique to
+        memorize openings quickly and thoroughly.
+      </CMText>
+    </SidebarTemplate>
+  );
+};
+
 const AskAboutExistingRepertoireOnboarding = () => {
   const responsive = useResponsive();
+  const repertoireState = getAppState().repertoireState;
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -370,7 +485,6 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.ChooseImportSource
               );
@@ -382,9 +496,10 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.finishSidebarOnboarding(
-                responsive
+              s.repertoireState.browsingState.clearViews();
+              s.repertoireState.startBrowsing(
+                repertoireState.onboarding.side as Side,
+                "build"
               );
             });
           },
@@ -393,9 +508,9 @@ const AskAboutExistingRepertoireOnboarding = () => {
         },
       ]}
     >
-      <CMText style={s()} class={"text-secondary"}>
-        You'll be able to import your repertoire from a PGN file, or from your
-        Lichess games.
+      <CMText class="body-text">
+        You can upload a PGN, or connect your Lichess account to add the
+        openings you play automatically.
       </CMText>
     </SidebarTemplate>
   );
@@ -410,7 +525,6 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
@@ -424,7 +538,6 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.Import
               );
@@ -600,7 +713,7 @@ const TrimRepertoireOnboarding = () => {
   ]);
   const header = "Do you want to trim your repertoire?";
   const body = (
-    <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
+    <CMText class="body-text">
       We can trim your repertoire to only the moves you're likely to see. This
       can be a good option if you have a large repertoire from other software.
     </CMText>

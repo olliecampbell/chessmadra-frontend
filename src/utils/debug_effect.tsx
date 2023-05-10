@@ -9,6 +9,8 @@ import {
   SidebarOnboardingImportType,
   SidebarOnboardingStage,
 } from "./browsing_state";
+import { PracticeComplete } from "~/components/PracticeComplete";
+import { OnboardingComplete } from "~/components/SidebarOnboarding";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -34,22 +36,22 @@ export const createDebugStateEffect = () => {
     //   //   SidebarOnboardingImportType.PGN;
     // });
     // quick((s) => {
-    //   s.repertoireState.browsingState.replaceView(<UpgradeSubscripitionView />);
-    // });
-    // quick((s) => {
     //   s.repertoireState.browsingState.replaceView(<RatingSettings />, "right");
     // });
 
-    // if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
-    //   setHasCalled(true);
-    //   quick((s) => {
-    //     s.repertoireState.startBrowsing("white", "build");
-    //     s.repertoireState.browsingState.sidebarState.addedLineState = {
-    //       visible: true,
-    //       loading: true,
-    //     };
-    //   });
-    // }
+    if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
+      setHasCalled(true);
+      // quick((s) => {
+      //   s.repertoireState.browsingState.replaceView(OnboardingComplete, {});
+      // });
+      //   quick((s) => {
+      //     s.repertoireState.startBrowsing("white", "build");
+      //     s.repertoireState.browsingState.sidebarState.addedLineState = {
+      //       visible: true,
+      //       loading: true,
+      //     };
+      //   });
+    }
     // setTimeout(() => {
     //   quick((s) => {
     //     s.repertoireState.startBrowsing("white", "build", {

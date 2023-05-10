@@ -55,6 +55,7 @@ import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
 import { MAX_MOVES_FREE_TIER } from "./payment";
 import dedent from "dedent-js";
+import { OnboardingIntro } from "~/components/SidebarOnboarding";
 
 const TEST_LINE = isDevelopment ? [] : [];
 console.log("TEST_LINE", TEST_LINE);
@@ -69,6 +70,10 @@ export interface LichessOauthData {
 }
 
 export interface RepertoireState {
+  onboarding: {
+    isOnboarding: boolean;
+    side?: Side;
+  };
   animateSidebarState?: (dir: "left" | "right") => void;
   lineReports: Record<string, LineReport>;
   numMovesFromEpd: BySide<Record<string, number>>;
@@ -245,6 +250,9 @@ export const getInitialRepertoireState = (
     pendingResponses: {},
     positionReports: { white: {}, black: {} },
     lineReports: {},
+    onboarding: {
+      isOnboarding: false,
+    },
     currentLine: [],
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
@@ -331,9 +339,11 @@ export const getInitialRepertoireState = (
             null
           );
           if (side && numBelowThreshold > minimumToTrim) {
-            s.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-              SidebarOnboardingStage.TrimRepertoire
-            );
+            s.onboarding.isOnboarding = true;
+            console.log("replace view");
+            // todo: trim thing
+            alert("unimplemented");
+            s.browsingState.replaceView(OnboardingIntro);
           } else {
             s.browsingState.finishSidebarOnboarding(responsive);
           }
@@ -372,12 +382,7 @@ export const getInitialRepertoireState = (
           });
         }
         const unclickableModes: BrowsingMode[] = ["review"];
-        if (
-          mode &&
-          mode !== "overview" &&
-          mode !== "home" &&
-          mode !== "onboarding"
-        ) {
+        if (mode && mode !== "overview" && mode !== "home") {
           const unclickable = unclickableModes.includes(mode);
           breadcrumbs.push({
             text: capitalize(modeToUI(mode)),
@@ -828,7 +833,6 @@ export const getInitialRepertoireState = (
           coverageReached: false,
           hasShown: false,
         };
-        s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [];
         // TODO: should just reset to a default state here, instead of doing it one by one
         s.browsingState.sidebarState.mode = mode;
         s.browsingState.sidebarState.activeSide = side;
@@ -1029,10 +1033,9 @@ export const getInitialRepertoireState = (
               s.hasCompletedRepertoireInitialization = true;
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
-                s.startBrowsing("white", "onboarding");
-                s.browsingState.sidebarState.activeSide = undefined;
-                s.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-                  [SidebarOnboardingStage.Initial];
+                s.onboarding.isOnboarding = true;
+                console.log("replace view");
+                s.browsingState.replaceView(OnboardingIntro);
               }
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);

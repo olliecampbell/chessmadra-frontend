@@ -160,6 +160,8 @@ export const RepertoireMovesTable = ({
   ]);
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const hideAnnotations = () => moveNumber() === 1;
+  const firstWhiteMove = () =>
+    moveNumber() === 1 && side() === "white" && myTurn() && !anyMine();
   const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
   const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
@@ -301,7 +303,7 @@ export const RepertoireMovesTable = ({
               class="text-tertiary &hover:text-primary transition-colors"
               style={s(c.fontSize(12), c.weightSemiBold)}
             >
-              Show more moves
+              {firstWhiteMove() ? "Something else..." : "Show more moves"}
             </CMText>
           </Pressable>
           <Spacer width={16} />

@@ -4,6 +4,7 @@ import { Spacer } from "~/components/Space";
 import { isEmpty, isNil, dropRight } from "lodash-es";
 import { CMText } from "./CMText";
 import {
+  getAppState,
   quick,
   useBrowsingState,
   useRepertoireState,
@@ -15,7 +16,6 @@ import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
-import { SidebarOnboarding } from "./SidebarOnboarding";
 import { FeedbackView } from "./FeedbackView";
 import { FadeInOut } from "./FadeInOut";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
@@ -46,22 +46,9 @@ import {
 import { clsx } from "~/utils/classes";
 import { Puff } from "solid-spinner";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { Dynamic } from "solid-js/web";
 
 export const BrowserSidebar = function BrowserSidebar() {
-  const [previousSidebarAnim, currentSidebarAnim, direction] = useBrowsingState(
-    ([s]) => [s.previousSidebarAnim, s.currentSidebarAnim, s.sidebarDirection]
-  );
-  // createEffect(() => {});
-  // let interval = setInterval(() => {
-  //   quick((s) => {
-  //     console.log(" moving sidebar state");
-  //     s.repertoireState.browsingState.moveSidebarState("right");
-  //   });
-  // }, 2000);
-  // onCleanup(() => {
-  //   clearInterval(interval);
-  // });
-
   onMount(() => {
     quick((s) => {
       s.repertoireState.animateSidebarState = (dir: "left" | "right") => {
@@ -160,7 +147,7 @@ export const BrowserSidebar = function BrowserSidebar() {
 
 export const InnerSidebar = function InnerSidebar() {
   const [sidebarState] = useSidebarState(([s]) => [s]);
-  const [view] = useSidebarState(([s]) => [s.view]);
+  const [view] = useSidebarState(([s]) => [s.viewStack.at(-1)]);
   const [
     addedLineState,
     deleteLineState,
@@ -182,6 +169,7 @@ export const InnerSidebar = function InnerSidebar() {
   ]);
   createEffect(() => {
     console.log("stageStack", stageStack());
+    console.log("View in sidebar", view());
   });
 
   const responsive = useResponsive();
@@ -193,7 +181,9 @@ export const InnerSidebar = function InnerSidebar() {
       </Show>
       <div id="sidebar-inner" style={s(c.relative, c.zIndex(100))}>
         <Switch fallback={<Responses />}>
-          <Match when={view()}>{view()}</Match>
+          <Match when={view()}>
+            <Dynamic component={view()?.component} {...view()?.props} />
+          </Match>
           <Match when={submitFeedbackState().visible}>
             <FeedbackView />
           </Match>
@@ -205,9 +195,6 @@ export const InnerSidebar = function InnerSidebar() {
           </Match>
           <Match when={mode() == "review"}>
             <RepertoireReview />
-          </Match>
-          <Match when={!isEmpty(stageStack())}>
-            <SidebarOnboarding />
           </Match>
           <Match when={deleteLineState().visible}>
             <DeleteLineView />
@@ -241,7 +228,6 @@ const BackSection = () => {
     transposedState,
     mode,
     side,
-    view,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
@@ -251,11 +237,10 @@ const BackSection = () => {
     s.transposedState,
     s.mode,
     s.activeSide,
-    s.view,
   ]);
-  const [onboardingStageStack] = useSidebarState(([s]) => [
-    s.sidebarOnboardingState.stageStack,
-  ]);
+  const [view] = useBrowsingState(([s]) => [s.currentView()]);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  const repertoireState = getAppState().repertoireState;
   const [moveLog] = useBrowsingState(([s, rs]) => [
     s.chessboard.get((v) => v).moveLog,
   ]);
@@ -319,8 +304,6 @@ const BackSection = () => {
       }
     }
 
-    if (mode() == "review") {
-    }
     if (mode() == "browse") {
       if (!isEmpty(moveLog())) {
         backButtonAction = () => {
@@ -341,15 +324,7 @@ const BackSection = () => {
         });
       };
     }
-    console.log("mode?", mode(), onboardingStageStack());
-    if (mode() == "onboarding") {
-      if (onboardingStageStack().length > 1) {
-        backButtonAction = () => {
-          quick((s) => {
-            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.pop();
-          });
-        };
-      }
+    if (repertoireState.onboarding.isOnboarding) {
     }
     if (submitFeedbackState().visible) {
       backButtonAction = () => {
@@ -359,8 +334,11 @@ const BackSection = () => {
       };
     }
     if (view()) {
-      // this is terrible
-      backButtonAction = "bogus";
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.browsingState.popView();
+        });
+      };
     }
     return backButtonAction;
   };
@@ -384,9 +362,7 @@ const BackSection = () => {
         <Pressable
           onPress={() => {
             quick((s) => {
-              if (view()) {
-                s.repertoireState.browsingState.replaceView(null, "left");
-              } else if (backButtonAction()) {
+              if (backButtonAction()) {
                 s.repertoireState.browsingState.moveSidebarState("left");
                 backButtonAction()?.();
               }

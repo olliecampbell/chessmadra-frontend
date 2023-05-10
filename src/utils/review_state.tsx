@@ -15,6 +15,7 @@ import {
   lineToPgn,
   pgnToLine,
   RepertoireMove,
+  SanPlus,
   Side,
   SIDES,
 } from "./repertoire";
@@ -32,6 +33,7 @@ import {
   createChessboardInterface,
 } from "./chessboard_interface";
 import { unwrap } from "solid-js/store";
+import { PracticeComplete } from "~/components/PracticeComplete";
 
 export interface QuizMove {
   moves: RepertoireMove[];
@@ -46,13 +48,23 @@ export interface ReviewPositionResults {
   sanPlus: string;
 }
 
+type ReviewMoveKey = string;
+type Epd = string;
+
 export interface ReviewState {
   buildQueue: (options: ReviewOptions) => QuizMove[];
   stopReviewing: () => void;
   chessboard: ChessboardInterface;
   // getQueueLength: (side?: Side) => number;
   showNext?: boolean;
-  failedReviewPositionMoves?: Record<string, RepertoireMove>;
+  allReviewPositionMoves: Record<
+    Epd,
+    Record<
+      SanPlus,
+      { sanPlus: string; epd: string; failed: boolean; side: Side }
+    >
+  >;
+  failedReviewPositionMoves: Record<string, RepertoireMove>;
   activeQueue: QuizMove[];
   currentMove?: QuizMove;
   reviewSide?: Side;
@@ -61,7 +73,6 @@ export interface ReviewState {
   giveUp: () => void;
   setupNextMove: () => void;
   startReview: (_side: Side | null, options: ReviewOptions) => void;
-  reviewWithQueue: (queue: QuizMove[]) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
   getNextReviewPositionMove(): RepertoireMove;
@@ -97,9 +108,11 @@ export const getInitialReviewState = (
     );
   };
   const initialState = {
+    allReviewPositionMoves: {},
+    chessboard: undefined as ChessboardInterface,
     showNext: false,
     // queues: EMPTY_QUEUES,
-    activeQueue: null,
+    activeQueue: [] as QuizMove[],
     markMovesReviewed: (results: ReviewPositionResults[]) => {
       trackEvent(`reviewing.reviewed_move`);
       set(([s, rs]) => {
@@ -144,7 +157,20 @@ export const getInitialReviewState = (
           console.log("generating queue");
           s.updateQueue(options);
         }
-        console.log(unwrap(s.activeQueue));
+        s.activeQueue.forEach((m) => {
+          m.moves.forEach((m) => {
+            if (!s.allReviewPositionMoves[m.epd]) {
+              s.allReviewPositionMoves[m.epd] = {};
+            }
+            s.allReviewPositionMoves[m.epd][m.sanPlus] = {
+              epd: m.epd,
+              sanPlus: m.sanPlus,
+              side: m.side,
+              failed: false,
+            };
+          });
+        });
+        console.log(unwrap(s.activeQueue), unwrap(s.allReviewPositionMoves));
         // gs.navigationState.push(`/openings/${side}/review`);
         s.reviewSide = side;
         s.setupNextMove();
@@ -177,7 +203,7 @@ export const getInitialReviewState = (
         }
         s.currentMove = s.activeQueue.shift();
         if (!s.currentMove) {
-          rs.backToOverview();
+          rs.browsingState.pushView(PracticeComplete);
           trackEvent(`review.review_complete`);
           return;
         }
@@ -216,6 +242,7 @@ export const getInitialReviewState = (
         s.completedReviewPositionMoves[move.sanPlus] = move;
         s.getRemainingReviewPositionMoves().forEach((move) => {
           s.failedReviewPositionMoves[move.sanPlus] = move;
+          s.allReviewPositionMoves[move.epd][move.sanPlus].failed = true;
         });
         s.showNext = true;
         s.chessboard.makeMove(moveObj, { animate: true });
@@ -284,7 +311,7 @@ export const getInitialReviewState = (
             (m) => m.sanPlus === move
           );
           epd = response?.epdAfter;
-          if (response && response.mine && response.epd !== START_EPD) {
+          if (response && response.mine) {
             queue.push({
               moves: [response],
               line: lineToPgn(lineSoFar),
@@ -377,6 +404,7 @@ export const getInitialReviewState = (
             // TODO: reduce repetition
             s.getRemainingReviewPositionMoves().forEach((move) => {
               s.failedReviewPositionMoves[move.sanPlus] = move;
+              s.allReviewPositionMoves[move.epd][move.sanPlus].failed = true;
             });
             return false;
           }

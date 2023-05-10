@@ -72,7 +72,10 @@ import { unwrap } from "solid-js/store";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 import { Chess } from "@lubert/chess.ts";
 import { PAYMENT_ENABLED } from "./payment";
-import { Dropdown } from "~/components/SidebarOnboarding";
+import {
+  Dropdown,
+  FirstLineSavedOnboarding,
+} from "~/components/SidebarOnboarding";
 import { c, s } from "./styles";
 import { CMText } from "~/components/CMText";
 import { Spacer } from "~/components/Space";
@@ -107,13 +110,8 @@ export enum SidebarOnboardingImportType {
   PGN,
   PlayerTemplates,
 }
-export type BrowsingMode =
-  | "browse"
-  | "build"
-  | "review"
-  | "overview"
-  | "home"
-  | "onboarding";
+export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
+
 export const modeToUI = (mode: BrowsingMode) => {
   switch (mode) {
     case "browse":
@@ -130,7 +128,7 @@ export const modeToUI = (mode: BrowsingMode) => {
 };
 
 export interface SidebarState {
-  view?: JSXElement;
+  viewStack: { component: Component<any>; props: any }[];
   isPastCoverageGoal?: boolean;
   mode: BrowsingMode;
   tableResponses: TableResponse[];
@@ -164,6 +162,7 @@ export interface SidebarState {
   planSections?: any;
   activeSide?: Side;
 }
+export type View = { component: Component<any>; props: any };
 
 export interface BrowsingState {
   // Functions
@@ -180,9 +179,18 @@ export interface BrowsingState {
   updateTableResponses: () => void;
   requestToAddCurrentLine: () => void;
   quick: (fn: (_: BrowsingState) => void) => void;
-  addPendingLine: (_?: { replace: boolean }) => void;
+  addPendingLine: (_?: { replace: boolean }) => Promise<void>;
   moveSidebarState: (direction: "left" | "right") => void;
-  replaceView: (view: JSXElement, direction?: "left" | "right") => void;
+  currentView: () => View;
+  clearViews: () => void;
+  pushView: (
+    view: Component<any>,
+    opts?: { direction?: "left" | "right"; props?: any }
+  ) => void;
+  replaceView: (
+    view: Component<any>,
+    opts?: { direction?: "left" | "right"; props?: any }
+  ) => void;
   popView: () => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
@@ -222,6 +230,7 @@ type Stack = [BrowsingState, RepertoireState, AppState];
 
 export const makeDefaultSidebarState = () => {
   return {
+    viewStack: [],
     moveLog: [],
     positionHistory: null,
     mode: "home",
@@ -730,7 +739,8 @@ export const getInitialBrowsingState = (
         if (
           !subscribed &&
           rs.pastFreeTier(s.sidebarState.activeSide) &&
-          PAYMENT_ENABLED
+          PAYMENT_ENABLED &&
+          !rs.onboarding.isOnboarding
         ) {
           s.replaceView(<UpgradeSubscriptionView pastLimit={true} />, "right");
           return;
@@ -837,6 +847,7 @@ export const getInitialBrowsingState = (
           flatten(values(s.sidebarState.pendingResponses)),
           (m) => m.mine
         );
+        console.log("hasPendingLineToAdd", s.sidebarState.hasPendingLineToAdd);
         if (s.sidebarState.mode !== "review") {
           s.fetchNeededPositionReports();
           s.updateRepertoireProgress();
@@ -877,15 +888,30 @@ export const getInitialBrowsingState = (
       get(([s, rs]) => {
         return last(s.getLineIncidences(options));
       }),
-    replaceView: (view: JSXElement, direction: "left" | "right") =>
+    clearViews: () =>
+      set(([s, gs]) => {
+        s.sidebarState.viewStack = [];
+      }),
+    currentView: () =>
+      get(([s, gs]) => {
+        return last(s.sidebarState.viewStack);
+      }),
+    pushView: (view, { direction, props } = {}) =>
       set(([s, gs]) => {
         s.moveSidebarState(direction ?? "right");
-        s.sidebarState.view = view;
+        console.log("doing this?");
+        s.sidebarState.viewStack.push({ component: view, props: props ?? {} });
+      }),
+    replaceView: (view, { direction, props } = {}) =>
+      set(([s, gs]) => {
+        s.moveSidebarState(direction ?? "right");
+        s.sidebarState.viewStack.pop();
+        s.sidebarState.viewStack.push({ component: view, props: props ?? {} });
       }),
     popView: () =>
       set(([s, gs]) => {
-        s.moveSidebarState("left");
-        s.sidebarState.view = null;
+        s.sidebarState.viewStack.pop();
+        console.log("view stack", s.sidebarState.viewStack);
       }),
     moveSidebarState: (direction: "left" | "right") =>
       set(([s, gs]) => {
@@ -901,7 +927,7 @@ export const getInitialBrowsingState = (
           visible: true,
           loading: true,
         };
-        client
+        return client
           .post("/api/v1/openings/add_moves", {
             moves: flatten(cloneDeep(values(s.sidebarState.pendingResponses))),
             side: s.sidebarState.activeSide,
@@ -909,10 +935,14 @@ export const getInitialBrowsingState = (
           })
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s, rs]) => {
-              s.sidebarState.addedLineState = {
-                visible: true,
-                loading: false,
-              };
+              if (rs.onboarding.isOnboarding) {
+                rs.browsingState.pushView(FirstLineSavedOnboarding);
+              } else {
+                s.sidebarState.addedLineState = {
+                  visible: true,
+                  loading: false,
+                };
+              }
               rs.repertoire = data.repertoire;
               rs.repertoireGrades = data.grades;
               rs.onRepertoireUpdate();

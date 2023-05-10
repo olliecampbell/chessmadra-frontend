@@ -26,21 +26,13 @@ export const ReviewText = ({
   const now = new Date();
   const diff = date.getTime() - now.getTime();
   let dueString = "";
-  const seconds = diff / 1000;
-  const minutes = seconds / 60;
-  const hours = minutes / 60;
-  const days = hours / 24;
   let color = c.grays[50];
   const prefix = overview ? `Due in` : `Due in`;
   if (diff < 0) {
     color = inverse ? c.oranges[30] : c.oranges[70];
     dueString = `${numMovesDueFromHere.toLocaleString()} Due`;
-  } else if (minutes < 60) {
-    dueString = `${prefix} ${pluralize(Math.round(minutes), "minute")}`;
-  } else if (hours < 24) {
-    dueString = `${prefix} ${pluralize(Math.round(hours), "hour")}`;
   } else {
-    dueString = `${prefix} ${pluralize(Math.round(days), "day")}`;
+    dueString = `${prefix} ${getHumanTimeUntil(date)}`;
   }
   return (
     <>
@@ -55,4 +47,22 @@ export const ReviewText = ({
       }
     </>
   );
+};
+
+export const getHumanTimeUntil = (date: Date) => {
+  const now = new Date();
+  const diff = date.getTime() - now.getTime();
+  const seconds = diff / 1000;
+  const minutes = seconds / 60;
+  const hours = minutes / 60;
+  const days = hours / 24;
+  if (diff < 0) {
+    return "Now";
+  } else if (minutes < 60) {
+    return `${pluralize(Math.round(minutes), "minute")}`;
+  } else if (hours < 24) {
+    return `${pluralize(Math.round(hours), "hour")}`;
+  } else {
+    return `${pluralize(Math.round(days), "day")}`;
+  }
 };
