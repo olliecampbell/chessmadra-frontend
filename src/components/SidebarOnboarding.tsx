@@ -183,71 +183,56 @@ export const SetRatingOnboarding = () => {
   const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
   return (
-    <div style={s(c.column)}>
-      <RepertoireEditingHeader>
-        What's your current rating?
-      </RepertoireEditingHeader>
-      <Spacer height={12} />
-      <div
-        style={s(
-          c.column,
-          c.px(c.getSidebarPadding(responsive)),
-          c.zIndex(2),
-          c.relative
-        )}
-      >
-        <CMText class={"body-text"}>
-          This is used to determine common moves and their win rates at your
-          level.
-        </CMText>
-        <Spacer height={12} />
-        <RatingSelection />
-      </div>
-      <Spacer height={36} />
-      <div style={s(c.gridColumn({ gap: 12 }))}>
-        <SidebarFullWidthButton
-          action={{
-            onPress: () => {
-              quick((s) => {
-                Promise.all([
-                  // this is dumb, but just so we get the latest elo range from the backend
-                  s.userState.setRatingRange(
-                    s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-")
-                  ),
-                ]).then(() => {
-                  quick((s) => {
-                    let recommendedThreshold = getRecommendedMissThreshold(
-                      s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
-                    );
-                    s.userState.setTargetDepth(recommendedThreshold);
-                    s.repertoireState.browsingState.pushView(
-                      ChooseColorOnboarding
-                    );
-                  });
+    <SidebarTemplate
+      header={"What's your current rating"}
+      bodyPadding={true}
+      actions={[
+        {
+          onPress: () => {
+            quick((s) => {
+              Promise.all([
+                // this is dumb, but just so we get the latest elo range from the backend
+                s.userState.setRatingRange(
+                  s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-")
+                ),
+              ]).then(() => {
+                quick((s) => {
+                  let recommendedThreshold = getRecommendedMissThreshold(
+                    s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+                  );
+                  s.userState.setTargetDepth(recommendedThreshold);
+                  s.repertoireState.browsingState.pushView(
+                    ChooseColorOnboarding
+                  );
                 });
               });
-            },
-            style: "primary",
-            text: "Set rating and continue",
-          }}
-        />
-        <SidebarFullWidthButton
-          action={{
-            onPress: () => {
-              quick((s) => {
-                let recommendedThreshold = getRecommendedMissThreshold(
-                  s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
-                );
-                s.userState.setTargetDepth(recommendedThreshold);
-                s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
-              });
-            },
-            style: "primary",
-            text: "I don't know, skip this step",
-          }}
-        />
-      </div>
-    </div>
+            });
+          },
+          style: "primary",
+          text: "Set rating and continue",
+        },
+        {
+          onPress: () => {
+            quick((s) => {
+              let recommendedThreshold = getRecommendedMissThreshold(
+                s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+              );
+              s.userState.setTargetDepth(recommendedThreshold);
+              s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
+            });
+          },
+          style: "primary",
+          text: "I don't know, skip this step",
+        },
+      ]}
+    >
+      <CMText class={"body-text"}>
+        This is used to determine common moves and their win rates at your
+        level.
+      </CMText>
+      <Spacer height={24} />
+      <RatingSelection />
+    </SidebarTemplate>
   );
 };
 
@@ -300,14 +285,13 @@ export const Dropdown: Component<{
             c.top("calc(100% + 8px)"),
             c.right(0),
             c.left(0),
-            c.bg(c.grays[10]),
             c.br(4),
             c.border(`1px solid ${c.grays[26]}`),
             c.overflowHidden,
             c.gridColumn({ gap: 0 }),
             c.alignStretch
           )}
-          class={clsx("rounded-sm p-2 ")}
+          class={clsx("bg-gray-4 rounded-sm p-2")}
         >
           {props.choices.map((c) => (
             <div class={clsx("&hover:bg-gray-16 ")}>
@@ -379,8 +363,7 @@ export const OnboardingComplete = () => {
       ]}
     >
       <p class={"body-text"}>
-        You've made a great start towards mastering the opening! Make sure you
-        spend a little bit of time on your openings every day.
+        You've made a great start towards mastering the opening!
       </p>
       <Spacer height={8} />
       <p class={"body-text"}>Recommended next steps:</p>
@@ -485,8 +468,8 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                SidebarOnboardingStage.ChooseImportSource
+              s.repertoireState.browsingState.pushView(
+                ChooseImportSourceOnboarding
               );
             });
           },
@@ -496,11 +479,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.clearViews();
-              s.repertoireState.startBrowsing(
-                repertoireState.onboarding.side as Side,
-                "build"
-              );
+              s.repertoireState.browsingState.goToBuildOnboarding();
             });
           },
           text: "No, I'll start from scratch",
@@ -525,11 +504,9 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                SidebarOnboardingStage.Import
-              );
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
-                SidebarOnboardingImportType.PGN;
+              s.repertoireState.browsingState.pushView(ImportOnboarding, {
+                props: { importType: SidebarOnboardingImportType.PGN },
+              });
             });
           },
           text: "From a PGN file",
@@ -538,37 +515,19 @@ const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                SidebarOnboardingStage.Import
-              );
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
-                SidebarOnboardingImportType.LichessUsername;
+              s.repertoireState.browsingState.pushView(ImportOnboarding, {
+                props: { importType: SidebarOnboardingImportType.PGN },
+              });
             });
           },
           text: "From my Lichess games",
           style: "primary",
         },
-        // {
-        //   onPress: () => {
-        //     quick((s) => {
-        //       s.repertoireState.browsingState.moveSidebarState("right");
-        //       s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-        //         SidebarOnboardingStage.Import
-        //       );
-        //       s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
-        //         SidebarOnboardingImportType.PlayerTemplates;
-        //     });
-        //   },
-        //   text: "Copy a popular streamer",
-        //   style: "primary",
-        // },
         {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.finishSidebarOnboarding(
-                responsive
-              );
+              s.repertoireState.browsingState.goToBuildOnboarding();
             });
           },
           text: "Nevermind, skip this for now",
@@ -579,18 +538,14 @@ const ChooseImportSourceOnboarding = () => {
   );
 };
 
-const ImportOnboarding = () => {
+const ImportOnboarding = (props: {
+  importType: SidebarOnboardingImportType;
+}) => {
   const responsive = useResponsive();
-  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const [importType] = useRepertoireState((s) => [
-    s.browsingState.sidebarState.sidebarOnboardingState.importType,
-  ]);
-  createEffect(() => {
-    quick((s) => {
-      s.repertoireState.fetchRepertoireTemplates();
-      s.repertoireState.fetchPlayerTemplates();
-    });
-  }, []);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  const activeSide = () => onboarding().side;
+
+  const importType = () => props.importType;
   const [username, setUsername] = createSignal("");
   const [loading, setLoading] = createSignal(null as string | null);
   // createEffect(() => {
@@ -607,16 +562,15 @@ const ImportOnboarding = () => {
   //   }
   // });
 
-  let [whitePgn, setWhitePgn] = createSignal("");
-  let [blackPgn, setBlackPgn] = createSignal("");
+  let [pgn, setPgn] = createSignal("");
   const { header, actions, bodyPadding } = destructure(() => {
     const bodyPadding = true;
     let header = null;
     let actions: SidebarAction[] = [];
     let body = null;
     if (importType() === SidebarOnboardingImportType.PGN) {
-      header = "Please upload your PGN files";
-      if (blackPgn() || whitePgn()) {
+      header = `Please upload your ${activeSide()} repertoire`;
+      if (pgn()) {
         actions.push({
           text: "Submit",
           onPress: () => {
@@ -656,8 +610,11 @@ const ImportOnboarding = () => {
     setLoading("Importing");
     quick((s) => {
       const params = {} as any;
-      params.whitePgn = whitePgn();
-      params.blackPgn = blackPgn();
+      if (activeSide() == "white") {
+        params.whitePgn = pgn();
+      } else {
+        params.blackPgn = pgn();
+      }
       s.repertoireState.initializeRepertoire({ ...params, responsive });
       trackEvent("import.from_pgns");
     });
@@ -683,9 +640,8 @@ const ImportOnboarding = () => {
     >
       <Switch>
         <Match when={importType() === SidebarOnboardingImportType.PGN}>
-          <div style={s(c.pt(20))} class={"flex flex-col space-y-8"}>
-            <PGNUpload onChange={setWhitePgn} side={"white"} />
-            <PGNUpload onChange={setBlackPgn} side={"black"} />
+          <div style={s()} class={"flex flex-col space-y-8"}>
+            <PGNUpload onChange={setPgn} side={"white"} />
           </div>
         </Match>
         <Match
@@ -705,7 +661,7 @@ const ImportOnboarding = () => {
   );
 };
 
-const TrimRepertoireOnboarding = () => {
+export const TrimRepertoireOnboarding = () => {
   const responsive = useResponsive();
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
@@ -724,13 +680,13 @@ const TrimRepertoireOnboarding = () => {
     trackEvent("onboarding.trim_repertoire", { threshold });
     setLoading("Trimming");
     quick((s) => {
-      s.repertoireState.trimRepertoire(threshold, [activeSide]);
+      s.repertoireState.trimRepertoire(threshold, [activeSide()]);
       s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
     });
   };
 
   const actions = () => {
-    let actions = [];
+    let actions: SidebarAction[] = [];
     THRESHOLD_OPTIONS.forEach((threshold) => {
       const numMoves = getNumResponsesBelowThreshold()(threshold, activeSide());
       if (numMoves > 0) {
@@ -738,7 +694,7 @@ const TrimRepertoireOnboarding = () => {
           text: `Trim responses that occur in less than 1 in ${
             1 / threshold
           } games`,
-          subtext: `${numMoves} responses`,
+          subtext: `${numMoves} responses will be trimmed`,
           onPress: () => {
             trimToThreshold(threshold);
           },
@@ -801,11 +757,7 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
   });
   return (
     <div style={s()}>
-      <p class={"text-secondary font-semibold"}>
-        {capitalize(props.side)} repertoire
-      </p>
-
-      <div class={"bg-gray-6 mt-4 rounded-sm p-4"}>
+      <div class={"bg-gray-6 rounded-sm p-4"}>
         <div
           class={
             "border-gray-24 border-1 &hover:bg-gray-12 row relative h-20 w-full items-center justify-center rounded-sm border-dashed transition-colors"

@@ -55,7 +55,10 @@ import { clsx } from "./classes";
 import { LogoFull } from "~/components/icons/LogoFull";
 import { MAX_MOVES_FREE_TIER } from "./payment";
 import dedent from "dedent-js";
-import { OnboardingIntro } from "~/components/SidebarOnboarding";
+import {
+  OnboardingIntro,
+  TrimRepertoireOnboarding,
+} from "~/components/SidebarOnboarding";
 
 const TEST_LINE = isDevelopment ? [] : [];
 console.log("TEST_LINE", TEST_LINE);
@@ -92,8 +95,6 @@ export interface RepertoireState {
   // startLichessOauthFlow: () => void;
   fetchEcoCodes: () => void;
   fetchSupplementary: () => Promise<void>;
-  fetchRepertoireTemplates: () => void;
-  fetchPlayerTemplates: () => void;
   initializeRepertoire: (_: {
     lichessUsername?: string;
     whitePgn?: string;
@@ -340,12 +341,10 @@ export const getInitialRepertoireState = (
           );
           if (side && numBelowThreshold > minimumToTrim) {
             s.onboarding.isOnboarding = true;
-            console.log("replace view");
-            // todo: trim thing
-            alert("unimplemented");
-            s.browsingState.replaceView(OnboardingIntro);
+            s.browsingState.pushView(TrimRepertoireOnboarding);
           } else {
-            s.browsingState.finishSidebarOnboarding(responsive);
+            s.browsingState.moveSidebarState("right");
+            s.browsingState.goToBuildOnboarding();
           }
         }, "initializeRepertoire");
       }),
@@ -845,7 +844,6 @@ export const getInitialRepertoireState = (
         if (options?.import) {
           // just don't show the chessboard
         } else if (mode === "browse" || mode === "build") {
-          s.browsingState.chessboardShownAnim = 1;
           if (s.browsingState.sidebarState.activeSide === "white") {
             const startResponses =
               s.repertoire?.[s.browsingState.sidebarState.activeSide]
@@ -872,26 +870,6 @@ export const getInitialRepertoireState = (
         s.browsingState.fetchNeededPositionReports();
         s.browsingState.updateRepertoireProgress();
         s.browsingState.updateTableResponses();
-      }),
-    fetchRepertoireTemplates: () =>
-      set(([s]) => {
-        client
-          .get("/api/v1/openings/template_repertoires")
-          .then(({ data }: { data: RepertoireTemplate[] }) => {
-            set(([s]) => {
-              s.repertoireTemplates = data;
-            });
-          });
-      }),
-    fetchPlayerTemplates: () =>
-      set(([s]) => {
-        client
-          .get("/api/v1/openings/player_templates")
-          .then(({ data }: { data: PlayerTemplate[] }) => {
-            set(([s]) => {
-              s.playerTemplates = data;
-            });
-          });
       }),
     fetchSupplementary: () =>
       set(([s]) => {
@@ -1036,6 +1014,10 @@ export const getInitialRepertoireState = (
                 s.onboarding.isOnboarding = true;
                 console.log("replace view");
                 s.browsingState.replaceView(OnboardingIntro);
+              }
+              console.log("is empty?", s.getIsRepertoireEmpty());
+              if (!s.getIsRepertoireEmpty()) {
+                appState.userState.pastLandingPage = true;
               }
               if (TEST_MODE) {
                 s.startBrowsing("white", TEST_MODE);

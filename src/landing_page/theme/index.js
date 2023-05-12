@@ -11,26 +11,28 @@ export default {
     }],
     "lg": [{
       "type": "max-width",
-      "value": 992
+      "value": "500"
     }]
   },
   "color": {
-    "dark": "#04080C",
+    "dark": "#101213",
     "darkL1": "#0E1317",
     "darkL2": "#191E22",
-    "grey": "#808c94",
+    "grey": "rgb(119, 130, 136)",
     "greyD1": "#637897",
     "greyD2": "#586D8E",
     "light": "#F7FBFF",
-    "lightD1": "#EDF2F6",
+    "lightD1": "#c6c6c6",
     "lightD2": "#E4E8EC",
     "green": "#00875A",
-    "primary": "#0077CC",
-    "secondary": "#FFC400",
+    "primary": "#576366",
+    "secondary": "#f5a300",
     "orange": "#FF7C22",
     "red": "#DE350B",
     "purple": "#FD6DF9",
-    "indigo": "#9B6CFC"
+    "indigo": "#9B6CFC",
+    "twitterBlue": "#1d9bf0",
+    "darkMobile": "#202426"
   },
   "fontFamily": {
     "sans": "-apple-system, system-ui, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
@@ -45,11 +47,24 @@ export default {
     "googleInter": "\"Inter\", sans-serif"
   },
   "font": {
-    "headline1": "normal 700 72px/1.2 --fontFamily-googleInter",
-    "headline2": "normal 700 42px/1.2 --fontFamily-googleInter",
-    "headline3": "normal 500 28px/1.2 --fontFamily-sans",
-    "base": "normal 300 16px/1.5 --fontFamily-sans",
-    "lead": "normal 300 20px/1.5 --fontFamily-sans"
+    "headline1": "normal 700 56px/1.2 --fontFamily-googleInter",
+    "headline2": "normal 700 32px/1.2 --fontFamily-googleInter",
+    "headline3": "normal 400 20px/1.2 --fontFamily-googleInter",
+    "base": "normal 300 16px/1.5 --fontFamily-googleInter",
+    "lead": "normal 300 18px/1.5 --fontFamily-googleInter",
+    "headline1Md": "normal 700 42px/1.2 --fontFamily-googleInter",
+    "headline1Sm": "normal 700 32px/1.2 --fontFamily-googleInter",
+    "headline2Md": "700 24px --fontFamily-googleInter",
+    "headline2Sm": "normal 700 20px/1.2 --fontFamily-googleInter",
+    "headline3Md": "normal 400 16px/1.2 --fontFamily-googleInter",
+    "headline3Sm": "normal 400 14px/1.2 --fontFamily-googleInter",
+    "baseMd": "normal 300 12px/1.5 --fontFamily-googleInter",
+    "baseSm": "normal 300 8px/1.5 --fontFamily-googleInter",
+    "leadMd": "normal 300 14px/1.5 --fontFamily-googleInter",
+    "leadSm": "normal 300 14px/1.5 --fontFamily-googleInter",
+    "small": "300 .8em --fontFamily-googleInter",
+    "smallMd": "300 .6em --fontFamily-googleInter",
+    "smallSm": "300 .4em --fontFamily-googleInter"
   },
   "boxShadow": {
     "m": "0 4px 5px -1px rgba(0, 0, 0, 0.1)",
@@ -58,9 +73,14 @@ export default {
     "xxl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
   },
   "background": {
-    "primaryGradient": "linear-gradient(180deg, --color-primary, transparent) no-repeat 0 0",
+    "primaryGradient": "linear-gradient(180deg,--color-dark 0%,transparent 100%) 0 0 no-repeat",
     "secondaryGradient": "linear-gradient(180deg, --color-secondary, transparent) no-repeat 0 0",
-    "sidebar": "#212526"
+    "sidebar": "#212526",
+    "sidebarDarker": "#191C1D",
+    "chessbookGreen": "#459345",
+    "chessbookBlack": "#101213",
+    "chessbookGradient": "radial-gradient(circle at center,#ffffff 0%,rgba(255, 255, 255, 0) 100%)",
+    "orange": "#ff7c22"
   },
   "transform": {
     "rotate90": "rotate(90deg)",
@@ -87,7 +107,8 @@ export default {
   "filter": {
     "grayscale": "grayscale(100%)",
     "invert": "invert(100%)",
-    "blur": "blur(10px)"
+    "blur": "blur(10px)",
+    "dropShadow": "drop-shadow(0px 10px 30px rgba(0, 0, 0, 0.5))"
   },
   "animation": {},
   "keyframes": {
@@ -143,5 +164,5 @@ export default {
       }
     }
   },
-  "version": 18
+  "version": 149
 };

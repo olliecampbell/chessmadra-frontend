@@ -1,3 +1,3 @@
-import { SidebarLayout } from "~/components/SidebarLayout";
+import { PageWrapper } from "~/components/PageWrapper";
 
-export default SidebarLayout;
+export default PageWrapper;

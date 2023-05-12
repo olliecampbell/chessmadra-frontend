@@ -23,15 +23,7 @@ export const RepertoirePageLayout = (props: {
   const [repertoireLoading] = useRepertoireState((s) => [
     s.repertoire === undefined,
   ]);
-  const [authStatus] = useAppState((s) => [s.userState.authStatus]);
 
-  createEffect(() => {
-    if (repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
-      quick((s) => {
-        s.repertoireState.initState();
-      });
-    }
-  });
   createDebugStateEffect();
   const backgroundColor = c.grays[8];
   return (

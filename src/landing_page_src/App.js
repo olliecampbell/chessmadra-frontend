@@ -4,19 +4,20 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 
 const GlobalStyles = createGlobalStyle`
-    .landing-page {
+    body {
         margin: 0;
         padding: 0;
         font-family: sans-serif;
-      color: black !important;
     }
 `;
 
-export default (props) => (
+export default ({ onClick }) => (
   <Router>
     <GlobalStyles />
     <Switch>
-      <Route component={() => <Index {...props} />} />
+      <Route>
+        <Index onClick={onClick} />
+      </Route>
     </Switch>
   </Router>
 );

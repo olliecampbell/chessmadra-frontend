@@ -43,7 +43,7 @@ export const SettingsButtons = () => {
       <Switch>
         <Match when={needsLogin()}>
           <SettingButton
-            title={"Log in"}
+            title={"Log in / Sign up"}
             icon={"fa-sharp fa-user"}
             onPress={() => {
               quick((s) => {

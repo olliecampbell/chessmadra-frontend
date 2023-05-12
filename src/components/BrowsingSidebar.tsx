@@ -433,18 +433,6 @@ const SavedLineView = function SavedLineView() {
     text: "Practice this line",
     style: "primary",
   };
-  const continueAddingToThisLineAction: SidebarAction = {
-    onPress: () => {
-      quick((s) => {
-        trackEvent(`${mode()}.added_line_state.contrinue_this_line`);
-        s.repertoireState.browsingState.moveSidebarState("right");
-        s.repertoireState.browsingState.sidebarState.addedLineState.visible =
-          false;
-      });
-    },
-    text: "Continue adding to this line",
-    style: "primary",
-  };
   return (
     <Show
       when={!addedLineState().loading}
@@ -457,7 +445,7 @@ const SavedLineView = function SavedLineView() {
       <SidebarTemplate
         header={"Line saved!"}
         bodyPadding
-        actions={[reviewCurrentLineAction, continueAddingToThisLineAction]}
+        actions={[reviewCurrentLineAction]}
       >
         <div style={s(c.fullWidth)}>
           <Animated.View

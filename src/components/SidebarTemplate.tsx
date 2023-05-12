@@ -20,7 +20,7 @@ export const SidebarTemplate: Component<{
     <div style={s(c.column)}>
       <Show when={props.header}>
         <RepertoireEditingHeader>{props.header}</RepertoireEditingHeader>
-        <Spacer height={32} />
+        <Spacer height={36} />
       </Show>
       <div
         style={s(

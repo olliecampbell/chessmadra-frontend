@@ -100,7 +100,7 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
               vertical && c.grow,
               vertical ? c.selfCenter : c.selfStretch
             )}
-            class={clsx("xxl:max-w-[800px] lg:max-w-[440px] xl:max-w-[600px]")}
+            class={clsx("xxl:max-w-[800px] lg:max-w-[440px] xl:max-w-[500px]")}
           >
             {!vertical ? (
               <div style={s(c.height(140), c.column, c.justifyEnd)}>

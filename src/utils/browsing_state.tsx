@@ -30,6 +30,8 @@ import {
   SIDES,
   BySide,
   otherSide,
+  lineToPgn,
+  pgnToLine,
 } from "./repertoire";
 import { AppState, quick } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -194,6 +196,7 @@ export interface BrowsingState {
   popView: () => void;
   updatePlans: () => void;
   checkShowTargetDepthReached: () => void;
+  goToBuildOnboarding(): unknown;
 
   // Fields
   chessboard: ChessboardInterface;
@@ -302,6 +305,22 @@ export const getInitialBrowsingState = (
       white: createEmptyRepertoireProgressState(),
       black: createEmptyRepertoireProgressState(),
     },
+
+    goToBuildOnboarding: () =>
+      set(([s, rs]) => {
+        s.clearViews();
+        let side = rs.onboarding.side;
+        if (!side) {
+          return;
+        }
+        const biggestMiss = rs.repertoireGrades[side]?.biggestMiss;
+        if (!biggestMiss) {
+          console.log("No biggest miss");
+          return;
+        }
+        const line = pgnToLine(biggestMiss.lines[0]);
+        rs.startBrowsing(side, "build", { pgnToPlay: lineToPgn(line) });
+      }),
     updateRepertoireProgress: () =>
       set(([s, rs, gs]) => {
         SIDES.forEach((side) => {

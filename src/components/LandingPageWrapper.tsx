@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { onMount } from "solid-js";
 import { quick } from "~/utils/app_state";
+import { trackEvent } from "~/utils/trackEvent";
 
 const QAPI = {
   pages: {
@@ -40,9 +41,10 @@ export default function LandingPageWrapper() {
     console.log("Index", App);
     ReactDOM.render(
       React.createElement(App, {
-        onClick: () => {
+        onClick: (source: string) => {
           quick((s) => {
             s.userState.pastLandingPage = true;
+            trackEvent("landing_page_conversion", { source: source });
           });
         },
       }),
