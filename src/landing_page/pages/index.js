@@ -322,7 +322,8 @@ export default (({
     font: "--lead",
     "lg-text-align": "center",
     "md-font": "--leadMd",
-    "sm-font": "--leadSm"
+    "sm-font": "--leadSm",
+    display: "block"
   }, "Most books and courses are written", " ", /*#__PURE__*/React.createElement(Span, {
     "overflow-wrap": "normal",
     "word-break": "normal",
@@ -425,7 +426,8 @@ export default (({
     "md-font": "--leadMd",
     "sm-font": "--leadSm",
     "lg-margin": "0px 0px 0px 0px",
-    margin: "0px 0px 0px 0px"
+    margin: "0px 0px 0px 0px",
+    display: "block"
   }, /*#__PURE__*/React.createElement(Span, {
     "overflow-wrap": "normal",
     "word-break": "normal",
@@ -434,7 +436,8 @@ export default (({
     "text-overflow": "clip",
     hyphens: "manual",
     "user-select": "auto",
-    "pointer-events": "auto"
+    "pointer-events": "auto",
+    display: "block"
   }, "Chessbook uses", " ", /*#__PURE__*/React.createElement(Strong, {
     "overflow-wrap": "normal",
     "word-break": "normal",
@@ -444,7 +447,7 @@ export default (({
     hyphens: "manual",
     "user-select": "auto",
     "pointer-events": "auto"
-  }, "spaced repetition")), ", a scientifically proven technique to memorize openings quickly and thoroughly."), /*#__PURE__*/React.createElement(Box, {
+  }, "spaced repetition,")), "a scientifically proven technique to memorize openings quickly and thoroughly."), /*#__PURE__*/React.createElement(Box, {
     display: "flex",
     "sm-flex-direction": "column",
     "sm-width": "100%",

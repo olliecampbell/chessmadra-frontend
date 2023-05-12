@@ -21,13 +21,6 @@ export const PageWrapper = () => {
   ]);
   const [authStatus] = useAppState((s) => [s.userState.authStatus]);
 
-  const repertoireNotEmpty = () =>
-    !getAppState().repertoireState.getIsRepertoireEmpty();
-
-  createEffect(() => {
-    console.log("not empty?", repertoireNotEmpty());
-  });
-
   createEffect(() => {
     console.log("initting state");
     if (repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
@@ -40,7 +33,7 @@ export const PageWrapper = () => {
   // return <SidebarLayout mode={mode()} />;
   return (
     <Switch fallback={<LandingPageWrapper></LandingPageWrapper>}>
-      <Match when={token() || pastLandingPage()}>
+      <Match when={token() || pastLandingPage() || repertoireLoading()}>
         <SidebarLayout />
       </Match>
     </Switch>

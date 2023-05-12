@@ -167,10 +167,9 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         trackEvent("side_overview.view_instructive_games");
         quick((s) => {
-          s.repertoireState.browsingState.replaceView(
-            <SidebarInstructiveGames games={modelGames()} />,
-            "right"
-          );
+          s.repertoireState.browsingState.replaceView(SidebarInstructiveGames, {
+            props: { games: modelGames() },
+          });
         });
       },
       left: (
@@ -251,8 +250,7 @@ export const RepertoireOverview = (props: {}) => {
           quick((s) => {
             trackEvent("side_overview.delete_repertoire");
             s.repertoireState.browsingState.replaceView(
-              <ConfirmDeleteRepertoire />,
-              "right"
+              ConfirmDeleteRepertoire
             );
           });
         },

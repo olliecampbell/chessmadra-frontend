@@ -392,6 +392,7 @@ export default ({ onClick }) => {
             lg-text-align="center"
             md-font="--leadMd"
             sm-font="--leadSm"
+            display={"block"}
           >
             Most books and courses are written{" "}
             <Span
@@ -521,6 +522,7 @@ export default ({ onClick }) => {
             sm-font="--leadSm"
             lg-margin="0px 0px 0px 0px"
             margin="0px 0px 0px 0px"
+            display="block"
           >
             <Span
               overflow-wrap="normal"
@@ -531,6 +533,7 @@ export default ({ onClick }) => {
               hyphens="manual"
               user-select="auto"
               pointer-events="auto"
+              display="block"
             >
               Chessbook uses{" "}
               <Strong
@@ -543,10 +546,10 @@ export default ({ onClick }) => {
                 user-select="auto"
                 pointer-events="auto"
               >
-                spaced repetition
+                spaced repetition,
               </Strong>
             </Span>
-            , a scientifically proven technique to memorize openings quickly and
+            a scientifically proven technique to memorize openings quickly and
             thoroughly.
           </Text>
           <Box
