@@ -755,13 +755,16 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         const subscribed = gs.userState.isSubscribed();
 
+        console.log("subscribed? ", subscribed);
         if (
           !subscribed &&
           rs.pastFreeTier(s.sidebarState.activeSide) &&
           PAYMENT_ENABLED &&
           !rs.onboarding.isOnboarding
         ) {
-          s.replaceView(<UpgradeSubscriptionView pastLimit={true} />, "right");
+          s.replaceView(UpgradeSubscriptionView, {
+            props: { pastLimit: true },
+          });
           return;
         }
         if (s.sidebarState.hasPendingLineToAdd) {

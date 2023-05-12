@@ -22,7 +22,7 @@ export const TargetCoverageReachedView = () => {
           onPress: () => {
             trackEvent(`${mode()}.save_line`);
             quick((s) => {
-              s.repertoireState.browsingState.addPendingLine();
+              s.repertoireState.browsingState.requestToAddCurrentLine();
             });
           },
           style: "focus",

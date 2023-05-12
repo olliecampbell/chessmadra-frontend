@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js";
+import { capitalize } from "lodash-es";
 import { Spacer } from "~/components/Space";
 import { useSidebarState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
@@ -34,15 +35,17 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
                 onPress: () => {
                   requestProPlan(true);
                 },
-                text: "Upgrade to Pro - $50/yr",
-                subtext: "13% discount",
+                text: "Upgrade to Pro - $48/yr",
+                subtext: "20% discount",
                 style: "primary",
               },
             ]
       }
       header={
         props.pastLimit
-          ? `You've reached the free tier limit for your ${side()} repertoire`
+          ? `Your ${capitalize(
+              side()
+            )} repertoire has reached the free tier limit`
           : "test blahd"
       }
       bodyPadding={true}
