@@ -10,7 +10,9 @@ const GlobalStyles = createGlobalStyle`
     }
 `;
 export default (({
-  onClick
+  onClick,
+  onLogin
 }) => /*#__PURE__*/React.createElement(Router, null, /*#__PURE__*/React.createElement(GlobalStyles, null), /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, null, /*#__PURE__*/React.createElement(Index, {
-  onClick: onClick
+  onClick: onClick,
+  onLogin: onLogin
 })))));

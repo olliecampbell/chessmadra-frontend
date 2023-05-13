@@ -16,7 +16,7 @@ import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "../global-page-styles";
 import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
-export default ({ onClick }) => {
+export default ({ onClick, onLogin }) => {
   return (
     <Theme theme={theme}>
       <GlobalQuarklyPageStyles pageUrl={"index"} />
@@ -58,9 +58,10 @@ export default ({ onClick }) => {
             <Override slot="item" padding="6px" />
             <Link
               onClick={() => {
-                onClick("login");
+                onLogin();
               }}
               slot="link-index"
+              href="/login"
               border-color="--color-lightD1"
               hover-color="--orange"
               font="--lead"

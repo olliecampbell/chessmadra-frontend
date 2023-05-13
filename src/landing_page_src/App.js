@@ -11,12 +11,12 @@ const GlobalStyles = createGlobalStyle`
     }
 `;
 
-export default ({ onClick }) => (
+export default ({ onClick, onLogin }) => (
   <Router>
     <GlobalStyles />
     <Switch>
       <Route>
-        <Index onClick={onClick} />
+        <Index onClick={onClick} onLogin={onLogin} />
       </Route>
     </Switch>
   </Router>

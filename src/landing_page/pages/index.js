@@ -6,7 +6,8 @@ import { GlobalQuarklyPageStyles } from "../global-page-styles";
 import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
 export default (({
-  onClick
+  onClick,
+  onLogin
 }) => {
   return /*#__PURE__*/React.createElement(Theme, {
     theme: theme
@@ -50,9 +51,10 @@ export default (({
     padding: "6px"
   }), /*#__PURE__*/React.createElement(Link, {
     onClick: () => {
-      onClick("login");
+      onLogin();
     },
     slot: "link-index",
+    href: "/login",
     "border-color": "--color-lightD1",
     "hover-color": "--orange",
     font: "--lead",

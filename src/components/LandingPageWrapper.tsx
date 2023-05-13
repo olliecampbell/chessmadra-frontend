@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import { onCleanup, onMount } from "solid-js";
 import { quick } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
+import { LoginSidebar } from "./LoginSidebar";
 
 const QAPI = {
   pages: {
@@ -40,6 +41,13 @@ export default function LandingPageWrapper() {
     window.QAPI = QAPI;
     ReactDOM.render(
       React.createElement(App, {
+        onLogin: () => {
+          quick((s) => {
+            trackEvent("landing_page_conversion", { source: "login" });
+            s.userState.pastLandingPage = true;
+            s.repertoireState.browsingState.pushView(LoginSidebar);
+          });
+        },
         onClick: (source: string) => {
           quick((s) => {
             s.userState.pastLandingPage = true;
