@@ -99,7 +99,9 @@ export const PracticeComplete = () => {
           onPress: () => {
             quick((s) => {
               if (s.repertoireState.onboarding.isOnboarding) {
-                s.repertoireState.browsingState.pushView(LoginSidebar);
+                s.repertoireState.browsingState.pushView(LoginSidebar, {
+                  props: { authType: "register" },
+                });
               } else {
                 s.repertoireState.backToOverview();
               }

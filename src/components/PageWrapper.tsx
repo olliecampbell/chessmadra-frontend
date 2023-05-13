@@ -30,7 +30,6 @@ export const PageWrapper = (props: { initialView: Component }) => {
   });
   onMount(() => {
     quick((s) => {
-      s.userState.pastLandingPage = true;
       if (props.initialView) {
         s.repertoireState.browsingState.pushView(props.initialView);
       }

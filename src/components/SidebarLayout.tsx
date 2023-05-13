@@ -29,17 +29,11 @@ export const VERTICAL_BREAKPOINT = BP.md;
 
 export const SidebarLayout = (props: { shared?: boolean }) => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  // let chessboardFrozen = sideBarMode === "overview" || sideBarMode === "home";
-  // if (onboardingStack.length > 0 || showingPlans) {
-  //   chessboardFrozen = true;
-  // }
-  const [onboardingStack, showingPlans] = useSidebarState(([s]) => [
-    s.sidebarOnboardingState.stageStack,
-    s.showPlansState.visible,
-  ]);
+  const [showingPlans] = useSidebarState(([s]) => [s.showPlansState.visible]);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   let chessboardFrozen = () => {
     let frozen = false;
-    if (mode() === "onboarding" || showingPlans()) {
+    if (showingPlans()) {
       console.log("chessboardFrozen");
       frozen = true;
     }

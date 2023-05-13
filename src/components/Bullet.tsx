@@ -3,10 +3,10 @@ import { Spacer } from "./Space";
 
 export const Bullet = ({ children }: { children: any }) => {
   return (
-    <div class={"row items-center pl-2"}>
-      <i class="fas fa-circle text-grays-60 text-[5px]" />
+    <div class={"row items-start pl-2"}>
+      <i class="fas fa-circle text-secondary mt-1.5 text-[5px]" />
       <Spacer width={8} />
-      <CMText class={"text-secondary"}>{children}</CMText>
+      <CMText class={"body-text"}>{children}</CMText>
     </div>
   );
 };
