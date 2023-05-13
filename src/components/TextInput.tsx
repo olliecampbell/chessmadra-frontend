@@ -61,7 +61,7 @@ export function TextInput(props: TextInputProps) {
       <input
         {...inputProps}
         class={clsx(
-          "bg-gray-12 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
+          "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
             ? "border-red-600/50 dark:border-red-400/50"
             : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50",
@@ -99,7 +99,7 @@ export function TextArea(props: TextAreaProps) {
       <textarea
         {...inputProps}
         class={clsx(
-          "bg-gray-12 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
+          "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
             ? "border-red-600/50 dark:border-red-400/50"
             : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50",

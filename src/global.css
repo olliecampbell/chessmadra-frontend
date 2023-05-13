@@ -12,6 +12,9 @@ textarea:focus {
 a:link {
   text-decoration: none;
 }
+a {
+  cursor: pointer;
+}
 * {
   border: solid;
   border-width: 0px;

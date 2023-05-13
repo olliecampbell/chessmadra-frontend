@@ -258,9 +258,6 @@ export const getInitialRepertoireState = (
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
       set(([s]) => {
-        s.browsingState.sidebarState = makeDefaultSidebarState();
-        s.repertoire = undefined;
-        s.updateRepertoireStructures();
         s.fetchRepertoire(true);
         s.fetchSupplementary();
       }, "initState"),

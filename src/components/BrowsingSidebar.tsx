@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isEmpty, isNil, dropRight } from "lodash-es";
+import { isEmpty, isNil, dropRight, filter } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   getAppState,
@@ -12,7 +12,11 @@ import {
 } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { Responses } from "./RepertoireEditingView";
-import { SidebarAction, SidebarActions } from "./SidebarActions";
+import {
+  SidebarAction,
+  SidebarActions,
+  useBiggestGapAction,
+} from "./SidebarActions";
 import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
 import { CoverageBar } from "./CoverageBar";
 import { DeleteLineView } from "./DeleteLineView";
@@ -445,7 +449,10 @@ const SavedLineView = function SavedLineView() {
       <SidebarTemplate
         header={"Line saved!"}
         bodyPadding
-        actions={[reviewCurrentLineAction]}
+        actions={filter(
+          [useBiggestGapAction(), reviewCurrentLineAction],
+          (a) => !isNil(a)
+        )}
       >
         <div style={s(c.fullWidth)}>
           <Animated.View

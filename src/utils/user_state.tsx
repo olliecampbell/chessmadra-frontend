@@ -76,7 +76,7 @@ export const getInitialUserState = (
         s.token = token;
         s.setUser(user);
         s.authStatus = AuthStatus.Authenticated;
-        appState.repertoireState.initState();
+        appState.repertoireState.fetchRepertoire(false);
       });
     },
     setUser: (user: User) => {

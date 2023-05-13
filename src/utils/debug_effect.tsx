@@ -1,25 +1,17 @@
-import { quick, useRepertoireState, useAppState } from "~/utils/app_state";
+import { useRepertoireState, useAppState, quick } from "~/utils/app_state";
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
-import { lineToPgn } from "./repertoire";
-import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
-import { RatingSettings } from "~/components/SidebarSettings";
-import {
-  SidebarOnboardingImportType,
-  SidebarOnboardingStage,
-} from "./browsing_state";
-import { PracticeComplete } from "~/components/PracticeComplete";
-import { OnboardingComplete } from "~/components/SidebarOnboarding";
+import { LoginSidebar } from "~/components/LoginSidebar";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
-  const [repertoireLoading] = useRepertoireState((s) => [
-    s.repertoire === undefined,
-  ]);
+  const [repertoire] = useRepertoireState((s) => [s.repertoire]);
+  const repertoireLoading = () => repertoire() === undefined;
   const [authStatus] = useAppState((s) => [s.userState.authStatus]);
   const [hasCalled, setHasCalled] = createSignal(false);
   createEffect(() => {
+    console.log("stuff", hasCalled(), repertoireLoading(), authStatus());
     if (hasCalled() || !isDevelopment) {
       return;
     }
@@ -41,6 +33,11 @@ export const createDebugStateEffect = () => {
 
     if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       setHasCalled(true);
+      // quick((s) => {
+      //   console.log("setting past landing page");
+      //   s.userState.pastLandingPage = true;
+      //   s.repertoireState.browsingState.replaceView(LoginSidebar, {});
+      // });
       // quick((s) => {
       //   s.repertoireState.browsingState.replaceView(OnboardingComplete, {});
       // });

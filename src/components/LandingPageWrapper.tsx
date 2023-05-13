@@ -1,7 +1,7 @@
 import App from "~/landing_page/App";
 import React from "react";
 import ReactDOM from "react-dom";
-import { onMount } from "solid-js";
+import { onCleanup, onMount } from "solid-js";
 import { quick } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 
@@ -38,7 +38,6 @@ export default function LandingPageWrapper() {
   onMount(() => {
     // @ts-ignore
     window.QAPI = QAPI;
-    console.log("Index", App);
     ReactDOM.render(
       React.createElement(App, {
         onClick: (source: string) => {
@@ -50,6 +49,9 @@ export default function LandingPageWrapper() {
       }),
       document.getElementById("root")
     );
+  });
+  onCleanup(() => {
+    ReactDOM.unmountComponentAtNode(document.getElementById("root"));
   });
   return <div id="root" class={"landing-page"}></div>;
 }

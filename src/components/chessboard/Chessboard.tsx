@@ -320,7 +320,6 @@ export function ChessboardView(props: {
   });
   // interaction/mouse stuff
   const onMouseOut = (evt: MouseEvent | TouchEvent) => {
-    console.log("mouse out");
     props.chessboardInterface.set((store) => {
       store.drag = cloneDeep(EMPTY_DRAG);
       store.draggedOverSquare = undefined;

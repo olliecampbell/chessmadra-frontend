@@ -15,7 +15,7 @@ export function InputError(props: InputErrorProps) {
   return (
     <Show when={!!props.error}>
       <div
-        class={`pt-4 text-sm text-red-60 ${props.class}`}
+        class={`text-red-60 pt-2 text-sm ${props.class}`}
         id={`${props.name}-error`}
       >
         {props.error}

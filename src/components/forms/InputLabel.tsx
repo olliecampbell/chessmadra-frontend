@@ -1,4 +1,4 @@
-import {clsx} from "~/utils/classes"
+import { clsx } from "~/utils/classes";
 import { Show } from "solid-js";
 
 type InputLabelProps = {
@@ -16,7 +16,7 @@ export function InputLabel(props: InputLabelProps) {
     <Show when={props.label}>
       <label
         class={clsx(
-          "inline-block font-medium md:text-lg",
+          "text-md inline-block font-medium",
           !props.margin && "mb-2"
         )}
         for={props.name}

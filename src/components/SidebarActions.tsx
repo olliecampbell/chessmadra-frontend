@@ -30,9 +30,10 @@ import { clsx } from "~/utils/classes";
 
 export interface SidebarAction {
   rightText?: string;
-  onPress: () => void;
+  onPress?: () => void;
   class?: string;
   text: string;
+  submitsForm?: string;
   right?: JSXElement | string;
   subtext?: string;
   style: "primary" | "focus" | "secondary" | "tertiary" | "wide";
@@ -84,81 +85,24 @@ export const SidebarActions = () => {
         ?.plans
     ),
   ]);
+  const biggestGapAction = () => useBiggestGapAction();
+  const addBiggestMissAction = (buttons: SidebarAction[]) => {
+    if (biggestGapAction()) {
+      return;
+    }
+  };
   const buttonsSig = () => {
     console.log("view is ", view(), hasPendingLineToAdd());
     let buttons: SidebarAction[] = [];
-    const addBiggestMissAction = () => {
-      let miss = null;
-      if (addedLineState().visible) {
-        miss = nearestMiss() ?? lineMiss();
-      } else {
-        miss = lineMiss();
-      }
-      if (isNil(miss)) {
-        return;
-      }
-      const text = `Go to the next gap in your repertoire`;
-      const line = pgnToLine(miss.lines[0]);
-      const missPositions = lineToPositions(line);
-      const missPositionsSet = new Set(missPositions);
-      const currentOpeningName = last(
-        filter(
-          map(positionHistory(), (epd) => {
-            const ecoCode = ecoCodeLookup()[epd];
-            if (ecoCode) {
-              return getNameEcoCodeIdentifier(ecoCode.fullName);
-            }
-          })
-        )
-      );
-      const openingNameOfMiss = last(
-        filter(
-          map(missPositions, (epd) => {
-            const ecoCode = ecoCodeLookup()[epd];
-            if (ecoCode) {
-              return getNameEcoCodeIdentifier(ecoCode.fullName);
-            }
-          })
-        )
-      );
-
-      const i = findLastIndex(positionHistory(), (epd) => {
-        if (missPositionsSet.has(epd)) {
-          return true;
-        }
-        return false;
-      });
-      const isAtBiggestMiss = currentEpd() === last(missPositions);
-      if (miss && !isAtBiggestMiss) {
-        buttons.push({
-          onPress: () => {
-            quick((s) => {
-              trackEvent(`${mode()}.added_line_state.next_gap`);
-              s.repertoireState.browsingState.moveSidebarState("right");
-              s.repertoireState.browsingState.dismissTransientSidebarState();
-              const lastMatchingEpd = positionHistory()[i];
-              s.repertoireState.browsingState.chessboard.playPgn(
-                lineToPgn(line),
-                {
-                  animated: true,
-                  fromEpd: lastMatchingEpd,
-                  animateLine: line.slice(i),
-                }
-              );
-            });
-          },
-          text: text,
-          style: "focus",
-        });
-      }
-    };
     let showTogglePlansButton = true;
+    if (onboarding().isOnboarding) {
+      showTogglePlansButton = false;
+    }
+
     if (submitFeedbackState().visible) {
       showTogglePlansButton = false;
       // This is taken care of by the delete line view, maybe bad though
     } else if (transposedState().visible) {
-      showTogglePlansButton = false;
-    } else if (onboarding().isOnboarding) {
       showTogglePlansButton = false;
     } else if (showPlansState().visible) {
       showTogglePlansButton = false;
@@ -168,10 +112,10 @@ export const SidebarActions = () => {
       // This is taken care of by the delete line view, maybe bad though
     } else if (addedLineState().visible) {
       if (!addedLineState().loading) {
-        addBiggestMissAction();
+        addBiggestMissAction(buttons);
       }
     } else if (!hasPendingLineToAdd()) {
-      addBiggestMissAction();
+      addBiggestMissAction(buttons);
     } else if (hasPendingLineToAdd() && !view()) {
       console.log("has pending line and stuff");
       buttons.push({
@@ -295,6 +239,12 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
   return (
     <Pressable
       onPress={props.action.onPress}
+      {...(props.action.submitsForm
+        ? {
+            type: "submit",
+            form: props.action.submitsForm,
+          }
+        : {})}
       {...hoveringProps}
       class={clsx(
         "transition-colors",
@@ -400,4 +350,97 @@ export const SidebarSectionHeader = ({
       {right}
     </div>
   );
+};
+
+export const useBiggestGapAction = (): SidebarAction => {
+  let [
+    addedLineState,
+    currentEpd,
+    nearestMiss,
+    lineMiss,
+    positionHistory,
+    mode,
+  ] = useSidebarState(([s, bs, rs]) => [
+    s.addedLineState,
+    s.currentEpd,
+    cloneDeep(bs.getNearestMiss(s)),
+    cloneDeep(bs.getMissInThisLine(s)),
+    s.positionHistory,
+    s.mode,
+  ]);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  positionHistory = positionHistory ?? [];
+  const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
+  const [hasPlans] = useBrowsingState(([s, rs]) => [
+    !isEmpty(
+      rs.positionReports[s.sidebarState.currentSide][s.sidebarState.currentEpd]
+        ?.plans
+    ),
+  ]);
+  const getBiggestGapAction = () => {
+    let miss = null;
+    if (addedLineState().visible) {
+      miss = nearestMiss() ?? lineMiss();
+    } else {
+      miss = lineMiss();
+    }
+    if (isNil(miss)) {
+      return;
+    }
+    const text = `Go to the next gap in your repertoire`;
+    const line = pgnToLine(miss.lines[0]);
+    const missPositions = lineToPositions(line);
+    const missPositionsSet = new Set(missPositions);
+    const currentOpeningName = last(
+      filter(
+        map(positionHistory(), (epd) => {
+          const ecoCode = ecoCodeLookup()[epd];
+          if (ecoCode) {
+            return getNameEcoCodeIdentifier(ecoCode.fullName);
+          }
+        })
+      )
+    );
+    const openingNameOfMiss = last(
+      filter(
+        map(missPositions, (epd) => {
+          const ecoCode = ecoCodeLookup()[epd];
+          if (ecoCode) {
+            return getNameEcoCodeIdentifier(ecoCode.fullName);
+          }
+        })
+      )
+    );
+
+    const i = findLastIndex(positionHistory(), (epd) => {
+      if (missPositionsSet.has(epd)) {
+        return true;
+      }
+      return false;
+    });
+    const isAtBiggestMiss = currentEpd() === last(missPositions);
+    if (miss && !isAtBiggestMiss) {
+      return {
+        onPress: () => {
+          quick((s) => {
+            trackEvent(`${mode()}.added_line_state.next_gap`);
+            s.repertoireState.browsingState.moveSidebarState("right");
+            s.repertoireState.browsingState.dismissTransientSidebarState();
+            const lastMatchingEpd = positionHistory()[i];
+            s.repertoireState.browsingState.chessboard.playPgn(
+              lineToPgn(line),
+              {
+                animated: true,
+                fromEpd: lastMatchingEpd,
+                animateLine: line.slice(i),
+              }
+            );
+          });
+        },
+        text: text,
+        style: "focus",
+      };
+    }
+  };
+  return getBiggestGapAction();
 };

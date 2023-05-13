@@ -3,16 +3,23 @@ import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { AuthStatus } from "~/utils/user_state";
-import { useAppState, quick, useSidebarState } from "~/utils/app_state";
+import {
+  useAppState,
+  quick,
+  useSidebarState,
+  useBrowsingState,
+} from "~/utils/app_state";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { useHovering } from "~/mocks";
 import { createEffect, Match, Show, Switch } from "solid-js";
+import { LoginSidebar } from "./LoginSidebar";
 
 export const SettingsButtons = () => {
   console.log("SettingsButtons");
+  const [view] = useBrowsingState(([s]) => [s.currentView()]);
   const [user, ratingDescription, authStatus] = useAppState((s) => [
     s.userState.user,
     s.userState.getUserRatingDescription(),
@@ -41,7 +48,7 @@ export const SettingsButtons = () => {
         />
       </Show>
       <Switch>
-        <Match when={needsLogin()}>
+        <Match when={needsLogin() && view()?.component !== LoginSidebar}>
           <SettingButton
             title={"Log in / Sign up"}
             icon={"fa-sharp fa-user"}

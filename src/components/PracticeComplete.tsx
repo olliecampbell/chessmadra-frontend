@@ -11,6 +11,7 @@ import { Repertoire, RepertoireMove, Side } from "~/utils/repertoire";
 import { pluralize } from "~/utils/pluralize";
 import { getHumanTimeUntil } from "./ReviewText";
 import { OnboardingComplete } from "./SidebarOnboarding";
+import { LoginSidebar } from "./LoginSidebar";
 
 export const PracticeComplete = () => {
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -98,7 +99,7 @@ export const PracticeComplete = () => {
           onPress: () => {
             quick((s) => {
               if (s.repertoireState.onboarding.isOnboarding) {
-                s.repertoireState.browsingState.pushView(OnboardingComplete);
+                s.repertoireState.browsingState.pushView(LoginSidebar);
               } else {
                 s.repertoireState.backToOverview();
               }

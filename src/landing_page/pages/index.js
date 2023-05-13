@@ -25,7 +25,7 @@ export default (({
     "flex-direction": "row",
     "md-padding": "9px 0 9px 0"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/chessbook.svg?v=2023-04-11T09:44:19.974Z",
+    src: "/homepage_imgs/chessbook.svg?v=2023-04-11T09:44:19.974Z",
     display: "block",
     height: "24px",
     "md-height": "18px"
@@ -142,7 +142,7 @@ export default (({
     "overflow-x": "hidden",
     "lg-width": "100%"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/desktop-hero.png?v=2023-04-24T11:44:36.906Z",
+    src: "/homepage_imgs/desktop-hero.png?v=2023-04-24T11:44:36.906Z",
     "hover-transform": "translateY(0px)",
     padding: "0px 0px 0px 0px",
     margin: "0px 0px 0px 50"
@@ -205,7 +205,7 @@ export default (({
     "md-padding": "0px 0px 0px 24px",
     "sm-padding": "0px 0px 0px 18px"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/coverage.png?v=2023-04-26T12:10:10.140Z",
+    src: "/homepage_imgs/coverage.png?v=2023-04-26T12:10:10.140Z",
     "object-fit": "cover",
     width: "100%",
     "border-radius": "16px",
@@ -239,7 +239,7 @@ export default (({
     "grid-gap": "16px",
     "lg-margin": "0px 0px 16px 0px"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/move_stats.png?v=2023-04-26T12:10:26.979Z",
+    src: "/homepage_imgs/move_stats.png?v=2023-04-26T12:10:26.979Z",
     "border-radius": "16px",
     "object-fit": "cover",
     width: "100%",
@@ -356,14 +356,14 @@ export default (({
     "md-padding": "0px 0px 0px 24px",
     "sm-padding": "0px 0px 0px 18px"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/incidence.png?v=2023-04-02T09:04:04.254Z",
+    src: "/homepage_imgs/incidence.png?v=2023-04-02T09:04:04.254Z",
     "object-fit": "cover",
     width: "1000%",
     "border-radius": "16px",
     "box-shadow": "--xl"
   }))), /*#__PURE__*/React.createElement(Section, {
     "inner-max-width": "1000px",
-    background: "url(https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/bobby.png?v=2023-04-24T10:51:51.196Z) 0% 0%/cover,--sidebar",
+    background: "url(/homepage_imgs/bobby.png?v=2023-04-24T10:51:51.196Z) 0% 0%/cover,--sidebar",
     "md-padding": "0 0 0 0",
     "lg-padding": "48px 0 4px 0"
   }, /*#__PURE__*/React.createElement(Override, {
@@ -385,7 +385,7 @@ export default (({
     "lg-padding": "0px 0px 0px 0px",
     "sm-padding": "0px 18px 0px 0px"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/mobile.png?v=2023-04-24T02:10:28.648Z",
+    src: "/homepage_imgs/mobile.png?v=2023-04-24T02:10:28.648Z",
     width: "400px",
     "max-width": "100%",
     transition: "transform 0.5s ease-in-out 0s",
@@ -508,7 +508,7 @@ export default (({
     "lg-padding": "0px 0px 0px 0px",
     "lg-justify-content": "center"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/diagram.svg?v=2023-04-24T10:01:03.577Z",
+    src: "/homepage_imgs/diagram.svg?v=2023-04-24T10:01:03.577Z",
     "object-fit": "cover",
     width: "100%",
     height: "100%"
@@ -567,7 +567,7 @@ export default (({
     "lg-padding": "0px 0px 0px 0px",
     "lg-justify-content": "center"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/how-to-play.png?v=2023-04-24T02:19:18.668Z",
+    src: "/homepage_imgs/how-to-play.png?v=2023-04-24T02:19:18.668Z",
     "object-fit": "cover",
     width: "100%",
     height: "100%",
@@ -577,7 +577,7 @@ export default (({
   }))), /*#__PURE__*/React.createElement(Section, {
     padding: "88px 0 100px 0",
     "inner-max-width": "1000px",
-    background: "url(https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/pexels-cottonbro-studio.png?v=2023-04-25T07:11:32.398Z) 0% 0%/cover scroll,--sidebar",
+    background: "url(/homepage_imgs/pexels-cottonbro-studio.png?v=2023-04-25T07:11:32.398Z) 0% 0%/cover scroll,--sidebar",
     "md-padding": "68px 0 80px 0",
     "lg-padding": "44px 0 48px 0"
   }, /*#__PURE__*/React.createElement(Override, {
@@ -643,7 +643,7 @@ export default (({
   }, "\u201CA great, free way to build your opening repertoire ... really smooth\u201D"), /*#__PURE__*/React.createElement(Image, {
     width: "40px",
     height: "40px",
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/-qKIY2uU_400x400.jpg?v=2023-04-24T07:37:29.398Z",
+    src: "/homepage_imgs/-qKIY2uU_400x400.jpg?v=2023-04-24T07:37:29.398Z",
     "border-radius": "22px",
     margin: "0px 15px 12px 0px",
     "md-margin": "0px 15px 9px 0px",
@@ -692,7 +692,7 @@ export default (({
   }, "\u201CThe best free chess websites?\xA0My picks: Lichess, OpeningTree, Chessbook\u201D"), /*#__PURE__*/React.createElement(Image, {
     width: "40px",
     height: "40px",
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/MEi_9zB0_400x400.jpg?v=2023-04-24T07:37:48.338Z",
+    src: "/homepage_imgs/MEi_9zB0_400x400.jpg?v=2023-04-24T07:37:48.338Z",
     "border-radius": "22px",
     margin: "0px 15px 12px 0px",
     "md-margin": "0px 15px 9px 0px",
@@ -1239,7 +1239,7 @@ export default (({
     padding: "88px 0 100px 0",
     margin: "0px 0px 0px 0px",
     "inner-max-width": "1000px",
-    background: "rgb(20, 18, 19) url(https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/hero%20illustration.svg?v=2023-04-25T09:19:10.485Z) 0% 0% /100% repeat scroll padding-box",
+    background: "rgb(20, 18, 19) url(/homepage_imgs/hero%20illustration.svg?v=2023-04-25T09:19:10.485Z) 0% 0% /100% repeat scroll padding-box",
     "md-padding": "68px 0 80px 0",
     "lg-padding": "44px 0 48px 0"
   }, /*#__PURE__*/React.createElement(Override, {
@@ -1464,7 +1464,7 @@ export default (({
     width: "127px",
     "align-self": "center"
   }, /*#__PURE__*/React.createElement(Image, {
-    src: "https://uploads.quarkly.io/640ea4c14b38c4002002742b/images/discord-logo-white.svg?v=2023-04-26T12:21:14.409Z",
+    src: "/homepage_imgs/discord-logo-white.svg?v=2023-04-26T12:21:14.409Z",
     display: "block",
     height: "24px",
     opacity: "0.5",

@@ -1,3 +1,6 @@
-import Login from "~/components/Login";
+import { LoginSidebar } from "~/components/LoginSidebar";
+import PageWrapper from "./[...404]";
 
-export default Login;
+export default () => {
+  return <PageWrapper initialView={LoginSidebar} />;
+};
