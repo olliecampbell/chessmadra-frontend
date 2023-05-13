@@ -516,7 +516,9 @@ const ChooseImportSourceOnboarding = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.pushView(ImportOnboarding, {
-                props: { importType: SidebarOnboardingImportType.PGN },
+                props: {
+                  importType: SidebarOnboardingImportType.LichessUsername,
+                },
               });
             });
           },
@@ -663,7 +665,9 @@ const ImportOnboarding = (props: {
 
 export const TrimRepertoireOnboarding = () => {
   const responsive = useResponsive();
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  const side = () => activeSide() || onboarding().side;
   const [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
     s.getNumResponsesBelowThreshold,
   ]);
@@ -680,7 +684,7 @@ export const TrimRepertoireOnboarding = () => {
     trackEvent("onboarding.trim_repertoire", { threshold });
     setLoading("Trimming");
     quick((s) => {
-      s.repertoireState.trimRepertoire(threshold, [activeSide()]);
+      s.repertoireState.trimRepertoire(threshold, [side()]);
       s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
     });
   };
@@ -688,7 +692,7 @@ export const TrimRepertoireOnboarding = () => {
   const actions = () => {
     let actions: SidebarAction[] = [];
     THRESHOLD_OPTIONS.forEach((threshold) => {
-      const numMoves = getNumResponsesBelowThreshold()(threshold, activeSide());
+      const numMoves = getNumResponsesBelowThreshold()(threshold, side());
       if (numMoves > 0) {
         actions.push({
           text: `Trim responses that occur in less than 1 in ${
@@ -706,7 +710,11 @@ export const TrimRepertoireOnboarding = () => {
       text: `No thanks, I'll keep my whole repertoire`,
       onPress: () => {
         quick((s) => {
-          s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
+          if (onboarding().isOnboarding) {
+            s.repertoireState.browsingState.goToBuildOnboarding();
+          } else {
+            s.repertoireState.startBrowsing(side(), "home");
+          }
         });
       },
       style: "focus",
