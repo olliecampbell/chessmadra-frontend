@@ -1839,6 +1839,7 @@ export default ({ onClick }) => {
           padding="12px 0px 0px 0px"
           md-font="--smallMd"
           md-padding="9px 0px 0px 0px"
+          display={"block"}
         >
           Questions? Feedback? Ideas? Join the{" "}
           <Link

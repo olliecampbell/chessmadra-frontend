@@ -16,7 +16,10 @@ import { CoverageBar } from "./CoverageBar";
 import { ReviewText } from "./ReviewText";
 import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
-import { BrowsingMode } from "~/utils/browsing_state";
+import {
+  BrowsingMode,
+  SidebarOnboardingImportType,
+} from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import {
   Component,
@@ -31,6 +34,12 @@ import { useHovering } from "~/mocks";
 import { clsx } from "~/utils/classes";
 import { InstructiveGame, ModelGame } from "~/utils/models";
 import { SidebarInstructiveGames } from "./SidebarInstructiveGames";
+import {
+  ChooseImportSourceOnboarding,
+  ImportOnboarding,
+  TrimRepertoireOnboarding,
+} from "./SidebarOnboarding";
+import { isDevelopment } from "~/utils/env";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -215,9 +224,27 @@ export const RepertoireOverview = (props: {}) => {
       },
       {
         onPress: () => {
+          trackEvent("side_overview.trim");
+          quick((s) => {
+            s.repertoireState.browsingState.pushView(TrimRepertoireOnboarding);
+          });
+        },
+        hidden: !isDevelopment,
+        left: (
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            Trim repertoire
+          </CMText>
+        ),
+        icon: "fa-sharp fa-file-import",
+        right: null,
+      },
+      {
+        onPress: () => {
           trackEvent("side_overview.import");
           quick((s) => {
-            s.repertoireState.startImporting(side());
+            s.repertoireState.browsingState.pushView(
+              ChooseImportSourceOnboarding
+            );
           });
         },
         left: (

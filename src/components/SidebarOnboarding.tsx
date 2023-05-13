@@ -495,7 +495,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
   );
 };
 
-const ChooseImportSourceOnboarding = () => {
+export const ChooseImportSourceOnboarding = () => {
   const responsive = useResponsive();
   return (
     <SidebarTemplate
@@ -540,12 +540,13 @@ const ChooseImportSourceOnboarding = () => {
   );
 };
 
-const ImportOnboarding = (props: {
+export const ImportOnboarding = (props: {
   importType: SidebarOnboardingImportType;
 }) => {
   const responsive = useResponsive();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
-  const activeSide = () => onboarding().side;
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+  const side = () => activeSide() || onboarding().side;
 
   const importType = () => props.importType;
   const [username, setUsername] = createSignal("");
@@ -571,7 +572,7 @@ const ImportOnboarding = (props: {
     let actions: SidebarAction[] = [];
     let body = null;
     if (importType() === SidebarOnboardingImportType.PGN) {
-      header = `Please upload your ${activeSide()} repertoire`;
+      header = `Please upload your ${side()} repertoire`;
       if (pgn()) {
         actions.push({
           text: "Submit",
@@ -612,7 +613,7 @@ const ImportOnboarding = (props: {
     setLoading("Importing");
     quick((s) => {
       const params = {} as any;
-      if (activeSide() == "white") {
+      if (side() == "white") {
         params.whitePgn = pgn();
       } else {
         params.blackPgn = pgn();

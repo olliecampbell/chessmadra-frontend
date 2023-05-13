@@ -12,6 +12,8 @@ const pageStyles = {
 
 const PageStyles = createGlobalStyle`
     body {
+    font-size: 16px;
+    -webkit-font-smoothing: auto;
         ${({ styles }) =>
           Object.entries(styles || {}).map(
             ([prop, value]) => `${prop}: ${transformVar(prop, value)};`
