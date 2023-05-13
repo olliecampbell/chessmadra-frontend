@@ -45,7 +45,7 @@
   "dependencies": {
     "@amplitude/analytics-browser": "^1.10.3",
     "@lubert/chess.ts": "^0.16.1",
-    "@modular-forms/solid": "^0.12.0",
+    "@modular-forms/solid": "^0.13.2",
     "@quarkly/atomize": "1.0.20",
     "@quarkly/components": "0.2.73",
     "@quarkly/widgets": "0.2.73",

@@ -8,8 +8,8 @@ dependencies:
     specifier: ^0.16.1
     version: 0.16.1
   '@modular-forms/solid':
-    specifier: ^0.11.0
-    version: 0.11.0(solid-js@1.7.5)
+    specifier: ^0.13.2
+    version: 0.13.2(solid-js@1.7.5)
   '@quarkly/atomize':
     specifier: 1.0.20
     version: 1.0.20(react@17.0.2)(styled-components@5.3.10)
@@ -2007,8 +2007,8 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@modular-forms/solid@0.11.0(solid-js@1.7.5):
-    resolution: {integrity: sha512-hL2pyy4O50/RxNWS1RjkdzNfOzzQlHVY1XzE61SDbgOP6heUywD2xurJvb1l9bMTzhekGyOj8rN1NUnfnv6uvA==}
+  /@modular-forms/solid@0.13.2(solid-js@1.7.5):
+    resolution: {integrity: sha512-wiwJUxbwDp8F2FI0hTYoydNumVRZruIiyjV+w91++zA0QofASuMWe3fs4lETHpaiQK/jJsGXhys7BFqXUf9SDg==}
     peerDependencies:
       solid-js: ^1.3.1
     dependencies:

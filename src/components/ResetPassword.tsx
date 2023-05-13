@@ -36,7 +36,7 @@ type ResetPasswordForm = {
 };
 
 export default function ResetPassword() {
-  const loginForm = createForm<ResetPasswordForm>({
+  const [loginForm] = createForm<ResetPasswordForm>({
     initialValues: { password: "" },
   });
 

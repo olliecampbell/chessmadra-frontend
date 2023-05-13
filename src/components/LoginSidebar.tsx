@@ -33,7 +33,7 @@ type LoginForm = {
 };
 
 export const LoginSidebar = (props: { authType?: AuthType }) => {
-  const loginForm = createForm<LoginForm>({
+  const [loginForm] = createForm<LoginForm>({
     initialValues: { email: "", password: "" },
   });
 
