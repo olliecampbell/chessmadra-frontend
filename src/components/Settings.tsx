@@ -55,7 +55,7 @@ export const SettingsButtons = () => {
             onPress={() => {
               quick((s) => {
                 trackEvent("top_buttons.log_in.clicked");
-                s.navigationState.push("/login");
+                s.repertoireState.browsingState.pushView(LoginSidebar);
               });
             }}
           />

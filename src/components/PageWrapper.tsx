@@ -22,8 +22,6 @@ export const PageWrapper = (props: { initialView: Component }) => {
   const [authStatus] = useAppState((s) => [s.userState.authStatus]);
 
   createEffect(() => {
-    console.log("initting state");
-    console.log("past landing page?", userState().pastLandingPage);
     if (repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       quick((s) => {
         s.repertoireState.initState();
