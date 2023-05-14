@@ -7,15 +7,16 @@ import { CMText } from "./CMText";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
 import { Intersperse } from "./Intersperse";
-import { createEffect, Show } from "solid-js";
+import { Accessor, createEffect, Show } from "solid-js";
+import { SidebarAction } from "./SidebarActions";
 
 export const TargetCoverageReachedView = () => {
   const [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
-  const actions = () => {
-    let acts = [];
+  const actions: Accessor<SidebarAction[]> = () => {
+    let acts: SidebarAction[] = [];
     if (showPlansState().coverageReached) {
       acts = [
         {
@@ -70,7 +71,6 @@ export const TargetCoverageReachedView = () => {
 };
 
 export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
-  const responsive = useResponsive();
   const [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
