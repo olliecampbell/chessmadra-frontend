@@ -57,6 +57,7 @@ export const OnboardingIntro = () => {
   return (
     <SidebarTemplate
       header="Let's start creating your repertoire!"
+      bodyPadding={true}
       actions={[
         {
           onPress: () => {

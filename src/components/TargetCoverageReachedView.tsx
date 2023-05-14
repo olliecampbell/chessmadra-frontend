@@ -75,9 +75,6 @@ export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
-  createEffect(() => {
-    console.log("plans", planSections);
-  });
   return (
     <>
       <Show when={showPlansState().coverageReached || isolated}>
