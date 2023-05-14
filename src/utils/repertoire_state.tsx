@@ -337,7 +337,6 @@ export const getInitialRepertoireState = (
             null
           );
           if (side && numBelowThreshold > minimumToTrim) {
-            s.onboarding.isOnboarding = true;
             s.browsingState.pushView(TrimRepertoireOnboarding);
           } else {
             s.browsingState.moveSidebarState("right");
@@ -794,6 +793,7 @@ export const getInitialRepertoireState = (
     backToOverview: () =>
       set(([s, gs]) => {
         s.startBrowsing(null, "home");
+        s.browsingState.clearViews();
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
@@ -1008,7 +1008,6 @@ export const getInitialRepertoireState = (
               s.hasCompletedRepertoireInitialization = true;
               s.onRepertoireUpdate();
               if (initial && s.getIsRepertoireEmpty()) {
-                s.onboarding.isOnboarding = true;
                 console.log("replace view");
                 s.browsingState.replaceView(OnboardingIntro);
               }

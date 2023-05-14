@@ -11,8 +11,6 @@ import { Puff } from "solid-spinner";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { TextInput } from "./TextInput";
 import { capitalize } from "lodash-es";
-type AuthType = "login" | "register";
-const AUTH_TYPES: AuthType[] = ["login", "register"];
 // import { createFormGroup, createFormControl } from "solid-forms";
 import { isServer } from "solid-js/web";
 import {
@@ -29,6 +27,7 @@ import { A, Link } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import { clsx } from "~/utils/classes";
+import { SidebarTemplate } from "./SidebarTemplate";
 
 type ForgotPasswordForm = {
   email: string;
@@ -43,7 +42,7 @@ export default function ForgotPassword() {
 
   const handleSubmit: SubmitHandler<ForgotPasswordForm> = (values, event) => {
     setServerError("");
-    client
+    return client
       .post("/api/forgot_password", { email: values.email })
       .then((resp) => {
         trackEvent(`auth.forgot_password.success`);
@@ -60,36 +59,22 @@ export default function ForgotPassword() {
   // });
   return (
     <>
-      <RepertoirePageLayout centered>
-        <HeadSiteMeta
-          siteMeta={{
-            title: "Forgot password",
-            description: "",
-          }}
-        />
-        <div style={s(c.selfCenter)}>
+      <SidebarTemplate
+        actions={[
+          {
+            submitsForm: "login-form",
+            text: "Submit",
+            style: "focus",
+          },
+        ]}
+        header={"Forgot your password?"}
+      >
+        <div class={clsx(loginForm.submitting && "opacity-0")}>
           <div class="col items-center">
-            <div style={s(c.size(48))}>
-              <PieceView piece={{ color: "w", type: "n" }} pieceSet={"alpha"} />
-            </div>
-            <Spacer height={12} />
-            <div class={`bg-gray-16 min-w-80 w-full self-stretch p-4`}>
-              <p
-                class={clsx("text-secondary mb-4 cursor-pointer ")}
-                onClick={() => {
-                  quick((s) => {
-                    s.navigationState.push("/login");
-                    trackEvent("auth.forgot_password.back");
-                  });
-                }}
-              >
-                <i class="fa-solid fa-arrow-left pr-2"></i>
-                Back
-              </p>
-              <p class="text-lg font-semibold">Forgot your password?</p>
-              <Spacer height={12} />
+            <div class={`min-w-80 padding-sidebar w-full self-stretch`}>
               <div style={s(c.br(4), c.px(0), c.py(0))}>
                 <Form
+                  id={"login-form"}
                   of={loginForm}
                   class={`col gap-8`}
                   onSubmit={handleSubmit}
@@ -102,34 +87,28 @@ export default function ForgotPassword() {
                       email("The email address is badly formatted."),
                     ]}
                   >
-                    {(field) => (
+                    {(field, props) => (
                       <TextInput
                         value={field.value}
                         error={field.error}
                         placeholder="example@email.com"
-                        {...field.props}
+                        label="Email"
+                        {...props}
                         type="email"
                       />
                     )}
                   </Field>
-                  <div class={"min-w-full max-w-min"}>
-                    <InputError
-                      name={"Server error"}
-                      error={serverError()}
-                      class={"inline-block"}
-                    />
-                    <input
-                      type="submit"
-                      value={"Get reset link"}
-                      class="btn w-fit self-end px-8 py-4"
-                    ></input>
-                  </div>
+                  <InputError
+                    name={"Server error"}
+                    error={serverError()}
+                    class={"inline-block"}
+                  />
                 </Form>
               </div>
             </div>
           </div>
         </div>
-      </RepertoirePageLayout>
+      </SidebarTemplate>
     </>
   );
 }

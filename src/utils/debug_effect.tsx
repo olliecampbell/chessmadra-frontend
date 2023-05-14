@@ -3,6 +3,7 @@ import { createEffect, createSignal, onCleanup } from "solid-js";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { LoginSidebar } from "~/components/LoginSidebar";
+import ForgotPassword from "~/components/ForgotPassword";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -36,7 +37,7 @@ export const createDebugStateEffect = () => {
       // quick((s) => {
       //   console.log("setting past landing page");
       //   s.userState.pastLandingPage = true;
-      //   s.repertoireState.browsingState.replaceView(LoginSidebar, {});
+      //   s.repertoireState.browsingState.replaceView(ForgotPassword, {});
       // });
       // quick((s) => {
       //   s.repertoireState.browsingState.replaceView(OnboardingComplete, {});

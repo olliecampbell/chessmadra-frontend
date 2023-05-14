@@ -23,6 +23,7 @@ import AuthHandler from "./components/AuthHandler";
 import { isServer } from "solid-js/web";
 import "virtual:uno.css";
 import { quick } from "~/utils/app_state";
+import { HeadSiteMeta } from "./components/PageContainer";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -91,7 +92,7 @@ export default function Root() {
           name="viewport"
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
         />
-        <Title>Chessbook</Title>
+<HeadSiteMeta/>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link

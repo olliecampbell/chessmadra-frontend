@@ -8,6 +8,7 @@ import {
   quick,
   useSidebarState,
   useBrowsingState,
+  useRepertoireState,
 } from "~/utils/app_state";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
@@ -19,6 +20,7 @@ import { LoginSidebar } from "./LoginSidebar";
 
 export const SettingsButtons = () => {
   console.log("SettingsButtons");
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [view] = useBrowsingState(([s]) => [s.currentView()]);
   const [user, ratingDescription, authStatus] = useAppState((s) => [
     s.userState.user,

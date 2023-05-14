@@ -99,12 +99,12 @@ export default function ResetPassword() {
                       ),
                     ]}
                   >
-                    {(field) => (
+                    {(field, props) => (
                       <>
                         <TextInput
                           value={field.value}
                           error={field.error}
-                          {...field.props}
+                          {...props}
                           type="password"
                         />
                       </>

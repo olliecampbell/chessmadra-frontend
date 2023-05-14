@@ -51,6 +51,7 @@ import { clsx } from "~/utils/classes";
 import { Puff } from "solid-spinner";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Dynamic } from "solid-js/web";
+import { OnboardingIntro } from "./SidebarOnboarding";
 
 export const BrowserSidebar = function BrowserSidebar() {
   onMount(() => {
@@ -344,10 +345,13 @@ const BackSection = () => {
         });
       };
     }
+    if (view()?.component === OnboardingIntro) {
+      backButtonAction = null;
+    }
     return backButtonAction;
   };
 
-  const isOpen = () => !isNil(backButtonAction()) || !!view();
+  const isOpen = () => !isNil(backButtonAction());
   createEffect(() => {
     console.log("isOpen", isOpen());
   });

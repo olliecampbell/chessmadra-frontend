@@ -28,33 +28,31 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
                 onPress: () => {
                   requestProPlan(false);
                 },
-                text: "Upgrade to Pro - $5/mo",
+                text: "Upgrade to Chessbook Pro - Monthy",
+                subtext: "$5/month",
                 style: "primary",
               },
               {
                 onPress: () => {
                   requestProPlan(true);
                 },
-                text: "Upgrade to Pro - $48/yr",
-                subtext: "20% discount",
+                text: "Upgrade to Chessbook Pro - Annual",
+                subtext: "$4/month (save 20%)",
                 style: "primary",
               },
             ]
       }
       header={
         props.pastLimit
-          ? `Your ${capitalize(
-              side()
-            )} repertoire has reached the free tier limit`
+          ? `You've reached the limit on the free plan`
           : "test blahd"
       }
       bodyPadding={true}
       loading={loading()}
     >
       <p class={clsx("text-secondary leading-5")}>
-        On the free tier you can add {MAX_MOVES_FREE_TIER} moves to your
-        repertoire for each side. Upgrade to Pro to take your repertoire to the
-        next level!
+        Free users can add {MAX_MOVES_FREE_TIER} moves per color. Upgrade to add
+        unlimited moves.
       </p>
     </SidebarTemplate>
   );

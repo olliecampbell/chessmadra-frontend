@@ -55,7 +55,6 @@ export const TargetCoverageReachedView = () => {
       actions={actions()}
       bodyPadding={true}
     >
-      <Spacer height={12} />
       <Show when={!isEmpty(planSections())}>
         <PlayFromHere />
       </Show>

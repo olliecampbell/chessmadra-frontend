@@ -10,7 +10,10 @@ import { forEach, min, filter } from "lodash-es";
 import { Repertoire, RepertoireMove, Side } from "~/utils/repertoire";
 import { pluralize } from "~/utils/pluralize";
 import { getHumanTimeUntil } from "./ReviewText";
-import { OnboardingComplete } from "./SidebarOnboarding";
+import {
+  ChooseToCreateAccountOnboarding,
+  OnboardingComplete,
+} from "./SidebarOnboarding";
 import { LoginSidebar } from "./LoginSidebar";
 
 export const PracticeComplete = () => {
@@ -99,9 +102,9 @@ export const PracticeComplete = () => {
           onPress: () => {
             quick((s) => {
               if (s.repertoireState.onboarding.isOnboarding) {
-                s.repertoireState.browsingState.pushView(LoginSidebar, {
-                  props: { authType: "register" },
-                });
+                s.repertoireState.browsingState.pushView(
+                  ChooseToCreateAccountOnboarding
+                );
               } else {
                 s.repertoireState.backToOverview();
               }
@@ -112,7 +115,9 @@ export const PracticeComplete = () => {
         },
       ]}
     >
-      <CMText class={clsx("body-text")}>Your stats from this session:</CMText>
+      <CMText class={clsx("text-primay font-bold")}>
+        Your stats from this session:
+      </CMText>
       <Spacer height={12} />
       <div class={"space-y-2"}>
         <For each={bullets()}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>

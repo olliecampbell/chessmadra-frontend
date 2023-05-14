@@ -82,7 +82,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
         actions={[
           {
             submitsForm: "login-form",
-            text: authType() === "login" ? "Log in" : "Register",
+            text: authType() === "login" ? "Log in" : "Create account",
             style: "focus",
           },
           {
@@ -96,14 +96,10 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
             style: "primary",
           },
         ]}
-        header={authType() == "login" ? "Login" : "Register"}
+        header={
+          authType() == "login" ? "Log in" : "Create your Chessbook account"
+        }
       >
-        <HeadSiteMeta
-          siteMeta={{
-            title: "Login",
-            description: "Login to Chessbook",
-          }}
-        />
         <div class={clsx(loginForm.submitting && "opacity-0")}>
           <div class="col items-center">
             <div class={`min-w-80 padding-sidebar w-full self-stretch`}>
@@ -123,13 +119,13 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
                       email("The email address is badly formatted."),
                     ]}
                   >
-                    {(field) => (
+                    {(field, props) => (
                       <TextInput
                         value={field.value}
                         error={field.error}
                         placeholder="example@email.com"
                         label="Email"
-                        {...field.props}
+                        {...props}
                         type="email"
                       />
                     )}
@@ -145,20 +141,20 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
                       ),
                     ]}
                   >
-                    {(field) => (
+                    {(field, props) => (
                       <>
                         <TextInput
                           label="Password"
                           value={field.value}
                           error={field.error}
-                          {...field.props}
+                          {...props}
                           type="password"
                         />
                         <Show when={authType() === "login"}>
                           <a
                             onClick={() => {
                               quick((s) => {
-                                s.repertoireState.browsingState.replaceView(
+                                s.repertoireState.browsingState.pushView(
                                   ForgotPassword
                                 );
                               });

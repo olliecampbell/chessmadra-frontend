@@ -46,6 +46,7 @@ import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
 import { CoverageBar } from "./CoverageBar";
 import { CoverageAndBar } from "./RepertoirtOverview";
 import { Bullet } from "./Bullet";
+import { LoginSidebar } from "./LoginSidebar";
 
 export const OnboardingIntro = () => {
   const responsive = useResponsive();
@@ -54,26 +55,10 @@ export const OnboardingIntro = () => {
     "Practicing it using spaced repetition",
   ];
   return (
-    <div style={s(c.column)}>
-      <RepertoireEditingHeader>
-        Let's start creating your repertoire!
-      </RepertoireEditingHeader>
-      <Spacer height={12} />
-      <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
-        <CMText class={"body-text"}>
-          This setup process will help you get started and introduce some of the
-          key ideas behind Chessbook. It should only take a few minutes to
-          complete.
-        </CMText>
-        <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
-          {bullets.map((bullet, i) => (
-            <Bullet>{bullet}</Bullet>
-          ))}
-        </div>
-      </div>
-      <Spacer height={36} />
-      <SidebarFullWidthButton
-        action={{
+    <SidebarTemplate
+      header="Let's start creating your repertoire!"
+      actions={[
+        {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.pushView(SetRatingOnboarding);
@@ -84,9 +69,21 @@ export const OnboardingIntro = () => {
           },
           style: "primary",
           text: "Get started",
-        }}
-      />
-    </div>
+        },
+      ]}
+    >
+      <CMText class={"body-text"}>
+        This setup process will introduce some of the key ideas behind
+        Chessbook. It should only take a few minutes to complete.
+      </CMText>
+      <Spacer height={12} />
+      <p class={"body-text"}>This walkthrough will cover:</p>
+      <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
+        {bullets.map((bullet, i) => (
+          <Bullet>{bullet}</Bullet>
+        ))}
+      </div>
+    </SidebarTemplate>
   );
 };
 
@@ -184,7 +181,7 @@ export const SetRatingOnboarding = () => {
   const [user] = useUserState((s) => [s.user]);
   return (
     <SidebarTemplate
-      header={"What's your current rating"}
+      header={"What is your current rating"}
       bodyPadding={true}
       actions={[
         {
@@ -227,11 +224,47 @@ export const SetRatingOnboarding = () => {
       ]}
     >
       <CMText class={"body-text"}>
-        This is used to determine common moves and their win rates at your
-        level.
+        This is used to determine which moves your opponents are likely to play.
       </CMText>
       <Spacer height={24} />
       <RatingSelection />
+    </SidebarTemplate>
+  );
+};
+
+export const ChooseToCreateAccountOnboarding = () => {
+  return (
+    <SidebarTemplate
+      header={"Would you like to create an account?"}
+      bodyPadding={true}
+      actions={[
+        {
+          onPress: () => {
+            quick((s) => {
+              s.repertoireState.browsingState.pushView(LoginSidebar, {
+                props: { authType: "register" },
+              });
+            });
+          },
+          style: "primary",
+          text: "Create account",
+        },
+        {
+          onPress: () => {
+            quick((s) => {
+              s.repertoireState.backToOverview();
+            });
+          },
+          style: "primary",
+          text: "Skip this step for now",
+        },
+      ]}
+    >
+      <CMText class={"body-text"}>
+        Creating an account will let you access your repertoire from other
+        devices and prevent you from losing it if you clear your browser
+        history.
+      </CMText>
     </SidebarTemplate>
   );
 };
@@ -410,9 +443,9 @@ export const FirstLineSavedOnboarding = () => {
       <div style={s(c.height(24))}>
         <CoverageBar isInSidebar side={onboarding().side as Side} />
       </div>
-      <Spacer height={16} />
+      <Spacer height={32} />
       <CMText class={"body-text font-bold"}>
-        How to complete your repertoire
+        How to complete your repertoire:
       </CMText>
       <Spacer height={8} />
       <CMText class={"body-text"}>
@@ -433,7 +466,7 @@ const PracticeIntroOnboarding = () => {
   return (
     <SidebarTemplate
       bodyPadding={true}
-      header="Now let's see how practice works"
+      header="Now let's practice the line you've added"
       actions={[
         {
           onPress: () => {
@@ -584,7 +617,7 @@ export const ImportOnboarding = (props: {
       }
     }
     if (importType() === SidebarOnboardingImportType.LichessUsername) {
-      header = "What's your lichess username?";
+      header = "What's your Lichess username?";
       body = (
         <div style={s(c.pt(20))}>
           <CMTextInput
@@ -685,8 +718,13 @@ export const TrimRepertoireOnboarding = () => {
     trackEvent("onboarding.trim_repertoire", { threshold });
     setLoading("Trimming");
     quick((s) => {
-      s.repertoireState.trimRepertoire(threshold, [side()]);
-      s.repertoireState.browsingState.finishSidebarOnboarding(responsive);
+      s.repertoireState.trimRepertoire(threshold, [side()]).then(() => {
+        if (onboarding().isOnboarding) {
+          s.repertoireState.browsingState.goToBuildOnboarding();
+        } else {
+          s.repertoireState.backToOverview();
+        }
+      });
     });
   };
 
@@ -696,10 +734,10 @@ export const TrimRepertoireOnboarding = () => {
       const numMoves = getNumResponsesBelowThreshold()(threshold, side());
       if (numMoves > 0) {
         actions.push({
-          text: `Trim responses that occur in less than 1 in ${
+          text: `Trim moves that occur in less than 1 in ${
             1 / threshold
           } games`,
-          subtext: `${numMoves} responses will be trimmed`,
+          subtext: `${numMoves} moves will be trimmed`,
           onPress: () => {
             trimToThreshold(threshold);
           },
