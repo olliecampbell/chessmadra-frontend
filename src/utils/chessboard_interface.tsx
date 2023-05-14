@@ -1,7 +1,7 @@
 import { Chess, Move } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import anime from "animejs";
-import { first, isEmpty, isEqual, isNil, last } from "lodash-es";
+import { cloneDeep, first, isEmpty, isEqual, isNil, last } from "lodash-es";
 import { Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { getAnimationDurations } from "~/components/chessboard/Chessboard";
@@ -78,13 +78,14 @@ export interface ChessboardDelegate {
   onBack?: () => void;
   onReset?: () => void;
   completedMoveAnimation?: (move: Move) => void;
+  askForPromotionPiece: (requestedMove: Move) => PieceSymbol | null;
 }
 
 export interface ChessboardViewState {
   animatingMoveSquare?: Square;
   flipped: boolean;
   frozen: boolean;
-  delegate: any;
+  delegate: ChessboardDelegate;
   notifyingDelegates: any;
   ringColor: string;
   refs: {
@@ -135,6 +136,7 @@ export const createChessboardInterface = (): [
     createStore<ChessboardViewState>({
       flipped: false,
       frozen: false,
+      // @ts-ignore
       delegate: null,
       plans: [],
       notifyingDelegates: true,
@@ -505,6 +507,15 @@ export const createChessboardInterface = (): [
       set((s) => {
         if (move) {
           chessboardInterface.clearPending();
+          let promotionPiece = chessboardInterface
+            .getDelegate()
+            ?.askForPromotionPiece?.(move);
+          console.log("promotion piece", promotionPiece);
+          if (promotionPiece) {
+            let newMove = cloneDeep(move);
+            newMove.promotion = promotionPiece;
+            move = (s.position.validateMoves([newMove]) as Move[])[0];
+          }
           let makeMove = () => {
             chessboardInterface.makeMove(move, options);
           };

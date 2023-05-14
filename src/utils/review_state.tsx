@@ -340,7 +340,25 @@ export const getInitialReviewState = (
   initialState.chessboard.set((c) => {
     // c.frozen = true;
     c.delegate = {
-      completedMoveAnimation: () => {},
+      askForPromotionPiece: (requestedMove: Move) => {
+        return get(([s]) => {
+          let currentMove = s.currentMove?.moves[0];
+          if (!currentMove) {
+            return null;
+          }
+          let moveObjects = s.chessboard
+            .get((s) => s.position)
+            .validateMoves([currentMove?.sanPlus]);
+          if (!moveObjects) {
+            return null;
+          }
+          let moveObject = moveObjects[0];
+          if (requestedMove.promotion) {
+            return moveObject.promotion ?? null;
+          }
+          return null;
+        });
+      },
       onPositionUpdated: () => {
         set(([s]) => {});
       },
