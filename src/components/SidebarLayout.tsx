@@ -123,7 +123,11 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
             </div>
             <Show when={!responsive.isMobile}>
               <Spacer height={12} />
-              <Show when={mode() === "build" || mode() === "browse"}>
+              <Show
+                when={
+                  mode() === "build" || mode() === "browse" || mode() === "review"
+                }
+              >
                 <div class="row w-full justify-center">
                   <AnalyzeOnLichessButton />
                 </div>

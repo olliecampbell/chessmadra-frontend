@@ -56,28 +56,27 @@ export const RepertoireHome = () => {
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
     const actions = [];
 
-    if (totalDue > 0) {
-      actions.push({
-        text: "Practice all moves due for review",
-        right: (
-          <ReviewText
-            date={
-              earliestDueDate()["white"] < earliestDueDate()["black"]
-                ? earliestDueDate()["white"]
-                : earliestDueDate()["black"]
-            }
-            numDue={totalDue}
-          />
-        ),
-        style: "primary",
-        onPress: () => {
-          trackEvent("home.practice_all_due");
-          quick((s) => {
-            s.repertoireState.reviewState.startReview(null, {});
-          });
-        },
-      } as SidebarAction);
-    }
+    actions.push({
+      text: "Practice all moves due for review",
+      right: (
+        <ReviewText
+          date={
+            earliestDueDate()["white"] < earliestDueDate()["black"]
+              ? earliestDueDate()["white"]
+              : earliestDueDate()["black"]
+          }
+          numDue={totalDue}
+        />
+      ),
+      style: "primary",
+      disabled: totalDue == 0,
+      onPress: () => {
+        trackEvent("home.practice_all_due");
+        quick((s) => {
+          s.repertoireState.reviewState.startReview(null, {});
+        });
+      },
+    } as SidebarAction);
     return actions;
   };
   return (

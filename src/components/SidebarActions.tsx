@@ -37,6 +37,7 @@ export interface SidebarAction {
   right?: JSXElement | string;
   subtext?: string;
   style: "primary" | "focus" | "secondary" | "tertiary" | "wide";
+  disabled?: boolean;
 }
 
 export const SidebarActions = () => {
@@ -210,10 +211,10 @@ export const SidebarActions = () => {
 export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
   const responsive = useResponsive();
   const { hovering, hoveringProps } = useHovering();
-  let py = 12;
   const styles = () => {
     let subtextColor = null;
     let textStyles = s();
+    let py = 12;
     if (props.action.style === "focus") {
       subtextColor = c.grays[20];
     }
@@ -234,11 +235,16 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
     return {
       subtextColor,
       textStyles,
+      py,
     };
   };
   return (
-    <Pressable
-      onPress={props.action.onPress}
+    <div
+      onClick={() => {
+        if (!props.action.disabled) {
+          props.action.onPress?.();
+        }
+      }}
       {...(props.action.submitsForm
         ? {
             type: "submit",
@@ -247,7 +253,7 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
         : {})}
       {...hoveringProps}
       class={clsx(
-        "transition-colors",
+        "cursor-pointer transition-colors",
         props.action.style !== "wide" && "min-h-sidebar-button",
         props.action.style === "secondary" &&
           "text-secondary &hover:bg-gray-18 &hover:text-primary",
@@ -258,7 +264,11 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
         props.action.style === "focus" &&
           "bg-gray-82 &hover:bg-gray-86 text-gray-10",
         props.action.style === "primary" &&
-          "text-primary bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover",
+          "text-primary bg-sidebar_button_primary ",
+        props.action.style === "primary" &&
+          !props.action.disabled &&
+          "&hover:bg-sidebar_button_primary_hover",
+        props.action.disabled && "!cursor-auto",
         props.action.class
       )}
       style={s(
@@ -266,7 +276,7 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
         c.row,
         c.justifyBetween,
         c.alignCenter,
-        c.py(py),
+        c.py(styles().py),
         c.px(c.getSidebarPadding(responsive)),
         props.action.style === "secondary" &&
           c.borderBottom(`1px solid ${c.colors.border}`)
@@ -321,7 +331,7 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
           )}
         </div>
       </Show>
-    </Pressable>
+    </div>
   );
 };
 

@@ -61,6 +61,10 @@ export const RepertoireOverview = (props: {}) => {
       ?.instructiveGames;
   };
 
+  console.log("[HOME] rendering overview");
+  createEffect(() => {
+    console.log("[HOME] empty?", empty());
+  });
   const empty = () => numMoves() === 0;
   const responsive = useResponsive();
   const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
