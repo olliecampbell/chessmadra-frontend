@@ -52,6 +52,7 @@ type ReviewMoveKey = string;
 type Epd = string;
 
 export interface ReviewState {
+  moveLog: string[];
   buildQueue: (options: ReviewOptions) => QuizMove[];
   stopReviewing: () => void;
   chessboard: ChessboardInterface;
@@ -360,7 +361,9 @@ export const getInitialReviewState = (
         });
       },
       onPositionUpdated: () => {
-        set(([s]) => {});
+        set(([s]) => {
+          s.moveLog = s.chessboard.get((s) => s.moveLog);
+        });
       },
       madeMove: () => {},
 

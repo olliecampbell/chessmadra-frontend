@@ -125,7 +125,9 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
               <Spacer height={12} />
               <Show
                 when={
-                  mode() === "build" || mode() === "browse" || mode() === "review"
+                  mode() === "build" ||
+                  mode() === "browse" ||
+                  mode() === "review"
                 }
               >
                 <div class="row w-full justify-center">
@@ -180,10 +182,18 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
   const responsive = useResponsive();
   const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
   const padding = 8;
+  const [mode] = useSidebarState(([s]) => [s.mode]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const [currentLine] = useBrowsingState(([s, rs]) => [
-    s.chessboard.get((v) => v).moveLog,
-  ]);
+  const currentLine = () => {
+    if (mode() === "review") {
+      return getAppState().repertoireState.reviewState.moveLog;
+    } else {
+      return getAppState().repertoireState.browsingState.sidebarState.moveLog;
+    }
+  };
+  createEffect(() => {
+    console.log("current linet", currentLine());
+  });
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
   createEffect(() => {
     console.log("debug", currentLine(), sideBarMode());
