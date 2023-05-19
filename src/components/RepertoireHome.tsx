@@ -188,9 +188,7 @@ export const RepertoireHome = () => {
                   onPress: () => {
                     quick((s) => {
                       trackEvent("home.contact.feedback");
-                      s.repertoireState.browsingState.pushView(
-                        FeedbackView,
-                      );
+                      s.repertoireState.browsingState.pushView(FeedbackView);
                     });
                   },
                   text: "Share your feedback",
