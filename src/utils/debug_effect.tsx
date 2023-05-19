@@ -4,6 +4,7 @@ import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { LoginSidebar } from "~/components/LoginSidebar";
 import ForgotPassword from "~/components/ForgotPassword";
+import { lineToPgn } from "./repertoire";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -34,6 +35,14 @@ export const createDebugStateEffect = () => {
 
     if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       setHasCalled(true);
+      quick((s) => {
+        console.log("setting past landing page");
+        // s.userState.pastLandingPage = true;
+        // s.repertoireState.onboarding.isOnboarding = false;
+        // s.repertoireState.startBrowsing("white", "build", {
+        //   pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5"]),
+        // });
+      });
       // quick((s) => {
       //   console.log("setting past landing page");
       //   s.userState.pastLandingPage = true;

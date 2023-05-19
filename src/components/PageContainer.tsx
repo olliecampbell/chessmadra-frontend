@@ -85,6 +85,7 @@ export const HeadSiteMeta = ({
   siteMeta?: SiteMetadata;
 }) => {
   let title = siteMeta?.title ?? "Chessbook";
+  let imageUrl = "/splash_og.png";
   let description =
     siteMeta?.description ??
     "Chessbook is the fastest way to build a bulletproof opening repertoire.";
@@ -104,6 +105,9 @@ export const HeadSiteMeta = ({
       <Meta property="og:description" content={description} />
       <Meta property="og:site_name" content="chessbook.com" />
       <Meta name="description" content={description} />
+
+      <Meta property="og:image" content={imageUrl} />
+      <Meta name="twitter:image" content={imageUrl} />
     </>
   );
 };

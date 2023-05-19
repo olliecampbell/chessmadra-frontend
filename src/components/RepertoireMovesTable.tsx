@@ -98,6 +98,7 @@ export const RepertoireMovesTable = ({
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [expandedLength, setExpandedLength] = createSignal(0);
   const [editingAnnotations, setEditingAnnotations] = createSignal(false);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
     destructure(
       createMemo(() => {
@@ -113,9 +114,13 @@ export const RepertoireMovesTable = ({
           isMobile,
         });
         const MIN_TRUNCATED = isMobile ? 1 : 1;
+        const MAX_ONBOARDING = 3;
         const trimmedResponses = filter(responses(), (r, i) => {
           if (mode() == "browse") {
             return r.repertoireMove;
+          }
+          if (onboarding().isOnboarding && !myTurn && i >= MAX_ONBOARDING) {
+            return false;
           }
           if (i < expandedLength()) {
             return true;
@@ -291,7 +296,13 @@ export const RepertoireMovesTable = ({
         style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
         class={clsx("pt-4")}
       >
-        <Show when={truncated() && mode() == "build"}>
+        <Show
+          when={
+            truncated() &&
+            mode() == "build" &&
+            !(onboarding().isOnboarding && !myTurn())
+          }
+        >
           <Pressable
             onPress={() => {
               setExpandedLength(trimmedResponses().length + 5);
@@ -308,29 +319,31 @@ export const RepertoireMovesTable = ({
           </Pressable>
           <Spacer width={16} />
         </Show>
-        {!hideAnnotations() && mode() == "build" && (
-          <>
-            <Pressable
-              class={clsx("pb-1")}
-              onPress={() => {
-                if (!editingAnnotations()) {
-                  trackEvent(`${mode()}.moves_table.edit_annotations`);
-                }
-                setEditingAnnotations(!editingAnnotations());
-              }}
-            >
-              <CMText
-                style={s(c.fontSize(12), c.weightSemiBold)}
-                class="text-tertiary &hover:text-primary transition-colors"
+        {!hideAnnotations() &&
+          mode() == "build" &&
+          !onboarding().isOnboarding && (
+            <>
+              <Pressable
+                class={clsx("pb-1")}
+                onPress={() => {
+                  if (!editingAnnotations()) {
+                    trackEvent(`${mode()}.moves_table.edit_annotations`);
+                  }
+                  setEditingAnnotations(!editingAnnotations());
+                }}
               >
-                {editingAnnotations()
-                  ? "Stop editing annotations"
-                  : "Edit annotations"}
-              </CMText>
-            </Pressable>
-            <Spacer width={16} />
-          </>
-        )}
+                <CMText
+                  style={s(c.fontSize(12), c.weightSemiBold)}
+                  class="text-tertiary &hover:text-primary transition-colors"
+                >
+                  {editingAnnotations()
+                    ? "Stop editing annotations"
+                    : "Edit annotations"}
+                </CMText>
+              </Pressable>
+              <Spacer width={16} />
+            </>
+          )}
         <Show when={anyMine() && mode() == "build"}>
           <Pressable
             class={clsx("pb-1")}

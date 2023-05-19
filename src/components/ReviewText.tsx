@@ -28,6 +28,7 @@ export const ReviewText = ({
   let dueString = "";
   let color = c.grays[50];
   const prefix = overview ? `Due in` : `Due in`;
+  console.log("diff", diff, dateString);
   if (diff < 0) {
     color = inverse ? c.oranges[30] : c.oranges[70];
     dueString = `${numMovesDueFromHere.toLocaleString()} Due`;

@@ -111,7 +111,7 @@ const initialState = {
   trackEvent: (name: string, props?: Object) => {
     get((s: AppState) => {
       console.log(
-        `%c${name} %c ${Object.entries(props ?? {})
+        `[EVENT] %c${name} %c ${Object.entries(props ?? {})
           .map(([k, v]) => `${k}=${v}`)
           .join(" | ")}`,
         "color: salmon; font-weight: bold;",

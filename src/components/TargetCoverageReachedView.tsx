@@ -7,7 +7,7 @@ import { CMText } from "./CMText";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
 import { Intersperse } from "./Intersperse";
-import { Accessor, createEffect, Show } from "solid-js";
+import { Accessor, createEffect, For, Show } from "solid-js";
 import { SidebarAction } from "./SidebarActions";
 
 export const TargetCoverageReachedView = () => {
@@ -85,13 +85,8 @@ export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
         </CMText>
         <Spacer height={18} />
       </Show>
-      <div>
-        <Intersperse
-          separator={() => {
-            return <Spacer height={12} />;
-          }}
-          each={planSections}
-        >
+      <div class={"space-y-4"}>
+        <For each={planSections()}>
           {(section, i) => {
             return (
               <div style={s(c.row, c.alignStart)}>
@@ -100,13 +95,11 @@ export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
                   style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
                 />
                 <Spacer width={8} />
-                <CMText style={s(c.fg(c.colors.textPrimary))}>
-                  {section()}
-                </CMText>
+                <p class={"text-primary"}>{section()}</p>
               </div>
             );
           }}
-        </Intersperse>
+        </For>
       </div>
     </>
   );

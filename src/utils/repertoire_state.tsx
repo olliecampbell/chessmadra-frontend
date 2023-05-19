@@ -56,6 +56,7 @@ import { LogoFull } from "~/components/icons/LogoFull";
 import { MAX_MOVES_FREE_TIER } from "./payment";
 import dedent from "dedent-js";
 import {
+  ImportSuccessOnboarding,
   OnboardingIntro,
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
@@ -202,7 +203,7 @@ interface GetSharedRepertoireResponse {
   repertoire: Repertoire;
 }
 
-export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
+export const DEFAULT_ELO_RANGE = [0, 1100] as [number, number];
 
 type Stack = [RepertoireState, AppState];
 const selector = (s: AppState): Stack => [s.repertoireState, s];
@@ -339,8 +340,7 @@ export const getInitialRepertoireState = (
           if (side && numBelowThreshold > minimumToTrim) {
             s.browsingState.pushView(TrimRepertoireOnboarding);
           } else {
-            s.browsingState.moveSidebarState("right");
-            s.browsingState.goToBuildOnboarding();
+            s.browsingState.pushView(ImportSuccessOnboarding);
           }
         }, "initializeRepertoire");
       }),
@@ -792,8 +792,8 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
+        s.onboarding.isOnboarding = false;
         s.startBrowsing(null, "home");
-        s.browsingState.clearViews();
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
@@ -805,6 +805,7 @@ export const getInitialRepertoireState = (
         s.divergencePosition = null;
         s.divergenceIndex = null;
         s.browsingState.sidebarState = makeDefaultSidebarState();
+        console.log("new browsing state", s.browsingState.sidebarState);
       }),
     startImporting: (side: Side) =>
       set(([s]) => {

@@ -223,7 +223,6 @@ export const createChessboardInterface = (): [
           s._animatePosition.move(m);
           return;
         }
-        chessboardInterface.clearPending();
         s.availableMoves = [];
         let pos = s.position;
         let moveObject: Move | null = null;
@@ -237,13 +236,14 @@ export const createChessboardInterface = (): [
         } else {
           moveObject = m;
         }
+        let sameAsPreviewed =
+          s.previewedMove?.to === moveObject.to &&
+          s.previewedMove?.from === moveObject.from;
+        chessboardInterface.clearPending();
         if (
           options?.animate &&
           // if same as previewed move just make the move no animation
-          !(
-            s.previewedMove?.to === moveObject.to &&
-            s.previewedMove?.from === moveObject.from
-          )
+          !sameAsPreviewed
         ) {
           s._animatePosition = createChessProxy(new Chess(s.position.fen()));
           s.animationQueue = moves;
@@ -480,6 +480,9 @@ export const createChessboardInterface = (): [
         const { x: startX, y: startY } = getSquareOffset(start, s.flipped);
         s.animatingMoveSquare = start;
         const pieceRef = s.refs.pieceRefs[start as Square];
+        if (!pieceRef) {
+          return;
+        }
         pieceRef.style.top = `${startY * 100}%`;
         pieceRef.style.left = `${startX * 100}%`;
         anime({
@@ -517,6 +520,12 @@ export const createChessboardInterface = (): [
             move = (s.position.validateMoves([newMove]) as Move[])[0];
           }
           let makeMove = () => {
+            if (s.previewedMove?.san == move.san) {
+              chessboardInterface.makeMove(move, {
+                ...options,
+                animate: false,
+              });
+            }
             chessboardInterface.makeMove(move, options);
           };
           if (chessboardInterface.getDelegate()?.shouldMakeMove?.(move)) {

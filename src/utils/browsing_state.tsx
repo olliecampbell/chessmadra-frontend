@@ -108,9 +108,9 @@ export interface SidebarOnboardingState {
 }
 
 export enum SidebarOnboardingImportType {
-  LichessUsername,
-  PGN,
-  PlayerTemplates,
+  LichessUsername = "lichess_username",
+  PGN = "pgn",
+  PlayerTemplates = "player_templates",
 }
 export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
 
@@ -161,7 +161,7 @@ export interface SidebarState {
   positionHistory: string[] | null;
   currentEpd: string;
   lastEcoCode?: EcoCode;
-  planSections?: any;
+  planSections?: (() => JSXElement)[];
   activeSide?: Side;
 }
 export type View = { component: Component<any>; props: any };
@@ -793,6 +793,7 @@ export const getInitialBrowsingState = (
           c.plans = consumer.metaPlans.filter((p) =>
             consumer.consumed.has(p.id)
           );
+          console.log("updating plans to ", c.plans);
           s.sidebarState.planSections = consumer.planSections;
           c.maxPlanOccurence = maxOccurence;
         });

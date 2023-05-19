@@ -365,7 +365,7 @@ export default (({
     "box-shadow": "--xl"
   }))), /*#__PURE__*/React.createElement(Section, {
     "inner-max-width": "1000px",
-    background: "url(/homepage_imgs/bobby.png?v=2023-04-24T10:51:51.196Z) 0% 0%/cover,--sidebar",
+    background: "url(/homepage_imgs/bobby.png?v=2023-04-24T10:51:51.196Z) 0% 0%,--sidebar",
     "md-padding": "0 0 0 0",
     "lg-padding": "48px 0 4px 0"
   }, /*#__PURE__*/React.createElement(Override, {
@@ -579,7 +579,7 @@ export default (({
   }))), /*#__PURE__*/React.createElement(Section, {
     padding: "88px 0 100px 0",
     "inner-max-width": "1000px",
-    background: "url(/homepage_imgs/pexels-cottonbro-studio.png?v=2023-04-25T07:11:32.398Z) 0% 0%/cover scroll,--sidebar",
+    background: "url(/homepage_imgs/pexels-cottonbro-studio.jpg?v=2023-04-25T07:11:32.398Z) 0% 0%/cover scroll,--sidebar",
     "md-padding": "68px 0 80px 0",
     "lg-padding": "44px 0 48px 0"
   }, /*#__PURE__*/React.createElement(Override, {

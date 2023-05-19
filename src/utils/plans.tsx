@@ -154,7 +154,7 @@ class PlanConsumer {
   consumed: Set<string>;
   capturePieces: Record<Square, PieceSymbol>;
   planPrecedingCaptures: Record<Square, MetaPlan>;
-  planSections: PlanSection[];
+  planSections: (() => PlanSection)[];
 
   constructor(plans: Plan[], side: Side, position: Chess) {
     this.planSections = [];
@@ -213,7 +213,7 @@ class PlanConsumer {
       const queensideMoreCommon =
         queenside.plan.occurences > kingside.plan.occurences;
       this.consume([queenside, kingside]);
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           You can castle to either side, although{" "}
           <PlanMoveText plan={queensideMoreCommon ? queenside : kingside}>
@@ -221,25 +221,25 @@ class PlanConsumer {
           </PlanMoveText>{" "}
           is most common
         </>
-      );
+      ));
     } else if (kingside) {
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           {capitalize(this.side)} {this.nextAdverb()}{" "}
           <PlanMoveText plan={this.consume(kingside)}>
             castles kingside
           </PlanMoveText>
         </>
-      );
+      ));
     } else if (queenside) {
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           {capitalize(this.side)} {this.nextAdverb()}{" "}
           <PlanMoveText plan={this.consume(queenside)}>
             castles queenside
           </PlanMoveText>
         </>
-      );
+      ));
     }
   }
   consumeCaptures() {
@@ -274,7 +274,7 @@ class PlanConsumer {
         }
         this.consume(planBeforeCapture);
       }
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           The{" "}
           <EnglishSeparator
@@ -291,7 +291,7 @@ class PlanConsumer {
             {pieceSymbolToPieceName(capturedPiece)} on {plan.plan.toSquare}
           </PlanMoveText>
         </>
-      );
+      ));
     });
   }
   pawnPlansConsumer() {
@@ -308,14 +308,14 @@ class PlanConsumer {
     if (isEmpty(pawnPlans)) {
       return null;
     }
-    this.planSections.push(
+    this.planSections.push(() => (
       <>
         {pawnPlans.length > 1
           ? "Common pawn moves are"
           : "A common pawn move is"}{" "}
         <PlanMoves metaPlans={this.consume(pawnPlans)} />{" "}
       </>
-    );
+    ));
   }
 
   remainingPlans() {
@@ -342,12 +342,12 @@ class PlanConsumer {
     if (isEmpty(piecePlans)) {
       return null;
     }
-    this.planSections.push(
+    this.planSections.push(() => (
       <>
         Common piece moves include{" "}
         <PlanMoves metaPlans={this.consume(piecePlans)} />
       </>
-    );
+    ));
   }
   viaConsumer() {
     this.remainingPlans().map((plan) => {
@@ -371,14 +371,14 @@ class PlanConsumer {
         return;
       }
 
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           The {pieceDescription} often{" "}
           <PlanMoveText plans={this.consume([plan, finalDestination])}>
             goes to {finalDestination.plan.toSquare}, via {plan.plan.toSquare}
           </PlanMoveText>
         </>
-      );
+      ));
     });
   }
   fianchettoConsumer() {
@@ -418,14 +418,14 @@ class PlanConsumer {
         return;
       }
 
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           The {developmentPieceDescription} is {this.nextAdverb}{" "}
           <PlanMoveText plan={this.consume(plan)}>
             fianchettoed on {plan.plan.toSquare}
           </PlanMoveText>
         </>
-      );
+      ));
     });
   }
 
@@ -469,7 +469,7 @@ class PlanConsumer {
         descriptor = "moves to";
       }
 
-      this.planSections.push(
+      this.planSections.push(() => (
         <>
           The {pieceDescription}{" "}
           {allDevelopmentPlans.length > 1
@@ -490,7 +490,7 @@ class PlanConsumer {
             }
           />
         </>
-      );
+      ));
     });
   }
 }
@@ -508,6 +508,10 @@ export const parsePlans = (
   consumer.pieceDevelopmentConsumer();
   consumer.piecePlansConsumer();
   consumer.pawnPlansConsumer();
+  // this is terrible, but this is to make sure we consume the plans in the
+  // sections, even though we're only storing functions that get called when
+  // rendered
+  consumer.planSections.forEach((section) => section());
   return consumer;
 };
 
@@ -584,9 +588,6 @@ const PlanMoveText = (props: {
   plans?: MetaPlan[];
   children: any;
 }) => {
-  createEffect(() => {
-    console.log("plan is", props.plan, props.children);
-  });
   const { hovering, hoveringProps } = useHovering(
     () => {
       quick((s) => {

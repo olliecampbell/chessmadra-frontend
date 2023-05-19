@@ -139,9 +139,8 @@ export const RepertoireHome = () => {
                   onPress: () => {
                     quick((s) => {
                       trackEvent("home.settings.coverage");
-                      s.repertoireState.browsingState.replaceView(
-                        <CoverageSettings />,
-                        "right"
+                      s.repertoireState.browsingState.pushView(
+                        CoverageSettings
                       );
                     });
                   },
@@ -155,10 +154,7 @@ export const RepertoireHome = () => {
                   onPress: () => {
                     quick((s) => {
                       trackEvent("home.settings.rating");
-                      s.repertoireState.browsingState.replaceView(
-                        <RatingSettings />,
-                        "right"
-                      );
+                      s.repertoireState.browsingState.pushView(RatingSettings);
                     });
                   },
                   text: "Your rating",
@@ -169,10 +165,7 @@ export const RepertoireHome = () => {
                   onPress: () => {
                     quick((s) => {
                       trackEvent("home.settings.theme");
-                      s.repertoireState.browsingState.replaceView(
-                        <ThemeSettings />,
-                        "right"
-                      );
+                      s.repertoireState.browsingState.pushView(ThemeSettings);
                     });
                   },
                   text: "Board appearance",

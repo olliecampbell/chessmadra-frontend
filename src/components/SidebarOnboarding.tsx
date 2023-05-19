@@ -29,6 +29,7 @@ import {
   Match,
   Switch,
   For,
+  onMount,
 } from "solid-js";
 import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
@@ -63,6 +64,7 @@ export const OnboardingIntro = () => {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.pushView(SetRatingOnboarding);
+              trackEvent("onboarding.get_started");
               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
                 SidebarOnboardingStage.SetRating
               );
@@ -88,98 +90,30 @@ export const OnboardingIntro = () => {
   );
 };
 
-export const ConnectAccountOnboarding = () => {
-  const responsive = useResponsive();
-  return (
-    <div style={s(c.column)}>
-      <RepertoireEditingHeader>
-        Connect your online chess account
-      </RepertoireEditingHeader>
-      <Spacer height={12} />
-      <div style={s(c.column, c.px(c.getSidebarPadding(responsive)))}>
-        <CMText class={"body-text"}>
-          We'll use your rating to prepare you for common lines you'll encounter
-          at your level. This will also let you save your repertoire. Chess.com
-          integration coming soon.
-        </CMText>
-      </div>
-      <Spacer height={36} />
-      <div style={s(c.gridColumn({ gap: 12 }))}>
-        {/*
-        <SidebarFullWidthButton
-          action={{
-            onPress: () => {
-              quick((s) => {});
-            },
-            style: "primary",
-            text: "Connect chess.com account",
-          }}
-        />
-      */}
-        <SidebarFullWidthButton
-          action={{
-            onPress: () => {
-              quick((s) => {
-                s.repertoireState.startLichessOauthFlow();
-              });
-            },
-            style: "primary",
-            text: "Connect lichess account",
-          }}
-        />
-        <SidebarFullWidthButton
-          action={{
-            onPress: () => {
-              quick((s) => {
-                s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                  SidebarOnboardingStage.SetRating
-                );
-              });
-            },
-            style: "primary",
-            text: "Skip this step for now",
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-// const CoverageGoalOnboarding = () => {
-//   const responsive = useResponsive();
-//   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-//   return (
-//     <SidebarTemplate
-//       bodyPadding={true}
-//       header={`Your coverage goal has been set to 1 in ${Math.round(
-//         1 / threshold()
-//       )} games`}
-//       actions={[
-//         {
-//           onPress: () => {
-//             quick((s) => {
-//               s.repertoireState.browsingState.moveSidebarState("right");
-//               s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-//                 SidebarOnboardingStage.AskAboutExistingRepertoire
-//               );
-//             });
-//           },
-//           text: "Got it!",
-//           style: "primary",
-//         },
-//       ]}
-//     >
-//       <CMText style={s()} class={"text-secondary leading-5"}>
-//         This would give you a solid repertoire for your rating. You can alway
-//         increase this in the future.
-//       </CMText>
-//     </SidebarTemplate>
-//   );
-// };
-
 export const SetRatingOnboarding = () => {
   const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
+  const setAndContinue = (range: string | null) => {
+    quick((s) => {
+      Promise.all([
+        // this is dumb, but just so we get the latest elo range from the backend
+        s.userState.setRatingRange(
+          range ?? s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+        ),
+      ]).then(() => {
+        quick((s) => {
+          let recommendedThreshold = getRecommendedMissThreshold(
+            s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+          );
+          s.userState.setTargetDepth(recommendedThreshold);
+          s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
+        });
+      });
+    });
+  };
+  onMount(() => {
+    trackEvent("onboarding.rating.shown");
+  });
   return (
     <SidebarTemplate
       header={"What is your current rating"}
@@ -187,37 +121,19 @@ export const SetRatingOnboarding = () => {
       actions={[
         {
           onPress: () => {
-            quick((s) => {
-              Promise.all([
-                // this is dumb, but just so we get the latest elo range from the backend
-                s.userState.setRatingRange(
-                  s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-")
-                ),
-              ]).then(() => {
-                quick((s) => {
-                  let recommendedThreshold = getRecommendedMissThreshold(
-                    s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
-                  );
-                  s.userState.setTargetDepth(recommendedThreshold);
-                  s.repertoireState.browsingState.pushView(
-                    ChooseColorOnboarding
-                  );
-                });
-              });
+            trackEvent("onboarding.rating.set", {
+              ratingRange: user()?.eloRange,
+              ratingSource: user()?.ratingSystem,
             });
+            setAndContinue(null);
           },
           style: "primary",
           text: "Set rating and continue",
         },
         {
           onPress: () => {
-            quick((s) => {
-              let recommendedThreshold = getRecommendedMissThreshold(
-                s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
-              );
-              s.userState.setTargetDepth(recommendedThreshold);
-              s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
-            });
+            trackEvent("onboarding.rating.dont_know");
+            setAndContinue(DEFAULT_ELO_RANGE.join("-"));
           },
           style: "primary",
           text: "I don't know, skip this step",
@@ -242,6 +158,7 @@ export const ChooseToCreateAccountOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              trackEvent("onboarding.create_account.yes");
               s.repertoireState.browsingState.pushView(LoginSidebar, {
                 props: { authType: "register" },
               });
@@ -253,6 +170,7 @@ export const ChooseToCreateAccountOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              trackEvent("onboarding.create_account.skip");
               s.repertoireState.backToOverview();
             });
           },
@@ -345,6 +263,9 @@ export const Dropdown: Component<{
 
 const ChooseColorOnboarding = () => {
   const responsive = useResponsive();
+  onMount(() => {
+    trackEvent("onboarding.choose_color.shown");
+  });
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -352,6 +273,7 @@ const ChooseColorOnboarding = () => {
       actions={SIDES.map((side) => ({
         onPress: () => {
           quick((s) => {
+            trackEvent("onboarding.choose_color", { color: side });
             s.repertoireState.onboarding.side = side;
             s.repertoireState.browsingState.pushView(
               AskAboutExistingRepertoireOnboarding
@@ -380,6 +302,9 @@ export const OnboardingComplete = () => {
 
     return bullets;
   };
+  onMount(() => {
+    trackEvent("onboarding.complete.shown");
+  });
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -390,6 +315,7 @@ export const OnboardingComplete = () => {
           style: "primary",
           onPress: () => {
             quick((s) => {
+              trackEvent("onboarding.complete.continue");
               s.repertoireState.backToOverview();
             });
           },
@@ -409,6 +335,50 @@ export const OnboardingComplete = () => {
   );
 };
 
+export const ImportSuccessOnboarding = () => {
+  const responsive = useResponsive();
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  const [progressState] = useRepertoireState((s) => [
+    s.browsingState.repertoireProgressState[onboarding().side as Side],
+  ]);
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  let bullets = [
+    <>
+      Your goal is to cover any lines which occur in at least 1 in{" "}
+      {Math.round(1 / threshold())} games.
+    </>,
+    <>
+      This goal was set based on your rating but you can always change it later.
+    </>,
+  ];
+  return (
+    <SidebarTemplate
+      bodyPadding={true}
+      header="Import successful"
+      actions={[
+        {
+          onPress: () => {
+            console.log("test?");
+            quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
+              s.repertoireState.browsingState.goToBuildOnboarding();
+            });
+          },
+          text: "Ok, got it",
+          style: "primary",
+        },
+      ]}
+    >
+      <CMText class={"body-text"}>How to complete your repertoire:</CMText>
+      <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
+        {bullets.map((bullet, i) => (
+          <Bullet>{bullet}</Bullet>
+        ))}
+      </div>
+    </SidebarTemplate>
+  );
+};
+
 export const FirstLineSavedOnboarding = () => {
   const responsive = useResponsive();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -416,6 +386,9 @@ export const FirstLineSavedOnboarding = () => {
     s.browsingState.repertoireProgressState[onboarding().side as Side],
   ]);
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  onMount(() => {
+    trackEvent("onboarding.first_line_saved.shown");
+  });
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -423,7 +396,7 @@ export const FirstLineSavedOnboarding = () => {
       actions={[
         {
           onPress: () => {
-            console.log("test?");
+            trackEvent("onboarding.first_line_saved.continue");
             quick((s) => {
               s.repertoireState.browsingState.pushView(PracticeIntroOnboarding);
             });
@@ -464,6 +437,9 @@ export const FirstLineSavedOnboarding = () => {
 const PracticeIntroOnboarding = () => {
   const [currentLine] = useSidebarState(([s]) => [s.moveLog]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  onMount(() => {
+    trackEvent("onboarding.practice_intro.shown");
+  });
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -472,6 +448,7 @@ const PracticeIntroOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              trackEvent("onboarding.practice_intro.continue");
               s.repertoireState.reviewState.reviewLine(
                 currentLine(),
                 onboarding().side
@@ -494,6 +471,9 @@ const PracticeIntroOnboarding = () => {
 const AskAboutExistingRepertoireOnboarding = () => {
   const responsive = useResponsive();
   const repertoireState = getAppState().repertoireState;
+  onMount(() => {
+    trackEvent("onboarding.ask_about_existing_repertoire.shown");
+  });
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -501,6 +481,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
       actions={[
         {
           onPress: () => {
+            trackEvent("onboarding.ask_about_existing_repertoire.has_existing");
             quick((s) => {
               s.repertoireState.browsingState.pushView(
                 ChooseImportSourceOnboarding
@@ -512,6 +493,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
         },
         {
           onPress: () => {
+            trackEvent("onboarding.ask_about_existing_repertoire.no_existing");
             quick((s) => {
               s.repertoireState.browsingState.goToBuildOnboarding();
             });
@@ -531,6 +513,9 @@ const AskAboutExistingRepertoireOnboarding = () => {
 
 export const ChooseImportSourceOnboarding = () => {
   const responsive = useResponsive();
+  onMount(() => {
+    trackEvent("onboarding.choose_import_source.shown");
+  });
   return (
     <SidebarTemplate
       header="How do you want to import your repertoire? "
@@ -538,6 +523,7 @@ export const ChooseImportSourceOnboarding = () => {
         {
           onPress: () => {
             quick((s) => {
+              trackEvent("onboarding.choose_import_source.pgn");
               s.repertoireState.browsingState.pushView(ImportOnboarding, {
                 props: { importType: SidebarOnboardingImportType.PGN },
               });
@@ -548,6 +534,7 @@ export const ChooseImportSourceOnboarding = () => {
         },
         {
           onPress: () => {
+            trackEvent("onboarding.choose_import_source.lichess");
             quick((s) => {
               s.repertoireState.browsingState.pushView(ImportOnboarding, {
                 props: {
@@ -561,6 +548,7 @@ export const ChooseImportSourceOnboarding = () => {
         },
         {
           onPress: () => {
+            trackEvent("onboarding.choose_import_source.nevermind");
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.goToBuildOnboarding();
@@ -585,21 +573,11 @@ export const ImportOnboarding = (props: {
   const importType = () => props.importType;
   const [username, setUsername] = createSignal("");
   const [loading, setLoading] = createSignal(null as string | null);
-  // createEffect(() => {
-  //   let dropContainer = pgnUploadRef();
-  //   console.log("dropContainer", dropContainer);
-  //   if (dropContainer) {
-  //     dropContainer.ondragover = dropContainer.ondragenter = function (evt) {
-  //       evt.preventDefault();
-  //     };
-  //
-  //     const onFileUpoad = async (e: any) => {};
-  //     dropContainer.onchange = onFileUpoad;
-  //     dropContainer.ondrop = onFileUpoad;
-  //   }
-  // });
-
   let [pgn, setPgn] = createSignal("");
+
+  onMount(() => {
+    trackEvent(`onboarding.import_${importType()}.shown`);
+  });
   const { header, actions, bodyPadding } = destructure(() => {
     const bodyPadding = true;
     let header = null;
@@ -612,6 +590,9 @@ export const ImportOnboarding = (props: {
           text: "Submit",
           onPress: () => {
             importFromPgn();
+            onMount(() => {
+              trackEvent(`onboarding.import_${importType()}.submit`);
+            });
           },
           style: "primary",
         });
@@ -632,6 +613,9 @@ export const ImportOnboarding = (props: {
       actions.push({
         text: "Submit",
         onPress: () => {
+          onMount(() => {
+            trackEvent(`onboarding.import_${importType()}.submit`);
+          });
           importFromLichessUsername();
         },
         style: "primary",
@@ -706,6 +690,9 @@ export const TrimRepertoireOnboarding = () => {
   const [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
     s.getNumResponsesBelowThreshold,
   ]);
+  onMount(() => {
+    trackEvent("onboarding.trim_repertoire.shown");
+  });
   const header = "Do you want to trim your repertoire?";
   const body = (
     <CMText class="body-text">
@@ -716,12 +703,12 @@ export const TrimRepertoireOnboarding = () => {
   const [loading, setLoading] = createSignal(null as string);
 
   const trimToThreshold = (threshold: number) => {
-    trackEvent("onboarding.trim_repertoire", { threshold });
+    trackEvent("onboarding.trim_repertoire.trimmed", { threshold });
     setLoading("Trimming");
     quick((s) => {
       s.repertoireState.trimRepertoire(threshold, [side()]).then(() => {
         if (onboarding().isOnboarding) {
-          s.repertoireState.browsingState.goToBuildOnboarding();
+          s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
         } else {
           s.repertoireState.backToOverview();
         }
@@ -749,9 +736,10 @@ export const TrimRepertoireOnboarding = () => {
     actions.push({
       text: `No thanks, I'll keep my whole repertoire`,
       onPress: () => {
+        trackEvent("onboarding.trim_repertoire.skip");
         quick((s) => {
           if (onboarding().isOnboarding) {
-            s.repertoireState.browsingState.goToBuildOnboarding();
+            s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
           } else {
             s.repertoireState.startBrowsing(side(), "home");
           }

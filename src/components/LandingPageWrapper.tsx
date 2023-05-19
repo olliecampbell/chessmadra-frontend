@@ -50,9 +50,10 @@ export default function LandingPageWrapper() {
         },
         onClick: (source: string) => {
           quick((s) => {
+            trackEvent("landing_page_conversion", { source: source });
+            trackEvent("onboarding.started");
             s.repertoireState.onboarding.isOnboarding = true;
             s.userState.pastLandingPage = true;
-            trackEvent("landing_page_conversion", { source: source });
           });
         },
       }),
