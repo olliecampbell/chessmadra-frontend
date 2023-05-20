@@ -792,7 +792,6 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
-        s.onboarding.isOnboarding = false;
         s.startBrowsing(null, "home");
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {

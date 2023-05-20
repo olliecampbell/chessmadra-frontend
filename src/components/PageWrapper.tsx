@@ -32,6 +32,7 @@ export const PageWrapper = (props: { initialView: Component }) => {
     quick((s) => {
       if (props.initialView) {
         s.userState.pastLandingPage = true;
+        s.repertoireState.onboarding.isOnboarding = false;
         s.repertoireState.browsingState.pushView(props.initialView);
       }
     });
