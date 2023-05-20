@@ -155,7 +155,7 @@ export const createChessboardInterface = (): [
       moveLog: [],
       moveLogPgn: "",
       position: createChessProxy(new Chess()),
-      futurePosition: createChessProxy(new Chess()),
+      futurePosition: null,
       positionHistory: [START_EPD],
       moveHistory: [],
       refs: {
@@ -454,6 +454,7 @@ export const createChessboardInterface = (): [
     clearPending: () => {
       set((s: ChessboardViewState) => {
         s.movesToVisualize = [];
+
         s.activeFromSquare = undefined;
         s.availableMoves = [];
         s.draggedOverSquare = undefined;
