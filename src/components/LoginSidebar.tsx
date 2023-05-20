@@ -3,15 +3,6 @@ import { createSignal, For, Match, Show, Switch } from "solid-js";
 import client from "~/utils/client";
 import { AuthResponse } from "~/utils/models";
 import { quick, useUserState, useRepertoireState } from "~/utils/app_state";
-import {
-  createForm,
-  email,
-  Field,
-  Form,
-  minLength,
-  required,
-  SubmitHandler,
-} from "@modular-forms/solid";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
@@ -27,24 +18,18 @@ import ForgotPassword from "./ForgotPassword";
 import { OnboardingComplete } from "./SidebarOnboarding";
 import { clsx } from "~/utils/classes";
 
+// form stuff
+import { validator } from "@felte/validator-yup";
+import * as yup from "yup";
+import { createForm } from "@felte/solid";
+
 type LoginForm = {
   email: string;
   password: string;
 };
 
 export const LoginSidebar = (props: { authType?: AuthType }) => {
-  const [loginForm] = createForm<LoginForm>({
-    initialValues: { email: "", password: "" },
-  });
-
-  const [authType, setAuthType] = createSignal(
-    props.authType ?? ("login" as AuthType)
-  );
-  const [serverError, setServerError] = createSignal("");
-  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
-  const [ref, setRef] = createSignal<HTMLInputElement>();
-
-  const handleSubmit: SubmitHandler<LoginForm> = (values, event) => {
+  const onSubmit = (values: LoginForm, event) => {
     console.log("values,", values);
     setServerError("");
     return client
@@ -57,6 +42,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
           s.userState.handleAuthResponse(resp.data);
           s.navigationState.push("/");
 
+          console.log("onboarding? ", onboarding().isOnboarding);
           if (onboarding().isOnboarding) {
             trackEvent(`onboarding.${authType()}.success`);
             s.repertoireState.browsingState.replaceView(OnboardingComplete);
@@ -72,16 +58,41 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
         setServerError(err?.response?.data?.error ?? "Something went wrong");
       });
   };
+  const {
+    form,
+    data: formData,
+    isSubmitting,
+    errors,
+    createSubmitHandler,
+  } = createForm<LoginForm>({
+    initialValues: { email: "", password: "" },
+    onSubmit: onSubmit,
+    extend: [
+      validator({
+        schema: yup.object({
+          email: yup.string().email().required().label("Email"),
+          password: yup.string().min(8).required().label("Password"),
+        }),
+      }),
+    ],
+  });
+  const handleSubmit = createSubmitHandler({
+    onSubmit,
+  });
 
-  // createEffect(() => {
-  //   console.log("errors", loginForm.internal.erro);
-  // });
+  const [authType, setAuthType] = createSignal(
+    props.authType ?? ("login" as AuthType)
+  );
+  const [serverError, setServerError] = createSignal("");
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   return (
     <>
       <SidebarTemplate
         actions={[
           {
-            submitsForm: "login-form",
+            onPress: () => {
+              handleSubmit();
+            },
             text: authType() === "login" ? "Log in" : "Create account",
             style: "focus",
           },
@@ -100,81 +111,42 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
           authType() == "login" ? "Log in" : "Create your Chessbook account"
         }
       >
-        <div class={clsx(loginForm.submitting && "opacity-0")}>
+        <div class={clsx(isSubmitting() && "opacity-0")}>
           <div class="col items-center">
             <div class={`min-w-80 padding-sidebar w-full self-stretch`}>
               <div style={s(c.br(4), c.px(0), c.py(0))}>
-                <Form
-                  ref={setRef}
-                  id={"login-form"}
-                  of={loginForm}
-                  class={`col gap-8`}
-                  onSubmit={handleSubmit}
-                >
-                  <Field
-                    of={loginForm}
+                <form ref={form} class={`col gap-8`}>
+                  <TextInput
+                    placeholder="example@gmail.com"
+                    type="text"
                     name="email"
-                    validate={[
-                      required("Please enter your email."),
-                      email("The email address is badly formatted."),
-                    ]}
-                  >
-                    {(field, props) => (
-                      <TextInput
-                        value={field.value}
-                        error={field.error}
-                        placeholder="example@email.com"
-                        label="Email"
-                        {...props}
-                        type="email"
-                      />
-                    )}
-                  </Field>
-                  <Field
-                    of={loginForm}
-                    name="password"
-                    validate={[
-                      required("Please enter your password."),
-                      minLength(
-                        8,
-                        "You password must have 8 characters or more."
-                      ),
-                    ]}
-                  >
-                    {(field, props) => (
-                      <>
-                        <TextInput
-                          label="Password"
-                          value={field.value}
-                          error={field.error}
-                          {...props}
-                          type="password"
-                        />
-                        <Show when={authType() === "login"}>
-                          <a
-                            onClick={() => {
-                              quick((s) => {
-                                s.repertoireState.browsingState.pushView(
-                                  ForgotPassword
-                                );
-                              });
-                            }}
-                            class={
-                              "text-tertiary &hover:text-primary -mt-6 cursor-pointer text-sm font-semibold"
-                            }
-                          >
-                            Forgot your password?
-                          </a>
-                        </Show>
-                      </>
-                    )}
-                  </Field>
+                    label="Email"
+                    errors={errors()}
+                  />
+                  <TextInput type="password" name="password" label="Password" />
+                  <Show when={authType() === "login"}>
+                    <a
+                      onClick={() => {
+                        quick((s) => {
+                          s.repertoireState.browsingState.pushView(
+                            ForgotPassword
+                          );
+                        });
+                      }}
+                      class={
+                        "text-tertiary &hover:text-primary -mt-6 cursor-pointer text-sm font-semibold"
+                      }
+                    >
+                      Forgot your password?
+                    </a>
+                  </Show>
                   <InputError
                     name={"Server error"}
                     error={serverError()}
                     class={"inline-block"}
                   />
-                </Form>
+                  <input type="submit" hidden />
+                </form>
               </div>
             </div>
           </div>

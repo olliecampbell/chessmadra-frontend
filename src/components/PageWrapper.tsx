@@ -5,11 +5,11 @@ import {
   useRepertoireState,
   quick,
 } from "~/utils/app_state";
-import { SidebarLayout } from "~/components/SidebarLayout";
 import { Component, createEffect, Match, onMount, Switch } from "solid-js";
 import LandingPageWrapper from "~/components/LandingPageWrapper";
 import { Puff } from "solid-spinner";
 import { AuthStatus } from "~/utils/user_state";
+import { RepertoireBuilder } from "./RepertoireBuilder";
 
 export const PageWrapper = (props: { initialView: Component }) => {
   const [userState] = useAppState((s) => [s.userState]);
@@ -31,6 +31,7 @@ export const PageWrapper = (props: { initialView: Component }) => {
   onMount(() => {
     quick((s) => {
       if (props.initialView) {
+        s.userState.pastLandingPage = true;
         s.repertoireState.browsingState.pushView(props.initialView);
       }
     });
@@ -42,7 +43,7 @@ export const PageWrapper = (props: { initialView: Component }) => {
       <Match
         when={token() || userState().pastLandingPage || repertoireLoading()}
       >
-        <SidebarLayout />
+        <RepertoireBuilder />
       </Match>
     </Switch>
   );

@@ -232,6 +232,8 @@ export function ChessboardView(props: {
     createSignal(null);
   const chessboardLayout = createElementBounds(chessboardContainerRef);
   const [didImmediatelyTap, setDidImmediatelyTap] = createSignal(false);
+  const position = () =>
+    chessboardStore().futurePosition ?? chessboardStore().position;
   const getTapOffset = (e: MouseEvent | TouchEvent, parent: NullableBounds) => {
     // @ts-ignore
     const touch = e.targetTouches?.[0];
@@ -258,7 +260,7 @@ export function ChessboardView(props: {
       chessboardLayout,
       tap
     );
-    const piece = props.chessboardInterface.get((s) => s.position.get(square));
+    const piece = position().get(square);
     console.log("----", drag().square, square, piece);
     let availableMove = find(
       chessboardStore().availableMoves,
@@ -304,7 +306,7 @@ export function ChessboardView(props: {
         y: tap.y - centerY,
       };
       store.activeFromSquare = square;
-      store.availableMoves = store.position.moves({
+      store.availableMoves = position().moves({
         square: square,
         verbose: true,
       });
@@ -404,6 +406,9 @@ export function ChessboardView(props: {
   const isMobile = useIsMobile();
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
+  createEffect(() => {
+    console.log("plans", chessboardStore().plans);
+  });
   const x = (
     <>
       <div
@@ -577,12 +582,15 @@ export function ChessboardView(props: {
               c.center,
               c.opacity(0)
             )}
+            ref={(x) => {
+              refs.visualizationDotRef = x;
+            }}
           >
             <div
+              class={clsx(true ? "bg-gray-98" : "bg-gray-4", "opacity-70")}
               style={s(
                 c.size("50%"),
                 c.round,
-                // c.bg(indicatorColor),
                 c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
               )}
             ></div>
@@ -687,7 +695,7 @@ export function ChessboardView(props: {
           </Show>
           <div
             style={s(c.column, c.fullWidth, c.fullHeight, c.noPointerEvents)}
-            class={clsx("z-1")}
+            class={clsx("")}
           >
             {times(8)((i) => {
               return (
@@ -712,40 +720,48 @@ export function ChessboardView(props: {
                     const square = createMemo(
                       () => `${tileLetter()}${tileNumber()}` as Square
                     );
+                    type HighlightType = readonly [
+                      "indicator" | "full" | null,
+                      "last" | "next" | null
+                    ];
+                    const [highlightType, highlightColor] = destructure(
+                      createMemo(() => {
+                        const isDraggedOverSquare =
+                          chessboardStore().draggedOverSquare == square();
+                        let availableMove = availableMoves().find(
+                          (m) => m.to == square()
+                        );
+                        if (isDraggedOverSquare) {
+                          return ["full", "next"];
+                        }
+                        let hasPiece = position().get(square()) != null;
+                        if (availableMove) {
+                          if (hasPiece) {
+                            return ["indicator", "next"];
+                          }
+                          return ["indicator", "next"];
+                        }
+                        const isLastMoveSquare =
+                          props.chessboardInterface.getLastMove()?.to ==
+                            square() ||
+                          props.chessboardInterface.getLastMove()?.from ==
+                            square();
+                        if (isLastMoveSquare) {
+                          return ["full", "last"];
+                        }
+                        const isPreviewSquare =
+                          chessboardStore().previewedMove?.to === square() ||
+                          chessboardStore().previewedMove?.from === square();
+                        if (isPreviewSquare) {
+                          return ["full", "next"];
+                        }
 
-                    let availableMove = createMemo(() => {
-                      return availableMoves().find((m) => m.to == square());
-                    });
-                    const isFromSquare = () =>
-                      chessboardStore().activeFromSquare === square();
-                    const isDraggedOverSquare = () =>
-                      chessboardStore().draggedOverSquare == square();
-                    const highlightingPreviewMove = () =>
-                      chessboardStore().previewedMove;
-                    const isPreviewSquare = () =>
-                      chessboardStore().previewedMove?.to === square() ||
-                      chessboardStore().previewedMove?.from === square();
-                    const isLastMoveSquare = createMemo(
-                      () =>
-                        !(
-                          isDraggedOverSquare() ||
-                          availableMove() ||
-                          isFromSquare() ||
-                          isPreviewSquare()
-                        )
+                        return [null, null];
+                      })()
                     );
-
                     const isBottomEdge = i == 7;
                     const isRightEdge = j == 7;
-                    const shouldHighlight = () =>
-                      isFromSquare() ||
-                      isDraggedOverSquare() ||
-                      props.chessboardInterface.getLastMove()?.to == square() ||
-                      props.chessboardInterface.getLastMove()?.from ==
-                        square() ||
-                      isPreviewSquare();
-                    const isJustIndicator = () =>
-                      availableMove() && !shouldHighlight();
+
                     return (
                       <div
                         style={s(
@@ -760,31 +776,35 @@ export function ChessboardView(props: {
                       >
                         <div
                           class="absolute inset-0 grid place-items-center rounded-full"
-                          style={s(c.zIndex(10))}
+                          style={s(
+                            c.zIndex(highlightType() === "indicator" ? 11 : 1)
+                          )}
                         >
                           <div
                             class={`h-1/3 w-1/3 rounded-full transition-opacity duration-300 ${
-                              isJustIndicator() ? "opacity-100" : "opacity-0"
+                              highlightType() ? "opacity-100" : "opacity-0"
                             }`}
                             id={`indicator-${square()}`}
                             classList={{
-                              hidden: !isJustIndicator(),
+                              hidden: !(highlightType() === "indicator"),
                             }}
                             style={s(
                               c.bg(theme().highlightNextMove),
                               c.absolute,
-                              c.zIndex(2)
+                              c.zIndex(6)
                             )}
                           />
                         </div>
                         <div
                           class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity ${
-                            shouldHighlight() ? "opacity-100" : "opacity-0"
+                            highlightType() === "full"
+                              ? "opacity-100"
+                              : "opacity-0"
                           }`}
                           id={`highlight-${square()}`}
                           style={s(
                             c.bg(
-                              isLastMoveSquare()
+                              highlightColor() === "last"
                                 ? theme().highlightLastMove
                                 : theme().highlightNextMove
                             ),

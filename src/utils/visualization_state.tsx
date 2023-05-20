@@ -8,7 +8,11 @@ import {
 } from "~/types/VisualizationState";
 import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
-import { getInitialPuzzleState, PuzzleState } from "./puzzle_state";
+import {
+  getInitialPuzzleState,
+  PuzzleState,
+  PuzzleStateDelegate,
+} from "./puzzle_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
   DEBUG_CLIMB_START_PLAYING,
@@ -19,7 +23,12 @@ import { cloneDeep, takeRight } from "lodash-es";
 import { fensTheSame } from "~/utils/fens";
 import { createQuick } from "./quick";
 import { times } from "~/utils/times";
-import { createChessboardInterface } from "./chessboard_interface";
+import {
+  ChessboardDelegate,
+  ChessboardInterface,
+  createChessboardInterface,
+} from "./chessboard_interface";
+import { toSide } from "./repertoire";
 
 type Stack = [VisualizationState, AppState];
 
@@ -82,13 +91,13 @@ export const getInitialVisualizationState = (
     );
   };
   let initialState = {
+    pulsePlay: true,
+    viewStack: [],
+    // @ts-ignore
+    chessboard: null as ChessboardInterface,
     finishedAutoPlaying: false,
     chessboardState: null,
     puzzleState: getInitialPuzzleState(setPuzzle, getPuzzle),
-    progressMessage: (testProgress
-      ? { message: "Test message", type: ProgressMessageType.Error }
-      : null) as ProgressMessage,
-
     isDone: false,
     playButtonFlashAnim: 0,
     mockPassFail: DEBUG_PASS_FAIL_BUTTONS,
@@ -100,7 +109,7 @@ export const getInitialVisualizationState = (
       "playback-speed",
       PlaybackSpeed.Normal
     ),
-    hiddenMoves: null,
+    hiddenMoves: [],
     autoPlay: false,
     showHelpButton: true,
     nextPuzzle: null,
@@ -140,7 +149,6 @@ export const getInitialVisualizationState = (
     resetState: () => {
       set(([state]) => {
         state.showPuzzlePosition = false;
-        state.progressMessage = null;
         state.finishedAutoPlaying = false;
         state.isDone = false;
       });
@@ -169,7 +177,8 @@ export const getInitialVisualizationState = (
     ...createQuick(setOnly),
     visualizeHiddenMoves: (callback) =>
       set(([s]) => {
-        s.chessboardState.visualizeMoves(
+        s.stopLoopingPlayFlash();
+        s.chessboard.visualizeMoves(
           cloneDeep(s.hiddenMoves),
           s.playbackSpeedUserSetting.value,
           callback
@@ -177,6 +186,8 @@ export const getInitialVisualizationState = (
       }),
     setupForPuzzle: () =>
       set(([state]) => {
+        state.chessboard.resetPosition();
+        state.chessboard.clearPending();
         state.focusedMoveIndex = null;
         const currentPosition = new Chess();
         const puzzlePosition = new Chess();
@@ -208,11 +219,13 @@ export const getInitialVisualizationState = (
             }
             // state.currentPosition = currentPosition
             state.currentPosition = currentPosition;
-            state.chessboardState.futurePosition = puzzlePosition;
+            state.chessboard.set((s) => {
+              s.futurePosition = puzzlePosition;
+              s.position = currentPosition;
+            });
             state.puzzleState.puzzlePosition = puzzlePosition;
             state.showPuzzlePosition = false;
-            state.chessboardState.position = currentPosition;
-            state.chessboardState.flipped = puzzlePosition.turn() === "b";
+            state.chessboard.setPerspective(toSide(puzzlePosition.turn()));
             break;
           }
         }
@@ -225,7 +238,7 @@ export const getInitialVisualizationState = (
               if (s.onAutoPlayEnd && !s.finishedAutoPlaying) {
                 s.onAutoPlayEnd();
               }
-              s.chessboardState.isVisualizingMoves = false;
+              // s.chessboardState.isVisualizingMoves = false;
               s.finishedAutoPlaying = true;
               s.focusedMoveIndex = null;
             });
@@ -234,26 +247,11 @@ export const getInitialVisualizationState = (
       }),
     stopLoopingPlayFlash: () =>
       set(([s]) => {
-        s.playButtonFlashAnim.setValue(1.0);
+        s.pulsePlay = false;
       }),
     startLoopingPlayFlash: () =>
       set(([s]) => {
-        const animDuration = 1000;
-        Animated.loop(
-          Animated.sequence([
-            Animated.timing(s.playButtonFlashAnim, {
-              toValue: 1.0,
-              duration: animDuration,
-              useNativeDriver: true,
-            }),
-
-            Animated.timing(s.playButtonFlashAnim, {
-              toValue: 0,
-              duration: animDuration,
-              useNativeDriver: true,
-            }),
-          ])
-        ).start();
+        s.pulsePlay = true;
       }),
     toggleNotation: () =>
       set(([s]) => {
@@ -276,20 +274,22 @@ export const getInitialVisualizationState = (
   initialState.puzzleState = getInitialPuzzleState(setPuzzle, getPuzzle);
   initialState.puzzleState.delegate = {
     animatePieceMove: (...args) => {
-      initialState.chessboardState.animatePieceMove(...args);
+      initialState.chessboard.animatePieceMove(...args);
     },
     onPuzzleMoveSuccess: () => {
       set(([state]) => {
         // TODO: animate piece move
         state.showPuzzlePosition = true;
-        state.chessboardState.flashRing(true);
-        state.chessboardState.position = state.puzzleState.puzzlePosition;
-        state.chessboardState.futurePosition = null;
+        state.chessboard.flashRing(true);
+        state.chessboard.set((s) => {
+          s.futurePosition = null;
+          s.position = state.puzzleState.puzzlePosition;
+        });
       });
     },
     onPuzzleMoveFailure: (move: Move) => {
       set(([state]) => {
-        state.chessboardState.flashRing(false);
+        state.chessboard.flashRing(false);
         if (isClimb) {
           state.onFail();
         }
@@ -297,122 +297,135 @@ export const getInitialVisualizationState = (
     },
     onPuzzleSuccess: () => {
       set(([state]) => {
-        state.progressMessage = null;
         state.isDone = true;
         if (state.onSuccess) {
           state.onSuccess();
         }
       });
     },
-  };
-
-  const setChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _set((s) =>
-      fn((isClimb ? s.climbState : s.visualizationState).chessboardState)
-    );
-  };
-  const getChess = <T,>(fn: (s: ChessboardState) => T, id?: string): T => {
-    return _get((s) =>
-      fn((isClimb ? s.climbState : s.visualizationState).chessboardState)
-    );
-  };
-  initialState.chessboardState = createChessboardInterface()[1];
-  initialState.chessboardState.set((c) => {
-    c.frozen = false;
-    c.delegate = initialState.puzzleState;
-  });
-  if (isClimb) {
-    initialState = {
-      ...initialState,
-      ...{
-        isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
-        scoreOpacityAnim: 0.0,
-        // TODO: bring back intro screen
-        score: new StorageItem("climb-score", 0),
-        highScore: new StorageItem("climb-high-score", 0),
-        delta: 0,
-        step: null,
-        puzzleStartTime: null,
-        startPlayingClimb: () =>
-          set(([s]) => {
-            s.isPlayingClimb = true;
-            s.visualizeHiddenMoves(() => {
-              set(([s]) => {
-                if (s.onAutoPlayEnd && !s.finishedAutoPlaying) {
-                  s.onAutoPlayEnd();
-                }
-                s.chessboardState.isVisualizingMoves = false;
-                s.finishedAutoPlaying = true;
-                s.focusedMoveIndex = null;
-              });
-            });
-          }),
-        onFail: () =>
-          set(([s]) => {
-            // TODO: fix repetition here
-            if (!s.currentPuzzleFailed) {
-              const delta = -10;
-              s.delta = delta;
-              s.lastPuzzleSuccess = false;
-              s.animatePointChange();
-              s.score.value = Math.max(s.score.value + delta, 0);
-              s.updateStep();
-            }
-            s.currentPuzzleFailed = true;
-          }),
-        onSuccess: () =>
-          set(([s]) => {
-            if (s.currentPuzzleFailed) {
-              return;
-            }
-            const timeTaken = performance.now() - s.puzzleStartTime;
-            const delta = Math.round(
-              Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
-            );
-            s.lastPuzzleSuccess = true;
-            s.delta = delta;
-            s.animatePointChange();
-            s.score.value = s.score.value + delta;
-            if (s.score.value > s.highScore.value) {
-              s.highScore.value = s.score.value;
-            }
-            s.updateStep();
-          }),
-        lastPuzzleSuccess: false,
-        currentPuzzleFailed: false,
-        animatePointChange: () =>
-          set(([s]) => {
-            const animDuration = 300;
-            Animated.sequence([
-              Animated.timing(s.scoreOpacityAnim, {
-                toValue: 1,
-                duration: animDuration,
-                useNativeDriver: true,
-              }),
-
-              Animated.timing(s.scoreOpacityAnim, {
-                toValue: 0,
-                duration: animDuration,
-                useNativeDriver: true,
-              }),
-            ]).start();
-          }),
-        onAutoPlayEnd: () =>
-          set(([s]) => {
-            s.puzzleStartTime = performance.now();
-            s.currentPuzzleFailed = false;
-          }),
-        initState: () =>
-          set(([s]) => {
-            s.updateStep();
-            s.refreshPuzzle();
-          }),
-        updateStep: () =>
-          set(([s]) => {
-            s.step = CLIMB[s.score.value];
-          }),
+  } as PuzzleStateDelegate;
+  initialState.chessboard = createChessboardInterface()[1];
+  initialState.chessboard.set((c) => {
+    c.delegate = {
+      completedMoveAnimation: () => {},
+      onPositionUpdated: () => {
+        set(([s]) => {});
       },
+
+      madeManualMove: () => {
+        get(([s]) => {});
+      },
+      onBack: () => {
+        set(([s]) => {});
+      },
+      onReset: () => {
+        set(([s]) => {});
+      },
+      onMovePlayed: () => {
+        set(([s, rs]) => {});
+      },
+      shouldMakeMove: (move: Move) =>
+        set(([s]) => {
+          return s.puzzleState.shouldMakeMove(move);
+        }),
     };
-  }
+  });
+
+  initialState.chessboard.set((c) => {
+    c.frozen = false;
+  });
+  // if (isClimb) {
+  //   initialState = {
+  //     ...initialState,
+  //     ...{
+  //       isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
+  //       scoreOpacityAnim: 0.0,
+  //       // TODO: bring back intro screen
+  //       score: new StorageItem("climb-score", 0),
+  //       highScore: new StorageItem("climb-high-score", 0),
+  //       delta: 0,
+  //       step: null,
+  //       puzzleStartTime: null,
+  //       startPlayingClimb: () =>
+  //         set(([s]) => {
+  //           s.isPlayingClimb = true;
+  //           s.visualizeHiddenMoves(() => {
+  //             set(([s]) => {
+  //               if (s.onAutoPlayEnd && !s.finishedAutoPlaying) {
+  //                 s.onAutoPlayEnd();
+  //               }
+  //               s.chessboardState.isVisualizingMoves = false;
+  //               s.finishedAutoPlaying = true;
+  //               s.focusedMoveIndex = null;
+  //             });
+  //           });
+  //         }),
+  //       onFail: () =>
+  //         set(([s]) => {
+  //           // TODO: fix repetition here
+  //           if (!s.currentPuzzleFailed) {
+  //             const delta = -10;
+  //             s.delta = delta;
+  //             s.lastPuzzleSuccess = false;
+  //             s.animatePointChange();
+  //             s.score.value = Math.max(s.score.value + delta, 0);
+  //             s.updateStep();
+  //           }
+  //           s.currentPuzzleFailed = true;
+  //         }),
+  //       onSuccess: () =>
+  //         set(([s]) => {
+  //           if (s.currentPuzzleFailed) {
+  //             return;
+  //           }
+  //           const timeTaken = performance.now() - s.puzzleStartTime;
+  //           const delta = Math.round(
+  //             Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
+  //           );
+  //           s.lastPuzzleSuccess = true;
+  //           s.delta = delta;
+  //           s.animatePointChange();
+  //           s.score.value = s.score.value + delta;
+  //           if (s.score.value > s.highScore.value) {
+  //             s.highScore.value = s.score.value;
+  //           }
+  //           s.updateStep();
+  //         }),
+  //       lastPuzzleSuccess: false,
+  //       currentPuzzleFailed: false,
+  //       animatePointChange: () =>
+  //         set(([s]) => {
+  //           const animDuration = 300;
+  //           Animated.sequence([
+  //             Animated.timing(s.scoreOpacityAnim, {
+  //               toValue: 1,
+  //               duration: animDuration,
+  //               useNativeDriver: true,
+  //             }),
+  //
+  //             Animated.timing(s.scoreOpacityAnim, {
+  //               toValue: 0,
+  //               duration: animDuration,
+  //               useNativeDriver: true,
+  //             }),
+  //           ]).start();
+  //         }),
+  //       onAutoPlayEnd: () =>
+  //         set(([s]) => {
+  //           s.puzzleStartTime = performance.now();
+  //           s.currentPuzzleFailed = false;
+  //         }),
+  //       initState: () =>
+  //         set(([s]) => {
+  //           s.updateStep();
+  //           s.refreshPuzzle();
+  //         }),
+  //       updateStep: () =>
+  //         set(([s]) => {
+  //           s.step = CLIMB[s.score.value];
+  //         }),
+  //     },
+  //   };
+  // }
   return initialState;
 };

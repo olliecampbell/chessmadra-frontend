@@ -67,6 +67,13 @@ export interface ChessboardInterface {
 
   setFrozen: (_: boolean) => void;
   setPerspective: (_: Side) => void;
+
+  // Other trainer tool stuff
+  visualizeMoves: (
+    _: Move[],
+    speed: PlaybackSpeed,
+    callback: (() => void) | undefined
+  ) => void;
 }
 
 export interface ChessboardDelegate {
@@ -78,7 +85,7 @@ export interface ChessboardDelegate {
   onBack?: () => void;
   onReset?: () => void;
   completedMoveAnimation?: (move: Move) => void;
-  askForPromotionPiece: (requestedMove: Move) => PieceSymbol | null;
+  askForPromotionPiece?: (requestedMove: Move) => PieceSymbol | null;
 }
 
 export interface ChessboardViewState {
@@ -91,6 +98,7 @@ export interface ChessboardViewState {
   refs: {
     ringRef: HTMLDivElement | null;
     pieceRefs: Partial<Record<Square, HTMLDivElement>>;
+    visualizationDotRef: HTMLDivElement | null;
   };
   _animatePosition?: Chess;
   position: Chess;
@@ -125,6 +133,10 @@ export interface ChessboardViewState {
   moveLogPgn: string;
   moveHistory: Move[];
   positionHistory: string[];
+
+  // other tool stuff
+  futurePosition: Chess | null;
+  movesToVisualize: Move[];
 }
 
 export const createChessboardInterface = (): [
@@ -143,10 +155,12 @@ export const createChessboardInterface = (): [
       moveLog: [],
       moveLogPgn: "",
       position: createChessProxy(new Chess()),
+      futurePosition: createChessProxy(new Chess()),
       positionHistory: [START_EPD],
       moveHistory: [],
       refs: {
         ringRef: null,
+        visualizationDotRef: null,
         pieceRefs: {},
       },
       ringColor: c.colors.successColor,
@@ -439,6 +453,7 @@ export const createChessboardInterface = (): [
     },
     clearPending: () => {
       set((s: ChessboardViewState) => {
+        s.movesToVisualize = [];
         s.activeFromSquare = undefined;
         s.availableMoves = [];
         s.draggedOverSquare = undefined;
@@ -584,6 +599,72 @@ export const createChessboardInterface = (): [
         chessboardInterface.getDelegate()?.onPositionUpdated?.();
         chessboardInterface.getDelegate()?.onBack?.();
       });
+    },
+    visualizeMoves: (
+      moves: Move[],
+      speed: PlaybackSpeed,
+      callback: (() => void) | undefined
+    ) => {
+      set((s) => {
+        s.movesToVisualize = moves;
+      });
+      const recurseVisualize = () => {
+        set((s) => {
+          let move = s.movesToVisualize?.shift();
+          if (!move) {
+            return;
+          }
+          let { fadeDuration, moveDuration, stayDuration } =
+            getAnimationDurations(speed);
+          // @ts-ignore
+          const [start, end]: Square[] = [move.from, move.to];
+          const { x, y } = getSquareOffset(end, s.flipped);
+          const { x: startX, y: startY } = getSquareOffset(start, s.flipped);
+          const dotRef = s.refs.visualizationDotRef;
+          console.log("dot ref", dotRef);
+          if (!dotRef) {
+            return;
+          }
+          dotRef.style.top = `${startY * 100}%`;
+          dotRef.style.left = `${startX * 100}%`;
+
+          let tl = anime.timeline({
+            autoplay: true,
+          });
+
+          // Fade In
+          tl.add({
+            targets: dotRef,
+            opacity: [0, 1],
+            duration: fadeDuration,
+            easing: "linear",
+            offset: 0,
+          });
+
+          // Move
+          tl.add({
+            targets: dotRef,
+            top: `${y * 100}%`,
+            left: `${x * 100}%`,
+            duration: moveDuration,
+            easing: "easeInOutSine",
+            offset: fadeDuration, // start the move after fadeDuration
+          });
+
+          // Fade Out
+          tl.add({
+            targets: dotRef,
+            opacity: [1, 0],
+            duration: stayDuration,
+            easing: "linear",
+            offset: fadeDuration + moveDuration, // start fading out after fadeDuration + moveDuration
+            complete: () => {
+              recurseVisualize();
+            },
+          });
+        });
+      };
+      recurseVisualize();
     },
     // visualizeMove: (move: Move, speed: PlaybackSpeed, callback: () => void) => {
     //   set((s) => {

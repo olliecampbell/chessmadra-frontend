@@ -2,7 +2,7 @@ import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { includes, isEmpty } from "lodash-es";
 import { CMText } from "./CMText";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { BrowserSidebar } from "./BrowsingSidebar";
+import { SidebarContainer } from "./SidebarContainer";
 import { FadeInOut } from "./FadeInOut";
 import { SettingsButtons } from "./Settings";
 import { Animated } from "./View";
@@ -24,10 +24,21 @@ import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
 import { createElementBounds } from "@solid-primitives/bounds";
+import { BackSection } from "./BackSection";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
-export const SidebarLayout = (props: { shared?: boolean }) => {
+export const SidebarLayout = (props: {
+  shared?: boolean;
+  setAnimateSidebar: (fn: (dir: "right" | "left") => void) => void;
+  breadcrumbs;
+  sidebarContent;
+  belowChessboard;
+  chessboardInterface;
+  backSection;
+  settings;
+  loading: boolean;
+}) => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [showingPlans] = useSidebarState(([s]) => [s.showPlansState.visible]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -67,7 +78,13 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
   };
 
   return (
-    <RepertoirePageLayout flushTop bottom={null} fullHeight naked>
+    <RepertoirePageLayout
+      flushTop
+      bottom={null}
+      fullHeight
+      naked
+      loading={props.loading}
+    >
       <div
         id="page-content"
         style={s(
@@ -98,11 +115,23 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
           >
             {!vertical ? (
               <div style={s(c.height(140), c.column, c.justifyEnd)}>
-                <NavBreadcrumbs />
+                {props.breadcrumbs}
                 <Spacer height={32} />
               </div>
             ) : (
-              <MobileTopBar />
+              <div
+                style={s(
+                  c.row,
+                  c.alignCenter,
+                  c.fullWidth,
+                  c.justifyBetween,
+                  c.px(c.getSidebarPadding(responsive)),
+                  c.py(8)
+                )}
+              >
+                {props.breadcrumbs}
+                {props.settings}
+              </div>
             )}
             <div
               ref={setChessboardContainerRef}
@@ -119,21 +148,13 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
                 chessboardHidden() ? c.opacity(20) : c.opacity(100)
               )}
             >
-              <BrowsingChessboardView />
+              <ChessboardView chessboardInterface={props.chessboardInterface} />
             </div>
             <Show when={!responsive.isMobile}>
               <Spacer height={12} />
-              <Show
-                when={
-                  mode() === "build" ||
-                  mode() === "browse" ||
-                  mode() === "review"
-                }
-              >
-                <div class="row w-full justify-center">
-                  <AnalyzeOnLichessButton />
-                </div>
-              </Show>
+              <div class="row w-full justify-center">
+                {props.belowChessboard}
+              </div>
             </Show>
             <Show when={responsive.isMobile}>
               <Spacer height={c.getSidebarPadding(responsive)} />
@@ -149,7 +170,11 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
                     : c.mt(0)
                 )}
               >
-                <BrowserSidebar />
+                <SidebarContainer
+                  setAnimateSidebar={props.setAnimateSidebar}
+                  children={props.sidebarContent}
+                  settings={props.settings}
+                />
               </div>
             ) : (
               <Spacer height={60} />
@@ -168,7 +193,11 @@ export const SidebarLayout = (props: { shared?: boolean }) => {
                   c.maxWidth(600)
                 )}
               >
-                <BrowserSidebar />
+                <SidebarContainer
+                  setAnimateSidebar={props.setAnimateSidebar}
+                  children={props.sidebarContent}
+                  settings={props.settings}
+                />
               </div>
             </>
           </Show>
@@ -230,21 +259,6 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
       </Pressable>
     </FadeInOut>
   );
-};
-
-// TODO: solid: ref stuff?
-const BrowsingChessboardView = function BrowsingChessboardView() {
-  const [mode] = useRepertoireState((s) => [s.browsingState.sidebarState.mode]);
-  const chessboardState = () =>
-    mode() === "review"
-      ? getAppState().repertoireState.reviewState.chessboard
-      : getAppState().repertoireState.browsingState.chessboard;
-  // useRepertoireState((s) => [
-  //   s.browsingState.sidebarState.mode == "review"
-  //     ? s.reviewState.chessboardState
-  //     : s.browsingState.chessboardState,
-  // ]);
-  return <ChessboardView chessboardInterface={chessboardState()} />;
 };
 
 const MobileTopBar = ({}) => {

@@ -1,37 +1,127 @@
-
-// import { ExchangeRates } from "~/ExchangeRate";
+import { includes } from "lodash-es";
+import {
+  useRepertoireState,
+  useSidebarState,
+  quick,
+  getAppState,
+} from "~/utils/app_state";
+import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import { BP, useResponsive } from "~/utils/useResponsive";
+import { createElementBounds } from "@solid-primitives/bounds";
+import { BackSection } from "./BackSection";
+import {
+  VERTICAL_BREAKPOINT,
+  SidebarLayout,
+  NavBreadcrumbs,
+  AnalyzeOnLichessButton,
+} from "./SidebarLayout";
+import { Responses } from "./RepertoireEditingView";
+import { Dynamic } from "solid-js/web";
+import { FeedbackView } from "./FeedbackView";
+import { RepertoireHome } from "./RepertoireHome";
+import { RepertoireOverview } from "./RepertoirtOverview";
+import { RepertoireReview } from "./RepertoireReview";
+import { DeleteLineView } from "./DeleteLineView";
+import { TransposedView } from "./TransposedView";
+import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
+import { SavedLineView } from "./SavedLineView";
+import { Spacer } from "./Space";
+import { SidebarActions } from "./SidebarActions";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { useIsMobile } from "~/utils/isMobile";
-import { CMText } from "./CMText";
-import { useDebugState } from "~/utils/app_state";
+import { SettingsButtons } from "./Settings";
 
 export const RepertoireBuilder = () => {
-  const isMobile = useIsMobile();
-  const [underConstruction, debugUi] = useDebugState((s) => [
-    s.underConstruction,
-    s.debugUi,
+  const [mode] = useSidebarState(([s]) => [s.mode]);
+
+  const responsive = useResponsive();
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const chessboardState = () =>
+    mode() === "review"
+      ? getAppState().repertoireState.reviewState.chessboard
+      : getAppState().repertoireState.browsingState.chessboard;
+  const [view] = useSidebarState(([s]) => [s.viewStack.at(-1)]);
+  const [
+    addedLineState,
+    deleteLineState,
+    stageStack,
+    submitFeedbackState,
+    showPlansState,
+    transposedState,
+  ] = useSidebarState(([s]) => [
+    s.addedLineState,
+    s.deleteLineState,
+    s.sidebarOnboardingState.stageStack,
+    s.submitFeedbackState,
+    s.showPlansState,
+    s.transposedState,
+  ]);
+  createEffect(() => {
+    console.log("stageStack", stageStack());
+    console.log("View in sidebar", view());
+  });
+  const [repertoireLoading] = useRepertoireState((s) => [
+    s.repertoire === undefined,
   ]);
 
-  if (underConstruction && !debugUi) {
-    return (
-      <div style={s(c.column, c.center)}>
-        {!isMobile && <Spacer height={48} />}
-        <i
-          class="fa-sharp fa-hammer"
-          style={s(c.fontSize(32), c.fg(c.grays[80]))}
-        />
-        <Spacer height={12} />
-        <CMText style={s(c.fontSize(18), c.weightSemiBold)}>
-          Under construction
-        </CMText>
-        <Spacer height={12} />
-        <CMText style={s()}>
-          Doing some housekeeping, will be down for a few hours, sorry!
-        </CMText>
+  const sidebarContent = (
+    <>
+      <Show when={vertical}>
+        <BackSection />
+      </Show>
+      <div id="sidebar-inner" style={s(c.relative, c.zIndex(100))}>
+        <Switch fallback={<Responses />}>
+          <Match when={view()}>
+            <Dynamic component={view()?.component} {...view()?.props} />
+          </Match>
+          <Match when={submitFeedbackState().visible}>
+            <FeedbackView />
+          </Match>
+          <Match when={mode() == "home"}>
+            <RepertoireHome />
+          </Match>
+          <Match when={mode() == "overview"}>
+            <RepertoireOverview />
+          </Match>
+          <Match when={mode() == "review"}>
+            <RepertoireReview />
+          </Match>
+          <Match when={deleteLineState().visible}>
+            <DeleteLineView />
+          </Match>
+          <Match when={transposedState().visible}>
+            <TransposedView />
+          </Match>
+          <Match when={showPlansState().visible}>
+            <TargetCoverageReachedView />
+          </Match>
+          <Match when={addedLineState().visible}>
+            <SavedLineView />
+          </Match>
+        </Switch>
       </div>
-    );
-  } else {
-    return <SidebarLayout mode="home" shared={false} />;
-  }
+      <Spacer height={44} />
+      <SidebarActions />
+    </>
+  );
+
+  return (
+    <SidebarLayout
+      loading={repertoireLoading()}
+      breadcrumbs={<NavBreadcrumbs />}
+      sidebarContent={sidebarContent}
+      settings={<SettingsButtons />}
+      chessboardInterface={chessboardState()}
+      backSection={<BackSection />}
+      belowChessboard={
+        (mode() === "build" || mode() === "browse" || mode() === "review") && (
+          <AnalyzeOnLichessButton />
+        )
+      }
+      setAnimateSidebar={(fn) => {
+        quick((s) => {
+          s.repertoireState.animateSidebarState = fn;
+        });
+      }}
+    />
+  );
 };

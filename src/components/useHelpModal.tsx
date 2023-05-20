@@ -1,7 +1,7 @@
-
 import { Modal } from "./Modal";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
+import { createSignal } from "solid-js";
 
 export const useHelpModal = ({ copy }) => {
   const [helpOpen, setHelpOpen] = createSignal(false);

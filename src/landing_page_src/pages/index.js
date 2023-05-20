@@ -451,6 +451,7 @@ export default ({ onClick, onLogin }) => {
       <Section
         inner-max-width="1000px"
         background="url(/homepage_imgs/bobby.png?v=2023-04-24T10:51:51.196Z) 0% 0%,--sidebar"
+        background-size="cover"
         md-padding="0 0 0 0"
         lg-padding="48px 0 4px 0"
       >

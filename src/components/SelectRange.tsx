@@ -1,11 +1,16 @@
-
 import { s, c } from "~/utils/styles";
-import * as React from "react";
-import { Range, getTrackBackground } from "react-range";
 import { isNil } from "lodash-es";
 import { CMText } from "./CMText";
 
-export const SelectRange: React.FC<{
+export const SelectRange = ({
+  min,
+  max,
+  range,
+  step,
+  onChange,
+  formatter,
+  onFinish,
+}: {
   min: number;
   max: number;
   range: [number, number];
@@ -13,7 +18,7 @@ export const SelectRange: React.FC<{
   formatter?: (_: number) => string;
   onChange: (_: [number, number]) => void;
   onFinish: () => void;
-}> = ({ min, max, range, step, onChange, formatter, onFinish }) => {
+}) => {
   const values = [range[0], isNil(range[1]) ? max : range[1]];
   console.log("values", values);
   return (

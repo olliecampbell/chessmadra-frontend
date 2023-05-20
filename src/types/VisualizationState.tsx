@@ -1,21 +1,21 @@
-import { Animated } from "react-native";
 import { Chess, Move } from "@lubert/chess.ts";
-import { StorageItem } from "app/utils/storageItem";
-import { LichessPuzzle } from "app/models";
-import { ChessboardState } from "app/utils/chessboard_state";
-import { PuzzleState } from "app/utils/puzzle_state";
+import { LichessPuzzle } from "~/utils/models";
+import { ChessboardInterface } from "~/utils/chessboard_interface";
+import { StorageItem } from "~/utils/storageItem";
+import { PuzzleState } from "~/utils/puzzle_state";
+import { View } from "./View";
 
 export interface VisualizationState {
+  pulsePlay: boolean;
   puzzleState: PuzzleState;
-  chessboardState: ChessboardState;
+  chessboard: ChessboardInterface;
+  viewStack: View[];
 
-  progressMessage: ProgressMessage;
   mockPassFail: boolean;
   helpOpen: boolean;
   showPuzzlePosition: boolean;
   currentPosition: Chess;
   isDone: boolean;
-  playButtonFlashAnim: Animated.Value;
   plyUserSetting: StorageItem<number>;
   ratingGteUserSetting: StorageItem<number>;
   ratingLteUserSetting: StorageItem<number>;
@@ -23,10 +23,10 @@ export interface VisualizationState {
   hiddenMoves: Move[];
   showHelpButton: boolean;
   autoPlay: boolean;
-  nextPuzzle: LichessPuzzle;
+  nextPuzzle: LichessPuzzle | null;
   isPlaying: boolean;
-  focusedMoveIndex: number;
-  focusedMove: Move;
+  focusedMoveIndex: number | null;
+  focusedMove: Move | null;
   canFocusNextMove: boolean;
   canFocusLastMove: boolean;
   showNotation: StorageItem<boolean>;
@@ -36,7 +36,7 @@ export interface VisualizationState {
   refreshPuzzle: () => void;
   startLoopingPlayFlash: () => void;
   stopLoopingPlayFlash: () => void;
-  quick: (fn: any) => void;
+  quick: (fn: (s: VisualizationState) => void) => void;
   setupForPuzzle: () => void;
   finishedAutoPlaying: boolean;
   toggleNotation: () => void;
@@ -61,7 +61,6 @@ export interface VisualizationState {
   onAutoPlayEnd?: () => void;
   initState?: () => void;
   updateStep?: () => void;
-  scoreOpacityAnim?: Animated.Value;
 }
 
 interface Step {

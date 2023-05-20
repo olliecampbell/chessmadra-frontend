@@ -83,6 +83,7 @@ import { CMText } from "~/components/CMText";
 import { Spacer } from "~/components/Space";
 import { Pressable } from "~/components/Pressable";
 import { LichessLogoIcon } from "~/components/icons/LichessLogoIcon";
+import { View } from "~/types/View";
 
 export interface GetIncidenceOptions {
   placeholder: void;
@@ -130,7 +131,7 @@ export const modeToUI = (mode: BrowsingMode) => {
 };
 
 export interface SidebarState {
-  viewStack: { component: Component<any>; props: any }[];
+  viewStack: View[];
   isPastCoverageGoal?: boolean;
   mode: BrowsingMode;
   tableResponses: TableResponse[];
@@ -164,7 +165,6 @@ export interface SidebarState {
   planSections?: (() => JSXElement)[];
   activeSide?: Side;
 }
-export type View = { component: Component<any>; props: any };
 
 export interface BrowsingState {
   // Functions

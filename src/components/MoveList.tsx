@@ -1,13 +1,10 @@
-
-import {
-  Pressable,
-} from "react-native";
 import { s, c } from "~/utils/styles";
 import { forEach, isEmpty } from "lodash-es";
 import { Spacer } from "~/components/Space";
 import { Move } from "@lubert/chess.ts";
 import { CMText } from "./CMText";
 import { Show } from "solid-js";
+import { Pressable } from "./Pressable";
 
 export const MoveList = ({
   moveList,
@@ -106,9 +103,9 @@ export const MoveList = ({
                 </CMText>
               </Pressable>
             </div>
-            <Show when={i != pairs.length - 1 }>
+            <Show when={i != pairs.length - 1}>
               <div style={s(c.height(1), c.bg(c.grays[30]))} />
-              </Show>
+            </Show>
           </div>
         );
       })}

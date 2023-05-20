@@ -1,5 +1,7 @@
 import { BlunderPuzzle, LichessPuzzle } from "~/utils/models";
 import client from "~/utils/client";
+import { isDevelopment } from "./env";
+import { MOCK_BLACK_PUZZLE, MOCK_WHITE_PUZZLE } from "~/mocks/puzzles";
 
 interface PuzzleFetchOptions {
   ratingGte?: number;
@@ -7,10 +9,20 @@ interface PuzzleFetchOptions {
   maxPly?: number;
 }
 
-const flipper = 0;
+let flipper = 0;
+const MOCK_RESPONSES = true;
+
 export const fetchNewPuzzle = async (
   args: PuzzleFetchOptions
 ): Promise<LichessPuzzle> => {
+  if (MOCK_RESPONSES && isDevelopment) {
+    flipper++;
+    if (flipper % 2 === 0) {
+      return MOCK_WHITE_PUZZLE;
+    } else {
+      return MOCK_BLACK_PUZZLE;
+    }
+  }
   try {
     const response = await client.post("/api/v2/tactic", {
       ...args,

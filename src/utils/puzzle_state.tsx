@@ -15,8 +15,8 @@ export interface PuzzleState extends ChessboardDelegate {
   turn: Color;
   solutionMoves: Move[];
   puzzle: LichessPuzzle;
-  progressMessage?: ProgressMessage;
-  delegate?: PuzzleStateDelegate;
+  progressMessage: ProgressMessage | null;
+  delegate: PuzzleStateDelegate;
 }
 
 export interface PuzzleStateDelegate {
@@ -44,6 +44,8 @@ export const getInitialPuzzleState = (
     return _get((s) => fn(s));
   };
   return {
+    // @ts-ignore
+    delegate: null as PuzzleStateDelegate,
     puzzlePosition: null,
     turn: "w" as Color,
     shouldMakeMove: (move: Move) =>
@@ -66,14 +68,11 @@ export const getInitialPuzzleState = (
           s.solutionMoves.shift();
           if (!isEmpty(s.solutionMoves)) {
             s.delegate.onPuzzleMoveSuccess();
-            s.progressMessage = {
-              message: "Keep going...",
-              type: ProgressMessageType.Success,
-            };
           } else {
             s.delegate.onPuzzleMoveSuccess();
             s.delegate.onPuzzleSuccess();
           }
+          return true;
         } else {
           s.delegate.onPuzzleMoveFailure(move);
           s.progressMessage = {
@@ -89,6 +88,6 @@ export const getInitialPuzzleState = (
     completedMoveAnimation: (move: Move) => set((state) => {}),
     puzzle: null,
     solutionMoves: [] as Move[],
-    progressMessage: null as ProgressMessage,
+    progressMessage: null,
   } as PuzzleState;
 };

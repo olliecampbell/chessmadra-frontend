@@ -18,11 +18,9 @@ export const RepertoirePageLayout = (props: {
   centered?: boolean;
   fullHeight?: boolean;
   naked?: boolean;
+  loading?: boolean;
 }) => {
   const isMobile = useIsMobile();
-  const [repertoireLoading] = useRepertoireState((s) => [
-    s.repertoire === undefined,
-  ]);
 
   createDebugStateEffect();
   const backgroundColor = c.grays[8];
@@ -47,17 +45,17 @@ export const RepertoirePageLayout = (props: {
           isMobile ? s(c.grow) : c.flexShrink(1),
           props.centered && c.grow,
           props.fullHeight && c.grow,
-          repertoireLoading() && c.grow
+          props.loading && c.grow
         )}
       >
-        <Show when={repertoireLoading()}>
+        <Show when={props.loading}>
           <div style={s(c.grow, c.center)}>
             <div class={clsx("w-40")}>
               <LogoFull />
             </div>
           </div>
         </Show>
-        <Show when={!repertoireLoading()}>
+        <Show when={!props.loading}>
           <div
             style={s(
               !isMobile && s(c.overflowY("auto")),
@@ -83,7 +81,7 @@ export const RepertoirePageLayout = (props: {
           </div>
         </Show>
       </div>
-      <Show when={!repertoireLoading()}>{props.bottom}</Show>
+      <Show when={!props.loading}>{props.bottom}</Show>
     </div>
   );
 };

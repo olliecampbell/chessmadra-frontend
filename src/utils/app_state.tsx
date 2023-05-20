@@ -35,6 +35,7 @@ import { BrowsingState, SidebarState } from "./browsing_state";
 import { Accessor, useContext } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { destructure } from "@solid-primitives/destructure";
+import { getInitialTrainersState, TrainersState } from "./trainers_state";
 
 const DEBUG_STATE = true;
 
@@ -42,16 +43,17 @@ export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
   adminState: AdminState;
   visualizationState: VisualizationState;
-  climbState: VisualizationState;
+  // climbState: VisualizationState;
   repertoireState: RepertoireState;
-  blunderState: BlunderRecognitionState;
-  blindfoldState: BlindfoldTrainingState;
-  colorTrainingState: ColorTrainingState;
-  gameSearchState: GameSearchState;
-  gameMemorizationState: GameMemorizationState;
+  // blunderState: BlunderRecognitionState;
+  // blindfoldState: BlindfoldTrainingState;
+  // colorTrainingState: ColorTrainingState;
+  // gameSearchState: GameSearchState;
+  // gameMemorizationState: GameMemorizationState;
   debugState: DebugState;
   navigationState: NavigationState;
   userState: UserState;
+  trainersState: TrainersState;
   trackEvent: (name: string, props?: Object) => void;
 }
 
@@ -97,6 +99,7 @@ const initialState = {
   //         });
   //       },
   repertoireState: getInitialRepertoireState(set, get),
+  trainersState: getInitialTrainersState(set, get),
   adminState: getInitialAdminState(set, get),
   // visualizationState: getInitialVisualizationState(set, get, false),
   // climbState: getInitialVisualizationState(set, get, true),
@@ -108,6 +111,7 @@ const initialState = {
   debugState: getInitialDebugState(set, get),
   navigationState: getInitialNavigationState(set, get),
   userState: getInitialUserState(set, get),
+  visualizationState: getInitialVisualizationState(set, get, false),
   trackEvent: (name: string, props?: Object) => {
     get((s: AppState) => {
       console.log(
@@ -335,11 +339,11 @@ export const useSidebarState = <T extends any[]>(
   );
 };
 
-export const useVisualizationState = <T,>(
+export const useVisualizationState = <T extends any[]>(
   fn: (_: VisualizationState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSlice(fn, (s) => s.visualizationState, config);
+  return useStateSliceDestructure(fn, (s) => s.visualizationState, config);
 };
 
 export const useClimbState = <T,>(

@@ -4,7 +4,7 @@ import { Show } from "solid-js";
 
 type InputErrorProps = {
   name: string;
-  error?: string;
+  error?: string | null;
   class?: string;
 };
 

@@ -5,12 +5,8 @@ import { InputError } from "./forms/InputError";
 import { InputLabel } from "./forms/InputLabel";
 
 type TextInputProps = {
-  ref: (element: HTMLInputElement | HTMLTextAreaElement) => void;
   type: "text" | "email" | "tel" | "password" | "url" | "number" | "date";
   name: string;
-  value: string | number | undefined;
-  onInput: JSX.EventHandler<HTMLInputElement, InputEvent>;
-  onBlur: JSX.EventHandler<HTMLInputElement, FocusEvent>;
   placeholder?: string;
   required?: boolean;
   class?: string;
@@ -18,6 +14,7 @@ type TextInputProps = {
   label?: string;
   error?: string;
   padding?: "none";
+  errors?: Record<string, string[] | null>;
 };
 
 type TextAreaProps = {
@@ -40,17 +37,9 @@ type TextAreaProps = {
  * displayed in or around the field to communicate the entry requirements.
  */
 export function TextInput(props: TextInputProps) {
-  const [, inputProps] = splitProps(props, [
-    "class",
-    "inputClass",
-    "value",
-    "label",
-    "error",
-    "padding",
-  ]);
-  createEffect(() => {
-    console.log(`errors, ${props.name}`, props.error);
-  });
+  const error = () => {
+    return props.errors?.[props.name]?.[0];
+  };
   return (
     <div class={clsx(!props.padding && "", props.class)}>
       <InputLabel
@@ -59,7 +48,7 @@ export function TextInput(props: TextInputProps) {
         required={props.required}
       />
       <input
-        {...inputProps}
+        name={props.name}
         class={clsx(
           "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
@@ -68,11 +57,11 @@ export function TextInput(props: TextInputProps) {
           props.inputClass
         )}
         id={props.name}
-        value={props.value || ""}
+        type={props.type}
         aria-invalid={!!props.error}
         aria-errormessage={`${props.name}-error`}
       />
-      <InputError name={props.name} error={props.error} />
+      <InputError name={props.name} error={error()} class={"inline-block"} />
     </div>
   );
 }

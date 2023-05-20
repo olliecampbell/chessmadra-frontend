@@ -799,13 +799,12 @@ export const getInitialRepertoireState = (
           s.reviewState.stopReviewing();
         }
         s.showImportView = false;
-        console.log("back to overview?");
+        s.browsingState.clearViews();
         s.backToStartPosition();
         s.browsingState.sidebarState.activeSide = null;
         s.divergencePosition = null;
         s.divergenceIndex = null;
         s.browsingState.sidebarState = makeDefaultSidebarState();
-        console.log("new browsing state", s.browsingState.sidebarState);
       }),
     startImporting: (side: Side) =>
       set(([s]) => {
