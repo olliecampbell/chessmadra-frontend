@@ -14,7 +14,7 @@ import { RepertoireMovesTable } from "./RepertoireMovesTable";
 import { shouldUsePeerRates } from "~/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
-import { createEffect, createMemo, Show } from "solid-js";
+import { createEffect, createMemo, Match, Show, Switch } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 import { Puff } from "solid-spinner";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
@@ -99,7 +99,7 @@ export const Responses = function Responses() {
     if (!isEmpty(prepareFor())) {
       return prepareForHeader();
     }
-    return getResponsesHeader(currentLine(), yourMoves().length);
+    return getResponsesHeader(currentLine(), yourMoves().length, activeSide());
   };
   const responses = createMemo(() => {
     if (!isEmpty(yourMoves())) {
@@ -109,6 +109,16 @@ export const Responses = function Responses() {
     } else {
       return tableResponses();
     }
+  });
+  createEffect(() => {
+    console.log(
+      "This is a weird case",
+      tableResponses(),
+      positionReport(),
+      isEmpty(positionReport()?.suggestedMoves),
+      isEmpty(yourMoves()),
+      responses()
+    );
   });
   return (
     <div style={s(c.column, c.constrainWidth)}>
@@ -159,45 +169,37 @@ export const Responses = function Responses() {
         </>
       </Show>
       {user()?.isAdmin && <InstructiveGamesView />}
-      {(() => {
-        if (!positionReport()) {
-          return (
-            <div style={s(c.center, c.column, c.py(48))}>
-              <Puff color={c.primaries[60]} />
-            </div>
-          );
-        } else if (
-          isEmpty(positionReport().suggestedMoves) &&
-          isEmpty(yourMoves)
-        ) {
-          return (
-            <div
-              style={s(
-                c.column,
-                c.alignCenter,
-                c.selfCenter,
-                c.px(12),
-                c.maxWidth(240),
-                c.py(48)
-              )}
-            >
-              <CMText>
-                <i
-                  class="fa-light fa-empty-set"
-                  style={s(c.fg(c.grays[50]), c.fontSize(24))}
-                />
-              </CMText>
-              <Spacer height={18} />
-              <CMText style={s(c.fg(c.grays[75]))}>
-                No moves available for this position. You can still add a move
-                by playing it on the board.
-              </CMText>
-            </div>
-          );
-        } else {
-          return <></>;
-        }
-      })()}
+      <Switch>
+        <Match when={!positionReport()}>
+          <div style={s(c.center, c.column, c.py(48))}>
+            <Puff color={c.primaries[60]} />
+          </div>
+        </Match>
+        <Match when={isEmpty(tableResponses()) && isEmpty(yourMoves())}>
+          <div
+            style={s(
+              c.column,
+              c.alignCenter,
+              c.selfCenter,
+              c.px(12),
+              c.maxWidth(240),
+              c.py(48)
+            )}
+          >
+            <CMText>
+              <i
+                class="fa-light fa-empty-set"
+                style={s(c.fg(c.grays[50]), c.fontSize(24))}
+              />
+            </CMText>
+            <Spacer height={18} />
+            <CMText style={s(c.fg(c.grays[75]))}>
+              No moves available for this position. You can still add a move by
+              playing it on the board.
+            </CMText>
+          </div>
+        </Match>
+      </Switch>
     </div>
   );
 };
@@ -218,7 +220,11 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
   return false;
 };
 
-function getResponsesHeader(currentLine: string[], myMoves?: number): string {
+function getResponsesHeader(
+  currentLine: string[],
+  myMoves?: number,
+  side: Side
+): string {
   const hasMove = myMoves;
   // TODO: account for multiple moves, "These moves are"
   if (myMoves) {
@@ -230,6 +236,9 @@ function getResponsesHeader(currentLine: string[], myMoves?: number): string {
   }
   if (!hasMove && isEmpty(currentLine)) {
     return "Which first move do you play as white?";
+  }
+  if (side === "black" && currentLine.length === 1) {
+    return `What do you play as black against 1. ${currentLine[0]}?`;
   }
   return `${hasMove ? "Your" : "Choose your"} ${
     isEmpty(currentLine) ? "first" : "next"

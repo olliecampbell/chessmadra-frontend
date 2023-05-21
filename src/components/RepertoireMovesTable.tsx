@@ -420,7 +420,7 @@ const Response = (props: {
   const moveRating = () => props.tableResponse.moveRating;
 
   const responsive = useResponsive();
-  const { hoveringProps: responseHoverProps } = useHovering(
+  const { hoveringProps: responseHoverProps, hoveringRef } = useHovering(
     () => {
       getAppState().repertoireState.browsingState.chessboard?.previewMove(
         sanPlus()
@@ -561,7 +561,14 @@ const Response = (props: {
         </div>
       </Show>
       <Show when={!props.editing}>
-        <div style={s(c.row, c.alignStart)} {...responseHoverProps}>
+        <div
+          style={s(c.row, c.alignStart)}
+          {...responseHoverProps}
+          ref={(ref) => {
+            hoveringRef(ref);
+            console.log("ref called");
+          }}
+        >
           <Pressable
             onPress={() => {
               quick((s) => {

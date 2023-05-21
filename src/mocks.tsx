@@ -1,4 +1,5 @@
-import { Accessor, createSignal } from "solid-js";
+import { useMousePosition } from "@solid-primitives/mouse";
+import { Accessor, createSignal, onMount } from "solid-js";
 
 export const GridLoader = () => {
   return <div>mocked GridLoader</div>;
@@ -13,10 +14,21 @@ export const useHovering = (
   hovering: Accessor<boolean>;
 
   hoveringProps: { onMouseEnter: () => void; onMouseLeave: () => void };
+  hoveringRef: (x: HTMLDivElement) => void;
 } => {
   const [hovering, setHovering] = createSignal(false);
+
   return {
     hovering,
+    hoveringRef: (x: HTMLDivElement) => {
+      setTimeout(() => {
+        if (x?.matches(":hover")) {
+          console.log("matches hover");
+          onHover?.();
+          setHovering(true);
+        }
+      }, 0);
+    },
     hoveringProps: {
       onMouseEnter: (e) => {
         const isTouchDevice =

@@ -142,13 +142,13 @@ export const VisualizationSidebar = () => {
       >
         <Switch>
           <Match when={isDone()}>
-            <p class="text-body">Nice! Another?</p>
+            <p class="body-text">Nice! Another?</p>
           </Match>
           <Match when={progressMessage()}>
-            <p class="text-body">{progressMessage()?.message}</p>
+            <p class="body-text">{progressMessage()?.message}</p>
           </Match>
           <Match when={true}>
-            <p class="text-body">
+            <p class="body-text">
               Press the play button to see the next few moves, then try to find
               the move.
             </p>

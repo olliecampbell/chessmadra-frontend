@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isEmpty, isNil, dropRight, filter } from "lodash-es";
+import { isEmpty, isNil, dropRight, filter, includes } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   getAppState,
@@ -14,8 +14,9 @@ import { useResponsive } from "~/utils/useResponsive";
 import { FadeInOut } from "./FadeInOut";
 import { createEffect, Show } from "solid-js";
 import { Pressable } from "./Pressable";
-import { OnboardingIntro } from "./SidebarOnboarding";
+import { FirstLineSavedOnboarding, OnboardingIntro } from "./SidebarOnboarding";
 import { AnalyzeOnLichessButton, VERTICAL_BREAKPOINT } from "./SidebarLayout";
+import { PracticeComplete } from "./PracticeComplete";
 export const BackSection = () => {
   const [
     addedLineState,
@@ -122,8 +123,6 @@ export const BackSection = () => {
         });
       };
     }
-    if (repertoireState.onboarding.isOnboarding) {
-    }
     if (submitFeedbackState().visible) {
       backButtonAction = () => {
         quick((s) => {
@@ -138,8 +137,16 @@ export const BackSection = () => {
         });
       };
     }
-    if (view()?.component === OnboardingIntro) {
-      backButtonAction = null;
+    if (onboarding().isOnboarding) {
+      if (
+        includes(
+          [OnboardingIntro, FirstLineSavedOnboarding, PracticeComplete],
+          view()?.component
+        ) ||
+        (onboarding().isOnboarding && mode() === "build" && isEmpty(moveLog()))
+      ) {
+        backButtonAction = null;
+      }
     }
     return backButtonAction;
   };

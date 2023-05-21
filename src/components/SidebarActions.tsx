@@ -263,12 +263,11 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
           "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover",
         props.action.style === "focus" &&
           "bg-gray-82 &hover:bg-gray-86 text-gray-10",
-        props.action.style === "primary" &&
-          "text-primary bg-sidebar_button_primary ",
+        props.action.style === "primary" && " bg-sidebar_button_primary ",
         props.action.style === "primary" &&
           !props.action.disabled &&
-          "&hover:bg-sidebar_button_primary_hover",
-        props.action.disabled && "!cursor-auto",
+          "&hover:bg-sidebar_button_primary_hover text-primary",
+        props.action.disabled && "text-tertiary !cursor-default",
         props.action.class
       )}
       style={s(

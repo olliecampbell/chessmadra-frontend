@@ -24,6 +24,7 @@ import {
   BySide,
   getAllRepertoireMoves,
   lineToPgn,
+  pgnToLine,
   Repertoire,
   RepertoireGrade,
   RepertoireMove,
@@ -61,7 +62,9 @@ import {
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
 
-const TEST_LINE = isDevelopment ? [] : [];
+const TEST_LINE = isDevelopment
+  ? [] //pgnToLine("1.e4 c6 2. d4 d5 3. exd5 cxd5 4. Bd3 Nc6 5. c3 Qc7 6. Ne2")
+  : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;

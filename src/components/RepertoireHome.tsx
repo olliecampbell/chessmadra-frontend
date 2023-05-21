@@ -51,6 +51,21 @@ export const RepertoireHome = () => {
   const [progressState] = useBrowsingState(([s]) => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
+  const overallEarliest = () => {
+    let white = earliestDueDate()["white"];
+    let black = earliestDueDate()["black"];
+    if (white && !black) {
+      return white;
+    }
+    if (!white && black) {
+      return black;
+    }
+    if (white < black) {
+      return white;
+    } else {
+      return black;
+    }
+  };
   const overallActions: Accessor<SidebarAction[]> = () => {
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
@@ -58,16 +73,7 @@ export const RepertoireHome = () => {
 
     actions.push({
       text: "Practice all moves due for review",
-      right: (
-        <ReviewText
-          date={
-            earliestDueDate()["white"] < earliestDueDate()["black"]
-              ? earliestDueDate()["white"]
-              : earliestDueDate()["black"]
-          }
-          numDue={totalDue}
-        />
-      ),
+      right: <ReviewText date={overallEarliest()} numDue={totalDue} />,
       style: "primary",
       disabled: totalDue == 0,
       onPress: () => {

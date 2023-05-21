@@ -387,6 +387,7 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         if (!s.sidebarState.activeSide || !rs.repertoire) {
           s.sidebarState.tableResponses = [];
+          console.log("Aborting updateTableResponses");
           return;
         }
         const threshold = gs.userState.getCurrentThreshold();

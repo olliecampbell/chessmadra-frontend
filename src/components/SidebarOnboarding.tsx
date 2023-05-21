@@ -116,7 +116,7 @@ export const SetRatingOnboarding = () => {
   });
   return (
     <SidebarTemplate
-      header={"What is your current rating"}
+      header={"What is your current rating?"}
       bodyPadding={true}
       actions={[
         {
@@ -171,7 +171,7 @@ export const ChooseToCreateAccountOnboarding = () => {
           onPress: () => {
             quick((s) => {
               trackEvent("onboarding.create_account.skip");
-              s.repertoireState.backToOverview();
+              s.repertoireState.browsingState.pushView(OnboardingComplete);
             });
           },
           style: "primary",
@@ -325,8 +325,8 @@ export const OnboardingComplete = () => {
       <p class={"body-text"}>
         You've made a great start towards mastering the opening!
       </p>
-      <Spacer height={8} />
-      <p class={"body-text"}>Recommended next steps:</p>
+      <Spacer height={16} />
+      <p class={"body-text font-bold"}>Recommended next steps:</p>
       <Spacer height={8} />
       <div class={"space-y-2"}>
         <For each={bullets()}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
@@ -443,7 +443,7 @@ const PracticeIntroOnboarding = () => {
   return (
     <SidebarTemplate
       bodyPadding={true}
-      header="Now let's practice the line you've added"
+      header="Now let's practice the line you've added…"
       actions={[
         {
           onPress: () => {

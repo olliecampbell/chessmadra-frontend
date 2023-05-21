@@ -32,6 +32,7 @@ export const RepertoireReview = (props: {}) => {
     console.log("current move", currentMove());
   });
   const [mode] = useSidebarState(([s]) => [s.mode]);
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const actions: Accessor<SidebarAction[]> = () => [
     {
       onPress: () => {
@@ -59,6 +60,7 @@ export const RepertoireReview = (props: {}) => {
         });
       },
       style: "primary",
+      hidden: onboarding().isOnboarding,
       text: "View in repertoire builder",
     },
   ];

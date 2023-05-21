@@ -69,7 +69,7 @@ export const SidebarSelectOneOf: Component<{
         <>
           <CMText
             style={s(
-              c.fontSize(16),
+              c.fontSize(14),
               c.weightSemiBold,
               c.fg(c.colors.textPrimary),
               c.px(c.getSidebarPadding(responsive))
@@ -77,19 +77,11 @@ export const SidebarSelectOneOf: Component<{
           >
             {props.title}
           </CMText>
-          <Spacer height={12} />
         </>
       </Show>
       <Show when={props.description}>
         <>
-          <CMText
-            style={s(
-              c.fontSize(12),
-              c.lineHeight("1.5rem"),
-              c.fg(c.colors.textPrimary),
-              c.px(c.getSidebarPadding(responsive))
-            )}
-          >
+          <CMText class={"body-text padding-sidebar"}>
             {props.description}
           </CMText>
           <Spacer height={12} />
@@ -131,9 +123,8 @@ export const CoverageSettings = ({}: {}) => {
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
   return (
     <SidebarTemplate actions={[]} header={"Coverage goal"}>
-      <Spacer height={12} />
       <SidebarSelectOneOf
-        description={`Your repertoire will be complete when you cover all lines seen in`}
+        description={`Your repertoire will be complete when you cover all lines seen in:`}
         choices={thresholdOptions}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
@@ -192,15 +183,13 @@ export const ThemeSettings = ({}: {}) => {
   const user = () => getAppState().userState?.user;
   const height = 24;
   return (
-    <SidebarTemplate actions={[]} header={null}>
-      <Spacer height={12} />
+    <SidebarTemplate header={"Board appearance"} actions={[]}>
       <SidebarSelectOneOf
         description={null}
-        title={"Board appearance"}
         choices={combinedThemes.map((t) => t.boardTheme)}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
-        activeChoice={user()?.theme}
+        activeChoice={user()?.theme ?? "default"}
         onSelect={(boardThemeId: BoardThemeId) => {
           quick((s) => {
             const theme = find(
@@ -220,33 +209,8 @@ export const ThemeSettings = ({}: {}) => {
             (t) => t.boardTheme === boardThemeId
           );
           const boardTheme = BOARD_THEMES_BY_ID[boardThemeId];
-          // console.log(theme, themeId);
           return (
-            <div style={s(c.row, c.center, c.height(height))}>
-              {/*
-              <div
-                style={s(c.row)}
-                class={clsx(
-                  "border-1 overflow-hidden rounded-sm border-solid border-white"
-                )}
-              >
-                <div
-                  style={s(
-                    c.size(22),
-                    c.bg(boardTheme.light.color),
-                    boardTheme.light.styles
-                  )}
-                ></div>
-                <div
-                  style={s(
-                    c.size(22),
-                    c.bg(boardTheme.dark.color),
-                    boardTheme.dark.styles
-                  )}
-                ></div>
-              </div>
-              <Spacer width={22} />
-            */}
+            <div style={s(c.row, c.center)}>
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme.name}
               </CMText>
