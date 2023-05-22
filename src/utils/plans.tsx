@@ -195,9 +195,9 @@ class PlanConsumer {
     return adverbs[adverbIndex++ % adverbs.length];
   }
 
-  consume<T extends MetaPlan | MetaPlan[]>(plan: T): T {
+  consume<T extends MetaPlan | (MetaPlan | undefined)[]>(plan: T): T {
     if (Array.isArray(plan)) {
-      plan.map((p) => this.consumed.add(p.id));
+      plan.map((p) => this.consumed.add(p?.id));
     } else {
       this.consumed.add(plan.id);
     }
@@ -207,13 +207,13 @@ class PlanConsumer {
     const plans = this.remainingPlans();
     const queenside = find(plans, (p) => p.plan.san === "O-O-O");
     const kingside = find(plans, (p) => p.plan.san === "O-O");
+    this.consume([queenside, kingside]);
     if (!(queenside || kingside)) {
       return null;
     } else if (queenside && kingside) {
       const queensideMoreCommon =
         queenside.plan.occurences > kingside.plan.occurences;
-      this.consume([queenside, kingside]);
-      this.planSections.push(() => (
+      this.addSection(() => (
         <>
           You can castle to either side, although{" "}
           <PlanMoveText plan={queensideMoreCommon ? queenside : kingside}>
@@ -223,21 +223,17 @@ class PlanConsumer {
         </>
       ));
     } else if (kingside) {
-      this.planSections.push(() => (
+      this.addSection(() => (
         <>
           {capitalize(this.side)} {this.nextAdverb()}{" "}
-          <PlanMoveText plan={this.consume(kingside)}>
-            castles kingside
-          </PlanMoveText>
+          <PlanMoveText plan={kingside}>castles kingside</PlanMoveText>
         </>
       ));
     } else if (queenside) {
-      this.planSections.push(() => (
+      this.addSection(() => (
         <>
           {capitalize(this.side)} {this.nextAdverb()}{" "}
-          <PlanMoveText plan={this.consume(queenside)}>
-            castles queenside
-          </PlanMoveText>
+          <PlanMoveText plan={queenside}>castles queenside</PlanMoveText>
         </>
       ));
     }
@@ -274,7 +270,8 @@ class PlanConsumer {
         }
         this.consume(planBeforeCapture);
       }
-      this.planSections.push(() => (
+      this.consume(allCapturers);
+      this.addSection(() => (
         <>
           The{" "}
           <EnglishSeparator
@@ -286,7 +283,7 @@ class PlanConsumer {
             )}
           />{" "}
           {this.nextAdverb()}{" "}
-          <PlanMoveText plans={this.consume(allCapturers)}>
+          <PlanMoveText plans={allCapturers}>
             {recapture ? "recaptures" : "captures"} the{" "}
             {pieceSymbolToPieceName(capturedPiece)} on {plan.plan.toSquare}
           </PlanMoveText>
@@ -308,12 +305,13 @@ class PlanConsumer {
     if (isEmpty(pawnPlans)) {
       return null;
     }
-    this.planSections.push(() => (
+    this.consume(pawnPlans);
+    this.addSection(() => (
       <>
         {pawnPlans.length > 1
           ? "Common pawn moves are"
           : "A common pawn move is"}{" "}
-        <PlanMoves metaPlans={this.consume(pawnPlans)} />{" "}
+        <PlanMoves metaPlans={pawnPlans} />{" "}
       </>
     ));
   }
@@ -342,10 +340,10 @@ class PlanConsumer {
     if (isEmpty(piecePlans)) {
       return null;
     }
-    this.planSections.push(() => (
+    this.consume(piecePlans);
+    this.addSection(() => (
       <>
-        Common piece moves include{" "}
-        <PlanMoves metaPlans={this.consume(piecePlans)} />
+        Common piece moves include <PlanMoves metaPlans={piecePlans} />
       </>
     ));
   }
@@ -370,11 +368,11 @@ class PlanConsumer {
       if (!finalDestination) {
         return;
       }
-
-      this.planSections.push(() => (
+      this.consume([plan, finalDestination]);
+      this.addSection(() => (
         <>
           The {pieceDescription} often{" "}
-          <PlanMoveText plans={this.consume([plan, finalDestination])}>
+          <PlanMoveText plans={[plan, finalDestination]}>
             goes to {finalDestination.plan.toSquare}, via {plan.plan.toSquare}
           </PlanMoveText>
         </>
@@ -418,15 +416,20 @@ class PlanConsumer {
         return;
       }
 
-      this.planSections.push(() => (
+      this.consume(plan);
+      this.addSection(() => {
         <>
           The {developmentPieceDescription} is {this.nextAdverb}{" "}
-          <PlanMoveText plan={this.consume(plan)}>
+          <PlanMoveText plan={plan}>
             fianchettoed on {plan.plan.toSquare}
           </PlanMoveText>
-        </>
-      ));
+        </>;
+      });
     });
+  }
+
+  addSection(section) {
+    this.planSections.push(section);
   }
 
   pieceDevelopmentConsumer() {
@@ -468,8 +471,8 @@ class PlanConsumer {
         beforeDescriptor = "often";
         descriptor = "moves to";
       }
-
-      this.planSections.push(() => (
+      this.consume(allDevelopmentPlans);
+      this.addSection(() => (
         <>
           The {pieceDescription}{" "}
           {allDevelopmentPlans.length > 1
@@ -479,7 +482,7 @@ class PlanConsumer {
             : ""}
           <PlanMoves
             exclusive
-            metaPlans={this.consume(allDevelopmentPlans)}
+            metaPlans={allDevelopmentPlans}
             stripPieceSymbol
             customFormatter={
               allDevelopmentPlans.length > 1
@@ -508,10 +511,6 @@ export const parsePlans = (
   consumer.pieceDevelopmentConsumer();
   consumer.piecePlansConsumer();
   consumer.pawnPlansConsumer();
-  // this is terrible, but this is to make sure we consume the plans in the
-  // sections, even though we're only storing functions that get called when
-  // rendered
-  consumer.planSections.forEach((section) => section());
   return consumer;
 };
 

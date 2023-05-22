@@ -14,28 +14,28 @@ export const SidebarContainer = (props: {
       if (!previousRef() || !currentRef()) {
         return;
       }
-      // let clone = currentRef().cloneNode(true);
-      // previousRef().replaceChildren(clone);
-      // const ms = 200;
-      // const duration = `${ms}ms`;
-      // previousRef().style.transform = "translateX(0px)";
-      // currentRef().style.transform =
-      //   dir === "right" ? "translateX(40px)" : "translateX(-40px)";
-      // previousRef().style.transition = null;
-      // currentRef().style.transition = null;
-      // previousRef().style.opacity = "1";
-      // currentRef().style.opacity = "0";
-      // previousRef().offsetHeight; /* trigger reflow */
-      // previousRef().style.transition = `opacity ${duration}, transform ${duration}`;
-      // currentRef().style.transition = `opacity ${duration}, transform ${duration}`;
-      // previousRef().style.opacity = "0";
-      // previousRef().style.transform =
-      //   dir === "left" ? "translateX(40px)" : "translateX(-40px)";
-      // setTimeout(() => {
-      //   currentRef().style.opacity = "1";
-      //   currentRef().style.transform = "translateX(0px)";
-      //   previousRef().replaceChildren();
-      // }, ms);
+      let clone = currentRef().cloneNode(true);
+      previousRef().replaceChildren(clone);
+      const ms = 200;
+      const duration = `${ms}ms`;
+      previousRef().style.transform = "translateX(0px)";
+      currentRef().style.transform =
+        dir === "right" ? "translateX(40px)" : "translateX(-40px)";
+      previousRef().style.transition = null;
+      currentRef().style.transition = null;
+      previousRef().style.opacity = "1";
+      currentRef().style.opacity = "0";
+      previousRef().offsetHeight; /* trigger reflow */
+      previousRef().style.transition = `opacity ${duration}, transform ${duration}`;
+      currentRef().style.transition = `opacity ${duration}, transform ${duration}`;
+      previousRef().style.opacity = "0";
+      previousRef().style.transform =
+        dir === "left" ? "translateX(40px)" : "translateX(-40px)";
+      setTimeout(() => {
+        currentRef().style.opacity = "1";
+        currentRef().style.transform = "translateX(0px)";
+        previousRef().replaceChildren();
+      }, ms);
     });
   });
   // @ts-ignore

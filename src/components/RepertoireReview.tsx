@@ -84,7 +84,7 @@ export const RepertoireReview = (props: {}) => {
               currentMove()?.moves.length
             } responses to this position in your repertoire. Play all your responses on the board`
       }
-      actions={actions()}
+      actions={filter(actions(), (a) => !a.hidden)}
       bodyPadding={true}
     >
       <Show when={num() > 1}>

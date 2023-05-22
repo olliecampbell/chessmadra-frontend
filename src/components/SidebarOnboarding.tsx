@@ -741,6 +741,7 @@ export const TrimRepertoireOnboarding = () => {
           if (onboarding().isOnboarding) {
             s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
           } else {
+            s.repertoireState.browsingState.clearViews()
             s.repertoireState.startBrowsing(side(), "home");
           }
         });
