@@ -316,6 +316,7 @@ export const OnboardingComplete = () => {
           onPress: () => {
             quick((s) => {
               trackEvent("onboarding.complete.continue");
+              s.repertoireState.browsingState.moveSidebarState("left");
               s.repertoireState.backToOverview();
             });
           },
@@ -364,12 +365,26 @@ export const ImportSuccessOnboarding = () => {
               s.repertoireState.browsingState.goToBuildOnboarding();
             });
           },
-          text: "Ok, got it",
+          text: "Go to the biggest gap in your repertoire",
           style: "primary",
         },
       ]}
     >
-      <CMText class={"body-text"}>How to complete your repertoire:</CMText>
+      <CMText class={"body-text"}>
+        Your {onboarding().side} repertoire is now{" "}
+        <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
+          {Math.round(progressState().percentComplete)}%
+        </CMText>{" "}
+        complete.
+      </CMText>
+      <Spacer height={8} />
+      <div style={s(c.height(24))}>
+        <CoverageBar isInSidebar side={onboarding().side as Side} />
+      </div>
+      <Spacer height={24} />
+      <CMText class={"body-text font-bold"}>
+        How to complete your repertoire:
+      </CMText>
       <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
         {bullets.map((bullet, i) => (
           <Bullet>{bullet}</Bullet>
@@ -741,7 +756,7 @@ export const TrimRepertoireOnboarding = () => {
           if (onboarding().isOnboarding) {
             s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
           } else {
-            s.repertoireState.browsingState.clearViews()
+            s.repertoireState.browsingState.clearViews();
             s.repertoireState.startBrowsing(side(), "home");
           }
         });

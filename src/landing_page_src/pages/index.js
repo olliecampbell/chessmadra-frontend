@@ -1668,7 +1668,7 @@ export default ({ onClick, onLogin }) => {
               md-margin="0px 0px 36px 0px"
               lg-margin="0px 0px 24px 0px"
             >
-              Build a repertoire of up to 200 moves.
+              Build a repertoire of up to 400 moves.
             </Text>
             <Link
               onClick={() => {
