@@ -174,7 +174,6 @@ export const getInitialUserState = (
             annual,
           })
           .then(({ data }: { data: { url: string } }) => {
-            window.location.href = data.url;
             return data.url;
           })
           .finally(() => {});

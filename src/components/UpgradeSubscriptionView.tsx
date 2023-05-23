@@ -17,7 +17,8 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
     });
     quick((s) => {
       s.userState.getCheckoutLink(annual).then((url) => {
-        console.log("url? ", url);
+        // Open in new tab
+        window.open(url, "_blank");
       });
     });
   };
