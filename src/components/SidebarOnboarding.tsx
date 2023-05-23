@@ -355,6 +355,9 @@ export const ImportSuccessOnboarding = () => {
       This goal was set based on your rating but you can always change it later.
     </>,
   ];
+  onMount(() => {
+    trackEvent("onboarding.import_success.shown");
+  });
   return (
     <SidebarTemplate
       bodyPadding={true}
@@ -362,8 +365,8 @@ export const ImportSuccessOnboarding = () => {
       actions={[
         {
           onPress: () => {
-            console.log("test?");
             quick((s) => {
+              trackEvent("onboarding.import_success.continue");
               s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.goToBuildOnboarding();
             });
