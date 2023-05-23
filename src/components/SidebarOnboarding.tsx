@@ -150,6 +150,9 @@ export const SetRatingOnboarding = () => {
 };
 
 export const ChooseToCreateAccountOnboarding = () => {
+  onMount(() => {
+    trackEvent("onboarding.create_account.shown");
+  });
   return (
     <SidebarTemplate
       header={"Would you like to create an account?"}

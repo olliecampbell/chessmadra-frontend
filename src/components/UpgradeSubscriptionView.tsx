@@ -1,16 +1,20 @@
-import { createSignal } from "solid-js";
+import { createEffect, createSignal, onMount } from "solid-js";
 import { capitalize } from "lodash-es";
 import { Spacer } from "~/components/Space";
 import { useSidebarState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { trackEvent } from "~/utils/trackEvent";
 
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
   const [loading, setLoading] = createSignal(false);
   const requestProPlan = (annual: boolean) => {
     setLoading(true);
+    trackEvent("upgrade.subscribe", {
+      type: annual ? "annual" : "monthly",
+    });
     quick((s) => {
       s.userState.getCheckoutLink(annual).then((url) => {
         console.log("url? ", url);
@@ -18,6 +22,9 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
     });
   };
   console.log("re-rendering!");
+  onMount(() => {
+    trackEvent("upgrade.shown");
+  });
   return (
     <SidebarTemplate
       actions={
