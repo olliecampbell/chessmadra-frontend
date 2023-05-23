@@ -90,6 +90,7 @@ export interface RepertoireState {
   quick: (fn: (_: RepertoireState) => void) => void;
   repertoire: Repertoire | undefined;
   numResponsesAboveThreshold?: BySide<number>;
+  numResponses?: BySide<number>;
   positionReports: BySide<Record<string, PositionReport>>;
   failedToFetchSharedRepertoire?: boolean;
   repertoireGrades: BySide<RepertoireGrade | null>;
@@ -606,6 +607,13 @@ export const getInitialRepertoireState = (
             return nodeEpds;
           }
         );
+        s.numResponses = mapSides(
+          s.repertoire,
+          (repertoireSide: RepertoireSide) => {
+            return flatten(Object.values(repertoireSide.positionResponses))
+              .length;
+          }
+        );
         s.numResponsesAboveThreshold = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
@@ -1034,7 +1042,7 @@ export const getInitialRepertoireState = (
         if (!s.repertoire) {
           return false;
         }
-        const numMoves = s.numMovesFromEpd[side][START_EPD];
+        const numMoves = s.numResponses?.[side] ?? 0;
         return numMoves > MAX_MOVES_FREE_TIER;
       }),
     getLineCount: (side?: Side) =>
