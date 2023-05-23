@@ -2,7 +2,7 @@ import { clsx } from "~/utils/classes";
 import { CMText } from "./CMText";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
-import { createEffect, createMemo, For } from "solid-js";
+import { createEffect, createMemo, For, onMount } from "solid-js";
 import { Bullet } from "./Bullet";
 import { useRepertoireState, quick } from "~/utils/app_state";
 import { SidebarAction } from "./SidebarActions";
@@ -15,6 +15,7 @@ import {
   OnboardingComplete,
 } from "./SidebarOnboarding";
 import { LoginSidebar } from "./LoginSidebar";
+import { trackEvent } from "~/utils/trackEvent";
 
 export const PracticeComplete = () => {
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -54,6 +55,12 @@ export const PracticeComplete = () => {
     // can assume there will be one
     return new Date(min(filter(dues, (d) => d !== undefined)) as string);
   };
+  onMount(() => {
+    trackEvent("practice_complete", {
+      num_failed: numFailed(),
+      num_correct: numCorrect(),
+    });
+  });
   createEffect(() => {
     console.log(
       "All debug, numFailed",
@@ -101,7 +108,9 @@ export const PracticeComplete = () => {
         {
           onPress: () => {
             quick((s) => {
+              trackEvent("practice_complete.continue");
               if (s.repertoireState.onboarding.isOnboarding) {
+                trackEvent("onboarding.practice_complete.continue");
                 s.repertoireState.browsingState.pushView(
                   ChooseToCreateAccountOnboarding
                 );
