@@ -4,6 +4,7 @@ import {
   SuggestedMove,
 } from "~/utils/models";
 import { isNil } from "lodash-es";
+import { Side } from "./repertoire";
 
 export function getTotalGames(results: GameResultsDistribution) {
   if (!results) {
@@ -22,6 +23,10 @@ export const formatWinPercentage = (x: number) => {
 
 export function getWinRate(x: GameResultsDistribution, side: string) {
   return x[side] / getTotalGames(x);
+}
+
+export function getDrawAdjustedWinRate(x: GameResultsDistribution, side: Side) {
+  return (x[side] + x.draw / 2) / getTotalGames(x);
 }
 
 export function getWinRateRange(

@@ -1,6 +1,7 @@
 import { GameResultsDistribution } from "~/utils/models";
 import {
   formatWinPercentage,
+  getDrawAdjustedWinRate,
   getTotalGames,
   getWinRate,
 } from "~/utils/results_distribution";
@@ -147,8 +148,13 @@ export const MovementIndicator = ({
   const oldWr = getWinRate(previous, side);
   const newWr = getWinRate(results, side);
   if (newWr < oldWr - threshold) {
-    icon = "fa-sharp fa-arrow-down-right";
-    color = side === "white" ? c.reds[45] : c.reds[55];
+    if (
+      getDrawAdjustedWinRate(results, side) <
+      getDrawAdjustedWinRate(previous, side) - threshold
+    ) {
+      icon = "fa-sharp fa-arrow-down-right";
+      color = side === "white" ? c.reds[45] : c.reds[55];
+    }
   } else if (newWr > oldWr + threshold) {
     icon = "fa-sharp fa-arrow-up-right";
     color = side === "white" ? c.colors.success : c.colors.success;
