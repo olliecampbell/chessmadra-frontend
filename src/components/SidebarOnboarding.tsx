@@ -48,6 +48,9 @@ import { CoverageBar } from "./CoverageBar";
 import { CoverageAndBar } from "./RepertoirtOverview";
 import { Bullet } from "./Bullet";
 import { LoginSidebar } from "./LoginSidebar";
+import { createForm } from "@felte/solid";
+import { validator } from "@felte/validator-yup";
+import * as yup from "yup";
 
 export const OnboardingIntro = () => {
   const responsive = useResponsive();
@@ -583,27 +586,54 @@ export const ChooseImportSourceOnboarding = () => {
   );
 };
 
+type LichessUsernameForm = {
+  username: string;
+};
+
 export const ImportOnboarding = (props: {
   importType: SidebarOnboardingImportType;
 }) => {
+  const onSubmit = async (values: LichessUsernameForm) => {
+    trackEvent(`onboarding.import_${importType()}.submit`);
+    setLoading("Importing your games");
+    quick((s) => {
+      trackEvent("import.from_lichess_username");
+      s.repertoireState.initializeRepertoire({
+        lichessUsername: values.username,
+        responsive,
+      });
+    });
+  };
+  const { form, isSubmitting, errors, createSubmitHandler } =
+    createForm<LichessUsernameForm>({
+      initialValues: { username: "" },
+      onSubmit,
+      extend: [
+        validator({
+          schema: yup.object({
+            username: yup.string().required().label("Lichess username"),
+          }),
+        }),
+      ],
+    });
+  const handleSubmit = createSubmitHandler({
+    onSubmit,
+  });
   const responsive = useResponsive();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const side = () => activeSide() || onboarding().side;
 
   const importType = () => props.importType;
-  const [username, setUsername] = createSignal("");
   const [loading, setLoading] = createSignal(null as string | null);
   let [pgn, setPgn] = createSignal("");
 
   onMount(() => {
     trackEvent(`onboarding.import_${importType()}.shown`);
   });
-  const { header, actions, bodyPadding } = destructure(() => {
-    const bodyPadding = true;
+  const { header, actions } = destructure(() => {
     let header = null;
     let actions: SidebarAction[] = [];
-    let body = null;
     if (importType() === SidebarOnboardingImportType.PGN) {
       header = `Please upload your ${side()} repertoire`;
       if (pgn()) {
@@ -621,23 +651,10 @@ export const ImportOnboarding = (props: {
     }
     if (importType() === SidebarOnboardingImportType.LichessUsername) {
       header = "What's your Lichess username?";
-      body = (
-        <div style={s(c.pt(20))}>
-          <CMTextInput
-            placeholder="username"
-            value={username()}
-            setValue={setUsername}
-            style={s(c.maxWidth(200))}
-          />
-        </div>
-      );
       actions.push({
         text: "Submit",
         onPress: () => {
-          onMount(() => {
-            trackEvent(`onboarding.import_${importType()}.submit`);
-          });
-          importFromLichessUsername();
+          handleSubmit();
         },
         style: "primary",
       });
@@ -645,7 +662,7 @@ export const ImportOnboarding = (props: {
     if (loading()) {
       actions = [];
     }
-    return { body, header, bodyPadding, actions };
+    return { header, actions };
   });
 
   const importFromPgn = () => {
@@ -662,20 +679,9 @@ export const ImportOnboarding = (props: {
     });
   };
 
-  const importFromLichessUsername = () => {
-    setLoading("Importing your games");
-    quick((s) => {
-      trackEvent("import.from_lichess_username");
-      s.repertoireState.initializeRepertoire({
-        lichessUsername: username(),
-        responsive,
-      });
-    });
-  };
-
   return (
     <SidebarTemplate
-      bodyPadding={bodyPadding()}
+      bodyPadding={true}
       header={header()}
       actions={actions()}
       loading={loading()}
@@ -690,12 +696,15 @@ export const ImportOnboarding = (props: {
           when={importType() === SidebarOnboardingImportType.LichessUsername}
         >
           <div style={s(c.pt(20))}>
-            <CMTextInput
-              placeholder="username"
-              value={username()}
-              setValue={setUsername}
-              style={s(c.maxWidth(200))}
-            />
+            <form ref={form} class={`col gap-8`}>
+              <TextInput
+                placeholder="yourusername"
+                type="text"
+                name="username"
+                label="Lichess username"
+                errors={errors()}
+              />
+            </form>
           </div>
         </Match>
       </Switch>
