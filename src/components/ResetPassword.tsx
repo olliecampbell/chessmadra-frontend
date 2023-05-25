@@ -53,6 +53,7 @@ export default function ResetPassword() {
         quick((s) => {
           s.userState.handleAuthResponse(resp.data);
           s.repertoireState.browsingState.clearViews();
+          window.history.replaceState({}, "", "/");
         });
         // todo: actually log them in
       })

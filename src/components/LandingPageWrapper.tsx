@@ -5,6 +5,7 @@ import { onCleanup, onMount } from "solid-js";
 import { quick } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { LoginSidebar } from "./LoginSidebar";
+import { OnboardingIntro } from "./SidebarOnboarding";
 
 const QAPI = {
   pages: {
@@ -53,6 +54,7 @@ export default function LandingPageWrapper() {
             trackEvent("landing_page_conversion", { source: source });
             trackEvent("onboarding.started");
             s.repertoireState.onboarding.isOnboarding = true;
+            s.repertoireState.browsingState.pushView(OnboardingIntro);
             s.userState.pastLandingPage = true;
           });
         },
