@@ -102,10 +102,8 @@ export default function Root() {
         <link rel="manifest" href="manifest.json" />
 
         <Meta charset="utf-8" />
-        <Meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1"
-        />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
         <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link
