@@ -52,7 +52,7 @@ export default function ResetPassword() {
         trackEvent(`auth.reset_password.success`);
         quick((s) => {
           s.userState.handleAuthResponse(resp.data);
-          s.navigationState.push("/");
+          s.repertoireState.browsingState.clearViews();
         });
         // todo: actually log them in
       })

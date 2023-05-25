@@ -1017,11 +1017,6 @@ export const getInitialRepertoireState = (
               s.repertoireShareId = data.shareId;
               s.hasCompletedRepertoireInitialization = true;
               s.onRepertoireUpdate();
-              if (initial && s.getIsRepertoireEmpty()) {
-                console.log("replace view");
-                s.browsingState.replaceView(OnboardingIntro);
-              }
-              console.log("is empty?", s.getIsRepertoireEmpty());
               if (!s.getIsRepertoireEmpty()) {
                 appState.userState.pastLandingPage = true;
               }
