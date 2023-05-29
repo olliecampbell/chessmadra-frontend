@@ -76,6 +76,7 @@ export const SidebarLayout = (props: {
   const chessboardHeight = () => chessboardLayout.height;
   const chessboardHidden = () => {
     if (isChessmadra) {
+      console.log("checking this hidden thing", activeTool());
       return activeTool() !== "visualization";
     }
     if (vertical) {
@@ -140,32 +141,35 @@ export const SidebarLayout = (props: {
                 {props.settings}
               </div>
             )}
-            <div
-              ref={setChessboardContainerRef}
-              class={clsx("duration-250 transition-opacity ease-in-out")}
-              style={s(
-                c.fullWidth,
-                vertical &&
-                  s(
-                    c.selfCenter,
-                    c.maxWidth(480),
-                    c.px(c.getSidebarPadding(responsive))
-                  ),
-                chessboardFrozen() && c.noPointerEvents,
-                chessboardHidden() ? c.opacity(20) : c.opacity(100)
-              )}
-            >
-              <ChessboardView chessboardInterface={props.chessboardInterface} />
-            </div>
-            <Show when={!responsive.isMobile}>
-              <Spacer height={12} />
-              <div class="row w-full justify-center">
-                {props.belowChessboard}
+            <div ref={setChessboardContainerRef}>
+              <div
+                class={clsx("duration-250 transition-opacity ease-in-out")}
+                style={s(
+                  c.fullWidth,
+                  vertical &&
+                    s(
+                      c.selfCenter,
+                      c.maxWidth(480),
+                      c.px(c.getSidebarPadding(responsive))
+                    ),
+                  chessboardFrozen() && c.noPointerEvents,
+                  chessboardHidden() ? c.opacity(20) : c.opacity(100)
+                )}
+              >
+                <ChessboardView
+                  chessboardInterface={props.chessboardInterface}
+                />
               </div>
-            </Show>
-            <Show when={responsive.isMobile}>
-              <Spacer height={c.getSidebarPadding(responsive)} />
-            </Show>
+              <Show when={props.belowChessboard}>
+                <Spacer height={12} />
+                <div class="row w-full justify-center">
+                  {props.belowChessboard}
+                </div>
+              </Show>
+              <Show when={responsive.isMobile}>
+                <Spacer height={12} />
+              </Show>
+            </div>
             {vertical ? (
               <div
                 class={clsx("transition-mt duration-250 ease-in-out")}

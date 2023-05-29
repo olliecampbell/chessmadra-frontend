@@ -57,10 +57,9 @@ export const getInitialTrainersState = (
         for (const view of s.viewStack) {
           if (view.component === VisualizationTraining) {
             return "visualization";
-          } else {
-            return null;
           }
         }
+        return null;
       });
     },
     clearViews: () =>

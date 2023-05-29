@@ -76,11 +76,6 @@ export const VisualizationSidebar = () => {
         style: "focus",
       });
     }
-    actions.push({
-      onPress: () => {},
-      text: "Analyze on Lichess",
-      style: "tertiary",
-    });
     return actions;
   };
   return (

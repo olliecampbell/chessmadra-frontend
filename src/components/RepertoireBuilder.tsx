@@ -110,6 +110,7 @@ export const RepertoireBuilder = () => {
       chessboardInterface={chessboardState()}
       backSection={<BackSection />}
       belowChessboard={
+        vertical &&
         (mode() === "build" || mode() === "browse" || mode() === "review") && (
           <AnalyzeOnLichessButton />
         )

@@ -62,7 +62,10 @@ export const ChessMadra = (props: { initialTool: string }) => {
     <Switch>
       <Match when={activeTool() === "visualization" && !startedSolvingVis()}>
         <>
-          <div style={s(c.row, c.alignStretch, c.fullWidth)}>
+          <div
+            style={s(c.row, c.alignStretch, c.fullWidth)}
+            class={clsx("padding-sidebar")}
+          >
             <button
               style={s(
                 c.grow,
@@ -130,10 +133,13 @@ const BackSection = () => {
     return backButtonAction;
   };
 
+  const puzzle = () =>
+    getAppState().trainersState.visualizationState.puzzleState.puzzle;
   const isOpen = () => !isNil(backButtonAction());
   createEffect(() => {
     console.log("isOpen", isOpen());
   });
+  const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
 
   return (
     <FadeInOut
@@ -163,6 +169,28 @@ const BackSection = () => {
           <p style={s(c.weightBold, c.row, c.alignCenter)}>
             <i class="fa fa-arrow-left pr-2"></i>
             Back
+          </p>
+        </Pressable>
+        <Pressable
+          style={s()}
+          class={clsx(
+            "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors"
+          )}
+          onPress={() => {
+            quick((s) => {
+              window.open(
+                `https://lichess.org/training/${puzzle().id}`,
+                "_blank"
+              );
+            });
+          }}
+        >
+          <p>
+            View on Lichess
+            <i
+              class="fa fa-up-right-from-square pl-2"
+              style={s(iconStyles)}
+            ></i>
           </p>
         </Pressable>
       </div>
