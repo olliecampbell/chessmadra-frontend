@@ -244,6 +244,26 @@ const PuzzleDifficultySettings = ({}: {}) => {
             min: 0,
             max: 1200,
           },
+          {
+            text: "Intermediate",
+            min: 1200,
+            max: 1600,
+          },
+          {
+            text: "Hard",
+            min: 1600,
+            max: 2000,
+          },
+          {
+            text: "Expert",
+            min: 2000,
+            max: 3000,
+          },
+          {
+            text: "Varied",
+            min: 0,
+            max: 2000,
+          },
         ]}
         // cellStyles={s(c.bg(c.grays[15]))}
         // horizontal={true}
@@ -252,10 +272,11 @@ const PuzzleDifficultySettings = ({}: {}) => {
         renderChoice={(r: DifficultySetting, active: boolean) => {
           return (
             <div class="row items-end">
-              <div>{r.text}</div>
+              <div>{r.text}</div> (
               <p>
                 {r.min}-{r.max}
               </p>
+              )
             </div>
           );
         }}
