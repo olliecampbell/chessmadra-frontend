@@ -686,9 +686,9 @@ export function ChessboardView(props: {
                     {(j) => {
                       const debugSquare = "e4";
                       const light = (i + j) % 2 == 0;
-                      const [color, inverseColor] = light
-                        ? colors()
-                        : [colors()[1], colors()[0]];
+                      const [color, inverseColor] = destructure(() =>
+                        light ? colors() : [colors()[1], colors()[0]]
+                      );
                       // if (state.hideColors) {
                       //   color = c.grays[30];
                       // }
@@ -748,7 +748,7 @@ export function ChessboardView(props: {
                         <div
                           style={s(
                             c.keyedProp("touch-action")("none"),
-                            !boardImage() && c.bg(color),
+                            !boardImage() && c.bg(color()),
                             themeStyles(light),
                             c.center,
                             !frozen() && c.clickable,
@@ -799,7 +799,7 @@ export function ChessboardView(props: {
                             !chessboardStore().hideCoordinates && (
                               <CMText
                                 style={s(
-                                  c.fg(inverseColor),
+                                  c.fg(inverseColor()),
                                   c.weightSemiBold,
                                   c.absolute,
                                   c.fontSize(isMobile ? 8 : 8),
@@ -815,7 +815,7 @@ export function ChessboardView(props: {
                             !chessboardStore().hideCoordinates && (
                               <CMText
                                 style={s(
-                                  c.fg(inverseColor),
+                                  c.fg(inverseColor()),
                                   c.weightBold,
                                   c.absolute,
                                   c.fontSize(8),
