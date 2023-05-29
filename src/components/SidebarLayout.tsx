@@ -25,6 +25,7 @@ import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
 import { createElementBounds } from "@solid-primitives/bounds";
 import { BackSection } from "./BackSection";
+import { isChessmadra } from "~/utils/env";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -50,6 +51,7 @@ export const SidebarLayout = (props: {
     }
     return frozen;
   };
+  const activeTool = () => getAppState().trainersState.getActiveTool();
 
   // useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
   //   if (event.key === "ArrowLeft" && mode !== "review") {
@@ -73,6 +75,9 @@ export const SidebarLayout = (props: {
   });
   const chessboardHeight = () => chessboardLayout.height;
   const chessboardHidden = () => {
+    if (isChessmadra) {
+      return activeTool() === "visualization";
+    }
     if (vertical) {
       return includes(["overview", "home"], mode());
     }
