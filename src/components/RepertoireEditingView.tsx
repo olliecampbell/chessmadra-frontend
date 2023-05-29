@@ -110,16 +110,6 @@ export const Responses = function Responses() {
       return tableResponses();
     }
   });
-  createEffect(() => {
-    console.log(
-      "This is a weird case",
-      tableResponses(),
-      positionReport(),
-      isEmpty(positionReport()?.suggestedMoves),
-      isEmpty(yourMoves()),
-      responses()
-    );
-  });
   return (
     <div style={s(c.column, c.constrainWidth)}>
       <Show when={positionReport()}>

@@ -38,6 +38,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { FetchRepertoireResponse, RepertoireState } from "./repertoire_state";
 import { genEpd, START_EPD } from "./chess";
 import {
+  getPlayRate,
   getTotalGames,
   getWinRate,
   getWinRateRange,
@@ -532,7 +533,12 @@ export const getInitialBrowsingState = (
               return;
             }
             const allOthersInaccurate = every(tableResponses, (tr, j) => {
-              return !isNil(tr.moveRating) || j === i;
+              return (
+                !isNil(tr.moveRating) ||
+                (j === i &&
+                  tr.suggestedMove &&
+                  getPlayRate(tr.suggestedMove, positionReport, true) < 0.02)
+              );
             });
             const playedEnough =
               getTotalGames(tr.suggestedMove?.results) /

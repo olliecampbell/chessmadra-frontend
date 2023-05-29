@@ -35,7 +35,8 @@ export function getWinRateRange(
 ): [number, number, number] {
   const w = x[side];
   const n = getTotalGames(x);
-  const range = 1.96 * Math.sqrt(((w / n) * (1 - w / n)) / n);
+  const p = w / n;
+  const range = 2.5 * Math.sqrt((p * (1 - p)) / n);
   return [w / n - range, w / n + range, range * 2];
 }
 

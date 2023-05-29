@@ -67,15 +67,15 @@ export const getMoveRating = (
   if (isNil(before) || isNil(after)) {
     return null;
   }
-  const winBefore = getWinPercentage(before, side);
-  const winAfter = getWinPercentage(after, side);
-  if (winAfter < winBefore - 20) {
+  const expectedWinBefore = getWinPercentage(before, side);
+  const expectedWinAfter = getWinPercentage(after, side);
+  if (expectedWinAfter < expectedWinBefore - 20) {
     return MoveRating.Blunder;
   }
-  if (winAfter < winBefore - 10) {
+  if (expectedWinAfter < expectedWinBefore - 12) {
     return MoveRating.Mistake;
   }
-  if (winAfter < winBefore - 6) {
+  if (expectedWinAfter < expectedWinBefore - 8) {
     return MoveRating.Inaccuracy;
   }
 };

@@ -97,7 +97,7 @@ export const SidebarContainer = (props: {
           ref={setCurrentRef}
           style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}
         >
-          <Show when={vertical}>{props.backSection}</Show>
+          <Show when={vertical()}>{props.backSection}</Show>
           {props.children}
         </div>
       </div>

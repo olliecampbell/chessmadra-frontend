@@ -36,7 +36,9 @@ export const scoreTableResponses = (
     incidence: number;
   }
 ): TableResponse[] => {
-  const positionWinRate = report ? getWinRate(report?.results, side) : NaN;
+  const positionWinRate = report
+    ? getWinRateRange(report.results, side)[0]
+    : NaN;
   const DEBUG_MOVE = null;
   if (mode == "browse") {
     return sortBy(

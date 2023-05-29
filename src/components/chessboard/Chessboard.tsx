@@ -397,9 +397,6 @@ export function ChessboardView(props: {
   const isMobile = useIsMobile();
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
-  createEffect(() => {
-    console.log("plans", chessboardStore().plans);
-  });
   const x = (
     <>
       <div

@@ -159,6 +159,9 @@ export const RepertoireMovesTable = ({
       })
     );
   const widths: Record<string, number | null> = {};
+  createEffect(() => {
+    console.log("trimmedResponses", trimmedResponses());
+  });
 
   const [currentLine] = useBrowsingState(([s, rs]) => [
     s.chessboard.get((v) => v).moveLog,
@@ -566,7 +569,6 @@ const Response = (props: {
           {...responseHoverProps}
           ref={(ref) => {
             hoveringRef(ref);
-            console.log("ref called");
           }}
         >
           <Pressable

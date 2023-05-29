@@ -63,7 +63,7 @@ import {
 } from "~/components/SidebarOnboarding";
 
 const TEST_LINE = isDevelopment
-  ? [] //pgnToLine("1.e4 c6 2. d4 d5 3. exd5 cxd5 4. Bd3 Nc6 5. c3 Qc7 6. Ne2")
+  ? pgnToLine("1. e4 c6 2. d4 d6 3. Nc3 Nd7")
   : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
@@ -332,14 +332,14 @@ export const getInitialRepertoireState = (
             blackPgn,
           }
         );
-        set(([s]) => {
+        set(([s, gs]) => {
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
           const minimumToTrim = 10;
           const side: Side = blackPgn ? "black" : "white";
           const numBelowThreshold = s.getNumResponsesBelowThreshold(
-            1 / 100,
+            gs.userState.getCurrentThreshold(),
             null
           );
           if (side && numBelowThreshold > minimumToTrim) {

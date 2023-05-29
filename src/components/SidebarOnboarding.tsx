@@ -721,6 +721,7 @@ export const TrimRepertoireOnboarding = () => {
   const [getNumResponsesBelowThreshold] = useRepertoireState((s) => [
     s.getNumResponsesBelowThreshold,
   ]);
+  const [userThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
   onMount(() => {
     trackEvent("onboarding.trim_repertoire.shown");
   });
@@ -749,21 +750,18 @@ export const TrimRepertoireOnboarding = () => {
 
   const actions = () => {
     let actions: SidebarAction[] = [];
-    THRESHOLD_OPTIONS.forEach((threshold) => {
-      const numMoves = getNumResponsesBelowThreshold()(threshold, side());
-      if (numMoves > 0) {
+      // TODO: this isn't quite accurate since danger isn't accounted for,
+      // should have the same formula on the frontend, and include danger in
+      // repertoire response
+      const numMoves = getNumResponsesBelowThreshold()(userThreshold(), side());
         actions.push({
-          text: `Trim moves that occur in less than 1 in ${
-            1 / threshold
-          } games`,
+          text: `Trim rare lines below your coverage goal`,
           subtext: `${numMoves} moves will be trimmed`,
           onPress: () => {
-            trimToThreshold(threshold);
+            trimToThreshold(userThreshold());
           },
           style: "primary",
         });
-      }
-    });
     actions.push({
       text: `No thanks, I'll keep my whole repertoire`,
       onPress: () => {
@@ -777,7 +775,7 @@ export const TrimRepertoireOnboarding = () => {
           }
         });
       },
-      style: "focus",
+      style: "primary",
     });
     if (loading()) {
       actions = [];
