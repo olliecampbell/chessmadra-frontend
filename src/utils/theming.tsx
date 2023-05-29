@@ -74,14 +74,14 @@ export const BOARD_THEMES: BoardTheme[] = [
     // },
     // highlight: "hsla(198, 100%, 63%, 0.30)",
     // highlightDark: "hsla(198, 100%, 63%, 0.30)",
-    boardImage: chessbookBoard,
+    // boardImage: chessbookBoard,
     highlightLastMove: "hsla(198, 100%, 63%, 0.5)",
     highlightNextMove: "hsla(38, 74%, 55%, 0.5)",
     light: {
-      color: c.grays[24],
+      color: "hsl(118, 24%, 50%)",
     },
     dark: {
-      color: c.grays[14],
+      color: "hsl(146, 35%, 38%)",
     },
   },
   {

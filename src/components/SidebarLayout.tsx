@@ -13,7 +13,7 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createEffect, createSignal, Show } from "solid-js";
+import { createEffect, createSignal, onMount, Show } from "solid-js";
 import { Button } from "./Button";
 import { s, c } from "~/utils/styles";
 import { BrowsingMode } from "~/utils/browsing_state";
@@ -68,7 +68,9 @@ export const SidebarLayout = (props: {
   const vertical = responsive.bp < VERTICAL_BREAKPOINT;
   const [chessboardContainerRef, setChessboardContainerRef] =
     createSignal(null);
-  const chessboardLayout = createElementBounds(chessboardContainerRef);
+  const chessboardLayout = createElementBounds(chessboardContainerRef, {
+    trackMutation: false,
+  });
   const chessboardHeight = () => chessboardLayout.height;
   const chessboardHidden = () => {
     if (vertical) {
@@ -171,6 +173,7 @@ export const SidebarLayout = (props: {
                 )}
               >
                 <SidebarContainer
+                  backSection={props.backSection}
                   setAnimateSidebar={props.setAnimateSidebar}
                   children={props.sidebarContent}
                   settings={props.settings}
@@ -194,6 +197,7 @@ export const SidebarLayout = (props: {
                 )}
               >
                 <SidebarContainer
+                  backSection={props.backSection}
                   setAnimateSidebar={props.setAnimateSidebar}
                   children={props.sidebarContent}
                   settings={props.settings}

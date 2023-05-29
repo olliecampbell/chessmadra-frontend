@@ -52,6 +52,7 @@ export default function ResetPassword() {
         trackEvent(`auth.reset_password.success`);
         quick((s) => {
           s.userState.handleAuthResponse(resp.data);
+          s.repertoireState.initState()
           s.repertoireState.browsingState.clearViews();
           window.history.replaceState({}, "", "/");
         });

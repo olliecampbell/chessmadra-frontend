@@ -56,22 +56,54 @@ export default ({ onClick, onLogin }) => {
             />
             <Override slot="link-active" color="--primary" />
             <Override slot="item" padding="6px" />
-            <Link
-              onClick={() => {
-                onLogin();
-              }}
+            <Box
               slot="link-index"
-              href="/login"
-              border-color="--color-lightD1"
-              hover-color="--orange"
-              font="--lead"
-              color="--grey"
-              md-font="--leadMd"
-              lg-padding="6px 0px 6px 9px"
-              padding="0px 0px 0px 0px"
+              display={"flex"}
+              flex-direction="row"
+              align-items="center"
+              style={{
+                gap: "8px",
+              }}
             >
-              Log in
-            </Link>
+              <Link
+                onClick={() => {
+                  onLogin();
+                }}
+                href="/login"
+                border-color="--color-lightD1"
+                hover-color="--orange"
+                font="--lead"
+                color="--grey"
+                md-font="--leadMd"
+                lg-padding="6px 0px 6px 9px"
+                padding="0px 0px 0px 0px"
+              >
+                Log in
+              </Link>
+              <div
+                style={{
+                  width: "1px",
+                  height: "16px",
+                  background: "white",
+                  opacity: "0.35",
+                }}
+              ></div>
+              <Link
+                onClick={() => {
+                  onClick("signup");
+                }}
+                href="/login"
+                border-color="--color-lightD1"
+                hover-color="--orange"
+                font="--lead"
+                color="--grey"
+                md-font="--leadMd"
+                lg-padding="6px 0px 6px 9px"
+                padding="0px 0px 0px 0px"
+              >
+                Sign up
+              </Link>
+            </Box>
           </Menu>
         </Box>
       </Section>

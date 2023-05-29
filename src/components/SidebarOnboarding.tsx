@@ -322,6 +322,7 @@ export const OnboardingComplete = () => {
           onPress: () => {
             quick((s) => {
               trackEvent("onboarding.complete.continue");
+              s.repertoireState.onboarding.isOnboarding = false;
               s.repertoireState.browsingState.moveSidebarState("left");
               s.repertoireState.backToOverview();
             });

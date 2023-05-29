@@ -201,7 +201,6 @@ export interface BrowsingState {
   // Fields
   chessboard: ChessboardInterface;
   sidebarState: SidebarState;
-  previousSidebarState: SidebarState | null;
   chessboardShown: boolean;
   repertoireProgressState: BySide<RepertoireProgressState>;
   showPlans: boolean;
@@ -288,12 +287,7 @@ export const getInitialBrowsingState = (
   };
   const initialState = {
     ...createQuick(setOnly),
-    previousSidebarState: null,
     chessboard: undefined as ChessboardInterface,
-    // TODO: solid
-    previousSidebarAnim: { value: 0, duration: 200 },
-    // TODO: solid
-    currentSidebarAnim: { value: 0, duration: 200 },
     activeSide: "white",
     sidebarState: makeDefaultSidebarState(),
     hasPendingLineToAdd: false,
@@ -940,7 +934,6 @@ export const getInitialBrowsingState = (
     moveSidebarState: (direction: "left" | "right") =>
       set(([s, gs]) => {
         gs.animateSidebarState?.(direction);
-        s.previousSidebarState = cloneDeep(s.sidebarState);
       }),
     addPendingLine: (cfg) =>
       set(([s, gs]) => {

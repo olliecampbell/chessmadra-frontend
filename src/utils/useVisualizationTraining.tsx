@@ -1,32 +1,12 @@
 /* eslint-disable */
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import {
-  getPlaybackSpeedDescription,
-  PieceView,
-} from "~/components/chessboard/Chessboard";
-import { isNil } from "lodash-es";
-import { MoveList } from "~/components/MoveList";
-// import { Feather } from "@expo/vector-icons";
-// import Icon from 'react-native-vector-icons/MaterialIcons'
-import { Button } from "~/components/Button";
 import { useIsMobile } from "~/utils/isMobile";
-import { Modal } from "~/components/Modal";
-import { intersperse } from "~/utils/intersperse";
 import {
-  PlaybackSpeed,
   PuzzleDifficulty,
   VisualizationState,
-  ProgressMessageType,
 } from "~/types/VisualizationState";
 import { useHelpModal } from "~/components/useHelpModal";
-import { SettingsTitle } from "~/components/SettingsTitle";
-import { SelectOneOf } from "~/components/SelectOneOf";
-import { ProgressMessageView } from "~/components/ProgressMessage";
-import { SelectRange } from "~/components/SelectRange";
-import { CMText } from "~/components/CMText";
-import { trackEvent } from "~/utils/trackEvent";
 import { createSignal, JSX, Show } from "solid-js";
 import { Pressable } from "~/components/Pressable";
 

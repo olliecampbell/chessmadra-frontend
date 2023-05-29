@@ -1,14 +1,8 @@
-// import { ExchangeRates } from "~/ExchangeRate";
 import { useIsMobile } from "~/utils/isMobile";
-import { quick, useRepertoireState, useAppState } from "~/utils/app_state";
-import { HeadSiteMeta } from "./PageContainer";
-import { OPENINGS_DESCRIPTION } from "./NavBar";
-import { createEffect, Show } from "solid-js";
+import { Show } from "solid-js";
 import { c, s } from "~/utils/styles";
-import { Puff } from "solid-spinner";
 import { LogoFull } from "./icons/LogoFull";
 import { clsx } from "~/utils/classes";
-import { AuthStatus } from "~/utils/user_state";
 import { createDebugStateEffect } from "~/utils/debug_effect";
 
 export const RepertoirePageLayout = (props: {
@@ -34,12 +28,6 @@ export const RepertoirePageLayout = (props: {
         s(c.minHeight("100vh"))
       )}
     >
-      <HeadSiteMeta
-        siteMeta={{
-          title: "Chessbook",
-          description: OPENINGS_DESCRIPTION,
-        }}
-      />
       <div
         style={s(
           isMobile ? s(c.grow) : c.flexShrink(1),

@@ -36,7 +36,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
                 onPress: () => {
                   requestProPlan(false);
                 },
-                text: "Upgrade to Chessbook Pro - Monthy",
+                text: "Upgrade to Chessbook Pro - Monthly",
                 subtext: "$5/month",
                 style: "primary",
               },

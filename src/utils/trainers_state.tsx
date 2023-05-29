@@ -3,13 +3,26 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { VisualizationState } from "~/types/VisualizationState";
 import { getInitialVisualizationState } from "./visualization_state";
+import { View } from "~/types/View";
+import { VisualizationTraining } from "~/components/VisualizationTraining";
+import { Component } from "solid-js";
+import { last } from "lodash-es";
 
 type TrainerTool = "visualization";
 
 export interface TrainersState {
-  activeTool: TrainerTool;
   quick: (fn: (_: TrainersState) => void) => void;
+  getActiveTool: () => TrainerTool;
   visualizationState: VisualizationState;
+  viewStack: View[];
+  currentView: () => View;
+  clearViews: () => void;
+  pushView: (
+    view: Component<any>,
+    opts?: { direction?: "left" | "right"; props?: any; replace?: boolean }
+  ) => void;
+  popView: () => void;
+  animateSidebarState?: (dir: "left" | "right") => void;
 }
 
 export enum AuthStatus {
@@ -37,8 +50,41 @@ export const getInitialTrainersState = (
   };
   const initialState = {
     ...createQuick<TrainersState>(setOnly),
-    visualizationState: getInitialVisualizationState(_get, _set, false),
-    activeTool: "visualization",
+    visualizationState: getInitialVisualizationState(_set, _get, false),
+    viewStack: [],
+    getActiveTool: () => {
+      return get(([s]) => {
+        for (const view of s.viewStack) {
+          if (view.component === VisualizationTraining) {
+            return "visualization";
+          } else {
+            return null;
+          }
+        }
+      });
+    },
+    clearViews: () =>
+      set(([s, gs]) => {
+        s.viewStack = [];
+      }),
+    currentView: () =>
+      get(([s, gs]) => {
+        return last(s.viewStack);
+      }),
+    pushView: (view, { direction, props, replace } = {}) =>
+      set(([s, gs]) => {
+        s.animateSidebarState?.(direction ?? "right");
+        console.log("doing this?");
+        if (replace) {
+          s.viewStack.pop();
+        }
+        s.viewStack.push({ component: view, props: props ?? {} });
+      }),
+    popView: () =>
+      set(([s, gs]) => {
+        s.viewStack.pop();
+        console.log("view stack", s.viewStack);
+      }),
   } as TrainersState;
 
   return initialState;

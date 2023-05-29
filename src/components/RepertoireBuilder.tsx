@@ -65,9 +65,6 @@ export const RepertoireBuilder = () => {
 
   const sidebarContent = (
     <>
-      <Show when={vertical}>
-        <BackSection />
-      </Show>
       <div id="sidebar-inner" style={s(c.relative, c.zIndex(100))}>
         <Switch fallback={<Responses />}>
           <Match when={view()}>

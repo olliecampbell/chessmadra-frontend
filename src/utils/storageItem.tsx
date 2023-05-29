@@ -1,10 +1,16 @@
+import { Setter } from "solid-js";
+import { Accessor, createSignal, Signal } from "solid-js";
+
 export class StorageItem<T> {
   key: string;
-  private _value: T;
+  private _value: Accessor<T>;
+  private _setValue: Setter<T>;
 
   constructor(key: string, defaultValue: T) {
     this.key = key;
-    this._value = this.load() || defaultValue;
+    const [value, setValue] = createSignal((this.load() || defaultValue) as T);
+    this._value = value;
+    this._setValue = setValue;
   }
 
   private load() {
@@ -18,15 +24,15 @@ export class StorageItem<T> {
   }
 
   save() {
-    localStorage.setItem(this.key, JSON.stringify(this._value));
+    localStorage.setItem(this.key, JSON.stringify(this._value()));
   }
 
   get value(): T {
-    return this._value;
+    return this._value();
   }
 
   set value(v: T) {
-    this._value = v;
+    this._setValue(v);
     this.save();
   }
 }

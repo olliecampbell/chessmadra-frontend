@@ -17,6 +17,7 @@ export interface PuzzleState extends ChessboardDelegate {
   puzzle: LichessPuzzle;
   progressMessage: ProgressMessage | null;
   delegate: PuzzleStateDelegate;
+  shouldMakeMove: (move: Move) => boolean;
 }
 
 export interface PuzzleStateDelegate {
@@ -68,7 +69,14 @@ export const getInitialPuzzleState = (
           s.solutionMoves.shift();
           if (!isEmpty(s.solutionMoves)) {
             s.delegate.onPuzzleMoveSuccess();
+            s.progressMessage = {
+              message: `Keep going...`,
+              // onPromptPress: () => {},
+              // prompt: "Give up?",
+              type: ProgressMessageType.Error,
+            };
           } else {
+            s.progressMessage = null;
             s.delegate.onPuzzleMoveSuccess();
             s.delegate.onPuzzleSuccess();
           }

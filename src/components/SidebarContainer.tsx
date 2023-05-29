@@ -8,6 +8,7 @@ export const SidebarContainer = (props: {
   setAnimateSidebar: (fn: (dir: "left" | "right") => void) => void;
   settings: JSX.Element;
   children: JSX.Element;
+  backSection: JSX.Element;
 }) => {
   onMount(() => {
     props.setAnimateSidebar((dir: "left" | "right") => {
@@ -72,7 +73,7 @@ export const SidebarContainer = (props: {
           {props.settings}
         </div>
       </Show>
-      {!vertical() && <BackSection />}
+      {!vertical() && props.backSection}
       <div
         style={s(
           c.column,
@@ -96,6 +97,7 @@ export const SidebarContainer = (props: {
           ref={setCurrentRef}
           style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}
         >
+          <Show when={vertical}>{props.backSection}</Show>
           {props.children}
         </div>
       </div>

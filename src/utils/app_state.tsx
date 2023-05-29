@@ -42,7 +42,6 @@ const DEBUG_STATE = true;
 export interface AppState {
   quick: (fn: (_: AppState) => void) => void;
   adminState: AdminState;
-  visualizationState: VisualizationState;
   // climbState: VisualizationState;
   repertoireState: RepertoireState;
   // blunderState: BlunderRecognitionState;
@@ -111,7 +110,6 @@ const initialState = {
   debugState: getInitialDebugState(set, get),
   navigationState: getInitialNavigationState(set, get),
   userState: getInitialUserState(set, get),
-  visualizationState: getInitialVisualizationState(set, get, false),
   trackEvent: (name: string, props?: Object) => {
     get((s: AppState) => {
       console.log(
@@ -295,6 +293,13 @@ export const useRepertoireState = <T extends any[]>(
   return useStateSliceDestructure(fn, (s) => s.repertoireState, config);
 };
 
+export const useTrainersState = <T extends any[]>(
+  fn: (_: TrainersState) => T,
+  config?: Partial<EqualityConfig>
+) => {
+  return useStateSliceDestructure(fn, (s) => s.trainersState, config);
+};
+
 export const useBrowsingState = <T extends any[]>(
   fn: (_: [BrowsingState, RepertoireState]) => T,
   config?: Partial<EqualityConfig>
@@ -343,7 +348,11 @@ export const useVisualizationState = <T extends any[]>(
   fn: (_: VisualizationState) => T,
   config?: Partial<EqualityConfig>
 ) => {
-  return useStateSliceDestructure(fn, (s) => s.visualizationState, config);
+  return useStateSliceDestructure(
+    fn,
+    (s) => s.trainersState.visualizationState,
+    config
+  );
 };
 
 export const useClimbState = <T,>(

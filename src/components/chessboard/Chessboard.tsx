@@ -16,6 +16,7 @@ import {
   isEqual,
   isNil,
   last,
+  range,
 } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import { getAppState, quick } from "~/utils/app_state";
@@ -57,19 +58,6 @@ export const EMPTY_DRAG = {
   x: 0,
   y: 0,
   transform: { x: 0, y: 0 },
-};
-
-export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
-  switch (ps) {
-    case PlaybackSpeed.Slow:
-      return "Slow";
-    case PlaybackSpeed.Normal:
-      return "Normal";
-    case PlaybackSpeed.Fast:
-      return "Fast";
-    case PlaybackSpeed.Ludicrous:
-      return "Ludicrous";
-  }
 };
 
 const getSvgName = (piece: PieceSymbol, color: ChessColor) => {
@@ -230,7 +218,9 @@ export function ChessboardView(props: {
   let tapSelectedSquare = false;
   const [chessboardContainerRef, setChessboardContainerRef] =
     createSignal(null);
-  const chessboardLayout = createElementBounds(chessboardContainerRef);
+  const chessboardLayout = createElementBounds(chessboardContainerRef, {
+    trackMutation: false,
+  });
   const [didImmediatelyTap, setDidImmediatelyTap] = createSignal(false);
   const position = () =>
     chessboardStore().futurePosition ?? chessboardStore().position;
@@ -290,7 +280,7 @@ export function ChessboardView(props: {
     }
     window.setTimeout(() => {
       setTapAction(null);
-    }, 100);
+    }, 200);
     const turn = props.chessboardInterface.getTurn();
     if (!piece?.color || toSide(piece.color) !== turn) {
       return;
@@ -378,15 +368,16 @@ export function ChessboardView(props: {
 
     console.log("mouse up", evt);
     evt.preventDefault();
-    if (tapAction()) {
+    const tap = getTapOffset(evt, chessboardLayout);
+    const [newSquare, centerX, centerY] = getSquareFromLayoutAndGesture(
+      chessboardLayout,
+      tap
+    );
+    if (newSquare === drag().square && tapAction()) {
       console.log("doing tap");
       tapAction()?.();
     } else {
       console.log("no tap action, was a drag");
-      const [newSquare] = getSquareFromLayoutAndGesture(
-        chessboardLayout,
-        drag()
-      );
 
       let availableMove = find(
         chessboardStore().availableMoves,
@@ -413,6 +404,7 @@ export function ChessboardView(props: {
     <>
       <div
         ref={props.ref}
+        class={clsx(`relative h-0 w-full touch-none select-none pb-[100%]`)}
         style={s(
           c.pb("100%"),
           c.relative,
@@ -420,14 +412,8 @@ export function ChessboardView(props: {
           c.width("100%"),
           props.styles,
           props.shadow && c.cardShadow,
-          c.keyedProp("touch-action")("none"),
           {
             "-webkit-touch-callout": "none",
-            "-webkit-user-select": "none",
-            "-khtml-user-select": "none",
-            "-moz-user-select": "none",
-            "-ms-user-select": "none",
-            "user-select": "none",
           }
         )}
       >
@@ -587,7 +573,12 @@ export function ChessboardView(props: {
             }}
           >
             <div
-              class={clsx(true ? "bg-gray-98" : "bg-gray-4", "opacity-70")}
+              class={clsx(
+                chessboardStore().visualizedMove?.color === "w"
+                  ? "bg-gray-98"
+                  : "bg-gray-4",
+                "opacity-70"
+              )}
               style={s(
                 c.size("50%"),
                 c.round,
@@ -697,49 +688,52 @@ export function ChessboardView(props: {
             style={s(c.column, c.fullWidth, c.fullHeight, c.noPointerEvents)}
             class={clsx("")}
           >
-            {times(8)((i) => {
-              return (
+            <For each={range(8)}>
+              {(i) => (
                 <div
                   style={s(c.fullWidth, c.row, c.grow, c.flexible, c.relative)}
                 >
-                  {times(8)((j) => {
-                    const debugSquare = "e4";
-                    const light = (i + j) % 2 == 0;
-                    const [color, inverseColor] = light
-                      ? colors()
-                      : [colors()[1], colors()[0]];
-                    // if (state.hideColors) {
-                    //   color = c.grays[30];
-                    // }
-                    const tileLetter = () =>
-                      flipped() ? COLUMNS[7 - j] : COLUMNS[j];
+                  <For each={range(8)}>
+                    {(j) => {
+                      const debugSquare = "e4";
+                      const light = (i + j) % 2 == 0;
+                      const [color, inverseColor] = light
+                        ? colors()
+                        : [colors()[1], colors()[0]];
+                      // if (state.hideColors) {
+                      //   color = c.grays[30];
+                      // }
+                      const tileLetter = () =>
+                        flipped() ? COLUMNS[7 - j] : COLUMNS[j];
 
-                    // Piece view / indicator view
-                    const tileNumber = () =>
-                      flipped() ? ROWS[i] : ROWS[7 - i];
-                    const square = createMemo(
-                      () => `${tileLetter()}${tileNumber()}` as Square
-                    );
-                    type HighlightType = readonly [
-                      "indicator" | "full" | null,
-                      "last" | "next" | null
-                    ];
-                    const [highlightType, highlightColor] = destructure(
-                      createMemo(() => {
-                        const isDraggedOverSquare =
-                          chessboardStore().draggedOverSquare == square();
-                        let availableMove = availableMoves().find(
-                          (m) => m.to == square()
-                        );
-                        if (isDraggedOverSquare) {
-                          return ["full", "next"];
+                      // Piece view / indicator view
+                      const tileNumber = () =>
+                        flipped() ? ROWS[i] : ROWS[7 - i];
+                      const square = createMemo(
+                        () => `${tileLetter()}${tileNumber()}` as Square
+                      );
+                      type HighlightType = readonly [
+                        "indicator" | "full" | null,
+                        "last" | "next" | null
+                      ];
+                      const isDraggedOverSquare = createMemo(
+                        () => chessboardStore().draggedOverSquare == square()
+                      );
+                      let availableMove = createMemo(
+                        () =>
+                          availableMoves().find((m) => m.to == square()) !==
+                          undefined
+                      );
+                      const highlight = createMemo(() => {
+                        if (isDraggedOverSquare()) {
+                          return { type: "full", color: "next" };
                         }
                         let hasPiece = position().get(square()) != null;
-                        if (availableMove) {
+                        if (availableMove()) {
                           if (hasPiece) {
-                            return ["indicator", "next"];
+                            return { type: "indicator", color: "next" };
                           }
-                          return ["indicator", "next"];
+                          return { type: "indicator", color: "next" };
                         }
                         const isLastMoveSquare =
                           props.chessboardInterface.getLastMove()?.to ==
@@ -747,107 +741,110 @@ export function ChessboardView(props: {
                           props.chessboardInterface.getLastMove()?.from ==
                             square();
                         if (isLastMoveSquare) {
-                          return ["full", "last"];
+                          return { type: "full", color: "last" };
                         }
                         const isPreviewSquare =
                           chessboardStore().previewedMove?.to === square() ||
                           chessboardStore().previewedMove?.from === square();
                         if (isPreviewSquare) {
-                          return ["full", "next"];
+                          return { type: "full", color: "next" };
                         }
 
-                        return [null, null];
-                      })()
-                    );
-                    const isBottomEdge = i == 7;
-                    const isRightEdge = j == 7;
+                        return { type: null, color: null };
+                      });
+                      const isBottomEdge = i == 7;
+                      const isRightEdge = j == 7;
 
-                    return (
-                      <div
-                        style={s(
-                          c.keyedProp("touch-action")("none"),
-                          !boardImage() && c.bg(color),
-                          themeStyles(light),
-                          c.center,
-                          !frozen() && c.clickable,
-                          c.flexible,
-                          c.relative
-                        )}
-                      >
+                      return (
                         <div
-                          class="absolute inset-0 grid place-items-center rounded-full"
                           style={s(
-                            c.zIndex(highlightType() === "indicator" ? 11 : 1)
+                            c.keyedProp("touch-action")("none"),
+                            !boardImage() && c.bg(color),
+                            themeStyles(light),
+                            c.center,
+                            !frozen() && c.clickable,
+                            c.flexible,
+                            c.relative
                           )}
                         >
                           <div
-                            class={`h-1/3 w-1/3 rounded-full transition-opacity duration-300 ${
-                              highlightType() ? "opacity-100" : "opacity-0"
-                            }`}
-                            id={`indicator-${square()}`}
-                            classList={{
-                              hidden: !(highlightType() === "indicator"),
-                            }}
+                            class="absolute inset-0 grid place-items-center rounded-full"
                             style={s(
-                              c.bg(theme().highlightNextMove),
+                              c.zIndex(
+                                highlight().type === "indicator" ? 11 : 1
+                              )
+                            )}
+                          >
+                            <div
+                              class={`h-1/3 w-1/3 rounded-full transition-opacity duration-300 ${
+                                highlight().type === "indicator"
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                              id={`indicator-${square()}`}
+                              style={s(
+                                c.bg(theme().highlightNextMove),
+                                c.absolute,
+                                c.zIndex(6)
+                              )}
+                            />
+                          </div>
+                          <div
+                            class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity ${
+                              highlight().type === "full"
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }`}
+                            id={`highlight-${square()}`}
+                            style={s(
+                              c.bg(
+                                highlight().color === "last"
+                                  ? theme().highlightLastMove
+                                  : theme().highlightNextMove
+                              ),
                               c.absolute,
-                              c.zIndex(6)
+                              c.zIndex(1)
                             )}
                           />
+                          {isBottomEdge &&
+                            !chessboardStore().hideCoordinates && (
+                              <CMText
+                                style={s(
+                                  c.fg(inverseColor),
+                                  c.weightSemiBold,
+                                  c.absolute,
+                                  c.fontSize(isMobile ? 8 : 8),
+                                  c.left(isMobile ? 1 : 1),
+                                  c.bottom(isMobile ? 1 : 0),
+                                  c.opacity(80)
+                                )}
+                              >
+                                {tileLetter}
+                              </CMText>
+                            )}
+                          {isRightEdge &&
+                            !chessboardStore().hideCoordinates && (
+                              <CMText
+                                style={s(
+                                  c.fg(inverseColor),
+                                  c.weightBold,
+                                  c.absolute,
+                                  c.fontSize(8),
+                                  c.right(2),
+                                  c.opacity(80),
+                                  c.top(0)
+                                )}
+                              >
+                                {tileNumber}
+                              </CMText>
+                            )}
                         </div>
-                        <div
-                          class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity ${
-                            highlightType() === "full"
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
-                          id={`highlight-${square()}`}
-                          style={s(
-                            c.bg(
-                              highlightColor() === "last"
-                                ? theme().highlightLastMove
-                                : theme().highlightNextMove
-                            ),
-                            c.absolute,
-                            c.zIndex(1)
-                          )}
-                        />
-                        {isBottomEdge && !chessboardStore().hideCoordinates && (
-                          <CMText
-                            style={s(
-                              c.fg(inverseColor),
-                              c.weightSemiBold,
-                              c.absolute,
-                              c.fontSize(isMobile ? 8 : 8),
-                              c.left(isMobile ? 1 : 1),
-                              c.bottom(isMobile ? 1 : 0),
-                              c.opacity(80)
-                            )}
-                          >
-                            {tileLetter}
-                          </CMText>
-                        )}
-                        {isRightEdge && !chessboardStore().hideCoordinates && (
-                          <CMText
-                            style={s(
-                              c.fg(inverseColor),
-                              c.weightBold,
-                              c.absolute,
-                              c.fontSize(8),
-                              c.right(2),
-                              c.opacity(80),
-                              c.top(0)
-                            )}
-                          >
-                            {tileNumber}
-                          </CMText>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    }}
+                  </For>
                 </div>
-              );
-            })}
+              )}
+            </For>
           </div>
         </div>
       </div>

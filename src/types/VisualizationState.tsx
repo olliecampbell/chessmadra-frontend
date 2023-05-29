@@ -8,8 +8,8 @@ import { View } from "./View";
 export interface VisualizationState {
   pulsePlay: boolean;
   puzzleState: PuzzleState;
+  startedSolving: boolean;
   chessboard: ChessboardInterface;
-  viewStack: View[];
 
   mockPassFail: boolean;
   helpOpen: boolean;

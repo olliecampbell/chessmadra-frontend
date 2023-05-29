@@ -1,0 +1,171 @@
+import {
+  useVisualizationState,
+  quick,
+  useTrainersState,
+  getAppState,
+} from "~/utils/app_state";
+import { For, onMount } from "solid-js";
+import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import { BP, useResponsive } from "~/utils/useResponsive";
+import { createElementBounds } from "@solid-primitives/bounds";
+import {
+  VERTICAL_BREAKPOINT,
+  SidebarLayout,
+  NavBreadcrumbs,
+  AnalyzeOnLichessButton,
+} from "./SidebarLayout";
+import { Dynamic } from "solid-js/web";
+import { Spacer } from "./Space";
+import {
+  SidebarAction,
+  SidebarActions,
+  SidebarFullWidthButton,
+  SidebarSectionHeader,
+} from "./SidebarActions";
+import { c, s } from "~/utils/styles";
+import { SettingsButtons } from "./Settings";
+import { SidebarTemplate } from "./SidebarTemplate";
+import { trackEvent } from "~/utils/trackEvent";
+import { clsx } from "~/utils/classes";
+import { VisualizationTraining } from "./VisualizationTraining";
+import { DirectorySidebar } from "./chessmadra/DirectorySidebar";
+import { isNil } from "lodash-es";
+import { FadeInOut } from "./FadeInOut";
+import { Pressable } from "./Pressable";
+
+export const ChessMadra = (props: { initialTool: string }) => {
+  onMount(() => {
+    if (props.initialTool) {
+      quick((s) => {
+        s.trainersState.pushView(VisualizationTraining);
+      });
+    }
+  });
+  const responsive = useResponsive();
+  const activeTool = () => getAppState().trainersState.getActiveTool();
+  const [state] = useVisualizationState((s) => [s]);
+  let view = () => getAppState().trainersState.currentView();
+  const sidebarContent = (
+    <>
+      <Switch fallback={<DirectorySidebar />}>
+        <Match when={view()}>
+          <Dynamic component={view()?.component} {...view()?.props} />
+        </Match>
+      </Switch>
+    </>
+  );
+
+  const [isPlaying] = useVisualizationState((s) => [s.isPlaying]);
+  const [startedSolvingVis] = useVisualizationState((s) => [s.startedSolving]);
+  const [flashPlayButton] = useVisualizationState((s) => [s.pulsePlay]);
+  const belowChessboard = (
+    <Switch>
+      <Match when={activeTool() === "visualization" && !startedSolvingVis()}>
+        <>
+          <div style={s(c.row, c.alignStretch, c.fullWidth)}>
+            <button
+              style={s(
+                c.grow,
+                c.height(60),
+                c.py(0),
+                c.fontSize(22),
+                c.overflowHidden
+              )}
+              class={clsx(
+                "row w-full cursor-pointer items-center justify-center rounded-sm bg-blue-50",
+                flashPlayButton() && "animate-pulse"
+              )}
+              onClick={() => {
+                trackEvent(`visualization.play_hidden_moves`);
+                quick((s) => {
+                  s.trainersState.visualizationState.visualizeHiddenMoves();
+                });
+              }}
+            >
+              <i
+                style={s(c.fg(c.colors.textPrimary))}
+                class={`fa-sharp ${isPlaying() ? "fa-pause" : "fa-play"}`}
+              ></i>
+            </button>
+          </div>
+          <Spacer height={12} />
+        </>
+      </Match>
+    </Switch>
+  );
+
+  return (
+    <SidebarLayout
+      loading={false}
+      breadcrumbs={<NavBreadcrumbs />}
+      sidebarContent={sidebarContent}
+      settings={<SettingsButtons />}
+      chessboardInterface={state().chessboard}
+      backSection={<BackSection />}
+      belowChessboard={belowChessboard}
+      setAnimateSidebar={(fn) => {
+        quick((s) => {
+          s.trainersState.animateSidebarState = fn;
+        });
+      }}
+    />
+  );
+};
+
+const BackSection = () => {
+  const responsive = useResponsive();
+  const paddingTop = 140;
+  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const backButtonAction = () => {
+    let backButtonAction: (() => void) | null = null;
+    if (getAppState().trainersState.currentView()) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.trainersState.animateSidebarState?.("left");
+          s.trainersState.popView();
+        });
+      };
+    }
+
+    return backButtonAction;
+  };
+
+  const isOpen = () => !isNil(backButtonAction());
+  createEffect(() => {
+    console.log("isOpen", isOpen());
+  });
+
+  return (
+    <FadeInOut
+      id="back-button"
+      style={s(
+        c.column,
+        !vertical ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
+      )}
+      open={() => isOpen()}
+      // className="transition-height"
+    >
+      <div class={"row padding-sidebar h-full items-center justify-between"}>
+        <Pressable
+          onPress={() => {
+            quick((s) => {
+              if (backButtonAction()) {
+                s.repertoireState.browsingState.moveSidebarState("left");
+                backButtonAction()?.();
+              }
+            });
+          }}
+          style={s(c.unshrinkable, c.column, c.justifyCenter)}
+          class={
+            "text-md text-tertiary &hover:text-secondary place-items-center py-2 md:self-end md:pb-8"
+          }
+        >
+          <p style={s(c.weightBold, c.row, c.alignCenter)}>
+            <i class="fa fa-arrow-left pr-2"></i>
+            Back
+          </p>
+        </Pressable>
+      </div>
+    </FadeInOut>
+  );
+};

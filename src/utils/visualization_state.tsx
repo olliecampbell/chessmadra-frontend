@@ -72,27 +72,36 @@ export const getInitialVisualizationState = (
   isClimb: boolean
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _set((s) => fn([isClimb ? s.climbState : s.visualizationState, s]));
+    return _set((s) =>
+      fn([isClimb ? s.climbState : s.trainersState.visualizationState, s])
+    );
   };
   const setOnly = <T,>(fn: (stack: VisualizationState) => T): T => {
     return set(([s]) => fn(s));
   };
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _get((s) => fn([isClimb ? s.climbState : s.visualizationState, s]));
+    return _get((s) =>
+      fn([isClimb ? s.climbState : s.trainersState.visualizationState, s])
+    );
   };
   const setPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
     return _set((s) =>
-      fn((isClimb ? s.climbState : s.visualizationState).puzzleState)
+      fn(
+        (isClimb ? s.climbState : s.trainersState.visualizationState)
+          .puzzleState
+      )
     );
   };
   const getPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
     return _get((s) =>
-      fn((isClimb ? s.climbState : s.visualizationState).puzzleState)
+      fn(
+        (isClimb ? s.climbState : s.trainersState.visualizationState)
+          .puzzleState
+      )
     );
   };
   let initialState = {
     pulsePlay: true,
-    viewStack: [],
     // @ts-ignore
     chessboard: null as ChessboardInterface,
     finishedAutoPlaying: false,
@@ -104,6 +113,7 @@ export const getInitialVisualizationState = (
     showNotation: new StorageItem("show-notation-v2", true),
     plyUserSetting: new StorageItem("visualization-ply", 2),
     ratingGteUserSetting: new StorageItem("puzzle-rating-gte-v3", 0),
+    startedSolving: false,
     ratingLteUserSetting: new StorageItem("puzzle-rating-lte-v3", 1200),
     playbackSpeedUserSetting: new StorageItem(
       "playback-speed",
@@ -188,6 +198,7 @@ export const getInitialVisualizationState = (
       set(([state]) => {
         state.chessboard.resetPosition();
         state.chessboard.clearPending();
+        state.startedSolving = false;
         state.focusedMoveIndex = null;
         const currentPosition = new Chess();
         const puzzlePosition = new Chess();
@@ -280,6 +291,7 @@ export const getInitialVisualizationState = (
       set(([state]) => {
         // TODO: animate piece move
         state.showPuzzlePosition = true;
+        state.startedSolving = true;
         state.chessboard.flashRing(true);
         state.chessboard.set((s) => {
           s.futurePosition = null;

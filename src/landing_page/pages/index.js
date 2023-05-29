@@ -49,11 +49,18 @@ export default (({
   }), /*#__PURE__*/React.createElement(Override, {
     slot: "item",
     padding: "6px"
-  }), /*#__PURE__*/React.createElement(Link, {
+  }), /*#__PURE__*/React.createElement(Box, {
+    slot: "link-index",
+    display: "flex",
+    "flex-direction": "row",
+    "align-items": "center",
+    style: {
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement(Link, {
     onClick: () => {
       onLogin();
     },
-    slot: "link-index",
     href: "/login",
     "border-color": "--color-lightD1",
     "hover-color": "--orange",
@@ -62,7 +69,26 @@ export default (({
     "md-font": "--leadMd",
     "lg-padding": "6px 0px 6px 9px",
     padding: "0px 0px 0px 0px"
-  }, "Log in")))), /*#__PURE__*/React.createElement(Section, {
+  }, "Log in"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "1px",
+      height: "16px",
+      background: "white",
+      opacity: "0.35"
+    }
+  }), /*#__PURE__*/React.createElement(Link, {
+    onClick: () => {
+      onClick("signup");
+    },
+    href: "/login",
+    "border-color": "--color-lightD1",
+    "hover-color": "--orange",
+    font: "--lead",
+    color: "--grey",
+    "md-font": "--leadMd",
+    "lg-padding": "6px 0px 6px 9px",
+    padding: "0px 0px 0px 0px"
+  }, "Sign up"))))), /*#__PURE__*/React.createElement(Section, {
     padding: "64px 0 0px 0",
     "md-padding": "68px 0 0px 0",
     "sm-padding": "72px 0 0px 0",

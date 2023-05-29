@@ -263,6 +263,7 @@ export const getInitialRepertoireState = (
     // hasCompletedRepertoireInitialization: failOnTrue(true),
     initState: () =>
       set(([s]) => {
+        s.repertoire = undefined;
         s.fetchRepertoire(true);
         s.fetchSupplementary();
       }, "initState"),

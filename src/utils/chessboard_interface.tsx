@@ -137,6 +137,7 @@ export interface ChessboardViewState {
   // other tool stuff
   futurePosition: Chess | null;
   movesToVisualize: Move[];
+  visualizedMove: Move | null | undefined;
 }
 
 export const createChessboardInterface = (): [
@@ -199,7 +200,11 @@ export const createChessboardInterface = (): [
       return s ? s(chessboardStore) : chessboardStore;
     },
     getTurn: () => {
-      return chessboardStore.position.turn() === "w" ? "white" : "black";
+      return (
+        chessboardStore.futurePosition ?? chessboardStore.position
+      ).turn() === "w"
+        ? "white"
+        : "black";
     },
     setFrozen: (x: boolean) => {
       set((s) => {
@@ -612,6 +617,7 @@ export const createChessboardInterface = (): [
       const recurseVisualize = () => {
         set((s) => {
           let move = s.movesToVisualize?.shift();
+          s.visualizedMove = move;
           if (!move) {
             return;
           }
