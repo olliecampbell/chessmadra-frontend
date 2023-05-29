@@ -76,7 +76,7 @@ export const SidebarLayout = (props: {
   const chessboardHeight = () => chessboardLayout.height;
   const chessboardHidden = () => {
     if (isChessmadra) {
-      return activeTool() === "visualization";
+      return activeTool() !== "visualization";
     }
     if (vertical) {
       return includes(["overview", "home"], mode());
