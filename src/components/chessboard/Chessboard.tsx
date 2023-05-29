@@ -336,6 +336,7 @@ export function ChessboardView(props: {
       };
       let tap = getTapOffset(evt, chessboardLayout);
       const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, tap);
+      console.log(`tap was `, tap, chessboardLayout, evt, newSquare);
       if (newSquare !== s.draggedOverSquare) {
         let isOverMovableSquare = s.availableMoves.find(
           (m) => m.to == newSquare
@@ -366,24 +367,17 @@ export function ChessboardView(props: {
   const onMouseUp = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
 
-    console.log("mouse up", evt);
     evt.preventDefault();
-    const tap = getTapOffset(evt, chessboardLayout);
-    const [newSquare, centerX, centerY] = getSquareFromLayoutAndGesture(
-      chessboardLayout,
-      tap
-    );
+    const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, drag());
     if (newSquare === drag().square && tapAction()) {
-      console.log("doing tap");
       tapAction()?.();
     } else {
-      console.log("no tap action, was a drag");
-
       let availableMove = find(
         chessboardStore().availableMoves,
         (m) => m.to == newSquare
       );
       if (availableMove) {
+        console.log("had an available move", availableMove);
         props.chessboardInterface.requestToMakeMove(availableMove as Move);
       } else {
         props.chessboardInterface.clearPending();

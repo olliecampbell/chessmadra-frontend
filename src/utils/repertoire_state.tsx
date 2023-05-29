@@ -63,7 +63,7 @@ import {
 } from "~/components/SidebarOnboarding";
 
 const TEST_LINE = isDevelopment
-  ? pgnToLine("1. e4 c6 2. d4 d6 3. Nc3 Nd7")
+  ? [] //pgnToLine("1. e4 c6 2. d4 d6 3. Nc3 Nd7")
   : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
