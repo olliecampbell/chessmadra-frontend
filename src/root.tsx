@@ -24,6 +24,7 @@ import { isServer } from "solid-js/web";
 import "virtual:uno.css";
 import { quick } from "~/utils/app_state";
 import { HeadSiteMeta } from "./components/PageContainer";
+import { isChessmadra } from "./utils/env";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -33,6 +34,8 @@ export default function Root() {
     amplitudeInit(
       development
         ? "a15d3fdaf95400ebeae67dafbb5e8929"
+        : isChessmadra
+        ? "5691c416a07b218210dba749f3638067"
         : "3709b7c3cbe8ef56eecec29da70f3d3c",
       undefined,
       {
