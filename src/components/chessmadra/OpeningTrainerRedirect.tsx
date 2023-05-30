@@ -5,6 +5,7 @@ import { SidebarTemplate } from "../SidebarTemplate";
 import { Spacer } from "../Space";
 import { VisualizationTraining } from "../VisualizationTraining";
 import { LoginSidebar } from "../LoginSidebar";
+import { clsx } from "~/utils/classes";
 
 export const OpeningTrainerRedirect = () => {
   const responsive = useResponsive();
@@ -36,8 +37,11 @@ export const OpeningTrainerRedirect = () => {
       ]}
     >
       <p class={"body-text"}>
-        This has moved over to <a href="https://chessbook.com/">Chessbook</a>!
-        If you have a repertoire that you haven't saved to an account yet, you
+        This has moved over to{" "}
+        <a href="https://chessbook.com/" class={clsx("underline!")}>
+          www.chessbook.com
+        </a>
+        ! If you have a repertoire that you haven't saved to an account yet, you
         should create an account first.
       </p>
       <Spacer height={12} />

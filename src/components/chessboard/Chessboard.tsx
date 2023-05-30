@@ -287,6 +287,9 @@ export function ChessboardView(props: {
     }
     props.chessboardInterface.set((store) => {
       const drag = store.drag;
+      console.log("evt", evt);
+      drag.touch = evt instanceof TouchEvent;
+      console.log("is touch?" + drag.touch);
       drag.square = square;
       drag.enoughToDrag = false;
       drag.x = tap.x;
@@ -594,7 +597,6 @@ export function ChessboardView(props: {
           <For each={Object.keys(SQUARES)}>
             {(square) => {
               let debug = "e2";
-              const piece = createMemo(() => pos().get(square));
               // createEffect(() => {
               //   if (square === debug) {
               //     console.log("piece", piece(), pos().ascii());
@@ -603,6 +605,14 @@ export function ChessboardView(props: {
 
               const dragging = createMemo(() => {
                 return drag().square === square;
+              });
+              const piece = createMemo(() => {
+                if (dragging()) {
+                  // this is terrible that these mean different things, pos vs position
+                  return position().get(square);
+                } else {
+                  return pos().get(square);
+                }
               });
               const animatedProps = () => {
                 // track
@@ -613,14 +623,13 @@ export function ChessboardView(props: {
                 );
                 let animated = false;
                 if (dragging() && drag().enoughToDrag) {
-                  posStyles = s(
-                    posStyles,
-                    c.transform(
-                      `translate(${drag().transform.x}px, ${
-                        drag().transform.y
-                      }px)`
-                    )
-                  );
+                  posStyles = s(posStyles, {
+                    translate: `${drag().transform.x}px ${
+                      drag().transform.y
+                    }px`,
+                    scale: "1.5",
+                    transition: "scale 0.2s",
+                  });
                 }
 
                 return { animated, posStyles };

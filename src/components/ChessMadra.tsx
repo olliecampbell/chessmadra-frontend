@@ -140,6 +140,7 @@ const BackSection = () => {
     console.log("isOpen", isOpen());
   });
   const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
+  const activeTool = () => getAppState().trainersState.getActiveTool();
 
   return (
     <FadeInOut
@@ -174,7 +175,8 @@ const BackSection = () => {
         <Pressable
           style={s()}
           class={clsx(
-            "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors md:self-end md:pb-8"
+            "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors md:self-end md:pb-8",
+            activeTool() === "visualization" ? "" : "hidden"
           )}
           onPress={() => {
             quick((s) => {

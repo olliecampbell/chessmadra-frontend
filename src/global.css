@@ -60,15 +60,15 @@ span {
 }
 
 a:visited {
-  text-decoration: none;
+  text-decoration: unset;
 }
 
 a:hover {
-  text-decoration: none;
+  text-decoration: unset;
 }
 
 a:active {
-  text-decoration: none;
+  text-decoration: unset;
 }
 a {
   color: unset;

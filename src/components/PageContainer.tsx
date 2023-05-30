@@ -5,6 +5,7 @@ import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 import { Meta, Title } from "solid-start";
 import { Show } from "solid-js";
+import { isChessmadra } from "~/utils/env";
 
 export const PageContainer = ({
   children,
@@ -84,11 +85,13 @@ export const HeadSiteMeta = ({
 }: {
   siteMeta?: SiteMetadata;
 }) => {
-  let title = siteMeta?.title ?? "Chessbook";
+  let title = siteMeta?.title ?? (isChessmadra ? "Chessmadra" : "Chessbook");
   let imageUrl = "/splash_og.png";
   let description =
     siteMeta?.description ??
-    "Chessbook is the fastest way to build a bulletproof opening repertoire.";
+    (isChessmadra
+      ? "Level up your chess tactics"
+      : "Chessbook is the fastest way to build a bulletproof opening repertoire.");
   return (
     <>
       <Title>{title}</Title>

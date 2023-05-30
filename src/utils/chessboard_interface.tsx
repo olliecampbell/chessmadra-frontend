@@ -111,6 +111,7 @@ export interface ChessboardViewState {
   nextPreviewMove?: Move;
   drag: {
     square: Square | null;
+    touch: boolean;
     enoughToDrag: boolean;
     x: number;
     y: number;
