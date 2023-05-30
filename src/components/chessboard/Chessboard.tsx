@@ -548,7 +548,7 @@ export function ChessboardView(props: {
               }}
             </For>
           </FadeInOut>
-          <Motion
+          <div
             style={s(
               c.size("calc(1/8 * 100%)"),
               c.noPointerEvents,
@@ -574,7 +574,7 @@ export function ChessboardView(props: {
                 c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
               )}
             ></div>
-          </Motion>
+          </div>
           <div
             id={"ring-indicator"}
             ref={(x) => {

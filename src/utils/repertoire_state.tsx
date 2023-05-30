@@ -63,7 +63,7 @@ import {
 } from "~/components/SidebarOnboarding";
 
 const TEST_LINE = isDevelopment
-  ? [] //pgnToLine("1. e4 c6 2. d4 d6 3. Nc3 Nd7")
+  ? pgnToLine("1.d4 f5 2.c4 Nf6 3.Nc3 g6 4.e4")
   : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
@@ -1025,7 +1025,7 @@ export const getInitialRepertoireState = (
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
                 window.setTimeout(() => {
-                  s.startBrowsing("white", "build", {
+                  s.startBrowsing("black", "build", {
                     pgnToPlay: lineToPgn(TEST_LINE),
                   });
                 }, 100);

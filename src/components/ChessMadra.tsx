@@ -63,8 +63,8 @@ export const ChessMadra = (props: { initialTool: string }) => {
       <Match when={activeTool() === "visualization" && !startedSolvingVis()}>
         <>
           <div
-            style={s(c.row, c.alignStretch, c.fullWidth)}
-            class={clsx("padding-sidebar")}
+            style={s(c.row, c.alignStretch)}
+            class={clsx("w-full", responsive.isMobile ? "padding-sidebar" : "")}
           >
             <button
               style={s(
@@ -174,7 +174,7 @@ const BackSection = () => {
         <Pressable
           style={s()}
           class={clsx(
-            "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors"
+            "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors md:self-end md:pb-8"
           )}
           onPress={() => {
             quick((s) => {

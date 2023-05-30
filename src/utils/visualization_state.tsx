@@ -241,6 +241,7 @@ export const getInitialVisualizationState = (
           }
         }
         state.puzzleState.turn = state.puzzleState.puzzlePosition.turn();
+        state.visualizeHiddenMoves(() => {});
         state.startLoopingPlayFlash();
         // @ts-ignore
         if (isClimb && state.isPlayingClimb) {

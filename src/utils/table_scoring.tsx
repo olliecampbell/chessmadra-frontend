@@ -168,6 +168,9 @@ export const scoreTableResponses = (
           tableResponse.suggestedMove?.results,
           side
         );
+        // console.log(
+        //   `for ${tableResponse.suggestedMove?.sanPlus}, winrateLowerBound: ${winrateLowerBound}, winrateUpperBound: ${winrateUpperBound}`
+        // );
         const winrateChange = winrateLowerBound - positionWinRate;
         if (!isNaN(winrateChange) && !isNil(winrateChange)) {
           const scoreForWinrate = winrateChange;
