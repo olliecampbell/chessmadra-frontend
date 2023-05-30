@@ -63,7 +63,7 @@ import {
 } from "~/components/SidebarOnboarding";
 
 const TEST_LINE = isDevelopment
-  ? pgnToLine("1.d4 f5 2.c4 Nf6 3.Nc3 g6 4.e4")
+  ? [] //pgnToLine("1.d4 f5 2.c4 Nf6 3.Nc3 g6 4.e4")
   : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
@@ -312,7 +312,7 @@ export const getInitialRepertoireState = (
           const { data }: { data: string } = await client.get(
             `https://lichess.org/api/games/user/${encodeURIComponent(
               lichessUsername
-            )}?max=${max}`,
+            )}?max=${max}&perfType=ultrabullet,bullet,blitz,rapid,classical,correspondence`,
             {
               headers: { Accept: "application/x-ndjson" },
             }
