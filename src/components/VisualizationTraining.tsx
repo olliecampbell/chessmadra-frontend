@@ -224,9 +224,10 @@ interface DifficultySetting {
 const PuzzleDifficultySettings = ({}: {}) => {
   const selected = () =>
     getAppState().trainersState.visualizationState.playbackSpeedUserSetting;
-  const onSelect = (t: PlaybackSpeed) => {
+  const onSelect = (t: DifficultySetting) => {
     quick((s) => {
-      s.trainersState.visualizationState.setPlaybackSpeed(t);
+      s.trainersState.visualizationState.ratingGteUserSetting.value = t.min;
+      s.trainersState.visualizationState.ratingLteUserSetting.value = t.max;
     });
   };
   return (
