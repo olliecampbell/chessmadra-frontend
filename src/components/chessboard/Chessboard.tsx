@@ -627,7 +627,7 @@ export function ChessboardView(props: {
                     translate: `${drag().transform.x}px ${
                       drag().transform.y
                     }px`,
-                    scale: "1.5",
+                    scale: "2.0",
                     transition: "scale 0.2s",
                   });
                 }
