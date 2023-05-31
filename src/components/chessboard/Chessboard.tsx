@@ -288,7 +288,7 @@ export function ChessboardView(props: {
     props.chessboardInterface.set((store) => {
       const drag = store.drag;
       console.log("evt", evt);
-      drag.touch = evt instanceof TouchEvent;
+      drag.touch = "TouchEvent" in window && evt instanceof TouchEvent;
       console.log("is touch?" + drag.touch);
       drag.square = square;
       drag.enoughToDrag = false;
