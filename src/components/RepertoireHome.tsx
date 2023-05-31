@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, upperFirst, find, isEmpty } from "lodash-es";
+import { capitalize, upperFirst, find, isEmpty, filter } from "lodash-es";
 import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
@@ -33,6 +33,7 @@ import {
 import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
 import { unwrap } from "solid-js/store";
 import { FeedbackView } from "./FeedbackView";
+import client from "~/utils/client";
 
 export const RepertoireHome = () => {
   const userState = getAppState().userState;
@@ -137,48 +138,70 @@ export const RepertoireHome = () => {
           <Spacer height={46} />
         </Show>
         <>
-          <SidebarSectionHeader text="Repertoire settings" />
+          <SidebarSectionHeader text="Settings" />
           <div style={s()}>
             <For
-              each={[
-                {
-                  onPress: () => {
-                    quick((s) => {
-                      trackEvent("home.settings.coverage");
-                      s.repertoireState.browsingState.pushView(
-                        CoverageSettings
-                      );
-                    });
-                  },
-                  text: "Cover lines seen in",
-                  right: `1 in ${Math.round(
-                    1 / userState.getCurrentThreshold()
-                  )} games`,
-                  style: "secondary",
-                } as SidebarAction,
-                {
-                  onPress: () => {
-                    quick((s) => {
-                      trackEvent("home.settings.rating");
-                      s.repertoireState.browsingState.pushView(RatingSettings);
-                    });
-                  },
-                  text: "Your rating",
-                  right: `${userState.user?.ratingRange} ${userState.user?.ratingSystem}`,
-                  style: "secondary",
-                } as SidebarAction,
-                {
-                  onPress: () => {
-                    quick((s) => {
-                      trackEvent("home.settings.theme");
-                      s.repertoireState.browsingState.pushView(ThemeSettings);
-                    });
-                  },
-                  text: "Board appearance",
-                  right: `${upperFirst(theme().name)}`,
-                  style: "secondary",
-                } as SidebarAction,
-              ]}
+              each={filter(
+                [
+                  {
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.settings.coverage");
+                        s.repertoireState.browsingState.pushView(
+                          CoverageSettings
+                        );
+                      });
+                    },
+                    text: "Cover lines seen in",
+                    right: `1 in ${Math.round(
+                      1 / userState.getCurrentThreshold()
+                    )} games`,
+                    style: "secondary",
+                  } as SidebarAction,
+                  {
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.settings.rating");
+                        s.repertoireState.browsingState.pushView(
+                          RatingSettings
+                        );
+                      });
+                    },
+                    text: "Your rating",
+                    right: `${userState.user?.ratingRange} ${userState.user?.ratingSystem}`,
+                    style: "secondary",
+                  } as SidebarAction,
+                  {
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.settings.theme");
+                        s.repertoireState.browsingState.pushView(ThemeSettings);
+                      });
+                    },
+                    text: "Board appearance",
+                    right: `${upperFirst(theme().name)}`,
+                    style: "secondary",
+                  } as SidebarAction,
+                  {
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.settings.manage_subscription");
+                        return client
+                          .post("/api/stripe/create-billing-portal-link")
+                          .then(({ data }: { data: { url: string } }) => {
+                            window.open(data.url, "_blank");
+                          })
+                          .finally(() => {});
+                      });
+                    },
+                    hidden: !userState.user?.subscribed,
+                    text: "Manage your subscription",
+                    style: "secondary",
+                  } as SidebarAction,
+                ],
+                // @ts-ignore
+                (a) => !a.hidden
+              )}
             >
               {(action, i) => <SidebarFullWidthButton action={action} />}
             </For>
