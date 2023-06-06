@@ -1845,6 +1845,307 @@ export default ({ onClick, onLogin }) => {
         </Box>
       </Section>
       <Section
+        padding="88px 0 68px 0"
+        color="--dark"
+        background="--sidebar"
+        md-padding="68px 0 48px 0"
+        lg-padding="44px 0 44px 0"
+      >
+        <Text
+          as="h1"
+          font="--headline2"
+          margin="0 0 68px 0"
+          color="--light"
+          text-align="center"
+          md-font="--headline2Md"
+          sm-font="--headline2Sm"
+          md-margin="0 0 48px 0"
+          sm-margin="0 0 36px 0"
+        >
+          Frequently asked questions
+        </Text>
+        <Box
+          margin="-16px -16px -16px -16px"
+          display="flex"
+          flex-wrap="wrap"
+          flex-direction="row"
+        >
+          <Box
+            padding="16px 16px 16px 16px"
+            width="33.333%"
+            md-width="50%"
+            sm-width="100%"
+            md-padding="16px 16px 0px 16px"
+          >
+            <Box display="flex" flex-direction="column">
+              <Text
+                as="h3"
+                font="--headline3"
+                margin="0px 0 12px 0"
+                color="--light"
+                md-font="--headline3Md"
+                md-margin="0px 0 12px 0"
+                sm-font="--headline3Sm"
+              >
+                What is an "opening repertoire"?
+              </Text>
+              <Text
+                as="p"
+                font="--base"
+                margin="12px 0"
+                color="--grey"
+                md-font="--baseMd"
+                md-margin="0px 0 12px 0"
+              >
+                An{" "}
+                <Strong
+                  overflow-wrap="normal"
+                  word-break="normal"
+                  white-space="normal"
+                  text-indent="0"
+                  text-overflow="clip"
+                  hyphens="manual"
+                  user-select="auto"
+                  pointer-events="auto"
+                >
+                  opening repertoire
+                </Strong>{" "}
+                is a set of pre-planned moves for the early part of a chess
+                game. A complete repertoire will include responses to all of the
+                opponent's potential moves during this phase of the game.
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            width="33.333%"
+            padding="16px 16px 16px 16px"
+            md-width="50%"
+            sm-width="100%"
+            md-padding="16px 16px 0p 16px"
+          >
+            <Box display="flex" flex-direction="column">
+              <Text
+                as="h3"
+                font="--headline3"
+                margin="0px 0 12px 0"
+                color="--light"
+                md-font="--headline3Md"
+                md-margin="0px 0 12px 0"
+                sm-font="--headline3Sm"
+              >
+                What's the benefit of having one?
+              </Text>
+              <Text
+                as="p"
+                font="--base"
+                margin="12px 0"
+                color="--grey"
+                md-font="--baseMd"
+                md-margin="0px 0 0px 0"
+              >
+                Having a well constructed repertoire that fits with your style
+                can be a huge advantage. It can let you steer the game toward
+                positions you are comfortable in and enjoy playing, improving
+                your results.
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            width="33.333%"
+            padding="16px 16px 16px 16px"
+            md-width="50%"
+            sm-width="100%"
+          >
+            <Box display="flex" flex-direction="column">
+              <Text
+                as="h3"
+                font="--headline3"
+                color="--light"
+                md-font="--headline3Md"
+                md-margin="0px 0 12px 0"
+                sm-font="--headline3Sm"
+                margin="0px 0 12px 0"
+              >
+                What's the difference between an "opening repertoire" and an
+                "opening"?
+              </Text>
+              <Text
+                as="p"
+                font="--base"
+                margin="12px 0"
+                color="--grey"
+                md-font="--baseMd"
+                md-margin="0px 0 0px 0"
+              >
+                An{" "}
+                <Strong
+                  overflow-wrap="normal"
+                  word-break="normal"
+                  white-space="normal"
+                  text-indent="0"
+                  text-overflow="clip"
+                  hyphens="manual"
+                  user-select="auto"
+                  pointer-events="auto"
+                >
+                  opening repertoire
+                </Strong>{" "}
+                consists of{" "}
+                <Span
+                  overflow-wrap="normal"
+                  word-break="normal"
+                  white-space="normal"
+                  text-indent="0"
+                  text-overflow="clip"
+                  hyphens="manual"
+                  user-select="auto"
+                  pointer-events="auto"
+                >
+                  multiple
+                </Span>{" "}
+                <Strong
+                  overflow-wrap="normal"
+                  word-break="normal"
+                  white-space="normal"
+                  text-indent="0"
+                  text-overflow="clip"
+                  hyphens="manual"
+                  user-select="auto"
+                  pointer-events="auto"
+                >
+                  openings
+                </Strong>{" "}
+                to combat different moves by the opponent. For example an e4
+                player will need to learn different openings to deal with the
+                Sicilian, French, Caro-Kann etc.
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            padding="16px 16px 16px 16px"
+            width="33.333%"
+            md-width="50%"
+            sm-width="100%"
+          >
+            <Box display="flex" flex-direction="column">
+              <Text
+                as="h3"
+                font="--headline3"
+                margin="0px 0 12px 0"
+                color="--light"
+                md-font="--headline3Md"
+                md-margin="0px 0 12px 0"
+                sm-font="--headline3Sm"
+              >
+                What's the difference between an "opening" and a "line"?
+              </Text>
+              <Text
+                as="p"
+                font="--base"
+                margin="12px 0"
+                color="--grey"
+                md-font="--baseMd"
+                md-margin="0px 0 0px 0"
+              >
+                A{" "}
+                <Strong
+                  overflow-wrap="normal"
+                  word-break="normal"
+                  white-space="normal"
+                  text-indent="0"
+                  text-overflow="clip"
+                  hyphens="manual"
+                  user-select="auto"
+                  pointer-events="auto"
+                >
+                  line
+                </Strong>{" "}
+                is a sequence of moves, one after another. An{" "}
+                <Strong
+                  overflow-wrap="normal"
+                  word-break="normal"
+                  white-space="normal"
+                  text-indent="0"
+                  text-overflow="clip"
+                  hyphens="manual"
+                  user-select="auto"
+                  pointer-events="auto"
+                >
+                  opening
+                </Strong>{" "}
+                is made up of many lines. For example, someone who plays the
+                Sicilian Dragon will need to learn many individual lines to
+                master that opening.
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            padding="16px 16px 16px 16px"
+            width="33.333%"
+            md-width="50%"
+            sm-width="100%"
+          >
+            <Box display="flex" flex-direction="column">
+              <Text
+                as="h3"
+                font="--headline3"
+                margin="0px 0 12px 0"
+                color="--light"
+                md-font="--headline3Md"
+                md-margin="0px 0 12px 0"
+                sm-font="--headline3Sm"
+              >
+                I'm new to chess, do I need an opening repertoire?
+              </Text>
+              <Text
+                as="p"
+                font="--base"
+                margin="12px 0"
+                color="--grey"
+                md-font="--baseMd"
+                md-margin="0px 0 0px 0"
+              >
+                While having a solid repertoire becomes more important as you
+                improve, even beginners can benefit from having a simple opening
+                repertoire that prepares them for common moves at their level.
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            padding="16px 16px 16px 16px"
+            width="33.333%"
+            md-width="50%"
+            sm-width="100%"
+          >
+            <Box display="flex" flex-direction="column">
+              <Text
+                as="h3"
+                font="--headline3"
+                margin="0px 0 12px 0"
+                color="--light"
+                md-font="--headline3Md"
+                md-margin="0px 0 12px 0"
+                sm-font="--headline3Sm"
+              >
+                What's involved in learning a repertoire?
+              </Text>
+              <Text
+                as="p"
+                font="--base"
+                margin="12px 0"
+                color="--grey"
+                md-font="--baseMd"
+                md-margin="0px 0 0px 0"
+              >
+                Learning a repertoire generally consists of choosing which
+                openings and lines to play, memorising specific sequences of
+                moves and understanding why those moves are played.
+              </Text>
+            </Box>
+          </Box>
+        </Box>
+      </Section>
+      <Section
         background-color="--dark"
         text-align="center"
         padding="100px 0 100px 0"

@@ -1479,6 +1479,221 @@ export default (({
     "md-font": "--smallMd",
     "md-padding": "6px 0px 0px 0px"
   }, "No signup required")))), /*#__PURE__*/React.createElement(Section, {
+    padding: "88px 0 68px 0",
+    color: "--dark",
+    background: "--sidebar",
+    "md-padding": "68px 0 48px 0",
+    "lg-padding": "44px 0 44px 0"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h1",
+    font: "--headline2",
+    margin: "0 0 68px 0",
+    color: "--light",
+    "text-align": "center",
+    "md-font": "--headline2Md",
+    "sm-font": "--headline2Sm",
+    "md-margin": "0 0 48px 0",
+    "sm-margin": "0 0 36px 0"
+  }, "Frequently asked questions"), /*#__PURE__*/React.createElement(Box, {
+    margin: "-16px -16px -16px -16px",
+    display: "flex",
+    "flex-wrap": "wrap",
+    "flex-direction": "row"
+  }, /*#__PURE__*/React.createElement(Box, {
+    padding: "16px 16px 16px 16px",
+    width: "33.333%",
+    "md-width": "50%",
+    "sm-width": "100%",
+    "md-padding": "16px 16px 0px 16px"
+  }, /*#__PURE__*/React.createElement(Box, {
+    display: "flex",
+    "flex-direction": "column"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h3",
+    font: "--headline3",
+    margin: "0px 0 12px 0",
+    color: "--light",
+    "md-font": "--headline3Md",
+    "md-margin": "0px 0 12px 0",
+    "sm-font": "--headline3Sm"
+  }, "What is an \"opening repertoire\"?"), /*#__PURE__*/React.createElement(Text, {
+    as: "p",
+    font: "--base",
+    margin: "12px 0",
+    color: "--grey",
+    "md-font": "--baseMd",
+    "md-margin": "0px 0 12px 0"
+  }, "An", " ", /*#__PURE__*/React.createElement(Strong, {
+    "overflow-wrap": "normal",
+    "word-break": "normal",
+    "white-space": "normal",
+    "text-indent": "0",
+    "text-overflow": "clip",
+    hyphens: "manual",
+    "user-select": "auto",
+    "pointer-events": "auto"
+  }, "opening repertoire"), " ", "is a set of pre-planned moves for the early part of a chess game. A complete repertoire will include responses to all of the opponent's potential moves during this phase of the game."))), /*#__PURE__*/React.createElement(Box, {
+    width: "33.333%",
+    padding: "16px 16px 16px 16px",
+    "md-width": "50%",
+    "sm-width": "100%",
+    "md-padding": "16px 16px 0p 16px"
+  }, /*#__PURE__*/React.createElement(Box, {
+    display: "flex",
+    "flex-direction": "column"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h3",
+    font: "--headline3",
+    margin: "0px 0 12px 0",
+    color: "--light",
+    "md-font": "--headline3Md",
+    "md-margin": "0px 0 12px 0",
+    "sm-font": "--headline3Sm"
+  }, "What's the benefit of having one?"), /*#__PURE__*/React.createElement(Text, {
+    as: "p",
+    font: "--base",
+    margin: "12px 0",
+    color: "--grey",
+    "md-font": "--baseMd",
+    "md-margin": "0px 0 0px 0"
+  }, "Having a well constructed repertoire that fits with your style can be a huge advantage. It can let you steer the game toward positions you are comfortable in and enjoy playing, improving your results."))), /*#__PURE__*/React.createElement(Box, {
+    width: "33.333%",
+    padding: "16px 16px 16px 16px",
+    "md-width": "50%",
+    "sm-width": "100%"
+  }, /*#__PURE__*/React.createElement(Box, {
+    display: "flex",
+    "flex-direction": "column"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h3",
+    font: "--headline3",
+    color: "--light",
+    "md-font": "--headline3Md",
+    "md-margin": "0px 0 12px 0",
+    "sm-font": "--headline3Sm",
+    margin: "0px 0 12px 0"
+  }, "What's the difference between an \"opening repertoire\" and an \"opening\"?"), /*#__PURE__*/React.createElement(Text, {
+    as: "p",
+    font: "--base",
+    margin: "12px 0",
+    color: "--grey",
+    "md-font": "--baseMd",
+    "md-margin": "0px 0 0px 0"
+  }, "An", " ", /*#__PURE__*/React.createElement(Strong, {
+    "overflow-wrap": "normal",
+    "word-break": "normal",
+    "white-space": "normal",
+    "text-indent": "0",
+    "text-overflow": "clip",
+    hyphens: "manual",
+    "user-select": "auto",
+    "pointer-events": "auto"
+  }, "opening repertoire"), " ", "consists of", " ", /*#__PURE__*/React.createElement(Span, {
+    "overflow-wrap": "normal",
+    "word-break": "normal",
+    "white-space": "normal",
+    "text-indent": "0",
+    "text-overflow": "clip",
+    hyphens: "manual",
+    "user-select": "auto",
+    "pointer-events": "auto"
+  }, "multiple"), " ", /*#__PURE__*/React.createElement(Strong, {
+    "overflow-wrap": "normal",
+    "word-break": "normal",
+    "white-space": "normal",
+    "text-indent": "0",
+    "text-overflow": "clip",
+    hyphens: "manual",
+    "user-select": "auto",
+    "pointer-events": "auto"
+  }, "openings"), " ", "to combat different moves by the opponent. For example an e4 player will need to learn different openings to deal with the Sicilian, French, Caro-Kann etc."))), /*#__PURE__*/React.createElement(Box, {
+    padding: "16px 16px 16px 16px",
+    width: "33.333%",
+    "md-width": "50%",
+    "sm-width": "100%"
+  }, /*#__PURE__*/React.createElement(Box, {
+    display: "flex",
+    "flex-direction": "column"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h3",
+    font: "--headline3",
+    margin: "0px 0 12px 0",
+    color: "--light",
+    "md-font": "--headline3Md",
+    "md-margin": "0px 0 12px 0",
+    "sm-font": "--headline3Sm"
+  }, "What's the difference between an \"opening\" and a \"line\"?"), /*#__PURE__*/React.createElement(Text, {
+    as: "p",
+    font: "--base",
+    margin: "12px 0",
+    color: "--grey",
+    "md-font": "--baseMd",
+    "md-margin": "0px 0 0px 0"
+  }, "A", " ", /*#__PURE__*/React.createElement(Strong, {
+    "overflow-wrap": "normal",
+    "word-break": "normal",
+    "white-space": "normal",
+    "text-indent": "0",
+    "text-overflow": "clip",
+    hyphens: "manual",
+    "user-select": "auto",
+    "pointer-events": "auto"
+  }, "line"), " ", "is a sequence of moves, one after another. An", " ", /*#__PURE__*/React.createElement(Strong, {
+    "overflow-wrap": "normal",
+    "word-break": "normal",
+    "white-space": "normal",
+    "text-indent": "0",
+    "text-overflow": "clip",
+    hyphens: "manual",
+    "user-select": "auto",
+    "pointer-events": "auto"
+  }, "opening"), " ", "is made up of many lines. For example, someone who plays the Sicilian Dragon will need to learn many individual lines to master that opening."))), /*#__PURE__*/React.createElement(Box, {
+    padding: "16px 16px 16px 16px",
+    width: "33.333%",
+    "md-width": "50%",
+    "sm-width": "100%"
+  }, /*#__PURE__*/React.createElement(Box, {
+    display: "flex",
+    "flex-direction": "column"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h3",
+    font: "--headline3",
+    margin: "0px 0 12px 0",
+    color: "--light",
+    "md-font": "--headline3Md",
+    "md-margin": "0px 0 12px 0",
+    "sm-font": "--headline3Sm"
+  }, "I'm new to chess, do I need an opening repertoire?"), /*#__PURE__*/React.createElement(Text, {
+    as: "p",
+    font: "--base",
+    margin: "12px 0",
+    color: "--grey",
+    "md-font": "--baseMd",
+    "md-margin": "0px 0 0px 0"
+  }, "While having a solid repertoire becomes more important as you improve, even beginners can benefit from having a simple opening repertoire that prepares them for common moves at their level."))), /*#__PURE__*/React.createElement(Box, {
+    padding: "16px 16px 16px 16px",
+    width: "33.333%",
+    "md-width": "50%",
+    "sm-width": "100%"
+  }, /*#__PURE__*/React.createElement(Box, {
+    display: "flex",
+    "flex-direction": "column"
+  }, /*#__PURE__*/React.createElement(Text, {
+    as: "h3",
+    font: "--headline3",
+    margin: "0px 0 12px 0",
+    color: "--light",
+    "md-font": "--headline3Md",
+    "md-margin": "0px 0 12px 0",
+    "sm-font": "--headline3Sm"
+  }, "What's involved in learning a repertoire?"), /*#__PURE__*/React.createElement(Text, {
+    as: "p",
+    font: "--base",
+    margin: "12px 0",
+    color: "--grey",
+    "md-font": "--baseMd",
+    "md-margin": "0px 0 0px 0"
+  }, "Learning a repertoire generally consists of choosing which openings and lines to play, memorising specific sequences of moves and understanding why those moves are played."))))), /*#__PURE__*/React.createElement(Section, {
     "background-color": "--dark",
     "text-align": "center",
     padding: "100px 0 100px 0",
