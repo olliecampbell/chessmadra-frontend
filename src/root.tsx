@@ -102,7 +102,7 @@ export default function Root() {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
-        <link rel="manifest" href="manifest.json" />
+        <link rel="manifest" href="site_manifest.json" />
 
         <Meta charset="utf-8" />
         <meta content="yes" name="apple-mobile-web-app-capable" />
