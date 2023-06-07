@@ -152,7 +152,7 @@ export const RepertoireHome = () => {
                         );
                       });
                     },
-                    text: "Cover lines seen in",
+                    text: "Cover positions seen in",
                     right: `1 in ${Math.round(
                       1 / userState.getCurrentThreshold()
                     )} games`,

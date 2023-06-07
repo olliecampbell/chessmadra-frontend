@@ -233,13 +233,7 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
       return getAppState().repertoireState.browsingState.sidebarState.moveLog;
     }
   };
-  createEffect(() => {
-    console.log("current linet", currentLine());
-  });
   const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
-  createEffect(() => {
-    console.log("debug", currentLine(), sideBarMode());
-  });
   return (
     <FadeInOut
       style={s(c.row)}

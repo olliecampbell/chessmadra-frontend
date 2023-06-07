@@ -55,7 +55,7 @@ import * as yup from "yup";
 export const OnboardingIntro = () => {
   const responsive = useResponsive();
   const bullets = [
-    "Adding your first opening line",
+    "Adding your first moves",
     "Practicing it using spaced repetition",
   ];
   return (
@@ -417,7 +417,7 @@ export const FirstLineSavedOnboarding = () => {
   return (
     <SidebarTemplate
       bodyPadding={true}
-      header="You've added your first line!"
+      header="You've added your first moves!"
       actions={[
         {
           onPress: () => {
@@ -468,7 +468,7 @@ const PracticeIntroOnboarding = () => {
   return (
     <SidebarTemplate
       bodyPadding={true}
-      header="Now let's practice the line you've added…"
+      header="Now let's practice the moves you've added…"
       actions={[
         {
           onPress: () => {
@@ -480,7 +480,7 @@ const PracticeIntroOnboarding = () => {
               );
             });
           },
-          text: "Practice this line",
+          text: "Practice these moves",
           style: "primary",
         },
       ]}
@@ -750,18 +750,18 @@ export const TrimRepertoireOnboarding = () => {
 
   const actions = () => {
     let actions: SidebarAction[] = [];
-      // TODO: this isn't quite accurate since danger isn't accounted for,
-      // should have the same formula on the frontend, and include danger in
-      // repertoire response
-      const numMoves = getNumResponsesBelowThreshold()(userThreshold(), side());
-        actions.push({
-          text: `Trim rare lines below your coverage goal`,
-          subtext: `${numMoves} moves will be trimmed`,
-          onPress: () => {
-            trimToThreshold(userThreshold());
-          },
-          style: "primary",
-        });
+    // TODO: this isn't quite accurate since danger isn't accounted for,
+    // should have the same formula on the frontend, and include danger in
+    // repertoire response
+    const numMoves = getNumResponsesBelowThreshold()(userThreshold(), side());
+    actions.push({
+      text: `Trim rare lines below your coverage goal`,
+      subtext: `${numMoves} moves will be trimmed`,
+      onPress: () => {
+        trimToThreshold(userThreshold());
+      },
+      style: "primary",
+    });
     actions.push({
       text: `No thanks, I'll keep my whole repertoire`,
       onPress: () => {

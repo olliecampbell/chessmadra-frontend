@@ -114,7 +114,7 @@ export const RepertoireOverview = (props: {}) => {
       },
       left: (
         <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          Browse / add new line
+          Browse / add new moves
         </CMText>
       ),
     },
@@ -253,7 +253,7 @@ export const RepertoireOverview = (props: {}) => {
         },
         left: (
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
-            Import lines
+            Import
           </CMText>
         ),
         icon: "fa-sharp fa-file-import",

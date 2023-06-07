@@ -93,7 +93,6 @@ export const SidebarActions = () => {
     }
   };
   const buttonsSig = () => {
-    console.log("view is ", view(), hasPendingLineToAdd());
     let buttons: SidebarAction[] = [];
     let showTogglePlansButton = true;
     if (onboarding().isOnboarding) {
@@ -118,7 +117,9 @@ export const SidebarActions = () => {
     } else if (!hasPendingLineToAdd()) {
       addBiggestMissAction(buttons);
     } else if (hasPendingLineToAdd() && !view()) {
-      console.log("has pending line and stuff");
+      if (onboarding().isOnboarding && !isPastCoverageGoal()) {
+        return [];
+      }
       buttons.push({
         onPress: () => {
           isPastCoverageGoal()

@@ -811,10 +811,9 @@ export function ChessboardView(props: {
                                   c.fg(inverseColor()),
                                   c.weightSemiBold,
                                   c.absolute,
-                                  c.fontSize(isMobile ? 8 : 8),
+                                  c.fontSize(10),
                                   c.left(isMobile ? 1 : 1),
-                                  c.bottom(isMobile ? 1 : 0),
-                                  c.opacity(80)
+                                  c.bottom(isMobile ? 1 : 0)
                                 )}
                               >
                                 {tileLetter}
@@ -827,9 +826,8 @@ export function ChessboardView(props: {
                                   c.fg(inverseColor()),
                                   c.weightBold,
                                   c.absolute,
-                                  c.fontSize(8),
+                                  c.fontSize(10),
                                   c.right(2),
-                                  c.opacity(80),
                                   c.top(0)
                                 )}
                               >

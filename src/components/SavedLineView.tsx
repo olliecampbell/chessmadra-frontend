@@ -28,7 +28,7 @@ export const SavedLineView = function SavedLineView() {
         s.repertoireState.reviewState.reviewLine(currentLine(), activeSide());
       });
     },
-    text: "Practice this line",
+    text: "Practice these moves",
     style: "primary",
   };
   return (
@@ -41,7 +41,7 @@ export const SavedLineView = function SavedLineView() {
       }
     >
       <SidebarTemplate
-        header={"Line saved!"}
+        header={"Moves saved!"}
         bodyPadding
         actions={filter(
           [useBiggestGapAction(), reviewCurrentLineAction],

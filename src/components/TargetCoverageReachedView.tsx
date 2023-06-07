@@ -2,7 +2,7 @@ import { Spacer } from "~/components/Space";
 import { isEmpty, cloneDeep } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { quick, useSidebarState } from "~/utils/app_state";
+import { quick, useSidebarState, useRepertoireState } from "~/utils/app_state";
 import { CMText } from "./CMText";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
@@ -11,6 +11,7 @@ import { Accessor, createEffect, For, Show } from "solid-js";
 import { SidebarAction } from "./SidebarActions";
 
 export const TargetCoverageReachedView = () => {
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
@@ -27,9 +28,11 @@ export const TargetCoverageReachedView = () => {
             });
           },
           style: "focus",
-          text: "I'm done, save this line to my repertoire",
+          text: "Save this line to my repertoire",
         },
-        {
+      ];
+      if (!onboarding().isOnboarding) {
+        acts.push({
           onPress: () => {
             quick((s) => {
               trackEvent(`${mode()}.plans_view.keep_adding`);
@@ -39,8 +42,8 @@ export const TargetCoverageReachedView = () => {
           },
           style: "primary",
           text: "Keep adding moves to this line",
-        },
-      ];
+        });
+      }
     }
     return acts;
   };

@@ -47,6 +47,7 @@ import { Pressable } from "./Pressable";
 import { destructure } from "@solid-primitives/destructure";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
+import { isDevelopment } from "~/utils/env";
 
 const DELETE_WIDTH = 30;
 
@@ -113,7 +114,8 @@ export const RepertoireMovesTable = ({
           usePeerRates: usePeerRates(),
           isMobile,
         });
-        const MIN_TRUNCATED = isMobile ? 1 : 1;
+        // todo: undo this
+        const MIN_TRUNCATED = 1;
         const MAX_ONBOARDING = 3;
         const trimmedResponses = filter(responses(), (r, i) => {
           if (mode() == "browse") {
@@ -686,25 +688,21 @@ const Response = (props: {
                   )}
                 </div>
 
-                <div style={s(c.row, c.alignCenter)}>
-                  <Intersperse
-                    separator={() => {
-                      return <Spacer width={getSpaceBetweenStats(isMobile)} />;
-                    }}
-                    each={() => props.sections}
-                  >
+                <div style={s(c.row, c.alignCenter)} class="space-x-4">
+                  <For each={props.sections}>
                     {(section) => {
                       return (
                         <div
                           style={s(
-                            c.width(section().width),
+                            c.width(section.width),
                             c.center,
-                            section().alignLeft && c.justifyStart,
-                            section().alignRight && c.justifyEnd,
+                            section.alignLeft && c.justifyStart,
+                            section.alignRight && c.justifyEnd,
                             c.row
                           )}
+                          id={`section-${section.header}`}
                         >
-                          {section().content({
+                          {section.content({
                             numMovesDueFromHere,
                             earliestDueDate,
                             suggestedMove: props.tableResponse.suggestedMove,
@@ -716,7 +714,7 @@ const Response = (props: {
                         </div>
                       );
                     }}
-                  </Intersperse>
+                  </For>
                 </div>
               </div>
               <div style={s(c.column, c.maxWidth(400))}>
@@ -755,21 +753,16 @@ const TableHeader = ({
       )}
     >
       <Spacer width={12} grow />
-      <div style={s(c.row, c.alignCenter)}>
-        <Intersperse
-          separator={() => {
-            return <Spacer width={getSpaceBetweenStats(isMobile)} />;
-          }}
-          each={sections}
-        >
+      <div style={s(c.row, c.alignCenter)} class="space-x-4">
+        <For each={sections()}>
           {(section, i) => {
             return (
               <div
                 style={s(
-                  c.width(section().width),
-                  section().alignRight
+                  c.width(section.width),
+                  section.alignRight
                     ? c.justifyEnd
-                    : section().alignLeft
+                    : section.alignLeft
                     ? c.justifyStart
                     : c.center,
                   c.row,
@@ -783,12 +776,12 @@ const TableHeader = ({
                     c.whitespace("nowrap")
                   )}
                 >
-                  {section().header}
+                  {section.header}
                 </CMText>
               </div>
             );
           }}
-        </Intersperse>
+        </For>
       </div>
       {anyMine && false && <Spacer width={DELETE_WIDTH} />}
     </div>

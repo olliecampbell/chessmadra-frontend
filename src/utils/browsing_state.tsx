@@ -535,9 +535,9 @@ export const getInitialBrowsingState = (
             const allOthersInaccurate = every(tableResponses, (tr, j) => {
               return (
                 !isNil(tr.moveRating) ||
-                (j === i &&
-                  tr.suggestedMove &&
-                  getPlayRate(tr.suggestedMove, positionReport, true) < 0.02)
+                (tr.suggestedMove &&
+                  getPlayRate(tr.suggestedMove, positionReport, true) < 0.04) ||
+                j === i
               );
             });
             const playedEnough =

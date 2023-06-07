@@ -75,7 +75,7 @@ export const getMoveRating = (
   if (expectedWinAfter < expectedWinBefore - 12) {
     return MoveRating.Mistake;
   }
-  if (expectedWinAfter < expectedWinBefore - 8) {
+  if (expectedWinAfter < expectedWinBefore - 6) {
     return MoveRating.Inaccuracy;
   }
 };

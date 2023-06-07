@@ -21,14 +21,14 @@ export const GameResultsBar = ({
   activeSide: Side;
 }) => {
   const total = getTotalGames(gameResults);
-  const threshold = 0.2;
+  const threshold = 0.3;
   const fontSize = 10;
   const whiteResults = (
     <div
       style={s(
         c.width(`${(gameResults.white / total) * 100}%`),
         c.bg(c.grays[90]),
-        c.px(4),
+        c.px(2),
         c.alignCenter,
         c.row,
         activeSide === "black" ? c.justifyEnd : c.justifyStart
@@ -45,6 +45,7 @@ export const GameResultsBar = ({
             )}
           >
             {formatWinPercentage(gameResults.white / total)}
+            <span class="text-[8px] opacity-50">%</span>
           </CMText>
           {activeSide === "white" && (
             <MovementIndicator
@@ -64,7 +65,7 @@ export const GameResultsBar = ({
         c.bg(c.grays[6]),
         c.alignCenter,
         c.row,
-        c.px(4),
+        c.px(2),
         activeSide === "black" ? c.justifyStart : c.justifyEnd
       )}
     >
@@ -79,6 +80,7 @@ export const GameResultsBar = ({
             )}
           >
             {formatWinPercentage(gameResults.black / total)}
+            <span class="text-[8px] opacity-50">%</span>
           </CMText>
           {activeSide === "black" && (
             <MovementIndicator
@@ -164,7 +166,7 @@ export const MovementIndicator = ({
   }
   return (
     <div style={s()}>
-      <i class={icon} style={s(c.fg(color), c.fontSize(12))} />
+      <i class={icon} style={s(c.fg(color), c.fontSize(10))} />
     </div>
   );
 };

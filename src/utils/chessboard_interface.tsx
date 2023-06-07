@@ -800,9 +800,7 @@ export const createChessboardInterface = (): [
         chessboardInterface.stopNotifyingDelegates();
         chessboardInterface.resetPosition();
         const line = pgnToLine(pgn);
-        console.log("playing pgn", s.position.ascii());
         line.map((san) => {
-          console.log(`playing san ${san}`, san);
           chessboardInterface.makeMove(san);
         });
         if (options?.animated) {

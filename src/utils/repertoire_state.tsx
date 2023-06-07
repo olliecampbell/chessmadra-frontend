@@ -62,9 +62,7 @@ import {
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
 
-const TEST_LINE = isDevelopment
-  ? [] //pgnToLine("1.d4 f5 2.c4 Nf6 3.Nc3 g6 4.e4")
-  : [];
+const TEST_LINE = isDevelopment ? pgnToLine("1.e4 d5") : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
@@ -852,14 +850,6 @@ export const getInitialRepertoireState = (
         if (options?.import) {
           // just don't show the chessboard
         } else if (mode === "browse" || mode === "build") {
-          if (s.browsingState.sidebarState.activeSide === "white") {
-            const startResponses =
-              s.repertoire?.[s.browsingState.sidebarState.activeSide]
-                ?.positionResponses[START_EPD];
-            if (startResponses?.length === 1) {
-              s.browsingState.chessboard.makeMove(startResponses[0].sanPlus);
-            }
-          }
           if (options?.pgnToPlay) {
             s.browsingState.chessboard.playPgn(options.pgnToPlay, {
               animated: true,
@@ -1025,7 +1015,7 @@ export const getInitialRepertoireState = (
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
                 window.setTimeout(() => {
-                  s.startBrowsing("black", "build", {
+                  s.startBrowsing("white", "build", {
                     pgnToPlay: lineToPgn(TEST_LINE),
                   });
                 }, 100);

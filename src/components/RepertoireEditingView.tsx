@@ -121,7 +121,7 @@ export const Responses = function Responses() {
               !isEmpty(prepareFor())
             }
           >
-            <div style={s()} id={`your-moves-play-${currentEpd}`}>
+            <div style={s()} id={`your-moves-play-${currentEpd()}`}>
               <RepertoireMovesTable
                 {...{
                   header: header,

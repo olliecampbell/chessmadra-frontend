@@ -110,7 +110,7 @@ const getBuildModeSections = ({
 }: SectionProps) => {
   const sections = [];
   const naStyles = s(textStyles, c.fg(c.grays[50]));
-  const na = <CMText style={s(naStyles)}>N/A</CMText>;
+  const na = () => <p style={s(naStyles)}>0%</p>;
   if (!myTurn) {
     sections.push({
       width: 100,
@@ -199,17 +199,9 @@ const getBuildModeSections = ({
             usePeerRates ? false : true
           );
         if (isNegligiblePlayrate(playRate)) {
-          return na;
+          return na();
         }
-        return (
-          <>
-            {
-              <CMText style={s(textStyles)}>
-                {formatPlayPercentage(playRate)}
-              </CMText>
-            }
-          </>
-        );
+        return <p style={s(textStyles)}>{formatPlayPercentage(playRate)}</p>;
       },
       header: usePeerRates ? "Peers" : "Masters",
     });
@@ -259,7 +251,7 @@ const getBuildModeSections = ({
       width: isMobile ? 80 : 80,
       content: ({ suggestedMove, positionReport, side, tableResponse }) => {
         if (!suggestedMove?.results) {
-          return na;
+          return na();
         }
         if (tableResponse.lowConfidence) {
           return (
@@ -352,8 +344,6 @@ const getReviewModeSections = ({
   textStyles,
 }: SectionProps) => {
   const sections: Section[] = [];
-  const naStyles = s(textStyles, c.fg(c.grays[50]));
-  const na = <CMText style={s(naStyles)}>N/A</CMText>;
 
   sections.push({
     width: 140,
