@@ -37,6 +37,7 @@ export const RepertoireReview = (props: {}) => {
     {
       onPress: () => {
         quick((s) => {
+          s.repertoireState.browsingState.moveSidebarState("right");
           if (s.repertoireState.reviewState.showNext) {
             s.repertoireState.reviewState.setupNextMove();
           } else {
@@ -46,7 +47,9 @@ export const RepertoireReview = (props: {}) => {
         });
       },
       style: showNext() ? "focus" : "primary",
-      text: showNext() ? "Next" : "I don't know, show me the answer",
+      text: showNext()
+        ? "Got it, continue practicing"
+        : "I don't know, show me the answer",
     },
     {
       onPress: () => {
@@ -61,7 +64,7 @@ export const RepertoireReview = (props: {}) => {
       },
       style: "primary",
       hidden: onboarding().isOnboarding,
-      text: "View in repertoire builder",
+      text: "Exit practice and view in repertoire builder",
     },
   ];
   createEffect(() => {
@@ -73,17 +76,25 @@ export const RepertoireReview = (props: {}) => {
       currentMove()?.moves,
       (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus])
     ).length;
+  const header = () => {
+    if (showNext()) {
+      return "This move is in your repertoire";
+    }
+    if (currentMove()?.moves.length === 1) {
+      if (currentMove()?.moves[0].epd === START_EPD) {
+        return "Play your first move on the board";
+      } else {
+        return "Play the correct move on the board";
+      }
+    } else {
+      return `You have ${
+        currentMove()?.moves.length
+      } responses to this position in your repertoire. Play all your responses on the board`;
+    }
+  };
   return (
     <SidebarTemplate
-      header={
-        currentMove()?.moves.length === 1
-          ? currentMove()?.moves[0].epd === START_EPD
-            ? "Play your first move as white"
-            : "Play the correct move on the board"
-          : `You have ${
-              currentMove()?.moves.length
-            } responses to this position in your repertoire. Play all your responses on the board`
-      }
+      header={header()}
       actions={filter(actions(), (a) => !a.hidden)}
       bodyPadding={true}
     >

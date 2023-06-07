@@ -23,6 +23,7 @@ import { GameResultsBar } from "~/components/GameResultsBar";
 import { ReviewText } from "~/components/ReviewText";
 import { Accessor, createEffect, Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
+import { initTooltip } from "~/components/Tooltip";
 
 interface Section {
   width: number;
@@ -183,6 +184,7 @@ const getBuildModeSections = ({
   if (myTurn) {
     sections.push({
       width: 34,
+      alignRight: true,
       content: ({
         suggestedMove,
         positionReport,
@@ -198,10 +200,28 @@ const getBuildModeSections = ({
             positionReport,
             usePeerRates ? false : true
           );
-        if (isNegligiblePlayrate(playRate)) {
-          return na();
-        }
-        return <p style={s(textStyles)}>{formatPlayPercentage(playRate)}</p>;
+
+        return (
+          <div
+            ref={(ref) => {
+              initTooltip({
+                ref,
+                content: () => (
+                  <p>
+                    <b>{formatPlayPercentage(playRate)}</b> of{" "}
+                    {usePeerRates ? "players in your rating range" : "masters"}{" "}
+                    choose this move
+                  </p>
+                ),
+                maxWidth: 200,
+              });
+            }}
+          >
+            <Show when={!isNegligiblePlayrate(playRate)} fallback={na()}>
+              <p style={s(textStyles)}>{formatPlayPercentage(playRate)}</p>
+            </Show>
+          </div>
+        );
       },
       header: usePeerRates ? "Peers" : "Masters",
     });
@@ -312,8 +332,28 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
     return { completed, progress };
   });
   const inProgressColor = () => (progress() < 20 ? c.reds[65] : c.oranges[65]);
+  console.log("rendered coveragebar");
   return (
-    <div style={s(c.column, c.fullWidth)}>
+    <div
+      style={s(c.column, c.fullWidth)}
+      class="py-1"
+      ref={(ref) => {
+        console.log("initting tooltip", ref);
+        initTooltip({
+          ref,
+          content: () => {
+            if (completed()) {
+              return "You have reached your coverage goal for this move";
+            }
+            if (progress() === 0) {
+              return "You haven't added any responses to this move";
+            }
+            return "Your coverage of this move is incomplete";
+          },
+          maxWidth: 160,
+        });
+      }}
+    >
       <div
         style={s(
           c.fullWidth,

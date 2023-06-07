@@ -533,12 +533,10 @@ export const getInitialBrowsingState = (
               return;
             }
             const allOthersInaccurate = every(tableResponses, (tr, j) => {
-              return (
-                !isNil(tr.moveRating) ||
-                (tr.suggestedMove &&
-                  getPlayRate(tr.suggestedMove, positionReport, true) < 0.04) ||
-                j === i
-              );
+              const playedByMasters =
+                tr.suggestedMove &&
+                getPlayRate(tr.suggestedMove, positionReport, true) > 0.02;
+              return (!isNil(tr.moveRating) && !playedByMasters) || j === i;
             });
             const playedEnough =
               getTotalGames(tr.suggestedMove?.results) /

@@ -300,7 +300,7 @@ export const OnboardingComplete = () => {
     bullets.push(<>Keep adding moves to your repertoire to get to 100%</>);
     bullets.push(
       <>
-        Practice your moves every day{" "}
+        Practice every day{" "}
         {!responsive.isMobile &&
           `(visit Chessbook.com on your mobile phone to practice on the go)`}
       </>
@@ -352,7 +352,7 @@ export const ImportSuccessOnboarding = () => {
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let bullets = [
     <>
-      Your goal is to cover any lines which occur in at least 1 in{" "}
+      Your goal is to cover any positions which occur in at least 1 in{" "}
       {Math.round(1 / threshold())} games.
     </>,
     <>
@@ -448,7 +448,7 @@ export const FirstLineSavedOnboarding = () => {
       </CMText>
       <Spacer height={8} />
       <CMText class={"body-text"}>
-        Your goal is to cover any lines which occur in at least 1 in{" "}
+        Your goal is to cover any positions which occur in at least 1 in{" "}
         {Math.round(1 / threshold())} games.
       </CMText>
       <Spacer height={8} />
@@ -520,6 +520,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
           onPress: () => {
             trackEvent("onboarding.ask_about_existing_repertoire.no_existing");
             quick((s) => {
+              s.repertoireState.browsingState.moveSidebarState("right");
               s.repertoireState.browsingState.goToBuildOnboarding();
             });
           },

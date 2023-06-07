@@ -14,6 +14,9 @@ import {
   useNavigate,
 } from "solid-start";
 import "./root.css";
+import "tippy.js/dist/tippy.css";
+import "tippy.js/animations/shift-away.css";
+
 import { init as amplitudeInit } from "@amplitude/analytics-browser";
 import * as Sentry from "@sentry/browser";
 import { BrowserTracing } from "@sentry/tracing";

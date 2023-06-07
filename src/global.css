@@ -212,3 +212,16 @@ meter {
 :where(dialog:modal) {
   all: revert;
 }
+
+.tippy-box .tippy-content {
+  background-color: #393e41;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 11px;
+  color: hsla(0, 0%, 100%, 0.9);
+  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.tippy-box .tippy-arrow {
+  color: #393e41;
+}

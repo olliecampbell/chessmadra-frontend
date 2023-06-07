@@ -83,6 +83,7 @@
     "solid-start": "^0.2.26",
     "styled-components": "^5.3.11",
     "tailwind-merge": "^1.12.0",
+    "tippy.js": "^6.3.7",
     "typescript-language-server": "^3.3.2",
     "undici": "^5.22.1",
     "yup": "^1.2.0"
