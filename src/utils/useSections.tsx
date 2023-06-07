@@ -8,6 +8,7 @@ import {
   formatPlayPercentage,
   getPlayRate,
   getTotalGames,
+  getWinRate,
   isNegligiblePlayrate,
 } from "~/utils/results_distribution";
 import {
@@ -24,6 +25,7 @@ import { ReviewText } from "~/components/ReviewText";
 import { Accessor, createEffect, Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 import { initTooltip } from "~/components/Tooltip";
+import { pluralize } from "./pluralize";
 
 interface Section {
   width: number;
@@ -233,6 +235,7 @@ const getBuildModeSections = ({
         const whiteWinning =
           suggestedMove?.stockfish?.eval >= 0 ||
           suggestedMove?.stockfish?.mate > 0;
+        const formattedEval = formatStockfishEval(suggestedMove?.stockfish);
         return (
           <>
             <Show when={suggestedMove?.stockfish}>
@@ -247,6 +250,42 @@ const getBuildModeSections = ({
                     c.center,
                     c.br(2)
                   )}
+                  ref={(ref) => {
+                    initTooltip({
+                      ref,
+                      content: () => {
+                        if (formattedEval == "=") {
+                          return (
+                            <p>
+                              After this move, the computer evaluates the
+                              position as <b>equal</b>
+                            </p>
+                          );
+                        } else if (suggestedMove?.stockfish?.mate) {
+                          let mateMoves = suggestedMove?.stockfish?.mate;
+                          let side = mateMoves > 0 ? "white" : "black";
+                          return `This position is a forced mate in ${pluralize(
+                            mateMoves,
+                            "move"
+                          )} for ${side}`;
+                        } else if (suggestedMove?.stockfish?.eval) {
+                          const betterSide =
+                            suggestedMove?.stockfish?.eval >= 0
+                              ? "white"
+                              : "black";
+                          return (
+                            <p>
+                              The computer evaluates this move as{" "}
+                              <b>better for {betterSide}</b> by the equivalent
+                              of <b>{formattedEval} </b>
+                              pawns
+                            </p>
+                          );
+                        }
+                      },
+                      maxWidth: 200,
+                    });
+                  }}
                 >
                   <CMText
                     style={s(
@@ -255,7 +294,7 @@ const getBuildModeSections = ({
                       c.fg(whiteWinning ? c.grays[10] : c.grays[90])
                     )}
                   >
-                    {formatStockfishEval(suggestedMove?.stockfish)}
+                    {formattedEval}
                   </CMText>
                 </div>
               </>
@@ -284,7 +323,47 @@ const getBuildModeSections = ({
         return (
           <>
             <Show when={suggestedMove}>
-              <div style={s(c.fullWidth)}>
+              <div
+                style={s(c.fullWidth)}
+                ref={(ref) => {
+                  initTooltip({
+                    ref,
+                    content: () => {
+                      return (
+                        <p class="text-left">
+                          <span class="block pb-2">
+                            When this is played at your level:
+                          </span>
+                          •<span class="pr-2" />
+                          White wins{" "}
+                          <b>
+                            {formatPlayPercentage(
+                              getWinRate(suggestedMove?.results, "white")
+                            )}
+                          </b>{" "}
+                          of games <br />•<span class="pr-2" />
+                          Black wins{" "}
+                          <b>
+                            {formatPlayPercentage(
+                              getWinRate(suggestedMove?.results, "black")
+                            )}
+                          </b>{" "}
+                          of games <br />•<span class="pr-2" />
+                          <b>
+                            {formatPlayPercentage(
+                              1 -
+                                getWinRate(suggestedMove?.results, "white") -
+                                getWinRate(suggestedMove?.results, "black")
+                            )}
+                          </b>{" "}
+                          of games are drawn
+                        </p>
+                      );
+                    },
+                    maxWidth: 200,
+                  });
+                }}
+              >
                 <GameResultsBar
                   previousResults={positionReport?.results}
                   activeSide={activeSide}
