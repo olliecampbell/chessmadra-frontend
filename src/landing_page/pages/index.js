@@ -219,7 +219,7 @@ export default (({
     "md-font": "--leadMd",
     margin: "0px 0px 0px 0px",
     "sm-font": "--leadSm"
-  }, "Chessbook calculates your coverage per line so you always know what to work on.")), /*#__PURE__*/React.createElement(Box, {
+  }, "Chessbook calculates your coverage per opening so you always know what to work on.")), /*#__PURE__*/React.createElement(Box, {
     display: "flex",
     width: "50%",
     "justify-content": "flex-end",
@@ -344,7 +344,7 @@ export default (({
     "lg-font": "--headline2Sm",
     "sm-font": "--headline2Sm",
     "lg-margin": "0px 0px 16px 0px"
-  }, "Only spend time on the lines you'll actually see"), /*#__PURE__*/React.createElement(Text, {
+  }, "Only spend time on the moves you'll actually see"), /*#__PURE__*/React.createElement(Text, {
     margin: "0px 0px 0px 0px",
     color: "--grey",
     font: "--lead",
@@ -370,7 +370,7 @@ export default (({
     hyphens: "manual",
     "user-select": "auto",
     "pointer-events": "auto"
-  }, /*#__PURE__*/React.createElement(Strong, null, "for")), " ", "masters. Chessbook lets you avoid obscure GM lines and focus your effort on the moves that are common at your level.")), /*#__PURE__*/React.createElement(Box, {
+  }, /*#__PURE__*/React.createElement(Strong, null, "for")), " ", "masters. Chessbook lets you avoid obscure grandmaster lines and focus your effort on the moves that are common at your level.")), /*#__PURE__*/React.createElement(Box, {
     display: "flex",
     width: "50%",
     "justify-content": "flex-end",
@@ -518,7 +518,7 @@ export default (({
     "md-font": "--headline2Md",
     "lg-font": "--headline2Sm",
     "sm-font": "--headline2Sm"
-  }, "Collect all your lines in one place"), /*#__PURE__*/React.createElement(Text, {
+  }, "Collect all your openings in one place"), /*#__PURE__*/React.createElement(Text, {
     color: "--grey",
     font: "--lead",
     "lg-text-align": "center",
@@ -585,7 +585,7 @@ export default (({
     "md-margin": "12px 0px 12px 0px",
     "sm-font": "--leadSm",
     "lg-margin": "12px 0px 0px 0px"
-  }, "See how top players handle the positions that result from the lines you play.")), /*#__PURE__*/React.createElement(Box, {
+  }, "See how top players handle the positions that result from the openings you play.")), /*#__PURE__*/React.createElement(Box, {
     display: "block",
     width: "100%",
     "justify-content": "flex-end",
@@ -859,7 +859,7 @@ export default (({
     margin: "0px 0px 0px 0px",
     "md-font": "normal 500 16px/1.2 \"Source Sans Pro\", sans-serif",
     height: "68px"
-  }, "Avoid\xA0obscure\xA0lines"), /*#__PURE__*/React.createElement(Text, {
+  }, "Avoid\xA0obscure\xA0moves"), /*#__PURE__*/React.createElement(Text, {
     color: "--light",
     font: "normal 300 16px/1.5 --fontFamily-googleInter",
     margin: "0px 0px 0px 0px",
@@ -1456,7 +1456,7 @@ export default (({
     "md-font": "--baseMd",
     "md-margin": "0px 0px 36px 0px",
     "lg-margin": "0px 0px 24px 0px"
-  }, "Add unlimited lines to any depth."), /*#__PURE__*/React.createElement(Link, {
+  }, "Add unlimited moves to any depth."), /*#__PURE__*/React.createElement(Link, {
     onClick: () => {
       onClick("pro_try_it_for_free");
     },

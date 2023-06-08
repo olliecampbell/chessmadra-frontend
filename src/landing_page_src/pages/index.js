@@ -266,8 +266,8 @@ export default ({ onClick, onLogin }) => {
             margin="0px 0px 0px 0px"
             sm-font="--leadSm"
           >
-            Chessbook calculates your coverage per line so you always know what
-            to work on.
+            Chessbook calculates your coverage per opening so you always know
+            what to work on.
           </Text>
         </Box>
         <Box
@@ -416,7 +416,7 @@ export default ({ onClick, onLogin }) => {
             sm-font="--headline2Sm"
             lg-margin="0px 0px 16px 0px"
           >
-            Only spend time on the lines you'll actually see
+            Only spend time on the moves you'll actually see
           </Text>
           <Text
             margin="0px 0px 0px 0px"
@@ -453,8 +453,8 @@ export default ({ onClick, onLogin }) => {
             >
               <Strong>for</Strong>
             </Span>{" "}
-            masters. Chessbook lets you avoid obscure GM lines and focus your
-            effort on the moves that are common at your level.
+            masters. Chessbook lets you avoid obscure grandmaster lines and
+            focus your effort on the moves that are common at your level.
           </Text>
         </Box>
         <Box
@@ -635,7 +635,7 @@ export default ({ onClick, onLogin }) => {
             lg-font="--headline2Sm"
             sm-font="--headline2Sm"
           >
-            Collect all your lines in one place
+            Collect all your openings in one place
           </Text>
           <Text
             color="--grey"
@@ -721,8 +721,8 @@ export default ({ onClick, onLogin }) => {
             sm-font="--leadSm"
             lg-margin="12px 0px 0px 0px"
           >
-            See how top players handle the positions that result from the lines
-            you play.
+            See how top players handle the positions that result from the
+            openings you play.
           </Text>
         </Box>
         <Box
@@ -1085,7 +1085,7 @@ export default ({ onClick, onLogin }) => {
                 md-font='normal 500 16px/1.2 "Source Sans Pro", sans-serif'
                 height="68px"
               >
-                Avoid obscure lines
+                Avoid obscure moves
               </Text>
               <Text
                 color="--light"
@@ -1811,7 +1811,7 @@ export default ({ onClick, onLogin }) => {
               md-margin="0px 0px 36px 0px"
               lg-margin="0px 0px 24px 0px"
             >
-              Add unlimited lines to any depth.
+              Add unlimited moves to any depth.
             </Text>
             <Link
               onClick={() => {

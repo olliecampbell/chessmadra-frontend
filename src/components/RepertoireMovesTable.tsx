@@ -48,6 +48,8 @@ import { destructure } from "@solid-primitives/destructure";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
 import { isDevelopment } from "~/utils/env";
+import { initTooltip } from "./Tooltip";
+import { renderThreshold } from "~/utils/threshold";
 
 const DELETE_WIDTH = 30;
 
@@ -424,6 +426,8 @@ const Response = (props: {
   const mine = () => props.tableResponse.repertoireMove?.mine;
   const moveRating = () => props.tableResponse.moveRating;
 
+  const userState = getAppState().userState;
+  const user = () => userState.user;
   const responsive = useResponsive();
   const { hoveringProps: responseHoverProps, hoveringRef } = useHovering(
     () => {
@@ -452,6 +456,12 @@ const Response = (props: {
     if (moveHasTag(props.tableResponse, MoveTag.BestMove)) {
       tags.push(
         <MoveTagView
+          tip={
+            <p>
+              This is the best move according to masters, the computer, and
+              results at your level
+            </p>
+          }
           text="Clear best move"
           icon="fa-duotone fa-trophy"
           style={s(c.fg(c.yellows[60]), c.fontSize(14))}
@@ -461,6 +471,12 @@ const Response = (props: {
     if (moveHasTag(props.tableResponse, MoveTag.Transposes)) {
       tags.push(
         <MoveTagView
+          tip={
+            <p>
+              This move is an alternative way to reach an existing position in
+              your repertoire
+            </p>
+          }
           text="Transposes to your repertoire"
           icon="fa-solid fa-merge"
           style={s(c.fg(c.colors.success), c.fontSize(14), c.rotate(-90))}
@@ -470,6 +486,12 @@ const Response = (props: {
     if (moveHasTag(props.tableResponse, MoveTag.TheoryHeavy)) {
       tags.push(
         <MoveTagView
+          tip={
+            <p>
+              This is the best move according to masters, the computer, and
+              results at your level
+            </p>
+          }
           text="Warning: heavy theory"
           icon="fa-solid fa-triangle-exclamation"
           style={s(c.fg(c.reds[60]), c.fontSize(14))}
@@ -479,6 +501,14 @@ const Response = (props: {
     if (moveHasTag(props.tableResponse, MoveTag.RareDangerous)) {
       tags.push(
         <MoveTagView
+          tip={
+            <p>
+              This move is seen in less than{" "}
+              <b>{renderThreshold(userState.getCurrentThreshold())}</b> games
+              but the high win-rate for {currentSide()} means you should still
+              prepare for it
+            </p>
+          }
           text="Rare but dangerous"
           icon="fa fa-radiation"
           style={s(c.fg(c.reds[65]), c.fontSize(18))}
@@ -488,6 +518,12 @@ const Response = (props: {
     if (moveHasTag(props.tableResponse, MoveTag.CommonMistake)) {
       tags.push(
         <MoveTagView
+          tip={
+            <p>
+              This is a bad move that's common at your level, so you should be
+              prepared to punish it
+            </p>
+          }
           text="Common mistake"
           icon="fa fa-person-falling"
           style={s(c.fg(c.grays[80]), c.fontSize(14))}
@@ -832,9 +868,19 @@ function renderAnnotation(_annotation: string) {
   }
 }
 
-const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
+const MoveTagView = ({
+  text,
+  icon,
+  style,
+  tip,
+}: {
+  icon;
+  text;
+  style;
+  tip;
+}) => {
   return (
-    <CMText
+    <p
       style={s(
         c.fg(c.grays[80]),
         c.fontSize(10),
@@ -842,11 +888,21 @@ const MoveTagView = ({ text, icon, style }: { icon; text; style }) => {
         c.row,
         c.alignCenter
       )}
+      ref={(ref) => {
+        console.log("ref", ref);
+        initTooltip({
+          ref,
+          content: () => {
+            return tip;
+          },
+          maxWidth: 200,
+        });
+      }}
     >
       <i class={icon} style={s(style)} />
       <Spacer width={8} />
       {text}
-    </CMText>
+    </p>
   );
 };
 
