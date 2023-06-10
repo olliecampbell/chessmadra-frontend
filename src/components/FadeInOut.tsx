@@ -10,6 +10,7 @@ export const FadeInOut = (props: {
   maxOpacity?: number;
   style?: any;
   className?: string;
+  class?: string;
   id?: string;
 }) => {
   const maxOpacity = props.maxOpacity ?? 100;
@@ -25,7 +26,8 @@ export const FadeInOut = (props: {
         "transition-opacity",
         props.open() ? "opacity-100" : "opacity-0",
         !props.open() && "pointer-events-none",
-        props.className
+        props.className,
+        props.class
       )}
     >
       {props.children}

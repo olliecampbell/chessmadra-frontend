@@ -650,30 +650,21 @@ const Response = (props: {
                       }}
                     >
                       <CMText
-                        style={s(
-                          c.fg(c.grays[60]),
-                          c.fontSize(14),
-                          c.weightSemiBold,
-                          c.lineHeight("1.3rem"),
-                          c.keyedProp("letter-spacing")("0.04rem")
-                        )}
+                        class={
+                          "text-gray-60 font-semibold leading-5 tracking-wider"
+                        }
                       >
                         {moveNumber}
                         {currentSide() === "black" ? "…" : "."}
                       </CMText>
                       <Spacer width={4} />
-                      <CMText
-                        key={sanPlus}
-                        style={s(
-                          c.fg(c.grays[85]),
-                          c.fontSize(14),
-                          c.lineHeight("1.3rem"),
-                          c.weightBold,
-                          c.keyedProp("letter-spacing")("0.04rem")
-                        )}
+                      <p
+                        class={
+                          "text-gray-85 font-bold leading-5 tracking-wider"
+                        }
                       >
                         {sanPlus}
-                      </CMText>
+                      </p>
                       {!isNil(moveRating()) && (
                         <>
                           <Spacer width={4} />

@@ -26,6 +26,7 @@ import { clsx } from "~/utils/classes";
 import { createElementBounds } from "@solid-primitives/bounds";
 import { BackSection } from "./BackSection";
 import { isChessmadra } from "~/utils/env";
+import { MoveLog } from "./MoveLog";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -116,6 +117,7 @@ export const SidebarLayout = (props: {
               c.column,
               !vertical && s(c.grow, c.noBasis, c.flexShrink),
               vertical && c.width("min(480px, 100%)"),
+              !vertical && c.minWidth("300px"),
               vertical && c.grow,
               vertical ? c.selfCenter : c.selfStretch
             )}
@@ -141,7 +143,7 @@ export const SidebarLayout = (props: {
                 {props.settings}
               </div>
             )}
-            <div ref={setChessboardContainerRef}>
+            <div ref={setChessboardContainerRef} class="col">
               <div
                 class={clsx("duration-250 transition-opacity ease-in-out")}
                 style={s(
@@ -161,7 +163,7 @@ export const SidebarLayout = (props: {
                 />
               </div>
               <Show when={props.belowChessboard}>
-                <Spacer height={12} />
+                <Spacer height={responsive.isMobile ? 12 : 32} />
                 <div class="row w-full justify-center">
                   {props.belowChessboard}
                 </div>
@@ -224,36 +226,27 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
   const responsive = useResponsive();
   const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
   const padding = 8;
-  const [mode] = useSidebarState(([s]) => [s.mode]);
+  const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const currentLine = () => {
-    if (mode() === "review") {
+    if (sidebarMode() === "review") {
       return getAppState().repertoireState.reviewState.moveLog;
     } else {
       return getAppState().repertoireState.browsingState.sidebarState.moveLog;
     }
   };
-  const [sideBarMode] = useSidebarState(([s]) => [s.mode]);
-  return (
-    <FadeInOut
-      style={s(c.row)}
-      open={() =>
-        !isEmpty(currentLine()) &&
-        (sideBarMode() == "browse" ||
-          sideBarMode() == "review" ||
-          sideBarMode() == "build")
-      }
-    >
+  const button = () => {
+    return (
       <Pressable
         style={s()}
         class={clsx(
-          "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors"
+          "text-tertiary &hover:text-primary text-md -my-2 shrink-0 py-2 font-semibold transition-colors"
         )}
         onPress={() => {
           quick((s) => {
             trackEvent("chessboard.analyze_on_lichess", {
               side: activeSide(),
-              mode: sideBarMode(),
+              mode: sidebarMode(),
             });
             s.repertoireState.analyzeLineOnLichess(currentLine(), activeSide());
           });
@@ -264,26 +257,24 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
           <i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)}></i>
         </p>
       </Pressable>
-    </FadeInOut>
-  );
-};
-
-const MobileTopBar = ({}) => {
-  const responsive = useResponsive();
+    );
+  };
   return (
-    <div
-      style={s(
-        c.row,
-        c.alignCenter,
-        c.fullWidth,
-        c.justifyBetween,
-        c.px(c.getSidebarPadding(responsive)),
-        c.py(8)
-      )}
+    <FadeInOut
+      style={s(c.row)}
+      class={clsx("row max-w-full justify-between md:w-full")}
+      open={() =>
+        !isEmpty(currentLine()) &&
+        (sidebarMode() == "browse" ||
+          sidebarMode() == "review" ||
+          sidebarMode() == "build")
+      }
     >
-      <NavBreadcrumbs />
-      <SettingsButtons />
-    </div>
+      {button()}
+      <Show when={!responsive.isMobile}>
+        <MoveLog />
+      </Show>
+    </FadeInOut>
   );
 };
 

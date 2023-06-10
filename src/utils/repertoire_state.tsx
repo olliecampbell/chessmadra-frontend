@@ -62,7 +62,7 @@ import {
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
 
-const TEST_LINE = isDevelopment ? pgnToLine("1.e4 d5") : [];
+const TEST_LINE = isDevelopment ? pgnToLine("1.e4 d5 2.exd5") : [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;

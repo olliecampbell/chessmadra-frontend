@@ -667,8 +667,15 @@ export function ChessboardView(props: {
                     }}
                   >
                     <div style={s(c.fullWidth, c.fullHeight)}>
-                      <Show when={piece() && !hiddenBecauseTake()}>
-                        <PieceView piece={piece()} pieceSet={pieceSet()} />
+                      <Show when={piece()}>
+                        <div
+                          class={clsx(
+                            hiddenBecauseTake() ? "opacity-0" : "opacity-100",
+                            "transition-opacity"
+                          )}
+                        >
+                          <PieceView piece={piece()} pieceSet={pieceSet()} />
+                        </div>
                       </Show>
                     </div>
                   </div>
@@ -733,6 +740,12 @@ export function ChessboardView(props: {
                           }
                           return { type: "indicator", color: "next" };
                         }
+                        const isPreviewSquare =
+                          chessboardStore().previewedMove?.to === square() ||
+                          chessboardStore().previewedMove?.from === square();
+                        if (isPreviewSquare) {
+                          return { type: "full", color: "next" };
+                        }
                         const isLastMoveSquare =
                           props.chessboardInterface.getLastMove()?.to ==
                             square() ||
@@ -740,12 +753,6 @@ export function ChessboardView(props: {
                             square();
                         if (isLastMoveSquare) {
                           return { type: "full", color: "last" };
-                        }
-                        const isPreviewSquare =
-                          chessboardStore().previewedMove?.to === square() ||
-                          chessboardStore().previewedMove?.from === square();
-                        if (isPreviewSquare) {
-                          return { type: "full", color: "next" };
                         }
 
                         return { type: null, color: null };
