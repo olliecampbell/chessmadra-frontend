@@ -302,7 +302,7 @@ export const OnboardingComplete = () => {
       <>
         Practice every day{" "}
         {!responsive.isMobile &&
-          `(visit Chessbook.com on your mobile phone to practice on the go)`}
+          `(visit Chessbook.com on your phone to practice on the go)`}
       </>
     );
 
