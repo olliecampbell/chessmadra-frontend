@@ -52,9 +52,7 @@ export const MoveLog = () => {
       if (i % 2 === 0) {
         elems.push(
           <p
-            class={
-              "text-gray-60 pl-2 pr-0.5 font-semibold leading-5 tracking-wider"
-            }
+            class={"text-gray-60 pl-2  font-semibold leading-5 tracking-wider"}
           >
             {Math.round(i / 2) + 1}.
           </p>
@@ -63,7 +61,7 @@ export const MoveLog = () => {
       elems.push(
         <p
           class={clsx(
-            "text-gray-85 &hover:text-primary &hover:-translate-y-0.5 cursor-pointer whitespace-nowrap rounded-sm px-0.5 font-bold  leading-5 tracking-wider transition-all"
+            "text-gray-85 &hover:text-primary &hover:-translate-y-0.5 cursor-pointer whitespace-nowrap rounded-sm px-1 font-bold  leading-5 tracking-wider transition-all"
           )}
           style={s(last && c.bg(theme().highlightLastMove))}
           onClick={() => {

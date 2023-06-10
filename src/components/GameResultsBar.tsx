@@ -30,7 +30,7 @@ export const GameResultsBar = ({
       style={s(
         c.width(`${(gameResults.white / total) * 100}%`),
         c.bg(c.grays[90]),
-        c.px(2),
+        c.px(4),
         c.alignCenter,
         c.row,
         activeSide === "black" ? c.justifyEnd : c.justifyStart

@@ -629,7 +629,6 @@ export const getInitialBrowsingState = (
         }
         if (s.sidebarState.showPlansState.visible) {
           s.sidebarState.showPlansState.visible = false;
-          s.sidebarState.showPlansState.hasShown = false;
           s.sidebarState.showPlansState.coverageReached = false;
           s.chessboard.set((c) => {
             c.showPlans = false;
