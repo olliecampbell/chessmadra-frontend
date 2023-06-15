@@ -5,7 +5,7 @@ import { InputError } from "./forms/InputError";
 import { InputLabel } from "./forms/InputLabel";
 
 type TextInputProps = {
-  type: "text" | "email" | "tel" | "password" | "url" | "number" | "date";
+  type?: "text" | "email" | "tel" | "password" | "url" | "number" | "date";
   name: string;
   placeholder?: string;
   required?: boolean;
@@ -20,8 +20,6 @@ type TextInputProps = {
 type TextAreaProps = {
   ref?: (element: HTMLTextAreaElement) => void;
   name?: string;
-  value: string | number | undefined;
-  onInput: JSX.EventHandler<HTMLTextAreaElement, InputEvent>;
   onBlur?: JSX.EventHandler<HTMLTextAreaElement, FocusEvent>;
   placeholder?: string;
   required?: boolean;
@@ -49,6 +47,7 @@ export function TextInput(props: TextInputProps) {
       />
       <input
         name={props.name}
+        autocapitalize={props.type === "email" ? "off" : undefined}
         class={clsx(
           "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
@@ -56,6 +55,7 @@ export function TextInput(props: TextInputProps) {
             : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50",
           props.inputClass
         )}
+        placeholder={props.placeholder}
         id={props.name}
         type={props.type}
         aria-invalid={!!props.error}
@@ -70,7 +70,6 @@ export function TextArea(props: TextAreaProps) {
   const [, inputProps] = splitProps(props, [
     "class",
     "inputClass",
-    "value",
     "label",
     "error",
     "padding",
@@ -87,6 +86,7 @@ export function TextArea(props: TextAreaProps) {
       />
       <textarea
         {...inputProps}
+        name={props.name}
         class={clsx(
           "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
@@ -95,7 +95,6 @@ export function TextArea(props: TextAreaProps) {
           props.inputClass
         )}
         id={props.name}
-        value={props.value || ""}
         aria-invalid={!!props.error}
         aria-errormessage={`${props.name}-error`}
       />

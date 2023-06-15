@@ -69,7 +69,7 @@ export const AnnotationEditor = ({
         </CMText>
       </div>
       <div style={s(c.bg(c.grays[20]), c.py(12), c.grow)}>
-        <input
+        <textarea
           value={annotation() ?? ""}
           style={s(
             {
