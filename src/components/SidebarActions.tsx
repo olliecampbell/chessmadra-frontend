@@ -130,7 +130,7 @@ export const SidebarActions = () => {
           });
         },
         text: isPastCoverageGoal()
-          ? "Save this line to my repertoire"
+          ? "Save these moves to my repertoire"
           : "I'll finish this later, save my progress",
         style: isPastCoverageGoal() ? "focus" : "primary",
       });

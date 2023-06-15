@@ -56,7 +56,7 @@ export const OnboardingIntro = () => {
   const responsive = useResponsive();
   const bullets = [
     "Adding your first moves",
-    "Practicing it using spaced repetition",
+    "Practicing them using spaced repetition",
   ];
   return (
     <SidebarTemplate

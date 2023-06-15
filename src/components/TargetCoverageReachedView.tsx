@@ -41,7 +41,7 @@ export const TargetCoverageReachedView = () => {
             });
           },
           style: "primary",
-          text: "Keep adding moves to this line",
+          text: "Keep adding moves",
         });
       }
     }
@@ -66,7 +66,7 @@ export const TargetCoverageReachedView = () => {
         <CMText
           style={s(c.weightRegular, c.fontSize(14), c.fg(c.colors.textPrimary))}
         >
-          Do you want to keep adding moves to this line, or save your progress?
+          Do you want to keep adding moves, or save your progress?
         </CMText>
       </Show>
     </SidebarTemplate>

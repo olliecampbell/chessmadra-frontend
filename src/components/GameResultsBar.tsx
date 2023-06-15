@@ -68,7 +68,7 @@ export const GameResultsBar = ({
         c.bg(c.grays[6]),
         c.alignCenter,
         c.row,
-        c.px(2),
+        c.px(4),
         activeSide === "black" ? c.justifyStart : c.justifyEnd
       )}
     >
