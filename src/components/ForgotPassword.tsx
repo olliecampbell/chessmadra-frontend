@@ -75,7 +75,7 @@ export default function ForgotPassword() {
                   <form ref={form} class={`col gap-8`}>
                     <TextInput
                       placeholder="example@gmail.com"
-                      type="text"
+                      type="email"
                       name="email"
                       label="Email"
                       errors={errors()}

@@ -47,7 +47,6 @@ export function TextInput(props: TextInputProps) {
       />
       <input
         name={props.name}
-        autocapitalize={props.type === "email" ? "off" : undefined}
         class={clsx(
           "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
