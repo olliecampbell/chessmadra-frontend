@@ -2,18 +2,10 @@ import { s, c } from "~/utils/styles";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 
-export const RepertoireEditingHeader = (props: { children: any }) => {
+export const SidebarHeader = (props: { children: any }) => {
   const responsive = useResponsive();
   return (
-    <CMText
-      style={s(
-        c.px(c.getSidebarPadding(responsive)),
-        c.fg(c.colors.textPrimary),
-        c.fontSize(responsive.switch(18, [BP.lg, 24])),
-        c.mt(responsive.switch(0, [BP.lg, -6])),
-        c.weightBold
-      )}
-    >
+    <CMText class=" text-primary mt-0 text-lg font-bold lg:-mt-2 lg:text-xl">
       {props.children}
     </CMText>
   );

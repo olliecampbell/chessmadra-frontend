@@ -17,9 +17,6 @@ import {
 import { trackEvent } from "~/utils/trackEvent";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
-import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
-import { CMTextInput } from "./CMTextInput";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {

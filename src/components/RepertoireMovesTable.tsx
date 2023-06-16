@@ -24,7 +24,7 @@ import {
   useRepertoireState,
   getAppState,
 } from "~/utils/app_state";
-import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
+import { SidebarHeader } from "./RepertoireEditingHeader";
 import { trackEvent } from "~/utils/trackEvent";
 import { getAppropriateEcoName } from "~/utils/eco_codes";
 import { getMoveRatingIcon, MoveRating } from "~/utils/move_inaccuracy";
@@ -235,7 +235,9 @@ export const RepertoireMovesTable = ({
     <div style={s(c.column)}>
       <Show when={header()}>
         <>
-          <RepertoireEditingHeader>{header()}</RepertoireEditingHeader>
+          <div class="padding-sidebar">
+            <SidebarHeader>{header()}</SidebarHeader>
+          </div>
           <Spacer height={responsive.switch(20, [BP.md, 24])} />
         </>
       </Show>

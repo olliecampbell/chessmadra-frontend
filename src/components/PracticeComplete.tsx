@@ -28,7 +28,6 @@ export const PracticeComplete = () => {
       [];
     forEach(allReviewPositionMoves(), (sanLookup, epd) => {
       forEach(sanLookup, ({ failed, side }, sanPlus) => {
-        console.log({ epd, sanPlus, failed });
         moves.push({ epd, sanPlus, failed, side });
       });
     });

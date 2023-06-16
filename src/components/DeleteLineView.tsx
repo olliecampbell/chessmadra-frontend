@@ -6,7 +6,7 @@ import { CMText } from "./CMText";
 import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarFullWidthButton } from "./SidebarActions";
-import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
+import { SidebarHeader } from "./RepertoireEditingHeader";
 import { For } from "solid-js";
 
 export const DeleteLineView = function DeleteLineView() {
@@ -25,9 +25,9 @@ export const DeleteLineView = function DeleteLineView() {
   const multiple = responses.length > 1;
   return (
     <div style={s(c.column)}>
-      <RepertoireEditingHeader>
+      <SidebarHeader>
         {multiple ? "Which line do you want to delete?" : "Are you sure?"}
-      </RepertoireEditingHeader>
+      </SidebarHeader>
       <Spacer height={24} />
       <div style={s(c.px(c.getSidebarPadding(responsive)))}>
         <CMText style={s()}>

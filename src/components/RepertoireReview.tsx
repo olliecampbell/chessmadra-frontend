@@ -1,18 +1,19 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isNil, sortBy, filter, range } from "lodash-es";
+import { isNil, sortBy, filter, range, forEach } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
 import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
-import { Accessor, createEffect, Show } from "solid-js";
+import { Accessor, createEffect, createMemo, For, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
-import { RepertoireMove } from "~/utils/repertoire";
+import { RepertoireMove, Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
+import { SidebarHeader } from "./RepertoireEditingHeader";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -33,6 +34,47 @@ export const RepertoireReview = (props: {}) => {
   });
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
+  const [allReviewPositionMoves] = useRepertoireState((s) => [
+    s.reviewState.allReviewPositionMoves,
+  ]);
+  const [queue] = useRepertoireState((s) => [s.reviewState.activeQueue]);
+  let moves = createMemo(() => {
+    let moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
+      [];
+    forEach(allReviewPositionMoves(), (sanLookup, epd) => {
+      forEach(sanLookup, ({ failed, side, reviewed }, sanPlus) => {
+        if (reviewed) {
+          moves.push({ epd, sanPlus, failed, side });
+        }
+      });
+    });
+    return moves;
+  });
+  let numFailed = () => {
+    return moves().filter((m) => m.failed).length;
+  };
+  let numCorrect = () => {
+    return moves().filter((m) => !m.failed).length;
+  };
+  const progressIcons = () => {
+    return [
+      {
+        icon: "fa fa-clock",
+        class: "text-orange-70",
+        text: queue().length,
+      },
+      {
+        icon: "fa fa-circle-check",
+        class: "text-[#79c977]",
+        text: numCorrect(),
+      },
+      {
+        icon: "fa fa-circle-xmark",
+        class: "text-[#c92b2b]",
+        text: numFailed(),
+      },
+    ];
+  };
   const actions: Accessor<SidebarAction[]> = () => [
     {
       onPress: () => {
@@ -76,7 +118,7 @@ export const RepertoireReview = (props: {}) => {
       currentMove()?.moves,
       (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus])
     ).length;
-  const header = () => {
+  const body = () => {
     if (showNext()) {
       return "This move is in your repertoire";
     }
@@ -94,10 +136,27 @@ export const RepertoireReview = (props: {}) => {
   };
   return (
     <SidebarTemplate
-      header={header()}
+      header={null}
       actions={filter(actions(), (a) => !a.hidden)}
       bodyPadding={true}
     >
+      <div class={"row w-full items-center justify-between"}>
+        <SidebarHeader>Practicing moves</SidebarHeader>
+        <div class="row items-center space-x-4 lg:space-x-8">
+          <For each={progressIcons()}>
+            {(i) => {
+              return (
+                <div class="row items-center">
+                  <p class={clsx(i.class, "font-semibold")}>{i.text}</p>
+                  <i class={clsx(i.class, i.icon, "ml-2 text-[20px]")}></i>
+                </div>
+              );
+            }}
+          </For>
+        </div>
+      </div>
+      <div class={"h-6 lg:h-10"} />
+      <p class="text-body">{body()}</p>
       <Show when={num() > 1}>
         <>
           <div

@@ -4,7 +4,7 @@ import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
-import { RepertoireEditingHeader } from "./RepertoireEditingHeader";
+import { SidebarHeader } from "./RepertoireEditingHeader";
 import { Component, createEffect, For, Show } from "solid-js";
 import { Puff } from "solid-spinner";
 
@@ -19,7 +19,7 @@ export const SidebarTemplate: Component<{
   return (
     <div style={s(c.column)}>
       <Show when={props.header}>
-        <RepertoireEditingHeader>{props.header}</RepertoireEditingHeader>
+        <SidebarHeader>{props.header}</SidebarHeader>
         <div class={"h-6 lg:h-10"} />
       </Show>
       <Show

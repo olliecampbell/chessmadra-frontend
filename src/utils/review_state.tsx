@@ -62,7 +62,13 @@ export interface ReviewState {
     Epd,
     Record<
       SanPlus,
-      { sanPlus: string; epd: string; failed: boolean; side: Side }
+      {
+        sanPlus: string;
+        epd: string;
+        failed: boolean;
+        side: Side;
+        reviewed: boolean;
+      }
     >
   >;
   failedReviewPositionMoves: Record<string, RepertoireMove>;
@@ -168,6 +174,7 @@ export const getInitialReviewState = (
               sanPlus: m.sanPlus,
               side: m.side,
               failed: false,
+              reviewed: false,
             };
           });
         });
@@ -240,11 +247,12 @@ export const getInitialReviewState = (
           return;
         }
         s.chessboard.setFrozen(true);
-        s.completedReviewPositionMoves[move.sanPlus] = move;
         s.getRemainingReviewPositionMoves().forEach((move) => {
           s.failedReviewPositionMoves[move.sanPlus] = move;
           s.allReviewPositionMoves[move.epd][move.sanPlus].failed = true;
+          s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed = true;
         });
+        s.completedReviewPositionMoves[move.sanPlus] = move;
         s.showNext = true;
         s.chessboard.makeMove(moveObj, { animate: true });
       }, "giveUp"),
@@ -391,6 +399,9 @@ export const getInitialReviewState = (
               }, 500);
               return true;
             }
+            s.currentMove?.moves.forEach((move) => {
+              s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed = true;
+            });
             const nextMove = s.activeQueue[1];
             console.log(s.activeQueue);
             // todo: make this actually work
@@ -426,6 +437,7 @@ export const getInitialReviewState = (
             s.getRemainingReviewPositionMoves().forEach((move) => {
               s.failedReviewPositionMoves[move.sanPlus] = move;
               s.allReviewPositionMoves[move.epd][move.sanPlus].failed = true;
+              s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed = true;
             });
             return false;
           }
