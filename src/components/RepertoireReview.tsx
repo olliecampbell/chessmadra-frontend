@@ -61,7 +61,7 @@ export const RepertoireReview = (props: {}) => {
       {
         icon: "fa fa-clock",
         class: "text-orange-70",
-        text: queue().length,
+        text: `${queue().length} Due`,
       },
       {
         icon: "fa fa-circle-check",
