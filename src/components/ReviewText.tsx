@@ -42,7 +42,7 @@ export const ReviewText = ({
           <CMText style={s(textStyles, c.fg(color))}>{dueString}</CMText>
           <i
             style={s(c.fg(color), c.fontSize(12))}
-            class="fa-regular fa-clock pl-2"
+            class="fa fa-clock pl-2"
           ></i>
         </div>
       }

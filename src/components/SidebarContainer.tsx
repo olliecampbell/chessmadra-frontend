@@ -15,6 +15,12 @@ export const SidebarContainer = (props: {
       if (!previousRef() || !currentRef()) {
         return;
       }
+      [...document.querySelectorAll("*")].forEach((node) => {
+        if (node._tippy) {
+          console.log("destroying tippy");
+          node._tippy.destroy();
+        }
+      });
       let clone = currentRef().cloneNode(true);
       previousRef().replaceChildren(clone);
       const ms = 200;

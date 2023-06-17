@@ -490,8 +490,8 @@ const Response = (props: {
         <MoveTagView
           tip={
             <p>
-              This is the best move according to masters, the computer, and
-              results at your level
+              This opening requires a lot of memorization so is not recommended
+              for beginners
             </p>
           }
           text="Warning: heavy theory"

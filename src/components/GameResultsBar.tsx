@@ -39,12 +39,7 @@ export const GameResultsBar = ({
       {percentWhite > threshold && !hideNumbers && (
         <>
           <CMText
-            style={s(
-              c.fg(c.grays[10]),
-              c.weightBold,
-              c.fontSize(fontSize),
-              c.pr(2)
-            )}
+            style={s(c.fg(c.grays[10]), c.weightBold, c.fontSize(fontSize))}
           >
             {formatWinPercentage(gameResults.white / total)}
             {percentWhite > showPercentageThreshold && <span class="">%</span>}
@@ -75,12 +70,7 @@ export const GameResultsBar = ({
       {gameResults.black / total > threshold && !hideNumbers && (
         <>
           <CMText
-            style={s(
-              c.fg(c.grays[90]),
-              c.weightBold,
-              c.fontSize(fontSize),
-              c.pr(2)
-            )}
+            style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(fontSize))}
           >
             {formatWinPercentage(gameResults.black / total)}
             {percentBlack > showPercentageThreshold && <span class="">%</span>}
@@ -168,7 +158,7 @@ export const MovementIndicator = ({
     return null;
   }
   return (
-    <div style={s()}>
+    <div class={"pl-px"}>
       <i class={icon} style={s(c.fg(color), c.fontSize(10))} />
     </div>
   );

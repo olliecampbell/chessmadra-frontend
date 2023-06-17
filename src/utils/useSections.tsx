@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { isNil, clamp } from "lodash-es";
-import { Side } from "~/utils/repertoire";
+import { otherSide, Side } from "~/utils/repertoire";
 import { PositionReport, SuggestedMove } from "~/utils/models";
 import { formatStockfishEval } from "~/utils/stockfish";
 import {
@@ -118,7 +118,7 @@ const getBuildModeSections = ({
     sections.push({
       width: 100,
       alignLeft: true,
-      content: ({ suggestedMove, positionReport, tableResponse }) => {
+      content: ({ suggestedMove, positionReport, tableResponse, side }) => {
         const playRate =
           suggestedMove &&
           positionReport &&
@@ -136,10 +136,37 @@ const getBuildModeSections = ({
         if (denominator >= 10000) {
           veryRare = true;
         }
+        const sanPlus =
+          tableResponse.repertoireMove?.sanPlus ??
+          tableResponse.suggestedMove?.sanPlus;
         return (
           <>
             {
-              <div style={s(c.column)}>
+              <div
+                style={s(c.column)}
+                ref={(ref) => {
+                  initTooltip({
+                    ref,
+                    content: () => (
+                      <p>
+                        {veryRare ? (
+                          <>
+                            You should expect to see this move in less than 1 in
+                            10,000 games.
+                          </>
+                        ) : (
+                          <>
+                            The position after <b>{sanPlus}</b> will happen once
+                            in every <b>{denominator.toLocaleString()}</b> games
+                            you play as {otherSide(side)}
+                          </>
+                        )}
+                      </p>
+                    ),
+                    maxWidth: 200,
+                  });
+                }}
+              >
                 <CMText
                   style={s(
                     textStyles,
@@ -277,7 +304,7 @@ const getBuildModeSections = ({
                             <p>
                               The computer evaluates this move as{" "}
                               <b>better for {betterSide}</b> by the equivalent
-                              of <b>{formattedEval} </b>
+                              of <b>{formattedEval.replace(/[-+]/, "")} </b>
                               pawns
                             </p>
                           );
@@ -422,7 +449,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
           ref,
           content: () => {
             if (completed()) {
-              return "You have reached your coverage goal for this move";
+              return "You've reached your coverage goal for this move";
             }
             if (progress() === 0) {
               return "You haven't added any responses to this move";
