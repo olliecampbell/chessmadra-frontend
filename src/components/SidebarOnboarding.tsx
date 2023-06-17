@@ -346,16 +346,6 @@ export const ImportSuccessOnboarding = () => {
   const [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[onboarding().side as Side],
   ]);
-  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let bullets = [
-    <>
-      Your goal is to cover any positions which occur in at least 1 in{" "}
-      {Math.round(1 / threshold())} games.
-    </>,
-    <>
-      This goal was set based on your rating but you can always change it later.
-    </>,
-  ];
   onMount(() => {
     trackEvent("onboarding.import_success.shown");
   });
@@ -389,6 +379,24 @@ export const ImportSuccessOnboarding = () => {
         <CoverageBar isInSidebar side={onboarding().side as Side} />
       </div>
       <Spacer height={24} />
+      <HowToComplete />
+    </SidebarTemplate>
+  );
+};
+
+const HowToComplete = () => {
+  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
+  let bullets = [
+    <>
+      Your goal is to cover any positions which occur in at least 1 in{" "}
+      {Math.round(1 / threshold())} games.
+    </>,
+    <>
+      This goal was set based on your rating but you can always change it later.
+    </>,
+  ];
+  return (
+    <>
       <CMText class={"body-text font-bold"}>
         How to complete your repertoire:
       </CMText>
@@ -397,7 +405,7 @@ export const ImportSuccessOnboarding = () => {
           <Bullet>{bullet}</Bullet>
         ))}
       </div>
-    </SidebarTemplate>
+    </>
   );
 };
 
@@ -440,18 +448,7 @@ export const FirstLineSavedOnboarding = () => {
         <CoverageBar isInSidebar side={onboarding().side as Side} />
       </div>
       <Spacer height={32} />
-      <CMText class={"body-text font-bold"}>
-        How to complete your repertoire:
-      </CMText>
-      <Spacer height={8} />
-      <CMText class={"body-text"}>
-        Your goal is to cover any positions which occur in at least 1 in{" "}
-        {Math.round(1 / threshold())} games.
-      </CMText>
-      <Spacer height={8} />
-      <CMText class={"body-text"}>
-        This was set based on your rating, you can always change it later.
-      </CMText>
+      <HowToComplete />
     </SidebarTemplate>
   );
 };
