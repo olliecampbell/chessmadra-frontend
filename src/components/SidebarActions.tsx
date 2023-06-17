@@ -89,6 +89,7 @@ export const SidebarActions = () => {
   const biggestGapAction = () => useBiggestGapAction();
   const addBiggestMissAction = (buttons: SidebarAction[]) => {
     if (biggestGapAction()) {
+      buttons.push(biggestGapAction());
       return;
     }
   };
@@ -111,9 +112,6 @@ export const SidebarActions = () => {
       showTogglePlansButton = false;
       // This is taken care of by the delete line view, maybe bad though
     } else if (addedLineState().visible) {
-      if (!addedLineState().loading) {
-        addBiggestMissAction(buttons);
-      }
     } else if (!hasPendingLineToAdd()) {
       addBiggestMissAction(buttons);
     } else if (hasPendingLineToAdd() && !view()) {
@@ -362,7 +360,7 @@ export const SidebarSectionHeader = ({
   );
 };
 
-export const useBiggestGapAction = (): SidebarAction => {
+export const useBiggestGapAction = (): SidebarAction | undefined => {
   let [
     addedLineState,
     currentEpd,
@@ -373,20 +371,13 @@ export const useBiggestGapAction = (): SidebarAction => {
   ] = useSidebarState(([s, bs, rs]) => [
     s.addedLineState,
     s.currentEpd,
-    cloneDeep(bs.getNearestMiss(s)),
-    cloneDeep(bs.getMissInThisLine(s)),
+    bs.getNearestMiss(s),
+    bs.getMissInThisLine(s),
     s.positionHistory,
     s.mode,
   ]);
-  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   positionHistory = positionHistory ?? [];
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
-  const [hasPlans] = useBrowsingState(([s, rs]) => [
-    !isEmpty(
-      rs.positionReports[s.sidebarState.currentSide][s.sidebarState.currentEpd]
-        ?.plans
-    ),
-  ]);
   const getBiggestGapAction = () => {
     let miss = null;
     if (addedLineState().visible) {
