@@ -19,7 +19,10 @@ export const SidebarTemplate: Component<{
   return (
     <div style={s(c.column)}>
       <Show when={props.header}>
-        <SidebarHeader>{props.header}</SidebarHeader>
+        <div class={"padding-sidebar"}>
+          <SidebarHeader>{props.header}</SidebarHeader>
+        </div>
+
         <div class={"h-6 lg:h-10"} />
       </Show>
       <Show
