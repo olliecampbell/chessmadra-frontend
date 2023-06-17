@@ -53,7 +53,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
       header={
         props.pastLimit
           ? `You've reached the limit on the free plan`
-          : "test blahd"
+          : "Upgrade your account"
       }
       bodyPadding={true}
       loading={loading()}

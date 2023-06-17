@@ -108,10 +108,10 @@ export const MoveLog = () => {
     return false;
   };
   return (
-    <div class={"row  shrink-1 min-w-0 items-center"}>
+    <div class={"row  shrink-1 ml-2 min-w-0 items-center"}>
       <div
         class={clsx(
-          "ml-2 h-5 w-0.5",
+          "ml-2 h-5 w-px",
           overflowing() ? "bg-gray-24" : "bg-transparent"
         )}
       />

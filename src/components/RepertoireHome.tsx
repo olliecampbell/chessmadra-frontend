@@ -34,6 +34,7 @@ import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
 import { unwrap } from "solid-js/store";
 import { FeedbackView } from "./FeedbackView";
 import client from "~/utils/client";
+import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
 
 export const RepertoireHome = () => {
   const userState = getAppState().userState;
@@ -185,17 +186,25 @@ export const RepertoireHome = () => {
                   {
                     onPress: () => {
                       quick((s) => {
-                        trackEvent("home.settings.manage_subscription");
-                        return client
-                          .post("/api/stripe/create-billing-portal-link")
-                          .then(({ data }: { data: { url: string } }) => {
-                            window.open(data.url, "_blank");
-                          })
-                          .finally(() => {});
+                        if (!userState.user?.subscribed) {
+                          trackEvent("home.settings.subscribe");
+                          s.repertoireState.browsingState.pushView(
+                            UpgradeSubscriptionView
+                          );
+                        } else {
+                          trackEvent("home.settings.manage_subscription");
+                          return client
+                            .post("/api/stripe/create-billing-portal-link")
+                            .then(({ data }: { data: { url: string } }) => {
+                              window.open(data.url, "_blank");
+                            })
+                            .finally(() => {});
+                        }
                       });
                     },
-                    hidden: !userState.user?.subscribed,
-                    text: "Manage your subscription",
+                    text: userState.user?.subscribed
+                      ? "Manage your subscription"
+                      : "Upgrade to add unlimited moves",
                     style: "secondary",
                   } as SidebarAction,
                 ],
