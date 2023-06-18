@@ -114,6 +114,7 @@ export default function ResetPassword() {
                       placeholder="New password"
                       type="password"
                       name="password"
+                      autocomplete="new-password"
                       label="New password"
                       errors={errors()}
                     />

@@ -5,9 +5,7 @@ import { InputError } from "./forms/InputError";
 import { InputLabel } from "./forms/InputLabel";
 
 type TextInputProps = {
-  type?: "text" | "email" | "tel" | "password" | "url" | "number" | "date";
   name: string;
-  placeholder?: string;
   required?: boolean;
   class?: string;
   inputClass?: string;
@@ -15,7 +13,7 @@ type TextInputProps = {
   error?: string;
   padding?: "none";
   errors?: Record<string, string[] | null>;
-};
+} & JSX.InputHTMLAttributes<HTMLInputElement>;
 
 type TextAreaProps = {
   ref?: (element: HTMLTextAreaElement) => void;
@@ -46,7 +44,6 @@ export function TextInput(props: TextInputProps) {
         required={props.required}
       />
       <input
-        name={props.name}
         class={clsx(
           "bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
           props.error
@@ -54,11 +51,9 @@ export function TextInput(props: TextInputProps) {
             : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50",
           props.inputClass
         )}
-        placeholder={props.placeholder}
-        id={props.name}
-        type={props.type}
         aria-invalid={!!props.error}
         aria-errormessage={`${props.name}-error`}
+        {...props}
       />
       <InputError name={props.name} error={error()} class={"inline-block"} />
     </div>

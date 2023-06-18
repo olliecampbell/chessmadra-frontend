@@ -123,7 +123,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
                     label="Email"
                     errors={errors()}
                   />
-                  <TextInput type="password" name="password" label="Password" />
+                  <TextInput type="password" name="password" label="Password" autocomplete="current-password"/>
                   <Show when={authType() === "login"}>
                     <a
                       onClick={() => {

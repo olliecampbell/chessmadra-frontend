@@ -114,6 +114,7 @@ export const PracticeComplete = () => {
                   ChooseToCreateAccountOnboarding
                 );
               } else {
+                s.repertoireState.browsingState.moveSidebarState("left");
                 s.repertoireState.backToOverview();
               }
             });

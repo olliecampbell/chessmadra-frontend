@@ -141,14 +141,16 @@ export const RepertoireReview = (props: {}) => {
       bodyPadding={true}
     >
       <div class={"row w-full items-center justify-between"}>
-        <SidebarHeader>Practicing moves</SidebarHeader>
+        <SidebarHeader>
+          {isMobile ? "Practice" : "Practicing moves"}
+        </SidebarHeader>
         <div class="row items-center space-x-4 lg:space-x-8">
           <For each={progressIcons()}>
             {(i) => {
               return (
                 <div class="row items-center">
                   <p class={clsx(i.class, "font-semibold")}>{i.text}</p>
-                  <i class={clsx(i.class, i.icon, "ml-2 text-[20px]")}></i>
+                  <i class={clsx(i.class, i.icon, " ml-2 text-[20px]")}></i>
                 </div>
               );
             }}
