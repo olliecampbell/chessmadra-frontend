@@ -120,7 +120,11 @@ export const RepertoireReview = (props: {}) => {
     ).length;
   const body = () => {
     if (showNext()) {
-      return "This move is in your repertoire";
+      if (num() === 1) {
+        return "This move is in your repertoire";
+      } else {
+        return null;
+      }
     }
     if (currentMove()?.moves.length === 1) {
       if (currentMove()?.moves[0].epd === START_EPD) {
@@ -162,6 +166,7 @@ export const RepertoireReview = (props: {}) => {
       <Show when={num() > 1}>
         <>
           <div
+            class="mt-2"
             style={s(
               c.row,
               c.overflowHidden,
