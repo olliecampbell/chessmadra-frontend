@@ -854,6 +854,7 @@ export const getInitialBrowsingState = (
                 incidence: incidence,
                 srs: {
                   needsReview: false,
+                  difficulty: 0.3,
                   firstReview: false,
                 },
               } as RepertoireMove;
