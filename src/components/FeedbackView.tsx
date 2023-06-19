@@ -24,14 +24,13 @@ export const FeedbackView = () => {
   const feedback = () => data().feedback;
   const email = () => data().email;
   const submitFeedback = () => {
-    console.log("data", data());
     if (isEmpty(feedback())) {
       return;
     }
     setLoading(true);
     client
       .post("/api/v1/submit-feedback", {
-        feedback: "",
+        feedback: feedback(),
         email: user()?.email ?? email() ?? null,
       })
       .then(() => {
