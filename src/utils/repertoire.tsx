@@ -91,6 +91,7 @@ export interface SpacedRepetitionStatus {
   needsReview: boolean;
   firstReview: boolean;
   dueAt: string;
+  difficulty: number;
   pending?: boolean;
 }
 

@@ -48,6 +48,7 @@ import { LoginSidebar } from "./LoginSidebar";
 import { createForm } from "@felte/solid";
 import { validator } from "@felte/validator-yup";
 import * as yup from "yup";
+import { RepertoireCompletion } from "./RepertoireCompletion";
 
 export const OnboardingIntro = () => {
   const responsive = useResponsive();
@@ -367,33 +368,33 @@ export const ImportSuccessOnboarding = () => {
         },
       ]}
     >
-      <CMText class={"body-text"}>
-        Your {onboarding().side} repertoire is now{" "}
-        <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-          {Math.round(progressState().percentComplete)}%
-        </CMText>{" "}
-        complete.
-      </CMText>
-      <Spacer height={8} />
-      <div style={s(c.height(24))}>
-        <CoverageBar isInSidebar side={onboarding().side as Side} />
-      </div>
+      <RepertoireCompletion side={onboarding().side} />
       <Spacer height={24} />
       <HowToComplete />
     </SidebarTemplate>
   );
 };
 
-const HowToComplete = () => {
+export const HowToComplete = (props: {
+  miss?: { name: string; incidence: number } | null | undefined;
+}) => {
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let bullets = [
+  let bullets = () => [
     <>
-      Your goal is to cover any positions which occur in at least 1 in{" "}
-      {Math.round(1 / threshold())} games.
+      Your goal is to cover any positions which occur in at least{" "}
+      <b>1 in {Math.round(1 / threshold())}</b> games.
     </>,
-    <>
-      This goal was set based on your rating but you can always change it later.
-    </>,
+    props.miss ? (
+      <>
+        Your biggest gap is in the <b>{props.miss.name}</b>, which you’ll see in{" "}
+        <b>1 in {Math.round(1 / props.miss.incidence)}</b> games
+      </>
+    ) : (
+      <>
+        This goal was set based on your rating but you can always change it
+        later.
+      </>
+    ),
   ];
   return (
     <>
@@ -401,7 +402,7 @@ const HowToComplete = () => {
         How to complete your repertoire:
       </CMText>
       <div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
-        {bullets.map((bullet, i) => (
+        {bullets().map((bullet, i) => (
           <Bullet>{bullet}</Bullet>
         ))}
       </div>
@@ -436,17 +437,7 @@ export const FirstLineSavedOnboarding = () => {
         },
       ]}
     >
-      <CMText class={"body-text"}>
-        Your {onboarding().side} repertoire is now{" "}
-        <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-          {Math.round(progressState().percentComplete)}%
-        </CMText>{" "}
-        complete.
-      </CMText>
-      <Spacer height={8} />
-      <div style={s(c.height(24))}>
-        <CoverageBar isInSidebar side={onboarding().side as Side} />
-      </div>
+      <RepertoireCompletion side={onboarding().side} />
       <Spacer height={32} />
       <HowToComplete />
     </SidebarTemplate>

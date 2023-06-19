@@ -155,8 +155,9 @@ export const SidebarActions = () => {
           onPress: () => {
             trackEvent(`${mode()}.practice_due`);
             quick((s) => {
-              s.repertoireState.reviewState.startReview(activeSide(), {
+              s.repertoireState.reviewState.startReview({
                 side: activeSide(),
+                filter: "due",
                 startLine: currentLine(),
                 startPosition: currentEpd(),
               });
@@ -170,9 +171,9 @@ export const SidebarActions = () => {
         onPress: () => {
           quick((s) => {
             trackEvent(`${mode()}.practice_all`);
-            s.repertoireState.reviewState.startReview(activeSide(), {
+            s.repertoireState.reviewState.startReview({
               side: activeSide(),
-              cram: true,
+              filter: "all",
               startLine: currentLine(),
               startPosition: currentEpd(),
             });
@@ -313,7 +314,9 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
           {typeof props.action.right === "string" ? (
             <CMText
               style={s(
-                c.fg(c.colors.textTertiary),
+                props.action.style === "focus"
+                  ? c.fg(c.colors.textInverseSecondary)
+                  : c.fg(c.colors.textSecondary),
                 props.action.style === "focus"
                   ? c.weightBold
                   : c.weightSemiBold,

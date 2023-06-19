@@ -40,6 +40,9 @@ import {
   TrimRepertoireOnboarding,
 } from "./SidebarOnboarding";
 import { isDevelopment } from "~/utils/env";
+import { PreReview } from "./PreReview";
+import { LOTS_DUE_MINIMUM } from "~/utils/review";
+import { PreBuild } from "./PreBuild";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -78,27 +81,6 @@ export const RepertoireOverview = (props: {}) => {
   };
   const buildOptions = () => [
     {
-      hidden: empty() || isNil(biggestMiss()),
-      onPress: () => {
-        quick((s) => {
-          trackEvent("side_overview.go_to_biggest_gap");
-          const line = pgnToLine(biggestMiss().lines[0]);
-          s.repertoireState.browsingState.moveSidebarState("right");
-          s.repertoireState.startBrowsing(side() as Side, "build", {
-            pgnToPlay: lineToPgn(line),
-          });
-        });
-      },
-      left: (
-        <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          {"Go to biggest gap"}
-        </CMText>
-      ),
-      right: null,
-      icon: empty() && "fa-sharp fa-plus",
-    },
-    {
-      hidden: empty(),
       right: (
         <div style={s(c.height(4), c.row)}>
           <CoverageAndBar home={false} side={side()} />
@@ -107,14 +89,26 @@ export const RepertoireOverview = (props: {}) => {
 
       onPress: () => {
         quick((s) => {
-          trackEvent("side_overview.browse_add_lines");
+          if (empty() || isNil(biggestMiss())) {
+            console.log("why?", biggestMiss(), empty());
+            s.repertoireState.browsingState.moveSidebarState("right");
+            startBrowsing("build", empty());
+            return;
+          }
+          trackEvent("side_overview.keep_building");
           s.repertoireState.browsingState.moveSidebarState("right");
-          startBrowsing("build", empty());
+          s.repertoireState.browsingState.pushView(PreBuild, {
+            props: { side: side() },
+          });
         });
       },
       left: (
         <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          Browse / add new moves
+          {empty()
+            ? "Start building your repertoire"
+            : isNil(biggestMiss())
+            ? "Browse / add new moves"
+            : "Keep building your repertoire"}
         </CMText>
       ),
     },
@@ -135,8 +129,15 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.start_review");
-          s.repertoireState.reviewState.startReview(side(), {
+          if (numMovesDueFromHere() > LOTS_DUE_MINIMUM) {
+            s.repertoireState.browsingState.pushView(PreReview, {
+              props: { side: side() },
+            });
+            return;
+          }
+          s.repertoireState.reviewState.startReview({
             side: side(),
+            filter: "due",
           });
         });
       },
@@ -150,29 +151,8 @@ export const RepertoireOverview = (props: {}) => {
             numMovesDueFromHere() === 0 && "text-tertiary"
           )}
         >
-          Practice all moves due for review
+          Practice your moves
         </CMText>
-      ),
-    },
-    {
-      hidden: empty(),
-      onPress: () => {
-        trackEvent("side_overview.choose_line_to_practice");
-        quick((s) => {
-          s.repertoireState.browsingState.moveSidebarState("right");
-          startBrowsing("browse");
-        });
-      },
-      left: (
-        <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          Choose a specific opening to practice
-        </CMText>
-      ),
-      right: (
-        <i
-          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
-          class={"fa fa-arrow-right"}
-        />
       ),
     },
     {

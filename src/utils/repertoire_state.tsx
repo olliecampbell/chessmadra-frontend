@@ -78,6 +78,7 @@ export interface LichessOauthData {
 }
 
 export interface RepertoireState {
+  numMyMoves: BySide<number>;
   onboarding: {
     isOnboarding: boolean;
     side?: Side;
@@ -614,6 +615,15 @@ export const getInitialRepertoireState = (
           (repertoireSide: RepertoireSide) => {
             return flatten(Object.values(repertoireSide.positionResponses))
               .length;
+          }
+        );
+        s.numMyMoves = mapSides(
+          s.repertoire,
+          (repertoireSide: RepertoireSide) => {
+            return filter(
+              flatten(Object.values(repertoireSide.positionResponses)),
+              (m) => m.mine
+            ).length;
           }
         );
         s.numResponsesAboveThreshold = mapSides(

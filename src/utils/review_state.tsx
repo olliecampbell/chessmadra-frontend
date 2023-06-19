@@ -10,6 +10,8 @@ import {
   values,
   some,
   filter,
+  sortBy,
+  take,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -34,12 +36,9 @@ import {
 } from "./chessboard_interface";
 import { unwrap } from "solid-js/store";
 import { PracticeComplete } from "~/components/PracticeComplete";
-
-export interface QuizMove {
-  moves: RepertoireMove[];
-  line: string;
-  side: Side;
-}
+import { QuizMove } from "./queues";
+import { isMoveDifficult } from "./srs";
+import { COMMON_MOVES_CUTOFF } from "./review";
 
 export interface ReviewPositionResults {
   side: Side;
@@ -79,7 +78,7 @@ export interface ReviewState {
   reviewLine: (line: string[], side: Side) => void;
   giveUp: () => void;
   setupNextMove: () => void;
-  startReview: (_side: Side | null, options: ReviewOptions) => void;
+  startReview: (options: ReviewOptions) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
   getNextReviewPositionMove(): RepertoireMove;
@@ -89,11 +88,14 @@ export interface ReviewState {
 type Stack = [ReviewState, RepertoireState, AppState];
 const EMPTY_QUEUES = { white: [], black: [] };
 
+type ReviewFilter = "difficult" | "all" | "common" | "due";
+
 interface ReviewOptions {
-  side?: Side;
+  side: Side | null;
   startPosition?: string;
   startLine?: string[];
   cram?: boolean;
+  filter?: ReviewFilter;
   customQueue?: QuizMove[];
 }
 
@@ -153,11 +155,11 @@ export const getInitialReviewState = (
           });
         });
     },
-    startReview: (side: Side, options: ReviewOptions) =>
+    startReview: (options: ReviewOptions) =>
       set(([s, rs, gs]) => {
         rs.browsingState.moveSidebarState("right");
         rs.browsingState.sidebarState.mode = "review";
-        rs.browsingState.sidebarState.activeSide = side;
+        rs.browsingState.sidebarState.activeSide = options.side;
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
@@ -180,7 +182,6 @@ export const getInitialReviewState = (
         });
         console.log(unwrap(s.activeQueue), unwrap(s.allReviewPositionMoves));
         // gs.navigationState.push(`/openings/${side}/review`);
-        s.reviewSide = side;
         s.setupNextMove();
       }),
     setupNextMove: () =>
@@ -264,27 +265,35 @@ export const getInitialReviewState = (
 
         s.reviewSide = null;
         if (s.currentMove) {
-          s.activeQueue = null;
+          s.activeQueue = [];
         }
-        s.currentMove = null;
+        s.currentMove = undefined;
       }),
     buildQueue: (options: ReviewOptions) =>
       get(([s, rs]) => {
         if (isNil(rs.repertoire)) {
           return null;
         }
-        const queue: QuizMove[] = [];
+        let queue: QuizMove[] = [];
         shuffle(SIDES).forEach((side) => {
           const seen_epds = new Set();
           if (options.side && options.side !== side) {
             return;
           }
-          const recurse = (epd, line) => {
+          const recurse = (epd: string, line: string[]) => {
             const responses = rs.repertoire[side].positionResponses[epd];
             if (responses?.[0]?.mine) {
-              const needsToReviewAny =
-                some(responses, (r) => r.srs.needsReview) || options.cram;
-              if (needsToReviewAny) {
+              const needsToReviewAny = some(
+                responses,
+                (r) => r.srs.needsReview
+              );
+              let shouldAdd =
+                (options.filter === "difficult" &&
+                  some(responses, (r) => isMoveDifficult(r))) ||
+                (options.filter == "common" && needsToReviewAny) ||
+                (options.filter == "due" && needsToReviewAny) ||
+                options.filter === "all";
+              if (shouldAdd) {
                 queue.push({
                   moves: responses,
                   line: lineToPgn(line),
@@ -302,6 +311,19 @@ export const getInitialReviewState = (
           };
           recurse(options.startPosition ?? START_EPD, options.startLine ?? []);
         });
+        if (options.filter === "common") {
+          let byIncidence = sortBy(
+            map(queue, (m) => m.moves[0].incidence ?? 0),
+            (v) => -v
+          );
+          let commonCutoff =
+            byIncidence[COMMON_MOVES_CUTOFF] ?? first(byIncidence);
+          let commonQueue = take(
+            filter(queue, (m) => m.moves[0].incidence >= commonCutoff),
+            COMMON_MOVES_CUTOFF
+          );
+          queue = commonQueue;
+        }
         return queue;
       }),
     updateQueue: (options: ReviewOptions) =>
@@ -331,7 +353,7 @@ export const getInitialReviewState = (
           lineSoFar.push(move);
         });
 
-        s.startReview(side, { side: side, customQueue: queue });
+        s.startReview({ side: side, customQueue: queue });
       }, "reviewLine"),
     getNextReviewPositionMove: () =>
       get(([s]) => {

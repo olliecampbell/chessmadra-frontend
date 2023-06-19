@@ -11,6 +11,7 @@ import { Animated } from "./View";
 import { CMText } from "./CMText";
 import { Spacer } from "./Space";
 import { CoverageBar } from "./CoverageBar";
+import { RepertoireCompletion } from "./RepertoireCompletion";
 
 export const SavedLineView = function SavedLineView() {
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
@@ -48,31 +49,7 @@ export const SavedLineView = function SavedLineView() {
           (a) => !isNil(a)
         )}
       >
-        <div style={s(c.fullWidth)}>
-          <Animated.View
-            style={s(
-              c.row,
-              c.alignCenter,
-              c.justifyBetween,
-              c.fullWidth,
-              c.opacity(100),
-              c.relative,
-              c.zIndex(2)
-            )}
-          >
-            <CMText style={s(c.sidebarDescriptionStyles(responsive))}>
-              Your {activeSide()} repertoire is now{" "}
-              <CMText style={s(c.fg(c.grays[80]), c.weightSemiBold)}>
-                {Math.round(progressState().percentComplete)}%
-              </CMText>{" "}
-              complete.
-            </CMText>
-          </Animated.View>
-          <Spacer height={4} />
-          <div style={s(c.height(24))}>
-            <CoverageBar isInSidebar side={activeSide()} />
-          </div>
-        </div>
+        <RepertoireCompletion side={activeSide()} />
         <Spacer height={12} />
       </SidebarTemplate>
     </Show>

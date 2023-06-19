@@ -35,6 +35,8 @@ import { unwrap } from "solid-js/store";
 import { FeedbackView } from "./FeedbackView";
 import client from "~/utils/client";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
+import { PreReview } from "./PreReview";
+import { LOTS_DUE_MINIMUM } from "~/utils/review";
 
 export const RepertoireHome = () => {
   const userState = getAppState().userState;
@@ -74,15 +76,16 @@ export const RepertoireHome = () => {
     const actions = [];
 
     actions.push({
-      text: "Practice all moves due for review",
+      text: "Practice moves you've added",
       right: <ReviewText date={overallEarliest()} numDue={totalDue} />,
       style: "primary",
       disabled: totalDue == 0,
       onPress: () => {
         trackEvent("home.practice_all_due");
         quick((s) => {
-          s.repertoireState.reviewState.startReview(null, {});
+          s.repertoireState.browsingState.pushView(PreReview);
         });
+        return;
       },
     } as SidebarAction);
     return actions;
