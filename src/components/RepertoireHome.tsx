@@ -83,7 +83,16 @@ export const RepertoireHome = () => {
       onPress: () => {
         trackEvent("home.practice_all_due");
         quick((s) => {
-          s.repertoireState.browsingState.pushView(PreReview);
+          if (totalDue > LOTS_DUE_MINIMUM) {
+            s.repertoireState.browsingState.pushView(PreReview, {
+              props: { side: null },
+            });
+            return;
+          }
+          s.repertoireState.reviewState.startReview({
+            side: null,
+            filter: "due",
+          });
         });
         return;
       },

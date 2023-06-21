@@ -59,6 +59,12 @@ export const TargetCoverageReachedView = () => {
       actions={actions()}
       bodyPadding={true}
     >
+      <Show when={onboarding().isOnboarding}>
+        <p class="body-text pb-6">
+          Let's add these moves to your repertoire! You'll be able to come back
+          to change these at any time.
+        </p>
+      </Show>
       <Show when={!isEmpty(planSections())}>
         <PlayFromHere />
       </Show>

@@ -337,6 +337,7 @@ export const getInitialReviewState = (
         let epd = START_EPD;
         const lineSoFar = [];
         line.map((move) => {
+          const responses = rs.repertoire[side].positionResponses[epd];
           const response = find(
             rs.repertoire[side].positionResponses[epd],
             (m) => m.sanPlus === move
@@ -344,7 +345,7 @@ export const getInitialReviewState = (
           epd = response?.epdAfter;
           if (response && response.mine) {
             queue.push({
-              moves: [response],
+              moves: responses,
               line: lineToPgn(lineSoFar),
             });
           } else {

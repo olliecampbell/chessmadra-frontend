@@ -129,28 +129,15 @@ export const RepertoireOverview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent("side_overview.start_review");
-          if (numMovesDueFromHere() > LOTS_DUE_MINIMUM) {
-            s.repertoireState.browsingState.pushView(PreReview, {
-              props: { side: side() },
-            });
-            return;
-          }
-          s.repertoireState.reviewState.startReview({
-            side: side(),
-            filter: "due",
+          s.repertoireState.browsingState.pushView(PreReview, {
+            props: { side: side() },
           });
         });
       },
       right: reviewTimer,
-      disabled: numMovesDueFromHere() === 0,
+      // disabled: numMovesDueFromHere() === 0,
       left: (
-        <CMText
-          style={s(textStyles)}
-          class={clsx(
-            textClasses,
-            numMovesDueFromHere() === 0 && "text-tertiary"
-          )}
-        >
+        <CMText style={s(textStyles)} class={clsx(textClasses)}>
           Practice your moves
         </CMText>
       ),

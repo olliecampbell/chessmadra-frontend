@@ -49,7 +49,8 @@ export const PreReview = (props: { side: Side | null }) => {
     );
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
-    if (true) {
+    const due = props.side ? numMovesDueBySide()[props.side] : totalDue;
+    if (due > 0) {
       actions.push({
         onPress: () => {
           quick((s) => {
@@ -61,7 +62,7 @@ export const PreReview = (props: { side: Side | null }) => {
           });
         },
         text: "All the moves that are due for review",
-        right: `${pluralize(totalDue, "move")}`,
+        right: `${pluralize(due, "move")}`,
         style: "focus",
       });
     }

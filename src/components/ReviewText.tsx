@@ -60,7 +60,7 @@ export const getHumanTimeUntil = (date: Date) => {
   if (diff < 0) {
     return "Now";
   } else if (minutes < 60) {
-    return `${pluralize(Math.round(minutes), "minute")}`;
+    return `${pluralize(Math.round(minutes), "min")}`;
   } else if (hours < 24) {
     return `${pluralize(Math.round(hours), "hour")}`;
   } else {

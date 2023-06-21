@@ -230,6 +230,7 @@ export const getInitialRepertoireState = (
   const initialState = {
     ...createQuick<RepertoireState>(setOnly),
     expectedNumMoves: { white: 0, black: 0 },
+    numMyMoves: { white: 0, black: 0 },
     numMovesFromEpd: { white: {}, black: {} },
     numMovesDueFromEpd: { white: {}, black: {} },
     earliestReviewDueFromEpd: { white: {}, black: {} },
@@ -365,7 +366,7 @@ export const getInitialRepertoireState = (
           ),
           onPress: () => {
             set(([s, appState]) => {
-              s.startBrowsing(null, "home");
+              s.backToOverview();
             });
           },
         };

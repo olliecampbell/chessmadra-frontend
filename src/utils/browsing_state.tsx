@@ -85,6 +85,7 @@ import { Spacer } from "~/components/Space";
 import { Pressable } from "~/components/Pressable";
 import { LichessLogoIcon } from "~/components/icons/LichessLogoIcon";
 import { View } from "~/types/View";
+import * as Sentry from "@sentry/browser";
 
 export interface GetIncidenceOptions {
   placeholder: void;
