@@ -99,7 +99,7 @@ export const SetRatingOnboarding = () => {
       Promise.all([
         // this is dumb, but just so we get the latest elo range from the backend
         s.userState.setRatingRange(
-          range ?? s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+          range ?? s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-")
         ),
       ]).then(() => {
         quick((s) => {
@@ -123,7 +123,7 @@ export const SetRatingOnboarding = () => {
         {
           onPress: () => {
             trackEvent("onboarding.rating.set", {
-              ratingRange: user()?.eloRange,
+              ratingRange: user()?.ratingRange,
               ratingSource: user()?.ratingSystem,
             });
             setAndContinue(null);
@@ -134,7 +134,7 @@ export const SetRatingOnboarding = () => {
         {
           onPress: () => {
             trackEvent("onboarding.rating.dont_know");
-            setAndContinue(DEFAULT_ELO_RANGE.join("-"));
+            setAndContinue("0-1100");
           },
           style: "primary",
           text: "I don't know, skip this step",

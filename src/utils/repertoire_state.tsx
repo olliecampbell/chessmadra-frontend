@@ -209,7 +209,7 @@ interface GetSharedRepertoireResponse {
   repertoire: Repertoire;
 }
 
-export const DEFAULT_ELO_RANGE = [0, 1100] as [number, number];
+export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
 
 type Stack = [RepertoireState, AppState];
 const selector = (s: AppState): Stack => [s.repertoireState, s];
