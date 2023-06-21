@@ -80,6 +80,7 @@ export const RepertoireOverview = (props: {}) => {
       }
     });
   };
+  const isMobile = useIsMobile();
   const buildOptions = () => [
     {
       right: (
@@ -108,7 +109,7 @@ export const RepertoireOverview = (props: {}) => {
             ? "Start building your repertoire"
             : isNil(biggestMiss())
             ? "Browse / add new moves"
-            : "Keep building your repertoire"}
+            : `Keep building ${!isMobile ? "your repertoire" : ""}`}
         </CMText>
       ),
     },
@@ -391,12 +392,9 @@ export const CoverageAndBar = (props: {
       <CMText style={s(textStyles())}>
         {progressState().completed ? (
           <>Completed</>
-        ) : !isMobile ? (
-          <>
-            {Math.round(progressState().percentComplete)}%{" "}
-            {!isMobile && "complete"}
-          </>
-        ) : null}
+        ) : (
+          <>{Math.round(progressState().percentComplete)}% Complete</>
+        )}
       </CMText>
       <Show when={!props.hideBar}>
         <>
