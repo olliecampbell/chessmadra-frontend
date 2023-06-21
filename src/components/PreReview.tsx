@@ -61,7 +61,20 @@ export const PreReview = (props: { side: Side | null }) => {
             });
           });
         },
-        text: "All the moves that are due for review",
+        text: (
+          <div class={clsx("row items-center")}>
+            <p class={clsx()}>
+              Everything that's due for review
+              <span
+                class={clsx(
+                  "bg-gray-30 text-primary ml-2 rounded-sm px-1 py-0.5 text-xs font-semibold"
+                )}
+              >
+                Recommended
+              </span>
+            </p>
+          </div>
+        ),
         right: `${pluralize(due, "move")}`,
         style: "focus",
       });
@@ -89,7 +102,7 @@ export const PreReview = (props: { side: Side | null }) => {
             s.repertoireState.browsingState.popView();
             s.repertoireState.reviewState.startReview({
               side: props.side,
-              filter: "difficult",
+              filter: "difficult-due",
             });
           });
         },
@@ -110,7 +123,9 @@ export const PreReview = (props: { side: Side | null }) => {
           });
         });
       },
-      text: "Every single move in my repertoire",
+      text: props.side
+        ? `My entire ${props.side} repertoire`
+        : "My entire repertoire",
       right: `${numMyMoves} moves`,
       style: "primary",
     });

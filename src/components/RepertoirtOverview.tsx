@@ -43,6 +43,7 @@ import { isDevelopment } from "~/utils/env";
 import { PreReview } from "./PreReview";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
 import { PreBuild } from "./PreBuild";
+import { useIsMobile } from "~/utils/isMobile";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -96,7 +97,6 @@ export const RepertoireOverview = (props: {}) => {
             return;
           }
           trackEvent("side_overview.keep_building");
-          s.repertoireState.browsingState.moveSidebarState("right");
           s.repertoireState.browsingState.pushView(PreBuild, {
             props: { side: side() },
           });
@@ -385,14 +385,18 @@ export const CoverageAndBar = (props: {
     s.browsingState.repertoireProgressState[props.side],
   ]);
 
+  const isMobile = useIsMobile();
   return (
     <div style={s(c.row, c.alignCenter)}>
       <CMText style={s(textStyles())}>
         {progressState().completed ? (
           <>Completed</>
-        ) : (
-          <>{Math.round(progressState().percentComplete)}% complete</>
-        )}
+        ) : !isMobile ? (
+          <>
+            {Math.round(progressState().percentComplete)}%{" "}
+            {!isMobile && "complete"}
+          </>
+        ) : null}
       </CMText>
       <Show when={!props.hideBar}>
         <>

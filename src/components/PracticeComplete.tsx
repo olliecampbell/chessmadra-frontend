@@ -16,6 +16,8 @@ import {
 } from "./SidebarOnboarding";
 import { LoginSidebar } from "./LoginSidebar";
 import { trackEvent } from "~/utils/trackEvent";
+import { START_EPD } from "~/utils/chess";
+import { bySide } from "~/utils/repertoire";
 
 export const PracticeComplete = () => {
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -42,6 +44,9 @@ export const PracticeComplete = () => {
   let total = () => {
     return moves().length;
   };
+  const [numMovesDueBySide] = useRepertoireState((s) => [
+    bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
+  ]);
   let earliestDue = () => {
     let rep = repertoire() as Repertoire;
     let dues = moves().flatMap((m) => {
@@ -60,17 +65,10 @@ export const PracticeComplete = () => {
       num_correct: numCorrect(),
     });
   });
-  createEffect(() => {
-    console.log(
-      "All debug, numFailed",
-      numFailed(),
-      numCorrect(),
-      total(),
-      earliestDue()
-    );
-  });
 
   const bullets = () => {
+    const totalDue =
+      (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
     const bullets = [];
     bullets.push(
       <>
@@ -89,14 +87,26 @@ export const PracticeComplete = () => {
         ({Math.round((100 * numCorrect()) / total())}%)
       </>
     );
-    bullets.push(
-      <>
-        These moves will be due for review again in{" "}
-        <span class={clsx("text-highlight font-semibold")}>
-          {getHumanTimeUntil(earliestDue())}
-        </span>
-      </>
-    );
+    if (totalDue > 0) {
+      bullets.push(
+        <>
+          You have{" "}
+          <span class={clsx("text-highlight font-semibold")}>
+            {pluralize(totalDue, "move")}
+          </span>{" "}
+          due for review now
+        </>
+      );
+    } else {
+      bullets.push(
+        <>
+          These moves will be due for review again in{" "}
+          <span class={clsx("text-highlight font-semibold")}>
+            {getHumanTimeUntil(earliestDue())}
+          </span>
+        </>
+      );
+    }
     return bullets;
   };
   return (

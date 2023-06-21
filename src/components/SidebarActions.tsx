@@ -32,7 +32,7 @@ export interface SidebarAction {
   rightText?: string;
   onPress?: () => void;
   class?: string;
-  text: string;
+  text: string | JSXElement;
   submitsForm?: string;
   right?: JSXElement | string;
   subtext?: string;

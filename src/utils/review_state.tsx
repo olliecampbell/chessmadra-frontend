@@ -88,7 +88,7 @@ export interface ReviewState {
 type Stack = [ReviewState, RepertoireState, AppState];
 const EMPTY_QUEUES = { white: [], black: [] };
 
-type ReviewFilter = "difficult" | "all" | "common" | "due";
+type ReviewFilter = "difficult-due" | "all" | "common" | "due";
 
 interface ReviewOptions {
   side: Side | null;
@@ -180,8 +180,6 @@ export const getInitialReviewState = (
             };
           });
         });
-        console.log(unwrap(s.activeQueue), unwrap(s.allReviewPositionMoves));
-        // gs.navigationState.push(`/openings/${side}/review`);
         s.setupNextMove();
       }),
     setupNextMove: () =>
@@ -288,8 +286,9 @@ export const getInitialReviewState = (
                 (r) => r.srs.needsReview
               );
               let shouldAdd =
-                (options.filter === "difficult" &&
-                  some(responses, (r) => isMoveDifficult(r))) ||
+                (options.filter === "difficult-due" &&
+                  some(responses, (r) => isMoveDifficult(r)) &&
+                  needsToReviewAny) ||
                 (options.filter == "common" && needsToReviewAny) ||
                 (options.filter == "due" && needsToReviewAny) ||
                 options.filter === "all";
