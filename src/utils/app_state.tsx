@@ -1,26 +1,6 @@
 import { VisualizationState } from "~/types/VisualizationState";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
 import { getInitialVisualizationState } from "./visualization_state";
-import {
-  BlunderRecognitionState,
-  getInitialBlundersState,
-} from "./blunders_state";
-import {
-  BlindfoldTrainingState,
-  getInitialBlindfoldState,
-} from "./blindfold_state";
-import {
-  ColorTrainingState,
-  getInitialColorState,
-} from "./color_training_state";
-import {
-  GameMemorizationState,
-  getInitialGameMemorizationState,
-} from "./game_memorization_state";
-import {
-  GameSearchState,
-  getInitialGameSearchState,
-} from "./game_search_state";
 import { every, isObject, keysIn, take, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { DebugState, getInitialDebugState } from "./debug_state";
@@ -44,11 +24,6 @@ export interface AppState {
   adminState: AdminState;
   // climbState: VisualizationState;
   repertoireState: RepertoireState;
-  // blunderState: BlunderRecognitionState;
-  // blindfoldState: BlindfoldTrainingState;
-  // colorTrainingState: ColorTrainingState;
-  // gameSearchState: GameSearchState;
-  // gameMemorizationState: GameMemorizationState;
   debugState: DebugState;
   navigationState: NavigationState;
   userState: UserState;
@@ -353,48 +328,6 @@ export const useVisualizationState = <T extends any[]>(
     (s) => s.trainersState.visualizationState,
     config
   );
-};
-
-export const useClimbState = <T,>(
-  fn: (_: VisualizationState) => T,
-  config?: Partial<EqualityConfig>
-) => {
-  return useStateSlice(fn, (s) => s.climbState, config);
-};
-
-export const useBlunderRecognitionState = <T,>(
-  fn: (_: BlunderRecognitionState) => T,
-  config?: Partial<EqualityConfig>
-) => {
-  return useStateSlice(fn, (s) => s.blunderState, config);
-};
-
-export const useBlindfoldState = <T,>(
-  fn: (_: BlindfoldTrainingState) => T,
-  config?: Partial<EqualityConfig>
-) => {
-  return useStateSlice(fn, (s) => s.blindfoldState, config);
-};
-
-export const useColorTrainingState = <T,>(
-  fn: (_: ColorTrainingState) => T,
-  config?: Partial<EqualityConfig>
-) => {
-  return useStateSlice(fn, (s) => s.colorTrainingState, config);
-};
-
-export const useGameMemorizationState = <T,>(
-  fn: (_: GameMemorizationState) => T,
-  config?: Partial<EqualityConfig>
-) => {
-  return useStateSlice(fn, (s) => s.gameMemorizationState, config);
-};
-
-export const useGameSearchState = <T,>(
-  fn: (_: GameSearchState) => T,
-  config?: Partial<EqualityConfig>
-) => {
-  return useStateSliceDestructure(fn, (s) => s.gameSearchState, config);
 };
 
 export const useDebugState = <T,>(

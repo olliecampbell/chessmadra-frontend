@@ -43,20 +43,17 @@ export const RepertoireBuilder = () => {
   const [
     addedLineState,
     deleteLineState,
-    stageStack,
     submitFeedbackState,
     showPlansState,
     transposedState,
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
-    s.sidebarOnboardingState.stageStack,
     s.submitFeedbackState,
     s.showPlansState,
     s.transposedState,
   ]);
   createEffect(() => {
-    console.log("stageStack", stageStack());
     console.log("View in sidebar", view());
   });
   const [repertoireLoading] = useRepertoireState((s) => [

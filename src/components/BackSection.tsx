@@ -30,7 +30,6 @@ export const BackSection = () => {
   ] = useSidebarState(([s]) => [
     s.addedLineState,
     s.deleteLineState,
-    s.sidebarOnboardingState.stageStack,
     s.submitFeedbackState,
     s.showPlansState,
     s.transposedState,
@@ -77,17 +76,6 @@ export const BackSection = () => {
           quick((s) => {
             s.repertoireState.browsingState.chessboard.backOne();
             s.repertoireState.browsingState.dismissTransientSidebarState();
-          });
-        };
-      } else if (stageStack().length > 1) {
-        backButtonAction = () => {
-          quick((s) => {
-            s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-              dropRight(
-                s.repertoireState.browsingState.sidebarState
-                  .sidebarOnboardingState.stageStack,
-                1
-              );
           });
         };
       } else if (!isEmpty(moveLog())) {

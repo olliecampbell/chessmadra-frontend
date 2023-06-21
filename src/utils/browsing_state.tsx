@@ -92,24 +92,6 @@ export interface GetIncidenceOptions {
   // onlyCovered?: boolean;
 }
 
-export enum SidebarOnboardingStage {
-  Initial,
-  ConnectAccount,
-  SetRating,
-  CoverageGoalFyi,
-  GoalSet,
-  // Probably skip this for now
-  Import,
-  AskAboutExistingRepertoire,
-  ChooseImportSource,
-  TrimRepertoire,
-}
-
-export interface SidebarOnboardingState {
-  stageStack: SidebarOnboardingStage[];
-  importType?: SidebarOnboardingImportType | null;
-}
-
 export enum SidebarOnboardingImportType {
   LichessUsername = "lichess_username",
   PGN = "pgn",
@@ -159,7 +141,6 @@ export interface SidebarState {
   pendingResponses?: Record<string, RepertoireMove>;
   currentSide: Side;
   hasPendingLineToAdd: boolean;
-  sidebarOnboardingState: SidebarOnboardingState;
   moveLog: string[];
   positionHistory: string[] | null;
   currentEpd: string;
@@ -263,10 +244,6 @@ export const makeDefaultSidebarState = () => {
     pendingResponses: {},
     currentSide: "white",
     hasPendingLineToAdd: false,
-    sidebarOnboardingState: {
-      stageStack: [],
-      importType: null,
-    },
   } as SidebarState;
 };
 

@@ -22,16 +22,6 @@ export const createDebugStateEffect = () => {
     }
     // setHasCalled(true);
     console.log("debug effect", repertoireLoading(), authStatus());
-    // quick((s) => {
-    //   s.repertoireState.startBrowsing(null, "onboarding");
-    //   s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack =
-    //     [SidebarOnboardingStage.SetRating];
-    //   // s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.importType =
-    //   //   SidebarOnboardingImportType.PGN;
-    // });
-    // quick((s) => {
-    //   s.repertoireState.browsingState.replaceView(<RatingSettings />, "right");
-    // });
 
     if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       setHasCalled(true);

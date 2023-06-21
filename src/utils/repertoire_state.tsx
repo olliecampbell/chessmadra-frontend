@@ -42,7 +42,6 @@ import {
   getInitialBrowsingState,
   makeDefaultSidebarState,
   modeToUI,
-  SidebarOnboardingStage,
 } from "./browsing_state";
 import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { getInitialReviewState, ReviewState } from "./review_state";
@@ -833,9 +832,6 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         s.startBrowsing(side, "build", { import: true });
         s.browsingState.chessboard.resetPosition();
-        s.browsingState.sidebarState.sidebarOnboardingState.stageStack = [
-          SidebarOnboardingStage.ChooseImportSource,
-        ];
       }, "startImporting"),
     startBrowsing: (side: Side, mode: BrowsingMode, options) =>
       set(([s, gs]) => {

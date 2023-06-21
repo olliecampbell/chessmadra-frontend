@@ -10,10 +10,7 @@ import {
   useSidebarState,
   useUserState,
 } from "~/utils/app_state";
-import {
-  SidebarOnboardingImportType,
-  SidebarOnboardingStage,
-} from "~/utils/browsing_state";
+import { SidebarOnboardingImportType } from "~/utils/browsing_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
@@ -66,9 +63,6 @@ export const OnboardingIntro = () => {
             quick((s) => {
               s.repertoireState.browsingState.pushView(SetRatingOnboarding);
               trackEvent("onboarding.get_started");
-              s.repertoireState.browsingState.sidebarState.sidebarOnboardingState.stageStack.push(
-                SidebarOnboardingStage.SetRating
-              );
             });
           },
           style: "primary",
