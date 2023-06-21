@@ -729,22 +729,37 @@ export function ChessboardView(props: {
                           availableMoves().find((m) => m.to == square()) !==
                           undefined
                       );
-                      const highlight = createMemo(() => {
+                      const [highlightColor, setHighlightColor] = createSignal<
+                        "last" | "next" | null
+                      >(null);
+                      const [highlightType, setHighlightType] = createSignal<
+                        "full" | "indicator" | null
+                      >(null);
+
+                      createEffect(() => {
                         if (isDraggedOverSquare()) {
-                          return { type: "full", color: "next" };
+                          setHighlightColor("next");
+                          setHighlightType("full");
+                          return;
                         }
                         let hasPiece = position().get(square()) != null;
                         if (availableMove()) {
                           if (hasPiece) {
-                            return { type: "indicator", color: "next" };
+                            setHighlightColor("next");
+                            setHighlightType("indicator");
+                            return;
                           }
-                          return { type: "indicator", color: "next" };
+                          setHighlightColor("next");
+                          setHighlightType("indicator");
+                          return;
                         }
                         const isPreviewSquare =
                           chessboardStore().previewedMove?.to === square() ||
                           chessboardStore().previewedMove?.from === square();
                         if (isPreviewSquare) {
-                          return { type: "full", color: "next" };
+                          setHighlightColor("next");
+                          setHighlightType("full");
+                          return;
                         }
                         const isLastMoveSquare =
                           props.chessboardInterface.getLastMove()?.to ==
@@ -752,10 +767,13 @@ export function ChessboardView(props: {
                           props.chessboardInterface.getLastMove()?.from ==
                             square();
                         if (isLastMoveSquare) {
-                          return { type: "full", color: "last" };
+                          setHighlightColor("last");
+                          setHighlightType("full");
+                          return;
                         }
 
-                        return { type: null, color: null };
+                        setHighlightType(null);
+                        return;
                       });
                       const isBottomEdge = i == 7;
                       const isRightEdge = j == 7;
@@ -775,14 +793,12 @@ export function ChessboardView(props: {
                           <div
                             class="absolute inset-0 grid place-items-center rounded-full"
                             style={s(
-                              c.zIndex(
-                                highlight().type === "indicator" ? 11 : 1
-                              )
+                              c.zIndex(highlightType() === "indicator" ? 11 : 1)
                             )}
                           >
                             <div
                               class={`h-1/3 w-1/3 rounded-full transition-opacity duration-300 ${
-                                highlight().type === "indicator"
+                                highlightType() === "indicator"
                                   ? "opacity-100"
                                   : "opacity-0"
                               }`}
@@ -796,14 +812,14 @@ export function ChessboardView(props: {
                           </div>
                           <div
                             class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity ${
-                              highlight().type === "full"
+                              highlightType() === "full"
                                 ? "opacity-100"
                                 : "opacity-0"
                             }`}
                             id={`highlight-${square()}`}
                             style={s(
                               c.bg(
-                                highlight().color === "last"
+                                highlightColor() === "last"
                                   ? theme().highlightLastMove
                                   : theme().highlightNextMove
                               ),
