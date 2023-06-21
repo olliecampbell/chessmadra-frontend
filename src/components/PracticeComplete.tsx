@@ -123,6 +123,7 @@ export const PracticeComplete = () => {
                 s.repertoireState.browsingState.pushView(
                   ChooseToCreateAccountOnboarding
                 );
+                s.repertoireState.updateRepertoireStructures();
               } else {
                 s.repertoireState.browsingState.moveSidebarState("left");
                 s.repertoireState.backToOverview();
