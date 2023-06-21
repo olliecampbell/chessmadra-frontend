@@ -156,9 +156,9 @@ const getBuildModeSections = ({
                           </>
                         ) : (
                           <>
-                            The position after <b>{sanPlus}</b> will happen once
-                            in every <b>{denominator.toLocaleString()}</b> games
-                            you play as {otherSide(side)}
+                            You'll see the position after <b>{sanPlus}</b>
+                            in <b>1 in {denominator.toLocaleString()}</b> games
+                            as {otherSide(side)}
                           </>
                         )}
                       </p>
