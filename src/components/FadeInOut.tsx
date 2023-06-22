@@ -1,7 +1,6 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Motion } from "@motionone/solid";
-import { Accessor, createEffect } from "solid-js";
+import { Accessor } from "solid-js";
 import { clsx } from "~/utils/classes";
 
 export const FadeInOut = (props: {

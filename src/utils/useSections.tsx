@@ -22,7 +22,7 @@ import { TableResponse } from "~/components/RepertoireMovesTable";
 import { CMText } from "~/components/CMText";
 import { GameResultsBar } from "~/components/GameResultsBar";
 import { ReviewText } from "~/components/ReviewText";
-import { Accessor, createEffect, Show } from "solid-js";
+import { Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 import { initTooltip } from "~/components/Tooltip";
 import { pluralize } from "./pluralize";
@@ -118,16 +118,16 @@ const getBuildModeSections = ({
     sections.push({
       width: 100,
       alignLeft: true,
-      content: ({ suggestedMove, positionReport, tableResponse, side }) => {
+      content: (props) => {
         const playRate =
-          suggestedMove &&
-          positionReport &&
-          getPlayRate(suggestedMove, positionReport, false);
+          props.suggestedMove &&
+          props.positionReport &&
+          getPlayRate(props.suggestedMove, props.positionReport, false);
         const denominator = Math.round(
-          1 / (tableResponse.suggestedMove?.incidence ?? 0.0001)
+          1 / (props.tableResponse.suggestedMove?.incidence ?? 0.0001)
         );
         const belowCoverageGoal =
-          (tableResponse.suggestedMove?.incidence ?? 0) < threshold;
+          (props.tableResponse.suggestedMove?.incidence ?? 0) < threshold;
         let veryRare = false;
         let hideGamesText = false;
         if (denominator >= 1000) {
@@ -137,8 +137,8 @@ const getBuildModeSections = ({
           veryRare = true;
         }
         const sanPlus =
-          tableResponse.repertoireMove?.sanPlus ??
-          tableResponse.suggestedMove?.sanPlus;
+          props.tableResponse.repertoireMove?.sanPlus ??
+          props.tableResponse.suggestedMove?.sanPlus;
         return (
           <>
             {
@@ -158,7 +158,7 @@ const getBuildModeSections = ({
                           <>
                             You'll see the position after <b>{sanPlus}</b> in{" "}
                             <b>1 in {denominator.toLocaleString()}</b> games as{" "}
-                            {otherSide(side)}
+                            {otherSide(props.side)}
                           </>
                         )}
                       </p>
@@ -199,13 +199,8 @@ const getBuildModeSections = ({
     sections.push({
       width: 80,
       alignLeft: true,
-      content: ({
-        suggestedMove,
-        positionReport,
-        tableResponse,
-        tableMeta,
-      }) => {
-        return <>{<CoverageProgressBar tableResponse={tableResponse} />}</>;
+      content: (props) => {
+        return <>{<CoverageProgressBar tableResponse={props.tableResponse} />}</>;
       },
       header: "Your coverage",
     });
@@ -214,19 +209,16 @@ const getBuildModeSections = ({
     sections.push({
       width: 34,
       alignRight: true,
-      content: ({
-        suggestedMove,
-        positionReport,
-      }: {
+      content: (props: {
         suggestedMove: SuggestedMove;
         positionReport: PositionReport;
       }) => {
         const playRate =
-          suggestedMove &&
-          positionReport &&
+          props.suggestedMove &&
+          props.positionReport &&
           getPlayRate(
-            suggestedMove,
-            positionReport,
+            props.suggestedMove,
+            props.positionReport,
             usePeerRates ? false : true
           );
 
@@ -258,14 +250,14 @@ const getBuildModeSections = ({
   if (myTurn) {
     sections.push({
       width: 40,
-      content: ({ suggestedMove, positionReport }) => {
+      content: (props) => {
         const whiteWinning =
-          suggestedMove?.stockfish?.eval >= 0 ||
-          suggestedMove?.stockfish?.mate > 0;
-        const formattedEval = formatStockfishEval(suggestedMove?.stockfish);
+          props.suggestedMove?.stockfish?.eval >= 0 ||
+          props.suggestedMove?.stockfish?.mate > 0;
+        const formattedEval = formatStockfishEval(props.suggestedMove?.stockfish);
         return (
           <>
-            <Show when={suggestedMove?.stockfish}>
+            <Show when={props.suggestedMove?.stockfish}>
               <>
                 <div
                   style={s(
@@ -288,16 +280,16 @@ const getBuildModeSections = ({
                               position as <b>equal</b>
                             </p>
                           );
-                        } else if (suggestedMove?.stockfish?.mate) {
-                          let mateMoves = suggestedMove?.stockfish?.mate;
-                          let side = mateMoves > 0 ? "white" : "black";
+                        } else if (props.suggestedMove?.stockfish?.mate) {
+                          const mateMoves = props.suggestedMove?.stockfish?.mate;
+                          const side = mateMoves > 0 ? "white" : "black";
                           return `This position is a forced mate in ${pluralize(
                             mateMoves,
                             "move"
                           )} for ${side}`;
-                        } else if (suggestedMove?.stockfish?.eval) {
+                        } else if (props.suggestedMove?.stockfish?.eval) {
                           const betterSide =
-                            suggestedMove?.stockfish?.eval >= 0
+                            props.suggestedMove?.stockfish?.eval >= 0
                               ? "white"
                               : "black";
                           return (
@@ -335,21 +327,21 @@ const getBuildModeSections = ({
   if (myTurn) {
     sections.push({
       width: isMobile ? 80 : 80,
-      content: ({ suggestedMove, positionReport, side, tableResponse }) => {
-        if (!suggestedMove?.results) {
+      content: (props) => {
+        if (!props.suggestedMove?.results) {
           return na();
         }
-        if (tableResponse.lowConfidence) {
+        if (props.tableResponse.lowConfidence) {
           return (
             <CMText style={s(naStyles)}>
-              {suggestedMove?.results[activeSide]} out of{" "}
-              {getTotalGames(suggestedMove?.results)}
+              {props.suggestedMove?.results[activeSide]} out of{" "}
+              {getTotalGames(props.suggestedMove?.results)}
             </CMText>
           );
         }
         return (
           <>
-            <Show when={suggestedMove}>
+            <Show when={props.suggestedMove}>
               <div
                 style={s(c.fullWidth)}
                 ref={(ref) => {
@@ -365,22 +357,22 @@ const getBuildModeSections = ({
                           White wins{" "}
                           <b>
                             {formatPlayPercentage(
-                              getWinRate(suggestedMove?.results, "white")
+                              getWinRate(props.suggestedMove?.results, "white")
                             )}
                           </b>{" "}
                           of games <br />•<span class="pr-2" />
                           Black wins{" "}
                           <b>
                             {formatPlayPercentage(
-                              getWinRate(suggestedMove?.results, "black")
+                              getWinRate(props.suggestedMove?.results, "black")
                             )}
                           </b>{" "}
                           of games <br />•<span class="pr-2" />
                           <b>
                             {formatPlayPercentage(
                               1 -
-                                getWinRate(suggestedMove?.results, "white") -
-                                getWinRate(suggestedMove?.results, "black")
+                                getWinRate(props.suggestedMove?.results, "white") -
+                                getWinRate(props.suggestedMove?.results, "black")
                             )}
                           </b>{" "}
                           of games are drawn
@@ -392,9 +384,9 @@ const getBuildModeSections = ({
                 }}
               >
                 <GameResultsBar
-                  previousResults={positionReport?.results}
+                  previousResults={props.positionReport?.results}
                   activeSide={activeSide}
-                  gameResults={suggestedMove.results}
+                  gameResults={props.suggestedMove.results}
                 />
               </div>
             </Show>
@@ -475,7 +467,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
             c.bg(completed() ? completedColor : inProgressColor()),
             c.fullHeight
           )}
-        ></div>
+         />
       </div>
     </div>
   );
@@ -494,11 +486,11 @@ const getReviewModeSections = ({
   sections.push({
     width: 140,
     alignRight: true,
-    content: ({ suggestedMove, positionReport, tableResponse }) => {
+    content: (props) => {
       return (
         <ReviewText
-          date={tableResponse.reviewInfo.earliestDue}
-          numDue={tableResponse.reviewInfo.due}
+          date={props.tableResponse.reviewInfo.earliestDue}
+          numDue={props.tableResponse.reviewInfo.due}
         />
       );
     },

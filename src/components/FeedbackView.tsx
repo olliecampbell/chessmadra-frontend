@@ -1,7 +1,6 @@
 import { Spacer } from "~/components/Space";
 import { isEmpty } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
-import { CMTextInput } from "./CMTextInput";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { useUserState } from "~/utils/app_state";
 import { createEffect, createSignal, Show } from "solid-js";
@@ -9,8 +8,6 @@ import { trackEvent } from "~/utils/trackEvent";
 import client from "~/utils/client";
 import { TextArea, TextInput } from "./TextInput";
 import { createForm } from "@felte/solid";
-import * as yup from "yup";
-import { validator } from "@felte/validator-yup";
 type Form = {
   email: string;
   feedback: string;

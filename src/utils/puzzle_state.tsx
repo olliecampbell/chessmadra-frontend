@@ -1,20 +1,20 @@
 import { isCheckmate } from "../utils/chess";
 import { Color, Move } from "@lubert/chess.ts";
 import { isEmpty } from "lodash-es";
-import { LichessPuzzle } from "../models";
-import { ChessboardDelegate } from "./chessboard_state";
+import { LichessPuzzle } from "./models";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
   PlaybackSpeed,
   ProgressMessage,
   ProgressMessageType,
 } from "~/types/VisualizationState";
+import { ChessboardDelegate } from "./chessboard_interface";
 
 export interface PuzzleState extends ChessboardDelegate {
   puzzlePosition: any;
   turn: Color;
   solutionMoves: Move[];
-  puzzle: LichessPuzzle;
+  puzzle: LichessPuzzle | null;
   progressMessage: ProgressMessage | null;
   delegate: PuzzleStateDelegate;
   shouldMakeMove: (move: Move) => boolean;

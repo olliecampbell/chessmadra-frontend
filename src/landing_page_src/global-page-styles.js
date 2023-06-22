@@ -20,6 +20,6 @@ const PageStyles = createGlobalStyle`
           )}
     }
 `;
-export const GlobalQuarklyPageStyles = ({ pageUrl }) => (
-  <PageStyles styles={pageStyles[pageUrl]} />
+export const GlobalQuarklyPageStyles = (props) => (
+  <PageStyles styles={pageStyles[props.pageUrl]} />
 );

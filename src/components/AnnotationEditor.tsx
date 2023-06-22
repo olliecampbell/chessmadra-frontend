@@ -8,23 +8,20 @@ import { clsx } from "~/utils/classes";
 
 export const MAX_ANNOTATION_LENGTH = 300;
 
-export const AnnotationEditor = ({
-  annotation: _annotation,
-  onUpdate,
-}: {
+export const AnnotationEditor = (props: {
   annotation: Accessor<string>;
   onUpdate: (annotation: string) => void;
 }) => {
   const [focus, setFocus] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
-  const [annotation, setAnnotation] = createSignal(_annotation());
+  const [annotation, setAnnotation] = createSignal(props.annotation());
   // TODO: solid
   // const { fadeStyling } = useFadeAnimation(loading(), { duration: 300 });
   let lastTimer: number | null = null;
   const updateDebounced = throttle(
     (annotation: string) => {
       setLoading(true);
-      onUpdate(annotation);
+      props.onUpdate(annotation);
       if (lastTimer) {
         window.clearTimeout(lastTimer);
         lastTimer = null;
@@ -52,7 +49,7 @@ export const AnnotationEditor = ({
       >
         <FadeInOut open={loading}>
           <CMText style={s(c.fg(c.grays[50]))}>
-            <i class="fas fa-circle-notch fa-spin"></i>
+            <i class="fas fa-circle-notch fa-spin" />
           </CMText>
         </FadeInOut>
         <CMText

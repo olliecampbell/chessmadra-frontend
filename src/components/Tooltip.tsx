@@ -1,6 +1,5 @@
-import { Accessor, createSignal, JSX } from "solid-js";
+import { Accessor, JSX } from "solid-js";
 import tippy from "tippy.js";
-import { isDevelopment } from "~/utils/env";
 
 export const initTooltip = ({
   content,

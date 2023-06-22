@@ -1,6 +1,5 @@
 import { VisualizationState } from "~/types/VisualizationState";
 import { getInitialRepertoireState, RepertoireState } from "./repertoire_state";
-import { getInitialVisualizationState } from "./visualization_state";
 import { every, isObject, keysIn, take, zip } from "lodash-es";
 import { Chess } from "@lubert/chess.ts";
 import { DebugState, getInitialDebugState } from "./debug_state";
@@ -12,7 +11,7 @@ import * as amplitude from "@amplitude/analytics-browser";
 import { c } from "~/utils/styles";
 import { isDevelopment } from "./env";
 import { BrowsingState, SidebarState } from "./browsing_state";
-import { Accessor, useContext } from "solid-js";
+import { Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { destructure } from "@solid-primitives/destructure";
 import { getInitialTrainersState, TrainersState } from "./trainers_state";

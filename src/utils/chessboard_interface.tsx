@@ -2,7 +2,6 @@ import { Chess, Move } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import anime from "animejs";
 import { cloneDeep, first, isEmpty, isEqual, isNil, last } from "lodash-es";
-import { Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { getAnimationDurations } from "~/components/chessboard/Chessboard";
 import { PlaybackSpeed } from "~/types/VisualizationState";
@@ -244,9 +243,9 @@ export const createChessboardInterface = (): [
           return;
         }
         s.availableMoves = [];
-        let pos = s.position;
+        const pos = s.position;
         let moveObject: Move | null = null;
-        let moves = pos.validateMoves([m]);
+        const moves = pos.validateMoves([m]);
         if (typeof m === "string") {
           if (!moves) {
             console.log("This move wasn't valid!", m);
@@ -256,7 +255,7 @@ export const createChessboardInterface = (): [
         } else {
           moveObject = m;
         }
-        let sameAsPreviewed =
+        const sameAsPreviewed =
           s.previewedMove?.to === moveObject.to &&
           s.previewedMove?.from === moveObject.from;
         chessboardInterface.clearPending();
@@ -271,7 +270,7 @@ export const createChessboardInterface = (): [
         }
         pos.move(m);
         if (moveObject) {
-          let epd = genEpd(pos);
+          const epd = genEpd(pos);
           s.positionHistory.push(epd);
           s.moveHistory.push(moveObject);
           chessboardInterface.updateMoveLogPgn();
@@ -358,7 +357,7 @@ export const createChessboardInterface = (): [
         if (isNil(s._animatePosition)) {
           return;
         }
-        let nextMove = s.animationQueue?.shift() as Move;
+        const nextMove = s.animationQueue?.shift() as Move;
         chessboardInterface.animatePieceMove(
           nextMove,
           PlaybackSpeed.Fast,
@@ -477,11 +476,11 @@ export const createChessboardInterface = (): [
         s._animatePosition = undefined;
         if (s.animatingMoveSquare) {
           console.log("clearing pending animating move", s.animatingMoveSquare);
-          let pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
+          const pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
           if (pieceRef) {
             console.log("got a piece ref");
             anime.remove(pieceRef);
-            let { x, y } = getSquareOffset(s.animatingMoveSquare, s.flipped);
+            const { x, y } = getSquareOffset(s.animatingMoveSquare, s.flipped);
             pieceRef.style.top = `${y * 100}%`;
             pieceRef.style.left = `${x * 100}%`;
           }
@@ -494,7 +493,7 @@ export const createChessboardInterface = (): [
       callback: (completed: boolean) => void
     ) => {
       set((s: ChessboardViewState) => {
-        let { fadeDuration, moveDuration, stayDuration } =
+        const { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
         const [start, end]: Square[] = [move.from, move.to];
@@ -532,16 +531,16 @@ export const createChessboardInterface = (): [
       set((s) => {
         if (move) {
           chessboardInterface.clearPending();
-          let promotionPiece = chessboardInterface
+          const promotionPiece = chessboardInterface
             .getDelegate()
             ?.askForPromotionPiece?.(move);
           console.log("promotion piece", promotionPiece);
           if (promotionPiece) {
-            let newMove = cloneDeep(move);
+            const newMove = cloneDeep(move);
             newMove.promotion = promotionPiece;
             move = (s.position.validateMoves([newMove]) as Move[])[0];
           }
-          let makeMove = () => {
+          const makeMove = () => {
             if (s.previewedMove?.san == move.san) {
               chessboardInterface.makeMove(move, {
                 ...options,
@@ -617,12 +616,12 @@ export const createChessboardInterface = (): [
       });
       const recurseVisualize = () => {
         set((s) => {
-          let move = s.movesToVisualize?.shift();
+          const move = s.movesToVisualize?.shift();
           s.visualizedMove = move;
           if (!move) {
             return;
           }
-          let { fadeDuration, moveDuration, stayDuration } =
+          const { fadeDuration, moveDuration, stayDuration } =
             getAnimationDurations(speed);
           // @ts-ignore
           const [start, end]: Square[] = [move.from, move.to];
@@ -636,7 +635,7 @@ export const createChessboardInterface = (): [
           dotRef.style.top = `${startY * 100}%`;
           dotRef.style.left = `${startX * 100}%`;
 
-          let tl = anime.timeline({
+          const tl = anime.timeline({
             autoplay: true,
           });
 
@@ -806,7 +805,7 @@ export const createChessboardInterface = (): [
         if (options?.animated) {
           const fen = `${options.fromEpd ?? START_EPD} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
-          let moves = s._animatePosition.validateMoves(line);
+          const moves = s._animatePosition.validateMoves(line);
           s.animationQueue = moves;
           chessboardInterface.stepAnimationQueue();
         }
@@ -824,7 +823,7 @@ const getAnimationTime = (
   start: { x: number; y: number },
   end: { x: number; y: number }
 ) => {
-  let distance =
+  const distance =
     Math.sqrt(
       Math.pow(Math.abs(end.x - start.x), 2) +
         Math.pow(Math.abs(end.y - start.y), 2)

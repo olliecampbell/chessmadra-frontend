@@ -2,19 +2,16 @@ import { clsx } from "~/utils/classes";
 import { CMText } from "./CMText";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
-import { createEffect, createMemo, For, onMount } from "solid-js";
+import { createMemo, For, onMount } from "solid-js";
 import { Bullet } from "./Bullet";
 import { useRepertoireState, quick } from "~/utils/app_state";
-import { SidebarAction } from "./SidebarActions";
 import { forEach, min, filter } from "lodash-es";
 import { Repertoire, RepertoireMove, Side } from "~/utils/repertoire";
 import { pluralize } from "~/utils/pluralize";
 import { getHumanTimeUntil } from "./ReviewText";
 import {
   ChooseToCreateAccountOnboarding,
-  OnboardingComplete,
 } from "./SidebarOnboarding";
-import { LoginSidebar } from "./LoginSidebar";
 import { trackEvent } from "~/utils/trackEvent";
 import { START_EPD } from "~/utils/chess";
 import { bySide } from "~/utils/repertoire";
@@ -25,8 +22,8 @@ export const PracticeComplete = () => {
   const [allReviewPositionMoves] = useRepertoireState((s) => [
     s.reviewState.allReviewPositionMoves,
   ]);
-  let moves = createMemo(() => {
-    let moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
+  const moves = createMemo(() => {
+    const moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
       [];
     forEach(allReviewPositionMoves(), (sanLookup, epd) => {
       forEach(sanLookup, ({ failed, side }, sanPlus) => {
@@ -35,21 +32,21 @@ export const PracticeComplete = () => {
     });
     return moves;
   });
-  let numFailed = () => {
+  const numFailed = () => {
     return moves().filter((m) => m.failed).length;
   };
-  let numCorrect = () => {
+  const numCorrect = () => {
     return moves().filter((m) => !m.failed).length;
   };
-  let total = () => {
+  const total = () => {
     return moves().length;
   };
   const [numMovesDueBySide] = useRepertoireState((s) => [
     bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
   ]);
-  let earliestDue = () => {
-    let rep = repertoire() as Repertoire;
-    let dues = moves().flatMap((m) => {
+  const earliestDue = () => {
+    const rep = repertoire() as Repertoire;
+    const dues = moves().flatMap((m) => {
       return rep[m.side].positionResponses[m.epd]?.map((r: RepertoireMove) => {
         if (r.sanPlus === m.sanPlus) {
           return r.srs?.dueAt;

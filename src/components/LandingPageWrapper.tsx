@@ -65,5 +65,5 @@ export default function LandingPageWrapper() {
   onCleanup(() => {
     ReactDOM.unmountComponentAtNode(document.getElementById("root"));
   });
-  return <div id="root" class={"landing-page"}></div>;
+  return <div id="root" class={"landing-page"} />;
 }

@@ -42,7 +42,7 @@ export const CoverageBar = (props: {
             c.bg(progressState().completed ? completedColor : inProgressColor),
             c.fullHeight
           )}
-        ></View>
+         />
       </div>
     </Show>
   );

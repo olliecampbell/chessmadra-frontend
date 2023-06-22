@@ -1,4 +1,4 @@
-import { c, s } from "~/utils/styles";
+import { c } from "~/utils/styles";
 import { useResponsive } from "~/utils/useResponsive";
 import { Show } from "solid-js";
 import { useSidebarState, useRepertoireState, quick } from "~/utils/app_state";
@@ -7,10 +7,7 @@ import { Puff } from "solid-spinner";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { filter, isNil } from "lodash-es";
 import { SidebarAction, useBiggestGapAction } from "./SidebarActions";
-import { Animated } from "./View";
-import { CMText } from "./CMText";
 import { Spacer } from "./Space";
-import { CoverageBar } from "./CoverageBar";
 import { RepertoireCompletion } from "./RepertoireCompletion";
 
 export const SavedLineView = function SavedLineView() {

@@ -1,5 +1,3 @@
-import { s, c } from "~/utils/styles";
-import { BP, useResponsive } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 
 export const SidebarHeader = (props: { children: any }) => {

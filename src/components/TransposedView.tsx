@@ -3,8 +3,6 @@ import { isEmpty } from "lodash-es";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { quick, useSidebarState } from "~/utils/app_state";
-import { CMText } from "./CMText";
-import { s, c } from "~/utils/styles";
 import { PlayFromHere } from "./TargetCoverageReachedView";
 import { Show } from "solid-js";
 

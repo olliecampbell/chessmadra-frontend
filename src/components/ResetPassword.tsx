@@ -1,20 +1,12 @@
 import client from "~/utils/client";
-import { HeadSiteMeta } from "./PageContainer";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { Button } from "./Button";
-import { CMText } from "./CMText";
-import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
-import { PieceView } from "./chessboard/Chessboard";
+import { createSignal, Show } from "solid-js";
 import { trackEvent } from "~/utils/trackEvent";
 import { Puff } from "solid-spinner";
-import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { TextInput } from "./TextInput";
-import { capitalize } from "lodash-es";
 type AuthType = "login" | "register";
 const AUTH_TYPES: AuthType[] = ["login", "register"];
 // import { createFormGroup, createFormControl } from "solid-forms";
-import { isServer } from "solid-js/web";
 // import {
 //   createForm,
 //   email,
@@ -25,9 +17,8 @@ import { isServer } from "solid-js/web";
 //   SubmitHandler,
 // } from "@modular-forms/solid";
 import { InputError } from "./forms/InputError";
-import { A, Link, useParams, useSearchParams } from "solid-start";
+import { useSearchParams } from "solid-start";
 import { quick } from "~/utils/app_state";
-import { AuthStatus } from "~/utils/user_state";
 import { AxiosResponse } from "axios";
 import { AuthResponse } from "~/utils/models";
 import { validator } from "@felte/validator-yup";

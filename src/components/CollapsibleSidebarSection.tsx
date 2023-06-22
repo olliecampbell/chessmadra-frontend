@@ -7,10 +7,7 @@ import { Pressable } from "./Pressable";
 import { clsx } from "~/utils/classes";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
-export const CollapsibleSidebarSection = ({
-  header,
-  children,
-}: {
+export const CollapsibleSidebarSection = (props: {
   children: JSX.Element | JSX.Element[];
   header: string;
 }) => {
@@ -38,7 +35,7 @@ export const CollapsibleSidebarSection = ({
             c.fg(c.colors.textPrimary)
           )}
         >
-          {header}
+          {props.header}
         </CMText>
         <div style={s()}>
           <i
@@ -47,10 +44,10 @@ export const CollapsibleSidebarSection = ({
               !collapsed() && "rotate-90"
             )}
             style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
-          ></i>
+           />
         </div>
       </Pressable>
-      <div style={s()}>{collapsed() ? null : children}</div>
+      <div style={s()}>{collapsed() ? null : props.children}</div>
     </div>
   );
 };

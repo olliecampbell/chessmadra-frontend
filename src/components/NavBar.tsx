@@ -116,7 +116,7 @@ export const NavBar = (props: {}) => {
             <i
               style={s(c.fg(c.colors.textSecondary))}
               class="fa-sharp fa-house"
-            ></i>
+             />
           </CMText>
         </Pressable>
         <Spacer width={12} />
@@ -155,9 +155,9 @@ export const NavBar = (props: {}) => {
           (i) => {
             return (
               <div
-                key={i}
+                
                 style={s(c.width(1), c.height(34), c.bg(c.grays[30]), c.mx(12))}
-              ></div>
+               />
             );
           }
         )}
@@ -214,7 +214,7 @@ export const NavBar = (props: {}) => {
           <i
             style={s(c.fg(c.grays[80]), c.fontSize(18))}
             class="fa-sharp fa-bars"
-          ></i>
+           />
         </Button>
         <Show when={needsLogin }>
           <>
@@ -251,7 +251,7 @@ export const NavBar = (props: {}) => {
           c.noPointerEvents,
           c.zIndex(8)
         )}
-      ></div>
+       />
       <div
         style={s(
           c.fixed,

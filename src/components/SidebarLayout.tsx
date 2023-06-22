@@ -4,19 +4,14 @@ import { CMText } from "./CMText";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { SidebarContainer } from "./SidebarContainer";
 import { FadeInOut } from "./FadeInOut";
-import { SettingsButtons } from "./Settings";
-import { Animated } from "./View";
 import {
   useRepertoireState,
-  useBrowsingState,
   useSidebarState,
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createEffect, createSignal, onMount, Show } from "solid-js";
-import { Button } from "./Button";
+import { createSignal, Show } from "solid-js";
 import { s, c } from "~/utils/styles";
-import { BrowsingMode } from "~/utils/browsing_state";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { Spacer } from "~/components/Space";
 import { Pressable } from "./Pressable";
@@ -24,7 +19,6 @@ import { trackEvent } from "~/utils/trackEvent";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
 import { createElementBounds } from "@solid-primitives/bounds";
-import { BackSection } from "./BackSection";
 import { isChessmadra } from "~/utils/env";
 import { MoveLog } from "./MoveLog";
 
@@ -44,7 +38,7 @@ export const SidebarLayout = (props: {
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [showingPlans] = useSidebarState(([s]) => [s.showPlansState.visible]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
-  let chessboardFrozen = () => {
+  const chessboardFrozen = () => {
     let frozen = false;
     if (showingPlans()) {
       console.log("chessboardFrozen");
@@ -222,7 +216,7 @@ export const SidebarLayout = (props: {
   );
 };
 
-export const AnalyzeOnLichessButton = ({}: {}) => {
+export const AnalyzeOnLichessButton = (props: {}) => {
   const responsive = useResponsive();
   const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
   const padding = 8;
@@ -254,7 +248,7 @@ export const AnalyzeOnLichessButton = ({}: {}) => {
       >
         <p>
           Analyze on Lichess
-          <i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)}></i>
+          <i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)} />
         </p>
       </Pressable>
     );

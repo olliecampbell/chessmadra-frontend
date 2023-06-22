@@ -25,5 +25,5 @@ export const Spacer = (props: {
     }
     return styles;
   };
-  return <div style={_styles()}></div>;
+  return <div style={_styles()} />;
 };

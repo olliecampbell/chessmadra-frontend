@@ -3,9 +3,9 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { useResponsive } from "~/utils/useResponsive";
-import { SidebarAction, SidebarActions, SidebarFullWidthButton } from "./SidebarActions";
+import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { SidebarHeader } from "./RepertoireEditingHeader";
-import { Component, createEffect, For, Show } from "solid-js";
+import { Component, Show } from "solid-js";
 import { Puff } from "solid-spinner";
 
 export const SidebarTemplate: Component<{

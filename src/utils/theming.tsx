@@ -1,6 +1,5 @@
-import { c, grayHue, s } from "~/utils/styles";
+import { c, s } from "~/utils/styles";
 import { keyBy } from "lodash-es";
-import chessbookBoard from "/boards/chessbook_board.png";
 export type BoardTheme = {
   light: TileTheme;
   dark: TileTheme;

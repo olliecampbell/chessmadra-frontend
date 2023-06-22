@@ -1,16 +1,15 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isNil, sortBy, filter, range, forEach } from "lodash-es";
+import { isNil, filter, range, forEach } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
 import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
 import { Accessor, createEffect, createMemo, For, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
-import { RepertoireMove, Side } from "~/utils/repertoire";
+import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
 import { SidebarHeader } from "./RepertoireEditingHeader";
@@ -38,8 +37,8 @@ export const RepertoireReview = (props: {}) => {
     s.reviewState.allReviewPositionMoves,
   ]);
   const [queue] = useRepertoireState((s) => [s.reviewState.activeQueue]);
-  let moves = createMemo(() => {
-    let moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
+  const moves = createMemo(() => {
+    const moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
       [];
     forEach(allReviewPositionMoves(), (sanLookup, epd) => {
       forEach(sanLookup, ({ failed, side, reviewed }, sanPlus) => {
@@ -50,10 +49,10 @@ export const RepertoireReview = (props: {}) => {
     });
     return moves;
   });
-  let numFailed = () => {
+  const numFailed = () => {
     return moves().filter((m) => m.failed).length;
   };
-  let numCorrect = () => {
+  const numCorrect = () => {
     return moves().filter((m) => !m.failed).length;
   };
   const progressIcons = () => {
@@ -154,7 +153,7 @@ export const RepertoireReview = (props: {}) => {
               return (
                 <div class="row items-center">
                   <p class={clsx(i.class, "font-semibold")}>{i.text}</p>
-                  <i class={clsx(i.class, i.icon, " ml-2 text-[20px]")}></i>
+                  <i class={clsx(i.class, i.icon, " ml-2 text-[20px]")} />
                 </div>
               );
             }}
@@ -188,7 +187,7 @@ export const RepertoireReview = (props: {}) => {
                   <div
                     class={clsx("bg-gray-20 w-0.5")}
                     style={s(c.fullHeight)}
-                  ></div>
+                   />
                 );
               }}
             >
@@ -201,7 +200,7 @@ export const RepertoireReview = (props: {}) => {
                       "transition-colors"
                     )}
                     style={s(c.grow)}
-                  ></div>
+                   />
                 );
               }}
             </Intersperse>

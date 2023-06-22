@@ -17,14 +17,12 @@ import {
   filter,
   flatten,
   values,
-  sortBy,
   capitalize,
 } from "lodash-es";
 import {
   BySide,
   getAllRepertoireMoves,
   lineToPgn,
-  pgnToLine,
   Repertoire,
   RepertoireGrade,
   RepertoireMove,
@@ -48,16 +46,13 @@ import { getInitialReviewState, ReviewState } from "./review_state";
 const NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
-import { BP, Responsive } from "./useResponsive";
-import { ChessboardInterface } from "./chessboard_interface";
+import { Responsive } from "./useResponsive";
 import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
-import { LogoFull } from "~/components/icons/LogoFull";
 import { MAX_MOVES_FREE_TIER } from "./payment";
 import dedent from "dedent-js";
 import {
   ImportSuccessOnboarding,
-  OnboardingIntro,
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
 
@@ -1007,7 +1002,7 @@ export const getInitialRepertoireState = (
     //   }),
     fetchRepertoire: (initial?: boolean) =>
       set(([s, appState]) => {
-        let user = appState.userState.user;
+        const user = appState.userState.user;
         client
           .get("/api/v1/openings")
           .then(({ data }: { data: FetchRepertoireResponse }) => {

@@ -1,5 +1,5 @@
 import { Setter } from "solid-js";
-import { Accessor, createSignal, Signal } from "solid-js";
+import { Accessor, createSignal } from "solid-js";
 
 export class StorageItem<T> {
   key: string;

@@ -16,7 +16,7 @@ import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "../global-page-styles";
 import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
-export default ({ onClick, onLogin }) => {
+export default (props) => {
   return (
     <Theme theme={theme}>
       <GlobalQuarklyPageStyles pageUrl={"index"} />
@@ -67,7 +67,7 @@ export default ({ onClick, onLogin }) => {
             >
               <Link
                 onClick={() => {
-                  onLogin();
+                  props.onLogin();
                 }}
                 href="/login"
                 border-color="--color-lightD1"
@@ -87,10 +87,10 @@ export default ({ onClick, onLogin }) => {
                   background: "white",
                   opacity: "0.35",
                 }}
-              ></div>
+               />
               <Link
                 onClick={() => {
-                  onClick("signup");
+                  props.onClick("signup");
                 }}
                 href="/login"
                 border-color="--color-lightD1"
@@ -168,7 +168,7 @@ export default ({ onClick, onLogin }) => {
           </Text>
           <Link
             onClick={() => {
-              onClick("splash_cta");
+              props.onClick("splash_cta");
             }}
             padding="12px 24px 12px 24px"
             color="--dark"
@@ -1704,7 +1704,7 @@ export default ({ onClick, onLogin }) => {
             </Text>
             <Link
               onClick={() => {
-                onClick("free_get_started");
+                props.onClick("free_get_started");
               }}
               href="#"
               text-decoration-line="initial"
@@ -1815,7 +1815,7 @@ export default ({ onClick, onLogin }) => {
             </Text>
             <Link
               onClick={() => {
-                onClick("pro_try_it_for_free");
+                props.onClick("pro_try_it_for_free");
               }}
               text-decoration-line="initial"
               color="--dark"

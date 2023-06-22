@@ -5,41 +5,35 @@ import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
 
-export const Button = ({
-  onPress,
-  style,
-  children,
-  isLoading,
-  loaderProps,
-}: {
+export const Button = (props: {
   onPress?: any;
   loaderProps?: any;
   style?: any;
   children: any;
   isLoading?: boolean;
 }) => {
-  let inner = children;
+  let inner = props.children;
   if (typeof inner === "string") {
-    inner = <CMText style={style.textStyles}>{inner}</CMText>;
+    inner = <CMText style={props.style.textStyles}>{inner}</CMText>;
   }
   return (
     <Pressable
-      style={s(c.relative, style)}
+      style={s(c.relative, props.style)}
       onPress={() => {
-        if (!isLoading) {
-          onPress();
+        if (!props.isLoading) {
+          props.onPress();
         }
       }}
     >
-      <Show when={isLoading}>
+      <Show when={props.isLoading}>
         <div style={s(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
           <div style={s(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
-            <BarLoader {...loaderProps} cssOverride={s(c.width("100%"))} />
+            <BarLoader {...props.loaderProps} cssOverride={s(c.width("100%"))} />
           </div>
         </div>
       </Show>
       <div
-        style={s(c.opacity(isLoading ? 0 : 100), c.row, c.center, c.fullWidth)}
+        style={s(c.opacity(props.isLoading ? 0 : 100), c.row, c.center, c.fullWidth)}
       >
         {inner}
       </div>

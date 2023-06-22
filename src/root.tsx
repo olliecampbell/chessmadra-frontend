@@ -10,7 +10,6 @@ import {
   Routes,
   Scripts,
   Style,
-  Title,
   useNavigate,
 } from "solid-start";
 import "./root.css";
@@ -123,7 +122,7 @@ export default function Root() {
         <script
           src="https://kit.fontawesome.com/b1f0634f74.js"
           crossorigin="anonymous"
-        ></script>
+         />
       </Head>
       <Style>
         {`
@@ -159,7 +158,7 @@ export default function Root() {
 }
 
 const RouteProvider = () => {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   onMount(() => {
     quick((s) => {
       s.navigationState.setNavigate(navigate);

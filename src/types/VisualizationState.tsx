@@ -3,7 +3,6 @@ import { LichessPuzzle } from "~/utils/models";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
 import { StorageItem } from "~/utils/storageItem";
 import { PuzzleState } from "~/utils/puzzle_state";
-import { View } from "./View";
 
 export interface VisualizationState {
   pulsePlay: boolean;

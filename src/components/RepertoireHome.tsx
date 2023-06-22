@@ -26,12 +26,10 @@ import {
   ThemeSettings,
 } from "./SidebarSettings";
 import {
-  BOARD_THEMES_BY_ID,
   combinedThemes,
   COMBINED_THEMES_BY_ID,
 } from "~/utils/theming";
-import { Accessor, createEffect, For, onCleanup, Show } from "solid-js";
-import { unwrap } from "solid-js/store";
+import { Accessor, For, Show } from "solid-js";
 import { FeedbackView } from "./FeedbackView";
 import client from "~/utils/client";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
@@ -56,8 +54,8 @@ export const RepertoireHome = () => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
   const overallEarliest = () => {
-    let white = earliestDueDate()["white"];
-    let black = earliestDueDate()["black"];
+    const white = earliestDueDate()["white"];
+    const black = earliestDueDate()["black"];
     if (white && !black) {
       return white;
     }

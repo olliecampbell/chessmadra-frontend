@@ -4,26 +4,18 @@ import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
 import { useResponsive } from "~/utils/useResponsive";
-import { cloneDeep, find, keys, upperFirst } from "lodash-es";
-import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
+import { cloneDeep, find } from "lodash-es";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   BoardThemeId,
   BOARD_THEMES_BY_ID,
-  CombinedThemeID,
   combinedThemes,
-  COMBINED_THEMES_BY_ID,
-  PieceSetId,
-  PIECE_SETS,
 } from "~/utils/theming";
-import { PieceView } from "./chessboard/Chessboard";
-import { PieceSymbol } from "@lubert/chess.ts";
-import { Component, createSignal, createEffect, For, on, Show } from "solid-js";
+import { createEffect, Show } from "solid-js";
 import { clsx } from "~/utils/classes";
 import { compareFloats } from "~/utils/utils";
 import { Dropdown } from "./SidebarOnboarding";
 import { Pressable } from "./Pressable";
-import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
 
 export const SidebarSetting = () => {
@@ -45,7 +37,7 @@ export const THRESHOLD_OPTIONS = [
   1 / 400,
 ];
 
-export const CoverageSettings = ({}: {}) => {
+export const CoverageSettings = (props: {}) => {
   const [user, missThreshold] = useUserState((s) => [
     s.user,
     s.getCurrentThreshold(),
@@ -89,7 +81,7 @@ export const CoverageSettings = ({}: {}) => {
     </SidebarTemplate>
   );
 };
-export const RatingSettings = ({}: {}) => {
+export const RatingSettings = (props: {}) => {
   const [user, missThreshold] = useUserState((s) => [
     s.user,
     s.getCurrentThreshold(),
@@ -116,7 +108,7 @@ export const RatingSettings = ({}: {}) => {
   );
 };
 
-export const ThemeSettings = ({}: {}) => {
+export const ThemeSettings = (props: {}) => {
   const user = () => getAppState().userState?.user;
   const height = 24;
   return (
@@ -218,7 +210,7 @@ export const RatingSelection = (props: {}) => {
             </Pressable>
           );
         }}
-      ></Dropdown>
+       />
       <div style={s(c.row)}>
         <Dropdown
           title={"Platform"}
@@ -281,7 +273,7 @@ export const RatingSelection = (props: {}) => {
               );
             }
           }}
-        ></Dropdown>
+         />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, last } from "lodash-es";
+import { capitalize } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   getAppState,
@@ -13,7 +13,7 @@ import {
 import { SidebarOnboardingImportType } from "~/utils/browsing_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { useResponsive } from "~/utils/useResponsive";
-import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
+import { SidebarAction } from "./SidebarActions";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
@@ -25,21 +25,16 @@ import {
   For,
   onMount,
 } from "solid-js";
-import { Pressable } from "./Pressable";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
 import {
   RatingSelection,
-  RatingSource,
-  THRESHOLD_OPTIONS,
 } from "./SidebarSettings";
 import { clsx } from "~/utils/classes";
 import { TextArea, TextInput } from "./TextInput";
 import { Side, SIDES } from "~/utils/repertoire";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
-import { CoverageBar } from "./CoverageBar";
-import { CoverageAndBar } from "./RepertoirtOverview";
 import { Bullet } from "./Bullet";
 import { LoginSidebar } from "./LoginSidebar";
 import { createForm } from "@felte/solid";
@@ -97,7 +92,7 @@ export const SetRatingOnboarding = () => {
         ),
       ]).then(() => {
         quick((s) => {
-          let recommendedThreshold = getRecommendedMissThreshold(
+          const recommendedThreshold = getRecommendedMissThreshold(
             s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
           );
           s.userState.setTargetDepth(recommendedThreshold);
@@ -243,7 +238,7 @@ export const Dropdown: Component<{
           )}
           class={clsx("bg-gray-4 rounded-sm p-2")}
         >
-          {props.choices.map((c) => (
+          <For each={props.choices}>{(c) => (
             <div class={clsx("&hover:bg-gray-16 ")}>
               {props.renderChoice(c, true, (e) => {
                 props.onSelect(c);
@@ -252,7 +247,7 @@ export const Dropdown: Component<{
                 e?.stopPropagation();
               })}
             </div>
-          ))}
+          )}</For>
         </Motion>
       </div>
     </div>
@@ -281,7 +276,7 @@ const ChooseColorOnboarding = () => {
         text: capitalize(side),
         style: "primary",
       }))}
-    ></SidebarTemplate>
+     />
   );
 };
 
@@ -373,7 +368,7 @@ export const HowToComplete = (props: {
   miss?: { name: string; incidence: number } | null | undefined;
 }) => {
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
-  let bullets = () => [
+  const bullets = () => [
     <>
       Your goal is to cover any positions which occur in at least{" "}
       <b>1 in {Math.round(1 / threshold())}</b> games.
@@ -563,7 +558,7 @@ export const ChooseImportSourceOnboarding = () => {
           style: "primary",
         },
       ]}
-    ></SidebarTemplate>
+     />
   );
 };
 
@@ -607,7 +602,7 @@ export const ImportOnboarding = (props: {
 
   const importType = () => props.importType;
   const [loading, setLoading] = createSignal(null as string | null);
-  let [pgn, setPgn] = createSignal("");
+  const [pgn, setPgn] = createSignal("");
 
   onMount(() => {
     trackEvent(`onboarding.import_${importType()}.shown`);
@@ -811,18 +806,18 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
         >
           <i
             class={clsx("fas mr-2", hasUploaded() ? "fa-check" : "fa-upload")}
-          ></i>
+           />
           {hasUploaded() ? "Uploaded" : "Upload"}
           <input
             type="file"
             ref={setPgnUploadRef}
             class={"absolute z-10 h-24 h-full w-full cursor-pointer opacity-0"}
-          ></input>
+           />
         </div>
         <div class={"row my-4 items-center space-x-2"}>
-          <div class={"bg-gray-18 h-1px grow"}></div>
+          <div class={"bg-gray-18 h-1px grow"} />
           <p class={"text-secondary  ext-xs font-semibold"}>Or</p>
-          <div class={"bg-gray-18 h-1px grow"}></div>
+          <div class={"bg-gray-18 h-1px grow"} />
         </div>
         <TextArea
           placeholder="Paste your PGN here"

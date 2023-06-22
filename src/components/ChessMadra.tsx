@@ -1,30 +1,22 @@
 import {
   useVisualizationState,
   quick,
-  useTrainersState,
   getAppState,
 } from "~/utils/app_state";
-import { For, onMount } from "solid-js";
-import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
+import { onMount } from "solid-js";
+import { createEffect, Match, Switch } from "solid-js";
 import { BP, useResponsive } from "~/utils/useResponsive";
-import { createElementBounds } from "@solid-primitives/bounds";
 import {
   VERTICAL_BREAKPOINT,
   SidebarLayout,
   NavBreadcrumbs,
-  AnalyzeOnLichessButton,
 } from "./SidebarLayout";
 import { Dynamic } from "solid-js/web";
 import { Spacer } from "./Space";
-import {
-  SidebarAction,
-  SidebarActionsLegacy,
-  SidebarFullWidthButton,
-  SidebarSectionHeader,
-} from "./SidebarActions";
+
+
 import { c, s } from "~/utils/styles";
 import { SettingsButtons } from "./Settings";
-import { SidebarTemplate } from "./SidebarTemplate";
 import { trackEvent } from "~/utils/trackEvent";
 import { clsx } from "~/utils/classes";
 import { VisualizationTraining } from "./VisualizationTraining";
@@ -44,7 +36,7 @@ export const ChessMadra = (props: { initialTool: string }) => {
   const responsive = useResponsive();
   const activeTool = () => getAppState().trainersState.getActiveTool();
   const [state] = useVisualizationState((s) => [s]);
-  let view = () => getAppState().trainersState.currentView();
+  const view = () => getAppState().trainersState.currentView();
   const sidebarContent = (
     <>
       <Switch fallback={<DirectorySidebar />}>
@@ -88,7 +80,7 @@ export const ChessMadra = (props: { initialTool: string }) => {
               <i
                 style={s(c.fg(c.colors.textPrimary))}
                 class={`fa-sharp ${isPlaying() ? "fa-pause" : "fa-play"}`}
-              ></i>
+               />
             </button>
           </div>
           <Spacer height={12} />
@@ -168,7 +160,7 @@ const BackSection = () => {
           }
         >
           <p style={s(c.weightBold, c.row, c.alignCenter)}>
-            <i class="fa fa-arrow-left pr-2"></i>
+            <i class="fa fa-arrow-left pr-2" />
             Back
           </p>
         </Pressable>
@@ -192,7 +184,7 @@ const BackSection = () => {
             <i
               class="fa fa-up-right-from-square pl-2"
               style={s(iconStyles)}
-            ></i>
+             />
           </p>
         </Pressable>
       </div>

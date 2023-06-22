@@ -1,5 +1,5 @@
 import { Square } from "@lubert/chess.ts/dist/types";
-import { BySide, RepertoireGrade, Side } from "./utils/repertoire";
+import { BySide, RepertoireGrade, Side } from "./repertoire";
 
 export interface LichessPuzzle {
   id: string;

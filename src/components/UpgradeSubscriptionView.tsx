@@ -1,6 +1,4 @@
-import { createEffect, createSignal, onMount } from "solid-js";
-import { capitalize } from "lodash-es";
-import { Spacer } from "~/components/Space";
+import { createSignal, onMount } from "solid-js";
 import { useSidebarState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { MAX_MOVES_FREE_TIER } from "~/utils/payment";

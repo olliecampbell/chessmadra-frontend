@@ -47,7 +47,6 @@ import { Pressable } from "./Pressable";
 import { destructure } from "@solid-primitives/destructure";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
-import { isDevelopment } from "~/utils/env";
 import { initTooltip } from "./Tooltip";
 import { renderThreshold } from "~/utils/threshold";
 
@@ -81,14 +80,7 @@ export interface ScoreFactor {
   total?: number;
 }
 
-export const RepertoireMovesTable = ({
-  header,
-  activeSide,
-  side,
-  responses,
-  usePeerRates,
-  body,
-}: {
+export const RepertoireMovesTable = (props: {
   header: Accessor<string | undefined | null>;
   body?: Accessor<string>;
   activeSide: Accessor<Side>;
@@ -105,21 +97,21 @@ export const RepertoireMovesTable = ({
   const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
     destructure(
       createMemo(() => {
-        const anyMine = some(responses(), (m) => m.repertoireMove?.mine);
-        const mine = filter(responses(), (m) => m.repertoireMove?.mine);
-        const anyNeeded = some(responses(), (m) => m.suggestedMove?.needed);
-        const myTurn = side() === activeSide();
+        const anyMine = some(props.responses(), (m) => m.repertoireMove?.mine);
+        const mine = filter(props.responses(), (m) => m.repertoireMove?.mine);
+        const anyNeeded = some(props.responses(), (m) => m.suggestedMove?.needed);
+        const myTurn = props.side() === props.activeSide();
         const isMobile = useIsMobile();
         // todo: solid, prob need to use accessors here
         const sections = useSections({
           myTurn,
-          usePeerRates: usePeerRates(),
+          usePeerRates: props.usePeerRates(),
           isMobile,
         });
         // todo: undo this
         const MIN_TRUNCATED = 1;
         const MAX_ONBOARDING = 3;
-        const trimmedResponses = filter(responses(), (r, i) => {
+        const trimmedResponses = filter(props.responses(), (r, i) => {
           if (mode() == "browse") {
             return r.repertoireMove;
           }
@@ -149,7 +141,7 @@ export const RepertoireMovesTable = ({
             (myTurn && moveHasTag(r, MoveTag.Transposes))
           );
         }) as TableResponse[];
-        const numTruncated = responses().length - trimmedResponses.length;
+        const numTruncated = props.responses().length - trimmedResponses.length;
         const truncated = numTruncated > 0;
         // console.log("returning sections", sections);
         return {
@@ -173,7 +165,7 @@ export const RepertoireMovesTable = ({
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const hideAnnotations = () => moveNumber() === 1;
   const firstWhiteMove = () =>
-    moveNumber() === 1 && side() === "white" && myTurn() && !anyMine();
+    moveNumber() === 1 && props.side() === "white" && myTurn() && !anyMine();
   const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
   const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
@@ -194,7 +186,7 @@ export const RepertoireMovesTable = ({
   const tableMeta: Accessor<TableMeta> = () => {
     return {
       highestIncidence: max(
-        map(responses(), (r) => r.suggestedMove?.incidence ?? 1.0)
+        map(props.responses(), (r) => r.suggestedMove?.incidence ?? 1.0)
       ),
     };
   };
@@ -233,18 +225,18 @@ export const RepertoireMovesTable = ({
   );
   return (
     <div style={s(c.column)}>
-      <Show when={header()}>
+      <Show when={props.header()}>
         <>
           <div class="padding-sidebar">
-            <SidebarHeader>{header()}</SidebarHeader>
+            <SidebarHeader>{props.header()}</SidebarHeader>
           </div>
           <Spacer height={responsive.switch(20, [BP.md, 24])} />
         </>
       </Show>
-      <Show when={body}>
+      <Show when={props.body}>
         <>
           <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
-            {body}
+            {props.body}
           </CMText>
           <Spacer height={24} />
         </>
@@ -273,7 +265,7 @@ export const RepertoireMovesTable = ({
                 c.height(editingAnnotations() ? 12 : 1),
                 !editingAnnotations() && c.bg(c.grays[30])
               )}
-            ></div>
+             />
           )}
         >
           {(tableResponse, i) => {
@@ -763,10 +755,7 @@ const Response = (props: {
   );
 };
 
-const TableHeader = ({
-  sections,
-  anyMine,
-}: {
+const TableHeader = (props: {
   sections: Accessor<any[]>;
   anyMine: boolean;
 }) => {
@@ -783,7 +772,7 @@ const TableHeader = ({
     >
       <Spacer width={12} grow />
       <div style={s(c.row, c.alignCenter)} class="space-x-4">
-        <For each={sections()}>
+        <For each={props.sections()}>
           {(section, i) => {
             return (
               <div
@@ -812,14 +801,12 @@ const TableHeader = ({
           }}
         </For>
       </div>
-      {anyMine && false && <Spacer width={DELETE_WIDTH} />}
+      {props.anyMine && false && <Spacer width={DELETE_WIDTH} />}
     </div>
   );
 };
 
-export const DebugScoreView = ({
-  tableResponse,
-}: {
+export const DebugScoreView = (props: {
   tableResponse: TableResponse;
 }) => {
   return (
@@ -839,7 +826,7 @@ export const DebugScoreView = ({
       <div style={s(c.row)}>
         <CMText style={s(c.weightBold)}>Total</CMText>
         <Spacer width={12} grow />
-        <CMText style={s()}>{tableResponse.score?.toFixed(2)}</CMText>
+        <CMText style={s()}>{props.tableResponse.score?.toFixed(2)}</CMText>
       </div>
     </div>
   );
@@ -861,12 +848,7 @@ function renderAnnotation(_annotation: string) {
   }
 }
 
-const MoveTagView = ({
-  text,
-  icon,
-  style,
-  tip,
-}: {
+const MoveTagView = (props: {
   icon;
   text;
   style;
@@ -886,15 +868,15 @@ const MoveTagView = ({
         initTooltip({
           ref,
           content: () => {
-            return tip;
+            return props.tip;
           },
           maxWidth: 200,
         });
       }}
     >
-      <i class={icon} style={s(style)} />
+      <i class={props.icon} style={s(props.style)} />
       <Spacer width={8} />
-      {text}
+      {props.text}
     </p>
   );
 };

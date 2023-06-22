@@ -84,7 +84,7 @@ export const SettingsButtons = () => {
 export const SettingButton = (props) => {
   const { hovering, hoveringProps } = useHovering();
   const responsive = useResponsive();
-  let color = () => {
+  const color = () => {
     if (hovering()) {
       return c.colors.textSecondary;
     }
@@ -103,7 +103,7 @@ export const SettingButton = (props) => {
       )}
       {...hoveringProps}
     >
-      <i style={s(c.fg(color()), c.fontSize(12))} class={props.icon}></i>
+      <i style={s(c.fg(color()), c.fontSize(12))} class={props.icon} />
       <Spacer width={responsive.switch(4, [BP.md, 8])} />
       <CMText style={s(c.fg(color()), c.weightSemiBold)}>{props.title}</CMText>
     </Pressable>

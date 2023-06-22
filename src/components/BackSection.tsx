@@ -1,7 +1,6 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
-import { isEmpty, isNil, dropRight, filter, includes } from "lodash-es";
+import { isEmpty, isNil, includes } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   getAppState,
@@ -170,7 +169,7 @@ export const BackSection = () => {
           }
         >
           <CMText style={s(c.weightBold, c.row, c.alignCenter)}>
-            <i class="fa fa-arrow-left pr-2"></i>
+            <i class="fa fa-arrow-left pr-2" />
             Back
           </CMText>
         </Pressable>

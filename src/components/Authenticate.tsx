@@ -1,5 +1,4 @@
 import client from "~/utils/client";
-import { AuthStatus as GlobalAuthStatus } from "~/utils/user_state";
 import { PageContainer } from "~/components/PageContainer";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";

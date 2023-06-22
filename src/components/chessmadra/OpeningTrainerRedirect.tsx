@@ -1,9 +1,7 @@
 import { useResponsive } from "~/utils/useResponsive";
-import { CMText } from "../CMText";
 import { quick } from "~/utils/app_state";
 import { SidebarTemplate } from "../SidebarTemplate";
 import { Spacer } from "../Space";
-import { VisualizationTraining } from "../VisualizationTraining";
 import { LoginSidebar } from "../LoginSidebar";
 import { clsx } from "~/utils/classes";
 

@@ -6,7 +6,6 @@ import { Side } from "./repertoire";
 import {
   getPlayRate,
   getTotalGames,
-  getWinRate,
   getWinRateRange,
   isNegligiblePlayrate,
 } from "./results_distribution";

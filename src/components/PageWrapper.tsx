@@ -7,7 +7,6 @@ import {
 } from "~/utils/app_state";
 import { Component, createEffect, Match, onMount, Switch } from "solid-js";
 import LandingPageWrapper from "~/components/LandingPageWrapper";
-import { Puff } from "solid-spinner";
 import { AuthStatus } from "~/utils/user_state";
 import { RepertoireBuilder } from "./RepertoireBuilder";
 
@@ -40,7 +39,7 @@ export const PageWrapper = (props: { initialView: Component }) => {
 
   // return <SidebarLayout mode={mode()} />;
   return (
-    <Switch fallback={<LandingPageWrapper></LandingPageWrapper>}>
+    <Switch fallback={<LandingPageWrapper />}>
       <Match
         when={token() || userState().pastLandingPage || repertoireLoading()}
       >

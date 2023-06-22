@@ -4,15 +4,10 @@ import { NavBar } from "~/components/NavBar";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "../utils/intersperse";
 import { Meta, Title } from "solid-start";
-import { Show } from "solid-js";
+import { mergeProps, Show } from "solid-js";
 import { isChessmadra } from "~/utils/env";
 
-export const PageContainer = ({
-  children,
-  centered,
-  hideNavBar,
-  hideIcons,
-}: any) => {
+export const PageContainer = (props: any) => {
   const isMobile = useIsMobile();
   const icons = [
     {
@@ -27,20 +22,20 @@ export const PageContainer = ({
   ];
   return (
     <div style={s(c.column, c.minHeight("100vh"), c.alignCenter)}>
-      {!hideNavBar && <NavBar />}
+      {!props.hideNavBar && <NavBar />}
       <div
         style={s(
           c.grow,
           c.fullWidth,
           c.column,
           c.alignCenter,
-          centered && c.justifyCenter,
-          !isMobile && !hideNavBar && c.mt(48)
+          props.centered && c.justifyCenter,
+          !isMobile && !props.hideNavBar && c.mt(48)
         )}
       >
-        {children}
+        {props.children}
       </div>
-      <Show when={!hideIcons}>
+      <Show when={!props.hideIcons}>
         <>
           <Spacer height={32} />
           <div
@@ -56,16 +51,16 @@ export const PageContainer = ({
             {intersperse(
               icons.map((icon) => {
                 return (
-                  <a href={icon.link} key={icon.link}>
+                  <a href={icon.link}>
                     <i
                       style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
                       class={`fas ${icon.icon}`}
-                    ></i>
+                    />
                   </a>
                 );
               }),
               (i) => {
-                return <Spacer key={i} width={24} />;
+                return <Spacer width={24} />;
               }
             )}
           </div>
@@ -80,15 +75,13 @@ export interface SiteMetadata {
   description?: string;
 }
 
-export const HeadSiteMeta = ({
-  siteMeta = {},
-}: {
-  siteMeta?: SiteMetadata;
-}) => {
-  let title = siteMeta?.title ?? (isChessmadra ? "Chessmadra" : "Chessbook");
-  let imageUrl = "/splash_og.png";
-  let description =
-    siteMeta?.description ??
+export const HeadSiteMeta = (_props: { siteMeta?: SiteMetadata }) => {
+  const props = mergeProps({ siteMeta: {} as SiteMetadata }, _props);
+  const title =
+    props.siteMeta?.title ?? (isChessmadra ? "Chessmadra" : "Chessbook");
+  const imageUrl = "/splash_og.png";
+  const description =
+    props.siteMeta?.description ??
     (isChessmadra
       ? "Level up your chess tactics"
       : "Chessbook is the fastest way to build a bulletproof opening repertoire.");

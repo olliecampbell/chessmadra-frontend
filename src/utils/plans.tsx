@@ -23,7 +23,7 @@ import {
   isNil,
 } from "lodash-es";
 import { useHovering } from "~/mocks";
-import { createEffect, JSXElement } from "solid-js";
+import { JSXElement } from "solid-js";
 let adverbIndex = 0;
 
 export interface MetaPlan {
@@ -514,27 +514,22 @@ export const parsePlans = (
   return consumer;
 };
 
-const PlanMoves = ({
-  metaPlans,
-  exclusive,
-  stripPieceSymbol,
-  customFormatter,
-}: {
+const PlanMoves = (props: {
   metaPlans: MetaPlan[];
   exclusive?: boolean;
   stripPieceSymbol?: boolean;
   customFormatter?: (plan: MetaPlan) => any;
 }) => {
-  const combinator = exclusive ? "or" : "and";
+  const combinator = props.exclusive ? "or" : "and";
   return (
     <CMText style={s(c.fg(c.colors.textPrimary))}>
       {intersperse(
-        metaPlans.map((metaPlan, i) => {
+        props.metaPlans.map((metaPlan, i) => {
           return (
             <PlanMoveText plan={metaPlan}>
-              {customFormatter
-                ? customFormatter(metaPlan)
-                : stripPieceSymbol
+              {props.customFormatter
+                ? props.customFormatter(metaPlan)
+                : props.stripPieceSymbol
                 ? metaPlan.plan.toSquare
                 : metaPlan.plan.san}
             </PlanMoveText>
@@ -544,7 +539,7 @@ const PlanMoves = ({
           return (
             <CMText key={k} style={s(c.fg(c.colors.textPrimary))}>
               {isLast
-                ? metaPlans.length > 2
+                ? props.metaPlans.length > 2
                   ? `, ${combinator} `
                   : ` ${combinator} `
                 : ", "}
@@ -556,22 +551,19 @@ const PlanMoves = ({
   );
 };
 
-const EnglishSeparator = ({
-  exclusive,
-  items,
-}: {
+const EnglishSeparator = (props: {
   exclusive?: boolean;
   items: any[];
 }) => {
-  const combinator = exclusive ? "or" : "and";
+  const combinator = props.exclusive ? "or" : "and";
 
   return (
     <CMText style={s(c.fg(c.colors.textPrimary))}>
-      {intersperse(items, (k, isLast) => {
+      {intersperse(props.items, (k, isLast) => {
         return (
           <CMText key={k} style={s()}>
             {isLast
-              ? items.length > 2
+              ? props.items.length > 2
                 ? `, ${combinator} `
                 : ` ${combinator} `
               : ", "}

@@ -3,12 +3,10 @@ import { MoveAnnotation, MoveAnnotationReview } from "~/utils/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { Repertoire } from "./repertoire";
 import { StorageItem } from "./storageItem";
 
 export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
-  fetchAudit: () => void;
   fetchMoveAnnotationReviewQueue: () => void;
   acceptMoveAnnotation: (
     epd: string,
@@ -24,20 +22,14 @@ export interface AdminState {
   }) => void;
   rejectMoveAnnotations: (epd: string, san: string) => void;
   becomeAdmin: (password: string) => void;
-  auditResponse?: AuditResponse;
   moveAnnotationsDashboard?: MoveAnnotationsDashboard;
   fetchMoveAnnotationDashboard: () => void;
   quick: (fn: (_: AdminState) => void) => void;
-  spoofedEmail?: StorageItem<string>;
+  spoofedEmail: StorageItem<string | undefined>;
 }
 
 type Stack = [AdminState, AppState];
 const selector = (s: AppState): Stack => [s.adminState, s];
-
-export interface AuditResponse {
-  eloAudits: RepertoireAudit[];
-  repertoire: Repertoire;
-}
 
 export interface MoveAnnotationsDashboard {
   needed: AdminMoveAnnotation[];
@@ -51,24 +43,6 @@ export interface AdminMoveAnnotation {
   annotation?: MoveAnnotation;
   reviewerEmail?: string;
   games: number;
-}
-
-export interface RepertoireAudit {
-  eloRange: string;
-  missedLines: AuditMissedLine[];
-  excessiveLines: AuditExcessiveLine[];
-}
-
-export interface AuditMissedLine {
-  lines: string[];
-  incidence: number;
-  epd: string;
-}
-
-export interface AuditExcessiveLine {
-  lines: string[];
-  incidence: number;
-  epd: string;
 }
 
 export const getInitialAdminState = (
@@ -86,7 +60,7 @@ export const getInitialAdminState = (
   };
   const initialState = {
     ...createQuick<AdminState>(setOnly),
-    moveAnnotationReviewQueue: null,
+    moveAnnotationReviewQueue: [],
     spoofedEmail: new StorageItem("spoofed-email", undefined),
     fetchMoveAnnotationReviewQueue: () =>
       set(([s]) => {
@@ -150,16 +124,6 @@ export const getInitialAdminState = (
             });
           });
       }),
-    fetchAudit: () =>
-      set(([s]) => {
-        client
-          .get(`/api/v1/audit`)
-          .then(({ data }: { data: AuditResponse }) => {
-            set(([s]) => {
-              s.auditResponse = data;
-            });
-          });
-      }),
     acceptMoveAnnotation: (epd: string, san: string, text: string) =>
       set(([s]) => {
         return client
@@ -172,7 +136,7 @@ export const getInitialAdminState = (
           .post(`/api/v1/admin/submit-password`, { password })
           .then(({ data }) => {
             set(([s, appState]) => {
-              appState.userState.user.isAdmin = true;
+              appState.userState.user!.isAdmin = true;
             });
           });
       }),

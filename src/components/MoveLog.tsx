@@ -42,13 +42,13 @@ export const MoveLog = () => {
   });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
-  let currentLineElements = () => {
-    let elems = [];
-    let moves = [];
+  const currentLineElements = () => {
+    const elems = [];
+    const moves = [];
     forEach(currentLine(), (e, i) => {
       moves.push(e);
-      let theseMoves = cloneDeep(moves);
-      let last = i == currentLine().length - 1;
+      const theseMoves = cloneDeep(moves);
+      const last = i == currentLine().length - 1;
       if (i % 2 === 0) {
         elems.push(
           <p

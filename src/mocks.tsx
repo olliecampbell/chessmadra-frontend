@@ -1,5 +1,4 @@
-import { useMousePosition } from "@solid-primitives/mouse";
-import { Accessor, createSignal, onMount } from "solid-js";
+import { Accessor, createSignal } from "solid-js";
 
 export const GridLoader = () => {
   return <div>mocked GridLoader</div>;

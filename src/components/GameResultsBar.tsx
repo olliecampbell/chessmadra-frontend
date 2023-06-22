@@ -9,77 +9,72 @@ import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Side } from "~/utils/repertoire";
 
-export const GameResultsBar = ({
-  gameResults,
-  previousResults,
-  hideNumbers,
-  activeSide,
-}: {
+export const GameResultsBar = (props: {
   gameResults: GameResultsDistribution;
   previousResults?: GameResultsDistribution;
   hideNumbers?: boolean;
   activeSide: Side;
 }) => {
-  const total = getTotalGames(gameResults);
+  const total = getTotalGames(props.gameResults);
   const threshold = 0.3;
   const showPercentageThreshold = 0.4;
   const fontSize = 10;
-  const percentWhite = gameResults.white / total;
+  const percentWhite = props.gameResults.white / total;
   const whiteResults = (
     <div
       style={s(
-        c.width(`${(gameResults.white / total) * 100}%`),
+        c.width(`${(props.gameResults.white / total) * 100}%`),
         c.bg(c.grays[90]),
         c.px(4),
         c.alignCenter,
         c.row,
-        activeSide === "black" ? c.justifyEnd : c.justifyStart
+        props.activeSide === "black" ? c.justifyEnd : c.justifyStart
       )}
     >
-      {percentWhite > threshold && !hideNumbers && (
+      {percentWhite > threshold && !props.hideNumbers && (
         <>
           <CMText
             style={s(c.fg(c.grays[10]), c.weightBold, c.fontSize(fontSize))}
           >
-            {formatWinPercentage(gameResults.white / total)}
+            {formatWinPercentage(props.gameResults.white / total)}
             {percentWhite > showPercentageThreshold && <span class="">%</span>}
           </CMText>
-          {activeSide === "white" && (
+          {props.activeSide === "white" && (
             <MovementIndicator
               side={"white"}
-              results={gameResults}
-              previous={previousResults}
+              results={props.gameResults}
+              previous={props.previousResults}
             />
           )}
         </>
       )}
     </div>
   );
-  const percentBlack = gameResults.black / total;
+  const percentBlack = props.gameResults.black / total;
   const blackResults = (
     <div
       style={s(
-        c.width(`${(gameResults.black / total) * 100}%`),
+        c.width(`${(props.gameResults.black / total) * 100}%`),
         c.bg(c.grays[6]),
         c.alignCenter,
         c.row,
         c.px(4),
-        activeSide === "black" ? c.justifyStart : c.justifyEnd
+        props.activeSide === "black" ? c.justifyStart : c.justifyEnd
       )}
     >
-      {gameResults.black / total > threshold && !hideNumbers && (
+      {props.gameResults.black / total > threshold && !props.hideNumbers && (
         <>
           <CMText
             style={s(c.fg(c.grays[90]), c.weightBold, c.fontSize(fontSize))}
           >
-            {formatWinPercentage(gameResults.black / total)}
+            {formatWinPercentage(props.gameResults.black / total)}
             {percentBlack > showPercentageThreshold && <span class="">%</span>}
           </CMText>
-          {activeSide === "black" && (
+          {props.activeSide === "black" && (
             <MovementIndicator
               side={"black"}
-              results={gameResults}
-              previous={previousResults}
+              results={props.gameResults}
+              previous={props.previousResults}
             />
           )}
         </>
@@ -87,7 +82,7 @@ export const GameResultsBar = ({
     </div>
   );
   const [first, last] =
-    activeSide === "white"
+    props.activeSide === "white"
       ? [whiteResults, blackResults]
       : [blackResults, whiteResults];
   return (
@@ -104,18 +99,18 @@ export const GameResultsBar = ({
       {first}
       <div
         style={s(
-          c.width(`${(gameResults.draw / total) * 100}%`),
+          c.width(`${(props.gameResults.draw / total) * 100}%`),
           c.bg(c.grays[40]),
           c.center
         )}
       >
-        {gameResults.draw / total > threshold &&
-          !hideNumbers &&
-          !activeSide && (
+        {props.gameResults.draw / total > threshold &&
+          !props.hideNumbers &&
+          !props.activeSide && (
             <CMText
               style={s(c.fg(c.grays[75]), c.weightBold, c.fontSize(fontSize))}
             >
-              {formatWinPercentage(gameResults.draw / total)}
+              {formatWinPercentage(props.gameResults.draw / total)}
             </CMText>
           )}
       </div>
@@ -124,35 +119,31 @@ export const GameResultsBar = ({
   );
 };
 
-export const MovementIndicator = ({
-  results,
-  previous,
-  side,
-}: {
+export const MovementIndicator = (props: {
   results: GameResultsDistribution;
   previous: GameResultsDistribution;
   side: Side;
 }) => {
-  if (getTotalGames(results) < 10 || !previous) {
+  if (getTotalGames(props.results) < 10 || !props.previous) {
     return null;
   }
 
   let icon = null;
   let color = null;
   const threshold = 0.02;
-  const oldWr = getWinRate(previous, side);
-  const newWr = getWinRate(results, side);
+  const oldWr = getWinRate(props.previous, props.side);
+  const newWr = getWinRate(props.results, props.side);
   if (newWr < oldWr - threshold) {
     if (
-      getDrawAdjustedWinRate(results, side) <
-      getDrawAdjustedWinRate(previous, side) - threshold
+      getDrawAdjustedWinRate(props.results, props.side) <
+      getDrawAdjustedWinRate(props.previous, props.side) - threshold
     ) {
       icon = "fa-sharp fa-arrow-down-right";
-      color = side === "white" ? c.reds[45] : c.reds[55];
+      color = props.side === "white" ? c.reds[45] : c.reds[55];
     }
   } else if (newWr > oldWr + threshold) {
     icon = "fa-sharp fa-arrow-up-right";
-    color = side === "white" ? c.colors.success : c.colors.success;
+    color = props.side === "white" ? c.colors.success : c.colors.success;
   }
   if (!icon) {
     return null;

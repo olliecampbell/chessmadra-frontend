@@ -1,37 +1,23 @@
 // import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
 import {
-  isNil,
-  sortBy,
   filter,
-  range,
-  forEach,
   some,
   values,
   sum,
 } from "lodash-es";
-import { useIsMobile } from "~/utils/isMobile";
-import { intersperse } from "~/utils/intersperse";
 import {
   useRepertoireState,
   quick,
-  useSidebarState,
   getAppState,
 } from "~/utils/app_state";
-import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
-import { Accessor, createEffect, createMemo, For, Show } from "solid-js";
-import { Intersperse } from "./Intersperse";
-import { RepertoireMove, Side } from "~/utils/repertoire";
+import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
-import { SidebarHeader } from "./RepertoireEditingHeader";
 import { bySide } from "~/utils/repertoire";
 import { isMoveDifficult } from "~/utils/srs";
 import { countQueue } from "~/utils/queues";
-import { pluralize } from "~/utils/pluralize";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { ReviewText } from "./ReviewText";
 import { Label } from "./Label";
@@ -40,8 +26,8 @@ export const PreReview = (props: { side: Side | null }) => {
   const [numMovesDueBySide] = useRepertoireState((s) => [
     bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
   ]);
-  let actions = () => {
-    let actions: SidebarAction[] = [];
+  const actions = () => {
+    const actions: SidebarAction[] = [];
     const queue = getAppState().repertoireState.reviewState.buildQueue({
       side: props.side,
       filter: "due",
@@ -125,7 +111,7 @@ export const PreReview = (props: { side: Side | null }) => {
       right: `${numMyMoves} moves`,
       style: "secondary",
     });
-    let side = props.side;
+    const side = props.side;
     if (side) {
       actions.push({
         onPress: () => {
@@ -146,6 +132,6 @@ export const PreReview = (props: { side: Side | null }) => {
       header={"What would you like to practice?"}
       actions={actions()}
       bodyPadding={true}
-    ></SidebarTemplate>
+     />
   );
 };

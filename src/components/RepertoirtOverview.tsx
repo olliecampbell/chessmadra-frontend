@@ -10,7 +10,7 @@ import {
   getAppState,
 } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
-import { lineToPgn, pgnToLine, Side } from "~/utils/repertoire";
+import { Side } from "~/utils/repertoire";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { CoverageBar } from "./CoverageBar";
 import { ReviewText } from "./ReviewText";
@@ -18,7 +18,6 @@ import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
 import {
   BrowsingMode,
-  SidebarOnboardingImportType,
 } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import {
@@ -32,16 +31,14 @@ import {
 import { Pressable } from "./Pressable";
 import { useHovering } from "~/mocks";
 import { clsx } from "~/utils/classes";
-import { InstructiveGame, ModelGame } from "~/utils/models";
+import { InstructiveGame } from "~/utils/models";
 import { SidebarInstructiveGames } from "./SidebarInstructiveGames";
 import {
   ChooseImportSourceOnboarding,
-  ImportOnboarding,
   TrimRepertoireOnboarding,
 } from "./SidebarOnboarding";
 import { isDevelopment } from "~/utils/env";
 import { PreReview } from "./PreReview";
-import { LOTS_DUE_MINIMUM } from "~/utils/review";
 import { PreBuild } from "./PreBuild";
 import { useIsMobile } from "~/utils/isMobile";
 import { Label } from "./Label";
@@ -116,7 +113,7 @@ export const RepertoireOverview = (props: {}) => {
     },
   ];
   const reviewTimer = () => {
-    let reviewTimer = (
+    const reviewTimer = (
       <ReviewText
         date={earliestDueDate()}
         numDue={numMovesDueFromHere()}

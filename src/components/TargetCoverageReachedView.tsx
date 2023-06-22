@@ -1,13 +1,11 @@
 import { Spacer } from "~/components/Space";
 import { isEmpty, cloneDeep } from "lodash-es";
-import { useResponsive } from "~/utils/useResponsive";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { quick, useSidebarState, useRepertoireState } from "~/utils/app_state";
 import { CMText } from "./CMText";
 import { trackEvent } from "~/utils/trackEvent";
 import { c, s } from "~/utils/styles";
-import { Intersperse } from "./Intersperse";
-import { Accessor, createEffect, For, Show } from "solid-js";
+import { Accessor, For, Show } from "solid-js";
 import { SidebarAction } from "./SidebarActions";
 
 export const TargetCoverageReachedView = () => {
@@ -79,14 +77,14 @@ export const TargetCoverageReachedView = () => {
   );
 };
 
-export const PlayFromHere = ({ isolated }: { isolated?: boolean }) => {
+export const PlayFromHere = (props: { isolated?: boolean }) => {
   const [planSections, showPlansState] = useSidebarState(([s]) => [
     cloneDeep(s.planSections),
     s.showPlansState,
   ]);
   return (
     <>
-      <Show when={showPlansState().coverageReached || isolated}>
+      <Show when={showPlansState().coverageReached || props.isolated}>
         <CMText
           style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
         >

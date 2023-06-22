@@ -13,12 +13,11 @@ import { AnnotationEditor } from "./AnnotationEditor";
 import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { MoveAnnotationReview } from "~/utils/models";
 import { pluralize } from "~/utils/pluralize";
-import { useOnScreen } from "~/utils/useIntersectionObserver";
 import { LazyLoad } from "./LazyLoad";
-import { createEffect, createSignal, For, onMount, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 
-export const ReviewMoveAnnotationsView = ({}) => {
+export const ReviewMoveAnnotationsView = (props) => {
   const isMobile = useIsMobile();
   const [user] = useUserState((s) => [s.user]);
   const [
@@ -68,13 +67,11 @@ export const ReviewMoveAnnotationsView = ({}) => {
   );
 };
 
-const MoveAnnotationsReview = ({
-  review,
-}: {
+const MoveAnnotationsReview = (props: {
   review: MoveAnnotationReview;
 }) => {
-  console.log("Epd is ", review.epd);
-  const fen = `${review.epd} 0 1`;
+  console.log("Epd is ", props.review.epd);
+  const fen = `${props.review.epd} 0 1`;
   const position = new Chess(fen);
   const isMobile = useIsMobile();
   const [user] = useUserState((s) => [s.user]);
@@ -110,7 +107,7 @@ const MoveAnnotationsReview = ({
           <ChessboardView
             onSquarePress={() => {}}
             chessboardInterface={createStaticChessState({
-              epd: review.epd,
+              epd: props.review.epd,
               side: "white",
               nextMove: undefined,
             })}
@@ -121,7 +118,7 @@ const MoveAnnotationsReview = ({
           onPress={() => {
             const windowReference = window.open("about:blank", "_blank");
             if (windowReference) {
-              windowReference.location = `https://lichess.org/analysis/${review.epd}`;
+              windowReference.location = `https://lichess.org/analysis/${props.review.epd}`;
             }
           }}
         >
@@ -145,11 +142,11 @@ const MoveAnnotationsReview = ({
       <div style={s(c.column, c.flexShrink(1))}>
         <CMText style={s(c.fontSize(24), c.weightBold)}>
           {capitalize(position.turn() === "b" ? "Black" : "White")} plays{" "}
-          {review.san}
+          {props.review.san}
         </CMText>
         <Spacer height={12} />
         {intersperse(
-          review.annotations.map((x, i) => {
+          props.review.annotations.map((x, i) => {
             return (
               <div
                 style={s(
@@ -165,8 +162,8 @@ const MoveAnnotationsReview = ({
                     onUpdate={(v) => {
                       quick((s) => {
                         s.adminState.editMoveAnnotation({
-                          epd: review.epd,
-                          san: review.san,
+                          epd: props.review.epd,
+                          san: props.review.san,
                           userId: x.userId,
                           text: v,
                         });
@@ -206,7 +203,7 @@ const MoveAnnotationsReview = ({
                       c.selfEnd
                     )}
                     onPress={() => {
-                      acceptMoveAnnotation(review.epd, review.san, x.text);
+                      acceptMoveAnnotation(props.review.epd, props.review.san, x.text);
                       setReviewed(true);
                     }}
                   >
@@ -237,11 +234,11 @@ const MoveAnnotationsReview = ({
             c.selfEnd
           )}
           onPress={() => {
-            rejectMoveAnnotations()(review.epd, review.san);
+            rejectMoveAnnotations()(props.review.epd, props.review.san);
             setReviewed(true);
           }}
         >
-          {`Reject ${pluralize(review.annotations.length, "annotation")}`}
+          {`Reject ${pluralize(props.review.annotations.length, "annotation")}`}
         </Button>
       </div>
     </div>

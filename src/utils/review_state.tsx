@@ -26,15 +26,12 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { RepertoireState } from "./repertoire_state";
 import { trackEvent } from "~/utils/trackEvent";
 import client from "~/utils/client";
-import { PlaybackSpeed } from "~/types/VisualizationState";
 import { START_EPD } from "./chess";
 import { logProxy } from "./state";
 import {
   ChessboardInterface,
-  ChessboardViewState,
   createChessboardInterface,
 } from "./chessboard_interface";
-import { unwrap } from "solid-js/store";
 import { PracticeComplete } from "~/components/PracticeComplete";
 import { QuizMove } from "./queues";
 import { isMoveDifficult } from "./srs";
@@ -285,7 +282,7 @@ export const getInitialReviewState = (
                 responses,
                 (r) => r.srs.needsReview
               );
-              let shouldAdd =
+              const shouldAdd =
                 (options.filter === "difficult-due" &&
                   some(responses, (r) => isMoveDifficult(r)) &&
                   needsToReviewAny) ||
@@ -311,13 +308,13 @@ export const getInitialReviewState = (
           recurse(options.startPosition ?? START_EPD, options.startLine ?? []);
         });
         if (options.filter === "common") {
-          let byIncidence = sortBy(
+          const byIncidence = sortBy(
             map(queue, (m) => m.moves[0].incidence ?? 0),
             (v) => -v
           );
-          let commonCutoff =
+          const commonCutoff =
             byIncidence[COMMON_MOVES_CUTOFF] ?? first(byIncidence);
-          let commonQueue = take(
+          const commonQueue = take(
             filter(queue, (m) => m.moves[0].incidence >= commonCutoff),
             COMMON_MOVES_CUTOFF
           );
@@ -373,17 +370,17 @@ export const getInitialReviewState = (
     c.delegate = {
       askForPromotionPiece: (requestedMove: Move) => {
         return get(([s]) => {
-          let currentMove = s.currentMove?.moves[0];
+          const currentMove = s.currentMove?.moves[0];
           if (!currentMove) {
             return null;
           }
-          let moveObjects = s.chessboard
+          const moveObjects = s.chessboard
             .get((s) => s.position)
             .validateMoves([currentMove?.sanPlus]);
           if (!moveObjects) {
             return null;
           }
-          let moveObject = moveObjects[0];
+          const moveObject = moveObjects[0];
           if (requestedMove.promotion) {
             return moveObject.promotion ?? null;
           }

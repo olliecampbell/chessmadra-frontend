@@ -1,4 +1,4 @@
-import { Component, For, Show } from "solid-js";
+import { Component, For } from "solid-js";
 import { clsx } from "~/utils/classes";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { EcoCode, InstructiveGame } from "~/utils/models";

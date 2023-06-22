@@ -1,5 +1,4 @@
 import { useResponsive } from "~/utils/useResponsive";
-import { CMText } from "../CMText";
 import { quick } from "~/utils/app_state";
 import { SidebarTemplate } from "../SidebarTemplate";
 import { Spacer } from "../Space";

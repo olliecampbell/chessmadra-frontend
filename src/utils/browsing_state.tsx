@@ -3,7 +3,6 @@ import {
   EcoCode,
   MoveTag,
   PositionReport,
-  SuggestedMove,
 } from "~/utils/models";
 import {
   isEmpty,
@@ -58,32 +57,22 @@ import { isTheoryHeavy } from "./theory_heavy";
 import { parsePlans } from "./plans";
 // solid TODO
 // import * as Sentry from "sentry-expo";
-import { Responsive, useResponsive } from "./useResponsive";
+import { Responsive } from "./useResponsive";
 // solid TODO
 // import { Identify, identify } from "@amplitude/analytics-browser";
 import client from "./client";
-import { Component, createContext, createSignal, JSXElement } from "solid-js";
+import { Component, JSXElement } from "solid-js";
 import { identify, Identify } from "@amplitude/analytics-browser";
-import { Animated } from "./animation";
-import { animateTo } from "./animation";
 import {
   ChessboardInterface,
-  ChessboardViewState,
   createChessboardInterface,
 } from "./chessboard_interface";
-import { unwrap } from "solid-js/store";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 import { Chess } from "@lubert/chess.ts";
 import { PAYMENT_ENABLED } from "./payment";
 import {
-  Dropdown,
   FirstLineSavedOnboarding,
 } from "~/components/SidebarOnboarding";
-import { c, s } from "./styles";
-import { CMText } from "~/components/CMText";
-import { Spacer } from "~/components/Space";
-import { Pressable } from "~/components/Pressable";
-import { LichessLogoIcon } from "~/components/icons/LichessLogoIcon";
 import { View } from "~/types/View";
 import * as Sentry from "@sentry/browser";
 
@@ -282,7 +271,7 @@ export const getInitialBrowsingState = (
     goToBuildOnboarding: () =>
       set(([s, rs]) => {
         s.clearViews();
-        let side = rs.onboarding.side;
+        const side = rs.onboarding.side;
         if (!side) {
           return;
         }
@@ -710,7 +699,7 @@ export const getInitialBrowsingState = (
                     const epds: string[] = [];
                     game.moves.forEach((move) => {
                       chess.move(move);
-                      let epd = genEpd(chess);
+                      const epd = genEpd(chess);
                       epds.push(epd);
                     });
                     game.epds = epds;

@@ -1,6 +1,6 @@
 import client from "~/utils/client";
 import { c, s } from "~/utils/styles";
-import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { trackEvent } from "~/utils/trackEvent";
 import { Puff } from "solid-spinner";
 import { TextInput } from "./TextInput";

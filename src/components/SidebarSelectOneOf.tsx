@@ -5,10 +5,7 @@ import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import {
   Component,
-  createSignal,
-  createEffect,
   For,
-  on,
   Show,
   JSX,
 } from "solid-js";

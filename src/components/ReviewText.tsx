@@ -1,6 +1,5 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
-import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { pluralize } from "~/utils/pluralize";
 import { destructure } from "@solid-primitives/destructure";
@@ -43,7 +42,7 @@ export const ReviewText = (props: {
         <i
           style={s(c.fg(color()), c.fontSize(12))}
           class="fa fa-clock pl-2"
-        ></i>
+         />
       </div>
     </>
   );

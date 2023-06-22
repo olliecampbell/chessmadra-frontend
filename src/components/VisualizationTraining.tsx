@@ -1,32 +1,21 @@
 import {
   useVisualizationState,
   quick,
-  useTrainersState,
   getAppState,
 } from "~/utils/app_state";
 import { For, onMount } from "solid-js";
-import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
-import { BP, useResponsive } from "~/utils/useResponsive";
-import { createElementBounds } from "@solid-primitives/bounds";
-import { BackSection } from "./BackSection";
-import {
-  VERTICAL_BREAKPOINT,
-  SidebarLayout,
-  NavBreadcrumbs,
-  AnalyzeOnLichessButton,
-} from "./SidebarLayout";
-import { Dynamic } from "solid-js/web";
+import { createEffect, Match, Switch } from "solid-js";
+import { useResponsive } from "~/utils/useResponsive";
+
+
 import { Spacer } from "./Space";
 import {
   SidebarAction,
   SidebarFullWidthButton,
   SidebarSectionHeader,
 } from "./SidebarActions";
-import { c, s } from "~/utils/styles";
-import { SettingsButtons } from "./Settings";
+import { s } from "~/utils/styles";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { trackEvent } from "~/utils/trackEvent";
-import { clsx } from "~/utils/classes";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getPlaybackSpeedDescription } from "~/utils/playback_speed";
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
@@ -62,8 +51,8 @@ export const VisualizationSidebar = () => {
   createEffect(() => {
     console.log("progress is ", progressMessage());
   });
-  let actions = () => {
-    let actions: SidebarAction[] = [];
+  const actions = () => {
+    const actions: SidebarAction[] = [];
     if (isDone()) {
       actions.push({
         onPress: () => {
@@ -143,7 +132,7 @@ export const VisualizationSidebar = () => {
   );
 };
 
-const PlaypackSpeedSettings = ({}: {}) => {
+const PlaypackSpeedSettings = (props: {}) => {
   const selected =
     getAppState().trainersState.visualizationState.playbackSpeedUserSetting;
   const onSelect = (t: PlaybackSpeed) => {
@@ -181,7 +170,7 @@ const PlaypackSpeedSettings = ({}: {}) => {
   );
 };
 
-const NumberHiddenMovesSettings = ({}: {}) => {
+const NumberHiddenMovesSettings = (props: {}) => {
   const selected = () =>
     getAppState().trainersState.visualizationState.plyUserSetting;
   const onSelect = (t: number) => {
@@ -220,7 +209,7 @@ interface DifficultySetting {
   text: string;
 }
 
-const PuzzleDifficultySettings = ({}: {}) => {
+const PuzzleDifficultySettings = (props: {}) => {
   const selected = () =>
     getAppState().trainersState.visualizationState.playbackSpeedUserSetting;
   const onSelect = (t: DifficultySetting) => {

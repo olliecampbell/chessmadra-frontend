@@ -1,13 +1,11 @@
-import { includes } from "lodash-es";
 import {
   useRepertoireState,
   useSidebarState,
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createEffect, createSignal, Match, Show, Switch } from "solid-js";
-import { BP, useResponsive } from "~/utils/useResponsive";
-import { createElementBounds } from "@solid-primitives/bounds";
+import { createEffect, Match, Switch } from "solid-js";
+import { useResponsive } from "~/utils/useResponsive";
 import { BackSection } from "./BackSection";
 import {
   VERTICAL_BREAKPOINT,

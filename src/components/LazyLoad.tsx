@@ -1,5 +1,3 @@
-import { s } from "~/utils/styles";
-import { useOnScreen } from "~/utils/useIntersectionObserver";
 import { createVisibilityObserver } from "@solid-primitives/intersection-observer";
 import { createEffect, createSignal, Show } from "solid-js";
 

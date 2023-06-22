@@ -22,9 +22,8 @@ import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
 import { trackEvent } from "~/utils/trackEvent";
-import { Component, JSXElement, Match, Show, Switch } from "solid-js";
+import { JSXElement, Match, Show, Switch } from "solid-js";
 import { useHovering } from "~/mocks";
-import { Pressable } from "./Pressable";
 import { Intersperse } from "./Intersperse";
 import { clsx } from "~/utils/classes";
 
@@ -374,10 +373,7 @@ export const SidebarActions = (props: {
   );
 };
 
-export const SidebarSectionHeader = ({
-  text,
-  right,
-}: {
+export const SidebarSectionHeader = (props: {
   text: string;
   right?: JSXElement;
 }) => {
@@ -394,9 +390,9 @@ export const SidebarSectionHeader = ({
       )}
     >
       <CMText style={s(c.fontSize(14), c.fg(c.colors.textTertiary))}>
-        {text}
+        {props.text}
       </CMText>
-      {right}
+      {props.right}
     </div>
   );
 };

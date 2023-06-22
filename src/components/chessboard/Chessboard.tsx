@@ -1,25 +1,20 @@
-import { Chess, PieceSymbol, SQUARES } from "@lubert/chess.ts";
+import { PieceSymbol, SQUARES } from "@lubert/chess.ts";
 import { getStatic } from "~/utils/assets";
 import { s, c } from "~/utils/styles";
 import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "~/types/Chess";
 import { PlaybackSpeed } from "~/types/VisualizationState";
-import { getSquareOffset, START_EPD } from "../../utils/chess";
+import { getSquareOffset } from "../../utils/chess";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
 import {
   cloneDeep,
   find,
-  first,
   forEach,
-  isEmpty,
-  isEqual,
-  isNil,
-  last,
   range,
 } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
-import { getAppState, quick } from "~/utils/app_state";
+import { getAppState } from "~/utils/app_state";
 import {
   BoardTheme,
   BOARD_THEMES_BY_ID,
@@ -35,21 +30,15 @@ import {
   createMemo,
   createSignal,
   For,
-  onMount,
   Show,
 } from "solid-js";
-import { Motion } from "@motionone/solid";
-import { times } from "~/utils/times";
 import { createElementBounds, NullableBounds } from "@solid-primitives/bounds";
 import { destructure } from "@solid-primitives/destructure";
-import { createStore, produce, Store, unwrap } from "solid-js/store";
 import {
   ChessboardInterface,
   ChessboardViewState,
 } from "~/utils/chessboard_interface";
-import anime from "animejs";
-import { createChessProxy } from "~/utils/chess_proxy";
-import { pgnToLine, toSide } from "~/utils/repertoire";
+import { toSide } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 
 export const EMPTY_DRAG = {
@@ -132,7 +121,7 @@ export function ChessboardView(props: {
   const chessboardStore = createMemo(() =>
     props.chessboardInterface.get((s) => s)
   );
-  let preview = true;
+  const preview = true;
   // testing preview move
   const availableMoves = () => chessboardStore().availableMoves;
 
@@ -190,8 +179,8 @@ export function ChessboardView(props: {
   ): [Square, number, number] => {
     const columnPercent = gesture.x / chessboardLayout.width;
     const rowPercent = gesture.y / chessboardLayout.height;
-    let row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
-    let column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
+    const row = Math.min(7, Math.max(0, Math.floor(rowPercent * 8)));
+    const column = Math.min(7, Math.max(0, Math.floor(columnPercent * 8)));
     let square = `${COLUMNS[column]}${ROWS[7 - row]}`;
     if (flipped()) {
       square = `${COLUMNS[7 - column]}${ROWS[row]}`;
@@ -252,7 +241,7 @@ export function ChessboardView(props: {
     );
     const piece = position().get(square);
     console.log("----", drag().square, square, piece);
-    let availableMove = find(
+    const availableMove = find(
       chessboardStore().availableMoves,
       (m) => m.to == square
     );
@@ -330,17 +319,17 @@ export function ChessboardView(props: {
       return;
     }
     props.chessboardInterface.set((s) => {
-      let newDrag = {
+      const newDrag = {
         square: drag().square,
         enoughToDrag: drag().enoughToDrag,
         x: 0,
         y: 0,
         transform: { x: 0, y: 0 },
       };
-      let tap = getTapOffset(evt, chessboardLayout);
+      const tap = getTapOffset(evt, chessboardLayout);
       const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, tap);
       if (newSquare !== s.draggedOverSquare) {
-        let isOverMovableSquare = s.availableMoves.find(
+        const isOverMovableSquare = s.availableMoves.find(
           (m) => m.to == newSquare
         );
         if (isOverMovableSquare) {
@@ -350,10 +339,10 @@ export function ChessboardView(props: {
         }
       }
       forEach(["x", "y"] as ("x" | "y")[], (key) => {
-        let prev = drag()[key];
+        const prev = drag()[key];
 
         const curr = tap[key];
-        let delta = curr - prev;
+        const delta = curr - prev;
         newDrag[key] = curr;
         newDrag.transform[key] = drag().transform[key] + delta;
       });
@@ -374,7 +363,7 @@ export function ChessboardView(props: {
     if (newSquare === drag().square && tapAction()) {
       tapAction()?.();
     } else {
-      let availableMove = find(
+      const availableMove = find(
         chessboardStore().availableMoves,
         (m) => m.to == newSquare
       );
@@ -576,7 +565,7 @@ export function ChessboardView(props: {
                 c.round,
                 c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
               )}
-            ></div>
+             />
           </div>
           <div
             id={"ring-indicator"}
@@ -593,10 +582,10 @@ export function ChessboardView(props: {
               c.keyedProp("--shadow-color")(chessboardStore().ringColor),
               c.noPointerEvents
             )}
-          ></div>
+           />
           <For each={Object.keys(SQUARES)}>
             {(square) => {
-              let debug = "e2";
+              const debug = "e2";
               // createEffect(() => {
               //   if (square === debug) {
               //     console.log("piece", piece(), pos().ascii());
@@ -621,7 +610,7 @@ export function ChessboardView(props: {
                   c.top(`${getSquareOffset(square, flipped()).y * 100}%`),
                   c.left(`${getSquareOffset(square, flipped()).x * 100}%`)
                 );
-                let animated = false;
+                const animated = false;
                 if (dragging() && drag().enoughToDrag) {
                   posStyles = s(posStyles, {
                     translate: `${drag().transform.x}px ${
@@ -724,7 +713,7 @@ export function ChessboardView(props: {
                       const isDraggedOverSquare = createMemo(
                         () => chessboardStore().draggedOverSquare == square()
                       );
-                      let availableMove = createMemo(
+                      const availableMove = createMemo(
                         () =>
                           availableMoves().find((m) => m.to == square()) !==
                           undefined
@@ -742,7 +731,7 @@ export function ChessboardView(props: {
                           setHighlightType("full");
                           return;
                         }
-                        let hasPiece = position().get(square()) != null;
+                        const hasPiece = position().get(square()) != null;
                         if (availableMove()) {
                           if (hasPiece) {
                             setHighlightColor("next");

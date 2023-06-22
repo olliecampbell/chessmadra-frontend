@@ -11,7 +11,7 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://localhost:8040";
 }
 if (import.meta.env.VITE_API_ENV == "production") {
-  baseURL = "https://chessmadra.com";
+  baseURL = "https://chessbook.com";
 }
 const client = applyCaseMiddleware(
   axios.create({

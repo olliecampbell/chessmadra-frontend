@@ -2,7 +2,6 @@ import { c, s } from "~/utils/styles";
 import { useResponsive } from "~/utils/useResponsive";
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
-import { BackSection } from "./BackSection";
 
 export const SidebarContainer = (props: {
   setAnimateSidebar: (fn: (dir: "left" | "right") => void) => void;
@@ -15,7 +14,7 @@ export const SidebarContainer = (props: {
       if (!previousRef() || !currentRef()) {
         return;
       }
-      let clone = currentRef().cloneNode(true);
+      const clone = currentRef().cloneNode(true);
       previousRef().replaceChildren(clone);
       const ms = 200;
       const duration = `${ms}ms`;
@@ -105,7 +104,7 @@ export const SidebarContainer = (props: {
             c.displayFlex,
             c.noPointerEvents
           )}
-        ></div>
+         />
         <div
           ref={setCurrentRef}
           style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}

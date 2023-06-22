@@ -1,10 +1,7 @@
-import { useRepertoireState, useAppState, quick } from "~/utils/app_state";
+import { useRepertoireState, useAppState } from "~/utils/app_state";
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
-import { LoginSidebar } from "~/components/LoginSidebar";
-import ForgotPassword from "~/components/ForgotPassword";
-import { lineToPgn } from "./repertoire";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");

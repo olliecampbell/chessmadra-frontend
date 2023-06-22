@@ -4,9 +4,8 @@ import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { isEmpty, isNil, take } from "lodash-es";
 import { Button } from "~/components/Button";
-import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "./CMText";
-import { quick, useAdminState, useUserState } from "~/utils/app_state";
+import { quick, useAdminState } from "~/utils/app_state";
 // import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
@@ -15,9 +14,7 @@ import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
 import {
   createEffect,
-  createMemo,
   createSignal,
-  For,
   Index,
   Show,
 } from "solid-js";
@@ -25,7 +22,7 @@ import { A } from "solid-start";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 import { LazyLoad } from "./LazyLoad";
 
-export const MoveAnnotationsDashboard = ({}) => {
+export const MoveAnnotationsDashboard = (props) => {
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
   createEffect(() => {
     console.log("dashboard", dashboard());
@@ -33,7 +30,7 @@ export const MoveAnnotationsDashboard = ({}) => {
   const [activeTab, setActiveTab] = createSignal("Needed");
   createEffect(() => {
     quick((s) => s.adminState.fetchMoveAnnotationDashboard());
-  }, []);
+  }, );
   return (
     <AdminPageLayout>
       {(() => {
