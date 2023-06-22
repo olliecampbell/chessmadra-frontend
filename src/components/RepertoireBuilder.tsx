@@ -26,7 +26,7 @@ import { TransposedView } from "./TransposedView";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
 import { SavedLineView } from "./SavedLineView";
 import { Spacer } from "./Space";
-import { SidebarActions } from "./SidebarActions";
+import { SidebarActionsLegacy } from "./SidebarActions";
 import { c, s } from "~/utils/styles";
 import { SettingsButtons } from "./Settings";
 
@@ -97,7 +97,7 @@ export const RepertoireBuilder = () => {
         </Switch>
       </div>
       <Spacer height={44} />
-      <SidebarActions />
+      <SidebarActionsLegacy />
     </>
   );
 

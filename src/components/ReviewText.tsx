@@ -3,14 +3,10 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { pluralize } from "~/utils/pluralize";
+import { destructure } from "@solid-primitives/destructure";
 
-export const ReviewText = ({
-  date: dateString,
-  numDue,
-  inverse,
-  overview,
-}: {
-  date: string;
+export const ReviewText = (props: {
+  date?: string;
   inverse?: boolean;
   overview?: boolean;
   numDue: number;
@@ -21,31 +17,34 @@ export const ReviewText = ({
     c.fontSize(12),
     c.lineHeight("1.3rem")
   );
-  const date = new Date(dateString);
-  const numMovesDueFromHere = numDue;
+  const date = () => new Date(props.date || "");
+  const numMovesDueFromHere = () => props.numDue;
   const now = new Date();
-  const diff = date.getTime() - now.getTime();
-  let dueString = "";
-  let color = c.grays[50];
-  const prefix = overview ? `Due in` : `Due in`;
-  console.log("diff", diff, dateString);
-  if (diff < 0) {
-    color = inverse ? c.oranges[30] : c.oranges[70];
-    dueString = `${numMovesDueFromHere.toLocaleString()} Due`;
-  } else {
-    dueString = `${prefix} ${getHumanTimeUntil(date)}`;
-  }
+  const diff = () => date().getTime() - now.getTime();
+  const prefix = () => (props.overview ? `Due in` : `Due in`);
+  const { color, dueString } = destructure(() => {
+    let dueString = "";
+    let color = c.grays[50];
+    if (!props.date || diff() < 0) {
+      color = props.inverse ? c.oranges[30] : c.oranges[70];
+      dueString = `${numMovesDueFromHere().toLocaleString()} Due`;
+    } else {
+      dueString = `${prefix()} ${getHumanTimeUntil(date())}`;
+    }
+    return {
+      color,
+      dueString,
+    };
+  });
   return (
     <>
-      {
-        <div style={s(c.row, c.alignCenter)}>
-          <CMText style={s(textStyles, c.fg(color))}>{dueString}</CMText>
-          <i
-            style={s(c.fg(color), c.fontSize(12))}
-            class="fa fa-clock pl-2"
-          ></i>
-        </div>
-      }
+      <div style={s(c.row, c.alignCenter)}>
+        <CMText style={s(textStyles, c.fg(color()))}>{dueString()}</CMText>
+        <i
+          style={s(c.fg(color()), c.fontSize(12))}
+          class="fa fa-clock pl-2"
+        ></i>
+      </div>
     </>
   );
 };

@@ -21,12 +21,15 @@ export default [
   },
   js.configs.recommended,
   ...compat.config({
-    plugins: ["solid"],
+    plugins: ["solid", "unused-imports"],
     extends: [
       "eslint:recommended",
       "plugin:solid/typescript",
       "plugin:@typescript-eslint/recommended",
     ],
+    rules: {
+      "unused-imports/no-unused-imports-ts": 2,
+    },
   }),
   {
     files: ["**/*.{ts,tsx,js}"],
