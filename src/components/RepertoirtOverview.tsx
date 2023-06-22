@@ -91,7 +91,7 @@ export const RepertoireOverview = (props: {}) => {
   const options = () =>
     [
       {
-        right: (
+        right: !empty() && (
           <div style={s(c.height(4), c.row)}>
             <CoverageAndBar home={false} side={side()} />
           </div>
@@ -187,7 +187,7 @@ export const RepertoireOverview = (props: {}) => {
         style: "secondary",
       },
       {
-        hidden: !expanded(),
+        hidden: !(expanded() || empty()),
         onPress: () => {
           trackEvent("side_overview.import");
           quick((s) => {

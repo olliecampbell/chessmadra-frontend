@@ -86,22 +86,24 @@ export const PreReview = (props: { side: Side | null }) => {
     }
     const myMoves = getAppState().repertoireState.numMyMoves;
     const numMyMoves = props.side ? myMoves[props.side] : sum(values(myMoves));
-    actions.push({
-      onPress: () => {
-        quick((s) => {
-          s.repertoireState.browsingState.popView();
-          s.repertoireState.reviewState.startReview({
-            side: props.side,
-            filter: "all",
+    if (numMyMoves > due) {
+      actions.push({
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.browsingState.popView();
+            s.repertoireState.reviewState.startReview({
+              side: props.side,
+              filter: "all",
+            });
           });
-        });
-      },
-      text: props.side
-        ? `My entire ${props.side} repertoire`
-        : "My entire repertoire",
-      right: `${numMyMoves} moves`,
-      style: "secondary",
-    });
+        },
+        text: props.side
+          ? `My entire ${props.side} repertoire`
+          : "My entire repertoire",
+        right: `${numMyMoves} moves`,
+        style: "secondary",
+      });
+    }
     const side = props.side;
     if (side) {
       actions.push({
