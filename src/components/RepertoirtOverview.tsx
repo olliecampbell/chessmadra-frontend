@@ -16,9 +16,7 @@ import { CoverageBar } from "./CoverageBar";
 import { ReviewText } from "./ReviewText";
 import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
-import {
-  BrowsingMode,
-} from "~/utils/browsing_state";
+import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import {
   Component,
@@ -42,6 +40,7 @@ import { PreReview } from "./PreReview";
 import { PreBuild } from "./PreBuild";
 import { useIsMobile } from "~/utils/isMobile";
 import { Label } from "./Label";
+import { SidebarAction, SidebarActions } from "./SidebarActions";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -79,39 +78,6 @@ export const RepertoireOverview = (props: {}) => {
     });
   };
   const isMobile = useIsMobile();
-  const buildOptions = () => [
-    {
-      right: (
-        <div style={s(c.height(4), c.row)}>
-          <CoverageAndBar home={false} side={side()} />
-        </div>
-      ),
-
-      onPress: () => {
-        quick((s) => {
-          if (empty() || isNil(biggestMiss())) {
-            console.log("why?", biggestMiss(), empty());
-            s.repertoireState.browsingState.moveSidebarState("right");
-            startBrowsing("build", empty());
-            return;
-          }
-          trackEvent("side_overview.keep_building");
-          s.repertoireState.browsingState.pushView(PreBuild, {
-            props: { side: side() },
-          });
-        });
-      },
-      left: (
-        <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          {empty()
-            ? "Start building your repertoire"
-            : isNil(biggestMiss())
-            ? "Browse / add new moves"
-            : `Keep building ${!isMobile ? "your repertoire" : ""}`}
-        </CMText>
-      ),
-    },
-  ];
   const reviewTimer = () => {
     const reviewTimer = (
       <ReviewText
@@ -122,87 +88,106 @@ export const RepertoireOverview = (props: {}) => {
     );
     return reviewTimer;
   };
-  const reviewOptions = () => [
-    {
-      hidden: empty(),
-      onPress: () => {
-        quick((s) => {
-          trackEvent("side_overview.start_review");
-          s.repertoireState.browsingState.pushView(PreReview, {
-            props: { side: side() },
-          });
-        });
-      },
-      right: reviewTimer,
-      // disabled: numMovesDueFromHere() === 0,
-      left: (
-        <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          Practice your repertoire
-        </CMText>
-      ),
-    },
-    {
-      hidden: modelGames()?.length == 0,
-      onPress: () => {
-        trackEvent("side_overview.view_instructive_games");
-        quick((s) => {
-          s.repertoireState.browsingState.replaceView(SidebarInstructiveGames, {
-            props: { games: modelGames() },
-          });
-        });
-      },
-      left: (
-        <div class={clsx("row items-center")}>
-          <CMText style={s(textStyles)} class={clsx(textClasses)}>
-            View model games in lines you play
-          </CMText>
-          <Label>Beta</Label>
-        </div>
-      ),
-      right: (
-        <i
-          style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}
-          class={"fa fa-book-open"}
-        />
-      ),
-    },
-  ];
   const options = () =>
     [
       {
-        hidden: !empty(),
+        right: (
+          <div style={s(c.height(4), c.row)}>
+            <CoverageAndBar home={false} side={side()} />
+          </div>
+        ),
+
         onPress: () => {
-          trackEvent("side_overview.start_building");
           quick((s) => {
-            s.repertoireState.startBrowsing(side() as Side, "build");
-            trackEvent("side_overview.start_building");
+            if (empty() || isNil(biggestMiss())) {
+              s.repertoireState.browsingState.moveSidebarState("right");
+              startBrowsing("build", empty());
+              if (empty()) {
+                trackEvent("side_overview.start_building");
+              } else {
+                trackEvent("side_overview.keep_building");
+              }
+              return;
+            }
+            trackEvent("side_overview.keep_building");
+            s.repertoireState.browsingState.pushView(PreBuild, {
+              props: { side: side() },
+            });
           });
         },
-        left: (
+        text: (
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
-            {"Start building"}
+            {empty()
+              ? "Start building your repertoire"
+              : isNil(biggestMiss())
+              ? "Browse / add new moves"
+              : `Keep building ${!isMobile ? "your repertoire" : ""}`}
           </CMText>
         ),
-        right: null,
-        icon: empty() && "fa-sharp fa-plus",
+        style: "secondary",
       },
       {
+        hidden: empty(),
+        onPress: () => {
+          quick((s) => {
+            trackEvent("side_overview.start_review");
+            s.repertoireState.browsingState.pushView(PreReview, {
+              props: { side: side() },
+            });
+          });
+        },
+        right: reviewTimer,
+        // disabled: numMovesDueFromHere() === 0,
+        text: (
+          <CMText style={s(textStyles)} class={clsx(textClasses)}>
+            Practice your repertoire
+          </CMText>
+        ),
+        style: "secondary",
+      },
+      {
+        hidden: modelGames()?.length == 0,
+        onPress: () => {
+          trackEvent("side_overview.view_instructive_games");
+          quick((s) => {
+            s.repertoireState.browsingState.replaceView(
+              SidebarInstructiveGames,
+              {
+                props: { games: modelGames() },
+              }
+            );
+          });
+        },
+        text: (
+          <div class={clsx("row items-center")}>
+            <CMText style={s(textStyles)} class={clsx(textClasses)}>
+              View model games in lines you play
+            </CMText>
+            <Label>Beta</Label>
+          </div>
+        ),
+        right: null,
+        style: "secondary",
+      },
+      {
+        hidden: !expanded() || !isDevelopment,
         onPress: () => {
           trackEvent("side_overview.trim");
           quick((s) => {
             s.repertoireState.browsingState.pushView(TrimRepertoireOnboarding);
           });
         },
-        hidden: !isDevelopment,
-        left: (
+        text: (
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
             Trim repertoire
           </CMText>
         ),
         icon: "fa-sharp fa-file-import",
         right: null,
+        style: "secondary",
       },
       {
+        hidden: !expanded(),
         onPress: () => {
           trackEvent("side_overview.import");
           quick((s) => {
@@ -211,13 +196,14 @@ export const RepertoireOverview = (props: {}) => {
             );
           });
         },
-        left: (
+        text: (
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
             Import
           </CMText>
         ),
         icon: "fa-sharp fa-file-import",
         right: null,
+        style: "secondary",
       },
       {
         onPress: () => {
@@ -226,17 +212,18 @@ export const RepertoireOverview = (props: {}) => {
             s.repertoireState.exportPgn(side());
           });
         },
-        hidden: empty(),
-        left: (
+        hidden: !expanded(),
+        text: (
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
             Export repertoire
           </CMText>
         ),
         icon: "fa-sharp fa-arrow-down-to-line",
         right: null,
+        style: "secondary",
       },
       {
-        hidden: empty(),
+        hidden: !expanded(),
         onPress: () => {
           quick((s) => {
             trackEvent("side_overview.delete_repertoire");
@@ -245,23 +232,26 @@ export const RepertoireOverview = (props: {}) => {
             );
           });
         },
-        left: (
+        text: (
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
             Delete repertoire
           </CMText>
         ),
         icon: "fa-sharp fa-trash",
         right: null,
+        style: "secondary",
       },
     ].filter((o) => {
-      if (o.hidden) return false;
-      return empty() || expanded();
-    });
+      return !o.hidden;
+    }) as SidebarAction[];
   const [expanded, setExpanded] = createSignal(false);
   // let reviewStatus = `You have ${pluralize(
   //   numMovesDueFromHere,
   //   "move"
   // )} due for review`;
+  createEffect(() => {
+    console.log("options", options());
+  });
   const repertoireStatus = () => {
     if (empty()) {
       return `Your repertoire is empty`;
@@ -277,27 +267,7 @@ export const RepertoireOverview = (props: {}) => {
       bodyPadding={false}
     >
       <Spacer height={24} />
-
-      <Show when={!empty()}>
-        <div style={s(c.borderTop(`1px solid ${c.colors.border}`))}>
-          <For
-            each={[...buildOptions(), ...reviewOptions()].filter(
-              (opt) => !opt.hidden
-            )}
-          >
-            {(opt) => {
-              return <Option option={opt} />;
-            }}
-          </For>
-        </div>
-      </Show>
-      <div class={clsx("b-0 ")}>
-        <For each={options()}>
-          {(opt) => {
-            return <Option option={opt} />;
-          }}
-        </For>
-      </div>
+      <SidebarActions actions={options()} />
       <div
         style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
         class={clsx("pt-4")}
@@ -317,47 +287,6 @@ export const RepertoireOverview = (props: {}) => {
         </Show>
       </div>
     </SidebarTemplate>
-  );
-};
-
-const Option = (props: {
-  option: {
-    onPress: () => void;
-    right?: Component | null;
-    left?: Component | null;
-    core?: boolean;
-    icon?: string;
-    disabled?: boolean;
-  };
-}) => {
-  const responsive = useResponsive();
-  const styles = s(
-    c.py(12),
-    c.px(c.getSidebarPadding(responsive)),
-    c.center,
-    c.row,
-    c.justifyBetween
-  );
-  const { hovering, hoveringProps } = useHovering();
-  return (
-    <Pressable
-      {...hoveringProps}
-      class={clsx("&hover:bg-gray-18 h-sidebar-button")}
-      style={s(
-        styles,
-        props.option.disabled && c.noPointerEvents,
-        c.borderBottom(`1px solid ${c.colors.border}`),
-        s(hovering() && !props.option.disabled && c.bg(c.grays[18]))
-      )}
-      onPress={() => {
-        if (!props.option.disabled) {
-          props.option.onPress();
-        }
-      }}
-    >
-      {props.option.left}
-      {props.option.right}
-    </Pressable>
   );
 };
 

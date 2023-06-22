@@ -1,15 +1,6 @@
 // import { ExchangeRates } from "~/ExchangeRate";
-import {
-  filter,
-  some,
-  values,
-  sum,
-} from "lodash-es";
-import {
-  useRepertoireState,
-  quick,
-  getAppState,
-} from "~/utils/app_state";
+import { filter, some, values, sum } from "lodash-es";
+import { useRepertoireState, quick, getAppState } from "~/utils/app_state";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
 import { Side } from "~/utils/repertoire";
@@ -72,7 +63,7 @@ export const PreReview = (props: { side: Side | null }) => {
             });
           });
         },
-        text: "Just the most common",
+        text: "Just the most common moves",
         right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
         style: "secondary",
       });
@@ -132,6 +123,6 @@ export const PreReview = (props: { side: Side | null }) => {
       header={"What would you like to practice?"}
       actions={actions()}
       bodyPadding={true}
-     />
+    />
   );
 };

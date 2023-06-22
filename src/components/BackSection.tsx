@@ -20,7 +20,6 @@ export const BackSection = () => {
   const [
     addedLineState,
     deleteLineState,
-    stageStack,
     submitFeedbackState,
     showPlansState,
     transposedState,

@@ -207,6 +207,7 @@ export const getInitialReviewState = (
         }
         s.currentMove = s.activeQueue.shift();
         if (!s.currentMove) {
+          rs.updateRepertoireStructures();
           rs.browsingState.pushView(PracticeComplete);
           trackEvent(`review.review_complete`);
           return;

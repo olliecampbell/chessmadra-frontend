@@ -354,6 +354,9 @@ export const SidebarActions = (props: {
               <Match when={action().style === "wide"}>
                 <Spacer height={20} />
               </Match>
+              <Match when={action().style === "focus"}>
+                <Spacer height={12} />
+              </Match>
               <Match when={action().style === "primary"}>
                 <Spacer height={12} />
               </Match>

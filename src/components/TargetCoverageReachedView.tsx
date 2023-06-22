@@ -66,7 +66,7 @@ export const TargetCoverageReachedView = () => {
       <Show when={!isEmpty(planSections())}>
         <PlayFromHere />
       </Show>
-      <Show when={isEmpty(planSections())}>
+      <Show when={isEmpty(planSections()) && !onboarding().isOnboarding}>
         <CMText
           style={s(c.weightRegular, c.fontSize(14), c.fg(c.colors.textPrimary))}
         >
