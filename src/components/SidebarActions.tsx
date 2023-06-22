@@ -22,7 +22,7 @@ import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
 import { trackEvent } from "~/utils/trackEvent";
-import { Component, JSXElement, Show } from "solid-js";
+import { Component, JSXElement, Match, Show, Switch } from "solid-js";
 import { useHovering } from "~/mocks";
 import { Pressable } from "./Pressable";
 import { Intersperse } from "./Intersperse";
@@ -40,7 +40,7 @@ export interface SidebarAction {
   disabled?: boolean;
 }
 
-export const SidebarActions = () => {
+export const SidebarActionsLegacy = () => {
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   let [
     hasPendingLineToAdd,
@@ -206,7 +206,10 @@ export const SidebarActions = () => {
     </div>
   );
 };
-export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
+export const SidebarFullWidthButton = (props: {
+  action: SidebarAction;
+  first?: boolean;
+}) => {
   const responsive = useResponsive();
   const { hovering, hoveringProps } = useHovering();
   const styles = () => {
@@ -276,7 +279,10 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
         c.py(styles().py),
         c.px(c.getSidebarPadding(responsive)),
         props.action.style === "secondary" &&
-          c.borderBottom(`1px solid ${c.colors.border}`)
+          c.borderBottom(`1px solid ${c.colors.border}`),
+        props.action.style === "secondary" &&
+          props.first &&
+          c.borderTop(`1px solid ${c.colors.border}`)
       )}
     >
       <div style={s(c.column)}>
@@ -330,6 +336,40 @@ export const SidebarFullWidthButton = (props: { action: SidebarAction }) => {
           )}
         </div>
       </Show>
+    </div>
+  );
+};
+
+export const SidebarActions = (props: {
+  actions: SidebarAction[];
+  header?: JSXElement;
+}) => {
+  return (
+    <div style={s(c.column, c.fullWidth)}>
+      {props.header}
+      <Intersperse
+        each={() => props.actions}
+        separator={(action) => {
+          return (
+            <Switch>
+              <Match when={action().style === "wide"}>
+                <Spacer height={20} />
+              </Match>
+              <Match when={action().style === "primary"}>
+                <Spacer height={12} />
+              </Match>
+              <Match when={action().style === "secondary"}>
+                <Spacer height={0} />
+              </Match>
+              <Match when={action().style === "tertiary"}>
+                <Spacer height={0} />
+              </Match>
+            </Switch>
+          );
+        }}
+      >
+        {(a, i) => <SidebarFullWidthButton action={a()} first={i === 0} />}
+      </Intersperse>
     </div>
   );
 };

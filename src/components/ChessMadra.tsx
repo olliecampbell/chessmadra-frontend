@@ -18,7 +18,7 @@ import { Dynamic } from "solid-js/web";
 import { Spacer } from "./Space";
 import {
   SidebarAction,
-  SidebarActions,
+  SidebarActionsLegacy,
   SidebarFullWidthButton,
   SidebarSectionHeader,
 } from "./SidebarActions";

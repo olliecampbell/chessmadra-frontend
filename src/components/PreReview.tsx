@@ -33,6 +33,8 @@ import { isMoveDifficult } from "~/utils/srs";
 import { countQueue } from "~/utils/queues";
 import { pluralize } from "~/utils/pluralize";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
+import { ReviewText } from "./ReviewText";
+import { Label } from "./Label";
 
 export const PreReview = (props: { side: Side | null }) => {
   const [numMovesDueBySide] = useRepertoireState((s) => [
@@ -65,18 +67,12 @@ export const PreReview = (props: { side: Side | null }) => {
           <div class={clsx("row items-center")}>
             <p class={clsx()}>
               Everything that's due for review
-              <span
-                class={clsx(
-                  "bg-gray-30 text-primary ml-2 rounded-sm px-1 py-0.5 text-xs font-semibold"
-                )}
-              >
-                Recommended
-              </span>
+              <Label>Recommended</Label>
             </p>
           </div>
         ),
-        right: `${pluralize(due, "move")}`,
-        style: "focus",
+        right: <ReviewText numDue={due} />,
+        style: "secondary",
       });
     }
     if (COMMON_MOVES_CUTOFF < totalDue) {
@@ -90,9 +86,9 @@ export const PreReview = (props: { side: Side | null }) => {
             });
           });
         },
-        text: "Just the most common due moves",
-        right: `${COMMON_MOVES_CUTOFF} moves`,
-        style: "primary",
+        text: "Just the most common",
+        right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
+        style: "secondary",
       });
     }
     if (difficultCount > 0) {
@@ -107,8 +103,8 @@ export const PreReview = (props: { side: Side | null }) => {
           });
         },
         text: "Just the moves I often get wrong",
-        right: `${pluralize(difficultCount, "move")}`,
-        style: "primary",
+        right: <ReviewText numDue={difficultCount} />,
+        style: "secondary",
       });
     }
     const myMoves = getAppState().repertoireState.numMyMoves;
@@ -127,7 +123,7 @@ export const PreReview = (props: { side: Side | null }) => {
         ? `My entire ${props.side} repertoire`
         : "My entire repertoire",
       right: `${numMyMoves} moves`,
-      style: "primary",
+      style: "secondary",
     });
     let side = props.side;
     if (side) {
@@ -139,8 +135,8 @@ export const PreReview = (props: { side: Side | null }) => {
           });
         },
         text: "A specific opening I've added",
-        right: "",
-        style: "primary",
+        right: <i class="fa fa-arrow-right" />,
+        style: "secondary",
       });
     }
     return actions;

@@ -3,7 +3,7 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { useResponsive } from "~/utils/useResponsive";
-import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
+import { SidebarAction, SidebarActions, SidebarFullWidthButton } from "./SidebarActions";
 import { SidebarHeader } from "./RepertoireEditingHeader";
 import { Component, createEffect, For, Show } from "solid-js";
 import { Puff } from "solid-spinner";
@@ -48,11 +48,7 @@ export const SidebarTemplate: Component<{
           {props.children}
         </div>
         <Spacer height={props.children ? (responsive.isMobile ? 24 : 36) : 0} />
-        <div style={s(c.gridColumn({ gap: 12 }))}>
-          <For each={props.actions}>
-            {(action) => <SidebarFullWidthButton action={action} />}
-          </For>
-        </div>
+        <SidebarActions actions={props.actions} />
       </Show>
     </div>
   );

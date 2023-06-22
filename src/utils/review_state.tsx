@@ -149,7 +149,7 @@ export const getInitialReviewState = (
               );
             });
             // todo: this could be optimized in the future to only re-compute some stuff
-            rs.updateRepertoireStructures();
+            // rs.updateRepertoireStructures();
             // if (rs.browsingState.sidebarState.mode !== "review")
             //   rs.updateRepertoireStructures();
           });

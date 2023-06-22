@@ -44,6 +44,7 @@ import { PreReview } from "./PreReview";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
 import { PreBuild } from "./PreBuild";
 import { useIsMobile } from "~/utils/isMobile";
+import { Label } from "./Label";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -139,7 +140,7 @@ export const RepertoireOverview = (props: {}) => {
       // disabled: numMovesDueFromHere() === 0,
       left: (
         <CMText style={s(textStyles)} class={clsx(textClasses)}>
-          Practice your moves
+          Practice your repertoire
         </CMText>
       ),
     },
@@ -158,13 +159,7 @@ export const RepertoireOverview = (props: {}) => {
           <CMText style={s(textStyles)} class={clsx(textClasses)}>
             View model games in lines you play
           </CMText>
-          <span
-            class={clsx(
-              "bg-gray-30 text-primary ml-2 rounded-sm px-1 py-0.5 text-xs font-semibold"
-            )}
-          >
-            Beta
-          </span>
+          <Label>Beta</Label>
         </div>
       ),
       right: (

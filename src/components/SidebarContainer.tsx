@@ -15,12 +15,6 @@ export const SidebarContainer = (props: {
       if (!previousRef() || !currentRef()) {
         return;
       }
-      [...document.querySelectorAll("*")].forEach((node) => {
-        if (node._tippy) {
-          console.log("destroying tippy");
-          node._tippy.destroy();
-        }
-      });
       let clone = currentRef().cloneNode(true);
       previousRef().replaceChildren(clone);
       const ms = 200;
@@ -42,6 +36,19 @@ export const SidebarContainer = (props: {
         currentRef().style.opacity = "1";
         currentRef().style.transform = "translateX(0px)";
         previousRef().replaceChildren();
+        setTimeout(() => {
+          // todo: this is terrible and we should figure out why tippy is holding onto an old ref
+          [...document.querySelectorAll("[data-tippy-root]")].forEach(
+            (node) => {
+              if (node._tippy) {
+                if (!document.body.contains(node._tippy.reference)) {
+                  console.log("destroying tippy");
+                  node._tippy.destroy();
+                }
+              }
+            }
+          );
+        }, ms);
       }, ms);
     });
   });
