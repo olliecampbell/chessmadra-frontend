@@ -101,7 +101,6 @@ export const MoveLog = () => {
   const containerLayout = createElementBounds(containerRef);
   const movesLayout = createElementBounds(movesRef);
   const overflowing = () => {
-    console.log("widths", containerLayout.width, movesLayout.width);
     if (movesLayout && containerLayout) {
       return movesLayout.width > containerLayout.width;
     }

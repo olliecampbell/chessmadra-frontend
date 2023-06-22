@@ -125,8 +125,8 @@ export const getInitialReviewState = (
         results.forEach((r, i) => {
           rs.repertoire[r.side].positionResponses[r.epd]?.forEach(
             (m: RepertoireMove) => {
-              if (m.sanPlus === r.sanPlus) {
-                m.needed = r.correct;
+              if (m.sanPlus === r.sanPlus && m.srs) {
+                m.srs.needsReview = !r.correct;
               }
             }
           );

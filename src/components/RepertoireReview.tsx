@@ -16,21 +16,12 @@ import { SidebarHeader } from "./RepertoireEditingHeader";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
-  const buttonStyles = s(c.width("unset"), c.py(8));
-  const [
-    completedReviewPositionMoves,
-    currentMove,
-    repertoireLoading,
-    showNext,
-  ] = useRepertoireState((s) => [
-    s.reviewState.completedReviewPositionMoves,
-    s.reviewState.currentMove,
-    s.repertoire === undefined,
-    s.reviewState.showNext,
-  ]);
-  createEffect(() => {
-    console.log("current move", currentMove());
-  });
+  const [completedReviewPositionMoves, currentMove, showNext] =
+    useRepertoireState((s) => [
+      s.reviewState.completedReviewPositionMoves,
+      s.reviewState.currentMove,
+      s.reviewState.showNext,
+    ]);
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [allReviewPositionMoves] = useRepertoireState((s) => [
@@ -38,8 +29,12 @@ export const RepertoireReview = (props: {}) => {
   ]);
   const [queue] = useRepertoireState((s) => [s.reviewState.activeQueue]);
   const moves = createMemo(() => {
-    const moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
-      [];
+    const moves: {
+      epd: string;
+      sanPlus: string;
+      failed: boolean;
+      side: Side;
+    }[] = [];
     forEach(allReviewPositionMoves(), (sanLookup, epd) => {
       forEach(sanLookup, ({ failed, side, reviewed }, sanPlus) => {
         if (reviewed) {
@@ -187,7 +182,7 @@ export const RepertoireReview = (props: {}) => {
                   <div
                     class={clsx("bg-gray-20 w-0.5")}
                     style={s(c.fullHeight)}
-                   />
+                  />
                 );
               }}
             >
@@ -200,7 +195,7 @@ export const RepertoireReview = (props: {}) => {
                       "transition-colors"
                     )}
                     style={s(c.grow)}
-                   />
+                  />
                 );
               }}
             </Intersperse>

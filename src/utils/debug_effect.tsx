@@ -10,7 +10,6 @@ export const createDebugStateEffect = () => {
   const [authStatus] = useAppState((s) => [s.userState.authStatus]);
   const [hasCalled, setHasCalled] = createSignal(false);
   createEffect(() => {
-    console.log("stuff", hasCalled(), repertoireLoading(), authStatus());
     if (hasCalled() || !isDevelopment) {
       return;
     }

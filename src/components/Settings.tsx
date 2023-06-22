@@ -19,7 +19,6 @@ import { createEffect, Match, Show, Switch } from "solid-js";
 import { LoginSidebar } from "./LoginSidebar";
 
 export const SettingsButtons = () => {
-  console.log("SettingsButtons");
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [view] = useBrowsingState(([s]) => [s.currentView()]);
   const [user, ratingDescription, authStatus] = useAppState((s) => [
@@ -31,9 +30,6 @@ export const SettingsButtons = () => {
   const needsLogin = () =>
     authStatus() === AuthStatus.Unauthenticated ||
     (authStatus() === AuthStatus.Authenticated && user()?.temporary);
-  createEffect(() => {
-    console.log("needsLogin:", needsLogin(), authStatus());
-  });
   const responsive = useResponsive();
   return (
     <div style={s(c.row, c.gap(responsive.switch(12, [BP.md, 16])))}>
