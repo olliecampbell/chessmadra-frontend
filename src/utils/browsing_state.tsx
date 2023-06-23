@@ -1,9 +1,5 @@
 import { Move } from "@lubert/chess.ts/dist/types";
-import {
-  EcoCode,
-  MoveTag,
-  PositionReport,
-} from "~/utils/models";
+import { EcoCode, MoveTag, PositionReport } from "~/utils/models";
 import {
   isEmpty,
   last,
@@ -70,9 +66,7 @@ import {
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 import { Chess } from "@lubert/chess.ts";
 import { PAYMENT_ENABLED } from "./payment";
-import {
-  FirstLineSavedOnboarding,
-} from "~/components/SidebarOnboarding";
+import { FirstLineSavedOnboarding } from "~/components/SidebarOnboarding";
 import { View } from "~/types/View";
 import * as Sentry from "@sentry/browser";
 
@@ -976,6 +970,7 @@ export const getInitialBrowsingState = (
       onMovePlayed: () => {
         set(([s, rs]) => {
           if (includes(["home", "overview"], s.sidebarState.mode)) {
+            s.clearViews();
             rs.startBrowsing(s.sidebarState.activeSide ?? "white", "build", {
               keepPosition: true,
             });

@@ -147,8 +147,21 @@ export const RepertoireReview = (props: {}) => {
             {(i) => {
               return (
                 <div class="row items-center">
-                  <p class={clsx(i.class, "font-semibold")}>{i.text}</p>
-                  <i class={clsx(i.class, i.icon, " ml-2 text-[20px]")} />
+                  <p
+                    class={clsx(
+                      i.class,
+                      "text-sm font-semibold lg:text-[20px]"
+                    )}
+                  >
+                    {i.text}
+                  </p>
+                  <i
+                    class={clsx(
+                      i.class,
+                      i.icon,
+                      " ml-2 text-sm lg:text-[20px]"
+                    )}
+                  />
                 </div>
               );
             }}
