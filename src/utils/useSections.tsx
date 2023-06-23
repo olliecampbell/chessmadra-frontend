@@ -26,6 +26,8 @@ import { Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 import { initTooltip } from "~/components/Tooltip";
 import { pluralize } from "./pluralize";
+import { MoveRating } from "./move_inaccuracy";
+import { clsx } from "./classes";
 
 interface Section {
   width: number;
@@ -200,7 +202,9 @@ const getBuildModeSections = ({
       width: 80,
       alignLeft: true,
       content: (props) => {
-        return <>{<CoverageProgressBar tableResponse={props.tableResponse} />}</>;
+        return (
+          <>{<CoverageProgressBar tableResponse={props.tableResponse} />}</>
+        );
       },
       header: "Your coverage",
     });
@@ -254,7 +258,12 @@ const getBuildModeSections = ({
         const whiteWinning =
           props.suggestedMove?.stockfish?.eval >= 0 ||
           props.suggestedMove?.stockfish?.mate > 0;
-        const formattedEval = formatStockfishEval(props.suggestedMove?.stockfish);
+        const backgroundSide = whiteWinning ? "white" : "black";
+        const moveRating: MoveRating = props.tableResponse.moveRating;
+        const isBadMove = !isNil(moveRating);
+        const formattedEval = formatStockfishEval(
+          props.suggestedMove?.stockfish
+        );
         return (
           <>
             <Show when={props.suggestedMove?.stockfish}>
@@ -281,17 +290,15 @@ const getBuildModeSections = ({
                             </p>
                           );
                         } else if (props.suggestedMove?.stockfish?.mate) {
-                          const mateMoves = props.suggestedMove?.stockfish?.mate;
+                          const mateMoves =
+                            props.suggestedMove?.stockfish?.mate;
                           const side = mateMoves > 0 ? "white" : "black";
                           return `This position is a forced mate in ${pluralize(
                             mateMoves,
                             "move"
                           )} for ${side}`;
                         } else if (props.suggestedMove?.stockfish?.eval) {
-                          const betterSide =
-                            props.suggestedMove?.stockfish?.eval >= 0
-                              ? "white"
-                              : "black";
+                          const betterSide = whiteWinning ? "white" : "black";
                           return (
                             <p>
                               The computer evaluates this move as{" "}
@@ -307,10 +314,13 @@ const getBuildModeSections = ({
                   }}
                 >
                   <CMText
-                    style={s(
-                      c.weightHeavy,
-                      c.fontSize(10),
-                      c.fg(whiteWinning ? c.grays[10] : c.grays[90])
+                    style={s(c.weightHeavy, c.fontSize(10))}
+                    class={clsx(
+                      isBadMove
+                        ? `text-red-black`
+                        : backgroundSide === "white"
+                        ? "text-gray-10"
+                        : "text-gray-90"
                     )}
                   >
                     {formattedEval}
@@ -371,8 +381,14 @@ const getBuildModeSections = ({
                           <b>
                             {formatPlayPercentage(
                               1 -
-                                getWinRate(props.suggestedMove?.results, "white") -
-                                getWinRate(props.suggestedMove?.results, "black")
+                                getWinRate(
+                                  props.suggestedMove?.results,
+                                  "white"
+                                ) -
+                                getWinRate(
+                                  props.suggestedMove?.results,
+                                  "black"
+                                )
                             )}
                           </b>{" "}
                           of games are drawn
@@ -467,7 +483,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
             c.bg(completed() ? completedColor : inProgressColor()),
             c.fullHeight
           )}
-         />
+        />
       </div>
     </div>
   );

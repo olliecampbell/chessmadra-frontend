@@ -29,6 +29,10 @@ const colorMap = Object.entries(colorMapping).forEach(([key, value]) => {
     colors[`${key}`][`${parseInt(shade) * 10}`] = color;
   });
 });
+colors["red"]["black"] = allShades.reds["60"];
+colors["green"]["black"] = allShades.greens["60"];
+colors["red"]["white"] = allShades.reds["45"];
+colors["green"]["white"] = "#1A9200";
 
 const unoConfig = {
   rules: [

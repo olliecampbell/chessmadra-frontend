@@ -12,6 +12,7 @@ import { countQueue } from "~/utils/queues";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { ReviewText } from "./ReviewText";
 import { Label } from "./Label";
+import { useIsMobile } from "~/utils/isMobile";
 
 export const PreReview = (props: { side: Side | null }) => {
   const [numMovesDueBySide] = useRepertoireState((s) => [
@@ -29,6 +30,7 @@ export const PreReview = (props: { side: Side | null }) => {
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
     const due = props.side ? numMovesDueBySide()[props.side] : totalDue;
+    const isMobile = useIsMobile();
     if (due > 0) {
       actions.push({
         onPress: () => {
@@ -43,7 +45,7 @@ export const PreReview = (props: { side: Side | null }) => {
         text: (
           <div class={clsx("row items-center")}>
             <p class={clsx()}>
-              Everything that's due for review
+              Everything that's due {isMobile ? "" : "for review"}
               <Label>Recommended</Label>
             </p>
           </div>
