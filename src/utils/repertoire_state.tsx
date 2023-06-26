@@ -431,8 +431,9 @@ export const getInitialRepertoireState = (
           window.open(`https://lichess.org/analysis`, "_blank");
           return;
         }
+        const side = _side ?? sideOfLastmove(line);
         window.open(
-          `https://lichess.org/analysis/pgn/${line.join("_")}`,
+          `https://lichess.org/analysis/pgn/${line.join("_")}?color=${side}`,
           "_blank"
         );
       }),
