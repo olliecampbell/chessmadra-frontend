@@ -426,21 +426,15 @@ export const getInitialRepertoireState = (
       }),
     analyzeLineOnLichess: (line: string[], _side?: Side) =>
       set(([s]) => {
-        const bodyFormData = new FormData();
-        bodyFormData.append("pgn", lineToPgn(line));
         if (isEmpty(line)) {
           // TODO: figure out a way to open up analysis from black side
           window.open(`https://lichess.org/analysis`, "_blank");
           return;
         }
-        const windowReference = window.open("about:blank", "_blank");
-        const side = _side ?? sideOfLastmove(line);
-        client
-          .post(`https://lichess.org/api/import`, bodyFormData)
-          .then(({ data }) => {
-            const url = data["url"];
-            windowReference.location = `${url}/${side}#${line.length}`;
-          });
+        window.open(
+          `https://lichess.org/analysis/pgn/${line.join("_")}`,
+          "_blank"
+        );
       }),
     onMove: () =>
       set(([s]) => {
