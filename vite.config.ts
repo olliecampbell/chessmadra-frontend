@@ -4,6 +4,7 @@ import devtools from "solid-devtools/vite";
 import UnoCSS from "unocss/vite";
 import { presetUno, presetAttributify, presetTagify } from "unocss";
 import { grays, colors as allShades, c as styles } from "./src/utils/styles";
+import { fileURLToPath } from "node:url";
 const colorMapping = {
   gray: "grays",
   blue: "blues",
@@ -33,6 +34,7 @@ colors["red"]["black"] = allShades.reds["60"];
 colors["green"]["black"] = allShades.greens["60"];
 colors["red"]["white"] = allShades.reds["45"];
 colors["green"]["white"] = "#1A9200";
+const IS_STORYBOOK = !!process.env.IS_STORYBOOK;
 
 const unoConfig = {
   rules: [
@@ -95,12 +97,18 @@ export default defineConfig({
   define: {
     "process.env": JSON.stringify({}),
   },
+  resolve: {
+    alias: {
+      "~": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
+
   plugins: [
     devtools({
       /* additional options */
       autoname: true, // e.g. enable autoname
     }),
     UnoCSS(unoConfig),
-    solid(),
+    [...(IS_STORYBOOK ? [] : [solid()])],
   ],
 });

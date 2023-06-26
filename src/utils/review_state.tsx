@@ -12,6 +12,8 @@ import {
   filter,
   sortBy,
   take,
+  cloneDeep,
+  sum,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -68,13 +70,14 @@ export interface ReviewState {
     >
   >;
   failedReviewPositionMoves: Record<string, RepertoireMove>;
+  reviewStats: ReviewStats;
   activeQueue: QuizMove[];
   currentMove?: QuizMove;
   reviewSide?: Side;
-  completedReviewPositionMoves?: Record<string, RepertoireMove>;
+  completedReviewPositionMoves: Record<string, RepertoireMove>;
   reviewLine: (line: string[], side: Side) => void;
   giveUp: () => void;
-  setupNextMove: () => void;
+  setupNextMove: (delay?: number) => void;
   startReview: (options: ReviewOptions) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
@@ -84,6 +87,11 @@ export interface ReviewState {
 
 type Stack = [ReviewState, RepertoireState, AppState];
 const EMPTY_QUEUES = { white: [], black: [] };
+type ReviewStats = {
+  due: number;
+  correct: number;
+  incorrect: number;
+};
 
 type ReviewFilter = "difficult-due" | "all" | "common" | "due";
 
@@ -95,6 +103,12 @@ interface ReviewOptions {
   filter?: ReviewFilter;
   customQueue?: QuizMove[];
 }
+
+const FRESH_REVIEW_STATS = {
+  due: 0,
+  correct: 0,
+  incorrect: 0,
+} as ReviewStats;
 
 export const getInitialReviewState = (
   _set: StateSetter<AppState, any>,
@@ -114,8 +128,12 @@ export const getInitialReviewState = (
     );
   };
   const initialState = {
+    moveLog: [],
+    completedReviewPositionMoves: {},
+    failedReviewPositionMoves: {},
     allReviewPositionMoves: {},
     chessboard: undefined as ChessboardInterface,
+    reviewStats: cloneDeep(FRESH_REVIEW_STATS),
     showNext: false,
     // queues: EMPTY_QUEUES,
     activeQueue: [] as QuizMove[],
@@ -154,6 +172,7 @@ export const getInitialReviewState = (
     },
     startReview: (options: ReviewOptions) =>
       set(([s, rs, gs]) => {
+        s.reviewStats = cloneDeep(FRESH_REVIEW_STATS);
         rs.browsingState.moveSidebarState("right");
         rs.browsingState.sidebarState.mode = "review";
         rs.browsingState.sidebarState.activeSide = options.side;
@@ -179,7 +198,7 @@ export const getInitialReviewState = (
         });
         s.setupNextMove();
       }),
-    setupNextMove: () =>
+    setupNextMove: (delay) =>
       set(([s, rs]) => {
         s.chessboard.setFrozen(false);
         s.showNext = false;
@@ -212,23 +231,37 @@ export const getInitialReviewState = (
           trackEvent(`review.review_complete`);
           return;
         }
-        s.reviewSide = s.currentMove.side;
-        s.failedReviewPositionMoves = {};
-        s.completedReviewPositionMoves = {};
-        s.chessboard.setPerspective(s.currentMove.moves[0].side);
-        s.chessboard.resetPosition();
-        s.chessboard.playPgn(s.currentMove.line);
-        const lastOpponentMove = last(
-          s.chessboard.get((s) => s.position).history({ verbose: true })
-        );
-        s.chessboard.backOne();
+        let currentMove = s.currentMove as QuizMove;
+        let setup = () => {
+          set(([s]) => {
+            s.reviewSide = currentMove.side;
+            s.failedReviewPositionMoves = {};
+            s.completedReviewPositionMoves = {};
+            s.chessboard.setPerspective(currentMove.moves[0].side);
+            s.chessboard.resetPosition();
+            s.chessboard.playPgn(currentMove.line);
+            const lastOpponentMove = last(
+              s.chessboard.get((s) => s.position).history({ verbose: true })
+            );
+            s.chessboard.backOne();
 
-        if (lastOpponentMove) {
-          window.setTimeout(() => {
-            set(([s]) => {
-              s.chessboard.makeMove(lastOpponentMove, { animate: true });
-            });
-          }, 300);
+            if (lastOpponentMove) {
+              window.setTimeout(() => {
+                set(([s]) => {
+                  s.chessboard.makeMove(lastOpponentMove, { animate: true });
+                });
+              }, 300);
+            }
+          });
+        };
+
+        s.reviewStats.due--;
+        if (delay) {
+          setTimeout(() => {
+            setup();
+          }, delay);
+        } else {
+          setup();
         }
       }, "setupNextMove"),
 
@@ -245,6 +278,9 @@ export const getInitialReviewState = (
         }
         s.chessboard.setFrozen(true);
         s.getRemainingReviewPositionMoves().forEach((move) => {
+          if (!s.failedReviewPositionMoves[move.sanPlus]) {
+            s.reviewStats.incorrect++;
+          }
           s.failedReviewPositionMoves[move.sanPlus] = move;
           s.allReviewPositionMoves[move.epd][move.sanPlus].failed = true;
           s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed = true;
@@ -326,6 +362,11 @@ export const getInitialReviewState = (
     updateQueue: (options: ReviewOptions) =>
       set(([s, rs]) => {
         s.activeQueue = s.buildQueue(options);
+        s.reviewStats = {
+          due: sum(map(s.activeQueue, (m) => m.moves.length)),
+          incorrect: 0,
+          correct: 0,
+        };
       }),
     reviewLine: (line: string[], side: Side) =>
       set(([s, rs]) => {
@@ -405,6 +446,7 @@ export const getInitialReviewState = (
           if (matchingResponse) {
             s.chessboard.flashRing(true);
 
+            s.reviewStats.correct++;
             s.completedReviewPositionMoves[matchingResponse.sanPlus] =
               matchingResponse;
             // TODO: this is really dirty
@@ -434,25 +476,22 @@ export const getInitialReviewState = (
             //   nextMove?.line,
             //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
             // );
-            window.setTimeout(
-              () => {
-                set(([s]) => {
-                  if (s.currentMove?.moves.length > 1) {
-                    s.showNext = true;
-                  } else {
-                    if (isEmpty(s.failedReviewPositionMoves)) {
-                      s.setupNextMove();
-                    } else {
-                      s.showNext = true;
-                    }
-                  }
-                });
-              },
-              continuesCurrentLine ? 200 : 200
-            );
+
+            if (s.currentMove?.moves.length > 1) {
+              s.showNext = true;
+            } else {
+              if (isEmpty(s.failedReviewPositionMoves)) {
+                s.setupNextMove(200);
+              } else {
+                s.showNext = true;
+              }
+            }
             return true;
           } else {
             s.chessboard.flashRing(false);
+            if (isEmpty(s.failedReviewPositionMoves)) {
+              s.reviewStats.incorrect++;
+            }
             // TODO: reduce repetition
             s.getRemainingReviewPositionMoves().forEach((move) => {
               s.failedReviewPositionMoves[move.sanPlus] = move;

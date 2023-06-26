@@ -12,7 +12,6 @@ import {
   Style,
   useNavigate,
 } from "solid-start";
-import "./root.css";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/animations/shift-away.css";
 
@@ -122,7 +121,7 @@ export default function Root() {
         <script
           src="https://kit.fontawesome.com/b1f0634f74.js"
           crossorigin="anonymous"
-         />
+        />
       </Head>
       <Style>
         {`

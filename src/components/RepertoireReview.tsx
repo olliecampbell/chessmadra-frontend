@@ -27,7 +27,7 @@ export const RepertoireReview = (props: {}) => {
   const [allReviewPositionMoves] = useRepertoireState((s) => [
     s.reviewState.allReviewPositionMoves,
   ]);
-  const [queue] = useRepertoireState((s) => [s.reviewState.activeQueue]);
+  const [reviewStats] = useRepertoireState((s) => [s.reviewState.reviewStats]);
   const moves = createMemo(() => {
     const moves: {
       epd: string;
@@ -44,28 +44,22 @@ export const RepertoireReview = (props: {}) => {
     });
     return moves;
   });
-  const numFailed = () => {
-    return moves().filter((m) => m.failed).length;
-  };
-  const numCorrect = () => {
-    return moves().filter((m) => !m.failed).length;
-  };
   const progressIcons = () => {
     return [
       {
         icon: "fa fa-clock",
         class: "text-orange-70",
-        text: `${queue().length} Due`,
+        text: `${reviewStats().due + 1} Due`,
       },
       {
         icon: "fa fa-circle-check",
         class: "text-[#79c977]",
-        text: numCorrect(),
+        text: reviewStats().correct,
       },
       {
         icon: "fa fa-circle-xmark",
         class: "text-[#c92b2b]",
-        text: numFailed(),
+        text: reviewStats().incorrect,
       },
     ];
   };
