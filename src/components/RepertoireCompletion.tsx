@@ -17,7 +17,7 @@ export const RepertoireCompletion = (props: { side: Side }) => {
         </b>{" "}
         complete.
       </p>
-      <Spacer height={8} />
+      <Spacer height={16} />
       <div style={s(c.height(24))}>
         <CoverageBar isInSidebar side={props.side} />
       </div>

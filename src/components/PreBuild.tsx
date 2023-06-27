@@ -1,14 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { Spacer } from "~/components/Space";
-import {
-  first,
-  findLast,
-} from "lodash-es";
-import {
-  useRepertoireState,
-  quick,
-  getAppState,
-} from "~/utils/app_state";
+import { first, findLast } from "lodash-es";
+import { useRepertoireState, quick, getAppState } from "~/utils/app_state";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
 import { lineToPgn, pgnToLine, Side } from "~/utils/repertoire";
@@ -16,10 +9,13 @@ import { lineToPositions } from "~/utils/chess";
 import { getAppropriateEcoName } from "~/utils/eco_codes";
 import { RepertoireCompletion } from "./RepertoireCompletion";
 import { HowToComplete } from "./SidebarOnboarding";
+import { createMemo, Show } from "solid-js";
 
 export const PreBuild = (props: { side: Side }) => {
-  const biggestMiss = () =>
-    getAppState().repertoireState.repertoireGrades?.[props.side]?.biggestMiss;
+  const biggestMiss = createMemo(
+    () =>
+      getAppState().repertoireState.repertoireGrades?.[props.side]?.biggestMiss
+  );
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
   const miss = () => {
     const miss = biggestMiss();
@@ -53,7 +49,8 @@ export const PreBuild = (props: { side: Side }) => {
           });
         },
         text: `Go to the biggest gap in your repertoire`,
-        style: "primary",
+        right: <i class="fa fa-arrow-right text-secondary" />,
+        style: "secondary",
       });
     }
     actions.push({
@@ -65,7 +62,8 @@ export const PreBuild = (props: { side: Side }) => {
         });
       },
       text: `Choose something else to work on`,
-      style: "primary",
+      right: <i class="fa fa-arrow-right text-secondary" />,
+      style: "secondary",
     });
     return actions;
   };
@@ -76,8 +74,17 @@ export const PreBuild = (props: { side: Side }) => {
       bodyPadding={true}
     >
       <RepertoireCompletion side={props.side} />
-      <Spacer height={24} />
-      <HowToComplete miss={miss()} />
+      <Spacer height={48} />
+      <Show when={miss()} fallback={<HowToComplete />}>
+        {(miss) => {
+          return (
+            <p class="body-text">
+              Your biggest gap is in the <b>{miss().name}</b>, which you’ll see
+              in <b>1 in {Math.round(1 / miss().incidence)}</b> games
+            </p>
+          );
+        }}
+      </Show>
     </SidebarTemplate>
   );
 };
