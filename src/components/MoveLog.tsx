@@ -7,6 +7,7 @@ import {
   createRenderEffect,
   createSignal,
   For,
+  JSXElement,
 } from "solid-js";
 import { clsx } from "~/utils/classes";
 import { c, s } from "~/utils/styles";
@@ -23,11 +24,18 @@ import { lineToPgn } from "~/utils/repertoire";
 export const MoveLog = () => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const currentLine = () => {
-    if (mode() === "review") {
-      return getAppState().repertoireState.reviewState.moveLog;
-    } else {
-      return getAppState().repertoireState.browsingState.sidebarState.moveLog;
-    }
+    return (
+      getAppState()
+        .repertoireState.getChessboard()
+        ?.get((s) => s.moveHistory) ?? []
+    );
+  };
+  const forwardLine = () => {
+    return (
+      getAppState()
+        .repertoireState.getChessboard()
+        ?.get((s) => s.forwardMoveHistory) ?? []
+    );
   };
   const userState = getAppState().userState;
   const user = () => userState.user;
@@ -43,10 +51,10 @@ export const MoveLog = () => {
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
   const currentLineElements = () => {
-    const elems = [];
-    const moves = [];
-    forEach(currentLine(), (e, i) => {
-      moves.push(e);
+    const elems: JSXElement[] = [];
+    const moves: string[] = [];
+    forEach([...currentLine(), ...forwardLine()], (e, i) => {
+      moves.push(e.san);
       const theseMoves = cloneDeep(moves);
       const last = i == currentLine().length - 1;
       if (i % 2 === 0) {
@@ -68,17 +76,20 @@ export const MoveLog = () => {
           onClick={() => {
             if (mode() !== "review") {
               quick((s) => {
-                s.repertoireState.browsingState.chessboard.playPgn(
-                  lineToPgn(theseMoves),
-                  {
-                    animated: true,
-                  }
-                );
+                if (theseMoves.length < currentLine().length) {
+                  s.repertoireState
+                    .getChessboard()
+                    ?.backN(currentLine().length - theseMoves.length);
+                } else {
+                  s.repertoireState.browsingState.chessboard.forwardN(
+                    theseMoves.length - currentLine().length
+                  );
+                }
               });
             }
           }}
         >
-          {e}
+          {e.san}
         </p>
       );
     });
@@ -88,8 +99,7 @@ export const MoveLog = () => {
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
   const [movesRef, setMovesRef] = createSignal<HTMLDivElement>();
   createRenderEffect(() => {
-    currentLine();
-    console.log("container? ", containerRef());
+    currentLine().length;
     // scroll to right of container ref, smoothly
     if (containerRef()) {
       containerRef().scrollTo({

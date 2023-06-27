@@ -60,6 +60,7 @@
     "@solid-primitives/bounds": "^0.0.110",
     "@solid-primitives/destructure": "^0.1.13",
     "@solid-primitives/intersection-observer": "^2.1.2",
+    "@solid-primitives/keyboard": "^1.2.3",
     "@solid-primitives/mouse": "^2.0.14",
     "@solid-primitives/resize-observer": "^2.0.18",
     "@solidjs/meta": "^0.28.5",

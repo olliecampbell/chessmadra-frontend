@@ -10,7 +10,7 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { s, c } from "~/utils/styles";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { Spacer } from "~/components/Space";
@@ -21,6 +21,7 @@ import { clsx } from "~/utils/classes";
 import { createElementBounds } from "@solid-primitives/bounds";
 import { isChessmadra } from "~/utils/env";
 import { MoveLog } from "./MoveLog";
+import { useKeyDownEvent } from "@solid-primitives/keyboard";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -48,11 +49,62 @@ export const SidebarLayout = (props: {
   };
   const activeTool = () => getAppState().trainersState.getActiveTool();
 
-  // useKeypress(["ArrowLeft", "ArrowRight"], (event) => {
-  //   if (event.key === "ArrowLeft" && mode !== "review") {
-  //     quick((s) => s.repertoireState.backOne());
+  // const event = useKeyDownEvent();
+  // console.log("renderign sidebar layout");
+  //
+  // createEffect(() => {
+  //   const e = event();
+  //   console.log(e); // => KeyboardEvent | null
+  //
+  //   if (e) {
+  //     console.log("key is", e.key); // => "Q" | "ALT" | ... or null
+  //     if (mode() === "review") {
+  //       return;
+  //     }
+  //     if (e.key === "ArrowLeft") {
+  //       e.preventDefault(); // prevent default behavior or last keydown event
+  //       e.stopPropagation();
+  //       quick((s) => s.repertoireState.backOne());
+  //     }
+  //     if (e.key === "ArrowRight") {
+  //       quick((s) => s.repertoireState.backOne());
+  //       e.preventDefault(); // prevent default behavior or last keydown event
+  //     }
   //   }
   // });
+  const keydownListener = function (event) {
+    event.preventDefault();
+    const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
+    // todo: allow in review too
+    if (mode() !== "build") {
+      return;
+    }
+    switch (
+      key // change to event.key to key to use the above variable
+    ) {
+      case "ArrowLeft":
+        quick((s) => s.repertoireState.getChessboard()?.backOne());
+        // Left pressed
+        break;
+      case "ArrowRight":
+        quick((s) => s.repertoireState.getChessboard()?.forwardOne());
+        // Right pressed
+        break;
+      case "ArrowUp":
+        // Up pressed
+        break;
+      case "ArrowDown":
+        // Down pressed
+        break;
+    }
+  };
+  onMount(() => {
+    document.addEventListener("keydown", keydownListener);
+  });
+  onCleanup(() => {
+    document.removeEventListener("keydown", keydownListener);
+  });
+
   // let { side: paramSide } = useParams();
   // useEffect(() => {
   //   if (mode && !sideBarMode) {

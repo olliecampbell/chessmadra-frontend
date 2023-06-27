@@ -7,12 +7,7 @@ import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
 import { useIsMobile } from "~/utils/isMobile";
 import { CMText } from "../CMText";
-import {
-  cloneDeep,
-  find,
-  forEach,
-  range,
-} from "lodash-es";
+import { cloneDeep, find, forEach, range } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
 import { getAppState } from "~/utils/app_state";
 import {
@@ -86,7 +81,7 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
       };
     case PlaybackSpeed.Normal:
       return {
-        moveDuration: 200,
+        moveDuration: 220,
         fadeDuration: 150,
         stayDuration: 300,
       };
@@ -565,7 +560,7 @@ export function ChessboardView(props: {
                 c.round,
                 c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
               )}
-             />
+            />
           </div>
           <div
             id={"ring-indicator"}
@@ -582,7 +577,7 @@ export function ChessboardView(props: {
               c.keyedProp("--shadow-color")(chessboardStore().ringColor),
               c.noPointerEvents
             )}
-           />
+          />
           <For each={Object.keys(SQUARES)}>
             {(square) => {
               const debug = "e2";

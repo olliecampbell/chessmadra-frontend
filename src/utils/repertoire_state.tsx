@@ -55,6 +55,7 @@ import {
   ImportSuccessOnboarding,
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
+import { ChessboardInterface } from "./chessboard_interface";
 
 const TEST_LINE = isDevelopment
   ? //pgnToLine("1.e4 d5 2.exd5")
@@ -128,7 +129,6 @@ export interface RepertoireState {
   getIsRepertoireEmpty: (side?: Side) => boolean;
   analyzeLineOnLichess: (line: string[], side?: Side) => void;
   analyzeMoveOnLichess: (fen: string, move: string, turn: Side) => void;
-  backOne: () => void;
   backToStartPosition: () => void;
   deleteRepertoire: (side: Side) => void;
   deleteMove: (response: RepertoireMove) => Promise<void>;
@@ -173,6 +173,7 @@ export interface RepertoireState {
   // fetchDebugPawnStructureForPosition: () => void;
   selectDebugGame: (i: number) => void;
   pastFreeTier: (side: Side) => boolean;
+  getChessboard: () => ChessboardInterface | null;
 }
 
 export interface NavBreadcrumb {
@@ -949,6 +950,15 @@ export const getInitialRepertoireState = (
         //   lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
         // );
       }),
+    getChessboard: () => {
+      return get(([s]) => {
+        if (s.browsingState.sidebarState.mode === "review") {
+          return s.reviewState.chessboard;
+        } else {
+          return s.browsingState.chessboard;
+        }
+      });
+    },
     fetchSharedRepertoire: (id: string) =>
       set(([s]) => {
         Promise.all([
@@ -1002,7 +1012,6 @@ export const getInitialRepertoireState = (
           .get("/api/v1/openings")
           .then(({ data }: { data: FetchRepertoireResponse }) => {
             set(([s]) => {
-              console.log("setting repertoire for user");
               s.repertoire = data.repertoire;
               s.repertoireGrades = data.grades;
               s.repertoireShareId = data.shareId;
@@ -1092,14 +1101,6 @@ export const getInitialRepertoireState = (
           return isEmpty(s.repertoire[side].positionResponses);
         }
         return isEmpty(getAllRepertoireMoves(s.repertoire));
-      }),
-    backOne: () =>
-      set(([s]) => {
-        if (s.browsingState.sidebarState.mode === "build") {
-          s.browsingState.sidebarState.addedLineState.visible = false;
-          s.browsingState.chessboard.backOne();
-          return;
-        }
       }),
     backToStartPosition: () =>
       set(([s]) => {

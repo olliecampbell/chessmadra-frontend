@@ -1,7 +1,15 @@
 import { Chess, Move } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import anime from "animejs";
-import { cloneDeep, first, isEmpty, isEqual, isNil, last } from "lodash-es";
+import {
+  cloneDeep,
+  first,
+  isEmpty,
+  isEqual,
+  isNil,
+  last,
+  times,
+} from "lodash-es";
 import { createStore, produce } from "solid-js/store";
 import { getAnimationDurations } from "~/components/chessboard/Chessboard";
 import { PlaybackSpeed } from "~/types/VisualizationState";
@@ -11,12 +19,14 @@ import { MetaPlan } from "./plans";
 import { lineToPgn, pgnToLine, Side } from "./repertoire";
 import { c } from "./styles";
 import { Option } from "./optional";
+import { deepEqual } from "assert";
 
 interface PlayPgnOptions {
   animateLine?: string[];
   animated?: boolean;
   fromEpd?: string;
 }
+type AnimationMove = Move & { reverse: boolean };
 
 type GetFn<T> = (s: ChessboardViewState) => T;
 type MakeMoveOptions = {
@@ -32,7 +42,12 @@ export interface ChessboardInterface {
   setPosition: (_: Chess) => void;
   makeMove: (_: Move | string, options?: MakeMoveOptions) => void;
   clearPending: () => void;
-  backOne: () => void;
+  backAll: () => void;
+  backOne: (opts?: { clear?: boolean; skipAnimation?: boolean }) => void;
+  backN: (n: number) => void;
+  forwardN: (n: number) => void;
+  forwardOne: () => void;
+  forwardAll: () => void;
   getTurn: () => Side;
   // visualizeMove: (
   //   move: Move,
@@ -88,6 +103,7 @@ export interface ChessboardDelegate {
 }
 
 export interface ChessboardViewState {
+  animating: boolean;
   animatingMoveSquare?: Square;
   flipped: boolean;
   frozen: boolean;
@@ -102,8 +118,8 @@ export interface ChessboardViewState {
   _animatePosition?: Chess;
   position: Chess;
   previewPosition?: Chess;
-  animatedMove?: Move;
-  animationQueue?: Option<Move[]>;
+  animatedMove?: AnimationMove;
+  animationQueue?: Option<AnimationMove[]>;
   isReversingPreviewMove?: boolean;
   isAnimatingPreviewMove?: boolean;
   previewedMove?: Move;
@@ -132,7 +148,9 @@ export interface ChessboardViewState {
   moveLog: string[];
   moveLogPgn: string;
   moveHistory: Move[];
+  forwardMoveHistory: Move[];
   positionHistory: string[];
+  forwardPositionHistory: string[];
 
   // other tool stuff
   futurePosition: Chess | null;
@@ -159,6 +177,8 @@ export const createChessboardInterface = (): [
       futurePosition: null,
       positionHistory: [START_EPD],
       moveHistory: [],
+      forwardMoveHistory: [],
+      forwardPositionHistory: [],
       refs: {
         ringRef: null,
         visualizationDotRef: null,
@@ -238,10 +258,6 @@ export const createChessboardInterface = (): [
     },
     makeMove: (m: Move | string, options?: MakeMoveOptions) => {
       set((s) => {
-        if (s._animatePosition) {
-          s._animatePosition.move(m);
-          return;
-        }
         s.availableMoves = [];
         const pos = s.position;
         let moveObject: Move | null = null;
@@ -258,18 +274,33 @@ export const createChessboardInterface = (): [
         const sameAsPreviewed =
           s.previewedMove?.to === moveObject.to &&
           s.previewedMove?.from === moveObject.from;
-        chessboardInterface.clearPending();
+        // chessboardInterface.clearPending();
         if (
           options?.animate &&
           // if same as previewed move just make the move no animation
           !sameAsPreviewed
         ) {
-          s._animatePosition = createChessProxy(new Chess(s.position.fen()));
-          s.animationQueue = moves;
+          // todo: check if animate position already there, don't recreate if so
+          if (!s._animatePosition) {
+            s._animatePosition = createChessProxy(new Chess(s.position.fen()));
+            s.animationQueue = [];
+          }
+          s.animationQueue = [
+            ...(s.animationQueue ?? []),
+            ...(moves as AnimationMove[]),
+          ];
           chessboardInterface.stepAnimationQueue();
         }
         pos.move(m);
         if (moveObject) {
+          if (isEqual(moveObject, s.forwardMoveHistory[0])) {
+            s.forwardMoveHistory.shift();
+            s.forwardPositionHistory.shift();
+          } else {
+            console.log("not equal!", m, s.forwardMoveHistory[0]);
+            s.forwardMoveHistory = [];
+            s.forwardPositionHistory = [];
+          }
           const epd = genEpd(pos);
           s.positionHistory.push(epd);
           s.moveHistory.push(moveObject);
@@ -354,16 +385,22 @@ export const createChessboardInterface = (): [
         if (isEmpty(s.animationQueue)) {
           s._animatePosition = undefined;
         }
-        if (isNil(s._animatePosition)) {
+        if (isNil(s._animatePosition) || s.animating) {
           return;
         }
-        const nextMove = s.animationQueue?.shift() as Move;
+        const nextMove = s.animationQueue?.shift() as AnimationMove;
+        s.animating = true;
         chessboardInterface.animatePieceMove(
           nextMove,
-          PlaybackSpeed.Fast,
+          PlaybackSpeed.Normal,
           (completed) => {
+            s.animating = false;
             if (completed) {
-              s._animatePosition?.move(nextMove);
+              if (nextMove.reverse) {
+                let m = s._animatePosition?.undo();
+              } else {
+                s._animatePosition?.move(nextMove);
+              }
               chessboardInterface.stepAnimationQueue();
             }
           }
@@ -423,7 +460,6 @@ export const createChessboardInterface = (): [
           easing: "easeInOutSine",
           duration: duration,
         });
-        console.log("previewing move", move);
         timeline = timeline.add({
           targets: pieceRef,
           top,
@@ -461,6 +497,7 @@ export const createChessboardInterface = (): [
         s.movesToVisualize = [];
 
         s.activeFromSquare = undefined;
+        s.animating = false;
         s.availableMoves = [];
         s.draggedOverSquare = undefined;
         s.drag = {
@@ -475,10 +512,8 @@ export const createChessboardInterface = (): [
         s.previewedMove = undefined;
         s._animatePosition = undefined;
         if (s.animatingMoveSquare) {
-          console.log("clearing pending animating move", s.animatingMoveSquare);
           const pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
           if (pieceRef) {
-            console.log("got a piece ref");
             anime.remove(pieceRef);
             const { x, y } = getSquareOffset(s.animatingMoveSquare, s.flipped);
             pieceRef.style.top = `${y * 100}%`;
@@ -488,7 +523,7 @@ export const createChessboardInterface = (): [
       });
     },
     animatePieceMove: (
-      move: Move,
+      move: AnimationMove,
       speed: PlaybackSpeed,
       callback: (completed: boolean) => void
     ) => {
@@ -496,7 +531,9 @@ export const createChessboardInterface = (): [
         const { fadeDuration, moveDuration, stayDuration } =
           getAnimationDurations(speed);
         // @ts-ignore
-        const [start, end]: Square[] = [move.from, move.to];
+        const [start, end]: Square[] = move.reverse
+          ? [move.to, move.from]
+          : [move.from, move.to];
         const { x, y } = getSquareOffset(end, s.flipped);
         const { x: startX, y: startY } = getSquareOffset(start, s.flipped);
         s.animatingMoveSquare = start;
@@ -534,7 +571,6 @@ export const createChessboardInterface = (): [
           const promotionPiece = chessboardInterface
             .getDelegate()
             ?.askForPromotionPiece?.(move);
-          console.log("promotion piece", promotionPiece);
           if (promotionPiece) {
             const newMove = cloneDeep(move);
             newMove.promotion = promotionPiece;
@@ -573,14 +609,59 @@ export const createChessboardInterface = (): [
         }
       });
     },
-    backOne: () => {
+    forwardOne: () => {
       set((s) => {
-        if (s.positionHistory.length > 1) {
-          chessboardInterface.clearPending();
-          s.positionHistory.pop();
-          s.moveHistory.pop();
+        if (s.forwardPositionHistory.length > 0) {
+          let m = s.forwardMoveHistory[0] as Move;
+          chessboardInterface.makeMove(m, { animate: true });
+          chessboardInterface.updateMoveLogPgn();
+          chessboardInterface.getDelegate()?.onPositionUpdated?.();
+        }
+      });
+    },
+    forwardN: (n: number) => {
+      set((s) => {
+        if (s.moveHistory.length > 0) {
+          times(n, () => {
+            chessboardInterface.forwardOne();
+          });
+        }
+      });
+    },
+    backN: (n: number) => {
+      set((s) => {
+        if (s.moveHistory.length > 0) {
+          times(n, () => {
+            chessboardInterface.backOne();
+          });
+        }
+      });
+    },
+    backOne: (opts) => {
+      set((s) => {
+        if (s.moveHistory.length > 0) {
+          let position = s.positionHistory.pop() as string;
+          let m = s.moveHistory.pop() as Move;
           s.previewPosition = undefined;
+          s.forwardMoveHistory.unshift(m);
+          s.forwardPositionHistory.unshift(position);
+          if (opts?.clear) {
+            s.forwardPositionHistory = [];
+            s.forwardMoveHistory = [];
+          }
+          if (!opts?.skipAnimation) {
+            if (!s._animatePosition) {
+              s._animatePosition = createChessProxy(s.position.clone());
+              s.animationQueue = [];
+            }
+            s.animationQueue = [
+              ...(s.animationQueue ?? []),
+              { ...m, reverse: true },
+            ];
+            chessboardInterface.stepAnimationQueue();
+          }
           s.position.undo();
+
           chessboardInterface.updateMoveLogPgn();
           chessboardInterface.getDelegate()?.onPositionUpdated?.();
           chessboardInterface.getDelegate()?.onBack?.();
@@ -589,17 +670,17 @@ export const createChessboardInterface = (): [
     },
     setPosition: (chess: Chess) => {
       set((s) => {
-        console.log("set position!");
         s.position = createChessProxy(chess.clone());
       });
     },
     resetPosition: () => {
       set((s) => {
-        console.log("resetting position");
         s.position = createChessProxy(new Chess());
         chessboardInterface.clearPending();
         s.positionHistory = [START_EPD];
         s.moveHistory = [];
+        s.forwardMoveHistory = [];
+        s.forwardPositionHistory = [];
         s.previewPosition = undefined;
         chessboardInterface.updateMoveLogPgn();
         chessboardInterface.getDelegate()?.onPositionUpdated?.();

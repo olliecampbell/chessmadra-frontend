@@ -243,7 +243,7 @@ export const getInitialReviewState = (
             const lastOpponentMove = last(
               s.chessboard.get((s) => s.position).history({ verbose: true })
             );
-            s.chessboard.backOne();
+            s.chessboard.backOne({ clear: true, skipAnimation: true });
 
             if (lastOpponentMove) {
               window.setTimeout(() => {

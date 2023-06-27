@@ -752,7 +752,6 @@ export const getInitialBrowsingState = (
           c.plans = consumer.metaPlans.filter((p) =>
             consumer.consumed.has(p.id)
           );
-          console.log("updating plans to ", c.plans);
           s.sidebarState.planSections = consumer.planSections;
           c.maxPlanOccurence = maxOccurence;
         });
@@ -959,7 +958,10 @@ export const getInitialBrowsingState = (
         });
       },
       onBack: () => {
-        set(([s]) => {});
+        set(([s]) => {
+          s.dismissTransientSidebarState();
+          s.sidebarState.addedLineState.visible = false;
+        });
       },
       onReset: () => {
         set(([s]) => {
