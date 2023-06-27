@@ -73,7 +73,6 @@ export const SidebarLayout = (props: {
   //   }
   // });
   const keydownListener = function (event) {
-    event.preventDefault();
     const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
     // todo: allow in review too
     if (mode() !== "build") {
@@ -83,10 +82,12 @@ export const SidebarLayout = (props: {
       key // change to event.key to key to use the above variable
     ) {
       case "ArrowLeft":
+        event.preventDefault();
         quick((s) => s.repertoireState.getChessboard()?.backOne());
         // Left pressed
         break;
       case "ArrowRight":
+        event.preventDefault();
         quick((s) => s.repertoireState.getChessboard()?.forwardOne());
         // Right pressed
         break;
