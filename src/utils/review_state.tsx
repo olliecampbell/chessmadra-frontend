@@ -255,7 +255,7 @@ export const getInitialReviewState = (
           });
         };
 
-        s.reviewStats.due--;
+        s.reviewStats.due = sum(map(s.activeQueue, (m) => m.moves.length));
         if (delay) {
           setTimeout(() => {
             setup();
