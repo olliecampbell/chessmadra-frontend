@@ -72,19 +72,22 @@ export const PreBuild = (props: { side: Side }) => {
       header={"Repertoire progress"}
       actions={actions()}
       bodyPadding={true}
+      actionsPadding={false}
     >
       <RepertoireCompletion side={props.side} />
       <Spacer height={48} />
-      <Show when={miss()} fallback={<HowToComplete />}>
-        {(miss) => {
-          return (
-            <p class="body-text">
-              Your biggest gap is in the <b>{miss().name}</b>, which you’ll see
-              in <b>1 in {Math.round(1 / miss().incidence)}</b> games
-            </p>
-          );
-        }}
-      </Show>
+      <div class="mb-6">
+        <Show when={miss()} fallback={<HowToComplete />}>
+          {(miss) => {
+            return (
+              <p class="body-text ">
+                Your biggest gap is in the <b>{miss().name}</b>, which you’ll
+                see in <b>1 in {Math.round(1 / miss().incidence)}</b> games
+              </p>
+            );
+          }}
+        </Show>
+      </div>
     </SidebarTemplate>
   );
 };

@@ -5,7 +5,7 @@ import { CMText } from "./CMText";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { SidebarHeader } from "./RepertoireEditingHeader";
-import { Component, Show } from "solid-js";
+import { Component, mergeProps, Show } from "solid-js";
 import { Puff } from "solid-spinner";
 
 export const SidebarTemplate: Component<{
@@ -13,8 +13,15 @@ export const SidebarTemplate: Component<{
   children: any;
   loading?: boolean;
   bodyPadding?: boolean;
+  actionsPadding?: boolean;
   actions: SidebarAction[];
 }> = (props) => {
+  props = mergeProps(
+    {
+      actionsPadding: true,
+    },
+    props
+  );
   const responsive = useResponsive();
   return (
     <div style={s(c.column)}>
@@ -47,7 +54,15 @@ export const SidebarTemplate: Component<{
         >
           {props.children}
         </div>
-        <Spacer height={props.children ? (responsive.isMobile ? 24 : 36) : 0} />
+        <Spacer
+          height={
+            props.children && props.actionsPadding
+              ? responsive.isMobile
+                ? 24
+                : 36
+              : 0
+          }
+        />
         <SidebarActions actions={props.actions} />
       </Show>
     </div>
