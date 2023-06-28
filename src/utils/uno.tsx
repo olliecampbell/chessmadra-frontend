@@ -19,8 +19,9 @@ const unoColors: Record<string, Record<string, string> | string> = {
 // map color mpapins key and values
 const colorMap = Object.entries(colorMapping).forEach(([key, value]) => {
   unoColors[`${key}`] = {};
-  unoColors[`${key}`]["DEFAULT"] = colors[value]["50"];
-  Object.entries(allShades[value]).forEach(([shade, color]) => {
+  console.log("key", key);
+  unoColors[`${key}`]["DEFAULT"] = colors[key]["50"];
+  Object.entries(colors[key]).forEach(([shade, color]) => {
     unoColors[`${key}`][`${shade}`] = color;
     unoColors[`${key}`][`${parseInt(shade) * 10}`] = color;
   });
@@ -29,6 +30,10 @@ unoColors["red"]["black"] = colors.red["55"];
 unoColors["green"]["black"] = colors.green["60"];
 unoColors["red"]["white"] = colors.red["25"];
 unoColors["green"]["white"] = "#1A9200";
+Object.entries(colors.components).forEach(([color, value]) => {
+  console.log("setting", color, value);
+  unoColors[color] = value;
+});
 
 export const unoConfig: VitePluginConfig = {
   rules: [
@@ -43,7 +48,7 @@ export const unoConfig: VitePluginConfig = {
   ],
   theme: {
     colors: {
-      ...colors,
+      ...unoColors,
     },
     height: {
       "sidebar-button": "45px",
