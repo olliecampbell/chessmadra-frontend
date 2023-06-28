@@ -91,7 +91,7 @@ export default function Root() {
         />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
-        <meta name="theme-color" content={c.grays[8]} />
+        <meta name="theme-color" content={c.gray[8]} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
@@ -126,16 +126,16 @@ export default function Root() {
       <Style>
         {`
     body {
-      color: ${c.colors.textPrimary}
+      color: ${c.colors.text.primary}
     }
   `}
       </Style>
 
       <Body
         style={s(
-          c.bg(c.grays[7]),
+          c.bg(c.gray[7]),
           // c.lineHeight(1.5),
-          c.fg(c.colors.textPrimary)
+          c.fg(c.colors.text.primary)
         )}
       >
         <Suspense>

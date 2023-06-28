@@ -11,7 +11,7 @@ export const ReviewText = (props: {
   numDue: number;
 }) => {
   const textStyles = s(
-    c.fg(c.grays[80]),
+    c.fg(c.gray[80]),
     c.weightSemiBold,
     c.fontSize(12),
     c.lineHeight("1.3rem")
@@ -23,9 +23,9 @@ export const ReviewText = (props: {
   const prefix = () => (props.overview ? `Due in` : `Due in`);
   const { color, dueString } = destructure(() => {
     let dueString = "";
-    let color = c.grays[50];
+    let color = c.gray[50];
     if (!props.date || diff() < 0) {
-      color = props.inverse ? c.oranges[30] : c.oranges[70];
+      color = props.inverse ? c.orange[30] : c.orange[70];
       dueString = `${numMovesDueFromHere().toLocaleString()} Due`;
     } else {
       dueString = `${prefix()} ${getHumanTimeUntil(date())}`;

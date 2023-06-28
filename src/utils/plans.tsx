@@ -522,7 +522,7 @@ const PlanMoves = (props: {
 }) => {
   const combinator = props.exclusive ? "or" : "and";
   return (
-    <CMText style={s(c.fg(c.colors.textPrimary))}>
+    <CMText style={s(c.fg(c.colors.text.primary))}>
       {intersperse(
         props.metaPlans.map((metaPlan, i) => {
           return (
@@ -537,7 +537,7 @@ const PlanMoves = (props: {
         }),
         (k, isLast) => {
           return (
-            <CMText key={k} style={s(c.fg(c.colors.textPrimary))}>
+            <CMText key={k} style={s(c.fg(c.colors.text.primary))}>
               {isLast
                 ? props.metaPlans.length > 2
                   ? `, ${combinator} `
@@ -558,7 +558,7 @@ const EnglishSeparator = (props: {
   const combinator = props.exclusive ? "or" : "and";
 
   return (
-    <CMText style={s(c.fg(c.colors.textPrimary))}>
+    <CMText style={s(c.fg(c.colors.text.primary))}>
       {intersperse(props.items, (k, isLast) => {
         return (
           <CMText key={k} style={s()}>
@@ -605,7 +605,7 @@ const PlanMoveText = (props: {
       <CMText
         style={s(
           c.weightSemiBold,
-          c.fg(hovering() ? c.purples[65] : c.arrowColors[55])
+          c.fg(hovering() ? c.purple[65] : c.arrowColors[55])
         )}
       >
         {props.children}

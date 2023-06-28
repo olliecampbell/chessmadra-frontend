@@ -15,16 +15,16 @@ export const CMTextInput: Component<{
     <input
       class={clsx("text-input placeholder-gray-50")}
       style={s(
-        c.bg(c.grays[14]),
+        c.bg(c.gray[14]),
         c.py(12),
         c.px(12),
         c.fontSize(14),
         focus()
-          ? c.border(`1px solid ${c.grays[30]}`)
-          : c.border(`1px solid ${c.grays[26]}`),
+          ? c.border(`1px solid ${c.gray[30]}`)
+          : c.border(`1px solid ${c.gray[26]}`),
         c.br(4),
         c.keyedProp("outline")("none"),
-        c.fg(c.colors.textPrimary),
+        c.fg(c.colors.text.primary),
         props.style ?? {}
       )}
       placeholder={props.placeholder}

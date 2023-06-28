@@ -114,7 +114,7 @@ export const NavBar = (props: {}) => {
         >
           <CMText style={s(c.fontSize(18), c.clickable, c.px(12), c.py(12))}>
             <i
-              style={s(c.fg(c.colors.textSecondary))}
+              style={s(c.fg(c.colors.text.secondary))}
               class="fa-sharp fa-house"
              />
           </CMText>
@@ -140,11 +140,11 @@ export const NavBar = (props: {}) => {
                 >
                   <CMText
                     style={s(
-                      c.fg(c.colors.textPrimary),
+                      c.fg(c.colors.text.primary),
                       c.weightBold,
                       c.fontSize(isMobile ? 14 : 16),
                       c.pb(isMobile ? 2 : 4),
-                      isActive && s(c.borderBottom(`2px solid ${c.grays[60]}`))
+                      isActive && s(c.borderBottom(`2px solid ${c.gray[60]}`))
                     )}
                   >
                     {navItem.title}
@@ -156,7 +156,7 @@ export const NavBar = (props: {}) => {
             return (
               <div
                 
-                style={s(c.width(1), c.height(34), c.bg(c.grays[30]), c.mx(12))}
+                style={s(c.width(1), c.height(34), c.bg(c.gray[30]), c.mx(12))}
                />
             );
           }
@@ -175,7 +175,7 @@ export const NavBar = (props: {}) => {
               <CMText
                 style={s(
                   c.buttons.basic,
-                  c.bg(c.grays[20]),
+                  c.bg(c.gray[20]),
                   c.px(12),
                   c.py(12),
                   c.br(4),
@@ -212,7 +212,7 @@ export const NavBar = (props: {}) => {
           }}
         >
           <i
-            style={s(c.fg(c.grays[80]), c.fontSize(18))}
+            style={s(c.fg(c.gray[80]), c.fontSize(18))}
             class="fa-sharp fa-bars"
            />
         </Button>
@@ -223,7 +223,7 @@ export const NavBar = (props: {}) => {
               <CMText
                 style={s(
                   c.buttons.basic,
-                  c.bg(c.grays[20]),
+                  c.bg(c.gray[20]),
                   c.px(12),
                   c.height(40),
                   c.br(4),
@@ -268,7 +268,7 @@ export const NavBar = (props: {}) => {
           style={s(
             c.fullHeight,
             c.fullWidth,
-            c.bg(c.grays[20]),
+            c.bg(c.gray[20]),
             c.br(2),
             c.px(12),
             c.py(16)
@@ -294,12 +294,12 @@ export const NavBar = (props: {}) => {
                   >
                     <CMText
                       style={s(
-                        c.fg(isActive ? c.grays[90] : c.grays[80]),
+                        c.fg(isActive ? c.gray[90] : c.gray[80]),
                         c.weightSemiBold,
                         c.fontSize(18),
                         c.pb(isMobile ? 2 : 4),
                         isActive &&
-                          s(c.borderBottom(`1px solid ${c.grays[80]}`)),
+                          s(c.borderBottom(`1px solid ${c.gray[80]}`)),
                         c.selfStart
                       )}
                     >

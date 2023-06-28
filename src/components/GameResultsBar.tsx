@@ -31,7 +31,7 @@ export const GameResultsBar = (props: {
     <div
       style={s(
         c.width(`${(props.gameResults.white / total) * 100}%`),
-        c.bg(c.grays[90]),
+        c.bg(c.gray[90]),
         c.px(4),
         c.alignCenter,
         c.row,
@@ -64,7 +64,7 @@ export const GameResultsBar = (props: {
     <div
       style={s(
         c.width(`${(props.gameResults.black / total) * 100}%`),
-        c.bg(c.grays[6]),
+        c.bg(c.gray[6]),
         c.alignCenter,
         c.row,
         c.px(4),
@@ -111,7 +111,7 @@ export const GameResultsBar = (props: {
       <div
         style={s(
           c.width(`${(props.gameResults.draw / total) * 100}%`),
-          c.bg(c.grays[40]),
+          c.bg(c.gray[40]),
           c.center
         )}
       >
@@ -119,7 +119,7 @@ export const GameResultsBar = (props: {
           !props.hideNumbers &&
           !props.activeSide && (
             <CMText
-              style={s(c.fg(c.grays[75]), c.weightBold, c.fontSize(fontSize))}
+              style={s(c.fg(c.gray[75]), c.weightBold, c.fontSize(fontSize))}
             >
               {formatWinPercentage(props.gameResults.draw / total)}
             </CMText>

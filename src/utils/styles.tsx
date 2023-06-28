@@ -1,7 +1,8 @@
 import { assign } from "lodash-es";
+import { colors, gray as grays, hsl } from "./design-system";
 import { BP, Responsive } from "./useResponsive";
 
-export const s = (...args) => assign({}, ...args);
+export const s = (...args: any[]) => assign({}, ...args);
 
 const keyedProp = (key: string) => (x: any) => {
   return {
@@ -38,14 +39,6 @@ const keyedPercentProp = (key: string) => (x: number | string | any) => {
   };
 };
 
-const hsl = (h: number, s: number, l: number, a?: number) => {
-  if (a) {
-    return `hsla(${h}, ${s}%, ${l}%, ${a / 100})`;
-  } else {
-    return `hsl(${h}, ${s}%, ${l}%)`;
-  }
-};
-
 const caps = {
   textTransform: "uppercase",
   letterSpacing: "0.03rem",
@@ -55,16 +48,16 @@ const pt = keyedPixelProp("padding-top");
 const pb = keyedPixelProp("padding-bottom");
 const pl = keyedPixelProp("padding-left");
 const pr = keyedPixelProp("padding-right");
-const px = (x) => s(pl(x), pr(x));
-const py = (x) => s(pt(x), pb(x));
+const px = (x: any) => s(pl(x), pr(x));
+const py = (x: any) => s(pt(x), pb(x));
 
 const m = keyedPixelProp("margin");
 const mt = keyedPixelProp("margin-top");
 const mb = keyedPixelProp("margin-bottom");
 const ml = keyedPixelProp("margin-left");
 const mr = keyedPixelProp("margin-right");
-const mx = (x) => s(ml(x), mr(x));
-const my = (x) => s(mt(x), mb(x));
+const mx = (x: number) => s(ml(x), mr(x));
+const my = (x: number) => s(mt(x), mb(x));
 
 const weightThin = keyedProp("font-weight")(300);
 const weightRegular = keyedProp("font-weight")(400);
@@ -139,16 +132,16 @@ const brtl = keyedPixelProp("border-top-left-radius");
 const brtr = keyedPixelProp("border-top-right-radius");
 const brbl = keyedPixelProp("border-bottom-left-radius");
 const brbr = keyedPixelProp("border-bottom-right-radius");
-const brt = (x) => {
+const brt = (x: number) => {
   return s(brtl(x), brtr(x));
 };
-const brb = (x) => {
+const brb = (x: number) => {
   return s(brbr(x), brbl(x));
 };
-const brl = (x) => {
+const brl = (x: number) => {
   return s(brtl(x), brbl(x));
 };
-const brr = (x) => s(brtr(x), brbr(x));
+const brr = (x: number) => s(brtr(x), brbr(x));
 const maxWidth = keyedPixelProp("max-width");
 const maxHeight = keyedPixelProp("max-height");
 const clickable = keyedProp("cursor")("pointer");
@@ -185,7 +178,7 @@ const aircamBlue = "#1160d6";
 const lineHeight = keyedProp("line-height");
 const fontFamily = keyedProp("font-family");
 
-const shadow = (x, y, blur, spread, color) => {
+const shadow = (x: any, y: any, blur: any, spread: any, color: any) => {
   return {
     "box-shadow": `${x}px ${y}px ${blur}px ${spread}px ${color}`,
   };
@@ -200,121 +193,9 @@ const black = (opacity: number) => {
   return `hsla(0, 0%, 0%, ${opacity}%)`;
 };
 
-export const grayHue = 200;
-// const grays = {
-//   10: `hsl(${grayHue}, 39%, 4%)`,
-//   20: `hsl(${grayHue}, 20%, 8%)`,
-//   30: `hsl(${grayHue}, 15%, 15%)`,
-//   40: `hsl(${grayHue}, 13%, 25%)`,
-//   50: `hsl(${grayHue}, 7%, 35%)`,
-//   60: `hsl(${grayHue}, 7%, 70%)`,
-//   70: `hsl(${grayHue}, 9%, 80%)`,
-//   80: `hsl(${grayHue}, 5%, 90%)`,
-//   90: `hsl(${grayHue}, 3%, 95%)`
-// }
-function easeInOutSine(x: number): number {
-  return -(Math.cos(Math.PI * x) - 1) / 2;
-}
-const genGrays = (
-  hue: number,
-  minSat: number,
-  maxSat: number
-): Record<number, string> => {
-  const grays: Record<number, string> = {};
-  for (let i = 0; i <= 100; i = i + 1) {
-    const saturation = minSat + ((maxSat - minSat) * i) / 100;
-    grays[i] = `hsl(${hue}, ${saturation}%, ${i}%)`;
-  }
-  return grays;
-};
-export const grays = genGrays(grayHue, 8, 5);
-const trueGrays = genGrays(0, 0, 0);
-const chessboardGrays = genGrays(grayHue, 10, 3);
-
 function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
-const genShades = (
-  hue: number,
-  _minSaturation?: number,
-  _maxSaturation?: number
-): Record<number, string> => {
-  const shades: Record<number, string> = {};
-  const minSaturation = _minSaturation ?? 20;
-  const maxSaturation = _maxSaturation ?? 80;
-  const minLightness = 4;
-  const maxLightness = 80;
-  for (let i = 0; i <= 100; i = i + 1) {
-    const lightness_y = easeInOutSine(i / 100);
-    const saturation =
-      minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;
-    const lightness =
-      minLightness + (maxLightness - minLightness) * lightness_y;
-    shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  }
-  return shades;
-  // return {
-  //   10: `hsl(${hue}, 45%, 8%)`,
-  //   20: `hsl(${hue}, 45%, 13%)`,
-  //   30: `hsl(${hue}, 40%, 18%)`,
-  //   40: `hsl(${hue}, 35%, 25%)`,
-  //   50: `hsl(${hue}, 35%, 40%)`,
-  //   60: `hsl(${hue}, 40%, 50%)`,
-  //   70: `hsl(${hue}, 50%, 60%)`,
-  //   80: `hsl(${hue}, 50%, 90%)`,
-  //   90: `hsl(${hue}, 65%, 95%)`,
-  // };
-};
-const blues = genShades(grayHue, 50, 80);
-const teals = genShades(150);
-const primaries = blues;
-const yellows = genShades(41, 70, 70);
-const oranges = genShades(40, 70, 70);
-const arrowColors = genShades(40, 100, 100);
-const pinks = genShades(308);
-const purples = genShades(271);
-const reds = genShades(340, 40, 60);
-const greens = genShades(109);
-const forestGreens = genShades(83);
-const failureShades = reds;
-const successShades = genShades(164);
-export const colors = {
-  blues,
-  teals,
-  primaries,
-  yellows,
-  oranges,
-  pinks,
-  reds,
-  grays,
-  purples,
-  greens,
-  success: "#459B45",
-  forestGreens,
-  successShades,
-  textPrimary: grays[95],
-  textSecondary: grays[80],
-  textTertiary: grays[50],
-  sidebarBorder: grays[25],
-  border: grays[20],
-  textInverse: grays[5],
-  textInverseSecondary: grays[20],
-  successColor: "hsl(164, 98%, 55%)",
-  failureColor: "hsl(340, 70%, 52%)",
-  failureLight: "hsl(348, 100%, 72%)",
-  buttonSecondary: grays[80],
-  backgroundColor: grays[10],
-  header: "hsl(229, 19%, 14%)",
-  modalColor: "hsl(229, 10%, 90%)",
-  cardBackground: grays[18],
-  // lightTile: grays[48],
-  // darkTile: grays[38],
-
-  lightTile: hsl(grayHue, 14, 60),
-  darkTile: hsl(grayHue, 14, 40),
-  debugColor: hsl(71, 100, 42),
-  debugColorDark: hsl(71, 100, 28),
-};
 const extraDarkBorder = border(`1px solid ${grays[7]}`);
 
 const basicButtonStyles = s(
@@ -325,7 +206,7 @@ const basicButtonStyles = s(
   clickable,
   center,
   {
-    textStyles: s(weightBold, fontSize(16), fg(colors.textInverse)),
+    textStyles: s(weightBold, fontSize(16), fg(colors.text.inverse)),
   }
 );
 const outlineDarkButtonStyles = s(
@@ -350,17 +231,6 @@ const outlineLightButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg(grays[80])),
-  }
-);
-const basicInverseButtonStyles = s(
-  br(2),
-  py(16),
-  px(16),
-  bg(grays[20]),
-  clickable,
-  center,
-  {
-    textStyles: s(weightBold, fontSize(16), fg(colors.textPrimary)),
   }
 );
 const disabledButtonStyles = s(
@@ -399,8 +269,8 @@ const basicSecondaryButtonStyles = s(
     textStyles: s(weightBold, fontSize(16), fg(grays[70])),
   }
 );
-const primaryButtonStyles = s(basicButtonStyles, bg(primaries[40]), {
-  textStyles: s(weightBold, fg(colors.textPrimary), fontSize(16)),
+const primaryButtonStyles = s(basicButtonStyles, bg(colors.blue[40]), {
+  textStyles: s(weightBold, fg(colors.text.primary), fontSize(16)),
 });
 const primaryDisabledButtonStyles = s(basicButtonStyles, bg(grays[40]), {
   textStyles: s(weightBold, fg(grays[75]), fontSize(16)),
@@ -414,7 +284,7 @@ const buttons = {
     br(2),
     py(16),
     px(16),
-    bg(colors.cardBackground),
+    bg(grays[10]),
     cardShadow,
     clickable,
     center,
@@ -423,7 +293,6 @@ const buttons = {
     }
   ),
 
-  basicInverse: basicInverseButtonStyles,
   disabled: disabledButtonStyles,
   primary: primaryButtonStyles,
   primaryDisabled: primaryDisabledButtonStyles,
@@ -432,7 +301,7 @@ const buttons = {
   outlineDark: outlineDarkButtonStyles,
 };
 
-const duotone = (primary, secondary) => {
+const duotone = (primary: string, secondary: string) => {
   return {
     "--fa-primary-color": primary,
     "--fa-secondary-color": secondary,
@@ -440,25 +309,11 @@ const duotone = (primary, secondary) => {
   };
 };
 
-export const chessboardColors = {
-  outlineWidth: 0.8,
-  blackFill: chessboardGrays[26],
-  blackOutline: chessboardGrays[5],
-  blackLightAccent: chessboardGrays[26],
-  blackDarkAccent: "hsla(0, 0%, 100%, 10%)",
-  blackKnightAccent: chessboardGrays[20],
-  whiteFill: chessboardGrays[95],
-  whiteOutline: chessboardGrays[0],
-  whiteLightAccent: chessboardGrays[100],
-  whiteKnightAccent: chessboardGrays[40],
-  whiteDarkAccent: "hsla(0, 0%, 60%, 40%)",
-};
-
 const fillNoExpand = s(minWidth("100%"), width(0));
 
 const noPointerEvents = keyedProp("pointer-events")("none");
 const transform = keyedProp("transform");
-const oldContainerStyles = (isMobile, customMaxWidth?: number) =>
+const oldContainerStyles = (isMobile: boolean, customMaxWidth?: number) =>
   s(
     width(
       `min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`
@@ -486,7 +341,7 @@ export const noUserSelect = {
   MsUserSelect: "none",
   UserSelect: "none",
 };
-export const rotate = (x) => transform(`rotate(${x}deg)`);
+export const rotate = (x: number) => transform(`rotate(${x}deg)`);
 
 const grid = ({
   templateColumns,
@@ -522,20 +377,17 @@ const gridColumn = ({ gap }: { gap: number }) => {
   );
 };
 
-const minmax = (min, max) => {
-  return `minmax(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
-};
-const min = (min, max) => {
+const min = (min: any, max: any) => {
   return `min(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
 };
-const max = (min, max) => {
+const max = (min: any, max: any) => {
   return `max(${pixelifyIfNeeded(min)}, ${pixelifyIfNeeded(max)})`;
 };
-const calc = (c) => {
+const calc = (c: string) => {
   return `calc(${c})`;
 };
 const sidebarDescriptionStyles = (responsive: Responsive) => {
-  return s(c.fg(c.grays[70]));
+  return s(c.fg(c.gray[70]));
 };
 
 const getSidebarPadding = (responsive: Responsive) => {
@@ -572,18 +424,17 @@ export const c = {
   weightRegular,
   weightSemiBold,
   weightBold,
-  primaries,
-  blues,
-  purples,
-  pinks,
-  teals,
-  yellows,
-  oranges,
-  failureShades,
-  reds,
-  greens,
-  forestGreens,
-  successShades,
+  primaries: colors.primary,
+  blue: colors.blue,
+  purple: colors.purple,
+  pink: colors.pink,
+  teal: colors.teal,
+  yellow: colors.yellow,
+  orange: colors.orange,
+  failureShade: colors.red,
+  red: colors.red,
+  green: colors.green,
+  successShades: colors.successShades,
   weightHeavy,
   weightBlack,
   flexGrow,
@@ -614,8 +465,7 @@ export const c = {
   justifyEnd,
   justifyBetween,
   alignCenter,
-  grays,
-  trueGrays,
+  gray: colors.gray,
   alignStretch,
   justifyCenter,
   fg,
@@ -674,15 +524,12 @@ export const c = {
   shadow,
   cardShadow,
   lightCardShadow,
-  stif: (x, styles) => {
-    return x ? styles : {};
-  },
-  transition: (key) => {
+  transition: (key: string) => {
     return {
       transition: `200ms ${key} ease-in-out`,
     };
   },
-  gradient: (c1, c2, c3) => {
+  gradient: (c1: string, c2: string, c3: string) => {
     return {
       background: `linear-gradient(180deg, ${c1} 0%, ${c2} 66%, ${c3} 100%)`,
     };
@@ -696,11 +543,10 @@ export const c = {
   rotate,
   grid,
   gridColumn,
-  minmax,
   min,
   max,
   calc,
   noUserSelect,
   sidebarDescriptionStyles,
-  arrowColors,
+  arrowColors: colors.components.arrows,
 };

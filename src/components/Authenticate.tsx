@@ -64,7 +64,7 @@ const Authenticate = (props) => {
           style={s(
             c.weightSemiBold,
             c.fontSize(18),
-            c.fg(c.colors.textSecondary)
+            c.fg(c.colors.text.secondary)
           )}
         >
           {authStatus() === AuthStatus.SuccessWaiting ? (

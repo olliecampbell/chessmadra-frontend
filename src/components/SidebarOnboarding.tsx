@@ -218,7 +218,7 @@ export const Dropdown: Component<{
         <Spacer width={8} />
         <i
           class="fas fa-angle-down"
-          style={s(c.fontSize(18), c.fg(c.grays[80]))}
+          style={s(c.fontSize(18), c.fg(c.gray[80]))}
         />
         <Motion
           animate={{ opacity: isOpen() ? 1 : 0 }}
@@ -231,7 +231,7 @@ export const Dropdown: Component<{
             c.right(0),
             c.left(0),
             c.br(4),
-            c.border(`1px solid ${c.grays[26]}`),
+            c.border(`1px solid ${c.gray[26]}`),
             c.overflowHidden,
             c.gridColumn({ gap: 0 }),
             c.alignStretch

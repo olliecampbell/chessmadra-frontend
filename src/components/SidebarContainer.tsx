@@ -66,7 +66,7 @@ export const SidebarContainer = (props: {
         c.zIndex(4),
         c.relative,
         c.overflowHidden,
-        c.bg(c.grays[14]),
+        c.bg(c.gray[14]),
         c.pb(20),
         c.minHeight("100%")
       )}

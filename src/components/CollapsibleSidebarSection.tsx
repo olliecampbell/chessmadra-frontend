@@ -32,7 +32,7 @@ export const CollapsibleSidebarSection = (props: {
         <CMText
           style={s(
             c.fontSize(responsive.switch(14, [BP.lg, 14])),
-            c.fg(c.colors.textPrimary)
+            c.fg(c.colors.text.primary)
           )}
         >
           {props.header}
@@ -43,7 +43,7 @@ export const CollapsibleSidebarSection = (props: {
               "fa fa-chevron-right rotate-0 transition-transform",
               !collapsed() && "rotate-90"
             )}
-            style={s(c.fg(c.colors.textPrimary), c.fontSize(14))}
+            style={s(c.fg(c.colors.text.primary), c.fontSize(14))}
            />
         </div>
       </Pressable>

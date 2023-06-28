@@ -216,21 +216,21 @@ export const SidebarFullWidthButton = (props: {
     let textStyles = s();
     let py = 12;
     if (props.action.style === "focus") {
-      subtextColor = c.grays[20];
+      subtextColor = c.gray[20];
     }
     if (props.action.style === "wide") {
       textStyles = s(textStyles, c.fontSize(18), c.weightBold);
-      // subtextColor = c.grays[20];
+      // subtextColor = c.gray[20];
       py = 20;
     }
     if (props.action.style === "tertiary") {
-      subtextColor = c.grays[20];
+      subtextColor = c.gray[20];
     }
     if (props.action.style === "secondary") {
-      subtextColor = c.grays[20];
+      subtextColor = c.gray[20];
     }
     if (props.action.style === "primary") {
-      subtextColor = c.grays[70];
+      subtextColor = c.gray[70];
     }
     return {
       subtextColor,
@@ -319,7 +319,7 @@ export const SidebarFullWidthButton = (props: {
               style={s(
                 props.action.style === "focus"
                   ? c.fg(c.colors.textInverseSecondary)
-                  : c.fg(c.colors.textSecondary),
+                  : c.fg(c.colors.text.secondary),
                 props.action.style === "focus"
                   ? c.weightBold
                   : c.weightSemiBold,
@@ -329,7 +329,7 @@ export const SidebarFullWidthButton = (props: {
               {props.action.right}
             </CMText>
           ) : (
-            <CMText style={s(c.fg(c.colors.textTertiary), c.fontSize(14))}>
+            <CMText style={s(c.fg(c.colors.text.tertiary), c.fontSize(14))}>
               {props.action.right}
             </CMText>
           )}
@@ -392,7 +392,7 @@ export const SidebarSectionHeader = (props: {
         c.borderBottom(`1px solid ${c.colors.border}`)
       )}
     >
-      <CMText style={s(c.fontSize(14), c.fg(c.colors.textTertiary))}>
+      <CMText style={s(c.fontSize(14), c.fg(c.colors.text.tertiary))}>
         {props.text}
       </CMText>
       {props.right}

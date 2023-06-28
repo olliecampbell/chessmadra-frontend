@@ -55,7 +55,7 @@ export const CoverageSettings = (props: {}) => {
       <SidebarSelectOneOf
         description={`Your repertoire will be complete when you cover all lines seen in:`}
         choices={thresholdOptions}
-        // cellStyles={s(c.bg(c.grays[15]))}
+        // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
         activeChoice={selected()}
         onSelect={onSelect}
@@ -116,7 +116,7 @@ export const ThemeSettings = (props: {}) => {
       <SidebarSelectOneOf
         description={null}
         choices={combinedThemes.map((t) => t.boardTheme)}
-        // cellStyles={s(c.bg(c.grays[15]))}
+        // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
         activeChoice={user()?.theme ?? "default"}
         onSelect={(boardThemeId: BoardThemeId) => {
@@ -178,7 +178,7 @@ export const RatingSelection = (props: {}) => {
         ]}
         choice={user().ratingRange}
         renderChoice={(choice, inList, onPress) => {
-          const textColor = c.grays[80];
+          const textColor = c.gray[80];
           const textStyles = s(c.fg(textColor), c.fontSize(14));
           const containerStyles = s(
             c.py(12),
@@ -228,7 +228,7 @@ export const RatingSelection = (props: {}) => {
           ]}
           choice={user()?.ratingSystem ?? RatingSource.Lichess}
           renderChoice={(choice, inList, onPress) => {
-            const textColor = c.grays[80];
+            const textColor = c.gray[80];
             const textStyles = s(
               c.fg(textColor),
               c.fontSize(14),

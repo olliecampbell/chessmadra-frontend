@@ -263,7 +263,7 @@ export const RepertoireMovesTable = (props: {
             <div
               style={s(
                 c.height(editingAnnotations() ? 12 : 1),
-                !editingAnnotations() && c.bg(c.grays[30])
+                !editingAnnotations() && c.bg(c.gray[30])
               )}
              />
           )}
@@ -458,7 +458,7 @@ const Response = (props: {
           }
           text="Clear best move"
           icon="fa-duotone fa-trophy"
-          style={s(c.fg(c.yellows[60]), c.fontSize(14))}
+          style={s(c.fg(c.yellow[60]), c.fontSize(14))}
         />
       );
     }
@@ -488,7 +488,7 @@ const Response = (props: {
           }
           text="Warning: heavy theory"
           icon="fa-solid fa-triangle-exclamation"
-          style={s(c.fg(c.reds[60]), c.fontSize(14))}
+          style={s(c.fg(c.red[60]), c.fontSize(14))}
         />
       );
     }
@@ -505,7 +505,7 @@ const Response = (props: {
           }
           text="Rare but dangerous"
           icon="fa fa-radiation"
-          style={s(c.fg(c.reds[65]), c.fontSize(18))}
+          style={s(c.fg(c.red[65]), c.fontSize(18))}
         />
       );
     }
@@ -520,7 +520,7 @@ const Response = (props: {
           }
           text="Common mistake"
           icon="fa fa-person-falling"
-          style={s(c.fg(c.grays[80]), c.fontSize(14))}
+          style={s(c.fg(c.gray[80]), c.fontSize(14))}
         />
       );
     }
@@ -557,7 +557,7 @@ const Response = (props: {
             >
               <CMText
                 style={s(
-                  c.fg(c.colors.textSecondary),
+                  c.fg(c.colors.text.secondary),
                   c.weightSemiBold,
                   c.fontSize(18)
                 )}
@@ -569,7 +569,7 @@ const Response = (props: {
               <CMText
                 key={sanPlus}
                 style={s(
-                  c.fg(c.colors.textSecondary),
+                  c.fg(c.colors.text.secondary),
                   c.fontSize(18),
                   c.weightSemiBold,
                   c.keyedProp("letter-spacing")("0.04rem")
@@ -682,7 +682,7 @@ const Response = (props: {
                 >
                   <CMText
                     style={s(
-                      c.fg(c.grays[80]),
+                      c.fg(c.gray[80]),
                       c.fontSize(12),
                       c.lineHeight("1.3rem")
                     )}
@@ -741,7 +741,7 @@ const Response = (props: {
               <div style={s(c.column, c.maxWidth(400))}>
                 <Show when={isMobile && annotation()}>
                   <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
-                    <CMText style={s(c.fg(c.grays[70]), c.fontSize(12))}>
+                    <CMText style={s(c.fg(c.gray[70]), c.fontSize(12))}>
                       {annotation()}
                     </CMText>
                   </CMText>
@@ -789,7 +789,7 @@ const TableHeader = (props: {
               >
                 <CMText
                   style={s(
-                    c.fg(c.colors.textTertiary),
+                    c.fg(c.colors.text.tertiary),
                     c.fontSize(12),
                     c.whitespace("nowrap")
                   )}
@@ -857,7 +857,7 @@ const MoveTagView = (props: {
   return (
     <p
       style={s(
-        c.fg(c.grays[80]),
+        c.fg(c.gray[80]),
         c.fontSize(10),
         c.weightBold,
         c.row,

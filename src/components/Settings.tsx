@@ -77,14 +77,18 @@ export const SettingsButtons = () => {
   );
 };
 
-export const SettingButton = (props) => {
+export const SettingButton = (props: {
+  title: string;
+  icon: string;
+  onPress: () => void;
+}) => {
   const { hovering, hoveringProps } = useHovering();
   const responsive = useResponsive();
   const color = () => {
     if (hovering()) {
-      return c.colors.textSecondary;
+      return c.colors.text.secondary;
     }
-    return c.colors.textTertiary;
+    return c.colors.text.tertiary;
   };
   return (
     <Pressable
@@ -95,7 +99,7 @@ export const SettingButton = (props) => {
         c.px(responsive.switch(0, [BP.md, 8])),
         c.mx(responsive.switch(0, [BP.md, -8])),
         c.py(8)
-        // c.bg(hovering ? c.grays[14] : c.grays[6])
+        // c.bg(hovering ? c.gray[14] : c.gray[6])
       )}
       {...hoveringProps}
     >

@@ -64,7 +64,7 @@ export const useSections = ({
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   let sections: Section[] = [];
   const textStyles = s(
-    c.fg(c.grays[80]),
+    c.fg(c.gray[80]),
     c.weightSemiBold,
     c.fontSize(12),
     c.lineHeight("1.3rem")
@@ -114,7 +114,7 @@ const getBuildModeSections = ({
   textStyles,
 }: SectionProps) => {
   const sections = [];
-  const naStyles = s(textStyles, c.fg(c.grays[50]));
+  const naStyles = s(textStyles, c.fg(c.gray[50]));
   const na = () => <p style={s(naStyles)}>0%</p>;
   if (!myTurn) {
     sections.push({
@@ -172,7 +172,7 @@ const getBuildModeSections = ({
                 <CMText
                   style={s(
                     textStyles,
-                    belowCoverageGoal && s(c.fg(c.grays[44]))
+                    belowCoverageGoal && s(c.fg(c.gray[44]))
                   )}
                 >
                   {veryRare ? (
@@ -271,7 +271,7 @@ const getBuildModeSections = ({
                 <div
                   style={s(
                     c.row,
-                    c.bg(whiteWinning ? c.grays[90] : c.grays[4]),
+                    c.bg(whiteWinning ? c.gray[90] : c.gray[4]),
                     c.px(4),
                     c.minWidth(30),
                     c.height(18),
@@ -317,7 +317,7 @@ const getBuildModeSections = ({
                     style={s(c.weightHeavy, c.fontSize(10))}
                     class={clsx(
                       isBadMove
-                        ? `text-red-black`
+                        ? `text-red-${backgroundSide}`
                         : backgroundSide === "white"
                         ? "text-gray-10"
                         : "text-gray-90"
@@ -430,7 +430,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
       s.repertoireGrades[activeSide()]?.biggestMisses[epdAfter()],
     ]);
 
-  const backgroundColor = c.grays[28];
+  const backgroundColor = c.gray[28];
   const completedColor = c.colors.success;
   const { completed, progress } = destructure(() => {
     let completed = isNil(missFromHere());
@@ -445,7 +445,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
     }
     return { completed, progress };
   });
-  const inProgressColor = () => (progress() < 20 ? c.reds[65] : c.oranges[65]);
+  const inProgressColor = () => (progress() < 20 ? c.red[65] : c.orange[65]);
   console.log("rendered coveragebar");
   return (
     <div

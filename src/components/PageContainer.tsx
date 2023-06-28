@@ -44,7 +44,7 @@ export const PageContainer = (props: any) => {
               c.row,
               c.minHeight(48),
               c.py(32),
-              // c.bg(c.grays[40]),
+              // c.bg(c.gray[40]),
               c.center
             )}
           >
@@ -53,7 +53,7 @@ export const PageContainer = (props: any) => {
                 return (
                   <a href={icon.link}>
                     <i
-                      style={s(c.fg(c.colors.textPrimary), c.fontSize(24))}
+                      style={s(c.fg(c.colors.text.primary), c.fontSize(24))}
                       class={`fas ${icon.icon}`}
                     />
                   </a>

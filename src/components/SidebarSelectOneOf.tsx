@@ -35,7 +35,7 @@ export const SidebarSelectOneOf: Component<{
         onPress: () => props.onSelect(choice, i),
         right: () =>
           active && (
-            <i class={`fa fa-check`} style={s(c.fg(c.colors.textPrimary))} />
+            <i class={`fa fa-check`} style={s(c.fg(c.colors.text.primary))} />
           ),
       };
     });
@@ -47,7 +47,7 @@ export const SidebarSelectOneOf: Component<{
             style={s(
               c.fontSize(14),
               c.weightSemiBold,
-              c.fg(c.colors.textPrimary),
+              c.fg(c.colors.text.primary),
               c.px(c.getSidebarPadding(responsive))
             )}
           >

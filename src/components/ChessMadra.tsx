@@ -78,7 +78,7 @@ export const ChessMadra = (props: { initialTool: string }) => {
               }}
             >
               <i
-                style={s(c.fg(c.colors.textPrimary))}
+                style={s(c.fg(c.colors.text.primary))}
                 class={`fa-sharp ${isPlaying() ? "fa-pause" : "fa-play"}`}
                />
             </button>

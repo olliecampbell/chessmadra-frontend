@@ -123,8 +123,8 @@ export const BOARD_THEMES: BoardTheme[] = [
           `
       repeating-linear-gradient(
         135deg,
-        ${c.grays[60]},
-        ${c.grays[60]} 1px,
+        ${c.gray[60]},
+        ${c.gray[60]} 1px,
         hsla(0, 0%, 79%, 100%) 1px,
         hsla(0, 0%, 79%, 100%) 6px
       )

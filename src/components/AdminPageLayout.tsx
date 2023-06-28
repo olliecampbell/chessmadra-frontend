@@ -25,7 +25,7 @@ export const AdminPageLayout = (props: { children: JSXElement }) => {
       authStatus() === AuthStatus.Initial ||
       authStatus() === AuthStatus.Authenticating
     ) {
-      inner = <Puff color={c.grays[100]} />;
+      inner = <Puff color={c.gray[100]} />;
     }
     console.log("user email", user);
     if (user && isNil(user()?.email)) {
@@ -33,7 +33,7 @@ export const AdminPageLayout = (props: { children: JSXElement }) => {
         <div style={s()}>
           <CMText style={s()}>
             Looks like you're not logged in, go
-            <CMText style={s(c.fg(c.blues[55]), c.weightSemiBold, c.px(4))}>
+            <CMText style={s(c.fg(c.blue[55]), c.weightSemiBold, c.px(4))}>
               <A href="/login">log in</A>
             </CMText>
             first and then come back here:{" "}
@@ -55,7 +55,7 @@ export const AdminPageLayout = (props: { children: JSXElement }) => {
           />
           <Spacer height={12} />
           <Button
-            style={s(c.buttons.primary)}
+            style={s()}
             onPress={() => {
               quick((s) => {
                 s.adminState.becomeAdmin(password());

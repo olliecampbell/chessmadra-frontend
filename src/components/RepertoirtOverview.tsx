@@ -298,8 +298,8 @@ export const CoverageAndBar = (props: {
   const inverse = () => props.home && props.side === "white";
   const textStyles = () =>
     s(
-      c.fg(inverse() ? c.colors.textInverse : c.colors.textSecondary),
-      !props.home && c.fg(c.colors.textSecondary),
+      c.fg(inverse() ? c.colors.textInverse : c.colors.text.secondary),
+      !props.home && c.fg(c.colors.text.secondary),
       c.weightSemiBold,
       c.fontSize(12)
     );

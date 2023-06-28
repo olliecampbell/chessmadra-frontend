@@ -109,7 +109,7 @@ export const RepertoireHome = () => {
                     style: "wide",
                     text: `${capitalize(side)} repertoire`,
                     right: (
-                      <CMText style={s(c.fg(c.colors.textSecondary))}>
+                      <CMText style={s(c.fg(c.colors.text.secondary))}>
                         {numLines()[side] > 0
                           ? `${Math.round(
                               progressState()[side].percentComplete

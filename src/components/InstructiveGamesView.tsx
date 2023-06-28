@@ -23,7 +23,7 @@ export const InstructiveGamesView = ({}: {}) => {
   //           instructiveGames.map((x, i) => {
   //             return (
   //               <Pressable
-  //                 style={s(c.bg(c.grays[80]), c.p(12), c.fullWidth)}
+  //                 style={s(c.bg(c.gray[80]), c.p(12), c.fullWidth)}
   //                 onPress={() => {
   //                   var windowReference = window.open("about:blank", "_blank");
   //                   windowReference.location = x.gameLink;

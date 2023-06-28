@@ -194,7 +194,7 @@ export function ChessboardView(props: {
     });
   });
 
-  const hiddenColorsBorder = `1px solid ${c.grays[70]}`;
+  const hiddenColorsBorder = `1px solid ${c.gray[70]}`;
   // const pan: Accessor<{ square: Square | null } & XY> = createSignal({
   //   square: null,
   // });
@@ -444,8 +444,8 @@ export function ChessboardView(props: {
                     (1 / 8) * 0.1;
                   const angle = Math.atan2(to.y - from.y, to.x - from.x);
                   const angleDeg = (angle * 180) / Math.PI;
-                  let color = metaPlan.mine ? c.arrowColors[55] : c.grays[35];
-                  let gradientColor = c.grays[100];
+                  let color = metaPlan.mine ? c.arrowColors[55] : c.gray[35];
+                  let gradientColor = c.gray[100];
                   let focused = false;
                   let opacity = 80;
                   if (!metaPlan.mine) {
@@ -453,9 +453,9 @@ export function ChessboardView(props: {
                   }
                   if (chessboardStore().focusedPlans?.includes(metaPlan.id)) {
                     focused = true;
-                    color = c.purples[65];
+                    color = c.purple[65];
                     opacity = 100;
-                    gradientColor = c.purples[30];
+                    gradientColor = c.purple[30];
                   }
                   const duration = "1.0s";
                   const toSquareCenterX = to.x + 1 / 8 / 2;
@@ -690,7 +690,7 @@ export function ChessboardView(props: {
                         light ? colors() : [colors()[1], colors()[0]]
                       );
                       // if (state.hideColors) {
-                      //   color = c.grays[30];
+                      //   color = c.gray[30];
                       // }
                       const tileLetter = () =>
                         flipped() ? COLUMNS[7 - j] : COLUMNS[j];

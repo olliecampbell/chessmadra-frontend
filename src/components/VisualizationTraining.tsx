@@ -154,7 +154,7 @@ const PlaypackSpeedSettings = (props: {}) => {
           PlaybackSpeed.Fast,
           PlaybackSpeed.Ludicrous,
         ]}
-        // cellStyles={s(c.bg(c.grays[15]))}
+        // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
         activeChoice={selected.value}
         onSelect={onSelect}
@@ -187,7 +187,7 @@ const NumberHiddenMovesSettings = (props: {}) => {
       <SidebarSelectOneOf
         description={`Set the number of moves to visualize`}
         choices={range(1, 20)}
-        // cellStyles={s(c.bg(c.grays[15]))}
+        // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
         activeChoice={selected().value}
         onSelect={onSelect}
@@ -249,7 +249,7 @@ const PuzzleDifficultySettings = (props: {}) => {
             max: 2000,
           },
         ]}
-        // cellStyles={s(c.bg(c.grays[15]))}
+        // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
         activeChoice={selected().value}
         onSelect={onSelect}

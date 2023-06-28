@@ -42,16 +42,16 @@ export const SelectOneOf = <T,>(props: {
                 style={s(
                   active &&
                     props.tabStyle &&
-                    c.borderBottom(`2px solid ${c.grays[90]}`),
+                    c.borderBottom(`2px solid ${c.gray[90]}`),
                   c.row,
-                  !props.tabStyle && c.bg(active ? c.grays[80] : c.grays[25]),
+                  !props.tabStyle && c.bg(active ? c.gray[80] : c.gray[25]),
                   !props.tabStyle && c.py(8),
                   props.tabStyle && c.pb(4),
                   c.px(12),
                   !isLast() &&
                     !props.tabStyle &&
                     (props.horizontal ? c.borderRight : c.borderBottom)(
-                      `1px solid ${c.grays[15]}`
+                      `1px solid ${c.gray[15]}`
                     ),
                   props.cellStyles
                 )}
@@ -59,9 +59,9 @@ export const SelectOneOf = <T,>(props: {
                 <CMText
                   style={s(
                     props.tabStyle
-                      ? c.fg(active ? c.colors.textPrimary : c.grays[80])
+                      ? c.fg(active ? c.colors.text.primary : c.gray[80])
                       : c.fg(
-                          active ? c.colors.textInverse : c.colors.textSecondary
+                          active ? c.colors.textInverse : c.colors.text.secondary
                         ),
                     c.weightBold,
                     props.textStyles

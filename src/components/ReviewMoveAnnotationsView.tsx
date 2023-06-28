@@ -93,7 +93,7 @@ const MoveAnnotationsReview = (props: {
         <div
           style={s(
             c.absoluteFull,
-            c.bg(c.grays[20]),
+            c.bg(c.gray[20]),
             c.opacity(95),
             c.center,
             c.zIndex(2)
@@ -153,7 +153,7 @@ const MoveAnnotationsReview = (props: {
                   c.pb(12),
                   c.fullWidth,
                   c.width(300),
-                  c.bg(c.grays[80])
+                  c.bg(c.gray[80])
                 )}
               >
                 <div style={s(c.height(120))}>
@@ -175,14 +175,14 @@ const MoveAnnotationsReview = (props: {
                 <div style={s(c.row, c.alignCenter, c.justifyBetween)}>
                   {x?.userId === user()?.id ? (
                     <>
-                      <CMText style={s(c.fg(c.grays[0]), c.px(12), c.caps)}>
+                      <CMText style={s(c.fg(c.gray[0]), c.px(12), c.caps)}>
                         mine
                       </CMText>
                       <Spacer height={12} />
                     </>
                   ) : (
                     <>
-                      <CMText style={s(c.fg(c.grays[0]), c.px(12))}>
+                      <CMText style={s(c.fg(c.gray[0]), c.px(12))}>
                         {x?.userEmail ?? "Anonymous"}
                       </CMText>
                     </>
@@ -197,7 +197,7 @@ const MoveAnnotationsReview = (props: {
                         textStyles: s(
                           c.buttons.basicSecondary.textStyles,
                           c.fontSize(14),
-                          c.fg(c.grays[90])
+                          c.fg(c.gray[90])
                         ),
                       },
                       c.selfEnd
@@ -228,7 +228,7 @@ const MoveAnnotationsReview = (props: {
               textStyles: s(
                 c.buttons.basicSecondary.textStyles,
                 c.fontSize(14),
-                c.fg(c.grays[90])
+                c.fg(c.gray[90])
               ),
             },
             c.selfEnd

@@ -20,7 +20,7 @@ import { Puff } from "solid-spinner";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 const desktopHeaderStyles = s(
-  c.fg(c.colors.textPrimary),
+  c.fg(c.colors.text.primary),
   c.fontSize(22),
   c.mb(12),
   c.weightBold
@@ -179,11 +179,11 @@ export const Responses = function Responses() {
             <CMText>
               <i
                 class="fa-light fa-empty-set"
-                style={s(c.fg(c.grays[50]), c.fontSize(24))}
+                style={s(c.fg(c.gray[50]), c.fontSize(24))}
               />
             </CMText>
             <Spacer height={18} />
-            <CMText style={s(c.fg(c.grays[75]))}>
+            <CMText style={s(c.fg(c.gray[75]))}>
               No moves available for this position. You can still add a move by
               playing it on the board.
             </CMText>

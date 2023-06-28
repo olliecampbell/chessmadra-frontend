@@ -68,7 +68,7 @@ export const TargetCoverageReachedView = () => {
       </Show>
       <Show when={isEmpty(planSections()) && !onboarding().isOnboarding}>
         <CMText
-          style={s(c.weightRegular, c.fontSize(14), c.fg(c.colors.textPrimary))}
+          style={s(c.weightRegular, c.fontSize(14), c.fg(c.colors.text.primary))}
         >
           Do you want to keep adding moves, or save your progress?
         </CMText>
@@ -86,7 +86,7 @@ export const PlayFromHere = (props: { isolated?: boolean }) => {
     <>
       <Show when={showPlansState().coverageReached || props.isolated}>
         <CMText
-          style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.textPrimary))}
+          style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.text.primary))}
         >
           How to play from here
         </CMText>
@@ -99,7 +99,7 @@ export const PlayFromHere = (props: { isolated?: boolean }) => {
               <div style={s(c.row, c.alignStart)}>
                 <i
                   class="fa-solid fa-circle"
-                  style={s(c.fontSize(6), c.fg(c.grays[70]), c.mt(6))}
+                  style={s(c.fontSize(6), c.fg(c.gray[70]), c.mt(6))}
                 />
                 <Spacer width={8} />
                 <p class={"text-primary"}>{section()}</p>

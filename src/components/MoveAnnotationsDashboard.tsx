@@ -1,4 +1,3 @@
-// import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
@@ -6,18 +5,12 @@ import { isEmpty, isNil, take } from "lodash-es";
 import { Button } from "~/components/Button";
 import { CMText } from "./CMText";
 import { quick, useAdminState } from "~/utils/app_state";
-// import { createStaticChessState } from "~/utils/chessboard_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
-import {
-  createEffect,
-  createSignal,
-  Index,
-  Show,
-} from "solid-js";
+import { createEffect, createSignal, Index, Show } from "solid-js";
 import { A } from "solid-start";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 import { LazyLoad } from "./LazyLoad";
@@ -30,7 +23,7 @@ export const MoveAnnotationsDashboard = (props) => {
   const [activeTab, setActiveTab] = createSignal("Needed");
   createEffect(() => {
     quick((s) => s.adminState.fetchMoveAnnotationDashboard());
-  }, );
+  });
   return (
     <AdminPageLayout>
       {(() => {
@@ -77,7 +70,7 @@ export const MoveAnnotationsDashboard = (props) => {
                       c.grow,
                       c.alignCenter,
                       c.borderBottom(
-                        `2px solid ${active ? c.grays[90] : c.grays[20]}`
+                        `2px solid ${active ? c.gray[90] : c.gray[20]}`
                       ),
                       c.zIndex(5),
                       c.pb(8)
@@ -86,7 +79,7 @@ export const MoveAnnotationsDashboard = (props) => {
                     <CMText
                       style={s(
                         c.fg(
-                          active ? c.colors.textPrimary : c.colors.textSecondary
+                          active ? c.colors.text.primary : c.colors.text.secondary
                         ),
                         c.fontSize(16),
                         c.weightBold
@@ -141,7 +134,7 @@ export const MoveAnnotationRow = (props: {
     nextMove: props.annotation.sanPlus,
   });
   return (
-    <div style={s(c.bg(c.grays[30]), c.br(2), c.px(12), c.py(12), c.column)}>
+    <div style={s(c.bg(c.gray[30]), c.br(2), c.px(12), c.py(12), c.column)}>
       <div style={s(c.row)}>
         <div style={s(c.size(180))}>
           <LazyLoad>
@@ -201,7 +194,7 @@ export const MoveAnnotationRow = (props: {
         >
           <CMText style={s(c.buttons.primary.textStyles)}>
             <Show when={saved}>
-              <i class="fa fa-check" style={s(c.fg(c.grays[90]), c.mr(4))} />
+              <i class="fa fa-check" style={s(c.fg(c.gray[90]), c.mr(4))} />
             </Show>
             {loading() ? "Loading.." : saved() ? "Saved" : "Save"}
           </CMText>

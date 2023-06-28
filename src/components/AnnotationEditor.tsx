@@ -48,7 +48,7 @@ export const AnnotationEditor = (props: {
         )}
       >
         <FadeInOut open={loading}>
-          <CMText style={s(c.fg(c.grays[50]))}>
+          <CMText style={s(c.fg(c.gray[50]))}>
             <i class="fas fa-circle-notch fa-spin" />
           </CMText>
         </FadeInOut>
@@ -57,15 +57,15 @@ export const AnnotationEditor = (props: {
             annotation()?.length > MAX_ANNOTATION_LENGTH && c.weightBold,
             c.fg(
               annotation()?.length > MAX_ANNOTATION_LENGTH
-                ? c.reds[60]
-                : c.grays[50]
+                ? c.red[60]
+                : c.gray[50]
             )
           )}
         >
           {annotation()?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
         </CMText>
       </div>
-      <div style={s(c.bg(c.grays[20]), c.py(12), c.grow)}>
+      <div style={s(c.bg(c.gray[20]), c.py(12), c.grow)}>
         <textarea
           value={annotation() ?? ""}
           style={s(
@@ -77,8 +77,8 @@ export const AnnotationEditor = (props: {
             c.br(0),
             c.px(12),
             c.pb(24),
-            c.bg(c.grays[20]),
-            c.fg(c.grays[90]),
+            c.bg(c.gray[20]),
+            c.fg(c.gray[90]),
             c.keyedProp("resize")("none")
           )}
           class={clsx("placeholder-gray-50")}

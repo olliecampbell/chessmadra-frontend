@@ -175,7 +175,7 @@ export const RepertoireReview = (props: {}) => {
               c.height(12),
               c.round,
               c.alignStretch,
-              c.border(`1px solid ${c.grays[20]}`)
+              c.border(`1px solid ${c.gray[20]}`)
             )}
           >
             {(() => {

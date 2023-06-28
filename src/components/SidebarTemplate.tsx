@@ -37,7 +37,7 @@ export const SidebarTemplate: Component<{
         fallback={
           <div style={s(c.selfCenter, c.pt(48), c.center)}>
             <CMText
-              style={s(c.fontSize(14), c.weightSemiBold, c.fg(c.grays[75]))}
+              style={s(c.fontSize(14), c.weightSemiBold, c.fg(c.gray[75]))}
             >
               <Puff color={c.primaries[65]} />
             </CMText>

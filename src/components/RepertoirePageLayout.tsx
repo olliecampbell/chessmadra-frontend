@@ -17,7 +17,7 @@ export const RepertoirePageLayout = (props: {
   const isMobile = useIsMobile();
 
   createDebugStateEffect();
-  const backgroundColor = c.grays[8];
+  const backgroundColor = c.gray[8];
   return (
     <div
       style={s(

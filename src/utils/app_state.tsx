@@ -106,9 +106,9 @@ export const useAppStateInternal = <T,>(selector: (state: AppState) => T) => {
 const logUnequal = (a, b, path, config: EqualityConfig) => {
   console.log(
     `%c \n  Re-rendering, %c${path}%c used to be`,
-    `padding: 12px; padding-top: 24px; padding-right: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}`,
-    `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.grays[80]}; color: ${c.purples[55]}; font-weight: 600;`,
-    `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}; margin-bottom: 8px;`,
+    `padding: 12px; padding-top: 24px; padding-right: 6px; background-color: ${c.gray[80]}; color: ${c.gray[20]}`,
+    `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.gray[80]}; color: ${c.purple[55]}; font-weight: 600;`,
+    `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.gray[80]}; color: ${c.gray[20]}; margin-bottom: 8px;`,
     "\n\n\n",
     a,
     "\n\nBut is now:\n\n",
@@ -122,8 +122,8 @@ const logExpensive = (a, b, path, keys: number, config?: EqualityConfig) => {
   if (isDevelopment) {
     console.log(
       `%c ${path}%c is expensive, ${keys} keys`,
-      `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.grays[80]}; color: ${c.purples[55]}; font-weight: 600;`,
-      `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.grays[80]}; color: ${c.grays[20]}; margin-bottom: 8px;`,
+      `padding: 4px; padding-top: 24px; padding-bottom: 12px; background-color: ${c.gray[80]}; color: ${c.purple[55]}; font-weight: 600;`,
+      `padding: 12px; padding-top: 24px; padding-left: 6px; background-color: ${c.gray[80]}; color: ${c.gray[20]}; margin-bottom: 8px;`,
       "\n\n\n",
       a,
       "\n\nBut is now:\n\n",

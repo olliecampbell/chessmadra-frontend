@@ -84,11 +84,11 @@ export const getMoveRatingIcon = (rating: MoveRating) => {
   const styles = s(c.weightBold, c.fontSize(16));
   switch (rating) {
     case MoveRating.Inaccuracy:
-      return <CMText style={s(c.fg(c.grays[55]), styles)}>?!</CMText>;
+      return <CMText style={s(c.fg(c.gray[55]), styles)}>?!</CMText>;
     case MoveRating.Mistake:
-      return <CMText style={s(c.fg(c.yellows[60]), styles)}>?</CMText>;
+      return <CMText style={s(c.fg(c.yellow[60]), styles)}>?</CMText>;
     case MoveRating.Blunder:
-      return <CMText style={s(c.fg(c.reds[55]), styles)}>??</CMText>;
+      return <CMText style={s(c.fg(c.red[55]), styles)}>??</CMText>;
 
     default:
       break;

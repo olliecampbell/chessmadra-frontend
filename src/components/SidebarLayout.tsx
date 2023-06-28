@@ -342,7 +342,7 @@ export const NavBreadcrumbs = () => {
         separator={() => {
           return (
             <div style={s(c.mx(responsive.switch(6, [BP.lg, 8])))}>
-              <CMText style={s(c.fg(c.grays[40]))}>
+              <CMText style={s(c.fg(c.gray[40]))}>
                 <i class="fa-light fa-angle-right" />
               </CMText>
             </div>
