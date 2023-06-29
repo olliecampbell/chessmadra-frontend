@@ -7,6 +7,7 @@ import { unoConfig } from "./src/utils/uno";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 const IS_STORYBOOK = !!process.env.IS_STORYBOOK;
+console.log("env?", process.env);
 
 export default defineConfig({
   define: {
