@@ -26,6 +26,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ${{ github.workspace }}
+          build-args: |
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+
           # file: ./server/Dockerfile
           push: true
           tags: marcusbuffett/chess-frontend:latest

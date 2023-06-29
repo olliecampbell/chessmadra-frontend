@@ -6,6 +6,8 @@ COPY pnpm-lock.yaml ./
 RUN pnpm install
 COPY . .
 ENV NODE_ENV=production
+ARG SENTRY_AUTH_TOKEN
+ENV SENTRY_AUTH_TOKEN ${SENTRY_AUTH_TOKEN}
 RUN pnpm run build
 CMD pnpm run start --port=80
 
