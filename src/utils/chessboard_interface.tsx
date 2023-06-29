@@ -261,8 +261,8 @@ export const createChessboardInterface = (): [
         s.availableMoves = [];
         const pos = s.position;
         let moveObject: Move | null = null;
-        const moves = pos.validateMoves([m]);
         if (typeof m === "string") {
+          let moves = pos.validateMoves([m]);
           if (!moves) {
             console.log("This move wasn't valid!", m);
             return;
@@ -270,6 +270,10 @@ export const createChessboardInterface = (): [
           [moveObject] = moves;
         } else {
           moveObject = m;
+        }
+        if (!moveObject) {
+          console.log("This move wasn't valid!", m);
+          return;
         }
         const sameAsPreviewed =
           s.previewedMove?.to === moveObject.to &&
@@ -287,7 +291,7 @@ export const createChessboardInterface = (): [
           }
           s.animationQueue = [
             ...(s.animationQueue ?? []),
-            ...(moves as AnimationMove[]),
+            ...([moveObject] as AnimationMove[]),
           ];
           chessboardInterface.stepAnimationQueue();
         }

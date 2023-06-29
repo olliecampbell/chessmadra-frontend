@@ -52,7 +52,6 @@ import { trackEvent } from "~/utils/trackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { parsePlans } from "./plans";
 // solid TODO
-// import * as Sentry from "sentry-expo";
 import { Responsive } from "./useResponsive";
 // solid TODO
 // import { Identify, identify } from "@amplitude/analytics-browser";
@@ -932,7 +931,7 @@ export const getInitialBrowsingState = (
           })
           .catch((err) => {
             console.log("Error adding lines!", err);
-            Sentry.Browser.captureException(err);
+            Sentry.captureException(err);
           })
           .finally(() => {
             set(([s]) => {

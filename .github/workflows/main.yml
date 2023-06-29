@@ -29,6 +29,8 @@ jobs:
           # file: ./server/Dockerfile
           push: true
           tags: marcusbuffett/chess-frontend:latest
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       - name: Update deploy.yml
         uses: actions-hub/kubectl@master
         env:

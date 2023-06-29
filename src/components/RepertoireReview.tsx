@@ -13,6 +13,7 @@ import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
 import { SidebarHeader } from "./RepertoireEditingHeader";
+import { QuizMove } from "~/utils/queues";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobile();
@@ -85,15 +86,15 @@ export const RepertoireReview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent(`${mode()}.inspect_line`);
-          const qm = s.repertoireState.reviewState.currentMove;
+          let m = currentMove() as QuizMove;
           s.repertoireState.backToOverview();
-          s.repertoireState.startBrowsing(qm.moves[0].side, "build", {
-            pgnToPlay: qm.line,
+          s.repertoireState.startBrowsing(m.moves[0].side, "build", {
+            pgnToPlay: m.line,
           });
         });
       },
       style: "primary",
-      hidden: onboarding().isOnboarding,
+      hidden: onboarding().isOnboarding || !currentMove(),
       text: "Exit practice and view in repertoire builder",
     },
   ];

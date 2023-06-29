@@ -25,7 +25,7 @@ import { isServer } from "solid-js/web";
 import "virtual:uno.css";
 import { quick } from "~/utils/app_state";
 import { HeadSiteMeta } from "./components/PageContainer";
-import { isChessmadra } from "./utils/env";
+import { isChessmadra, isDevelopment } from "./utils/env";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -47,13 +47,12 @@ export default function Root() {
 
     // Option 1, initialize with API_KEY only
 
-    const SENTRY_DSN: string =
-      process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+    const SENTRY_DSN: string = process.env.SENTRY_DSN;
 
     Sentry.init({
-      dsn:
-        SENTRY_DSN ||
-        "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185",
+      dsn: isDevelopment
+        ? "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185"
+        : undefined,
       integrations: [new BrowserTracing()],
 
       debug: !(!process.env.NODE_ENV || process.env.NODE_ENV === "development"),
