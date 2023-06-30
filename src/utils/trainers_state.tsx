@@ -18,8 +18,8 @@ export interface TrainersState {
   currentView: () => View;
   clearViews: () => void;
   pushView: (
-    view: Component<any>,
-    opts?: { direction?: "left" | "right"; props?: any; replace?: boolean }
+    view: Component,
+    opts?: { direction?: "left" | "right"; props?: object; replace?: boolean }
   ) => void;
   popView: () => void;
   animateSidebarState?: (dir: "left" | "right") => void;
@@ -36,7 +36,9 @@ type Stack = [TrainersState, AppState];
 const selector = (s: AppState): Stack => [s.trainersState, s];
 
 export const getInitialTrainersState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {

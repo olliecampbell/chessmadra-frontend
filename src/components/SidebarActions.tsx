@@ -71,7 +71,7 @@ export const SidebarActionsLegacy = () => {
     s.showPlansState,
     s.transposedState,
     s.mode,
-    rs.numMovesDueFromEpd?.[s.activeSide]?.[s.currentEpd],
+    rs.numMovesDueFromEpd?.[s.activeSide!]?.[s.currentEpd],
     rs.browsingState.currentView(),
   ]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -86,7 +86,7 @@ export const SidebarActionsLegacy = () => {
   const biggestGapAction = () => useBiggestGapAction();
   const addBiggestMissAction = (buttons: SidebarAction[]) => {
     if (biggestGapAction()) {
-      buttons.push(biggestGapAction());
+      buttons.push(biggestGapAction()!);
       return;
     }
   };
@@ -153,7 +153,7 @@ export const SidebarActionsLegacy = () => {
             trackEvent(`${mode()}.practice_due`);
             quick((s) => {
               s.repertoireState.reviewState.startReview({
-                side: activeSide(),
+                side: activeSide()!,
                 filter: "due",
                 startLine: currentLine(),
                 startPosition: currentEpd(),
@@ -169,7 +169,7 @@ export const SidebarActionsLegacy = () => {
           quick((s) => {
             trackEvent(`${mode()}.practice_all`);
             s.repertoireState.reviewState.startReview({
-              side: activeSide(),
+              side: activeSide()!,
               filter: "all",
               startLine: currentLine(),
               startPosition: currentEpd(),
@@ -318,7 +318,7 @@ export const SidebarFullWidthButton = (props: {
             <CMText
               style={s(
                 props.action.style === "focus"
-                  ? c.fg(c.colors.textInverseSecondary)
+                  ? c.fg(c.colors.text.inverseSecondary)
                   : c.fg(c.colors.text.secondary),
                 props.action.style === "focus"
                   ? c.weightBold
@@ -467,7 +467,7 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
             trackEvent(`${mode()}.added_line_state.next_gap`);
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.dismissTransientSidebarState();
-            const lastMatchingEpd = positionHistory()[i];
+            const lastMatchingEpd = positionHistory()![i];
             s.repertoireState.browsingState.chessboard.playPgn(
               lineToPgn(line),
               {
@@ -483,5 +483,6 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
       };
     }
   };
-  return getBiggestGapAction();
+  // @ts-ignore
+  return getBiggestGapAction!();
 };

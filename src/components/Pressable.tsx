@@ -1,6 +1,6 @@
 import { c, s } from "~/utils/styles";
 
-export const Pressable = (props) => {
+export const Pressable = (props: any) => {
   return (
     <button
       {...props}

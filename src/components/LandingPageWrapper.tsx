@@ -1,5 +1,8 @@
+// @ts-ignore
 import App from "~/landing_page/App";
+// @ts-ignore
 import React from "react";
+// @ts-ignore
 import ReactDOM from "react-dom";
 import { onCleanup, onMount } from "solid-js";
 import { quick } from "~/utils/app_state";

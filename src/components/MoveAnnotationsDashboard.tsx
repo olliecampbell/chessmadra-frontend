@@ -15,7 +15,7 @@ import { A } from "solid-start";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 import { LazyLoad } from "./LazyLoad";
 
-export const MoveAnnotationsDashboard = (props) => {
+export const MoveAnnotationsDashboard = () => {
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
   createEffect(() => {
     console.log("dashboard", dashboard());
@@ -79,7 +79,9 @@ export const MoveAnnotationsDashboard = (props) => {
                     <CMText
                       style={s(
                         c.fg(
-                          active ? c.colors.text.primary : c.colors.text.secondary
+                          active
+                            ? c.colors.text.primary
+                            : c.colors.text.secondary
                         ),
                         c.fontSize(16),
                         c.weightBold
@@ -103,6 +105,7 @@ export const MoveAnnotationsDashboard = (props) => {
                 {(ann) => (
                   <MoveAnnotationRow
                     completed={activeTab() === "Completed"}
+                    // @ts-ignore
                     annotation={ann()}
                   />
                 )}

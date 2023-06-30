@@ -9,6 +9,7 @@ import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import client from "~/utils/client";
 import { BoardThemeId, PieceSetId } from "./theming";
 import { trackEvent } from "~/utils/trackEvent";
+import { noop } from "lodash-es";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -53,7 +54,9 @@ const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
 
 export const getInitialUserState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -111,10 +114,10 @@ export const getInitialUserState = (
     updateUserSettings: ({ theme, pieceSet }) =>
       set(([s]) => {
         if (pieceSet) {
-          s.user.pieceSet = pieceSet;
+          s.user!.pieceSet = pieceSet;
         }
         if (theme) {
-          s.user.theme = theme;
+          s.user!.theme = theme;
         }
         client
           .post("/api/v1/user/settings", {
@@ -125,8 +128,10 @@ export const getInitialUserState = (
             set(([s, appState]) => {
               s.setUser(data);
               const identifyObj = new Identify();
-              identifyObj.set("theme", s.user.theme);
-              identifyObj.set("piece_set", s.user.pieceSet);
+              if (s.user?.theme && s.user?.pieceSet) {
+                identifyObj.set("theme", s.user!.theme);
+                identifyObj.set("piece_set", s.user!.pieceSet);
+              }
               identify(identifyObj);
             });
           })
@@ -151,13 +156,21 @@ export const getInitialUserState = (
               appState.repertoireState.fetchRepertoire();
 
               const identifyObj = new Identify();
-              identifyObj.set("rating_range", s.user.ratingRange);
-              identifyObj.set("rating_system", s.user.ratingSystem);
-              identifyObj.set("computed_rating", s.user.eloRange);
-              identifyObj.set(
-                "coverage_target",
-                `1 in ${Math.round(1 / s.user.missThreshold)} games`
-              );
+              if (
+                s.user!.ratingRange &&
+                s.user!.ratingSystem &&
+                s.user!.eloRange
+              ) {
+                identifyObj.set("rating_range", s.user!.ratingRange);
+                identifyObj.set("rating_system", s.user!.ratingSystem);
+                identifyObj.set("computed_rating", s.user!.eloRange);
+              }
+              if (s.user?.missThreshold) {
+                identifyObj.set(
+                  "coverage_target",
+                  `1 in ${Math.round(1 / s.user.missThreshold)} games`
+                );
+              }
               identify(identifyObj);
             });
           })
@@ -176,29 +189,29 @@ export const getInitialUserState = (
           .then(({ data }: { data: { url: string } }) => {
             return data.url;
           })
-          .finally(() => {});
+          .finally(noop);
       });
     },
     setTargetDepth: (t: number) => {
       set(([s]) => {
-        s.user.missThreshold = t * 100;
+        s.user!.missThreshold = t * 100;
         trackEvent(`user.update_coverage_target`, {
           target: `1 in ${Math.round(1 / t)} games`,
         });
-        s.updateUserRatingSettings({ missThreshold: s.user.missThreshold });
+        s.updateUserRatingSettings({ missThreshold: s.user!.missThreshold });
       });
     },
     setRatingSystem: (system: string) => {
       set(([s]) => {
         trackEvent(`user.update_rating_system`, { rating_system: system });
-        s.user.ratingSystem = system;
+        s.user!.ratingSystem = system;
         return s.updateUserRatingSettings({ ratingSystem: system });
       });
     },
     setRatingRange: (range: string) => {
       set(([s]) => {
         trackEvent(`user.update_rating_range`, { rating_range: range });
-        s.user.ratingRange = range;
+        s.user!.ratingRange = range;
         return s.updateUserRatingSettings({ ratingRange: range });
       });
     },

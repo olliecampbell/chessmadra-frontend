@@ -1,8 +1,4 @@
-import {
-  useVisualizationState,
-  quick,
-  getAppState,
-} from "~/utils/app_state";
+import { useVisualizationState, quick, getAppState } from "~/utils/app_state";
 import { onMount } from "solid-js";
 import { createEffect, Match, Switch } from "solid-js";
 import { BP, useResponsive } from "~/utils/useResponsive";
@@ -13,7 +9,6 @@ import {
 } from "./SidebarLayout";
 import { Dynamic } from "solid-js/web";
 import { Spacer } from "./Space";
-
 
 import { c, s } from "~/utils/styles";
 import { SettingsButtons } from "./Settings";
@@ -80,7 +75,7 @@ export const ChessMadra = (props: { initialTool: string }) => {
               <i
                 style={s(c.fg(c.colors.text.primary))}
                 class={`fa-sharp ${isPlaying() ? "fa-pause" : "fa-play"}`}
-               />
+              />
             </button>
           </div>
           <Spacer height={12} />
@@ -173,6 +168,7 @@ const BackSection = () => {
           onPress={() => {
             quick((s) => {
               window.open(
+                // @ts-ignore
                 `https://lichess.org/training/${puzzle().id}`,
                 "_blank"
               );
@@ -181,10 +177,7 @@ const BackSection = () => {
         >
           <p>
             View on Lichess
-            <i
-              class="fa fa-up-right-from-square pl-2"
-              style={s(iconStyles)}
-             />
+            <i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)} />
           </p>
         </Pressable>
       </div>

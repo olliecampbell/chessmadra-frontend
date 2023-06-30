@@ -2,6 +2,7 @@ import { c, s } from "~/utils/styles";
 import { useResponsive } from "~/utils/useResponsive";
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
+import { DOMElement } from "solid-js/jsx-runtime";
 
 export const SidebarContainer = (props: {
   setAnimateSidebar: (fn: (dir: "left" | "right") => void) => void;
@@ -21,8 +22,8 @@ export const SidebarContainer = (props: {
       previousRef().style.transform = "translateX(0px)";
       currentRef().style.transform =
         dir === "right" ? "translateX(40px)" : "translateX(-40px)";
-      previousRef().style.transition = null;
-      currentRef().style.transition = null;
+      previousRef().style.transition = "";
+      currentRef().style.transition = "";
       previousRef().style.opacity = "1";
       currentRef().style.opacity = "0";
       previousRef().offsetHeight; /* trigger reflow */
@@ -39,9 +40,12 @@ export const SidebarContainer = (props: {
           // todo: this is terrible and we should figure out why tippy is holding onto an old ref
           [...document.querySelectorAll("[data-tippy-root]")].forEach(
             (node) => {
+              // @ts-ignore
               if (node._tippy) {
+                // @ts-ignore
                 if (!document.body.contains(node._tippy.reference)) {
                   console.log("destroying tippy");
+                  // @ts-ignore
                   node._tippy.destroy();
                 }
               }
@@ -52,9 +56,9 @@ export const SidebarContainer = (props: {
     });
   });
   // @ts-ignore
-  const [previousRef, setPreviousRef] = createSignal<Element>(null);
+  const [previousRef, setPreviousRef] = createSignal<HTMLElement>(null);
   // @ts-ignore
-  const [currentRef, setCurrentRef] = createSignal<Element>(null);
+  const [currentRef, setCurrentRef] = createSignal<HTMLElement>(null);
 
   const responsive = useResponsive();
   const vertical = () => responsive.bp < VERTICAL_BREAKPOINT;
@@ -104,7 +108,7 @@ export const SidebarContainer = (props: {
             c.displayFlex,
             c.noPointerEvents
           )}
-         />
+        />
         <div
           ref={setCurrentRef}
           style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}

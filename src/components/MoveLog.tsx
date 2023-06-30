@@ -19,7 +19,6 @@ import {
   COMBINED_THEMES_BY_ID,
 } from "~/utils/theming";
 import { createElementBounds } from "@solid-primitives/bounds";
-import { lineToPgn } from "~/utils/repertoire";
 
 export const MoveLog = () => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
@@ -102,8 +101,8 @@ export const MoveLog = () => {
     currentLine().length;
     // scroll to right of container ref, smoothly
     if (containerRef()) {
-      containerRef().scrollTo({
-        left: containerRef().scrollWidth,
+      containerRef()!.scrollTo({
+        left: containerRef()!.scrollWidth,
         behavior: "smooth",
       });
     }
@@ -112,7 +111,7 @@ export const MoveLog = () => {
   const movesLayout = createElementBounds(movesRef);
   const overflowing = () => {
     if (movesLayout && containerLayout) {
-      return movesLayout.width > containerLayout.width;
+      return movesLayout.width! > containerLayout.width!;
     }
     return false;
   };

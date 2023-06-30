@@ -1,7 +1,7 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isEmpty, isNil, capitalize } from "lodash-es";
+import { isEmpty, isNil, capitalize, noop } from "lodash-es";
 import { Button } from "~/components/Button";
 import { useIsMobile } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
@@ -17,7 +17,7 @@ import { LazyLoad } from "./LazyLoad";
 import { createSignal, For, onMount, Show } from "solid-js";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 
-export const ReviewMoveAnnotationsView = (props) => {
+export const ReviewMoveAnnotationsView = (props: any) => {
   const isMobile = useIsMobile();
   const [user] = useUserState((s) => [s.user]);
   const [
@@ -67,9 +67,7 @@ export const ReviewMoveAnnotationsView = (props) => {
   );
 };
 
-const MoveAnnotationsReview = (props: {
-  review: MoveAnnotationReview;
-}) => {
+const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
   console.log("Epd is ", props.review.epd);
   const fen = `${props.review.epd} 0 1`;
   const position = new Chess(fen);
@@ -105,7 +103,7 @@ const MoveAnnotationsReview = (props: {
       <div style={s(c.width(400), c.constrainWidth)}>
         <LazyLoad style={s(c.pb("100%"), c.height(0), c.width("100%"))}>
           <ChessboardView
-            onSquarePress={() => {}}
+            onSquarePress={noop}
             chessboardInterface={createStaticChessState({
               epd: props.review.epd,
               side: "white",
@@ -149,12 +147,7 @@ const MoveAnnotationsReview = (props: {
           props.review.annotations.map((x, i) => {
             return (
               <div
-                style={s(
-                  c.pb(12),
-                  c.fullWidth,
-                  c.width(300),
-                  c.bg(c.gray[80])
-                )}
+                style={s(c.pb(12), c.fullWidth, c.width(300), c.bg(c.gray[80]))}
               >
                 <div style={s(c.height(120))}>
                   <AnnotationEditor
@@ -203,7 +196,12 @@ const MoveAnnotationsReview = (props: {
                       c.selfEnd
                     )}
                     onPress={() => {
-                      acceptMoveAnnotation(props.review.epd, props.review.san, x.text);
+                      acceptMoveAnnotation(
+                        // @ts-ignore
+                        props.review.epd,
+                        props.review.san,
+                        x.text
+                      );
                       setReviewed(true);
                     }}
                   >
@@ -222,7 +220,7 @@ const MoveAnnotationsReview = (props: {
           style={s(
             c.buttons.primary,
             c.py(8),
-            c.bg(c.failureShades[45]),
+            c.bg(c.red[45]),
             c.px(16),
             {
               textStyles: s(

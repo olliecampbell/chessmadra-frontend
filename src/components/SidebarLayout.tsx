@@ -10,7 +10,7 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, JSXElement, onCleanup, onMount, Show } from "solid-js";
 import { s, c } from "~/utils/styles";
 import { BP, useResponsive } from "~/utils/useResponsive";
 import { Spacer } from "~/components/Space";
@@ -21,19 +21,19 @@ import { clsx } from "~/utils/classes";
 import { createElementBounds } from "@solid-primitives/bounds";
 import { isChessmadra } from "~/utils/env";
 import { MoveLog } from "./MoveLog";
-import { useKeyDownEvent } from "@solid-primitives/keyboard";
+import { ChessboardInterface } from "~/utils/chessboard_interface";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
 export const SidebarLayout = (props: {
   shared?: boolean;
   setAnimateSidebar: (fn: (dir: "right" | "left") => void) => void;
-  breadcrumbs;
-  sidebarContent;
-  belowChessboard;
-  chessboardInterface;
-  backSection;
-  settings;
+  breadcrumbs: JSXElement;
+  sidebarContent: JSXElement;
+  belowChessboard: JSXElement;
+  chessboardInterface: ChessboardInterface;
+  backSection: JSXElement;
+  settings: JSXElement;
   loading: boolean;
 }) => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
@@ -72,7 +72,7 @@ export const SidebarLayout = (props: {
   //     }
   //   }
   // });
-  const keydownListener = function (event) {
+  const keydownListener = function (event: KeyboardEvent) {
     const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
     // todo: allow in review too
     if (mode() !== "build") {
@@ -226,7 +226,8 @@ export const SidebarLayout = (props: {
                   c.grow,
 
                   chessboardHeight()
-                    ? c.mt(!chessboardHidden() ? 0 : -chessboardHeight() + 100)
+                    ? // @ts-ignore
+                      c.mt(!chessboardHidden() ? 0 : -chessboardHeight() + 100)
                     : c.mt(0)
                 )}
               >

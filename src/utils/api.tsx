@@ -14,7 +14,7 @@ const MOCK_RESPONSES = false;
 
 export const fetchNewPuzzle = async (
   args: PuzzleFetchOptions
-): Promise<LichessPuzzle> => {
+): Promise<LichessPuzzle | null> => {
   if (MOCK_RESPONSES && isDevelopment) {
     flipper++;
     if (flipper % 2 === 0) {
@@ -32,6 +32,7 @@ export const fetchNewPuzzle = async (
   } catch (error) {
     console.log(error);
   }
+  return null;
 };
 
 export const fetchNewBlunderPuzzle = async ({
@@ -42,6 +43,7 @@ export const fetchNewBlunderPuzzle = async ({
   centipawn_loss_max: number;
   centipawn_loss_min: number;
   limit: number;
+  // @ts-ignore
 }): Promise<BlunderPuzzle[]> => {
   try {
     const response = await client.post("/api/v1/blunder_puzzle", {

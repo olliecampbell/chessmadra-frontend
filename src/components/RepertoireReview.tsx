@@ -64,7 +64,7 @@ export const RepertoireReview = (props: {}) => {
       },
     ];
   };
-  const actions: Accessor<SidebarAction[]> = () => [
+  const actions: Accessor<(SidebarAction & { hidden?: boolean })[]> = () => [
     {
       onPress: () => {
         quick((s) => {
@@ -86,7 +86,7 @@ export const RepertoireReview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent(`${mode()}.inspect_line`);
-          let m = currentMove() as QuizMove;
+          const m = currentMove() as QuizMove;
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(m.moves[0].side, "build", {
             pgnToPlay: m.line,

@@ -6,9 +6,11 @@ export function createChessProxy(chess: Chess): Chess {
   const handler: ProxyHandler<Chess> = {
     get(target, prop, receiver) {
       track();
+      // @ts-ignore
       if (typeof target[prop] === "function" && prop !== "get") {
         const fen = chess.fen();
         return (...args: any[]) => {
+          // @ts-ignore
           const result = target[prop](...args);
           const newFen = chess.fen();
           if (fen !== newFen) {

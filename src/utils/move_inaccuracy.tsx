@@ -3,6 +3,7 @@ import { c, s } from "~/utils/styles";
 import { isNil } from "lodash-es";
 import { CMText } from "~/components/CMText";
 import { Side } from "./repertoire";
+import { Match, Switch } from "solid-js";
 
 export const getWinPercentage = (
   stockfish: StockfishReport,
@@ -82,15 +83,17 @@ export const getMoveRating = (
 
 export const getMoveRatingIcon = (rating: MoveRating) => {
   const styles = s(c.weightBold, c.fontSize(16));
-  switch (rating) {
-    case MoveRating.Inaccuracy:
-      return <CMText style={s(c.fg(c.gray[55]), styles)}>?!</CMText>;
-    case MoveRating.Mistake:
-      return <CMText style={s(c.fg(c.yellow[60]), styles)}>?</CMText>;
-    case MoveRating.Blunder:
-      return <CMText style={s(c.fg(c.red[55]), styles)}>??</CMText>;
-
-    default:
-      break;
-  }
+  return (
+    <Switch>
+      <Match when={rating === MoveRating.Inaccuracy}>
+        <CMText style={s(c.fg(c.gray[55]), styles)}>?!</CMText>
+      </Match>
+      <Match when={rating === MoveRating.Mistake}>
+        <CMText style={s(c.fg(c.yellow[60]), styles)}>?</CMText>
+      </Match>
+      <Match when={rating === MoveRating.Blunder}>
+        <CMText style={s(c.fg(c.red[55]), styles)}>??</CMText>
+      </Match>
+    </Switch>
+  );
 };

@@ -4,9 +4,9 @@ import { User } from "~/utils/models";
 import { uuid4 } from "@sentry/utils";
 import { getAppState } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
-import { createEffect, onMount } from "solid-js";
+import { createEffect, JSXElement, onMount } from "solid-js";
 
-const AuthHandler = ({ children }) => {
+const AuthHandler = ({ children }: { children: JSXElement }) => {
   // let [user, authStatus, token, tempUserUuid, quick] = useAppState((s) => [
   //   s.userState.user,
   //   s.userState.authStatus,

@@ -2,13 +2,13 @@
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { BP, useResponsive } from "~/utils/useResponsive";
-import { createSignal } from "solid-js";
+import { createSignal, JSXElement } from "solid-js";
 import { Pressable } from "./Pressable";
 import { clsx } from "~/utils/classes";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const CollapsibleSidebarSection = (props: {
-  children: JSX.Element | JSX.Element[];
+  children: JSXElement | JSXElement[];
   header: string;
 }) => {
   const responsive = useResponsive();
@@ -44,7 +44,7 @@ export const CollapsibleSidebarSection = (props: {
               !collapsed() && "rotate-90"
             )}
             style={s(c.fg(c.colors.text.primary), c.fontSize(14))}
-           />
+          />
         </div>
       </Pressable>
       <div style={s()}>{collapsed() ? null : props.children}</div>

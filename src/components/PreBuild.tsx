@@ -42,7 +42,7 @@ export const PreBuild = (props: { side: Side }) => {
           quick((s) => {
             s.repertoireState.browsingState.popView();
             s.repertoireState.browsingState.moveSidebarState("right");
-            const line = pgnToLine(biggestMiss().lines[0]);
+            const line = pgnToLine(biggestMiss()!.lines[0]);
             s.repertoireState.startBrowsing(props.side, "build", {
               pgnToPlay: lineToPgn(line),
             });

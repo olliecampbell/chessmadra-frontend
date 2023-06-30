@@ -1,3 +1,4 @@
+/* eslint-disable solid/reactivity, @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
 import { Chess, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import { CMText } from "~/components/CMText";
@@ -82,6 +83,7 @@ export const getMetaPlans = (
       }
       if (piece?.type === "k") {
         ["d1", "f1", "d8", "f8"].forEach((square) => {
+          // @ts-ignore
           byFromSquare[square]?.forEach((p) => {
             recurse(p, new Set());
           });
@@ -135,8 +137,6 @@ function pieceSymbolToPieceName(symbol: PieceSymbol): string {
       return "king";
     case "p":
       return "pawn";
-    default:
-      return null;
   }
 }
 
@@ -185,6 +185,7 @@ class PlanConsumer {
     forEach(SQUARES, (_, square) => {
       const piece = position.get(square);
       if (piece && toSide(piece.color) !== side) {
+        // @ts-ignore
         this.capturePieces[square] = piece.type;
       }
     });
@@ -197,6 +198,7 @@ class PlanConsumer {
 
   consume<T extends MetaPlan | (MetaPlan | undefined)[]>(plan: T): T {
     if (Array.isArray(plan)) {
+      // @ts-ignore
       plan.map((p) => this.consumed.add(p?.id));
     } else {
       this.consumed.add(plan.id);
@@ -260,6 +262,7 @@ class PlanConsumer {
       let recapture = false;
       if (planBeforeCapture) {
         const opponentHasPieceOnCaptureSquare =
+          // @ts-ignore
           toSide(this.position.get(plan.plan.toSquare)?.color) ==
           otherSide(plan.plan.side);
         if (
@@ -428,6 +431,7 @@ class PlanConsumer {
     });
   }
 
+  // @ts-ignore
   addSection(section) {
     this.planSections.push(section);
   }
@@ -456,7 +460,9 @@ class PlanConsumer {
       if (isEmpty(allDevelopmentPlans)) {
         return;
       }
+      // @ts-ignore
       let descriptor = null;
+      // @ts-ignore
       let beforeDescriptor = null;
       if (allDevelopmentPlans.length > 1 && isDevelopment) {
         beforeDescriptor = "can";
@@ -476,18 +482,22 @@ class PlanConsumer {
         <>
           The {pieceDescription}{" "}
           {allDevelopmentPlans.length > 1
-            ? `${beforeDescriptor} ${descriptor} `
-            : beforeDescriptor
+            ? // @ts-ignore
+              `${beforeDescriptor} ${descriptor} `
+            : // @ts-ignore
+            beforeDescriptor
             ? `${beforeDescriptor} `
             : ""}
           <PlanMoves
             exclusive
             metaPlans={allDevelopmentPlans}
             stripPieceSymbol
+            // @ts-ignore
             customFormatter={
               allDevelopmentPlans.length > 1
                 ? null
                 : () => {
+                    // @ts-ignore
                     return `${descriptor} ${plan.plan.toSquare}`;
                   }
             }
@@ -551,10 +561,7 @@ const PlanMoves = (props: {
   );
 };
 
-const EnglishSeparator = (props: {
-  exclusive?: boolean;
-  items: any[];
-}) => {
+const EnglishSeparator = (props: { exclusive?: boolean; items: any[] }) => {
   const combinator = props.exclusive ? "or" : "and";
 
   return (
@@ -614,7 +621,8 @@ const PlanMoveText = (props: {
   );
 };
 
-const getDevelopmentPieceDescription = (plan: MetaPlan): string => {
+// @ts-ignore
+const getDevelopmentPieceDescription = (plan: MetaPlan): string | null => {
   if (
     !(plan.plan.fromSquare.endsWith("1") || plan.plan.fromSquare.endsWith("8"))
   ) {

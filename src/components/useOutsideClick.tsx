@@ -2,7 +2,7 @@
 
 import { onCleanup } from "solid-js";
 
-export function useOutsideClick(ref, clicked) {
+export function useOutsideClick(ref: any, clicked: any) {
   function handleClickOutside(event: MouseEvent) {
     if (ref() && !ref().contains(event.target)) {
       return clicked(event);

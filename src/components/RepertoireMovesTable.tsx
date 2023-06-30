@@ -12,6 +12,7 @@ import {
   map,
   reverse,
   cloneDeep,
+  noop,
 } from "lodash-es";
 import { useIsMobile } from "~/utils/isMobile";
 import { RepertoireMiss, RepertoireMove, Side } from "~/utils/repertoire";
@@ -83,10 +84,10 @@ export interface ScoreFactor {
 export const RepertoireMovesTable = (props: {
   header: Accessor<string | undefined | null>;
   body?: Accessor<string>;
-  activeSide: Accessor<Side>;
+  activeSide: Side;
   showOtherMoves?: Accessor<boolean>;
   usePeerRates: Accessor<boolean>;
-  side: Accessor<Side>;
+  side: Side;
   responses: Accessor<TableResponse[]>;
 }) => {
   const responsive = useResponsive();
@@ -99,8 +100,11 @@ export const RepertoireMovesTable = (props: {
       createMemo(() => {
         const anyMine = some(props.responses(), (m) => m.repertoireMove?.mine);
         const mine = filter(props.responses(), (m) => m.repertoireMove?.mine);
-        const anyNeeded = some(props.responses(), (m) => m.suggestedMove?.needed);
-        const myTurn = props.side() === props.activeSide();
+        const anyNeeded = some(
+          props.responses(),
+          (m) => m.suggestedMove?.needed
+        );
+        const myTurn = props.side === props.activeSide;
         const isMobile = useIsMobile();
         // todo: solid, prob need to use accessors here
         const sections = useSections({
@@ -136,6 +140,7 @@ export const RepertoireMovesTable = (props: {
           return (
             i < MIN_TRUNCATED ||
             r.repertoireMove ||
+            // @ts-ignore
             (myTurn && r.score > 0) ||
             moveHasTag(r, MoveTag.RareDangerous) ||
             (myTurn && moveHasTag(r, MoveTag.Transposes))
@@ -165,12 +170,13 @@ export const RepertoireMovesTable = (props: {
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const hideAnnotations = () => moveNumber() === 1;
   const firstWhiteMove = () =>
-    moveNumber() === 1 && props.side() === "white" && myTurn() && !anyMine();
+    moveNumber() === 1 && props.side === "white" && myTurn() && !anyMine();
   const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
   const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
     referenceEquality: true,
   });
+  // @ts-ignore
   const onMoveRender = (sanPlus, e) => {
     if (isNil(e)) {
       // TODO: better deletion, decrease widths
@@ -183,6 +189,7 @@ export const RepertoireMovesTable = (props: {
       setMoveMaxWidth(width);
     }
   };
+  // @ts-ignore
   const tableMeta: Accessor<TableMeta> = () => {
     return {
       highestIncidence: max(
@@ -196,8 +203,10 @@ export const RepertoireMovesTable = (props: {
       map(reverse(cloneDeep(trimmedResponses())), (tr) => {
         const newOpeningName = null;
         const [currentOpeningName, currentVariations] = currentEcoCode()
-          ? getAppropriateEcoName(currentEcoCode()?.fullName)
+          ? // @ts-ignore
+            getAppropriateEcoName(currentEcoCode()?.fullName)
           : [];
+        // @ts-ignore
         const nextEcoCode = ecoCodeLookup()[tr.suggestedMove?.epdAfter];
         if (nextEcoCode) {
           const [name, variations] = getAppropriateEcoName(
@@ -265,7 +274,7 @@ export const RepertoireMovesTable = (props: {
                 c.height(editingAnnotations() ? 12 : 1),
                 !editingAnnotations() && c.bg(c.gray[30])
               )}
-             />
+            />
           )}
         >
           {(tableResponse, i) => {
@@ -281,6 +290,7 @@ export const RepertoireMovesTable = (props: {
                 editing={editingAnnotations()}
                 tableResponse={tableResponse()}
                 moveMinWidth={moveMaxWidth()}
+                // @ts-ignore
                 moveRef={(e) => {
                   onMoveRender(
                     tableResponse().suggestedMove?.sanPlus ||
@@ -389,6 +399,7 @@ const Response = (props: {
     s.activeSide,
   ]);
   const [positionReport] = useBrowsingState(([s, rs]) => [
+    // @ts-ignore
     rs.positionReports?.[activeSide()]?.[currentEpd()],
   ]);
   const [moveWidthRef, setMoveWidthRef] = createSignal(
@@ -401,9 +412,11 @@ const Response = (props: {
   });
 
   const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
+    // @ts-ignore
     rs.numMovesDueFromEpd[activeSide()][
       props.tableResponse.repertoireMove?.epdAfter
     ],
+    // @ts-ignore
     rs.earliestReviewDueFromEpd[activeSide()][
       props.tableResponse.repertoireMove?.epdAfter
     ],
@@ -426,6 +439,7 @@ const Response = (props: {
   const { hoveringProps: responseHoverProps, hoveringRef } = useHovering(
     () => {
       getAppState().repertoireState.browsingState.chessboard?.previewMove(
+        // @ts-ignore
         sanPlus()
       );
     },
@@ -438,6 +452,7 @@ const Response = (props: {
     if (props.hideAnnotations) {
       return null;
     }
+    // @ts-ignore
     return renderAnnotation(props.tableResponse.suggestedMove?.annotation);
   });
   // createEffect(() => {
@@ -548,7 +563,7 @@ const Response = (props: {
       <Show when={props.editing}>
         <div style={s(c.row, c.alignCenter)}>
           <Pressable
-            onPress={() => {}}
+            onPress={noop}
             class={clsx("bg-gray-12 row h-[128px] grow rounded-sm")}
             style={s(c.lightCardShadow, c.mx(c.getSidebarPadding(responsive)))}
           >
@@ -586,6 +601,7 @@ const Response = (props: {
                 quick((s) => {
                   s.repertoireState.uploadMoveAnnotation({
                     epd: currentEpd(),
+                    // @ts-ignore
                     san: sanPlus(),
                     text: annotation,
                   });
@@ -612,6 +628,7 @@ const Response = (props: {
 
                 if (props.tableResponse.transposes) {
                   s.repertoireState.browsingState.chessboard.makeMove(
+                    // @ts-ignore
                     sanPlus(),
                     { animate: true }
                   );
@@ -622,6 +639,7 @@ const Response = (props: {
                   });
                 } else {
                   s.repertoireState.browsingState.chessboard.makeMove(
+                    // @ts-ignore
                     sanPlus(),
                     { animate: true }
                   );
@@ -657,12 +675,12 @@ const Response = (props: {
                           "text-gray-85 font-bold leading-5 tracking-wider"
                         }
                       >
-                        {sanPlus}
+                        {sanPlus()}
                       </p>
                       {!isNil(moveRating()) && (
                         <>
                           <Spacer width={4} />
-                          {() => getMoveRatingIcon(props.moveRating)}
+                          {() => getMoveRatingIcon(moveRating()!)}
                         </>
                       )}
                     </div>
@@ -806,9 +824,7 @@ const TableHeader = (props: {
   );
 };
 
-export const DebugScoreView = (props: {
-  tableResponse: TableResponse;
-}) => {
+export const DebugScoreView = (props: { tableResponse: TableResponse }) => {
   return (
     <div style={s()}>
       <div style={s(c.row, c.textAlign("end"), c.weightBold)}>
@@ -849,9 +865,13 @@ function renderAnnotation(_annotation: string) {
 }
 
 const MoveTagView = (props: {
+  // @ts-ignore
   icon;
+  // @ts-ignore
   text;
+  // @ts-ignore
   style;
+  // @ts-ignore
   tip;
 }) => {
   return (

@@ -11,17 +11,14 @@ export type BoardTheme = {
 };
 export type TileTheme = {
   color: string;
-  styles?: any;
+  styles?: object;
 };
 
 export type BoardThemeId =
   | "default"
-  | "reddish"
   | "stripey"
   | "chess.com"
-  | "low-contrast"
-  | "lichess-brown"
-  | "lichess-blue";
+  | "lichess-brown";
 export type PieceSetId = string;
 export const PIECE_SETS = [
   "cburnett",
@@ -137,6 +134,7 @@ export const BOARD_THEMES: BoardTheme[] = [
   },
 ];
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 export const BOARD_THEMES_BY_ID: Record<BoardThemeId, BoardTheme> = keyBy(
   BOARD_THEMES,
@@ -175,5 +173,6 @@ export type CombinedTheme = {
   boardTheme: "stripey";
   pieceSet: "anarcandy";
 };
+// @ts-ignore
 export const COMBINED_THEMES_BY_ID: Record<CombinedThemeID, CombinedTheme> =
   keyBy(combinedThemes, "id");

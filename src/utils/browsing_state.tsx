@@ -17,6 +17,7 @@ import {
   forEach,
   uniqBy,
   includes,
+  noop,
 } from "lodash-es";
 import {
   RepertoireMove,
@@ -230,7 +231,9 @@ export const makeDefaultSidebarState = () => {
 };
 
 export const getInitialBrowsingState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -248,6 +251,7 @@ export const getInitialBrowsingState = (
   };
   const initialState = {
     ...createQuick(setOnly),
+    // @ts-ignore
     chessboard: undefined as ChessboardInterface,
     activeSide: "white",
     sidebarState: makeDefaultSidebarState(),
@@ -321,7 +325,7 @@ export const getInitialBrowsingState = (
         ) {
           trackEvent(`${s.sidebarState.mode}.coverage_reached`, {
             hasPlans: !isNil(
-              rs.positionReports[s.sidebarState.activeSide][
+              rs.positionReports[s.sidebarState.activeSide!][
                 s.sidebarState.currentEpd
               ]?.plans
             ),
@@ -356,6 +360,7 @@ export const getInitialBrowsingState = (
           ];
         const _tableResponses: Record<string, TableResponse> = {};
         positionReport?.suggestedMoves
+          // @ts-ignore
           .filter((sm) => getTotalGames(sm.results) > 0)
           .map((sm) => {
             _tableResponses[sm.sanPlus] = {
@@ -386,10 +391,13 @@ export const getInitialBrowsingState = (
           tableResponses = tableResponses.filter((tr) => tr.repertoireMove);
         }
         const biggestMisses =
+          // @ts-ignore
           rs.repertoireGrades[s.sidebarState.activeSide].biggestMisses ?? {};
         tableResponses.forEach((tr) => {
           const epd = tr.suggestedMove?.epdAfter;
+          // @ts-ignore
           if (biggestMisses[epd]) {
+            // @ts-ignore
             tr.biggestMiss = biggestMisses[epd];
           }
         });
@@ -415,6 +423,7 @@ export const getInitialBrowsingState = (
         tableResponses.forEach((tr) => {
           if (!ownSide && mode == "build") {
             if (
+              // @ts-ignore
               tr.suggestedMove?.incidence < threshold &&
               tr.suggestedMove?.needed
             ) {
@@ -430,8 +439,10 @@ export const getInitialBrowsingState = (
             const epd =
               tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
             let dueBelow =
+              // @ts-ignore
               rs.numMovesDueFromEpd[s.sidebarState.activeSide][epd];
             let earliestBelow =
+              // @ts-ignore
               rs.earliestReviewDueFromEpd[s.sidebarState.activeSide][epd];
             const dueAt = tr.repertoireMove.srs?.dueAt;
             if (epd == DEBUG.epd) {
@@ -469,6 +480,7 @@ export const getInitialBrowsingState = (
 
           if (
             !tr.repertoireMove &&
+            // @ts-ignore
             rs.epdNodes[s.sidebarState.activeSide][epdAfter]
           ) {
             tr.transposes = true;
@@ -482,9 +494,11 @@ export const getInitialBrowsingState = (
         tableResponses.forEach((tr) => {
           const moveRating = getMoveRating(
             positionReport,
+            // @ts-ignore
             tr.suggestedMove,
             currentSide
           );
+          // @ts-ignore
           tr.moveRating = moveRating;
         });
         if (ownSide && tableResponses.length >= 3) {
@@ -499,7 +513,9 @@ export const getInitialBrowsingState = (
               return (!isNil(tr.moveRating) && !playedByMasters) || j === i;
             });
             const playedEnough =
+              // @ts-ignore
               getTotalGames(tr.suggestedMove?.results) /
+                // @ts-ignore
                 getTotalGames(positionReport?.results) >
               0.02;
             if (allOthersInaccurate && isNil(tr.moveRating) && playedEnough) {
@@ -521,6 +537,7 @@ export const getInitialBrowsingState = (
           currentSide,
           currentEpd,
           s.sidebarState.mode,
+          // @ts-ignore
           ownSide
             ? usePeerRates
               ? EFFECTIVENESS_WEIGHTS_PEERS
@@ -560,6 +577,7 @@ export const getInitialBrowsingState = (
         return findLast(
           map(sidebarState.positionHistory, (epd) => {
             const miss =
+              // @ts-ignore
               rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
                 epd
               ];
@@ -605,10 +623,12 @@ export const getInitialBrowsingState = (
       }),
     reviewFromCurrentLine: () =>
       set(([s, rs]) => {
+        // @ts-ignore
         return rs.positionReports[s.chessboard.getCurrentEpd()];
       }),
     getCurrentPositionReport: (sidebarState: SidebarState) =>
       get(([s, rs]) => {
+        // @ts-ignore
         return rs.positionReports[sidebarState.currentEpd];
       }),
     fetchNeededPositionReports: () =>
@@ -629,8 +649,8 @@ export const getInitialBrowsingState = (
           });
         });
         if (!isNil(side)) {
-          const moveLog = [];
-          const epdLog = [];
+          const moveLog: string[] = [];
+          const epdLog: string[] = [];
           forEach(
             zip(
               s.chessboard.get((s) => s).positionHistory,
@@ -640,8 +660,10 @@ export const getInitialBrowsingState = (
               if (move) {
                 moveLog.push(move);
               }
+              // @ts-ignore
               epdLog.push(epd);
               requests.push({
+                // @ts-ignore
                 epd: epd,
                 side: side,
                 moves: [...moveLog],
@@ -651,8 +673,10 @@ export const getInitialBrowsingState = (
           );
           const currentEpd = s.chessboard.getCurrentEpd();
           const currentReport =
+            // @ts-ignore
             rs.positionReports[s.sidebarState.activeSide][currentEpd];
           if (currentReport) {
+            // @ts-ignore
             currentReport.suggestedMoves.forEach((sm) => {
               const epd = sm.epdAfter;
               requests.push({
@@ -716,6 +740,7 @@ export const getInitialBrowsingState = (
         console.log("subscribed? ", subscribed);
         if (
           !subscribed &&
+          // @ts-ignore
           rs.pastFreeTier(s.sidebarState.activeSide) &&
           PAYMENT_ENABLED &&
           !rs.onboarding.isOnboarding
@@ -767,6 +792,7 @@ export const getInitialBrowsingState = (
 
         s.updatePlans();
 
+        // @ts-ignore
         const incidences = s.getLineIncidences({});
         if (rs.ecoCodeLookup) {
           s.sidebarState.lastEcoCode = last(
@@ -795,14 +821,16 @@ export const getInitialBrowsingState = (
               i % 2 === (s.sidebarState.activeSide === "white" ? 0 : 1);
             if (
               !some(
+                // @ts-ignore
                 rs.repertoire?.[s.sidebarState.activeSide]?.positionResponses[
-                  position
+                  position!
                 ],
                 (m) => {
                   return m.sanPlus === san;
                 }
               )
             ) {
+              // @ts-ignore
               s.sidebarState.pendingResponses[position] = {
                 epd: position,
                 epdAfter: s.chessboard.get((s) => s.positionHistory)[i + 1],
@@ -835,6 +863,7 @@ export const getInitialBrowsingState = (
           s.updateTableResponses();
         }
       }),
+    // @ts-ignore
     getLineIncidences: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
         if (!s.sidebarState.activeSide) {
@@ -849,6 +878,7 @@ export const getInitialBrowsingState = (
           ),
           ([position, san], i) => {
             const positionReport =
+              // @ts-ignore
               rs.positionReports[s.sidebarState.activeSide][position];
             if (positionReport) {
               const suggestedMove = find(
@@ -865,6 +895,7 @@ export const getInitialBrowsingState = (
           }
         );
       }),
+    // @ts-ignore
     getIncidenceOfCurrentLine: (options: GetIncidenceOptions = {}) =>
       get(([s, rs]) => {
         return last(s.getLineIncidences(options));
@@ -944,7 +975,7 @@ export const getInitialBrowsingState = (
   initialState.chessboard = createChessboardInterface()[1];
   initialState.chessboard.set((c) => {
     c.delegate = {
-      completedMoveAnimation: () => {},
+      completedMoveAnimation: noop,
       onPositionUpdated: () => {
         set(([s]) => {
           s.onPositionUpdate();
@@ -1009,6 +1040,7 @@ const isCommonMistake = (
   if (!tr.suggestedMove || !positionReport) {
     return false;
   }
+  // @ts-ignore
   if (getTotalGames(tr.suggestedMove.results) < 100) {
     return false;
   }

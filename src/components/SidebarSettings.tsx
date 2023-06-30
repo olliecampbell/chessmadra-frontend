@@ -48,6 +48,7 @@ export const CoverageSettings = (props: {}) => {
       s.userState.setTargetDepth(t);
     });
   };
+  // @ts-ignore
   const recommendedDepth = () => getRecommendedMissThreshold(user()?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
   return (
@@ -82,21 +83,6 @@ export const CoverageSettings = (props: {}) => {
   );
 };
 export const RatingSettings = (props: {}) => {
-  const [user, missThreshold] = useUserState((s) => [
-    s.user,
-    s.getCurrentThreshold(),
-  ]);
-  const selected = missThreshold;
-  const onSelect = (t: string) => {
-    quick((s) => {
-      getAppState().userState.setRatingRange(t);
-    });
-  };
-  const responsive = useResponsive();
-  const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
-  if (user.isAdmin) {
-    thresholdOptions.push(0.25 / 100, 1 / 600);
-  }
   return (
     <SidebarTemplate actions={[]} header={"Your rating"} bodyPadding={true}>
       <CMText style={s()} class={"text-secondary"}>
@@ -114,7 +100,6 @@ export const ThemeSettings = (props: {}) => {
   return (
     <SidebarTemplate header={"Board appearance"} actions={[]}>
       <SidebarSelectOneOf
-        description={null}
         choices={combinedThemes.map((t) => t.boardTheme)}
         // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
@@ -127,8 +112,8 @@ export const ThemeSettings = (props: {}) => {
             );
             console.log("selected", boardThemeId, theme);
             s.userState.updateUserSettings({
-              theme: theme.boardTheme,
-              pieceSet: theme.pieceSet,
+              theme: theme!.boardTheme,
+              pieceSet: theme!.pieceSet,
             });
           });
         }}
@@ -141,7 +126,7 @@ export const ThemeSettings = (props: {}) => {
           return (
             <div style={s(c.row, c.center)}>
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
-                {theme.name}
+                {theme!.name}
               </CMText>
             </div>
           );
@@ -176,6 +161,7 @@ export const RatingSelection = (props: {}) => {
           "1900-2100",
           "2100+",
         ]}
+        // @ts-ignore
         choice={user().ratingRange}
         renderChoice={(choice, inList, onPress) => {
           const textColor = c.gray[80];
@@ -202,6 +188,7 @@ export const RatingSelection = (props: {}) => {
           return (
             <Pressable
               style={s(containerStyles)}
+              // @ts-ignore
               onPress={(e) => {
                 onPress(e);
               }}
@@ -210,7 +197,7 @@ export const RatingSelection = (props: {}) => {
             </Pressable>
           );
         }}
-       />
+      />
       <div style={s(c.row)}>
         <Dropdown
           title={"Platform"}
@@ -273,7 +260,7 @@ export const RatingSelection = (props: {}) => {
               );
             }
           }}
-         />
+        />
       </div>
     </div>
   );

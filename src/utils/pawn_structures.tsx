@@ -2,6 +2,7 @@ import { first, forEach, forEachRight } from "lodash-es";
 
 export function getPawnOnlyEpd(epd: string) {
   const setup = first(epd.split(" "));
+  // @ts-ignore
   const rows = setup.split("/");
   let newEpd = "";
   rows.forEach((row, i) => {

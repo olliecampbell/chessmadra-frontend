@@ -10,7 +10,7 @@ import { Puff } from "solid-spinner";
 
 export const SidebarTemplate: Component<{
   header: string | null;
-  children: any;
+  children?: any;
   loading?: boolean;
   bodyPadding?: boolean;
   actionsPadding?: boolean;

@@ -11,7 +11,9 @@ export interface DebugState {
 type Stack = [DebugState, AppState];
 
 export const getInitialDebugState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {

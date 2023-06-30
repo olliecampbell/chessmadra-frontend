@@ -18,16 +18,8 @@ import { START_EPD } from "~/utils/chess";
 import { useResponsive } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
-import {
-  Component,
-  createSignal,
-  For,
-  Show,
-  createEffect,
-  Accessor,
-} from "solid-js";
+import { createSignal, Show, createEffect, Accessor } from "solid-js";
 import { Pressable } from "./Pressable";
-import { useHovering } from "~/mocks";
 import { clsx } from "~/utils/classes";
 import { InstructiveGame } from "~/utils/models";
 import { SidebarInstructiveGames } from "./SidebarInstructiveGames";
@@ -49,13 +41,16 @@ export const RepertoireOverview = (props: {}) => {
   const appState = getAppState();
   const { repertoireState } = appState;
   const { browsingState } = repertoireState;
-  const progressState = () => browsingState.repertoireProgressState[side()];
+  const progressState = () => browsingState.repertoireProgressState[side()!];
   const biggestMiss = () =>
+    // @ts-ignore
     repertoireState.repertoireGrades[side()]?.biggestMiss;
   const numMoves = () => repertoireState.getLineCount(side());
   const numMovesDueFromHere = () =>
+    // @ts-ignore
     repertoireState.numMovesDueFromEpd[side()][START_EPD];
   const earliestDueDate = () =>
+    // @ts-ignore
     repertoireState.earliestReviewDueFromEpd[side()][START_EPD];
   const modelGames: Accessor<InstructiveGame[]> = () => {
     return repertoireState.positionReports[side() as Side][START_EPD]
@@ -71,8 +66,10 @@ export const RepertoireOverview = (props: {}) => {
   const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
     quick((s) => {
       if (skipAnimation) {
+        // @ts-ignore
         s.repertoireState.startBrowsing(side(), mode);
       } else {
+        // @ts-ignore
         s.repertoireState.startBrowsing(side(), mode);
       }
     });
@@ -93,7 +90,7 @@ export const RepertoireOverview = (props: {}) => {
       {
         right: !empty() && (
           <div style={s(c.height(4), c.row)}>
-            <CoverageAndBar home={false} side={side()} />
+            <CoverageAndBar home={false} side={side()!} />
           </div>
         ),
 
@@ -209,6 +206,7 @@ export const RepertoireOverview = (props: {}) => {
         onPress: () => {
           quick((s) => {
             trackEvent("side_overview.export");
+            // @ts-ignore
             s.repertoireState.exportPgn(side());
           });
         },
@@ -298,7 +296,7 @@ export const CoverageAndBar = (props: {
   const inverse = () => props.home && props.side === "white";
   const textStyles = () =>
     s(
-      c.fg(inverse() ? c.colors.textInverse : c.colors.text.secondary),
+      c.fg(inverse() ? c.colors.text.inverse : c.colors.text.secondary),
       !props.home && c.fg(c.colors.text.secondary),
       c.weightSemiBold,
       c.fontSize(12)

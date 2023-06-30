@@ -3,17 +3,12 @@ import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { useResponsive } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
-import {
-  Component,
-  For,
-  Show,
-  JSX,
-} from "solid-js";
+import { Component, For, Show, JSX } from "solid-js";
 
 export const SidebarSelectOneOf: Component<{
-  title: string;
-  description: string;
-  equality: (a: any, b: any) => boolean;
+  title?: string;
+  description?: string;
+  equality?: (a: any, b: any) => boolean;
   choices: any[];
   activeChoice: any;
   onSelect: (_: any, i?: number) => void;
@@ -33,11 +28,10 @@ export const SidebarSelectOneOf: Component<{
           active &&
           "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover !text-primary",
         onPress: () => props.onSelect(choice, i),
-        right: () =>
-          active && (
-            <i class={`fa fa-check`} style={s(c.fg(c.colors.text.primary))} />
-          ),
-      };
+        right: active && (
+          <i class={`fa fa-check`} style={s(c.fg(c.colors.text.primary))} />
+        ),
+      } as SidebarAction;
     });
   return (
     <div style={s(c.column, c.fullWidth)}>

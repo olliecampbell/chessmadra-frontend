@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize } from "lodash-es";
+import { capitalize, noop } from "lodash-es";
 import { CMText } from "./CMText";
 import {
   getAppState,
@@ -27,9 +27,7 @@ import {
 } from "solid-js";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
-import {
-  RatingSelection,
-} from "./SidebarSettings";
+import { RatingSelection } from "./SidebarSettings";
 import { clsx } from "~/utils/classes";
 import { TextArea, TextInput } from "./TextInput";
 import { Side, SIDES } from "~/utils/repertoire";
@@ -187,7 +185,11 @@ export const Dropdown: Component<{
   choices: TFake[];
   title?: string;
   onSelect: (_: TFake) => void;
-  renderChoice: (_: TFake, inDropdown: boolean, onPress: (e) => void) => any;
+  renderChoice: (
+    _: TFake,
+    inDropdown: boolean,
+    onPress: (e: MouseEvent) => void
+  ) => any;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [ref, setRef] = createSignal(null);
@@ -213,7 +215,7 @@ export const Dropdown: Component<{
         }}
       >
         <div class={clsx("pointer-events-none")}>
-          {props.renderChoice(props.choice, false, () => {})}
+          {props.renderChoice(props.choice, false, noop)}
         </div>
         <Spacer width={8} />
         <i
@@ -238,16 +240,18 @@ export const Dropdown: Component<{
           )}
           class={clsx("bg-gray-4 rounded-sm p-2")}
         >
-          <For each={props.choices}>{(c) => (
-            <div class={clsx("&hover:bg-gray-16 ")}>
-              {props.renderChoice(c, true, (e) => {
-                props.onSelect(c);
-                setIsOpen(false);
-                e?.preventDefault();
-                e?.stopPropagation();
-              })}
-            </div>
-          )}</For>
+          <For each={props.choices}>
+            {(c) => (
+              <div class={clsx("&hover:bg-gray-16 ")}>
+                {props.renderChoice(c, true, (e) => {
+                  props.onSelect(c);
+                  setIsOpen(false);
+                  e?.preventDefault();
+                  e?.stopPropagation();
+                })}
+              </div>
+            )}
+          </For>
         </Motion>
       </div>
     </div>
@@ -276,7 +280,7 @@ const ChooseColorOnboarding = () => {
         text: capitalize(side),
         style: "primary",
       }))}
-     />
+    />
   );
 };
 
@@ -357,7 +361,7 @@ export const ImportSuccessOnboarding = () => {
         },
       ]}
     >
-      <RepertoireCompletion side={onboarding().side} />
+      <RepertoireCompletion side={onboarding().side!} />
       <Spacer height={24} />
       <HowToComplete />
     </SidebarTemplate>
@@ -426,7 +430,7 @@ export const FirstLineSavedOnboarding = () => {
         },
       ]}
     >
-      <RepertoireCompletion side={onboarding().side} />
+      <RepertoireCompletion side={onboarding().side!} />
       <Spacer height={32} />
       <HowToComplete />
     </SidebarTemplate>
@@ -450,7 +454,7 @@ const PracticeIntroOnboarding = () => {
               trackEvent("onboarding.practice_intro.continue");
               s.repertoireState.reviewState.reviewLine(
                 currentLine(),
-                onboarding().side
+                onboarding().side!
               );
             });
           },
@@ -512,7 +516,6 @@ const AskAboutExistingRepertoireOnboarding = () => {
 };
 
 export const ChooseImportSourceOnboarding = () => {
-  const responsive = useResponsive();
   onMount(() => {
     trackEvent("onboarding.choose_import_source.shown");
   });
@@ -558,7 +561,7 @@ export const ChooseImportSourceOnboarding = () => {
           style: "primary",
         },
       ]}
-     />
+    />
   );
 };
 
@@ -660,7 +663,7 @@ export const ImportOnboarding = (props: {
       bodyPadding={true}
       header={header()}
       actions={actions()}
-      loading={loading()}
+      loading={!!loading()}
     >
       <Switch>
         <Match when={importType() === SidebarOnboardingImportType.PGN}>
@@ -707,13 +710,13 @@ export const TrimRepertoireOnboarding = () => {
       can be a good option if you have a large repertoire from other software.
     </CMText>
   );
-  const [loading, setLoading] = createSignal(null as string);
+  const [loading, setLoading] = createSignal(false);
 
   const trimToThreshold = (threshold: number) => {
     trackEvent("onboarding.trim_repertoire.trimmed", { threshold });
-    setLoading("Trimming");
+    setLoading(true);
     quick((s) => {
-      s.repertoireState.trimRepertoire(threshold, [side()]).then(() => {
+      s.repertoireState.trimRepertoire(threshold, [side()!]).then(() => {
         if (onboarding().isOnboarding) {
           s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
         } else {
@@ -728,7 +731,7 @@ export const TrimRepertoireOnboarding = () => {
     // TODO: this isn't quite accurate since danger isn't accounted for,
     // should have the same formula on the frontend, and include danger in
     // repertoire response
-    const numMoves = getNumResponsesBelowThreshold()(userThreshold(), side());
+    const numMoves = getNumResponsesBelowThreshold()(userThreshold(), side()!);
     actions.push({
       text: `Trim rare lines below your coverage goal`,
       subtext: `${numMoves} moves will be trimmed`,
@@ -746,7 +749,7 @@ export const TrimRepertoireOnboarding = () => {
             s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
           } else {
             s.repertoireState.browsingState.clearViews();
-            s.repertoireState.startBrowsing(side(), "home");
+            s.repertoireState.startBrowsing(side()!, "home");
           }
         });
       },
@@ -770,7 +773,7 @@ export const TrimRepertoireOnboarding = () => {
 };
 
 const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
-  const [pgn, setPgn] = createSignal("");
+  const [pgn, setPgn] = createSignal("" as string | null);
   const [textInputPgn, setTextInputPgn] = createSignal<string | null>("");
   const [pgnUploadRef, setPgnUploadRef] = createSignal(
     null as HTMLInputElement | null
@@ -806,13 +809,13 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
         >
           <i
             class={clsx("fas mr-2", hasUploaded() ? "fa-check" : "fa-upload")}
-           />
+          />
           {hasUploaded() ? "Uploaded" : "Upload"}
           <input
             type="file"
             ref={setPgnUploadRef}
             class={"absolute z-10 h-24 h-full w-full cursor-pointer opacity-0"}
-           />
+          />
         </div>
         <div class={"row my-4 items-center space-x-2"}>
           <div class={"bg-gray-18 h-1px grow"} />
@@ -828,6 +831,7 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
           }}
           class=" mt-2 w-full rounded-sm border border-gray-400"
           inputClass={"bg-gray-16"}
+          // @ts-ignore
           value={textInputPgn()}
         />
       </div>

@@ -32,6 +32,7 @@ export const Responses = function Responses() {
   const [user] = useUserState((s) => [s.user]);
   const [positionReport] = useBrowsingState(
     // TODO: we should have the active side on sidebar too
+    // @ts-ignore
     ([s, rs]) => [rs.positionReports[activeSide()]?.[currentEpd()]]
   );
   createEffect(() => {
@@ -99,6 +100,7 @@ export const Responses = function Responses() {
     if (!isEmpty(prepareFor())) {
       return prepareForHeader();
     }
+    // @ts-ignore
     return getResponsesHeader(currentLine(), yourMoves().length, activeSide());
   };
   const responses = createMemo(() => {
@@ -126,8 +128,8 @@ export const Responses = function Responses() {
                 {...{
                   header: header,
                   usePeerRates,
-                  activeSide,
-                  side: currentSide,
+                  activeSide: activeSide()!,
+                  side: currentSide()!,
                   responses: responses,
                 }}
               />
@@ -148,8 +150,8 @@ export const Responses = function Responses() {
                   {...{
                     header: () => null,
                     usePeerRates,
-                    activeSide,
-                    side: currentSide,
+                    activeSide: activeSide()!,
+                    side: currentSide()!,
                     responses: otherMoves,
                   }}
                 />
@@ -212,7 +214,7 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
 
 function getResponsesHeader(
   currentLine: string[],
-  myMoves?: number,
+  myMoves: number,
   side: Side
 ): string {
   const hasMove = myMoves;

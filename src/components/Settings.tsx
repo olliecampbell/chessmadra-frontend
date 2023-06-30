@@ -15,7 +15,7 @@ import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { useHovering } from "~/mocks";
-import { createEffect, Match, Show, Switch } from "solid-js";
+import { Match, Show, Switch } from "solid-js";
 import { LoginSidebar } from "./LoginSidebar";
 
 export const SettingsButtons = () => {

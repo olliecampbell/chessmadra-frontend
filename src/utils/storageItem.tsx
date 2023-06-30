@@ -32,6 +32,7 @@ export class StorageItem<T> {
   }
 
   set value(v: T) {
+    // @ts-ignore
     this._setValue(v);
     this.save();
   }

@@ -18,6 +18,7 @@ import {
   flatten,
   values,
   capitalize,
+  noop,
 } from "lodash-es";
 import {
   BySide,
@@ -56,6 +57,7 @@ import {
   TrimRepertoireOnboarding,
 } from "~/components/SidebarOnboarding";
 import { ChessboardInterface } from "./chessboard_interface";
+import { JSXElement } from "solid-js";
 
 const TEST_LINE = isDevelopment
   ? //pgnToLine("1.e4 d5 2.exd5")
@@ -177,7 +179,7 @@ export interface RepertoireState {
 }
 
 export interface NavBreadcrumb {
-  text: string;
+  text: JSXElement;
   unclickable?: boolean;
   onPress?: () => void;
 }
@@ -210,7 +212,9 @@ type Stack = [RepertoireState, AppState];
 const selector = (s: AppState): Stack => [s.repertoireState, s];
 
 export const getInitialRepertoireState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -304,7 +308,7 @@ export const getInitialRepertoireState = (
     }) =>
       set(async ([s]) => {
         let lichessGames = [];
-        const chessComGames = [];
+        // const chessComGames = [];
         if (lichessUsername) {
           const max = 200;
           const { data }: { data: string } = await client.get(
@@ -325,7 +329,7 @@ export const getInitialRepertoireState = (
           {
             lichessGames,
             lichessUsername,
-            chessComGames,
+            chessComGames: [],
             whitePgn,
             blackPgn,
           }
@@ -349,7 +353,7 @@ export const getInitialRepertoireState = (
       }),
     getBreadCrumbs: (mobile: boolean) =>
       get(([s]) => {
-        const homeBreadcrumb = {
+        const homeBreadcrumb: NavBreadcrumb = {
           text: (
             <div
               class={clsx(
@@ -389,7 +393,7 @@ export const getInitialRepertoireState = (
               ? undefined
               : () => {
                   quick((s) => {
-                    s.repertoireState.startBrowsing(side, mode);
+                    s.repertoireState.startBrowsing(side!, mode);
                     s.repertoireState.browsingState.chessboard.resetPosition();
                   });
                 },
@@ -422,7 +426,7 @@ export const getInitialRepertoireState = (
           .post(`https://lichess.org/api/import`, bodyFormData)
           .then(({ data }) => {
             const url = data["url"];
-            windowReference.location = `${url}/${turn}#999`;
+            windowReference!.location = `${url}/${turn}#999`;
           });
       }),
     analyzeLineOnLichess: (line: string[], _side?: Side) =>
@@ -452,11 +456,11 @@ export const getInitialRepertoireState = (
         const threshold = gs.userState.getCurrentThreshold();
         mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
           const seenEpds: Set<string> = new Set();
-          const numMovesByEpd = {};
+          const numMovesByEpd: { [epd: string]: number } = {};
           const recurse = (
             epd: string,
             seenEpds: Set<string>,
-            lastMove: RepertoireMove
+            lastMove?: RepertoireMove
           ) => {
             if (shouldDebugEpd(epd)) {
               console.log(
@@ -474,13 +478,13 @@ export const getInitialRepertoireState = (
             const allMoves = filter(
               repertoireSide.positionResponses[epd] ?? [],
               (m) => m.needed
-            );
+            ) as RepertoireMove[];
             const [mainMove, ...others] = allMoves;
             let additionalExpectedNumMoves = 0;
             if (mainMove?.mine && !isEmpty(others)) {
               others.forEach((m) => {
                 const additional = getExpectedNumMovesBetween(
-                  m.incidence,
+                  m.incidence ?? 0,
                   threshold,
                   side,
                   m.epd === START_EPD &&
@@ -527,14 +531,14 @@ export const getInitialRepertoireState = (
                 additionalExpectedNumMoves + childAdditionalMovesExpected,
             };
           };
-          recurse(START_EPD, seenEpds, null);
+          recurse(START_EPD, seenEpds, undefined);
         });
         mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
           const seenEpds: Set<string> = new Set();
           const recurse = (
             epd: string,
             seenEpds: Set<string>,
-            lastMove: RepertoireMove
+            lastMove?: RepertoireMove
           ) => {
             if (shouldDebugEpd(epd)) {
               console.log(
@@ -558,13 +562,16 @@ export const getInitialRepertoireState = (
                 recurse(m.epdAfter, newSeenEpds, m);
               if (
                 (earliestDueDate === null && recursedEarliestDueDate) ||
+                // @ts-ignore
                 recursedEarliestDueDate < earliestDueDate
               ) {
+                // @ts-ignore
                 earliestDueDate = recursedEarliestDueDate;
               }
               dueMovesFromHere = new Set([...dueMovesFromHere, ...dueMoves]);
             });
             s.numMovesDueFromEpd[side][epd] = dueMovesFromHere.size;
+            // @ts-ignore
             s.earliestReviewDueFromEpd[side][epd] = earliestDueDate;
             if (shouldDebugEpd(epd)) {
               console.log("earliestDueDate", earliestDueDate);
@@ -578,7 +585,7 @@ export const getInitialRepertoireState = (
               earliestDueDate: earliestDueDate ?? lastMove?.srs?.dueAt,
             };
           };
-          recurse(START_EPD, seenEpds, null);
+          recurse(START_EPD, seenEpds, undefined);
         });
         s.myResponsesLookup = mapSides(
           s.repertoire,
@@ -596,6 +603,7 @@ export const getInitialRepertoireState = (
               Object.values(repertoireSide.positionResponses)
             ).flatMap((m) => [m.epd, m.epdAfter]);
             allEpds.forEach((epd) => {
+              // @ts-ignore
               nodeEpds[epd] = true;
             });
             return nodeEpds;
@@ -644,7 +652,7 @@ export const getInitialRepertoireState = (
               }
             });
           })
-          .finally(() => {});
+          .finally(noop);
       }, "deleteMoveConfirmed"),
     deleteMove: (response: RepertoireMove) =>
       set(([s]) => {
@@ -666,6 +674,7 @@ export const getInitialRepertoireState = (
           .finally(() => {
             set(([s]) => {
               s.deleteMoveState.isDeletingMove = false;
+              // @ts-ignore
               s.deleteMoveState.response = null;
               s.deleteMoveState.modalOpen = false;
             });
@@ -685,7 +694,6 @@ export const getInitialRepertoireState = (
             });
           });
       }, "deleteRepertoire"),
-    exportPgns: () => set(([s]) => {}),
     exportPgn: (side: Side) =>
       set(([s]) => {
         let pgn = dedent`
@@ -700,8 +708,10 @@ export const getInitialRepertoireState = (
         pgn += "\n\n";
 
         const seenEpds = new Set();
+        // @ts-ignore
         const recurse = (epd, line, seenEpds) => {
           const [mainMove, ...others] =
+            // @ts-ignore
             s.repertoire[side].positionResponses[epd] ?? [];
           const newSeenEpds = new Set(seenEpds);
           newSeenEpds.add(epd);
@@ -791,9 +801,9 @@ export const getInitialRepertoireState = (
             epd: epd,
             san,
           })
-          .then(({ data }: { data: any }) => {
+          .then(({ data }) => {
             set(([s]) => {
-              s.positionReports[s.browsingState.sidebarState.activeSide][
+              s.positionReports[s.browsingState.sidebarState.activeSide!][
                 epd
               ]?.suggestedMoves?.forEach((sm) => {
                 if (sm.sanPlus === san) {
@@ -806,6 +816,7 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
+              // @ts-ignore
         s.startBrowsing(null, "home");
         gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
@@ -814,9 +825,9 @@ export const getInitialRepertoireState = (
         s.showImportView = false;
         s.browsingState.clearViews();
         s.backToStartPosition();
-        s.browsingState.sidebarState.activeSide = null;
-        s.divergencePosition = null;
-        s.divergenceIndex = null;
+        s.browsingState.sidebarState.activeSide = undefined;
+        s.divergencePosition = undefined;
+        s.divergenceIndex = undefined;
         s.browsingState.sidebarState = makeDefaultSidebarState();
       }),
     startImporting: (side: Side) =>
@@ -826,8 +837,6 @@ export const getInitialRepertoireState = (
       }, "startImporting"),
     startBrowsing: (side: Side, mode: BrowsingMode, options) =>
       set(([s, gs]) => {
-        s.browsingState.sidebarState.view = null;
-
         if (
           (mode === "overview" || mode === "home") &&
           !options?.keepPosition
@@ -1047,12 +1056,12 @@ export const getInitialRepertoireState = (
         }
         const seenEpds = new Set();
         let lineCount = 0;
-        const recurse = (epd) => {
+        const recurse = (epd: string) => {
           if (seenEpds.has(epd)) {
             return;
           }
           seenEpds.add(epd);
-          const moves = s.repertoire[side].positionResponses[epd] ?? [];
+          const moves = s.repertoire?.[side!].positionResponses[epd] ?? [];
           if (isEmpty(moves)) {
             return;
           }
@@ -1098,7 +1107,7 @@ export const getInitialRepertoireState = (
     getIsRepertoireEmpty: (side?: Side) =>
       get(([s]) => {
         if (side) {
-          return isEmpty(s.repertoire[side].positionResponses);
+          return isEmpty(s.repertoire![side].positionResponses);
         }
         return isEmpty(getAllRepertoireMoves(s.repertoire));
       }),
@@ -1120,7 +1129,7 @@ function removeLastMove(id: string) {
 }
 
 function getLastMoveWithNumber(id: string) {
-  const [n, m] = last(id.split(" ")).split(".");
+  const [n, m] = last(id.split(" "))!.split(".");
   if (!m) {
     return n;
   }
@@ -1155,7 +1164,7 @@ export const getExpectedNumMovesBetween = (
     m = 1.05;
     distance_pow = 1.15;
   }
-  const get_distance = (x, y) => {
+  const get_distance = (x: number, y: number) => {
     const distance = 1 / y / (1 / x);
     return Math.pow(distance, distance_pow);
   };

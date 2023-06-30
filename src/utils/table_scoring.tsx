@@ -18,6 +18,7 @@ export enum TableResponseScoreSource {
   Needed = "needed",
   MasterPlayrate = "masterPlayrate",
   Incidence = "incidence",
+  BestMove = "bestMove",
 }
 
 export const scoreTableResponses = (
@@ -74,12 +75,14 @@ export const scoreTableResponses = (
       if (suggestedMove) {
         let evalOverride = false;
         const masterPlayRate = getPlayRate(
+          // @ts-ignore
           tableResponse?.suggestedMove,
           report,
           true
         );
         if (!isNegligiblePlayrate(masterPlayRate)) {
           const masterRateAdditionalWeight = Math.min(
+            // @ts-ignore
             getTotalGames(tableResponse.suggestedMove?.masterResults) / 10,
             1
           );
@@ -110,6 +113,7 @@ export const scoreTableResponses = (
           if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
             const eval_loss = Math.abs(
               Math.max(
+                // @ts-ignore
                 (report.stockfish.eval - stockfish.eval) *
                   (side === "black" ? -1 : 1),
                 0
@@ -130,9 +134,11 @@ export const scoreTableResponses = (
           }
         }
         const rateAdditionalWeight = Math.min(
+          // @ts-ignore
           getTotalGames(tableResponse?.suggestedMove.results) / 100,
           1
         );
+        // @ts-ignore
         const playRate = getPlayRate(tableResponse.suggestedMove, report);
         if (!isNegligiblePlayrate(playRate)) {
           const scoreForPlayrate = playRate * 100 * rateAdditionalWeight;
@@ -148,6 +154,7 @@ export const scoreTableResponses = (
         } else if (weights[TableResponseScoreSource.Playrate] != 0) {
           scoreTable.notes.push("Insufficient games for playrate");
         }
+        // @ts-ignore
         if (weights[TableResponseScoreSource.Needed] > 0) {
           if (tableResponse.suggestedMove?.needed) {
             scoreTable.factors.push({
@@ -164,6 +171,7 @@ export const scoreTableResponses = (
           });
         }
         const [winrateLowerBound, winrateUpperBound] = getWinRateRange(
+          // @ts-ignore
           tableResponse.suggestedMove?.results,
           side
         );
@@ -181,7 +189,9 @@ export const scoreTableResponses = (
         }
       }
       scoreTable.factors.forEach((f) => {
+        // @ts-ignore
         f.weight = weights[f.source] ?? 1.0;
+        // @ts-ignore
         f.total = f.weight * f.value;
         if (f.max) {
           f.total = Math.min(f.total, f.max);
@@ -189,10 +199,9 @@ export const scoreTableResponses = (
       });
       if (tableResponse.tags.includes(MoveTag.BestMove)) {
         scoreTable.factors.push({
-          // @ts-ignore
-          source: "BestMove",
+          source: TableResponseScoreSource.BestMove,
           // weight: 1.0,
-          // value: 0,
+          value: 0,
           total: 10000,
         });
       }
@@ -205,6 +214,7 @@ export const scoreTableResponses = (
         });
       }
       tableResponse.scoreTable = scoreTable;
+      // @ts-ignore
       tableResponse.score = sumBy(scoreTable.factors, (f) => {
         return f.total;
       });
@@ -246,5 +256,6 @@ export const PLAYRATE_WEIGHTS = {
 };
 
 export const shouldUsePeerRates = (pr: PositionReport) => {
+  // @ts-ignore
   return getTotalGames(pr?.masterResults) < 10;
 };

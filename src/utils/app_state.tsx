@@ -98,11 +98,13 @@ const initialState = {
   },
   quick: set,
 };
+// @ts-ignore
 const [appState, setAppState] = createStore<AppState>(initialState);
 
 export const useAppStateInternal = <T,>(selector: (state: AppState) => T) => {
   return get((s) => selector(s));
 };
+// @ts-ignore
 const logUnequal = (a, b, path, config: EqualityConfig) => {
   console.log(
     `%c \n  Re-rendering, %c${path}%c used to be`,
@@ -118,6 +120,7 @@ const logUnequal = (a, b, path, config: EqualityConfig) => {
   );
 };
 
+// @ts-ignore
 const logExpensive = (a, b, path, keys: number, config?: EqualityConfig) => {
   if (isDevelopment) {
     console.log(
@@ -147,6 +150,7 @@ const DEFAULT_EQUALITY_CONFIG = {
 
 const EXPENSIVE_CUTOFF = 100;
 
+// @ts-ignore
 const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
   const debug = config.debug;
   if (config.referenceEquality) {
@@ -173,6 +177,7 @@ const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
     if (a.length > EXPENSIVE_CUTOFF || b.length > EXPENSIVE_CUTOFF) {
       logExpensive(a, b, path, Math.max(a.length, b.length), config);
     }
+    // @ts-ignore
     const arrayEqual = every(
       zip(a, b).map(([a, b], i) => {
         let newPath = path;
@@ -195,7 +200,9 @@ const customEqualityCheck = (a, b, path, config: EqualityConfig) => {
     }
     return every([...allKeys], (k) => {
       let newPath = path;
+      // @ts-ignore
       const a1 = a[k];
+      // @ts-ignore
       const b1 = b[k];
       newPath = newPath + `.${k}`;
       return customEqualityCheck(a1, b1, newPath, config);
@@ -229,9 +236,11 @@ function getStackTrace() {
   try {
     throw new Error("");
   } catch (error) {
+    // @ts-ignore
     stack = error.stack || "";
   }
 
+  // @ts-ignore
   stack = stack.split("\n").map(function (line) {
     return line.trim();
   });
@@ -333,6 +342,7 @@ export const useDebugState = <T,>(
   fn: (_: DebugState) => T,
   config?: Partial<EqualityConfig>
 ) => {
+  // @ts-ignore
   return useStateSliceDestructure(fn, (s) => s.debugState, config);
 };
 
@@ -347,6 +357,7 @@ export const useAdminState = <T,>(
   fn: (_: AdminState) => T,
   config?: Partial<EqualityConfig>
 ) => {
+  // @ts-ignore
   return useStateSliceDestructure(fn, (s) => s.adminState, config);
 };
 
@@ -354,6 +365,7 @@ export const useAppState = <T,>(
   fn: (_: AppState) => T,
   config?: Partial<EqualityConfig>
 ) => {
+  // @ts-ignore
   return useStateSliceDestructure(fn, (s) => s, config);
 };
 

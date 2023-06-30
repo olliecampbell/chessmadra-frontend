@@ -1,7 +1,7 @@
 import { s, c } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
-import { For } from "solid-js";
+import { For, JSXElement } from "solid-js";
 
 export const SelectOneOf = <T,>(props: {
   choices: T[];
@@ -10,8 +10,8 @@ export const SelectOneOf = <T,>(props: {
   onSelect: (_: T, i?: number) => void;
   equality?: (x: T, y: T) => boolean;
   horizontal?: boolean;
-  separator?: () => JSX.Element;
-  renderChoice: (x: T, active: boolean, i: number) => JSX.Element | string;
+  separator?: () => JSXElement;
+  renderChoice: (x: T, active: boolean, i: number) => JSXElement | string;
   containerStyles?: any;
   cellStyles?: any;
   textStyles?: any;
@@ -61,7 +61,9 @@ export const SelectOneOf = <T,>(props: {
                     props.tabStyle
                       ? c.fg(active ? c.colors.text.primary : c.gray[80])
                       : c.fg(
-                          active ? c.colors.textInverse : c.colors.text.secondary
+                          active
+                            ? c.colors.text.inverse
+                            : c.colors.text.secondary
                         ),
                     c.weightBold,
                     props.textStyles

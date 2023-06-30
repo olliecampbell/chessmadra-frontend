@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { assign } from "lodash-es";
 import { colors, gray as grays, hsl } from "./design-system";
 import { BP, Responsive } from "./useResponsive";

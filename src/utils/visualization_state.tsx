@@ -19,7 +19,7 @@ import {
   DEBUG_PASS_FAIL_BUTTONS,
 } from "./test_settings";
 import { StorageItem } from "~/utils/storageItem";
-import { cloneDeep, takeRight } from "lodash-es";
+import { cloneDeep, noop, takeRight } from "lodash-es";
 import { fensTheSame } from "~/utils/fens";
 import { createQuick } from "./quick";
 import { times } from "~/utils/times";
@@ -29,10 +29,9 @@ import {
   createChessboardInterface,
 } from "./chessboard_interface";
 import { toSide } from "./repertoire";
+import { LichessPuzzle } from "./models";
 
 type Stack = [VisualizationState, AppState];
-
-const testProgress = false;
 
 const generateClimb = () => {
   let puzzleDifficulty = 1000;
@@ -40,13 +39,13 @@ const generateClimb = () => {
   const cutoff = 2400;
   const climb = [{ puzzleDifficulty, hiddenMoves }];
   const addRampingPuzzleDifficulty = () => {
-    times(80)((i) => {
+    times(80)(() => {
       puzzleDifficulty += 8;
       climb.push({ puzzleDifficulty, hiddenMoves });
     });
   };
   const addRampingHiddenMoves = () => {
-    times(1)((i) => {
+    times(1)(() => {
       hiddenMoves += 1;
       if (puzzleDifficulty < cutoff) {
         puzzleDifficulty -= 600;
@@ -54,7 +53,7 @@ const generateClimb = () => {
       climb.push({ puzzleDifficulty, hiddenMoves });
     });
   };
-  times(30)((i) => {
+  times(30)(() => {
     if (puzzleDifficulty < cutoff) {
       addRampingPuzzleDifficulty();
     }
@@ -63,42 +62,30 @@ const generateClimb = () => {
   return climb;
 };
 
-const CLIMB = generateClimb();
-const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
+// const CLIMB = generateClimb();
+// const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
 
 export const getInitialVisualizationState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>,
   isClimb: boolean
 ) => {
-  const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _set((s) =>
-      fn([isClimb ? s.climbState : s.trainersState.visualizationState, s])
-    );
+  const set = <T,>(fn: (stack: Stack) => T): T => {
+    return _set((s) => fn([s.trainersState.visualizationState, s]));
   };
   const setOnly = <T,>(fn: (stack: VisualizationState) => T): T => {
     return set(([s]) => fn(s));
   };
-  const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
-    return _get((s) =>
-      fn([isClimb ? s.climbState : s.trainersState.visualizationState, s])
-    );
+  const get = <T,>(fn: (stack: Stack) => T): T => {
+    return _get((s) => fn([s.trainersState.visualizationState, s]));
   };
   const setPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
-    return _set((s) =>
-      fn(
-        (isClimb ? s.climbState : s.trainersState.visualizationState)
-          .puzzleState
-      )
-    );
+    return _set((s) => fn(s.trainersState.visualizationState.puzzleState));
   };
   const getPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
-    return _get((s) =>
-      fn(
-        (isClimb ? s.climbState : s.trainersState.visualizationState)
-          .puzzleState
-      )
-    );
+    return _get((s) => fn(s.trainersState.visualizationState.puzzleState));
   };
   let initialState = {
     pulsePlay: true,
@@ -202,7 +189,7 @@ export const getInitialVisualizationState = (
         state.focusedMoveIndex = null;
         const currentPosition = new Chess();
         const puzzlePosition = new Chess();
-        const puzzle = state.puzzleState.puzzle;
+        const puzzle: LichessPuzzle = state.puzzleState.puzzle as LichessPuzzle;
         for (const move of puzzle.allMoves) {
           currentPosition.move(move);
           puzzlePosition.move(move);
@@ -241,7 +228,7 @@ export const getInitialVisualizationState = (
           }
         }
         state.puzzleState.turn = state.puzzleState.puzzlePosition.turn();
-        state.visualizeHiddenMoves(() => {});
+        state.visualizeHiddenMoves(noop);
         state.startLoopingPlayFlash();
         // @ts-ignore
         if (isClimb && state.isPlayingClimb) {
@@ -304,7 +291,7 @@ export const getInitialVisualizationState = (
       set(([state]) => {
         state.chessboard.flashRing(false);
         if (isClimb) {
-          state.onFail();
+          state.onFail?.();
         }
       });
     },
@@ -320,7 +307,7 @@ export const getInitialVisualizationState = (
   initialState.chessboard = createChessboardInterface()[1];
   initialState.chessboard.set((c) => {
     c.delegate = {
-      completedMoveAnimation: () => {},
+      completedMoveAnimation: noop,
       onPositionUpdated: () => {
         set(([s]) => {});
       },

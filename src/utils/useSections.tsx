@@ -1,4 +1,5 @@
-// import { ExchangeRates } from "~/ExchangeRate";
+/* eslint-disable solid/reactivity, solid/components-return-once */
+
 import { c, s } from "~/utils/styles";
 import { isNil, clamp } from "lodash-es";
 import { otherSide, Side } from "~/utils/repertoire";
@@ -22,12 +23,22 @@ import { TableResponse } from "~/components/RepertoireMovesTable";
 import { CMText } from "~/components/CMText";
 import { GameResultsBar } from "~/components/GameResultsBar";
 import { ReviewText } from "~/components/ReviewText";
-import { Show } from "solid-js";
+import { Accessor, JSXElement, Show } from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 import { initTooltip } from "~/components/Tooltip";
 import { pluralize } from "./pluralize";
 import { MoveRating } from "./move_inaccuracy";
 import { clsx } from "./classes";
+
+interface SectionProps {
+  suggestedMove?: SuggestedMove;
+  positionReport?: PositionReport;
+  tableResponse: TableResponse;
+  tableMeta?: TableMeta;
+  earliestDueDate?: string;
+  numMovesDueFromHere?: number;
+  side: Side;
+}
 
 interface Section {
   width: number;
@@ -42,7 +53,7 @@ interface Section {
     earliestDueDate: string;
     numMovesDueFromHere: number;
     side: Side;
-  }) => any;
+  }) => JSXElement;
 }
 
 export interface TableMeta {
@@ -69,6 +80,7 @@ export const useSections = ({
     c.fontSize(12),
     c.lineHeight("1.3rem")
   );
+  const side: Accessor<Side> = () => activeSide() as Side;
 
   const [mode] = useSidebarState(([s]) => [s.mode]);
   if (mode() == "browse") {
@@ -80,11 +92,12 @@ export const useSections = ({
         isMobile,
         debugUi: debugUi(),
         threshold: threshold(),
-        activeSide: activeSide(),
+        activeSide: side(),
       })
     );
   } else {
     sections = sections.concat(
+      // @ts-ignore
       getBuildModeSections({
         myTurn,
         textStyles,
@@ -92,18 +105,19 @@ export const useSections = ({
         isMobile,
         debugUi: debugUi(),
         threshold: threshold(),
-        activeSide: activeSide(),
+        activeSide: side(),
       })
     );
   }
   return sections;
 };
-interface SectionProps extends UseSectionProps {
+interface GetSectionProps extends UseSectionProps {
   debugUi: boolean;
   threshold: number;
   activeSide: Side;
-  textStyles: any;
+  textStyles: object;
 }
+
 const getBuildModeSections = ({
   myTurn,
   usePeerRates,
@@ -112,7 +126,7 @@ const getBuildModeSections = ({
   activeSide,
   threshold,
   textStyles,
-}: SectionProps) => {
+}: GetSectionProps) => {
   const sections = [];
   const naStyles = s(textStyles, c.fg(c.gray[50]));
   const na = () => <p style={s(naStyles)}>0%</p>;
@@ -120,13 +134,13 @@ const getBuildModeSections = ({
     sections.push({
       width: 100,
       alignLeft: true,
-      content: (props) => {
+      content: (props: SectionProps) => {
         const playRate =
           props.suggestedMove &&
           props.positionReport &&
           getPlayRate(props.suggestedMove, props.positionReport, false);
         const denominator = Math.round(
-          1 / (props.tableResponse.suggestedMove?.incidence ?? 0.0001)
+          1 / (props.tableResponse!.suggestedMove?.incidence ?? 0.0001)
         );
         const belowCoverageGoal =
           (props.tableResponse.suggestedMove?.incidence ?? 0) < threshold;
@@ -186,7 +200,7 @@ const getBuildModeSections = ({
                 </CMText>
                 <Show when={debugUi}>
                   <CMText style={s(c.fg(c.colors.debugColorDark))}>
-                    {(playRate * 100).toFixed(2)}
+                    {(playRate! * 100).toFixed(2)}
                   </CMText>
                 </Show>
               </div>
@@ -201,7 +215,7 @@ const getBuildModeSections = ({
     sections.push({
       width: 80,
       alignLeft: true,
-      content: (props) => {
+      content: (props: SectionProps) => {
         return (
           <>{<CoverageProgressBar tableResponse={props.tableResponse} />}</>
         );
@@ -254,15 +268,15 @@ const getBuildModeSections = ({
   if (myTurn) {
     sections.push({
       width: 40,
-      content: (props) => {
+      content: (props: SectionProps) => {
         const whiteWinning =
-          props.suggestedMove?.stockfish?.eval >= 0 ||
-          props.suggestedMove?.stockfish?.mate > 0;
+          props.suggestedMove?.stockfish?.eval! >= 0 ||
+          props.suggestedMove?.stockfish?.mate! > 0;
         const backgroundSide = whiteWinning ? "white" : "black";
-        const moveRating: MoveRating = props.tableResponse.moveRating;
+        const moveRating: MoveRating = props.tableResponse.moveRating!;
         const isBadMove = !isNil(moveRating);
         const formattedEval = formatStockfishEval(
-          props.suggestedMove?.stockfish
+          props.suggestedMove?.stockfish!
         );
         return (
           <>
@@ -337,7 +351,7 @@ const getBuildModeSections = ({
   if (myTurn) {
     sections.push({
       width: isMobile ? 80 : 80,
-      content: (props) => {
+      content: (props: SectionProps) => {
         if (!props.suggestedMove?.results) {
           return na();
         }
@@ -367,14 +381,14 @@ const getBuildModeSections = ({
                           White wins{" "}
                           <b>
                             {formatPlayPercentage(
-                              getWinRate(props.suggestedMove?.results, "white")
+                              getWinRate(props.suggestedMove?.results!, "white")
                             )}
                           </b>{" "}
                           of games <br />•<span class="pr-2" />
                           Black wins{" "}
                           <b>
                             {formatPlayPercentage(
-                              getWinRate(props.suggestedMove?.results, "black")
+                              getWinRate(props.suggestedMove?.results!, "black")
                             )}
                           </b>{" "}
                           of games <br />•<span class="pr-2" />
@@ -382,11 +396,11 @@ const getBuildModeSections = ({
                             {formatPlayPercentage(
                               1 -
                                 getWinRate(
-                                  props.suggestedMove?.results,
+                                  props.suggestedMove?.results!,
                                   "white"
                                 ) -
                                 getWinRate(
-                                  props.suggestedMove?.results,
+                                  props.suggestedMove?.results!,
                                   "black"
                                 )
                             )}
@@ -420,11 +434,12 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
   const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   const epdAfter = () =>
     props.tableResponse.suggestedMove?.epdAfter ??
-    props.tableResponse.repertoireMove?.epdAfter;
-  const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+    (props.tableResponse.repertoireMove?.epdAfter as string);
+  const [activeSide] = useSidebarState(([s]) => [s.activeSide as Side]);
   const [hasResponse, numMovesFromHere, expectedNumMovesNeeded, missFromHere] =
     useRepertoireState((s) => [
-      s.repertoire[activeSide()]?.positionResponses[epdAfter()]?.length > 0,
+      // @ts-ignore
+      s.repertoire?.[activeSide()]?.positionResponses[epdAfter()]?.length > 0,
       s.numMovesFromEpd[activeSide()][epdAfter()],
       s.expectedNumMovesFromEpd[activeSide()][epdAfter()],
       s.repertoireGrades[activeSide()]?.biggestMisses[epdAfter()],
@@ -496,7 +511,7 @@ const getReviewModeSections = ({
   activeSide,
   threshold,
   textStyles,
-}: SectionProps) => {
+}: GetSectionProps) => {
   const sections: Section[] = [];
 
   sections.push({
@@ -505,8 +520,8 @@ const getReviewModeSections = ({
     content: (props) => {
       return (
         <ReviewText
-          date={props.tableResponse.reviewInfo.earliestDue}
-          numDue={props.tableResponse.reviewInfo.due}
+          date={props.tableResponse.reviewInfo!.earliestDue}
+          numDue={props.tableResponse.reviewInfo!.due}
         />
       );
     },

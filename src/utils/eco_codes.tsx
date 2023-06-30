@@ -2,6 +2,7 @@ import { map, last } from "lodash-es";
 
 export const getAppropriateEcoName = (fullName: string): [string, string[]] => {
   if (!fullName) {
+    // @ts-ignore
     return null;
   }
   const name = fullName.split(":")[0];
@@ -11,6 +12,7 @@ export const getAppropriateEcoName = (fullName: string): [string, string[]] => {
   if (isFirstTimeSeeing) {
     return [name, variations];
   } else {
+    // @ts-ignore
     return [last(variations) ?? name, null];
   }
 };

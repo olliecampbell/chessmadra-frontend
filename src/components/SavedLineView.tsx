@@ -13,7 +13,7 @@ import { RepertoireCompletion } from "./RepertoireCompletion";
 export const SavedLineView = function SavedLineView() {
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [progressState] = useRepertoireState((s) => [
-    s.browsingState.repertoireProgressState[activeSide()],
+    s.browsingState.repertoireProgressState[activeSide()!],
   ]);
   const responsive = useResponsive();
   const [addedLineState] = useSidebarState(([s]) => [s.addedLineState]);
@@ -23,7 +23,7 @@ export const SavedLineView = function SavedLineView() {
     onPress: () => {
       trackEvent(`${mode()}.added_line_state.practice_line`);
       quick((s) => {
-        s.repertoireState.reviewState.reviewLine(currentLine(), activeSide());
+        s.repertoireState.reviewState.reviewLine(currentLine(), activeSide()!);
       });
     },
     text: "Practice these moves",
@@ -41,12 +41,14 @@ export const SavedLineView = function SavedLineView() {
       <SidebarTemplate
         header={"Moves saved!"}
         bodyPadding
-        actions={filter(
-          [useBiggestGapAction(), reviewCurrentLineAction],
-          (a) => !isNil(a)
-        )}
+        actions={
+          filter(
+            [useBiggestGapAction(), reviewCurrentLineAction],
+            (a) => !isNil(a)
+          ) as SidebarAction[]
+        }
       >
-        <RepertoireCompletion side={activeSide()} />
+        <RepertoireCompletion side={activeSide()!} />
         <Spacer height={12} />
       </SidebarTemplate>
     </Show>

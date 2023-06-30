@@ -1,6 +1,6 @@
 import { isCheckmate } from "../utils/chess";
-import { Color, Move } from "@lubert/chess.ts";
-import { isEmpty } from "lodash-es";
+import { Chess, Color, Move } from "@lubert/chess.ts";
+import { isEmpty, noop } from "lodash-es";
 import { LichessPuzzle } from "./models";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import {
@@ -11,7 +11,7 @@ import {
 import { ChessboardDelegate } from "./chessboard_interface";
 
 export interface PuzzleState extends ChessboardDelegate {
-  puzzlePosition: any;
+  puzzlePosition: Chess;
   turn: Color;
   solutionMoves: Move[];
   puzzle: LichessPuzzle | null;
@@ -32,7 +32,9 @@ export interface PuzzleStateDelegate {
 }
 
 export const getInitialPuzzleState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<PuzzleState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<PuzzleState, any>
 ) => {
   const set = <T,>(fn: (s: PuzzleState) => T, id?: string): T => {
@@ -45,9 +47,11 @@ export const getInitialPuzzleState = (
     return _get((s) => fn(s));
   };
   return {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     delegate: null as PuzzleStateDelegate,
-    puzzlePosition: null,
+    // @ts-ignore
+    puzzlePosition: null as Chess,
     turn: "w" as Color,
     shouldMakeMove: (move: Move) =>
       set((s) => {
@@ -62,7 +66,7 @@ export const getInitialPuzzleState = (
             s.delegate.animatePieceMove(
               otherSideMove,
               PlaybackSpeed.Normal,
-              () => {}
+              noop
             );
           }
           s.solutionMoves.shift();
@@ -71,7 +75,7 @@ export const getInitialPuzzleState = (
             s.delegate.onPuzzleMoveSuccess();
             s.progressMessage = {
               message: `Keep going...`,
-              // onPromptPress: () => {},
+              // onPromptPress: noop,
               // prompt: "Give up?",
               type: ProgressMessageType.Error,
             };
@@ -85,15 +89,15 @@ export const getInitialPuzzleState = (
           s.delegate.onPuzzleMoveFailure(move);
           s.progressMessage = {
             message: `${move.san} was not the right move, try again.`,
-            // onPromptPress: () => {},
+            // onPromptPress: noop,
             // prompt: "Give up?",
             type: ProgressMessageType.Error,
           };
         }
         return false;
       }),
-    madeMove: (move: Move) => set((state) => {}),
-    completedMoveAnimation: (move: Move) => set((state) => {}),
+    madeMove: noop,
+    completedMoveAnimation: noop,
     puzzle: null,
     solutionMoves: [] as Move[],
     progressMessage: null,

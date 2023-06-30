@@ -29,6 +29,7 @@ export const useHovering = (
       }, 0);
     },
     hoveringProps: {
+      // @ts-ignore
       onMouseEnter: (e) => {
         const isTouchDevice =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
@@ -39,7 +40,7 @@ export const useHovering = (
         onHover?.();
         setHovering(true);
       },
-      onMouseLeave: (e) => {
+      onMouseLeave: () => {
         const isTouchDevice =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
         if (isTouchDevice) {

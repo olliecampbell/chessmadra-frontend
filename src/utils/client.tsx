@@ -50,13 +50,14 @@ client.interceptors.request.use(function (config) {
   const { spoofedEmail } = getAppState().adminState;
   const spoofKey = import.meta.env.VITE_SPOOF_KEY;
   if (spoofedEmail.value) {
-    config.headers["spoof-user-email"] = spoofedEmail.value;
-    config.headers["spoof-key"] = spoofKey;
+    config.headers!["spoof-user-email"] = spoofedEmail.value;
+    config.headers!["spoof-key"] = spoofKey;
   }
   if (token) {
-    config.headers.Authorization = token;
+    config.headers!.Authorization = token;
   } else {
-    config.headers["temp-user-uuid"] = tempUserUuid;
+    // @ts-ignore
+    config.headers!["temp-user-uuid"] = tempUserUuid;
   }
   return config;
 });

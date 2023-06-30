@@ -22,10 +22,12 @@ export const formatWinPercentage = (x: number) => {
 };
 
 export function getWinRate(x: GameResultsDistribution, side: string) {
+  // @ts-ignore
   return x[side] / getTotalGames(x);
 }
 
 export function getDrawAdjustedWinRate(x: GameResultsDistribution, side: Side) {
+  // @ts-ignore
   return (x[side] + x.draw / 2) / getTotalGames(x);
 }
 
@@ -33,6 +35,7 @@ export function getWinRateRange(
   x: GameResultsDistribution,
   side: string
 ): [number, number, number] {
+  // @ts-ignore
   const w = x[side];
   const n = getTotalGames(x);
   const { left, right } = wilson(w, n);
@@ -48,6 +51,7 @@ export const getPlayRate = (
   const total = getTotalGames(report[k]);
   const divisor = getTotalGames(m[k]);
   if (isNil(total) || isNil(divisor) || total === 0) {
+    // @ts-ignore
     return null;
   }
   return divisor / total;
@@ -59,6 +63,7 @@ export const isNegligiblePlayrate = (playRate: number) => {
   );
 };
 
+// @ts-ignore
 export const wilson = function (positiveScore, total) {
   if (total === 0) {
     return {

@@ -24,7 +24,7 @@ type LoginForm = {
 };
 
 export const LoginSidebar = (props: { authType?: AuthType }) => {
-  const onSubmit = (values: LoginForm, event) => {
+  const onSubmit = (values: LoginForm) => {
     console.log("values,", values);
     setServerError("");
     return client
@@ -118,7 +118,12 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
                     label="Email"
                     errors={errors()}
                   />
-                  <TextInput type="password" name="password" label="Password" autocomplete="current-password"/>
+                  <TextInput
+                    type="password"
+                    name="password"
+                    label="Password"
+                    autocomplete="current-password"
+                  />
                   <Show when={authType() === "login"}>
                     <a
                       onClick={() => {

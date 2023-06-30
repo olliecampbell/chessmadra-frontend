@@ -1,14 +1,13 @@
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
-import { NavigateFunction } from "react-router-dom";
 import { isNil } from "lodash-es";
 
 export interface NavigationState {
   quick: (fn: (_: NavigationState) => void) => void;
   push: (path: string, options?: { removeParams: boolean }) => void;
-  setNavigate: (n: NavigateFunction) => void;
-  _navigate?: NavigateFunction;
+  setNavigate: (n: any) => void;
+  _navigate?: () => void;
   _pendingPush?: () => void;
 }
 
@@ -30,30 +29,20 @@ export const getInitialNavigationState = (
   const initialState = {
     ...createQuick<NavigationState>(setOnly),
     navigationUi: false,
-    setNavigate: (navigate: NavigateFunction) => {
+    setNavigate: (navigate: any) => {
       set(([s]) => {
         s._navigate = navigate;
-        if (s._pendingPush) {
-          s._pendingPush();
-        }
       });
     },
     push: (path: string, options) => {
       set(([s]) => {
         // console.log(`PUSH - ${path}`);
-        if (!s._navigate) {
-          s._pendingPush = () => {
-            set(([s]) => {
-              s.push(path, options);
-            });
-          };
-        } else {
-          let p = `${path}${window.location.search}`;
-          if (options?.removeParams || isNil(window.location.search)) {
-            p = `${path}`;
-          }
-          s._navigate(p);
+        let p = `${path}${window.location.search}`;
+        if (options?.removeParams || isNil(window.location.search)) {
+          p = `${path}`;
         }
+        // @ts-ignore
+        s._navigate(p);
       });
     },
   } as NavigationState;

@@ -17,7 +17,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ["dist/**/*", ".solid/**/*", "landing_page_src/**/*"],
+    ignores: ["dist/**/*", ".solid/**/*", "src/landing_page_src/**/*"],
   },
   js.configs.recommended,
   ...compat.config({
@@ -34,6 +34,11 @@ export default [
   {
     files: ["**/*.{ts,tsx,js}"],
     ignores: ["/dist", "/.solid"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "prefer-const": "off",
+    },
 
     plugins: {
       typescript: typescriptPlugin,

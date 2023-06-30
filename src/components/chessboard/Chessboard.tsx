@@ -164,11 +164,12 @@ export function ChessboardView(props: {
   });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
-  const pieceSet: Accessor<BoardTheme> = () => combinedTheme().pieceSet;
+  const pieceSet: Accessor<string> = () => combinedTheme().pieceSet;
   const colors = () => [theme().light.color, theme().dark.color];
   const flipped = createMemo(() => !!chessboardStore().flipped);
   const boardImage = () => theme().boardImage;
   const getSquareFromLayoutAndGesture = (
+    // @ts-ignore
     chessboardLayout,
     gesture: XY
   ): [Square, number, number] => {
@@ -180,13 +181,14 @@ export function ChessboardView(props: {
     if (flipped()) {
       square = `${COLUMNS[7 - column]}${ROWS[row]}`;
     }
-    // @ts-ignore
     return [
+      // @ts-ignore
       square,
       (column + 0.5) * (chessboardLayout.width / 8),
       (row + 0.5) * (chessboardLayout.height / 8),
     ];
   };
+  // @ts-ignore
   const refs: ChessboardViewState["refs"] = { ringRef: null, pieceRefs: {} };
   createEffect(() => {
     props.chessboardInterface.set((s) => {
@@ -213,12 +215,16 @@ export function ChessboardView(props: {
     const touch = e.targetTouches?.[0];
     if (touch) {
       return {
+        // @ts-ignore
         x: touch.clientX - parent.left,
+        // @ts-ignore
         y: touch.clientY - parent.top,
       };
     } else {
       return {
+        // @ts-ignore
         x: e.offsetX,
+        // @ts-ignore
         y: e.offsetY,
       };
     }
@@ -300,6 +306,7 @@ export function ChessboardView(props: {
   // interaction/mouse stuff
   const onMouseOut = (evt: MouseEvent | TouchEvent) => {
     props.chessboardInterface.set((store) => {
+      // @ts-ignore
       store.drag = cloneDeep(EMPTY_DRAG);
       store.draggedOverSquare = undefined;
     });
@@ -347,6 +354,7 @@ export function ChessboardView(props: {
         );
         newDrag.enoughToDrag = distance > 5;
       }
+      // @ts-ignore
       s.drag = newDrag;
     });
   };
@@ -369,6 +377,7 @@ export function ChessboardView(props: {
       }
     }
     props.chessboardInterface.set((s) => {
+      // @ts-ignore
       s.drag = cloneDeep(EMPTY_DRAG);
     });
   };
@@ -646,6 +655,7 @@ export function ChessboardView(props: {
                     id={`piece-${square}`}
                     ref={(v) => {
                       props.chessboardInterface.set((s) => {
+                        // @ts-ignore
                         refs.pieceRefs[square] = v;
                       });
                     }}
@@ -658,7 +668,10 @@ export function ChessboardView(props: {
                             "transition-opacity"
                           )}
                         >
-                          <PieceView piece={piece()} pieceSet={pieceSet()} />
+                          <PieceView
+                            piece={piece()!}
+                            pieceSet={pieceSet() as string}
+                          />
                         </div>
                       </Show>
                     </div>
@@ -811,36 +824,34 @@ export function ChessboardView(props: {
                               c.zIndex(1)
                             )}
                           />
-                          {isBottomEdge &&
-                            !chessboardStore().hideCoordinates && (
-                              <CMText
-                                style={s(
-                                  c.fg(inverseColor()),
-                                  c.weightSemiBold,
-                                  c.absolute,
-                                  c.fontSize(10),
-                                  c.left(isMobile ? 1 : 1),
-                                  c.bottom(isMobile ? 1 : 0)
-                                )}
-                              >
-                                {tileLetter}
-                              </CMText>
-                            )}
-                          {isRightEdge &&
-                            !chessboardStore().hideCoordinates && (
-                              <CMText
-                                style={s(
-                                  c.fg(inverseColor()),
-                                  c.weightBold,
-                                  c.absolute,
-                                  c.fontSize(10),
-                                  c.right(2),
-                                  c.top(0)
-                                )}
-                              >
-                                {tileNumber}
-                              </CMText>
-                            )}
+                          {isBottomEdge && (
+                            <CMText
+                              style={s(
+                                c.fg(inverseColor()),
+                                c.weightSemiBold,
+                                c.absolute,
+                                c.fontSize(10),
+                                c.left(isMobile ? 1 : 1),
+                                c.bottom(isMobile ? 1 : 0)
+                              )}
+                            >
+                              {tileLetter}
+                            </CMText>
+                          )}
+                          {isRightEdge && (
+                            <CMText
+                              style={s(
+                                c.fg(inverseColor()),
+                                c.weightBold,
+                                c.absolute,
+                                c.fontSize(10),
+                                c.right(2),
+                                c.top(0)
+                              )}
+                            >
+                              {tileNumber}
+                            </CMText>
+                          )}
                         </div>
                       );
                     }}

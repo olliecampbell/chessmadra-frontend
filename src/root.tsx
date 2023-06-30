@@ -24,7 +24,7 @@ import AuthHandler from "./components/AuthHandler";
 import { isServer } from "solid-js/web";
 import "virtual:uno.css";
 import { quick } from "~/utils/app_state";
-import { HeadSiteMeta } from "./components/PageContainer";
+import { HeadSiteMeta } from "./components/HeadSiteMeta";
 import { isChessmadra, isDevelopment } from "./utils/env";
 
 const development =
@@ -47,8 +47,6 @@ export default function Root() {
 
     // Option 1, initialize with API_KEY only
 
-    const SENTRY_DSN: string = process.env.SENTRY_DSN;
-
     Sentry.init({
       dsn: isDevelopment
         ? "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185"
@@ -61,6 +59,7 @@ export default function Root() {
       tracesSampleRate: 1.0,
       beforeBreadcrumb: (breadcrumb, hint) => {
         if (breadcrumb.category === "xhr") {
+          // @ts-ignore
           const xhr = hint.xhr as XMLHttpRequest;
           const data = {
             // @ts-ignore

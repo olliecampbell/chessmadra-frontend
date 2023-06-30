@@ -2,6 +2,7 @@ import { useRepertoireState, useAppState } from "~/utils/app_state";
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
+import { noop } from "lodash-es";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -53,5 +54,5 @@ export const createDebugStateEffect = () => {
     //   });
     // }, 100);
   });
-  onCleanup(() => {});
+  onCleanup(noop);
 };

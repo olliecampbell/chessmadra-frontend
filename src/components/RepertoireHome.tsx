@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, upperFirst, find, isEmpty, filter } from "lodash-es";
+import { capitalize, upperFirst, find, isEmpty, filter, noop } from "lodash-es";
 import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
@@ -25,10 +25,7 @@ import {
   RatingSettings,
   ThemeSettings,
 } from "./SidebarSettings";
-import {
-  combinedThemes,
-  COMBINED_THEMES_BY_ID,
-} from "~/utils/theming";
+import { combinedThemes, COMBINED_THEMES_BY_ID } from "~/utils/theming";
 import { Accessor, For, Show } from "solid-js";
 import { FeedbackView } from "./FeedbackView";
 import client from "~/utils/client";
@@ -208,7 +205,7 @@ export const RepertoireHome = () => {
                             .then(({ data }: { data: { url: string } }) => {
                               window.open(data.url, "_blank");
                             })
-                            .finally(() => {});
+                            .finally(noop);
                         }
                       });
                     },

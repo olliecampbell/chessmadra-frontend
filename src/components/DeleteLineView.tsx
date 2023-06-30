@@ -13,7 +13,7 @@ export const DeleteLineView = function DeleteLineView() {
   const responsive = useResponsive();
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const [responses, deleting] = useRepertoireState((s) => [
-    s.repertoire?.[activeSide()].positionResponses[
+    s.repertoire?.[activeSide()!].positionResponses[
       s.browsingState.chessboard.getCurrentEpd()
     ],
     s.deleteMoveState.isDeletingMove,

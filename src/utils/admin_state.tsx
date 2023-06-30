@@ -46,7 +46,9 @@ export interface AdminMoveAnnotation {
 }
 
 export const getInitialAdminState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -107,6 +109,7 @@ export const getInitialAdminState = (
                       ann.userId === gs.userState.user?.id)
                   ) {
                     ann.text = text;
+                    // @ts-ignore
                     ann.userId = gs.userState.user?.id;
                   }
                 });

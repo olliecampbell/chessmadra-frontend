@@ -10,5 +10,6 @@ export const useIsMobile = () => {
 
 export const useIsMobileV2 = () => {
   const responsive = useResponsiveV2();
-  return createMemo(() => responsive().isMobile);
+  const isMobile = createMemo(() => responsive().isMobile);
+  return isMobile;
 };

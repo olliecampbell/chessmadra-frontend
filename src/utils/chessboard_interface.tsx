@@ -19,7 +19,6 @@ import { MetaPlan } from "./plans";
 import { lineToPgn, pgnToLine, Side } from "./repertoire";
 import { c } from "./styles";
 import { Option } from "./optional";
-import { deepEqual } from "assert";
 
 interface PlayPgnOptions {
   animateLine?: string[];
@@ -186,6 +185,7 @@ export const createChessboardInterface = (): [
       },
       ringColor: c.colors.successColor,
       availableMoves: [],
+      // @ts-ignore
       drag: {
         square: null,
         enoughToDrag: false,
@@ -262,7 +262,7 @@ export const createChessboardInterface = (): [
         const pos = s.position;
         let moveObject: Move | null = null;
         if (typeof m === "string") {
-          let moves = pos.validateMoves([m]);
+          const moves = pos.validateMoves([m]);
           if (!moves) {
             console.log("This move wasn't valid!", m);
             return;
@@ -401,7 +401,7 @@ export const createChessboardInterface = (): [
             s.animating = false;
             if (completed) {
               if (nextMove.reverse) {
-                let m = s._animatePosition?.undo();
+                const m = s._animatePosition?.undo();
               } else {
                 s._animatePosition?.move(nextMove);
               }
@@ -504,6 +504,7 @@ export const createChessboardInterface = (): [
         s.animating = false;
         s.availableMoves = [];
         s.draggedOverSquare = undefined;
+        // @ts-ignore
         s.drag = {
           square: null,
           enoughToDrag: false,
@@ -616,7 +617,7 @@ export const createChessboardInterface = (): [
     forwardOne: () => {
       set((s) => {
         if (s.forwardPositionHistory.length > 0) {
-          let m = s.forwardMoveHistory[0] as Move;
+          const m = s.forwardMoveHistory[0] as Move;
           chessboardInterface.makeMove(m, { animate: true });
           chessboardInterface.updateMoveLogPgn();
           chessboardInterface.getDelegate()?.onPositionUpdated?.();
@@ -644,8 +645,8 @@ export const createChessboardInterface = (): [
     backOne: (opts) => {
       set((s) => {
         if (s.moveHistory.length > 0) {
-          let position = s.positionHistory.pop() as string;
-          let m = s.moveHistory.pop() as Move;
+          const position = s.positionHistory.pop() as string;
+          const m = s.moveHistory.pop() as Move;
           s.previewPosition = undefined;
           s.forwardMoveHistory.unshift(m);
           s.forwardPositionHistory.unshift(position);
@@ -830,6 +831,7 @@ export const createChessboardInterface = (): [
     previewMove: (m: string | null | Move) => {
       set((s) => {
         if (m) {
+          // @ts-ignore
           const [moveObject] = s.position.validateMoves([m]) ?? [];
           s.nextPreviewMove = moveObject;
           chessboardInterface.stepPreviewMove();
@@ -891,6 +893,7 @@ export const createChessboardInterface = (): [
           const fen = `${options.fromEpd ?? START_EPD} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
           const moves = s._animatePosition.validateMoves(line);
+          // @ts-ignore
           s.animationQueue = moves;
           chessboardInterface.stepAnimationQueue();
         }

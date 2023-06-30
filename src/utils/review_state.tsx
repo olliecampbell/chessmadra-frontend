@@ -14,6 +14,7 @@ import {
   take,
   cloneDeep,
   sum,
+  noop,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -111,7 +112,9 @@ const FRESH_REVIEW_STATS = {
 } as ReviewStats;
 
 export const getInitialReviewState = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -132,6 +135,7 @@ export const getInitialReviewState = (
     completedReviewPositionMoves: {},
     failedReviewPositionMoves: {},
     allReviewPositionMoves: {},
+    // @ts-ignore
     chessboard: undefined as ChessboardInterface,
     reviewStats: cloneDeep(FRESH_REVIEW_STATS),
     showNext: false,
@@ -141,6 +145,7 @@ export const getInitialReviewState = (
       trackEvent(`reviewing.reviewed_move`);
       set(([s, rs]) => {
         results.forEach((r, i) => {
+          // @ts-ignore
           rs.repertoire[r.side].positionResponses[r.epd]?.forEach(
             (m: RepertoireMove) => {
               if (m.sanPlus === r.sanPlus && m.srs) {
@@ -155,6 +160,7 @@ export const getInitialReviewState = (
         .then(({ data: updatedSrss }) => {
           set(([s, rs]) => {
             results.forEach((r, i) => {
+              // @ts-ignore
               rs.repertoire[r.side].positionResponses[r.epd].forEach(
                 (m: RepertoireMove) => {
                   if (m.sanPlus === r.sanPlus) {
@@ -175,6 +181,7 @@ export const getInitialReviewState = (
         s.reviewStats = cloneDeep(FRESH_REVIEW_STATS);
         rs.browsingState.moveSidebarState("right");
         rs.browsingState.sidebarState.mode = "review";
+        // @ts-ignore
         rs.browsingState.sidebarState.activeSide = options.side;
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
@@ -231,8 +238,8 @@ export const getInitialReviewState = (
           trackEvent(`review.review_complete`);
           return;
         }
-        let currentMove = s.currentMove as QuizMove;
-        let setup = () => {
+        const currentMove = s.currentMove as QuizMove;
+        const setup = () => {
           set(([s]) => {
             s.reviewSide = currentMove.side;
             s.failedReviewPositionMoves = {};
@@ -293,8 +300,10 @@ export const getInitialReviewState = (
       set(([s, rs]) => {
         console.log("stopping review");
         rs.updateRepertoireStructures();
+        // @ts-ignore
         rs.browsingState.sidebarState.mode = null;
 
+        // @ts-ignore
         s.reviewSide = null;
         if (s.currentMove) {
           s.activeQueue = [];
@@ -313,10 +322,12 @@ export const getInitialReviewState = (
             return;
           }
           const recurse = (epd: string, line: string[]) => {
+            // @ts-ignore
             const responses = rs.repertoire[side].positionResponses[epd];
             if (responses?.[0]?.mine) {
               const needsToReviewAny = some(
                 responses,
+                // @ts-ignore
                 (r) => r.srs.needsReview
               );
               const shouldAdd =
@@ -352,6 +363,7 @@ export const getInitialReviewState = (
           const commonCutoff =
             byIncidence[COMMON_MOVES_CUTOFF] ?? first(byIncidence);
           const commonQueue = take(
+            // @ts-ignore
             filter(queue, (m) => m.moves[0].incidence >= commonCutoff),
             COMMON_MOVES_CUTOFF
           );
@@ -371,19 +383,25 @@ export const getInitialReviewState = (
     reviewLine: (line: string[], side: Side) =>
       set(([s, rs]) => {
         rs.backToOverview();
+        // @ts-ignore
         const queue = [];
         let epd = START_EPD;
+        // @ts-ignore
         const lineSoFar = [];
         line.map((move) => {
+          // @ts-ignore
           const responses = rs.repertoire[side].positionResponses[epd];
           const response = find(
+            // @ts-ignore
             rs.repertoire[side].positionResponses[epd],
             (m) => m.sanPlus === move
           );
+          // @ts-ignore
           epd = response?.epdAfter;
           if (response && response.mine) {
             queue.push({
               moves: responses,
+              // @ts-ignore
               line: lineToPgn(lineSoFar),
             });
           } else {
@@ -392,6 +410,7 @@ export const getInitialReviewState = (
           lineSoFar.push(move);
         });
 
+        // @ts-ignore
         s.startReview({ side: side, customQueue: queue });
       }, "reviewLine"),
     getNextReviewPositionMove: () =>
@@ -434,13 +453,13 @@ export const getInitialReviewState = (
           s.moveLog = s.chessboard.get((s) => s.moveLog);
         });
       },
-      madeMove: () => {},
-
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      madeMove: noop,
       shouldMakeMove: (move: Move) =>
         set(([s]) => {
           console.log("should make move?");
           const matchingResponse = find(
-            s.currentMove.moves,
+            s.currentMove!.moves,
             (m) => move.san == m.sanPlus
           );
           if (matchingResponse) {
@@ -469,7 +488,7 @@ export const getInitialReviewState = (
             // todo: make this actually work
             const continuesCurrentLine =
               nextMove?.line ==
-              lineToPgn([...pgnToLine(s.currentMove.line), move.san]);
+              lineToPgn([...pgnToLine(s.currentMove!.line), move.san]);
             // console.log(
             //   "continuesCurrentLine",
             //   continuesCurrentLine,
@@ -477,6 +496,7 @@ export const getInitialReviewState = (
             //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
             // );
 
+            // @ts-ignore
             if (s.currentMove?.moves.length > 1) {
               s.showNext = true;
             } else {

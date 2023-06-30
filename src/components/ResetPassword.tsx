@@ -6,16 +6,6 @@ import { Puff } from "solid-spinner";
 import { TextInput } from "./TextInput";
 type AuthType = "login" | "register";
 const AUTH_TYPES: AuthType[] = ["login", "register"];
-// import { createFormGroup, createFormControl } from "solid-forms";
-// import {
-//   createForm,
-//   email,
-//   Field,
-//   Form,
-//   minLength,
-//   required,
-//   SubmitHandler,
-// } from "@modular-forms/solid";
 import { InputError } from "./forms/InputError";
 import { useSearchParams } from "solid-start";
 import { quick } from "~/utils/app_state";
@@ -32,7 +22,7 @@ type ResetPasswordForm = {
 };
 
 export default function ResetPassword() {
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: any) => {
     setServerError("");
     client
       .post("/api/reset_password", {
@@ -43,7 +33,7 @@ export default function ResetPassword() {
         trackEvent(`auth.reset_password.success`);
         quick((s) => {
           s.userState.handleAuthResponse(resp.data);
-          s.repertoireState.initState()
+          s.repertoireState.initState();
           s.repertoireState.browsingState.clearViews();
           window.history.replaceState({}, "", "/");
         });
