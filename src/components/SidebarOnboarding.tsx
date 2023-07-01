@@ -827,6 +827,7 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
           onInput={(v) => {
             setTextInputPgn(v.target.value);
             setPgn(null);
+            props.onChange(v.target.value);
             setHasUploaded(false);
           }}
           class=" mt-2 w-full rounded-sm border border-gray-400"
