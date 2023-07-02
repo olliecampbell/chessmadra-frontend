@@ -1,4 +1,4 @@
-import { Move } from "@lubert/chess.ts/dist/types";
+import { Move, Square } from "@lubert/chess.ts/dist/types";
 import {
   isEmpty,
   last,
@@ -457,13 +457,15 @@ export const getInitialReviewState = (
       madeMove: noop,
       shouldMakeMove: (move: Move) =>
         set(([s]) => {
-          console.log("should make move?");
           const matchingResponse = find(
             s.currentMove!.moves,
             (m) => move.san == m.sanPlus
           );
           if (matchingResponse) {
-            s.chessboard.flashRing(true);
+            s.chessboard.showMoveFeedback({
+              square: move.to as Square,
+              type: "correct",
+            });
 
             s.reviewStats.correct++;
             s.completedReviewPositionMoves[matchingResponse.sanPlus] =
@@ -475,7 +477,7 @@ export const getInitialReviewState = (
             if (willUndoBecauseMultiple) {
               window.setTimeout(() => {
                 set(([s]) => {
-                  s.chessboard.backOne();
+                  s.chessboard.backOne({ clear: true });
                 });
               }, 500);
               return true;
@@ -508,7 +510,10 @@ export const getInitialReviewState = (
             }
             return true;
           } else {
-            s.chessboard.flashRing(false);
+            s.chessboard.showMoveFeedback({
+              square: move.to as Square,
+              type: "incorrect",
+            });
             if (isEmpty(s.failedReviewPositionMoves)) {
               s.reviewStats.incorrect++;
             }

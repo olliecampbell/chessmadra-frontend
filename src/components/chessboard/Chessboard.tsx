@@ -188,12 +188,19 @@ export function ChessboardView(props: {
       (row + 0.5) * (chessboardLayout.height / 8),
     ];
   };
-  // @ts-ignore
-  const refs: ChessboardViewState["refs"] = { ringRef: null, pieceRefs: {} };
-  createEffect(() => {
+  const refs: ChessboardViewState["refs"] = {
+    ringRef: null,
+    pieceRefs: {},
+    feedbackRefs: {},
+    visualizationDotRef: null,
+  };
+  const updateRefs = () => {
     props.chessboardInterface.set((s) => {
       s.refs = refs;
     });
+  };
+  createEffect(() => {
+    updateRefs();
   });
 
   const hiddenColorsBorder = `1px solid ${c.gray[70]}`;
@@ -655,8 +662,7 @@ export function ChessboardView(props: {
                     id={`piece-${square}`}
                     ref={(v) => {
                       props.chessboardInterface.set((s) => {
-                        // @ts-ignore
-                        refs.pieceRefs[square] = v;
+                        refs.pieceRefs[square as Square] = v;
                       });
                     }}
                   >
@@ -698,6 +704,9 @@ export function ChessboardView(props: {
                   <For each={range(8)}>
                     {(j) => {
                       const debugSquare = "e4";
+                      const feedback = createMemo(
+                        () => chessboardStore().moveFeedback
+                      );
                       const light = (i + j) % 2 == 0;
                       const [color, inverseColor] = destructure(() =>
                         light ? colors() : [colors()[1], colors()[0]]
@@ -774,6 +783,15 @@ export function ChessboardView(props: {
                       });
                       const isBottomEdge = i == 7;
                       const isRightEdge = j == 7;
+                      const [ref, setRef] = createSignal<HTMLDivElement | null>(
+                        null
+                      );
+                      createEffect(() => {
+                        if (ref()) {
+                          refs.feedbackRefs[square()] = ref() as HTMLDivElement;
+                          updateRefs();
+                        }
+                      });
 
                       return (
                         <div
@@ -787,6 +805,32 @@ export function ChessboardView(props: {
                             c.relative
                           )}
                         >
+                          <div class="center z-6 absolute right-0 top-0 h-[40%] w-[40%] -translate-y-1/2 translate-x-1/2">
+                            <div
+                              class={clsx(
+                                `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `,
+                                feedback().type === "correct"
+                                  ? `bg-[hsl(118,43%,63%)]`
+                                  : `bg-red-60`
+                              )}
+                              id={`feedback-${square()}`}
+                              ref={setRef}
+                              style={s(c.zIndex(6))}
+                            >
+                              <div
+                                class={clsx("absolute inset-0 bg-white ")}
+                                id="white-overlay"
+                              />
+                              <i
+                                class={clsx(
+                                  "fa-solid  text-gray-10 text-[55cqw]",
+                                  feedback().type === "correct"
+                                    ? "fa-check"
+                                    : "fa-xmark"
+                                )}
+                              ></i>
+                            </div>
+                          </div>
                           <div
                             class="absolute inset-0 grid place-items-center rounded-full"
                             style={s(

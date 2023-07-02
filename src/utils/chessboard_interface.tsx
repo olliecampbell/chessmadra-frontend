@@ -32,6 +32,8 @@ type MakeMoveOptions = {
   animate?: boolean;
 };
 
+type MoveFeedbackType = "correct" | "incorrect";
+
 export interface ChessboardInterface {
   set: <T>(s: (s: ChessboardViewState) => T) => T | null;
   // can you update the types here so that it returns ChessboardViewState if there's no s passed in?
@@ -63,6 +65,7 @@ export interface ChessboardInterface {
     speed: PlaybackSpeed,
     callback: (completed: boolean) => void
   ) => void;
+  // @deprecated
   flashRing: (success: boolean) => void;
   previewMove: (m: Move | string | null) => void;
   reversePreviewMove: () => void;
@@ -80,6 +83,7 @@ export interface ChessboardInterface {
 
   setFrozen: (_: boolean) => void;
   setPerspective: (_: Side) => void;
+  showMoveFeedback(arg0: { square: Square; type: MoveFeedbackType }): unknown;
 
   // Other trainer tool stuff
   visualizeMoves: (
@@ -104,6 +108,9 @@ export interface ChessboardDelegate {
 export interface ChessboardViewState {
   animating: boolean;
   animatingMoveSquare?: Square;
+  moveFeedback: {
+    type: MoveFeedbackType;
+  };
   flipped: boolean;
   frozen: boolean;
   delegate: ChessboardDelegate;
@@ -112,6 +119,7 @@ export interface ChessboardViewState {
   refs: {
     ringRef: HTMLDivElement | null;
     pieceRefs: Partial<Record<Square, HTMLDivElement>>;
+    feedbackRefs: Partial<Record<Square, HTMLDivElement>>;
     visualizationDotRef: HTMLDivElement | null;
   };
   _animatePosition?: Chess;
@@ -166,6 +174,9 @@ export const createChessboardInterface = (): [
     createStore<ChessboardViewState>({
       flipped: false,
       frozen: false,
+      moveFeedback: {
+        type: "incorrect",
+      },
       // @ts-ignore
       delegate: null,
       plans: [],
@@ -181,6 +192,7 @@ export const createChessboardInterface = (): [
       refs: {
         ringRef: null,
         visualizationDotRef: null,
+        feedbackRefs: {},
         pieceRefs: {},
       },
       ringColor: c.colors.successColor,
@@ -839,6 +851,43 @@ export const createChessboardInterface = (): [
           s.nextPreviewMove = undefined;
           chessboardInterface.stepPreviewMove();
         }
+      });
+    },
+    showMoveFeedback: ({ square, type }) => {
+      set((state) => {
+        state.moveFeedback.type = type;
+        const ref = state.refs.feedbackRefs[square];
+        console.log("ref?", ref);
+        anime({
+          targets: ref,
+          easing: "easeInOutSine",
+          duration: 300,
+          opacity: [0, 1.0],
+          scale: [0.8, 1.2, 1.0],
+          autoplay: true,
+        });
+        const whiteOverlay = ref?.querySelector(
+          "#white-overlay"
+        ) as HTMLDivElement;
+        anime({
+          targets: whiteOverlay,
+          easing: "easeInOutSine",
+          duration: 400,
+          opacity: [0.5, 0],
+          autoplay: true,
+        });
+        setTimeout(() => {
+          // set opacity of white overlay to 1
+          anime({
+            targets: ref,
+            easing: "easeInOutSine",
+            duration: 300,
+            opacity: [1.0, 0],
+            autoplay: true,
+          }).finished.then(() => {
+            whiteOverlay.style.opacity = "1";
+          });
+        }, 400);
       });
     },
     flashRing: (success: boolean) => {
