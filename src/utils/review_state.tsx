@@ -253,11 +253,15 @@ export const getInitialReviewState = (
             s.chessboard.backOne({ clear: true, skipAnimation: true });
 
             if (lastOpponentMove) {
+              // TODO: figure out why the setTimeout is needed here, bug is
+              // that practicing doesn't play the first move on the board if
+              // there's no delay. I imagine it's because the piece refs aren't
+              // there yet? Only the first move that breaks
               window.setTimeout(() => {
                 set(([s]) => {
                   s.chessboard.makeMove(lastOpponentMove, { animate: true });
                 });
-              }, 300);
+              }, 0);
             }
           });
         };
@@ -462,68 +466,77 @@ export const getInitialReviewState = (
             (m) => move.san == m.sanPlus
           );
           if (matchingResponse) {
-            s.chessboard.showMoveFeedback({
-              square: move.to as Square,
-              type: "correct",
-            });
-
             s.reviewStats.correct++;
             s.completedReviewPositionMoves[matchingResponse.sanPlus] =
               matchingResponse;
-            // TODO: this is really dirty
             const willUndoBecauseMultiple = !isEmpty(
               s.getRemainingReviewPositionMoves()
             );
-            if (willUndoBecauseMultiple) {
-              window.setTimeout(() => {
+            s.chessboard.showMoveFeedback(
+              {
+                square: move.to as Square,
+                type: "correct",
+              },
+              () => {
                 set(([s]) => {
-                  s.chessboard.backOne({ clear: true });
-                });
-              }, 500);
-              return true;
-            }
-            s.currentMove?.moves.forEach((move) => {
-              s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed = true;
-            });
-            const nextMove = s.activeQueue[1];
-            console.log(s.activeQueue);
-            // todo: make this actually work
-            const continuesCurrentLine =
-              nextMove?.line ==
-              lineToPgn([...pgnToLine(s.currentMove!.line), move.san]);
-            // console.log(
-            //   "continuesCurrentLine",
-            //   continuesCurrentLine,
-            //   nextMove?.line,
-            //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
-            // );
+                  if (willUndoBecauseMultiple) {
+                    s.chessboard.backOne({ clear: true });
+                    console.log("undo because multiple");
+                  }
 
-            // @ts-ignore
-            if (s.currentMove?.moves.length > 1) {
-              s.showNext = true;
-            } else {
-              if (isEmpty(s.failedReviewPositionMoves)) {
-                s.setupNextMove(200);
-              } else {
-                s.showNext = true;
+                  s.currentMove?.moves.forEach((move) => {
+                    s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed =
+                      true;
+                  });
+                  const nextMove = s.activeQueue[1];
+                  console.log(s.activeQueue);
+                  // todo: make this actually work
+                  const continuesCurrentLine =
+                    nextMove?.line ==
+                    lineToPgn([...pgnToLine(s.currentMove!.line), move.san]);
+                  // console.log(
+                  //   "continuesCurrentLine",
+                  //   continuesCurrentLine,
+                  //   nextMove?.line,
+                  //   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
+                  // );
+
+                  // @ts-ignore
+                  if (s.currentMove?.moves.length > 1) {
+                    s.showNext = true;
+                  } else {
+                    if (isEmpty(s.failedReviewPositionMoves)) {
+                      s.setupNextMove();
+                    } else {
+                      s.showNext = true;
+                    }
+                  }
+                });
               }
-            }
+            );
             return true;
           } else {
-            s.chessboard.showMoveFeedback({
-              square: move.to as Square,
-              type: "incorrect",
-            });
-            if (isEmpty(s.failedReviewPositionMoves)) {
-              s.reviewStats.incorrect++;
-            }
-            // TODO: reduce repetition
-            s.getRemainingReviewPositionMoves().forEach((move) => {
-              s.failedReviewPositionMoves[move.sanPlus] = move;
-              s.allReviewPositionMoves[move.epd][move.sanPlus].failed = true;
-              s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed = true;
-            });
-            return false;
+            s.chessboard.showMoveFeedback(
+              {
+                square: move.to as Square,
+                type: "incorrect",
+              },
+              () => {
+                s.chessboard.backOne({ clear: true });
+                if (isEmpty(s.failedReviewPositionMoves)) {
+                  s.reviewStats.incorrect++;
+                }
+                // TODO: reduce repetition
+                s.getRemainingReviewPositionMoves().forEach((move) => {
+                  s.failedReviewPositionMoves[move.sanPlus] = move;
+                  s.allReviewPositionMoves[move.epd][move.sanPlus].failed =
+                    true;
+                  s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed =
+                    true;
+                });
+              }
+            );
+            return true;
           }
         }),
     };

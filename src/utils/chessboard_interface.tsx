@@ -83,7 +83,10 @@ export interface ChessboardInterface {
 
   setFrozen: (_: boolean) => void;
   setPerspective: (_: Side) => void;
-  showMoveFeedback(arg0: { square: Square; type: MoveFeedbackType }): unknown;
+  showMoveFeedback(
+    arg0: { square: Square; type: MoveFeedbackType },
+    callback: () => void
+  ): unknown;
 
   // Other trainer tool stuff
   visualizeMoves: (
@@ -853,11 +856,10 @@ export const createChessboardInterface = (): [
         }
       });
     },
-    showMoveFeedback: ({ square, type }) => {
+    showMoveFeedback: ({ square, type }, callback) => {
       set((state) => {
         state.moveFeedback.type = type;
         const ref = state.refs.feedbackRefs[square];
-        console.log("ref?", ref);
         anime({
           targets: ref,
           easing: "easeInOutSine",
@@ -886,6 +888,7 @@ export const createChessboardInterface = (): [
             autoplay: true,
           }).finished.then(() => {
             whiteOverlay.style.opacity = "1";
+            callback?.();
           });
         }, 400);
       });
