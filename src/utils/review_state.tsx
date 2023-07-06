@@ -302,10 +302,7 @@ export const getInitialReviewState = (
       }, "giveUp"),
     stopReviewing: () =>
       set(([s, rs]) => {
-        console.log("stopping review");
         rs.updateRepertoireStructures();
-        // @ts-ignore
-        rs.browsingState.sidebarState.mode = null;
 
         // @ts-ignore
         s.reviewSide = null;

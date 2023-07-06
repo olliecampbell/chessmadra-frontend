@@ -123,6 +123,13 @@ export const BackSection = () => {
         });
       };
     }
+    if (view()?.component === PracticeComplete) {
+      backButtonAction = () => {
+        quick((s) => {
+          s.repertoireState.backToOverview();
+        });
+      };
+    }
     if (onboarding().isOnboarding) {
       if (
         includes(

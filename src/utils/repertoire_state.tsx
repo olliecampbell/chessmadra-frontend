@@ -816,12 +816,12 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
-              // @ts-ignore
-        s.startBrowsing(null, "home");
-        gs.navigationState.push("/");
         if (s.browsingState.sidebarState.mode == "review") {
           s.reviewState.stopReviewing();
         }
+        // @ts-ignore
+        s.startBrowsing(null, "home");
+        gs.navigationState.push("/");
         s.showImportView = false;
         s.browsingState.clearViews();
         s.backToStartPosition();

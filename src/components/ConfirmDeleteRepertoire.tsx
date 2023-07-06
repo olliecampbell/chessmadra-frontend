@@ -11,6 +11,7 @@ export const ConfirmDeleteRepertoire = function DeleteLineView() {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
   return (
     <SidebarTemplate
+      bodyPadding={true}
       header="Are you sure?"
       actions={[
         {
@@ -26,7 +27,7 @@ export const ConfirmDeleteRepertoire = function DeleteLineView() {
         },
       ]}
     >
-      <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
+      <CMText>
         This will permanently delete your {side} repertoire. This cannot be
         undone.
       </CMText>

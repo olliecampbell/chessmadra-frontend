@@ -4,7 +4,7 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createEffect, Match, Switch } from "solid-js";
+import { createEffect, createSignal, Match, Switch } from "solid-js";
 import { useResponsive } from "~/utils/useResponsive";
 import { BackSection } from "./BackSection";
 import {
@@ -27,6 +27,8 @@ import { Spacer } from "./Space";
 import { SidebarActionsLegacy } from "./SidebarActions";
 import { c, s } from "~/utils/styles";
 import { SettingsButtons } from "./Settings";
+import { createPageVisibility } from "@solid-primitives/page-visibility";
+import dayjs from "~/utils/dayjs";
 
 export const RepertoireBuilder = () => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
@@ -95,6 +97,20 @@ export const RepertoireBuilder = () => {
       <SidebarActionsLegacy />
     </>
   );
+  let visibility = createPageVisibility();
+  let [lastVisible, setLastVisible] = createSignal(dayjs());
+  createEffect((previousVisibility) => {
+    if (visibility() && previousVisibility === false) {
+      if (dayjs.duration(dayjs().diff(lastVisible())).hours() >= 1) {
+        // refresh page
+        window.location.reload();
+      }
+    }
+    if (visibility()) {
+      setLastVisible(dayjs());
+    }
+    return visibility();
+  });
 
   return (
     <SidebarLayout

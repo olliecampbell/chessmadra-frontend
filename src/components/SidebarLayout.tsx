@@ -78,6 +78,11 @@ export const SidebarLayout = (props: {
     if (mode() !== "build") {
       return;
     }
+    // @ts-ignore
+    const tagName = event.target?.tagName?.toLowerCase();
+    if (tagName === "input" || tagName === "textarea") {
+      return;
+    }
     switch (
       key // change to event.key to key to use the above variable
     ) {

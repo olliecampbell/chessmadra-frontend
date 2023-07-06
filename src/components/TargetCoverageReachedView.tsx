@@ -26,7 +26,7 @@ export const TargetCoverageReachedView = () => {
             });
           },
           style: "focus",
-          text: "Save this line to my repertoire",
+          text: "Save these moves to my repertoire",
         },
       ];
       if (!onboarding().isOnboarding) {
@@ -68,7 +68,11 @@ export const TargetCoverageReachedView = () => {
       </Show>
       <Show when={isEmpty(planSections()) && !onboarding().isOnboarding}>
         <CMText
-          style={s(c.weightRegular, c.fontSize(14), c.fg(c.colors.text.primary))}
+          style={s(
+            c.weightRegular,
+            c.fontSize(14),
+            c.fg(c.colors.text.primary)
+          )}
         >
           Do you want to keep adding moves, or save your progress?
         </CMText>

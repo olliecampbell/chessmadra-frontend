@@ -71,7 +71,7 @@ export const RepertoireHome = () => {
     const actions = [];
 
     actions.push({
-      text: "Practice moves you've added",
+      text: "Practice your repertoire",
       right: <ReviewText date={overallEarliest()} numDue={totalDue} />,
       style: "primary",
       disabled: totalDue == 0,

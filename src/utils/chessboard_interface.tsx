@@ -863,7 +863,7 @@ export const createChessboardInterface = (): [
         anime({
           targets: ref,
           easing: "easeInOutSine",
-          duration: 300,
+          duration: 200,
           opacity: [0, 1.0],
           scale: [0.8, 1.2, 1.0],
           autoplay: true,
@@ -874,12 +874,10 @@ export const createChessboardInterface = (): [
         anime({
           targets: whiteOverlay,
           easing: "easeInOutSine",
-          duration: 400,
+          duration: 200,
           opacity: [0.5, 0],
           autoplay: true,
-        });
-        setTimeout(() => {
-          // set opacity of white overlay to 1
+        }).finished.then(() => {
           anime({
             targets: ref,
             easing: "easeInOutSine",
@@ -890,7 +888,7 @@ export const createChessboardInterface = (): [
             whiteOverlay.style.opacity = "1";
             callback?.();
           });
-        }, 400);
+        });
       });
     },
     flashRing: (success: boolean) => {
