@@ -174,7 +174,7 @@ export const SidebarLayout = (props: {
               vertical() ? c.selfCenter : c.selfStretch
             )}
             class={clsx(
-              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[700px] 2xl:max-w-[800px]"
+              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[520px] 2xl:max-w-[700px]"
             )}
           >
             {!vertical() ? (
@@ -255,6 +255,7 @@ export const SidebarLayout = (props: {
                 width={responsive().switch(24, [BP.lg, 36], [BP.xl, 48])}
               />
               <div
+                // @ts-ignore
                 id="sidebar"
                 class={"max-w-[600px] xl:max-w-[650px] "}
                 style={s(c.flexGrow(2), c.flexShrink, c.noBasis)}
