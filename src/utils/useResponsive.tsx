@@ -62,41 +62,6 @@ export interface Responsive {
   // }
 }
 
-export const useResponsive = (): Responsive => {
-  // solid TODO
-  const windowSize = useWindowSize();
-  // const [isMobile, setIsMobile] = createSignal(true);
-  // useEffect(() => {
-  //   setIsMobile(windowWidth < 1000);
-  // }, []);
-  // console.log({ windowWidth });
-  const breakpoint = () => getBreakpoint(windowSize.width);
-  createEffect(
-    on(
-      () => breakpoint(),
-      () => {
-        // todo: solid
-        window.location.reload();
-      },
-      {
-        defer: true,
-      }
-    )
-  );
-  return {
-    isMobile: breakpoint() <= ResponsiveBreakpoint.sm,
-    bp: breakpoint(),
-    switch: <T,>(def: T, ...xs: [ResponsiveBreakpoint, T][]): T => {
-      let result = def;
-      xs.forEach(([bp, val]) => {
-        if (breakpoint() >= bp) {
-          result = val;
-        }
-      });
-      return result;
-    },
-  };
-};
 export const useResponsiveV2 = (): Accessor<Responsive> => {
   const windowSize = useWindowSize();
   const breakpoint = () => getBreakpoint(windowSize.width);

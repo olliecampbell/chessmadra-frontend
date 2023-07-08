@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import { BP,  useResponsiveV2 } from "~/utils/useResponsive";
 import { createSignal, JSXElement } from "solid-js";
 import { Pressable } from "./Pressable";
 import { clsx } from "~/utils/classes";
