@@ -13,6 +13,7 @@ import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { ReviewText } from "./ReviewText";
 import { Label } from "./Label";
 import { useIsMobileV2 } from "~/utils/isMobile";
+import { trackEvent } from "~/utils/trackEvent";
 
 export const PreReview = (props: { side: Side | null }) => {
   const [numMovesDueBySide] = useRepertoireState((s) => [
@@ -35,6 +36,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
+            trackEvent(`pre_review.all_due`);
             s.repertoireState.browsingState.popView();
             s.repertoireState.reviewState.startReview({
               side: props.side,
@@ -63,6 +65,7 @@ export const PreReview = (props: { side: Side | null }) => {
               side: props.side,
               filter: "common",
             });
+            trackEvent(`pre_review.common_moves`);
           });
         },
         text: "Just the most common moves",
@@ -74,6 +77,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
+            trackEvent(`pre_review.difficult_due`);
             s.repertoireState.browsingState.popView();
             s.repertoireState.reviewState.startReview({
               side: props.side,
@@ -92,6 +96,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
+            trackEvent(`pre_review.all`);
             s.repertoireState.browsingState.popView();
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.reviewState.startReview({
@@ -112,6 +117,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
+            trackEvent(`pre_review.specific`);
             s.repertoireState.browsingState.popView();
             s.repertoireState.startBrowsing(side as Side, "browse");
           });
