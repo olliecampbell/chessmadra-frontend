@@ -17,7 +17,7 @@ import {
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";

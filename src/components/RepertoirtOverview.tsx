@@ -15,7 +15,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { CoverageBar } from "./CoverageBar";
 import { ReviewText } from "./ReviewText";
 import { START_EPD } from "~/utils/chess";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { createSignal, Show, createEffect, Accessor } from "solid-js";

@@ -10,7 +10,7 @@ import {
   useBrowsingState,
   useRepertoireState,
 } from "~/utils/app_state";
-import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import { BP,  useResponsiveV2 } from "~/utils/useResponsive";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";

@@ -1,5 +1,5 @@
 import { c, s } from "~/utils/styles";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { DOMElement } from "solid-js/jsx-runtime";

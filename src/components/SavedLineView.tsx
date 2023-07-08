@@ -1,5 +1,4 @@
 import { c } from "~/utils/styles";
-import { useResponsive } from "~/utils/useResponsive";
 import { Show } from "solid-js";
 import { useSidebarState, useRepertoireState, quick } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";

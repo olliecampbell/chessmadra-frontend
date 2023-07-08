@@ -2,7 +2,7 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { SidebarHeader } from "./RepertoireEditingHeader";
 import { Component, mergeProps, Show } from "solid-js";

@@ -12,7 +12,7 @@ import {
 } from "~/utils/app_state";
 import { SidebarOnboardingImportType } from "~/utils/browsing_state";
 import { trackEvent } from "~/utils/trackEvent";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction } from "./SidebarActions";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";

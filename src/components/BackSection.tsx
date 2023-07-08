@@ -9,7 +9,7 @@ import {
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { FadeInOut } from "./FadeInOut";
 import { createEffect, Show } from "solid-js";
 import { Pressable } from "./Pressable";

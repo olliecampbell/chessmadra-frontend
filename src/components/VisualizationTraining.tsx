@@ -1,7 +1,6 @@
 import { useVisualizationState, quick, getAppState } from "~/utils/app_state";
 import { For, onMount } from "solid-js";
 import { createEffect, Match, Switch } from "solid-js";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 
 import { Spacer } from "./Space";
 import {

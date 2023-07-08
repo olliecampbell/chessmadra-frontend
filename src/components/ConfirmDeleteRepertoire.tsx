@@ -2,7 +2,6 @@
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { quick, useSidebarState } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { trackEvent } from "~/utils/trackEvent";
 

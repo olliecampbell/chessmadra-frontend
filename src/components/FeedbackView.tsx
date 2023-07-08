@@ -1,6 +1,5 @@
 import { Spacer } from "~/components/Space";
 import { isEmpty } from "lodash-es";
-import { useResponsive } from "~/utils/useResponsive";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { useUserState } from "~/utils/app_state";
 import { createEffect, createSignal, Show } from "solid-js";

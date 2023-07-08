@@ -1,7 +1,7 @@
 import { useVisualizationState, quick, getAppState } from "~/utils/app_state";
 import { onMount } from "solid-js";
 import { createEffect, Match, Switch } from "solid-js";
-import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import {
   VERTICAL_BREAKPOINT,
   SidebarLayout,

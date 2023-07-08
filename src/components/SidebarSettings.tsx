@@ -3,7 +3,7 @@ import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import {  useResponsiveV2 } from "~/utils/useResponsive";
 import { cloneDeep, find } from "lodash-es";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {

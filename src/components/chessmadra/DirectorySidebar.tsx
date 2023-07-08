@@ -1,4 +1,3 @@
-import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { quick } from "~/utils/app_state";
 import { SidebarTemplate } from "../SidebarTemplate";
 import { Spacer } from "../Space";

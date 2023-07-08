@@ -32,7 +32,7 @@ import { getMoveRatingIcon, MoveRating } from "~/utils/move_inaccuracy";
 import { quick } from "~/utils/app_state";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "~/utils/table_scoring";
-import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
+import { BP,  useResponsiveV2 } from "~/utils/useResponsive";
 import { TableMeta, useSections } from "~/utils/useSections";
 import { useHovering } from "~/mocks";
 import {
