@@ -52,9 +52,6 @@ import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "~/utils/trackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { parsePlans } from "./plans";
-// solid TODO
-import { Responsive } from "./useResponsive";
-// solid TODO
 // import { Identify, identify } from "@amplitude/analytics-browser";
 import client from "./client";
 import { Component, JSXElement } from "solid-js";
@@ -137,7 +134,7 @@ export interface BrowsingState {
   fetchNeededPositionReports: () => void;
   updateRepertoireProgress: () => void;
   reviewFromCurrentLine: () => void;
-  finishSidebarOnboarding: (responsive: Responsive) => void;
+  finishSidebarOnboarding: () => void;
   getIncidenceOfCurrentLine: () => number;
   getLineIncidences: (_: GetIncidenceOptions) => number[];
   dismissTransientSidebarState: () => void;
@@ -613,7 +610,7 @@ export const getInitialBrowsingState = (
           });
         }
       }),
-    finishSidebarOnboarding: (responsive: Responsive) =>
+    finishSidebarOnboarding: () =>
       set(([s, rs]) => {
         quick((s) => {
           s.repertoireState.browsingState.moveSidebarState("right");

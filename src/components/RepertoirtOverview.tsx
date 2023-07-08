@@ -15,7 +15,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { CoverageBar } from "./CoverageBar";
 import { ReviewText } from "./ReviewText";
 import { START_EPD } from "~/utils/chess";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { createSignal, Show, createEffect, Accessor } from "solid-js";
@@ -30,7 +30,7 @@ import {
 import { isDevelopment } from "~/utils/env";
 import { PreReview } from "./PreReview";
 import { PreBuild } from "./PreBuild";
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { Label } from "./Label";
 import { SidebarAction, SidebarActions } from "./SidebarActions";
 
@@ -62,7 +62,7 @@ export const RepertoireOverview = (props: {}) => {
     console.log("[HOME] empty?", empty());
   });
   const empty = () => numMoves() === 0;
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
     quick((s) => {
       if (skipAnimation) {
@@ -74,7 +74,7 @@ export const RepertoireOverview = (props: {}) => {
       }
     });
   };
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileV2();
   const reviewTimer = () => {
     const reviewTimer = (
       <ReviewText
@@ -118,7 +118,7 @@ export const RepertoireOverview = (props: {}) => {
               ? "Start building your repertoire"
               : isNil(biggestMiss())
               ? "Browse / add new moves"
-              : `Keep building ${!isMobile ? "your repertoire" : ""}`}
+              : `Keep building ${!isMobile() ? "your repertoire" : ""}`}
           </CMText>
         ),
         style: "secondary",
@@ -267,7 +267,7 @@ export const RepertoireOverview = (props: {}) => {
       <Spacer height={24} />
       <SidebarActions actions={options()} />
       <div
-        style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
+        style={s(c.row, c.px(c.getSidebarPadding(responsive())))}
         class={clsx("pt-4")}
       >
         <Show when={!empty()}>
@@ -305,7 +305,6 @@ export const CoverageAndBar = (props: {
     s.browsingState.repertoireProgressState[props.side],
   ]);
 
-  const isMobile = useIsMobile();
   return (
     <div style={s(c.row, c.alignCenter)}>
       <CMText style={s(textStyles())}>

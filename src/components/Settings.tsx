@@ -10,7 +10,7 @@ import {
   useBrowsingState,
   useRepertoireState,
 } from "~/utils/app_state";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
@@ -30,9 +30,9 @@ export const SettingsButtons = () => {
   const needsLogin = () =>
     authStatus() === AuthStatus.Unauthenticated ||
     (authStatus() === AuthStatus.Authenticated && user()?.temporary);
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   return (
-    <div style={s(c.row, c.gap(responsive.switch(12, [BP.md, 16])))}>
+    <div style={s(c.row, c.gap(responsive().switch(12, [BP.md, 16])))}>
       <Show when={mode() === "home" && false}>
         <SettingButton
           title={"Other tools"}
@@ -83,7 +83,7 @@ export const SettingButton = (props: {
   onPress: () => void;
 }) => {
   const { hovering, hoveringProps } = useHovering();
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const color = () => {
     if (hovering()) {
       return c.colors.text.secondary;
@@ -96,15 +96,15 @@ export const SettingButton = (props: {
       style={s(
         c.row,
         c.alignCenter,
-        c.px(responsive.switch(0, [BP.md, 8])),
-        c.mx(responsive.switch(0, [BP.md, -8])),
+        c.px(responsive().switch(0, [BP.md, 8])),
+        c.mx(responsive().switch(0, [BP.md, -8])),
         c.py(8)
         // c.bg(hovering ? c.gray[14] : c.gray[6])
       )}
       {...hoveringProps}
     >
       <i style={s(c.fg(color()), c.fontSize(12))} class={props.icon} />
-      <Spacer width={responsive.switch(4, [BP.md, 8])} />
+      <Spacer width={responsive().switch(4, [BP.md, 8])} />
       <CMText style={s(c.fg(color()), c.weightSemiBold)}>{props.title}</CMText>
     </Pressable>
   );

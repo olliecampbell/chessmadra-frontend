@@ -47,7 +47,6 @@ import { getInitialReviewState, ReviewState } from "./review_state";
 const NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 import { isDevelopment } from "./env";
 import { shouldDebugEpd } from "./debug";
-import { Responsive } from "./useResponsive";
 import { Logo } from "~/components/icons/Logo";
 import { clsx } from "./classes";
 import { MAX_MOVES_FREE_TIER } from "./payment";
@@ -104,11 +103,10 @@ export interface RepertoireState {
     whitePgn?: string;
     blackPgn?: string;
     state?: RepertoireState;
-    responsive: Responsive;
   }) => void;
   initState: () => void;
   // TODO: move review state stuff to its own module
-  usePlayerTemplate: (id: string, responsive: Responsive) => void;
+  usePlayerTemplate: (id: string) => void;
   backToOverview: () => void;
   uploadMoveAnnotation: (_: { epd: string; san: string; text: string }) => void;
   startBrowsing: (
@@ -269,7 +267,7 @@ export const getInitialRepertoireState = (
         s.fetchRepertoire(true);
         s.fetchSupplementary();
       }, "initState"),
-    usePlayerTemplate: (id: string, responsive: Responsive) =>
+    usePlayerTemplate: (id: string) =>
       set(async ([s]) => {
         const { data }: { data: FetchRepertoireResponse } = await client.post(
           "/api/v1/openings/use_player_template",
@@ -281,7 +279,7 @@ export const getInitialRepertoireState = (
           s.repertoire = data.repertoire;
           s.repertoireGrades = data.grades;
           s.onRepertoireUpdate();
-          s.browsingState.finishSidebarOnboarding(responsive);
+          s.browsingState.finishSidebarOnboarding();
         });
       }, "usePlayerTemplate"),
     addTemplates: () =>
@@ -304,7 +302,6 @@ export const getInitialRepertoireState = (
       lichessUsername,
       blackPgn,
       whitePgn,
-      responsive,
     }) =>
       set(async ([s]) => {
         let lichessGames = [];

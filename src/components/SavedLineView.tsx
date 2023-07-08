@@ -12,10 +12,6 @@ import { RepertoireCompletion } from "./RepertoireCompletion";
 
 export const SavedLineView = function SavedLineView() {
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-  const [progressState] = useRepertoireState((s) => [
-    s.browsingState.repertoireProgressState[activeSide()!],
-  ]);
-  const responsive = useResponsive();
   const [addedLineState] = useSidebarState(([s]) => [s.addedLineState]);
 
   const [mode, currentLine] = useSidebarState(([s]) => [s.mode, s.moveLog]);

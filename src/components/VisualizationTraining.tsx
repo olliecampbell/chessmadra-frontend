@@ -1,12 +1,7 @@
-import {
-  useVisualizationState,
-  quick,
-  getAppState,
-} from "~/utils/app_state";
+import { useVisualizationState, quick, getAppState } from "~/utils/app_state";
 import { For, onMount } from "solid-js";
 import { createEffect, Match, Switch } from "solid-js";
-import { useResponsive } from "~/utils/useResponsive";
-
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 
 import { Spacer } from "./Space";
 import {
@@ -24,8 +19,6 @@ import { range } from "lodash-es";
 const eventsIdentifier = "visualization";
 
 export const VisualizationTraining = () => {
-  const responsive = useResponsive();
-  const [state] = useVisualizationState((s) => [s]);
   onMount(() => {
     quick((s) => {
       s.trainersState.visualizationState.refreshPuzzle();

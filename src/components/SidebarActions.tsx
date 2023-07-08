@@ -17,7 +17,7 @@ import {
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
@@ -209,7 +209,7 @@ export const SidebarFullWidthButton = (props: {
   action: SidebarAction;
   first?: boolean;
 }) => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const { hovering, hoveringProps } = useHovering();
   const styles = () => {
     let subtextColor = null;
@@ -276,7 +276,7 @@ export const SidebarFullWidthButton = (props: {
         c.justifyBetween,
         c.alignCenter,
         c.py(styles().py),
-        c.px(c.getSidebarPadding(responsive)),
+        c.px(c.getSidebarPadding(responsive())),
         props.action.style === "secondary" &&
           c.borderBottom(`1px solid ${c.colors.border}`),
         props.action.style === "secondary" &&
@@ -380,14 +380,14 @@ export const SidebarSectionHeader = (props: {
   text: string;
   right?: JSXElement;
 }) => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   return (
     <div
       style={s(
         c.row,
         c.justifyBetween,
         c.alignCenter,
-        c.px(c.getSidebarPadding(responsive)),
+        c.px(c.getSidebarPadding(responsive())),
         c.pb(12),
         c.borderBottom(`1px solid ${c.colors.border}`)
       )}

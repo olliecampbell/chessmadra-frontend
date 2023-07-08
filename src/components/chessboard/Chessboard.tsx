@@ -5,7 +5,7 @@ import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "~/types/Chess";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { CMText } from "../CMText";
 import { cloneDeep, find, forEach, range } from "lodash-es";
 import { FadeInOut } from "../FadeInOut";
@@ -389,7 +389,6 @@ export function ChessboardView(props: {
     });
   };
 
-  const isMobile = useIsMobile();
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
   const x = (

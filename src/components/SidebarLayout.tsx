@@ -12,7 +12,7 @@ import {
 } from "~/utils/app_state";
 import { createSignal, JSXElement, onCleanup, onMount, Show } from "solid-js";
 import { s, c } from "~/utils/styles";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { Spacer } from "~/components/Space";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
@@ -119,8 +119,8 @@ export const SidebarLayout = (props: {
   //     });
   //   }
   // }, [mode, sideBarMode]);
-  const responsive = useResponsive();
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const responsive = useResponsiveV2();
+  const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
   const [chessboardContainerRef, setChessboardContainerRef] =
     createSignal(null);
   const chessboardLayout = createElementBounds(chessboardContainerRef, {
@@ -132,7 +132,7 @@ export const SidebarLayout = (props: {
       console.log("checking this hidden thing", activeTool());
       return activeTool() !== "visualization";
     }
-    if (vertical) {
+    if (vertical()) {
       return includes(["overview", "home"], mode());
     }
     return false;
@@ -149,7 +149,7 @@ export const SidebarLayout = (props: {
       <div
         id="page-content"
         style={s(
-          !vertical ? c.containerStyles(responsive.bp) : c.fullWidth,
+          !vertical ? c.containerStyles(responsive().bp) : c.fullWidth,
           c.alignCenter,
           c.grow,
           c.noUserSelect
@@ -157,27 +157,27 @@ export const SidebarLayout = (props: {
       >
         <div
           style={s(
-            vertical ? c.width(c.min(600, "100%")) : c.fullWidth,
-            vertical ? c.column : c.row,
+            vertical() ? c.width(c.min(600, "100%")) : c.fullWidth,
+            vertical() ? c.column : c.row,
             c.grow,
             c.selfStretch,
-            vertical ? c.justifyStart : c.justifyCenter
+            vertical() ? c.justifyStart : c.justifyCenter
           )}
         >
           <div
             style={s(
               c.column,
-              !vertical && s(c.grow, c.noBasis, c.flexShrink),
-              vertical && c.width("min(480px, 100%)"),
-              !vertical && c.minWidth("300px"),
-              vertical && c.grow,
-              vertical ? c.selfCenter : c.selfStretch
+              !vertical() && s(c.grow, c.noBasis, c.flexShrink),
+              vertical() && c.width("min(480px, 100%)"),
+              !vertical() && c.minWidth("300px"),
+              vertical() && c.grow,
+              vertical() ? c.selfCenter : c.selfStretch
             )}
             class={clsx(
               "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[700px] 2xl:max-w-[800px]"
             )}
           >
-            {!vertical ? (
+            {!vertical() ? (
               <div style={s(c.height(140), c.column, c.justifyEnd)}>
                 {props.breadcrumbs}
                 <Spacer height={32} />
@@ -189,7 +189,7 @@ export const SidebarLayout = (props: {
                   c.alignCenter,
                   c.fullWidth,
                   c.justifyBetween,
-                  c.px(c.getSidebarPadding(responsive)),
+                  c.px(c.getSidebarPadding(responsive())),
                   c.py(8)
                 )}
               >
@@ -202,11 +202,11 @@ export const SidebarLayout = (props: {
                 class={clsx("duration-250 transition-opacity ease-in-out")}
                 style={s(
                   c.fullWidth,
-                  vertical &&
+                  vertical() &&
                     s(
                       c.selfCenter,
                       c.maxWidth(480),
-                      c.px(c.getSidebarPadding(responsive))
+                      c.px(c.getSidebarPadding(responsive()))
                     ),
                   chessboardFrozen() && c.noPointerEvents,
                   chessboardHidden() ? c.opacity(20) : c.opacity(100)
@@ -217,16 +217,16 @@ export const SidebarLayout = (props: {
                 />
               </div>
               <Show when={props.belowChessboard}>
-                <Spacer height={responsive.isMobile ? 12 : 32} />
+                <Spacer height={responsive().isMobile ? 12 : 32} />
                 <div class="row w-full justify-center">
                   {props.belowChessboard}
                 </div>
               </Show>
-              <Show when={responsive.isMobile}>
+              <Show when={responsive().isMobile}>
                 <Spacer height={12} />
               </Show>
             </div>
-            {vertical ? (
+            {vertical() ? (
               <div
                 class={clsx("transition-mt duration-250 ease-in-out")}
                 style={s(
@@ -249,9 +249,11 @@ export const SidebarLayout = (props: {
               <Spacer height={60} />
             )}
           </div>
-          <Show when={!vertical}>
+          <Show when={!vertical()}>
             <>
-              <Spacer width={responsive.switch(24, [BP.lg, 36], [BP.xl, 48])} />
+              <Spacer
+                width={responsive().switch(24, [BP.lg, 36], [BP.xl, 48])}
+              />
               <div
                 // @ts-ignore
                 nativeID="sidebar"
@@ -278,8 +280,8 @@ export const SidebarLayout = (props: {
 };
 
 export const AnalyzeOnLichessButton = (props: {}) => {
-  const responsive = useResponsive();
-  const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
+  const responsive = useResponsiveV2();
+  const iconStyles = s(c.fontSize(responsive().switch(12, [BP.md, 14])));
   const padding = 8;
   const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
@@ -326,7 +328,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
       }
     >
       {button()}
-      <Show when={!responsive.isMobile}>
+      <Show when={!responsive().isMobile}>
         <MoveLog />
       </Show>
     </FadeInOut>
@@ -334,8 +336,8 @@ export const AnalyzeOnLichessButton = (props: {}) => {
 };
 
 export const NavBreadcrumbs = () => {
-  const responsive = useResponsive();
-  const mobile = () => responsive.isMobile;
+  const responsive = useResponsiveV2();
+  const mobile = () => responsive().isMobile;
   const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs(mobile())]);
 
   const hidden = () => breadcrumbs().length == 1;
@@ -349,7 +351,7 @@ export const NavBreadcrumbs = () => {
       <Intersperse
         separator={() => {
           return (
-            <div style={s(c.mx(responsive.switch(6, [BP.lg, 8])))}>
+            <div style={s(c.mx(responsive().switch(6, [BP.lg, 8])))}>
               <CMText style={s(c.fg(c.gray[40]))}>
                 <i class="fa-light fa-angle-right" />
               </CMText>

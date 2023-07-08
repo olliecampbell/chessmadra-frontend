@@ -6,7 +6,6 @@ import { LoginSidebar } from "../LoginSidebar";
 import { clsx } from "~/utils/classes";
 
 export const OpeningTrainerRedirect = () => {
-  const responsive = useResponsive();
   return (
     <SidebarTemplate
       header="The opening builder has moved!"

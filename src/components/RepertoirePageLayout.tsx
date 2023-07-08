@@ -1,4 +1,4 @@
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { Show } from "solid-js";
 import { c, s } from "~/utils/styles";
 import { LogoFull } from "./icons/LogoFull";
@@ -14,7 +14,7 @@ export const RepertoirePageLayout = (props: {
   naked?: boolean;
   loading?: boolean;
 }) => {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileV2();
 
   createDebugStateEffect();
   const backgroundColor = c.gray[8];
@@ -30,7 +30,7 @@ export const RepertoirePageLayout = (props: {
     >
       <div
         style={s(
-          isMobile ? s(c.grow) : c.flexShrink(1),
+          isMobile() ? s(c.grow) : c.flexShrink(1),
           props.centered && c.grow,
           props.fullHeight && c.grow,
           props.loading && c.grow
@@ -46,19 +46,21 @@ export const RepertoirePageLayout = (props: {
         <Show when={!props.loading}>
           <div
             style={s(
-              !isMobile && s(c.overflowY("auto")),
-              isMobile && s(c.grow),
+              !isMobile() && s(c.overflowY("auto")),
+              isMobile() && s(c.grow),
               c.center,
               c.justifyStart,
               c.flexShrink(1),
               props.fullHeight && s(c.grow),
-              !props.flushTop && !props.naked && c.pt(isMobile ? 24 : 48),
+              !props.flushTop && !props.naked && c.pt(isMobile() ? 24 : 48),
               props.centered && s(c.grow, c.justifyCenter)
             )}
           >
             <div
               style={s(
-                !props.fullHeight && !props.naked && c.pb(isMobile ? 92 : 180),
+                !props.fullHeight &&
+                  !props.naked &&
+                  c.pb(isMobile() ? 92 : 180),
                 c.center,
                 c.fullWidth,
                 props.fullHeight && c.grow

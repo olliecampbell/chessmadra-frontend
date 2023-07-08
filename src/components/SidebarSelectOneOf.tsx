@@ -1,7 +1,7 @@
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { Component, For, Show, JSX } from "solid-js";
 
@@ -15,7 +15,7 @@ export const SidebarSelectOneOf: Component<{
   renderChoice: (x: any, active: boolean) => JSX.Element;
   // todo: typing is hard
 }> = (props) => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const actions = () =>
     props.choices.map((choice, i) => {
       const active = props.equality
@@ -42,7 +42,7 @@ export const SidebarSelectOneOf: Component<{
               c.fontSize(14),
               c.weightSemiBold,
               c.fg(c.colors.text.primary),
-              c.px(c.getSidebarPadding(responsive))
+              c.px(c.getSidebarPadding(responsive()))
             )}
           >
             {props.title}

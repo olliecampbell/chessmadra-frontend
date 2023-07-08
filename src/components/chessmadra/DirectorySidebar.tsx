@@ -1,4 +1,4 @@
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { quick } from "~/utils/app_state";
 import { SidebarTemplate } from "../SidebarTemplate";
 import { Spacer } from "../Space";
@@ -6,7 +6,6 @@ import { VisualizationTraining } from "../VisualizationTraining";
 import { OpeningTrainerRedirect } from "./OpeningTrainerRedirect";
 
 export const DirectorySidebar = () => {
-  const responsive = useResponsive();
   return (
     <SidebarTemplate
       header="Welcome to Chess Madra!"

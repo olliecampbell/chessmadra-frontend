@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { createSignal, JSXElement } from "solid-js";
 import { Pressable } from "./Pressable";
 import { clsx } from "~/utils/classes";
@@ -11,7 +11,7 @@ export const CollapsibleSidebarSection = (props: {
   children: JSXElement | JSXElement[];
   header: string;
 }) => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const [collapsed, setCollapsed] = createSignal(true);
   return (
     <div style={s()}>
@@ -21,7 +21,7 @@ export const CollapsibleSidebarSection = (props: {
           c.justifyBetween,
           c.py(8),
           c.alignCenter,
-          c.px(c.getSidebarPadding(responsive)),
+          c.px(c.getSidebarPadding(responsive())),
           c.clickable
         )}
         class={clsx("&hover:bg-gray-18 h-sidebar-button")}
@@ -31,7 +31,7 @@ export const CollapsibleSidebarSection = (props: {
       >
         <CMText
           style={s(
-            c.fontSize(responsive.switch(14, [BP.lg, 14])),
+            c.fontSize(responsive().switch(14, [BP.lg, 14])),
             c.fg(c.colors.text.primary)
           )}
         >

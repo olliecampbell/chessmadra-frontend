@@ -5,7 +5,7 @@ import {
   getAppState,
 } from "~/utils/app_state";
 import { createEffect, createSignal, Match, Switch } from "solid-js";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { BackSection } from "./BackSection";
 import {
   VERTICAL_BREAKPOINT,
@@ -33,8 +33,8 @@ import dayjs from "~/utils/dayjs";
 export const RepertoireBuilder = () => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
 
-  const responsive = useResponsive();
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const responsive = useResponsiveV2();
+  const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
   const chessboardState = () =>
     mode() === "review"
       ? getAppState().repertoireState.reviewState.chessboard
@@ -121,7 +121,7 @@ export const RepertoireBuilder = () => {
       chessboardInterface={chessboardState()}
       backSection={<BackSection />}
       belowChessboard={
-        !vertical &&
+        !vertical() &&
         (mode() === "build" || mode() === "browse" || mode() === "review") && (
           <AnalyzeOnLichessButton />
         )

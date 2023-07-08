@@ -9,7 +9,7 @@ import {
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { FadeInOut } from "./FadeInOut";
 import { createEffect, Show } from "solid-js";
 import { Pressable } from "./Pressable";
@@ -40,9 +40,9 @@ export const BackSection = () => {
   const [moveLog] = useBrowsingState(([s, rs]) => [
     s.chessboard.get((v) => v).moveLog,
   ]);
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const paddingTop = 140;
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
   const backToOverview = () => {
     console.log("back to overview");
     quick((s) => {
@@ -154,7 +154,7 @@ export const BackSection = () => {
       id="back-button"
       style={s(
         c.column,
-        !vertical ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
+        !vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
       )}
       open={() => isOpen()}
       // className="transition-height"
@@ -179,7 +179,7 @@ export const BackSection = () => {
             Back
           </CMText>
         </Pressable>
-        <Show when={vertical}>
+        <Show when={vertical()}>
           <AnalyzeOnLichessButton />
         </Show>
       </div>

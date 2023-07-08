@@ -2,7 +2,7 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { isNil, filter, range, forEach } from "lodash-es";
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
@@ -16,7 +16,7 @@ import { SidebarHeader } from "./RepertoireEditingHeader";
 import { QuizMove } from "~/utils/queues";
 
 export const RepertoireReview = (props: {}) => {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileV2();
   const [completedReviewPositionMoves, currentMove, showNext] =
     useRepertoireState((s) => [
       s.reviewState.completedReviewPositionMoves,
@@ -135,7 +135,7 @@ export const RepertoireReview = (props: {}) => {
     >
       <div class={"row w-full items-center justify-between"}>
         <SidebarHeader>
-          {isMobile ? "Practice" : "Practicing moves"}
+          {isMobile() ? "Practice" : "Practicing moves"}
         </SidebarHeader>
         <div class="row items-center space-x-4 lg:space-x-8">
           <For each={progressIcons()}>

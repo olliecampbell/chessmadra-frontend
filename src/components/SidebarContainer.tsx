@@ -1,5 +1,5 @@
 import { c, s } from "~/utils/styles";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { DOMElement } from "solid-js/jsx-runtime";
@@ -60,8 +60,8 @@ export const SidebarContainer = (props: {
   // @ts-ignore
   const [currentRef, setCurrentRef] = createSignal<HTMLElement>(null);
 
-  const responsive = useResponsive();
-  const vertical = () => responsive.bp < VERTICAL_BREAKPOINT;
+  const responsive = useResponsiveV2();
+  const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
 
   return (
     <div
@@ -82,8 +82,8 @@ export const SidebarContainer = (props: {
             c.top(0),
             c.right(0),
             c.zIndex(15),
-            c.pr(c.getSidebarPadding(responsive)),
-            c.pt(c.getSidebarPadding(responsive))
+            c.pr(c.getSidebarPadding(responsive())),
+            c.pt(c.getSidebarPadding(responsive()))
           )}
         >
           {props.settings}

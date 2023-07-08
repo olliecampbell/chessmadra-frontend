@@ -14,7 +14,6 @@ type Form = {
 };
 
 export const FeedbackView = () => {
-  const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
   const [loading, setLoading] = createSignal(false);
   const [success, setSuccess] = createSignal(false);

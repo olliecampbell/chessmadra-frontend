@@ -12,7 +12,7 @@ import {
 } from "~/utils/app_state";
 import { SidebarOnboardingImportType } from "~/utils/browsing_state";
 import { trackEvent } from "~/utils/trackEvent";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction } from "./SidebarActions";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
@@ -41,7 +41,6 @@ import * as yup from "yup";
 import { RepertoireCompletion } from "./RepertoireCompletion";
 
 export const OnboardingIntro = () => {
-  const responsive = useResponsive();
   const bullets = [
     "Adding your first moves",
     "Practicing them using spaced repetition",
@@ -79,7 +78,6 @@ export const OnboardingIntro = () => {
 };
 
 export const SetRatingOnboarding = () => {
-  const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
   const setAndContinue = (range: string | null) => {
     quick((s) => {
@@ -259,7 +257,6 @@ export const Dropdown: Component<{
 };
 
 const ChooseColorOnboarding = () => {
-  const responsive = useResponsive();
   onMount(() => {
     trackEvent("onboarding.choose_color.shown");
   });
@@ -285,14 +282,14 @@ const ChooseColorOnboarding = () => {
 };
 
 export const OnboardingComplete = () => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const bullets = () => {
     const bullets = [];
     bullets.push(<>Keep adding moves to your repertoire to get to 100%</>);
     bullets.push(
       <>
         Practice every day{" "}
-        {!responsive.isMobile &&
+        {!responsive().isMobile &&
           `(visit Chessbook.com on your phone to practice on the go)`}
       </>
     );
@@ -335,7 +332,7 @@ export const OnboardingComplete = () => {
 };
 
 export const ImportSuccessOnboarding = () => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[onboarding().side as Side],
@@ -404,7 +401,7 @@ export const HowToComplete = (props: {
 };
 
 export const FirstLineSavedOnboarding = () => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[onboarding().side as Side],
@@ -472,7 +469,7 @@ const PracticeIntroOnboarding = () => {
 };
 
 const AskAboutExistingRepertoireOnboarding = () => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const repertoireState = getAppState().repertoireState;
   onMount(() => {
     trackEvent("onboarding.ask_about_existing_repertoire.shown");
@@ -579,7 +576,6 @@ export const ImportOnboarding = (props: {
       trackEvent("import.from_lichess_username");
       s.repertoireState.initializeRepertoire({
         lichessUsername: values.username,
-        responsive,
       });
     });
   };
@@ -598,7 +594,7 @@ export const ImportOnboarding = (props: {
   const handleSubmit = createSubmitHandler({
     onSubmit,
   });
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const side = () => activeSide() || onboarding().side;
@@ -692,7 +688,7 @@ export const ImportOnboarding = (props: {
 };
 
 export const TrimRepertoireOnboarding = () => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const side = () => activeSide() || onboarding().side;

@@ -3,7 +3,7 @@ import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
-import { useResponsive } from "~/utils/useResponsive";
+import { useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { cloneDeep, find } from "lodash-es";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
@@ -138,7 +138,6 @@ export const ThemeSettings = (props: {}) => {
 
 export const RatingSelection = (props: {}) => {
   console.log("rendering rating selection");
-  const responsive = useResponsive();
   const [user] = useUserState((s) => [s.user]);
   createEffect(() => {
     console.log("rating system ", user()?.ratingSystem);

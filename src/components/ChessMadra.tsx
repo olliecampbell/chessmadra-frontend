@@ -1,7 +1,7 @@
 import { useVisualizationState, quick, getAppState } from "~/utils/app_state";
 import { onMount } from "solid-js";
 import { createEffect, Match, Switch } from "solid-js";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import {
   VERTICAL_BREAKPOINT,
   SidebarLayout,
@@ -28,7 +28,7 @@ export const ChessMadra = (props: { initialTool: string }) => {
       });
     }
   });
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const activeTool = () => getAppState().trainersState.getActiveTool();
   const [state] = useVisualizationState((s) => [s]);
   const view = () => getAppState().trainersState.currentView();
@@ -51,7 +51,10 @@ export const ChessMadra = (props: { initialTool: string }) => {
         <>
           <div
             style={s(c.row, c.alignStretch)}
-            class={clsx("w-full", responsive.isMobile ? "padding-sidebar" : "")}
+            class={clsx(
+              "w-full",
+              responsive().isMobile ? "padding-sidebar" : ""
+            )}
           >
             <button
               style={s(
@@ -103,9 +106,9 @@ export const ChessMadra = (props: { initialTool: string }) => {
 };
 
 const BackSection = () => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const paddingTop = 140;
-  const vertical = responsive.bp < VERTICAL_BREAKPOINT;
+  const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
   const backButtonAction = () => {
     let backButtonAction: (() => void) | null = null;
     if (getAppState().trainersState.currentView()) {
@@ -126,7 +129,7 @@ const BackSection = () => {
   createEffect(() => {
     console.log("isOpen", isOpen());
   });
-  const iconStyles = s(c.fontSize(responsive.switch(12, [BP.md, 14])));
+  const iconStyles = s(c.fontSize(responsive().switch(12, [BP.md, 14])));
   const activeTool = () => getAppState().trainersState.getActiveTool();
 
   return (
@@ -134,7 +137,7 @@ const BackSection = () => {
       id="back-button"
       style={s(
         c.column,
-        !vertical ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
+        !vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
       )}
       open={() => isOpen()}
       // className="transition-height"

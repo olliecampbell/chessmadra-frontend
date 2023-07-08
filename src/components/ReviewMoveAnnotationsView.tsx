@@ -3,7 +3,7 @@ import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { isEmpty, isNil, capitalize, noop } from "lodash-es";
 import { Button } from "~/components/Button";
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
 import { quick, useAdminState, useUserState } from "~/utils/app_state";
@@ -18,19 +18,11 @@ import { createSignal, For, onMount, Show } from "solid-js";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 
 export const ReviewMoveAnnotationsView = (props: any) => {
-  const isMobile = useIsMobile();
-  const [user] = useUserState((s) => [s.user]);
-  const [
-    moveAnnotationReviewQueue,
-    fetchMoveAnnotationReviewQueue,
-    acceptMoveAnnotation,
-    rejectMoveAnnotations,
-  ] = useAdminState((s) => [
-    s.moveAnnotationReviewQueue,
-    s.fetchMoveAnnotationReviewQueue,
-    s.acceptMoveAnnotation,
-    s.rejectMoveAnnotations,
-  ]);
+  const [moveAnnotationReviewQueue, fetchMoveAnnotationReviewQueue] =
+    useAdminState((s) => [
+      s.moveAnnotationReviewQueue,
+      s.fetchMoveAnnotationReviewQueue,
+    ]);
   onMount(() => {
     fetchMoveAnnotationReviewQueue();
   });
@@ -71,22 +63,15 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
   console.log("Epd is ", props.review.epd);
   const fen = `${props.review.epd} 0 1`;
   const position = new Chess(fen);
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileV2();
   const [user] = useUserState((s) => [s.user]);
-  const [
-    moveAnnotationReviewQueue,
-    fetchMoveAnnotationReviewQueue,
-    acceptMoveAnnotation,
-    rejectMoveAnnotations,
-  ] = useAdminState((s) => [
-    s.moveAnnotationReviewQueue,
-    s.fetchMoveAnnotationReviewQueue,
+  const [acceptMoveAnnotation, rejectMoveAnnotations] = useAdminState((s) => [
     s.acceptMoveAnnotation,
     s.rejectMoveAnnotations,
   ]);
   const [reviewed, setReviewed] = createSignal(false);
   return (
-    <div style={s(isMobile ? c.column : c.row, c.constrainWidth, c.relative)}>
+    <div style={s(isMobile() ? c.column : c.row, c.constrainWidth, c.relative)}>
       <Show when={reviewed}>
         <div
           style={s(
@@ -120,7 +105,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
             }
           }}
         >
-          <div style={s(c.size(isMobile ? 20 : 22))}>
+          <div style={s(c.size(isMobile() ? 20 : 22))}>
             <LichessLogoIcon color={"white"} />
           </div>
           <Spacer width={8} />

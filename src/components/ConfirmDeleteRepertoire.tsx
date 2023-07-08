@@ -7,7 +7,6 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { trackEvent } from "~/utils/trackEvent";
 
 export const ConfirmDeleteRepertoire = function DeleteLineView() {
-  const responsive = useResponsive();
   const [side] = useSidebarState(([s]) => [s.activeSide]);
   return (
     <SidebarTemplate

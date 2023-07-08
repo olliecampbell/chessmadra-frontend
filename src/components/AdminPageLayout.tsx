@@ -2,7 +2,7 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { Button } from "~/components/Button";
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { Puff } from "solid-spinner";
 import { CMText } from "./CMText";
 import { quick, useAppState } from "~/utils/app_state";
@@ -13,7 +13,7 @@ import { createSignal, JSXElement } from "solid-js";
 import { A } from "solid-start";
 
 export const AdminPageLayout = (props: { children: JSXElement }) => {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileV2();
   const [password, setPassword] = createSignal("");
   const [authStatus, user] = useAppState((s) => [
     s.userState.authStatus,
@@ -42,7 +42,7 @@ export const AdminPageLayout = (props: { children: JSXElement }) => {
       );
     } else if (user && !user()?.isAdmin) {
       inner = (
-        <div style={s(c.oldContainerStyles(isMobile))}>
+        <div style={s(c.oldContainerStyles(isMobile()))}>
           <CMText style={s()}>
             You don't seem to be an admin. Do you have the password?
           </CMText>
@@ -70,7 +70,7 @@ export const AdminPageLayout = (props: { children: JSXElement }) => {
     return inner;
   };
   return (
-    <div style={s(c.oldContainerStyles(isMobile), c.center, c.pt(48))}>
+    <div style={s(c.oldContainerStyles(isMobile()), c.center, c.pt(48))}>
       {_inner()}
     </div>
   );

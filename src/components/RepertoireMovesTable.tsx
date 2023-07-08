@@ -14,7 +14,7 @@ import {
   cloneDeep,
   noop,
 } from "lodash-es";
-import { useIsMobile } from "~/utils/isMobile";
+import { useIsMobileV2 } from "~/utils/isMobile";
 import { RepertoireMiss, RepertoireMove, Side } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import { MoveTag, SuggestedMove } from "~/utils/models";
@@ -32,7 +32,7 @@ import { getMoveRatingIcon, MoveRating } from "~/utils/move_inaccuracy";
 import { quick } from "~/utils/app_state";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "~/utils/table_scoring";
-import { BP, useResponsive } from "~/utils/useResponsive";
+import { BP, useResponsive, useResponsiveV2 } from "~/utils/useResponsive";
 import { TableMeta, useSections } from "~/utils/useSections";
 import { useHovering } from "~/mocks";
 import {
@@ -90,7 +90,8 @@ export const RepertoireMovesTable = (props: {
   side: Side;
   responses: Accessor<TableResponse[]>;
 }) => {
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
+  const isMobile = useIsMobileV2();
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const [expandedLength, setExpandedLength] = createSignal(0);
   const [editingAnnotations, setEditingAnnotations] = createSignal(false);
@@ -105,12 +106,11 @@ export const RepertoireMovesTable = (props: {
           (m) => m.suggestedMove?.needed
         );
         const myTurn = props.side === props.activeSide;
-        const isMobile = useIsMobile();
         // todo: solid, prob need to use accessors here
         const sections = useSections({
           myTurn,
           usePeerRates: props.usePeerRates(),
-          isMobile,
+          isMobile: isMobile(),
         });
         // todo: undo this
         const MIN_TRUNCATED = 1;
@@ -239,12 +239,12 @@ export const RepertoireMovesTable = (props: {
           <div class="padding-sidebar">
             <SidebarHeader>{props.header()}</SidebarHeader>
           </div>
-          <Spacer height={responsive.switch(20, [BP.md, 24])} />
+          <Spacer height={responsive().switch(20, [BP.md, 24])} />
         </>
       </Show>
       <Show when={props.body}>
         <>
-          <CMText style={s(c.px(c.getSidebarPadding(responsive)))}>
+          <CMText style={s(c.px(c.getSidebarPadding(responsive())))}>
             {props.body}
           </CMText>
           <Spacer height={24} />
@@ -255,7 +255,7 @@ export const RepertoireMovesTable = (props: {
           <TableHeader anyMine={anyMine()} sections={sections} />
         </Show>
       </div>
-      <Spacer height={responsive.switch(6, [BP.md, 12])} />
+      <Spacer height={responsive().switch(6, [BP.md, 12])} />
       <div
         style={s(
           c.column,
@@ -304,7 +304,7 @@ export const RepertoireMovesTable = (props: {
         </Intersperse>
       </div>
       <div
-        style={s(c.row, c.px(c.getSidebarPadding(responsive)))}
+        style={s(c.row, c.px(c.getSidebarPadding(responsive())))}
         class={clsx("pt-4")}
       >
         <Show
@@ -425,7 +425,7 @@ const Response = (props: {
     s.moveLog,
     s.currentSide,
   ]);
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileV2();
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
   const sanPlus = () =>
     props.tableResponse.suggestedMove?.sanPlus ??
@@ -435,7 +435,7 @@ const Response = (props: {
 
   const userState = getAppState().userState;
   const user = () => userState.user;
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   const { hoveringProps: responseHoverProps, hoveringRef } = useHovering(
     () => {
       getAppState().repertoireState.browsingState.chessboard?.previewMove(
@@ -543,7 +543,7 @@ const Response = (props: {
   };
 
   const hasInlineAnnotationOrOpeningName = () =>
-    props.openingName || (!isMobile && annotation());
+    props.openingName || (!isMobile() && annotation());
 
   const tagsRow = () =>
     !isEmpty(tags()) && (
@@ -565,7 +565,10 @@ const Response = (props: {
           <Pressable
             onPress={noop}
             class={clsx("bg-gray-12 row h-[128px] grow rounded-sm")}
-            style={s(c.lightCardShadow, c.mx(c.getSidebarPadding(responsive)))}
+            style={s(
+              c.lightCardShadow,
+              c.mx(c.getSidebarPadding(responsive()))
+            )}
           >
             <div
               style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
@@ -649,7 +652,7 @@ const Response = (props: {
             class={clsx(
               "&hover:bg-gray-18 flexible row cursor-pointer rounded-sm py-3 transition-colors"
             )}
-            style={s(c.px(c.getSidebarPadding(responsive)))}
+            style={s(c.px(c.getSidebarPadding(responsive())))}
           >
             <div style={s(c.column, c.grow, c.constrainWidth)}>
               <div style={s(c.row, c.fullWidth, c.alignStart)}>
@@ -707,13 +710,13 @@ const Response = (props: {
                   >
                     <Show when={props.openingName}>
                       <b>{props.openingName}</b>
-                      <Show when={!isMobile && annotation()}>
+                      <Show when={!isMobile() && annotation()}>
                         <>
                           . <Spacer width={2} />
                         </>
                       </Show>
                     </Show>
-                    <Show when={!isMobile}>
+                    <Show when={!isMobile()}>
                       <p>{annotation()}</p>
                     </Show>
                   </CMText>
@@ -757,7 +760,7 @@ const Response = (props: {
                 </div>
               </div>
               <div style={s(c.column, c.maxWidth(400))}>
-                <Show when={isMobile && annotation()}>
+                <Show when={isMobile() && annotation()}>
                   <CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
                     <CMText style={s(c.fg(c.gray[70]), c.fontSize(12))}>
                       {annotation()}
@@ -777,15 +780,14 @@ const TableHeader = (props: {
   sections: Accessor<any[]>;
   anyMine: boolean;
 }) => {
-  const isMobile = useIsMobile();
-  const responsive = useResponsive();
+  const responsive = useResponsiveV2();
   return (
     <div
       style={s(
         c.row,
         c.fullWidth,
         c.pl(14),
-        c.px(c.getSidebarPadding(responsive))
+        c.px(c.getSidebarPadding(responsive()))
       )}
     >
       <Spacer width={12} grow />
@@ -846,10 +848,6 @@ export const DebugScoreView = (props: { tableResponse: TableResponse }) => {
       </div>
     </div>
   );
-};
-
-const getSpaceBetweenStats = (isMobile: boolean) => {
-  return isMobile ? 16 : 16;
 };
 
 function renderAnnotation(_annotation: string) {
