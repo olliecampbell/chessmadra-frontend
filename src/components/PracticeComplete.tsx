@@ -90,7 +90,7 @@ export const PracticeComplete = () => {
             trackEvent(`pre_review.common_moves`);
           });
         },
-        text: `Review next most common moves`,
+        text: `Practice next most common moves`,
         right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
         style: "secondary",
       });
