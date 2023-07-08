@@ -255,8 +255,7 @@ export const SidebarLayout = (props: {
                 width={responsive().switch(24, [BP.lg, 36], [BP.xl, 48])}
               />
               <div
-                // @ts-ignore
-                nativeID="sidebar"
+                id="sidebar"
                 class={"max-w-[600px] xl:max-w-[650px] "}
                 style={s(c.flexGrow(2), c.flexShrink, c.noBasis)}
               >
