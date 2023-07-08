@@ -870,31 +870,24 @@ export function ChessboardView(props: {
                           />
                           {isBottomEdge && (
                             <CMText
-                              style={s(
-                                c.fg(inverseColor()),
-                                c.weightSemiBold,
-                                c.absolute,
-                                c.fontSize(10),
-                                c.left(isMobile ? 1 : 1),
-                                c.bottom(isMobile ? 1 : 0)
+                              style={s(c.fg(inverseColor()))}
+                              class={clsx(
+                                "left-1px weight-bold absolute bottom-0 text-[10px]  lg:bottom-0.5 lg:left-1 lg:text-sm"
                               )}
                             >
-                              {tileLetter}
+                              {tileLetter()}
                             </CMText>
                           )}
                           {isRightEdge && (
-                            <CMText
-                              style={s(
-                                c.fg(inverseColor()),
-                                c.weightBold,
-                                c.absolute,
-                                c.fontSize(10),
-                                c.right(2),
-                                c.top(0)
+                            <p
+                              id={`coord-${square()}`}
+                              class={clsx(
+                                "right-1px weight-bold absolute top-0 text-[10px] lg:right-1 lg:top-0.5 lg:text-sm"
                               )}
+                              style={s(c.fg(inverseColor()))}
                             >
-                              {tileNumber}
-                            </CMText>
+                              {tileNumber()}
+                            </p>
                           )}
                         </div>
                       );

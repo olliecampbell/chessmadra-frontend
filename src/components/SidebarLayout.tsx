@@ -173,7 +173,9 @@ export const SidebarLayout = (props: {
               vertical && c.grow,
               vertical ? c.selfCenter : c.selfStretch
             )}
-            class={clsx("xxl:max-w-[800px] lg:max-w-[440px] xl:max-w-[500px]")}
+            class={clsx(
+              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[700px] 2xl:max-w-[800px]"
+            )}
           >
             {!vertical ? (
               <div style={s(c.height(140), c.column, c.justifyEnd)}>
@@ -249,7 +251,7 @@ export const SidebarLayout = (props: {
           </div>
           <Show when={!vertical}>
             <>
-              <Spacer width={responsive.switch(24, [BP.lg, 48])} />
+              <Spacer width={responsive.switch(24, [BP.lg, 36], [BP.xl, 48])} />
               <div
                 // @ts-ignore
                 nativeID="sidebar"

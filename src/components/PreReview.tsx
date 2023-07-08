@@ -93,6 +93,7 @@ export const PreReview = (props: { side: Side | null }) => {
         onPress: () => {
           quick((s) => {
             s.repertoireState.browsingState.popView();
+            s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.reviewState.startReview({
               side: props.side,
               filter: "all",
