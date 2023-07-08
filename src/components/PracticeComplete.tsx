@@ -4,27 +4,30 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
 import { createMemo, For, onMount } from "solid-js";
 import { Bullet } from "./Bullet";
-import { useRepertoireState, quick } from "~/utils/app_state";
+import { useRepertoireState, quick, getAppState } from "~/utils/app_state";
 import { forEach, min, filter } from "lodash-es";
 import { Repertoire, RepertoireMove, Side } from "~/utils/repertoire";
 import { pluralize } from "~/utils/pluralize";
-import { getHumanTimeUntil } from "./ReviewText";
-import {
-  ChooseToCreateAccountOnboarding,
-} from "./SidebarOnboarding";
+import { getHumanTimeUntil, ReviewText } from "./ReviewText";
+import { ChooseToCreateAccountOnboarding } from "./SidebarOnboarding";
 import { trackEvent } from "~/utils/trackEvent";
 import { START_EPD } from "~/utils/chess";
 import { bySide } from "~/utils/repertoire";
+import { COMMON_MOVES_CUTOFF } from "~/utils/review";
+import { SidebarAction } from "./SidebarActions";
 
 export const PracticeComplete = () => {
-  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [repertoire] = useRepertoireState((s) => [s.repertoire]);
   const [allReviewPositionMoves] = useRepertoireState((s) => [
     s.reviewState.allReviewPositionMoves,
   ]);
   const moves = createMemo(() => {
-    const moves: { epd: string; sanPlus: string; failed: boolean; side: Side }[] =
-      [];
+    const moves: {
+      epd: string;
+      sanPlus: string;
+      failed: boolean;
+      side: Side;
+    }[] = [];
     forEach(allReviewPositionMoves(), (sanLookup, epd) => {
       forEach(sanLookup, ({ failed, side }, sanPlus) => {
         moves.push({ epd, sanPlus, failed, side });
@@ -32,6 +35,7 @@ export const PracticeComplete = () => {
     });
     return moves;
   });
+  const [reviewStats] = useRepertoireState((s) => [s.reviewState.reviewStats]);
   const numFailed = () => {
     return moves().filter((m) => m.failed).length;
   };
@@ -41,9 +45,6 @@ export const PracticeComplete = () => {
   const total = () => {
     return moves().length;
   };
-  const [numMovesDueBySide] = useRepertoireState((s) => [
-    bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
-  ]);
   const earliestDue = () => {
     const rep = repertoire() as Repertoire;
     const dues = moves().flatMap((m) => {
@@ -62,7 +63,59 @@ export const PracticeComplete = () => {
       num_correct: numCorrect(),
     });
   });
+  const activeOptions = () =>
+    getAppState().repertoireState.reviewState.activeOptions;
+  const [numMovesDueBySide] = useRepertoireState((s) => [
+    bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
+  ]);
+  const due = () => {
+    const totalDue = () =>
+      (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
+    let side = activeOptions()?.side;
+    let due = side ? numMovesDueBySide()[side] : totalDue();
+    return due;
+  };
 
+  const actions = () => {
+    let actions: SidebarAction[] = [];
+    if (due() > 0 && activeOptions()?.filter === "common") {
+      actions.push({
+        onPress: () => {
+          quick((s) => {
+            s.repertoireState.browsingState.popView();
+            s.repertoireState.reviewState.startReview({
+              side: activeOptions()?.side ?? null,
+              filter: "common",
+            });
+            trackEvent(`pre_review.common_moves`);
+          });
+        },
+        text: `Review next most common moves`,
+        right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
+        style: "secondary",
+      });
+    }
+    actions.push({
+      onPress: () => {
+        quick((s) => {
+          trackEvent("practice_complete.continue");
+          if (s.repertoireState.onboarding.isOnboarding) {
+            trackEvent("onboarding.practice_complete.continue");
+            s.repertoireState.browsingState.pushView(
+              ChooseToCreateAccountOnboarding
+            );
+            s.repertoireState.updateRepertoireStructures();
+          } else {
+            s.repertoireState.browsingState.moveSidebarState("left");
+            s.repertoireState.backToOverview();
+          }
+        });
+      },
+      text: "Continue",
+      style: actions.length > 0 ? "secondary" : "primary",
+    });
+    return actions;
+  };
   const bullets = () => {
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
@@ -110,27 +163,7 @@ export const PracticeComplete = () => {
     <SidebarTemplate
       header={"Practice complete!"}
       bodyPadding={true}
-      actions={[
-        {
-          onPress: () => {
-            quick((s) => {
-              trackEvent("practice_complete.continue");
-              if (s.repertoireState.onboarding.isOnboarding) {
-                trackEvent("onboarding.practice_complete.continue");
-                s.repertoireState.browsingState.pushView(
-                  ChooseToCreateAccountOnboarding
-                );
-                s.repertoireState.updateRepertoireStructures();
-              } else {
-                s.repertoireState.browsingState.moveSidebarState("left");
-                s.repertoireState.backToOverview();
-              }
-            });
-          },
-          text: "Continue",
-          style: "primary",
-        },
-      ]}
+      actions={actions()}
     >
       <CMText class={clsx("text-primay font-bold")}>
         Your stats from this session:

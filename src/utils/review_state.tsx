@@ -73,6 +73,7 @@ export interface ReviewState {
   failedReviewPositionMoves: Record<string, RepertoireMove>;
   reviewStats: ReviewStats;
   activeQueue: QuizMove[];
+  activeOptions: ReviewOptions | null;
   currentMove?: QuizMove;
   reviewSide?: Side;
   completedReviewPositionMoves: Record<string, RepertoireMove>;
@@ -141,6 +142,7 @@ export const getInitialReviewState = (
     showNext: false,
     // queues: EMPTY_QUEUES,
     activeQueue: [] as QuizMove[],
+    activeOptions: null,
     markMovesReviewed: (results: ReviewPositionResults[]) => {
       trackEvent(`reviewing.reviewed_move`);
       set(([s, rs]) => {
@@ -183,12 +185,14 @@ export const getInitialReviewState = (
         rs.browsingState.sidebarState.mode = "review";
         // @ts-ignore
         rs.browsingState.sidebarState.activeSide = options.side;
+        s.activeOptions = options ?? null;
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
           console.log("generating queue");
           s.updateQueue(options);
         }
+        s.allReviewPositionMoves = {};
         s.activeQueue.forEach((m) => {
           m.moves.forEach((m) => {
             if (!s.allReviewPositionMoves[m.epd]) {
@@ -464,6 +468,7 @@ export const getInitialReviewState = (
           );
           if (matchingResponse) {
             s.reviewStats.correct++;
+            console.log("correct", s.reviewStats.correct);
             s.completedReviewPositionMoves[matchingResponse.sanPlus] =
               matchingResponse;
             const willUndoBecauseMultiple = !isEmpty(

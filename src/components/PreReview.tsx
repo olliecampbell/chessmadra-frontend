@@ -25,6 +25,7 @@ export const PreReview = (props: { side: Side | null }) => {
       side: props.side,
       filter: "due",
     });
+    // todo: this could be more performant
     const difficultCount = countQueue(
       filter(queue, (m) => some(m.moves, (m) => isMoveDifficult(m)))
     );
@@ -56,7 +57,7 @@ export const PreReview = (props: { side: Side | null }) => {
         style: "secondary",
       });
     }
-    if (COMMON_MOVES_CUTOFF < totalDue) {
+    if (COMMON_MOVES_CUTOFF < due) {
       actions.push({
         onPress: () => {
           quick((s) => {
