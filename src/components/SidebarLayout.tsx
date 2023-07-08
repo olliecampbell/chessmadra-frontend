@@ -257,12 +257,8 @@ export const SidebarLayout = (props: {
               <div
                 // @ts-ignore
                 nativeID="sidebar"
-                style={s(
-                  c.flexGrow(2),
-                  c.flexShrink,
-                  c.noBasis,
-                  c.maxWidth(600)
-                )}
+                class={"max-w-[600px] xl:max-w-[650px] "}
+                style={s(c.flexGrow(2), c.flexShrink, c.noBasis)}
               >
                 <SidebarContainer
                   backSection={props.backSection}
