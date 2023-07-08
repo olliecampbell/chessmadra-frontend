@@ -430,8 +430,6 @@ const getBuildModeSections = ({
 };
 
 const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
-  const [debugUi] = useDebugState((s) => [s.debugUi]);
-  const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
   const epdAfter = () =>
     props.tableResponse.suggestedMove?.epdAfter ??
     (props.tableResponse.repertoireMove?.epdAfter as string);
@@ -461,13 +459,11 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
     return { completed, progress };
   });
   const inProgressColor = () => (progress() < 20 ? c.red[65] : c.orange[65]);
-  console.log("rendered coveragebar");
   return (
     <div
       style={s(c.column, c.fullWidth)}
       class="py-1"
       ref={(ref) => {
-        console.log("initting tooltip", ref);
         initTooltip({
           ref,
           content: () => {
