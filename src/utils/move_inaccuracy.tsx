@@ -4,6 +4,7 @@ import { isNil } from "lodash-es";
 import { CMText } from "~/components/CMText";
 import { Side } from "./repertoire";
 import { Match, Switch } from "solid-js";
+import { initTooltip } from "~/components/Tooltip";
 
 export const getWinPercentage = (
   stockfish: StockfishReport,
@@ -84,16 +85,37 @@ export const getMoveRating = (
 export const getMoveRatingIcon = (rating: MoveRating) => {
   const styles = s(c.weightBold, c.fontSize(16));
   return (
-    <Switch>
-      <Match when={rating === MoveRating.Inaccuracy}>
-        <CMText style={s(c.fg(c.gray[55]), styles)}>?!</CMText>
-      </Match>
-      <Match when={rating === MoveRating.Mistake}>
-        <CMText style={s(c.fg(c.yellow[60]), styles)}>?</CMText>
-      </Match>
-      <Match when={rating === MoveRating.Blunder}>
-        <CMText style={s(c.fg(c.red[55]), styles)}>??</CMText>
-      </Match>
-    </Switch>
+    <div
+      ref={(ref) => {
+        initTooltip({
+          ref,
+          content: () => (
+            <p>
+              This move is{" "}
+              <b>
+                {rating === MoveRating.Inaccuracy
+                  ? "an inaccuracy"
+                  : rating === MoveRating.Mistake
+                  ? "a mistake"
+                  : "a blunder"}
+              </b>
+            </p>
+          ),
+          maxWidth: 200,
+        });
+      }}
+    >
+      <Switch>
+        <Match when={rating === MoveRating.Inaccuracy}>
+          <CMText style={s(c.fg(c.gray[55]), styles)}>?!</CMText>
+        </Match>
+        <Match when={rating === MoveRating.Mistake}>
+          <CMText style={s(c.fg(c.yellow[60]), styles)}>?</CMText>
+        </Match>
+        <Match when={rating === MoveRating.Blunder}>
+          <CMText style={s(c.fg(c.red[55]), styles)}>??</CMText>
+        </Match>
+      </Switch>
+    </div>
   );
 };
