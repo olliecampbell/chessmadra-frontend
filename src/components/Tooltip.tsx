@@ -1,4 +1,4 @@
-import { Accessor, JSX } from "solid-js";
+import { Accessor, JSX, onCleanup } from "solid-js";
 import tippy from "tippy.js";
 
 export const initTooltip = ({
@@ -10,7 +10,7 @@ export const initTooltip = ({
   ref: HTMLElement;
   maxWidth: number;
 }) => {
-  tippy(ref, {
+  let tip = tippy(ref, {
     content: content() as any,
     placement: "bottom",
     animation: "shift-away",
@@ -18,5 +18,8 @@ export const initTooltip = ({
     theme: "tooltip",
     // showOnCreate: isDevelopment && true,
     maxWidth: maxWidth ? `${maxWidth}px` : undefined,
+  });
+  onCleanup(() => {
+    tip.destroy();
   });
 };

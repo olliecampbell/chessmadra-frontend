@@ -1,5 +1,5 @@
 import { c, s } from "~/utils/styles";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { DOMElement } from "solid-js/jsx-runtime";
@@ -36,22 +36,6 @@ export const SidebarContainer = (props: {
         currentRef().style.opacity = "1";
         currentRef().style.transform = "translateX(0px)";
         previousRef().replaceChildren();
-        setTimeout(() => {
-          // todo: this is terrible and we should figure out why tippy is holding onto an old ref
-          [...document.querySelectorAll("[data-tippy-root]")].forEach(
-            (node) => {
-              // @ts-ignore
-              if (node._tippy) {
-                // @ts-ignore
-                if (!document.body.contains(node._tippy.reference)) {
-                  console.log("destroying tippy");
-                  // @ts-ignore
-                  node._tippy.destroy();
-                }
-              }
-            }
-          );
-        }, ms);
       }, ms);
     });
   });
