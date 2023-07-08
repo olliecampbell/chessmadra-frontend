@@ -863,7 +863,7 @@ export const createChessboardInterface = (): [
         anime({
           targets: ref,
           easing: "easeInOutSine",
-          duration: 200,
+          duration: 250,
           opacity: [0, 1.0],
           scale: [0.8, 1.2, 1.0],
           autoplay: true,
@@ -875,7 +875,7 @@ export const createChessboardInterface = (): [
           targets: whiteOverlay,
           easing: "easeInOutSine",
           duration: 200,
-          opacity: [0.5, 0],
+          opacity: [0.7, 0],
           autoplay: true,
         }).finished.then(() => {
           anime({

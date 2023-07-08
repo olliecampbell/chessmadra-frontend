@@ -807,25 +807,22 @@ export function ChessboardView(props: {
                           <div class="center z-6 absolute right-0 top-0 h-[40%] w-[40%] -translate-y-1/2 translate-x-1/2">
                             <div
                               class={clsx(
-                                `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `,
-                                feedback().type === "correct"
-                                  ? `bg-[hsl(118,43%,63%)]`
-                                  : `bg-red-60`
+                                `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `
                               )}
                               id={`feedback-${square()}`}
                               ref={setRef}
                               style={s(c.zIndex(6))}
                             >
                               <div
-                                class={clsx("absolute inset-0 bg-white ")}
+                                class={clsx("absolute inset-0 bg-white")}
                                 id="white-overlay"
                               />
                               <i
                                 class={clsx(
-                                  "fa-solid  text-gray-10 text-[55cqw]",
+                                  "bg-gray-10 text-[100cqw]",
                                   feedback().type === "correct"
-                                    ? "fa-check"
-                                    : "fa-xmark"
+                                    ? "fa fa-circle-check text-[#79c977]"
+                                    : "fa fa-circle-xmark text-[#c92b2b]"
                                 )}
                               ></i>
                             </div>
