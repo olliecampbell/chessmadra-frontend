@@ -92,13 +92,16 @@ export const getMoveRatingIcon = (rating: MoveRating) => {
           content: () => (
             <p>
               This move is{" "}
-              <b>
-                {rating === MoveRating.Inaccuracy
-                  ? "an inaccuracy"
-                  : rating === MoveRating.Mistake
-                  ? "a mistake"
-                  : "a blunder"}
-              </b>
+              {rating === MoveRating.Inaccuracy ? (
+                <>
+                  an <b>inaccuracy</b>
+                </>
+              ) : (
+                <>
+                  a{" "}
+                  <b>{rating === MoveRating.Mistake ? "mistake" : "blunder"}</b>
+                </>
+              )}
             </p>
           ),
           maxWidth: 200,
