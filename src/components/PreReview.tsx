@@ -99,7 +99,6 @@ export const PreReview = (props: { side: Side | null }) => {
           quick((s) => {
             trackEvent(`pre_review.all`);
             s.repertoireState.browsingState.popView();
-            s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.reviewState.startReview({
               side: props.side,
               filter: "all",
@@ -119,6 +118,7 @@ export const PreReview = (props: { side: Side | null }) => {
         onPress: () => {
           quick((s) => {
             trackEvent(`pre_review.specific`);
+            s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.popView();
             s.repertoireState.startBrowsing(side as Side, "browse");
           });
