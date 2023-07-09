@@ -883,6 +883,8 @@ export const createChessboardInterface = (): [
             easing: "easeInOutSine",
             duration: 300,
             opacity: [1.0, 0],
+            scale: [1.0, 0.6],
+            delay: 150,
             autoplay: true,
           }).finished.then(() => {
             whiteOverlay.style.opacity = "1";
