@@ -174,7 +174,7 @@ export const SidebarLayout = (props: {
               vertical() ? c.selfCenter : c.selfStretch
             )}
             class={clsx(
-              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[520px] 2xl:max-w-[700px]"
+              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[520px] 2xl:max-w-[650px]"
             )}
           >
             {!vertical() ? (
