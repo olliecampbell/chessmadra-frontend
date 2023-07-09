@@ -25,7 +25,6 @@ import {
 } from "lodash-es";
 import { useHovering } from "~/mocks";
 import { JSXElement } from "solid-js";
-let adverbIndex = 0;
 
 export interface MetaPlan {
   plan: Plan;
@@ -155,8 +154,10 @@ class PlanConsumer {
   capturePieces: Record<Square, PieceSymbol>;
   planPrecedingCaptures: Record<Square, MetaPlan>;
   planSections: (() => PlanSection)[];
+  adverbIndex: number;
 
   constructor(plans: Plan[], side: Side, position: Chess) {
+    this.adverbIndex = 0;
     this.planSections = [];
     this.metaPlans = getMetaPlans(plans, side, position);
     this.plans = plans;
@@ -193,7 +194,7 @@ class PlanConsumer {
 
   nextAdverb(): string {
     const adverbs = ["typically", "generally", "usually", "often"];
-    return adverbs[adverbIndex++ % adverbs.length];
+    return adverbs[this.adverbIndex++ % adverbs.length];
   }
 
   consume<T extends MetaPlan | (MetaPlan | undefined)[]>(plan: T): T {
