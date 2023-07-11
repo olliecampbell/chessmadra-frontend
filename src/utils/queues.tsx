@@ -1,11 +1,15 @@
 import { PieceSymbol } from "@lubert/chess.ts";
 import { Square } from "@lubert/chess.ts/dist/types";
+import { drop, take } from "lodash-es";
+import { MetaPlan } from "./plans";
 import { RepertoireMove, Side } from "./repertoire";
 
 export type QuizGroup = QuizGroupPlans | QuizGroupMoves;
 
 export interface QuizGroupPlans extends QuizGroupBase {
   plans: QuizPlan[];
+  remainingPlans: QuizPlan[];
+  completedPlans: QuizPlan[];
 }
 
 export interface QuizGroupMoves extends QuizGroupBase {
@@ -20,6 +24,7 @@ export interface QuizGroupBase {
 
 export interface QuizPlan {
   type: "piece_movement" | "castling";
+  metaPlan: MetaPlan;
   piece: PieceSymbol;
   toSquares: Square[];
   options?: Square[];
@@ -36,22 +41,46 @@ export interface QuizItem {
 
 export const countQueue = (queue: QuizGroup[]) => {
   return queue
-    .map((m) => (getQuizPlans(m) ?? getQuizMoves(m) ?? []).length)
+    .map((m) => {
+      let moves = Quiz.getMoves(m);
+      if (moves) {
+        return moves.length;
+      }
+      return 1;
+    })
     .reduce((a, b) => a + b, 0);
 };
 
-export const getQuizPlans = (quizGroup: QuizGroup): QuizPlan[] | null => {
-  if ("plans" in quizGroup) {
-    return (quizGroup as QuizGroupPlans).plans;
-  }
+export namespace Quiz {
+  export const getRemainingPlans = (
+    quizGroup: QuizGroup,
+    planIndex: number
+  ): QuizPlan[] | null => {
+    let plans = Quiz.getPlans(quizGroup);
+    return drop(plans, planIndex);
+  };
 
-  return null;
-};
+  export const getCompletedPlans = (
+    quizGroup: QuizGroup,
+    planIndex: number
+  ): QuizPlan[] | null => {
+    let plans = Quiz.getPlans(quizGroup);
+    return take(plans, planIndex);
+  };
 
-export const getQuizMoves = (quizGroup: QuizGroup): RepertoireMove[] | null => {
-  if ("moves" in quizGroup) {
-    return (quizGroup as QuizGroupMoves).moves;
-  }
+  export const getMoves = (quizGroup: QuizGroup): RepertoireMove[] | null => {
+    if ("moves" in quizGroup) {
+      return (quizGroup as QuizGroupMoves).moves;
+    }
 
-  return null;
-};
+    return null;
+  };
+
+  export const getPlans = (quizGroup: QuizGroup): QuizPlan[] | null => {
+    if ("plans" in quizGroup) {
+      return (quizGroup as QuizGroupPlans).plans;
+    }
+
+    return null;
+  };
+}

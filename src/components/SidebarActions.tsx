@@ -229,7 +229,7 @@ export const SidebarFullWidthButton = (props: {
       subtextColor = c.gray[20];
     }
     if (props.action.style === "secondary") {
-      subtextColor = c.gray[20];
+      subtextColor = c.gray[60];
     }
     if (props.action.style === "primary") {
       subtextColor = c.gray[70];
@@ -374,6 +374,31 @@ export const SidebarActions = (props: {
       >
         {(a, i) => <SidebarFullWidthButton action={a()} first={i === 0} />}
       </Intersperse>
+    </div>
+  );
+};
+
+export const SeeMoreActions = (props: {
+  onClick: () => void;
+  text: string;
+}) => {
+  const responsive = useResponsiveV2();
+  return (
+    <div
+      style={s(c.row, c.px(c.getSidebarPadding(responsive())))}
+      class={clsx("pt-4")}
+    >
+      <div
+        style={s(c.pb(2))}
+        class="cursor-pointer"
+        onClick={() => {
+          props.onClick();
+        }}
+      >
+        <CMText class="text-tertiary &hover:text-primary text-xs font-semibold transition-colors">
+          {props.text}
+        </CMText>
+      </div>
     </div>
   );
 };

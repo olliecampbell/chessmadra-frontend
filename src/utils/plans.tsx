@@ -780,11 +780,15 @@ class PlanQuizConsumer {
     } else if (queenside && kingside) {
       return null;
     }
-    let castle: MetaPlan = (kingside ?? queenside) as MetaPlan;
+    let castle: MetaPlan = cloneDeep((kingside ?? queenside) as MetaPlan);
+    castle.plan.toSquare = castle.plan.toSquare
+      .replace("h", "g")
+      .replace("a", "c") as Square;
     this.addQuizPlan({
       type: "castling",
       options: this.side === "white" ? ["g1", "c1"] : ["g8", "c8"],
       piece: castle.piece,
+      metaPlan: castle,
       toSquares: [
         castle.plan.toSquare.replace("h", "g").replace("a", "c") as Square,
       ],
@@ -802,7 +806,11 @@ class PlanQuizConsumer {
       if (!pieceDescription) {
         return;
       }
-      if (this.position.get(plan.plan.fromSquare)?.type !== plan.piece) {
+      const piece = this.position.get(plan.plan.fromSquare);
+      if (!piece) {
+        return;
+      }
+      if (piece.type !== plan.piece || toSide(piece.color) !== this.side) {
         return;
       }
       const allDevelopmentPlans = filter(
@@ -819,10 +827,10 @@ class PlanQuizConsumer {
       this.addQuizPlan({
         type: "piece_movement",
         piece: plan.piece,
-        toSquares: allDevelopmentPlans.map((p) => p.plan.toSquare),
+        toSquares: [allDevelopmentPlans[0].plan.toSquare],
+        metaPlan: plan,
         fromSquare: plan.plan.fromSquare,
       });
-      console.log("added quiz plan", last(this.quizPlans), plan);
     });
   }
 }

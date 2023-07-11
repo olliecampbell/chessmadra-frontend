@@ -74,7 +74,7 @@ export interface ChessboardInterface {
   stepPreviewMove: () => void;
   stepAnimationQueue: () => void;
   requestToMakeMove: (move: Move, options?: MakeMoveOptions) => void;
-  highlightSquare: (square: Square) => void;
+  highlightSquare: (square: Square | null) => void;
   setTapOptions: (squares: Square[]) => void;
   availableMovesFrom: (square: Square) => Move[];
   getLastMove: () => Move | undefined;
@@ -116,6 +116,7 @@ export interface ChessboardDelegate {
 export interface ChessboardViewState {
   highlightedSquares: Set<Square>;
   tapOptions: Set<Square>;
+  hideLastMoveHighlight: boolean;
   animating: boolean;
   animatingMoveSquare?: Square;
   moveFeedback: {
@@ -605,10 +606,13 @@ export const createChessboardInterface = (): [
         s.tapOptions = new Set(squares);
       });
     },
-    highlightSquare: (square: Square) => {
+    highlightSquare: (square: Square | null) => {
       set((s) => {
+        if (!square) {
+          s.highlightedSquares = new Set();
+          return;
+        }
         s.highlightedSquares = new Set([square]);
-        console.log("highlightedSquares", s.highlightedSquares);
       });
     },
     requestToMakeMove: (move: Move, options?: MakeMoveOptions) => {

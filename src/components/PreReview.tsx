@@ -8,26 +8,29 @@ import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
 import { bySide } from "~/utils/repertoire";
 import { isMoveDifficult } from "~/utils/srs";
-import { countQueue, getQuizMoves } from "~/utils/queues";
+import { countQueue, Quiz } from "~/utils/queues";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { ReviewText } from "./ReviewText";
 import { Label } from "./Label";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { trackEvent } from "~/utils/trackEvent";
+import { createMemo } from "solid-js";
 
 export const PreReview = (props: { side: Side | null }) => {
   const [numMovesDueBySide] = useRepertoireState((s) => [
     bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
   ]);
-  const actions = () => {
-    const actions: SidebarAction[] = [];
-    const queue = getAppState().repertoireState.reviewState.buildQueue({
+  const queue = createMemo(() =>
+    getAppState().repertoireState.reviewState.buildQueue({
       side: props.side,
       filter: "due",
-    });
+    })
+  );
+  const actions = () => {
+    const actions: SidebarAction[] = [];
     // todo: this could be more performant
     const difficultCount = countQueue(
-      filter(queue, (m) => some(getQuizMoves(m), (m) => isMoveDifficult(m)))
+      filter(queue(), (m) => some(Quiz.getMoves(m), (m) => isMoveDifficult(m)))
     );
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);

@@ -36,12 +36,14 @@ export interface UserState {
   updateUserSettings: (_: {
     theme?: BoardThemeId;
     pieceSet?: PieceSetId;
+    flags?: UserFlag[];
   }) => void;
   isUpdatingEloRange: boolean;
   pastLandingPage?: boolean;
   isSubscribed: () => boolean;
   getCheckoutLink: (annual: boolean) => Promise<string>;
   flagEnabled: (flag: UserFlag) => boolean;
+  setFlag(flag: UserFlag, enabled: boolean): void;
 }
 
 export enum AuthStatus {
@@ -100,8 +102,8 @@ export const getInitialUserState = (
     flagEnabled: (flag: UserFlag) => {
       return get(([s]) => {
         return (
-          s.user?.flags.includes("quiz_plans") ||
-          (isDevelopment && DEVELOPMENT_FLAGS.includes("quiz_plans"))
+          s.user?.flags.includes(flag) ||
+          (isDevelopment && DEVELOPMENT_FLAGS.includes(flag))
         );
       });
     },
@@ -122,7 +124,7 @@ export const getInitialUserState = (
         }`;
       });
     },
-    updateUserSettings: ({ theme, pieceSet }) =>
+    updateUserSettings: ({ theme, pieceSet, flags }) =>
       set(([s]) => {
         if (pieceSet) {
           s.user!.pieceSet = pieceSet;
@@ -134,6 +136,7 @@ export const getInitialUserState = (
           .post("/api/v1/user/settings", {
             theme,
             pieceSet,
+            flags,
           })
           .then(({ data }: { data: User }) => {
             set(([s, appState]) => {
@@ -224,6 +227,14 @@ export const getInitialUserState = (
         trackEvent(`user.update_rating_range`, { rating_range: range });
         s.user!.ratingRange = range;
         return s.updateUserRatingSettings({ ratingRange: range });
+      });
+    },
+    setFlag: (flag: UserFlag, enabled: boolean) => {
+      set(([s]) => {
+        s.user!.flags = s.user!.flags.includes(flag)
+          ? s.user!.flags.filter((f) => f !== flag)
+          : [...s.user!.flags, flag];
+        return s.updateUserSettings({ flags: s.user!.flags });
       });
     },
     token: undefined,

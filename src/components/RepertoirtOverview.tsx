@@ -15,7 +15,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { CoverageBar } from "./CoverageBar";
 import { ReviewText } from "./ReviewText";
 import { START_EPD } from "~/utils/chess";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { BrowsingMode } from "~/utils/browsing_state";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { createSignal, Show, createEffect, Accessor } from "solid-js";
@@ -32,7 +32,11 @@ import { PreReview } from "./PreReview";
 import { PreBuild } from "./PreBuild";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { Label } from "./Label";
-import { SidebarAction, SidebarActions } from "./SidebarActions";
+import {
+  SeeMoreActions,
+  SidebarAction,
+  SidebarActions,
+} from "./SidebarActions";
 
 export const RepertoireOverview = (props: {}) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -266,24 +270,12 @@ export const RepertoireOverview = (props: {}) => {
     >
       <Spacer height={24} />
       <SidebarActions actions={options()} />
-      <div
-        style={s(c.row, c.px(c.getSidebarPadding(responsive())))}
-        class={clsx("pt-4")}
-      >
-        <Show when={!empty()}>
-          <Pressable
-            style={s(c.pb(2))}
-            onPress={() => {
-              trackEvent("side_overview.go_to_biggest_gap");
-              setExpanded(!expanded());
-            }}
-          >
-            <CMText class="text-tertiary &hover:text-primary text-xs font-semibold transition-colors">
-              {!expanded() ? "More options..." : "Hide "}
-            </CMText>
-          </Pressable>
-        </Show>
-      </div>
+      <Show when={!empty()}>
+        <SeeMoreActions
+          text={!expanded() ? "More options..." : "Hide"}
+          onClick={() => setExpanded(!expanded())}
+        />
+      </Show>
     </SidebarTemplate>
   );
 };

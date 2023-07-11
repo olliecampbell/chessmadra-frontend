@@ -8,7 +8,7 @@ import { getSquareOffset } from "../../utils/chess";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { CMText } from "../CMText";
 import { cloneDeep, find, forEach, range } from "lodash-es";
-import { FadeInOut } from "../FadeInOut";
+import { FadeInOut, TransitionIn } from "../FadeInOut";
 import { getAppState } from "~/utils/app_state";
 import {
   BoardTheme,
@@ -506,49 +506,55 @@ export function ChessboardView(props: {
                 });
 
                 return (
-                  <div
-                    style={s(
-                      c.absoluteFull,
-                      c.noPointerEvents,
-                      c.zIndex(focused() ? 101 : 100),
-                      c.opacity(opacity())
-                    )}
-                  >
-                    <svg width="100%" height="100%" viewBox="0 0 1 1">
-                      <line
-                        // stroke={`url(#${`plan-line-gradient-${i}`})`}
-                        stroke={color()}
-                        stroke-width={1.4 / 100}
-                        stroke-linecap="round"
-                        x1={from().x + 1 / 8 / 2}
-                        y1={from().y + 1 / 8 / 2}
-                        x2={from().x + 1 / 8 / 2 + length() * Math.cos(angle())}
-                        y2={from().y + 1 / 8 / 2 + length() * Math.sin(angle())}
-                      />
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width={(1 / 8) * 0.04}
-                        fill={color()}
-                        stroke={color()}
-                        transform={`rotate(${
-                          angleDeg() - 90
-                        } ${toSquareCenterX()} ${toSquareCenterY()})`}
-                        d={`M ${toSquareCenterX() - 2 / 100},${
-                          toSquareCenterY() - 2.8 / 100
-                        } ${toSquareCenterX()},${toSquareCenterY() - 0.004} ${
-                          toSquareCenterX() + 2 / 100
-                        },${toSquareCenterY() - 2.8 / 100} Z`}
-                      />
-                      {/*<circle
+                  <TransitionIn id={`plan-line-${i()}`} open={() => true}>
+                    <div
+                      style={s(
+                        c.absoluteFull,
+                        c.noPointerEvents,
+                        c.zIndex(focused() ? 101 : 100),
+                        c.opacity(opacity())
+                      )}
+                    >
+                      <svg width="100%" height="100%" viewBox="0 0 1 1">
+                        <line
+                          // stroke={`url(#${`plan-line-gradient-${i}`})`}
+                          stroke={color()}
+                          stroke-width={1.4 / 100}
+                          stroke-linecap="round"
+                          x1={from().x + 1 / 8 / 2}
+                          y1={from().y + 1 / 8 / 2}
+                          x2={
+                            from().x + 1 / 8 / 2 + length() * Math.cos(angle())
+                          }
+                          y2={
+                            from().y + 1 / 8 / 2 + length() * Math.sin(angle())
+                          }
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width={(1 / 8) * 0.04}
+                          fill={color()}
+                          stroke={color()}
+                          transform={`rotate(${
+                            angleDeg() - 90
+                          } ${toSquareCenterX()} ${toSquareCenterY()})`}
+                          d={`M ${toSquareCenterX() - 2 / 100},${
+                            toSquareCenterY() - 2.8 / 100
+                          } ${toSquareCenterX()},${toSquareCenterY() - 0.004} ${
+                            toSquareCenterX() + 2 / 100
+                          },${toSquareCenterY() - 2.8 / 100} Z`}
+                        />
+                        {/*<circle
                         cx={to.x + 1 / 8 / 2}
                         cy={to.y + 1 / 8 / 2}
                         r={(1 / 8) * 0.12}
                         fill={gradientColor}
                         // fill={`url(#${`plan-line-gradient-${i}`})`}
                       />*/}
-                    </svg>
-                  </div>
+                      </svg>
+                    </div>
+                  </TransitionIn>
                 );
               }}
             </For>
@@ -643,24 +649,32 @@ export function ChessboardView(props: {
                   chessboardStore().previewedMove?.color !== piece()?.color
               );
 
-              const priority = () =>
-                chessboardStore().activeFromSquare === square ||
-                chessboardStore().drag.square === square ||
-                chessboardStore().animatingMoveSquare === square;
-              const containerViewStyles = () => {
-                pos();
+              const priority = createMemo(
+                () =>
+                  chessboardStore().activeFromSquare === square ||
+                  chessboardStore().availableMoves.some(
+                    (m) => m.from === square
+                  ) ||
+                  chessboardStore().drag.square === square ||
+                  chessboardStore().animatingMoveSquare === square,
+                "priority"
+              );
+              const containerViewStyles = createMemo(() => {
                 return s(
                   c.absolute,
-                  posStyles(),
                   c.zIndex(priority() ? 11 : 2),
                   c.size("12.5%"),
                   c.noPointerEvents
                 );
-              };
+              });
               return (
                 <>
                   <div
-                    style={s(containerViewStyles(), c.noPointerEvents)}
+                    style={s(
+                      containerViewStyles(),
+                      c.noPointerEvents,
+                      posStyles()
+                    )}
                     id={`piece-${square}`}
                     ref={(v) => {
                       props.chessboardInterface.set((s) => {
@@ -725,10 +739,6 @@ export function ChessboardView(props: {
                       const square = createMemo(
                         () => `${tileLetter()}${tileNumber()}` as Square
                       );
-                      type HighlightType = readonly [
-                        "indicator" | "full" | null,
-                        "last" | "next" | null
-                      ];
                       const isDraggedOverSquare = createMemo(
                         () => chessboardStore().draggedOverSquare == square()
                       );
@@ -748,6 +758,11 @@ export function ChessboardView(props: {
                         if (manuallyHighlightedSquares().has(square())) {
                           setHighlightColor("next");
                           setHighlightType("full");
+                          return;
+                        }
+                        if (chessboardStore().hideLastMoveHighlight) {
+                          setHighlightColor(null);
+                          setHighlightType(null);
                           return;
                         }
                         if (isDraggedOverSquare()) {
@@ -845,16 +860,11 @@ export function ChessboardView(props: {
                                 `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `
                               )}
                               id={`option-${square()}`}
-                              style={s(
-                                c.zIndex(6),
-                                chessboardStore().tapOptions.has(square())
-                                  ? c.opacity(100)
-                                  : c.opacity(0)
-                              )}
+                              style={s(c.zIndex(6))}
                             >
                               <i
                                 class={clsx(
-                                  "bg-gray-10 text-[100cqw]",
+                                  "bg-gray-10 text-[100cqw] opacity-40",
                                   "fa fa-circle-question text-[orange]"
                                 )}
                               ></i>

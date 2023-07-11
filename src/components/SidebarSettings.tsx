@@ -3,7 +3,7 @@ import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { cloneDeep, find } from "lodash-es";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
@@ -17,6 +17,8 @@ import { compareFloats } from "~/utils/utils";
 import { Dropdown } from "./SidebarOnboarding";
 import { Pressable } from "./Pressable";
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
+import { UserFlag } from "~/utils/models";
+import { SidebarActions } from "./SidebarActions";
 
 export const SidebarSetting = () => {
   return (
@@ -271,3 +273,36 @@ export enum RatingSource {
   USCF = "USCF",
   FIDE = "FIDE",
 }
+
+export const BetaFeaturesSettings = (props: {}) => {
+  let userState = () => getAppState().userState;
+  let features = [
+    {
+      flag: "quiz_plans" as UserFlag,
+      name: "Quiz plans",
+      description:
+        "Practice the middlegame plans in your repertoire, during review",
+    },
+  ];
+  return (
+    <SidebarTemplate header={"Beta features"} actions={[]}>
+      <SidebarActions
+        actions={features.map((feature) => {
+          let enabled = () => userState().flagEnabled(feature.flag);
+          console.log("enabled", enabled());
+          return {
+            text: feature.name,
+            style: enabled() ? "focus" : "primary",
+            right: enabled() ? "Enabled" : "Disabled",
+            subtext: feature.description,
+            onPress: () => {
+              quick((s) => {
+                s.userState.setFlag(feature.flag, !enabled);
+              });
+            },
+          };
+        })}
+      />
+    </SidebarTemplate>
+  );
+};

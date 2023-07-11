@@ -15,18 +15,20 @@ import { START_EPD } from "~/utils/chess";
 import { ReviewText } from "./ReviewText";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
+  SeeMoreActions,
   SidebarAction,
   SidebarFullWidthButton,
   SidebarSectionHeader,
 } from "./SidebarActions";
 import { bySide } from "~/utils/repertoire";
 import {
+  BetaFeaturesSettings,
   CoverageSettings,
   RatingSettings,
   ThemeSettings,
 } from "./SidebarSettings";
 import { combinedThemes, COMBINED_THEMES_BY_ID } from "~/utils/theming";
-import { Accessor, For, Show } from "solid-js";
+import { Accessor, createSignal, For, Show } from "solid-js";
 import { FeedbackView } from "./FeedbackView";
 import client from "~/utils/client";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
@@ -34,12 +36,12 @@ import { PreReview } from "./PreReview";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
 
 export const RepertoireHome = () => {
-  const userState = getAppState().userState;
-  const themeId = () => userState.user?.theme;
+  const userState = () => getAppState().userState;
+  const themeId = () => userState().user?.theme;
   const theme = () =>
     find(combinedThemes, (theme) => theme.boardTheme == themeId()) ||
     COMBINED_THEMES_BY_ID["default"];
-  const pieceSet = () => userState.user?.pieceSet;
+  const pieceSet = () => userState().user?.pieceSet;
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
     (s) => [
       bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -94,8 +96,9 @@ export const RepertoireHome = () => {
     } as SidebarAction);
     return actions;
   };
+  const [settingsExpanded, setSettingsExpanded] = createSignal(false);
   return (
-    <Show when={userState.user}>
+    <Show when={userState().user}>
       <SidebarTemplate header={null} actions={[]} bodyPadding={false}>
         <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
           <For each={SIDES}>
@@ -162,7 +165,7 @@ export const RepertoireHome = () => {
                     },
                     text: "Cover positions seen in",
                     right: `1 in ${Math.round(
-                      1 / userState.getCurrentThreshold()
+                      1 / userState().getCurrentThreshold()
                     )} games`,
                     style: "secondary",
                   } as SidebarAction,
@@ -176,7 +179,9 @@ export const RepertoireHome = () => {
                       });
                     },
                     text: "Your rating",
-                    right: `${userState.user?.ratingRange} ${userState.user?.ratingSystem}`,
+                    right: `${userState().user?.ratingRange} ${
+                      userState().user?.ratingSystem
+                    }`,
                     style: "secondary",
                   } as SidebarAction,
                   {
@@ -193,7 +198,26 @@ export const RepertoireHome = () => {
                   {
                     onPress: () => {
                       quick((s) => {
-                        if (!userState.user?.subscribed) {
+                        trackEvent("home.settings.beta_features");
+                        s.repertoireState.browsingState.pushView(
+                          BetaFeaturesSettings
+                        );
+                      });
+                    },
+                    text: "Beta features",
+                    hidden: !settingsExpanded(),
+                    right: `${
+                      (userState().user?.flags?.length ?? 0) > 0
+                        ? `${userState().user?.flags?.length} enabled`
+                        : "None enabled"
+                    }`,
+                    style: "secondary",
+                  } as SidebarAction,
+                  {
+                    hidden: !settingsExpanded(),
+                    onPress: () => {
+                      quick((s) => {
+                        if (!userState().user?.subscribed) {
                           trackEvent("home.settings.subscribe");
                           s.repertoireState.browsingState.pushView(
                             UpgradeSubscriptionView
@@ -209,7 +233,7 @@ export const RepertoireHome = () => {
                         }
                       });
                     },
-                    text: userState.user?.subscribed
+                    text: userState().user?.subscribed
                       ? "Manage your subscription"
                       : "Upgrade to add unlimited moves",
                     style: "secondary",
@@ -221,6 +245,12 @@ export const RepertoireHome = () => {
             >
               {(action, i) => <SidebarFullWidthButton action={action} />}
             </For>
+            <SeeMoreActions
+              text={settingsExpanded() ? "Hide" : `More options...`}
+              onClick={() => {
+                setSettingsExpanded(!settingsExpanded());
+              }}
+            />
           </div>
           <Spacer height={46} />
         </>

@@ -37,7 +37,7 @@ import {
   createChessboardInterface,
 } from "./chessboard_interface";
 import { PracticeComplete } from "~/components/PracticeComplete";
-import { countQueue, getQuizMoves, getQuizPlans, QuizGroup } from "./queues";
+import { countQueue, Quiz, QuizGroup } from "./queues";
 import { isMoveDifficult } from "./srs";
 import { COMMON_MOVES_CUTOFF } from "./review";
 import { parsePlansToQuizMoves } from "./plans";
@@ -77,12 +77,13 @@ export interface ReviewState {
   reviewStats: ReviewStats;
   activeQueue: QuizGroup[];
   activeOptions: ReviewOptions | null;
+  planIndex: number;
   currentQuizGroup?: QuizGroup;
   reviewSide?: Side;
   completedReviewPositionMoves: Record<string, RepertoireMove>;
   reviewLine: (line: string[], side: Side) => void;
   giveUp: () => void;
-  setupNextMove: (delay?: number) => void;
+  setupNextMove: () => void;
   startReview: (options: ReviewOptions) => void;
   markMovesReviewed: (results: ReviewPositionResults[]) => void;
   getRemainingReviewPositionMoves: () => RepertoireMove[];
@@ -147,6 +148,7 @@ export const getInitialReviewState = (
     // queues: EMPTY_QUEUES,
     activeQueue: [] as QuizGroup[],
     activeOptions: null,
+    planIndex: 0,
     markMovesReviewed: (results: ReviewPositionResults[]) => {
       trackEvent(`reviewing.reviewed_move`);
       set(([s, rs]) => {
@@ -198,7 +200,7 @@ export const getInitialReviewState = (
         }
         s.allReviewPositionMoves = {};
         s.activeQueue.forEach((m) => {
-          getQuizMoves(m)?.forEach((m) => {
+          Quiz.getMoves(m)?.forEach((m) => {
             if (!s.allReviewPositionMoves[m.epd]) {
               s.allReviewPositionMoves[m.epd] = {};
             }
@@ -213,10 +215,11 @@ export const getInitialReviewState = (
         });
         s.setupNextMove();
       }),
-    setupNextMove: (delay) =>
+    setupNextMove: () =>
       set(([s, rs]) => {
         s.chessboard.setFrozen(false);
         s.showNext = false;
+        s.planIndex = 0;
         console.log("setting up next");
         if (s.currentQuizGroup) {
           const failedMoves = values(s.failedReviewPositionMoves);
@@ -228,7 +231,7 @@ export const getInitialReviewState = (
               epd: s.currentQuizGroup.epd,
             });
           }
-          let moves = getQuizMoves(s.currentQuizGroup);
+          let moves = Quiz.getMoves(s.currentQuizGroup);
           if (moves) {
             s.markMovesReviewed(
               moves.map((m) => {
@@ -251,51 +254,45 @@ export const getInitialReviewState = (
           return;
         }
         const currentQuizGroup = s.currentQuizGroup as QuizGroup;
-        const setup = () => {
-          set(([s]) => {
-            s.reviewSide = currentQuizGroup.side;
-            s.failedReviewPositionMoves = {};
-            s.completedReviewPositionMoves = {};
-            s.chessboard.setPerspective(currentQuizGroup.side);
-            s.chessboard.setMode("normal");
-            s.chessboard.resetPosition();
-            s.chessboard.playPgn(currentQuizGroup.line);
-            const lastOpponentMove = last(
-              s.chessboard.get((s) => s.position).history({ verbose: true })
-            );
-
-            let plans = getQuizPlans(currentQuizGroup);
-            console.log("plans?", plans);
-            if (plans) {
-              let plan = plans[0];
-              s.chessboard.highlightSquare(plan.fromSquare);
-              s.chessboard.setTapOptions(plan.options ?? []);
-              s.chessboard.setMode("tap");
-            } else {
-              s.chessboard.backOne({ clear: true, skipAnimation: true });
-            }
-
-            if (lastOpponentMove) {
-              // TODO: figure out why the setTimeout is needed here, bug is
-              // that practicing doesn't play the first move on the board if
-              // there's no delay. I imagine it's because the piece refs aren't
-              // there yet? Only the first move that breaks
-              window.setTimeout(() => {
-                set(([s]) => {
-                  s.chessboard.makeMove(lastOpponentMove, { animate: true });
-                });
-              }, 0);
-            }
-          });
-        };
-
         s.reviewStats.due = countQueue(s.activeQueue);
-        if (delay) {
-          setTimeout(() => {
-            setup();
-          }, delay);
+        s.reviewSide = currentQuizGroup.side;
+        s.failedReviewPositionMoves = {};
+        s.completedReviewPositionMoves = {};
+        s.chessboard.setPerspective(currentQuizGroup.side);
+        s.chessboard.setMode("normal");
+        s.chessboard.resetPosition();
+        s.chessboard.playPgn(currentQuizGroup.line);
+        const lastOpponentMove = last(
+          s.chessboard.get((s) => s.position).history({ verbose: true })
+        );
+        s.chessboard.set((c) => {
+          c.plans = [];
+        });
+
+        let plans = Quiz.getPlans(currentQuizGroup);
+        if (plans) {
+          let plan = plans[0];
+          s.chessboard.set((c) => {
+            c.showPlans = true;
+            c.hideLastMoveHighlight = true;
+          });
+          s.chessboard.highlightSquare(plan.fromSquare);
+          s.chessboard.setTapOptions(plan.options ?? []);
+          s.chessboard.setMode("tap");
         } else {
-          setup();
+          s.chessboard.backOne({ clear: true, skipAnimation: true });
+        }
+
+        if (lastOpponentMove) {
+          // TODO: figure out why the setTimeout is needed here, bug is
+          // that practicing doesn't play the first move on the board if
+          // there's no delay. I imagine it's because the piece refs aren't
+          // there yet? Only the first move that breaks
+          window.setTimeout(() => {
+            set(([s]) => {
+              s.chessboard.makeMove(lastOpponentMove, { animate: true });
+            });
+          }, 0);
         }
       }, "setupNextMove"),
 
@@ -383,14 +380,14 @@ export const getInitialReviewState = (
                       side,
                       position
                     );
-                    take(quizPlans, 6).forEach((qp) => {
-                      queue.push({
-                        plans: [qp],
-                        line: lineToPgn(line),
-                        side,
-                        epd,
-                      } as QuizGroup);
-                    });
+                    queue.push({
+                      plans: [...quizPlans],
+                      remainingPlans: quizPlans,
+                      completedPlans: [],
+                      line: lineToPgn(line),
+                      side,
+                      epd,
+                    } as QuizGroup);
                   });
                 }
               }
@@ -407,7 +404,7 @@ export const getInitialReviewState = (
         });
         if (options.filter === "common") {
           const byIncidence = sortBy(
-            map(queue, (m) => getQuizMoves(m)?.[0].incidence ?? 0),
+            map(queue, (m) => Quiz.getMoves(m)?.[0].incidence ?? 0),
             (v) => -v
           );
           const commonCutoff =
@@ -475,7 +472,7 @@ export const getInitialReviewState = (
       }),
     getRemainingReviewPositionMoves: () =>
       get(([s]) => {
-        return filter(getQuizMoves(s.currentQuizGroup!), (m) => {
+        return filter(Quiz.getMoves(s.currentQuizGroup!), (m) => {
           return isNil(s.completedReviewPositionMoves[m.sanPlus]);
         });
       }),
@@ -487,7 +484,7 @@ export const getInitialReviewState = (
     c.delegate = {
       askForPromotionPiece: (requestedMove: Move) => {
         return get(([s]) => {
-          const currentMove = getQuizMoves(s.currentQuizGroup!)?.[0];
+          const currentMove = Quiz.getMoves(s.currentQuizGroup!)?.[0];
           if (!currentMove) {
             return null;
           }
@@ -513,13 +510,27 @@ export const getInitialReviewState = (
       madeMove: noop,
       tappedSquare: (square) =>
         set(([s]) => {
-          let plans = getQuizPlans(s.currentQuizGroup!);
-          if (!plans) {
+          let remaningPlans = Quiz.getRemainingPlans(
+            s.currentQuizGroup!,
+            s.planIndex
+          );
+          if (!remaningPlans) {
             return;
           }
-          let plan = plans[0];
-          console.log({ plan });
+          let plan = remaningPlans[0];
+          let next = remaningPlans[1];
           let correct = includes(plan.toSquares, square);
+          if (correct) {
+            s.chessboard.setTapOptions(next?.options ?? []);
+            s.chessboard.set((c) => {
+              let completedPlans = Quiz.getCompletedPlans(
+                s.currentQuizGroup!,
+                s.planIndex
+              );
+              c.plans =
+                [...(completedPlans ?? []), plan]?.map((p) => p.metaPlan) ?? [];
+            });
+          }
           s.chessboard.showMoveFeedback(
             {
               square,
@@ -528,7 +539,18 @@ export const getInitialReviewState = (
             () => {
               set(([s]) => {
                 if (correct) {
-                  s.setupNextMove();
+                  s.planIndex++;
+                  let remaningPlans = Quiz.getRemainingPlans(
+                    s.currentQuizGroup!,
+                    s.planIndex
+                  );
+                  let plan = first(remaningPlans);
+                  s.chessboard.setTapOptions(plan?.options ?? []);
+                  s.chessboard.highlightSquare(plan?.fromSquare ?? null);
+                  if (isEmpty(remaningPlans)) {
+                    s.showNext = true;
+                    return;
+                  }
                 }
               });
             }
@@ -537,7 +559,7 @@ export const getInitialReviewState = (
       shouldMakeMove: (move: Move) =>
         set(([s]) => {
           const matchingResponse = find(
-            getQuizMoves(s.currentQuizGroup!),
+            Quiz.getMoves(s.currentQuizGroup!),
             (m) => move.san == m.sanPlus
           );
           if (matchingResponse) {
@@ -560,7 +582,7 @@ export const getInitialReviewState = (
                     console.log("undo because multiple");
                   }
 
-                  getQuizMoves(s.currentQuizGroup!)?.forEach((move) => {
+                  Quiz.getMoves(s.currentQuizGroup!)?.forEach((move) => {
                     s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed =
                       true;
                   });

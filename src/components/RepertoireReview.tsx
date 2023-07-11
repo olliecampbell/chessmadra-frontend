@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isNil, filter, range, forEach, find } from "lodash-es";
+import { isNil, filter, range, forEach, find, first } from "lodash-es";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import {
   useRepertoireState,
@@ -18,7 +18,7 @@ import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
 import { SidebarHeader } from "./RepertoireEditingHeader";
-import { getQuizMoves, getQuizPlans, QuizGroup } from "~/utils/queues";
+import { Quiz, QuizGroup } from "~/utils/queues";
 import { pieceSymbolToPieceName } from "~/utils/plans";
 import {
   BoardTheme,
@@ -122,24 +122,33 @@ export const RepertoireReview = (props: {}) => {
   );
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
-  const num = () => getQuizMoves(currentMove()!)?.length ?? 0;
+  const num = () => Quiz.getMoves(currentMove()!)?.length ?? 0;
   const numCompleted = () =>
     filter(
-      getQuizMoves(currentMove()!),
+      Quiz.getMoves(currentMove()!),
       (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus])
     ).length;
-  const isPlanPractice = () => !!getQuizPlans(currentMove()!);
+  const isPlanPractice = () => !!Quiz.getPlans(currentMove()!);
+  const reviewState = () => getAppState().repertoireState.reviewState;
   const body = () => {
-    if (showNext()) {
+    if (showNext() && !isPlanPractice()) {
       if (num() === 1) {
         return "This move is in your repertoire";
       } else {
         return null;
       }
     }
-    let plans = getQuizPlans(currentMove()!);
-    if (plans) {
-      let plan = plans[0];
+    let plans = Quiz.getRemainingPlans(currentMove()!, reviewState().planIndex);
+    if (isPlanPractice()) {
+      let plan = first(plans);
+      if (!plan) {
+        return (
+          <>
+            These are your plans from this position, take a second to review
+            them
+          </>
+        );
+      }
       if (plan.type == "castling") {
         return (
           <>
@@ -167,7 +176,7 @@ export const RepertoireReview = (props: {}) => {
         </>
       );
     }
-    let moves = getQuizMoves(currentMove()!);
+    let moves = Quiz.getMoves(currentMove()!);
     if (moves?.length === 1) {
       if (moves[0].epd === START_EPD) {
         return "Play your first move on the board";
