@@ -8,7 +8,7 @@ import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
 import { bySide } from "~/utils/repertoire";
 import { isMoveDifficult } from "~/utils/srs";
-import { countQueue } from "~/utils/queues";
+import { countQueue, getQuizMoves } from "~/utils/queues";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { ReviewText } from "./ReviewText";
 import { Label } from "./Label";
@@ -27,7 +27,7 @@ export const PreReview = (props: { side: Side | null }) => {
     });
     // todo: this could be more performant
     const difficultCount = countQueue(
-      filter(queue, (m) => some(m.moves, (m) => isMoveDifficult(m)))
+      filter(queue, (m) => some(getQuizMoves(m), (m) => isMoveDifficult(m)))
     );
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);

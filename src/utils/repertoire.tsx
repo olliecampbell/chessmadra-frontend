@@ -1,5 +1,6 @@
 import { Color } from "@lubert/chess.ts";
 import { flatten, forEach } from "lodash-es";
+import { Plan } from "./models";
 
 export function sideOfLastmove(_line: string[] | string): Side {
   let line = _line;
@@ -60,6 +61,7 @@ export function otherSide(side: Side) {
 
 export interface RepertoireSide {
   positionResponses: Record<string, RepertoireMove[]>;
+  plans: Record<string, Plan[]>;
 }
 
 export function getAllRepertoireMoves(

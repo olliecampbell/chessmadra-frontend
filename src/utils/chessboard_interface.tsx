@@ -33,6 +33,7 @@ type MakeMoveOptions = {
 };
 
 type MoveFeedbackType = "correct" | "incorrect";
+type ChessboardMode = "tap" | "normal";
 
 export interface ChessboardInterface {
   set: <T>(s: (s: ChessboardViewState) => T) => T | null;
@@ -73,6 +74,8 @@ export interface ChessboardInterface {
   stepPreviewMove: () => void;
   stepAnimationQueue: () => void;
   requestToMakeMove: (move: Move, options?: MakeMoveOptions) => void;
+  highlightSquare: (square: Square) => void;
+  setTapOptions: (squares: Square[]) => void;
   availableMovesFrom: (square: Square) => Move[];
   getLastMove: () => Move | undefined;
   getCurrentEpd: () => string;
@@ -81,6 +84,7 @@ export interface ChessboardInterface {
   updateMoveLogPgn: () => void;
   resumeNotifyingDelegates: () => void;
 
+  setMode: (_: ChessboardMode) => void;
   setFrozen: (_: boolean) => void;
   setPerspective: (_: Side) => void;
   showMoveFeedback(
@@ -97,6 +101,7 @@ export interface ChessboardInterface {
 }
 
 export interface ChessboardDelegate {
+  tappedSquare?: (square: Square) => void;
   madeManualMove?(): void;
   shouldMakeMove?: (move: Move) => boolean;
   madeMove?: (move: Move) => void;
@@ -109,6 +114,8 @@ export interface ChessboardDelegate {
 }
 
 export interface ChessboardViewState {
+  highlightedSquares: Set<Square>;
+  tapOptions: Set<Square>;
   animating: boolean;
   animatingMoveSquare?: Square;
   moveFeedback: {
@@ -153,6 +160,7 @@ export interface ChessboardViewState {
   maxPlanOccurence?: number;
   plans: MetaPlan[];
   showPlans?: boolean;
+  mode: ChessboardMode;
 
   // history stuff
   moveLog: string[];
@@ -177,11 +185,14 @@ export const createChessboardInterface = (): [
     createStore<ChessboardViewState>({
       flipped: false,
       frozen: false,
+      highlightedSquares: new Set(),
+      tapOptions: new Set(),
       moveFeedback: {
         type: "incorrect",
       },
       // @ts-ignore
       delegate: null,
+      mode: "normal",
       plans: [],
       notifyingDelegates: true,
       moveLog: [],
@@ -240,6 +251,11 @@ export const createChessboardInterface = (): [
       ).turn() === "w"
         ? "white"
         : "black";
+    },
+    setMode: (x: ChessboardMode) => {
+      set((s) => {
+        s.mode = x;
+      });
     },
     setFrozen: (x: boolean) => {
       set((s) => {
@@ -583,6 +599,17 @@ export const createChessboardInterface = (): [
       } else {
         return null;
       }
+    },
+    setTapOptions: (squares: Square[]) => {
+      set((s) => {
+        s.tapOptions = new Set(squares);
+      });
+    },
+    highlightSquare: (square: Square) => {
+      set((s) => {
+        s.highlightedSquares = new Set([square]);
+        console.log("highlightedSquares", s.highlightedSquares);
+      });
     },
     requestToMakeMove: (move: Move, options?: MakeMoveOptions) => {
       set((s) => {

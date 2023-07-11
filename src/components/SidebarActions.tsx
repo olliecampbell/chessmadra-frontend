@@ -12,12 +12,12 @@ import {
 } from "lodash-es";
 import { CMText } from "./CMText";
 import {
+  getAppState,
   quick,
-  useBrowsingState,
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { lineToPositions } from "~/utils/chess";
 import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
@@ -76,13 +76,15 @@ export const SidebarActionsLegacy = () => {
   ]);
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   positionHistory = positionHistory ?? [];
-  const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
-  const [hasPlans] = useBrowsingState(([s, rs]) => [
-    !isEmpty(
-      rs.positionReports[s.sidebarState.currentSide][s.sidebarState.currentEpd]
-        ?.plans
-    ),
-  ]);
+  const hasPlans = () => {
+    let sidebarState = getAppState().repertoireState.browsingState.sidebarState;
+    let repertoireState = getAppState().repertoireState;
+    return !isEmpty(
+      repertoireState.positionReports[sidebarState.currentSide][
+        sidebarState.currentEpd
+      ]?.plans
+    );
+  };
   const biggestGapAction = () => useBiggestGapAction();
   const addBiggestMissAction = (buttons: SidebarAction[]) => {
     if (biggestGapAction()) {

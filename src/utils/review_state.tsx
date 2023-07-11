@@ -15,6 +15,7 @@ import {
   cloneDeep,
   sum,
   noop,
+  includes,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -36,9 +37,11 @@ import {
   createChessboardInterface,
 } from "./chessboard_interface";
 import { PracticeComplete } from "~/components/PracticeComplete";
-import { QuizMove } from "./queues";
+import { countQueue, getQuizMoves, getQuizPlans, QuizGroup } from "./queues";
 import { isMoveDifficult } from "./srs";
 import { COMMON_MOVES_CUTOFF } from "./review";
+import { parsePlansToQuizMoves } from "./plans";
+import { Chess } from "@lubert/chess.ts";
 
 export interface ReviewPositionResults {
   side: Side;
@@ -52,7 +55,7 @@ type Epd = string;
 
 export interface ReviewState {
   moveLog: string[];
-  buildQueue: (options: ReviewOptions) => QuizMove[];
+  buildQueue: (options: ReviewOptions) => QuizGroup[];
   stopReviewing: () => void;
   chessboard: ChessboardInterface;
   // getQueueLength: (side?: Side) => number;
@@ -72,9 +75,9 @@ export interface ReviewState {
   >;
   failedReviewPositionMoves: Record<string, RepertoireMove>;
   reviewStats: ReviewStats;
-  activeQueue: QuizMove[];
+  activeQueue: QuizGroup[];
   activeOptions: ReviewOptions | null;
-  currentMove?: QuizMove;
+  currentQuizGroup?: QuizGroup;
   reviewSide?: Side;
   completedReviewPositionMoves: Record<string, RepertoireMove>;
   reviewLine: (line: string[], side: Side) => void;
@@ -103,7 +106,8 @@ interface ReviewOptions {
   startLine?: string[];
   cram?: boolean;
   filter?: ReviewFilter;
-  customQueue?: QuizMove[];
+  customQueue?: QuizGroup[];
+  includePlans?: boolean;
 }
 
 const FRESH_REVIEW_STATS = {
@@ -141,7 +145,7 @@ export const getInitialReviewState = (
     reviewStats: cloneDeep(FRESH_REVIEW_STATS),
     showNext: false,
     // queues: EMPTY_QUEUES,
-    activeQueue: [] as QuizMove[],
+    activeQueue: [] as QuizGroup[],
     activeOptions: null,
     markMovesReviewed: (results: ReviewPositionResults[]) => {
       trackEvent(`reviewing.reviewed_move`);
@@ -194,7 +198,7 @@ export const getInitialReviewState = (
         }
         s.allReviewPositionMoves = {};
         s.activeQueue.forEach((m) => {
-          m.moves.forEach((m) => {
+          getQuizMoves(m)?.forEach((m) => {
             if (!s.allReviewPositionMoves[m.epd]) {
               s.allReviewPositionMoves[m.epd] = {};
             }
@@ -213,48 +217,63 @@ export const getInitialReviewState = (
       set(([s, rs]) => {
         s.chessboard.setFrozen(false);
         s.showNext = false;
-        if (s.currentMove) {
+        console.log("setting up next");
+        if (s.currentQuizGroup) {
           const failedMoves = values(s.failedReviewPositionMoves);
           if (!isEmpty(failedMoves)) {
-            // let side = failedMoves[0].side;
             s.activeQueue.push({
               moves: failedMoves,
-              line: s.currentMove.line,
-              side: s.currentMove.side,
+              line: s.currentQuizGroup.line,
+              side: s.currentQuizGroup.side,
+              epd: s.currentQuizGroup.epd,
             });
           }
-          s.markMovesReviewed(
-            s.currentMove.moves.map((m) => {
-              const failed = s.failedReviewPositionMoves[m.sanPlus];
-              return {
-                side: m.side,
-                epd: m.epd,
-                sanPlus: m.sanPlus,
-                correct: !failed,
-              };
-            })
-          );
+          let moves = getQuizMoves(s.currentQuizGroup);
+          if (moves) {
+            s.markMovesReviewed(
+              moves.map((m) => {
+                const failed = s.failedReviewPositionMoves[m.sanPlus];
+                return {
+                  side: m.side,
+                  epd: m.epd,
+                  sanPlus: m.sanPlus,
+                  correct: !failed,
+                };
+              })
+            );
+          }
         }
-        s.currentMove = s.activeQueue.shift();
-        if (!s.currentMove) {
+        s.currentQuizGroup = s.activeQueue.shift();
+        if (!s.currentQuizGroup) {
           rs.updateRepertoireStructures();
           rs.browsingState.pushView(PracticeComplete);
           trackEvent(`review.review_complete`);
           return;
         }
-        const currentMove = s.currentMove as QuizMove;
+        const currentQuizGroup = s.currentQuizGroup as QuizGroup;
         const setup = () => {
           set(([s]) => {
-            s.reviewSide = currentMove.side;
+            s.reviewSide = currentQuizGroup.side;
             s.failedReviewPositionMoves = {};
             s.completedReviewPositionMoves = {};
-            s.chessboard.setPerspective(currentMove.moves[0].side);
+            s.chessboard.setPerspective(currentQuizGroup.side);
+            s.chessboard.setMode("normal");
             s.chessboard.resetPosition();
-            s.chessboard.playPgn(currentMove.line);
+            s.chessboard.playPgn(currentQuizGroup.line);
             const lastOpponentMove = last(
               s.chessboard.get((s) => s.position).history({ verbose: true })
             );
-            s.chessboard.backOne({ clear: true, skipAnimation: true });
+
+            let plans = getQuizPlans(currentQuizGroup);
+            console.log("plans?", plans);
+            if (plans) {
+              let plan = plans[0];
+              s.chessboard.highlightSquare(plan.fromSquare);
+              s.chessboard.setTapOptions(plan.options ?? []);
+              s.chessboard.setMode("tap");
+            } else {
+              s.chessboard.backOne({ clear: true, skipAnimation: true });
+            }
 
             if (lastOpponentMove) {
               // TODO: figure out why the setTimeout is needed here, bug is
@@ -270,7 +289,7 @@ export const getInitialReviewState = (
           });
         };
 
-        s.reviewStats.due = sum(map(s.activeQueue, (m) => m.moves.length));
+        s.reviewStats.due = countQueue(s.activeQueue);
         if (delay) {
           setTimeout(() => {
             setup();
@@ -310,25 +329,27 @@ export const getInitialReviewState = (
 
         // @ts-ignore
         s.reviewSide = null;
-        if (s.currentMove) {
+        if (s.currentQuizGroup) {
           s.activeQueue = [];
         }
-        s.currentMove = undefined;
+        s.currentQuizGroup = undefined;
       }),
     buildQueue: (options: ReviewOptions) =>
-      get(([s, rs]) => {
+      get(([_s, rs, gs]) => {
+        if (gs.userState.flagEnabled("quiz_plans")) {
+          options.includePlans = true;
+        }
         if (isNil(rs.repertoire)) {
           return null;
         }
-        let queue: QuizMove[] = [];
+        let queue: QuizGroup[] = [];
         shuffle(SIDES).forEach((side) => {
           const seen_epds = new Set();
           if (options.side && options.side !== side) {
             return;
           }
           const recurse = (epd: string, line: string[]) => {
-            // @ts-ignore
-            const responses = rs.repertoire[side].positionResponses[epd];
+            const responses = rs.repertoire![side].positionResponses[epd];
             if (responses?.[0]?.mine) {
               const needsToReviewAny = some(
                 responses,
@@ -343,11 +364,35 @@ export const getInitialReviewState = (
                 (options.filter == "due" && needsToReviewAny) ||
                 options.filter === "all";
               if (shouldAdd) {
+                // todo: should re-enable
                 queue.push({
                   moves: responses,
                   line: lineToPgn(line),
                   side,
-                } as QuizMove);
+                } as QuizGroup);
+                if (options.includePlans) {
+                  responses.forEach((r) => {
+                    let plans = rs.repertoire![side].plans[r.epdAfter];
+                    if (!plans) {
+                      return;
+                    }
+                    const fen = `${epd} 0 1`;
+                    const position = new Chess(fen);
+                    let quizPlans = parsePlansToQuizMoves(
+                      plans,
+                      side,
+                      position
+                    );
+                    take(quizPlans, 6).forEach((qp) => {
+                      queue.push({
+                        plans: [qp],
+                        line: lineToPgn(line),
+                        side,
+                        epd,
+                      } as QuizGroup);
+                    });
+                  });
+                }
               }
             }
 
@@ -362,7 +407,7 @@ export const getInitialReviewState = (
         });
         if (options.filter === "common") {
           const byIncidence = sortBy(
-            map(queue, (m) => m.moves[0].incidence ?? 0),
+            map(queue, (m) => getQuizMoves(m)?.[0].incidence ?? 0),
             (v) => -v
           );
           const commonCutoff =
@@ -372,7 +417,13 @@ export const getInitialReviewState = (
             filter(queue, (m) => m.moves[0].incidence >= commonCutoff),
             COMMON_MOVES_CUTOFF
           );
-          queue = commonQueue;
+          const epds = map(commonQueue, (q) => q.epd);
+          if (options.includePlans) {
+            const commonWithPlans = filter(queue, (m) => epds.includes(m.epd));
+            queue = commonWithPlans;
+          } else {
+            queue = commonQueue;
+          }
         }
         return queue;
       }),
@@ -380,7 +431,7 @@ export const getInitialReviewState = (
       set(([s, rs]) => {
         s.activeQueue = s.buildQueue(options);
         s.reviewStats = {
-          due: sum(map(s.activeQueue, (m) => m.moves.length)),
+          due: countQueue(s.activeQueue),
           incorrect: 0,
           correct: 0,
         };
@@ -424,7 +475,7 @@ export const getInitialReviewState = (
       }),
     getRemainingReviewPositionMoves: () =>
       get(([s]) => {
-        return filter(s.currentMove?.moves, (m) => {
+        return filter(getQuizMoves(s.currentQuizGroup!), (m) => {
           return isNil(s.completedReviewPositionMoves[m.sanPlus]);
         });
       }),
@@ -436,7 +487,7 @@ export const getInitialReviewState = (
     c.delegate = {
       askForPromotionPiece: (requestedMove: Move) => {
         return get(([s]) => {
-          const currentMove = s.currentMove?.moves[0];
+          const currentMove = getQuizMoves(s.currentQuizGroup!)?.[0];
           if (!currentMove) {
             return null;
           }
@@ -460,10 +511,33 @@ export const getInitialReviewState = (
       },
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       madeMove: noop,
+      tappedSquare: (square) =>
+        set(([s]) => {
+          let plans = getQuizPlans(s.currentQuizGroup!);
+          if (!plans) {
+            return;
+          }
+          let plan = plans[0];
+          console.log({ plan });
+          let correct = includes(plan.toSquares, square);
+          s.chessboard.showMoveFeedback(
+            {
+              square,
+              type: correct ? "correct" : "incorrect",
+            },
+            () => {
+              set(([s]) => {
+                if (correct) {
+                  s.setupNextMove();
+                }
+              });
+            }
+          );
+        }),
       shouldMakeMove: (move: Move) =>
         set(([s]) => {
           const matchingResponse = find(
-            s.currentMove!.moves,
+            getQuizMoves(s.currentQuizGroup!),
             (m) => move.san == m.sanPlus
           );
           if (matchingResponse) {
@@ -486,7 +560,7 @@ export const getInitialReviewState = (
                     console.log("undo because multiple");
                   }
 
-                  s.currentMove?.moves.forEach((move) => {
+                  getQuizMoves(s.currentQuizGroup!)?.forEach((move) => {
                     s.allReviewPositionMoves[move.epd][move.sanPlus].reviewed =
                       true;
                   });
@@ -495,7 +569,10 @@ export const getInitialReviewState = (
                   // todo: make this actually work
                   const continuesCurrentLine =
                     nextMove?.line ==
-                    lineToPgn([...pgnToLine(s.currentMove!.line), move.san]);
+                    lineToPgn([
+                      ...pgnToLine(s.currentQuizGroup!.line),
+                      move.san,
+                    ]);
                   // console.log(
                   //   "continuesCurrentLine",
                   //   continuesCurrentLine,
@@ -504,7 +581,7 @@ export const getInitialReviewState = (
                   // );
 
                   // @ts-ignore
-                  if (s.currentMove?.moves.length > 1) {
+                  if (s.currentQuizGroup?.moves.length > 1) {
                     s.showNext = true;
                   } else {
                     if (isEmpty(s.failedReviewPositionMoves)) {

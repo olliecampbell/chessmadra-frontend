@@ -41,7 +41,10 @@ export interface User {
   theme?: string;
   pieceSet?: string;
   subscribed: boolean;
+  flags: UserFlag[];
 }
+
+export type UserFlag = "quiz_plans";
 
 export interface LichessGame {
   id: string;

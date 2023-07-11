@@ -158,10 +158,6 @@ export function ChessboardView(props: {
       find(combinedThemes, (theme) => theme.boardTheme == user()?.theme) ||
       COMBINED_THEMES_BY_ID["default"]
   );
-  createEffect(() => {
-    console.log("user theme", user()?.theme);
-    console.log("combined theme", combinedTheme());
-  });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
   const pieceSet: Accessor<string> = () => combinedTheme().pieceSet;
@@ -247,6 +243,10 @@ export function ChessboardView(props: {
       chessboardLayout,
       tap
     );
+    if (chessboardStore().mode === "tap") {
+      chessboardStore().delegate.tappedSquare?.(square);
+      return;
+    }
     const piece = position().get(square);
     console.log("----", drag().square, square, piece);
     const availableMove = find(
@@ -389,6 +389,9 @@ export function ChessboardView(props: {
     });
   };
 
+  const manuallyHighlightedSquares = createMemo(
+    () => chessboardStore().highlightedSquares
+  );
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
   const x = (
@@ -593,8 +596,8 @@ export function ChessboardView(props: {
               c.noPointerEvents
             )}
           />
-          <For each={Object.keys(SQUARES)}>
-            {(square) => {
+          <For each={Object.keys(SQUARES) as Square[]}>
+            {(square: Square) => {
               const debug = "e2";
               // createEffect(() => {
               //   if (square === debug) {
@@ -669,7 +672,7 @@ export function ChessboardView(props: {
                       <Show when={piece()}>
                         <div
                           class={clsx(
-                            hiddenBecauseTake() ? "opacity-0" : "opacity-100",
+                            hiddenBecauseTake() && "opacity-0",
                             "transition-opacity"
                           )}
                         >
@@ -742,6 +745,11 @@ export function ChessboardView(props: {
                       >(null);
 
                       createEffect(() => {
+                        if (manuallyHighlightedSquares().has(square())) {
+                          setHighlightColor("next");
+                          setHighlightType("full");
+                          return;
+                        }
                         if (isDraggedOverSquare()) {
                           setHighlightColor("next");
                           setHighlightType("full");
@@ -823,6 +831,27 @@ export function ChessboardView(props: {
                                   feedback().type === "correct"
                                     ? "fa fa-circle-check text-[#79c977]"
                                     : "fa fa-circle-xmark text-[#c92b2b]"
+                                )}
+                              ></i>
+                            </div>
+                          </div>
+                          <div class="center z-5 absolute right-0 top-0 h-[40%] w-[40%] -translate-y-1/2 translate-x-1/2">
+                            <div
+                              class={clsx(
+                                `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `
+                              )}
+                              id={`option-${square()}`}
+                              style={s(
+                                c.zIndex(6),
+                                chessboardStore().tapOptions.has(square())
+                                  ? c.opacity(100)
+                                  : c.opacity(0)
+                              )}
+                            >
+                              <i
+                                class={clsx(
+                                  "bg-gray-10 text-[100cqw]",
+                                  "fa fa-circle-question text-[orange]"
                                 )}
                               ></i>
                             </div>

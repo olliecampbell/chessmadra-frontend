@@ -22,9 +22,12 @@ import {
   cloneDeep,
   uniqBy,
   isNil,
+  includes,
+  last,
 } from "lodash-es";
 import { useHovering } from "~/mocks";
-import { JSXElement } from "solid-js";
+import { JSX, JSXElement } from "solid-js";
+import { QuizPlan } from "~/utils/queues";
 
 export interface MetaPlan {
   plan: Plan;
@@ -35,11 +38,7 @@ export interface MetaPlan {
   piece: PieceSymbol;
 }
 
-export const getMetaPlans = (
-  _plans: Plan[],
-  activeSide: Side,
-  board: Chess
-): MetaPlan[] => {
+export const getMetaPlans = (_plans: Plan[], activeSide: Side): MetaPlan[] => {
   return ["white", "black"].flatMap((side) => {
     let plans = _plans;
     plans = filter(plans, (p) => p.side === side);
@@ -74,13 +73,18 @@ export const getMetaPlans = (
       });
     };
     plans.forEach((plan) => {
-      const piece = board.get(plan.fromSquare);
-      if (piece && toSide(piece.color) === side) {
+      let piece = plan.san.at(0);
+      if (!includes(["B", "N", "Q", "R", "K"], piece)) {
+        piece = "p";
+      }
+      let pieceSide =
+        plan.side === activeSide ? activeSide : otherSide(activeSide);
+      if (piece && pieceSide === side) {
         byFromSquare[plan.fromSquare].forEach((p) => {
           recurse(p, new Set());
         });
       }
-      if (piece?.type === "k") {
+      if (piece === "k") {
         ["d1", "f1", "d8", "f8"].forEach((square) => {
           // @ts-ignore
           byFromSquare[square]?.forEach((p) => {
@@ -122,7 +126,7 @@ export const getPlanPiece = (plan: Plan): PieceSymbol => {
   }
 };
 
-function pieceSymbolToPieceName(symbol: PieceSymbol): string {
+export function pieceSymbolToPieceName(symbol: PieceSymbol): string {
   switch (symbol) {
     case "n":
       return "knight";
@@ -143,7 +147,7 @@ function getPieceDescription(plan: MetaPlan): string {
   return `${pieceSymbolToPieceName(plan.piece)} on ${plan.plan.fromSquare}`;
 }
 
-type PlanSection = JSXElement;
+type PlanSection = JSX.Element;
 
 class PlanConsumer {
   metaPlans: MetaPlan[];
@@ -159,7 +163,7 @@ class PlanConsumer {
   constructor(plans: Plan[], side: Side, position: Chess) {
     this.adverbIndex = 0;
     this.planSections = [];
-    this.metaPlans = getMetaPlans(plans, side, position);
+    this.metaPlans = getMetaPlans(plans, side);
     this.plans = plans;
     this.side = side;
     this.consumed = new Set();
@@ -422,18 +426,19 @@ class PlanConsumer {
 
       this.consume(plan);
       this.addSection(() => {
-        <>
-          The {developmentPieceDescription} is {this.nextAdverb}{" "}
-          <PlanMoveText plan={plan}>
-            fianchettoed on {plan.plan.toSquare}
-          </PlanMoveText>
-        </>;
+        return (
+          <>
+            The {developmentPieceDescription} is {this.nextAdverb}{" "}
+            <PlanMoveText plan={plan}>
+              fianchettoed on {plan.plan.toSquare}
+            </PlanMoveText>
+          </>
+        );
       });
     });
   }
 
-  // @ts-ignore
-  addSection(section) {
+  addSection(section: () => JSX.Element) {
     this.planSections.push(section);
   }
 
@@ -523,6 +528,22 @@ export const parsePlans = (
   consumer.piecePlansConsumer();
   consumer.pawnPlansConsumer();
   return consumer;
+};
+
+export const parsePlansToQuizMoves = (
+  plans: Plan[],
+  side: Side,
+  position: Chess
+): QuizPlan[] => {
+  const consumer = new PlanQuizConsumer(plans, side, position);
+  // consumer.fianchettoConsumer();
+  consumer.consumeCastles();
+  // consumer.consumeCaptures();
+  // consumer.viaConsumer();
+  consumer.pieceDevelopmentConsumer();
+  // consumer.piecePlansConsumer();
+  // consumer.pawnPlansConsumer();
+  return consumer.quizPlans;
 };
 
 const PlanMoves = (props: {
@@ -667,3 +688,141 @@ const getDevelopmentPieceDescription = (plan: MetaPlan): string | null => {
     }
   }
 };
+
+class PlanQuizConsumer {
+  metaPlans: MetaPlan[];
+  plans: Plan[];
+  side: Side;
+  position: Chess;
+  consumed: Set<string>;
+  capturePieces: Record<Square, PieceSymbol>;
+  quizPlans: QuizPlan[];
+  adverbIndex: number;
+
+  constructor(plans: Plan[], side: Side, position: Chess) {
+    this.adverbIndex = 0;
+    this.metaPlans = getMetaPlans(plans, side);
+    this.quizPlans = [];
+    this.plans = plans;
+    this.side = side;
+    this.consumed = new Set();
+    this.position = position;
+    // @ts-ignore
+    this.planPrecedingCaptures = keyBy(
+      sortBy(
+        filter(this.metaPlans, (p) => p.plan.side !== side),
+        (p) => p.plan.occurences
+      ),
+      (p) => p.plan.toSquare
+    );
+    // @ts-ignore
+    this.capturePieces = mapValues(
+      keyBy(
+        sortBy(
+          filter(plans, (p) => p.side !== side),
+          (p) => p.occurences
+        ),
+        (p) => p.toSquare
+      ),
+      (p) => getPlanPiece(p)
+    );
+    forEach(SQUARES, (_, square) => {
+      const piece = position.get(square);
+      if (piece && toSide(piece.color) !== side) {
+        // @ts-ignore
+        this.capturePieces[square] = piece.type;
+      }
+    });
+  }
+
+  nextAdverb(): string {
+    const adverbs = ["typically", "generally", "usually", "often"];
+    return adverbs[this.adverbIndex++ % adverbs.length];
+  }
+
+  consume<T extends MetaPlan | (MetaPlan | undefined)[]>(plan: T): T {
+    if (Array.isArray(plan)) {
+      // @ts-ignore
+      plan.map((p) => this.consumed.add(p?.id));
+    } else {
+      this.consumed.add(plan.id);
+    }
+    return plan;
+  }
+
+  remainingPlans() {
+    let mineConsumed = 0;
+    this.metaPlans.forEach((plan) => {
+      if (this.consumed.has(plan.id) && plan.plan.side === this.side) {
+        mineConsumed++;
+      }
+    });
+    return take(
+      filter(
+        this.metaPlans,
+        (p) => !this.consumed.has(p.id) && p.plan.side === this.side
+      ),
+      7 - mineConsumed
+    );
+  }
+
+  addQuizPlan(quizPlan: QuizPlan) {
+    this.quizPlans.push(quizPlan);
+  }
+
+  consumeCastles() {
+    const plans = this.remainingPlans();
+    const queenside = find(plans, (p) => p.plan.san === "O-O-O");
+    const kingside = find(plans, (p) => p.plan.san === "O-O");
+    this.consume([queenside, kingside]);
+    if (!(queenside || kingside)) {
+      return null;
+    } else if (queenside && kingside) {
+      return null;
+    }
+    let castle: MetaPlan = (kingside ?? queenside) as MetaPlan;
+    this.addQuizPlan({
+      type: "castling",
+      options: this.side === "white" ? ["g1", "c1"] : ["g8", "c8"],
+      piece: castle.piece,
+      toSquares: [
+        castle.plan.toSquare.replace("h", "g").replace("a", "c") as Square,
+      ],
+      fromSquare: castle.plan.fromSquare,
+    });
+  }
+
+  pieceDevelopmentConsumer() {
+    this.remainingPlans().map((plan) => {
+      if (plan.plan.san.includes("x")) {
+        return;
+      }
+      const pieceDescription =
+        getDevelopmentPieceDescription(plan) || getPieceDescription(plan);
+      if (!pieceDescription) {
+        return;
+      }
+      if (this.position.get(plan.plan.fromSquare)?.type !== plan.piece) {
+        return;
+      }
+      const allDevelopmentPlans = filter(
+        this.remainingPlans(),
+        (p) =>
+          p.plan.fromSquare === plan.plan.fromSquare &&
+          p.piece === plan.piece &&
+          !this.consumed.has(p.id)
+      );
+      if (isEmpty(allDevelopmentPlans)) {
+        return;
+      }
+      this.consume(allDevelopmentPlans);
+      this.addQuizPlan({
+        type: "piece_movement",
+        piece: plan.piece,
+        toSquares: allDevelopmentPlans.map((p) => p.plan.toSquare),
+        fromSquare: plan.plan.fromSquare,
+      });
+      console.log("added quiz plan", last(this.quizPlans), plan);
+    });
+  }
+}

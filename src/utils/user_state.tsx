@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { AuthResponse, User } from "~/utils/models";
+import { AuthResponse, User, UserFlag } from "~/utils/models";
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -10,6 +10,7 @@ import client from "~/utils/client";
 import { BoardThemeId, PieceSetId } from "./theming";
 import { trackEvent } from "~/utils/trackEvent";
 import { noop } from "lodash-es";
+import { isDevelopment } from "./env";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -40,6 +41,7 @@ export interface UserState {
   pastLandingPage?: boolean;
   isSubscribed: () => boolean;
   getCheckoutLink: (annual: boolean) => Promise<string>;
+  flagEnabled: (flag: UserFlag) => boolean;
 }
 
 export enum AuthStatus {
@@ -52,6 +54,7 @@ export enum AuthStatus {
 type Stack = [UserState, AppState];
 const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
+const DEVELOPMENT_FLAGS: UserFlag[] = []; // ["quiz_plans"];
 
 export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,6 +95,14 @@ export const getInitialUserState = (
         if (user.email) {
           setUserId(user.email);
         }
+      });
+    },
+    flagEnabled: (flag: UserFlag) => {
+      return get(([s]) => {
+        return (
+          s.user?.flags.includes("quiz_plans") ||
+          (isDevelopment && DEVELOPMENT_FLAGS.includes("quiz_plans"))
+        );
       });
     },
     getCurrentThreshold: () => {

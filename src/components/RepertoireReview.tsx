@@ -1,9 +1,14 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { isNil, filter, range, forEach } from "lodash-es";
+import { isNil, filter, range, forEach, find } from "lodash-es";
 import { useIsMobileV2 } from "~/utils/isMobile";
-import { useRepertoireState, quick, useSidebarState } from "~/utils/app_state";
+import {
+  useRepertoireState,
+  quick,
+  useSidebarState,
+  getAppState,
+} from "~/utils/app_state";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
@@ -13,17 +18,27 @@ import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
 import { START_EPD } from "~/utils/chess";
 import { SidebarHeader } from "./RepertoireEditingHeader";
-import { QuizMove } from "~/utils/queues";
+import { getQuizMoves, getQuizPlans, QuizGroup } from "~/utils/queues";
+import { pieceSymbolToPieceName } from "~/utils/plans";
+import {
+  BoardTheme,
+  BOARD_THEMES_BY_ID,
+  CombinedTheme,
+  combinedThemes,
+  COMBINED_THEMES_BY_ID,
+} from "~/utils/theming";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobileV2();
   const [completedReviewPositionMoves, currentMove, showNext] =
     useRepertoireState((s) => [
       s.reviewState.completedReviewPositionMoves,
-      s.reviewState.currentMove,
+      s.reviewState.currentQuizGroup,
       s.reviewState.showNext,
     ]);
   const [mode] = useSidebarState(([s]) => [s.mode]);
+  const side = () =>
+    getAppState().repertoireState.reviewState.reviewSide as Side;
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [allReviewPositionMoves] = useRepertoireState((s) => [
     s.reviewState.allReviewPositionMoves,
@@ -86,9 +101,9 @@ export const RepertoireReview = (props: {}) => {
       onPress: () => {
         quick((s) => {
           trackEvent(`${mode()}.inspect_line`);
-          const m = currentMove() as QuizMove;
+          const m = currentMove() as QuizGroup;
           s.repertoireState.backToOverview();
-          s.repertoireState.startBrowsing(m.moves[0].side, "build", {
+          s.repertoireState.startBrowsing(m.side, "build", {
             pgnToPlay: m.line,
           });
         });
@@ -98,15 +113,22 @@ export const RepertoireReview = (props: {}) => {
       text: "Exit practice and view in repertoire builder",
     },
   ];
-  createEffect(() => {
-    console.log("current move", currentMove());
-  });
-  const num = () => currentMove()?.moves.length ?? 0;
+  const userState = getAppState().userState;
+  const user = () => userState.user;
+  const combinedTheme: Accessor<CombinedTheme> = createMemo(
+    () =>
+      find(combinedThemes, (theme) => theme.boardTheme == user()?.theme) ||
+      COMBINED_THEMES_BY_ID["default"]
+  );
+  const theme: Accessor<BoardTheme> = () =>
+    BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
+  const num = () => getQuizMoves(currentMove()!)?.length ?? 0;
   const numCompleted = () =>
     filter(
-      currentMove()?.moves,
+      getQuizMoves(currentMove()!),
       (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus])
     ).length;
+  const isPlanPractice = () => !!getQuizPlans(currentMove()!);
   const body = () => {
     if (showNext()) {
       if (num() === 1) {
@@ -115,16 +137,45 @@ export const RepertoireReview = (props: {}) => {
         return null;
       }
     }
-    if (currentMove()?.moves.length === 1) {
-      if (currentMove()?.moves[0].epd === START_EPD) {
+    let plans = getQuizPlans(currentMove()!);
+    if (plans) {
+      let plan = plans[0];
+      if (plan.type == "castling") {
+        return (
+          <>
+            Which side does{" "}
+            <span
+              class="rounded-sm p-1 py-0.5 font-bold"
+              style={{ ["background-color"]: theme().highlightNextMove }}
+            >
+              {side()}
+            </span>{" "}
+            usually castle to? Tap on the board to indicate the correct square.
+          </>
+        );
+      }
+      return (
+        <>
+          Where does the{" "}
+          <span
+            class="rounded-sm p-1 py-0.5 font-bold"
+            style={{ ["background-color"]: theme().highlightNextMove }}
+          >
+            {pieceSymbolToPieceName(plan.piece)} on {plan.fromSquare}
+          </span>{" "}
+          usually belong? Tap on the board to indicate the correct square.
+        </>
+      );
+    }
+    let moves = getQuizMoves(currentMove()!);
+    if (moves?.length === 1) {
+      if (moves[0].epd === START_EPD) {
         return "Play your first move on the board";
       } else {
         return "Play the correct move on the board";
       }
     } else {
-      return `You have ${
-        currentMove()?.moves.length
-      } responses to this position in your repertoire. Play all your responses on the board`;
+      return `You have ${moves?.length} responses to this position in your repertoire. Play all your responses on the board`;
     }
   };
   return (
@@ -135,7 +186,9 @@ export const RepertoireReview = (props: {}) => {
     >
       <div class={"row w-full items-center justify-between"}>
         <SidebarHeader>
-          {isMobile() ? "Practice" : "Practicing moves"}
+          {isMobile()
+            ? "Practice"
+            : `Practicing ${isPlanPractice() ? "plans" : "moves"}`}
         </SidebarHeader>
         <div class="row items-center space-x-4 lg:space-x-8">
           <For each={progressIcons()}>
