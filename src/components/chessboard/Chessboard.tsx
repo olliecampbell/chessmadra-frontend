@@ -860,7 +860,12 @@ export function ChessboardView(props: {
                                 `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `
                               )}
                               id={`option-${square()}`}
-                              style={s(c.zIndex(6))}
+                              style={s(
+                                c.zIndex(6),
+                                chessboardStore().tapOptions.has(square())
+                                  ? c.opacity(100)
+                                  : c.opacity(0)
+                              )}
                             >
                               <i
                                 class={clsx(

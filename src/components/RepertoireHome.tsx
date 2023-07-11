@@ -205,7 +205,7 @@ export const RepertoireHome = () => {
                       });
                     },
                     text: "Beta features",
-                    hidden: !settingsExpanded(),
+                    hidden: !settingsExpanded() || !userState().user?.isAdmin,
                     right: `${
                       (userState().user?.flags?.length ?? 0) > 0
                         ? `${userState().user?.flags?.length} enabled`

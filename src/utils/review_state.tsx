@@ -265,6 +265,7 @@ export const getInitialReviewState = (
         const lastOpponentMove = last(
           s.chessboard.get((s) => s.position).history({ verbose: true })
         );
+        s.chessboard.highlightSquare(null);
         s.chessboard.set((c) => {
           c.plans = [];
         });
@@ -384,7 +385,7 @@ export const getInitialReviewState = (
                       plans: [...quizPlans],
                       remainingPlans: quizPlans,
                       completedPlans: [],
-                      line: lineToPgn(line),
+                      line: lineToPgn([...line, r.sanPlus]),
                       side,
                       epd,
                     } as QuizGroup);
