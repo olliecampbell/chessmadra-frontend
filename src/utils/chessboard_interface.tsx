@@ -887,37 +887,39 @@ export const createChessboardInterface = (): [
       set((state) => {
         state.moveFeedback.type = type;
         const ref = state.refs.feedbackRefs[square];
-        anime({
-          targets: ref,
-          easing: "easeInOutSine",
-          duration: 250,
-          opacity: [0, 1.0],
-          scale: [0.8, 1.2, 1.0],
-          autoplay: true,
-        });
-        const whiteOverlay = ref?.querySelector(
-          "#white-overlay"
-        ) as HTMLDivElement;
-        anime({
-          targets: whiteOverlay,
-          easing: "easeInOutSine",
-          duration: 200,
-          opacity: [0.7, 0],
-          autoplay: true,
-        }).finished.then(() => {
-          anime({
-            targets: ref,
-            easing: "easeInOutSine",
-            duration: 300,
-            opacity: [1.0, 0],
-            scale: [1.0, 0.6],
-            delay: 150,
+        // const whiteOverlay = ref?.querySelector(
+        //   "#white-overlay"
+        // ) as HTMLDivElement;
+        anime
+          .timeline({
+            duration: 250,
             autoplay: true,
-          }).finished.then(() => {
-            whiteOverlay.style.opacity = "1";
-            callback?.();
+            easing: "easeInOutSine",
+          })
+          .add({
+            targets: ref,
+            opacity: [0, 1.0],
+            scale: [0.8, 1.2, 1.0],
+          })
+          // .add({
+          //   targets: whiteOverlay,
+          //   opacity: [0.4, 0],
+          //   duration: 100,
+          // })
+          .finished.then(() => {
+            anime({
+              targets: ref,
+              easing: "easeInOutSine",
+              duration: 300,
+              opacity: [1.0, 0],
+              scale: [1.0, 0.8],
+              delay: 200,
+              autoplay: true,
+            }).finished.then(() => {
+              // whiteOverlay.style.opacity = "1";
+              callback?.();
+            });
           });
-        });
       });
     },
     flashRing: (success: boolean) => {
