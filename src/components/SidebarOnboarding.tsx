@@ -12,7 +12,7 @@ import {
 } from "~/utils/app_state";
 import { SidebarOnboardingImportType } from "~/utils/browsing_state";
 import { trackEvent } from "~/utils/trackEvent";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction } from "./SidebarActions";
 import { useOutsideClick } from "./useOutsideClick";
 import { SidebarTemplate } from "./SidebarTemplate";
@@ -39,6 +39,7 @@ import { createForm } from "@felte/solid";
 import { validator } from "@felte/validator-yup";
 import * as yup from "yup";
 import { RepertoireCompletion } from "./RepertoireCompletion";
+import { renderThreshold } from "~/utils/threshold";
 
 export const OnboardingIntro = () => {
   const bullets = [
@@ -372,12 +373,12 @@ export const HowToComplete = (props: {
   const bullets = () => [
     <>
       Your goal is to cover any positions which occur in at least{" "}
-      <b>1 in {Math.round(1 / threshold())}</b> games.
+      <b>{renderThreshold(threshold())}</b> games.
     </>,
     props.miss ? (
       <>
         Your biggest gap is in the <b>{props.miss.name}</b>, which you’ll see in{" "}
-        <b>1 in {Math.round(1 / props.miss.incidence)}</b> games
+        <b>{renderThreshold(threshold())}</b> games
       </>
     ) : (
       <>

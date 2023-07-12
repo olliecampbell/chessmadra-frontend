@@ -10,6 +10,7 @@ import { getAppropriateEcoName } from "~/utils/eco_codes";
 import { RepertoireCompletion } from "./RepertoireCompletion";
 import { HowToComplete } from "./SidebarOnboarding";
 import { createMemo, Show } from "solid-js";
+import { renderThreshold } from "~/utils/threshold";
 
 export const PreBuild = (props: { side: Side }) => {
   const biggestMiss = createMemo(
@@ -82,7 +83,7 @@ export const PreBuild = (props: { side: Side }) => {
             return (
               <p class="body-text ">
                 Your biggest gap is in the <b>{miss().name}</b>, which you’ll
-                see in <b>1 in {Math.round(1 / miss().incidence)}</b> games
+                see in <b>{renderThreshold(miss().incidence)}</b> games
               </p>
             );
           }}
