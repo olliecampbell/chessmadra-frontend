@@ -399,21 +399,6 @@ export const createChessboardInterface = (): [
             chessboardInterface.stepPreviewMove();
           });
         });
-        // s.previewPieceMoveAnim.setValue(start);
-        // Animated.sequence([
-        //   Animated.timing(s.previewPieceMoveAnim, {
-        //     toValue: end,
-        //     duration,
-        //     useNativeDriver: true,
-        //     easing: Easing.out(Easing.ease),
-        //   }),
-        // ]).start(({ finished }) => {
-        //   set((s) => {
-        //     s.previewedMove = null;
-        //     s.isReversingPreviewMove = false;
-        //     s.stepPreviewMove();
-        //   });
-        // });
       });
     },
     stepAnimationQueue: () => {

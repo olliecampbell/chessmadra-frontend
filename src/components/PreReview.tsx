@@ -1,4 +1,3 @@
-// import { ExchangeRates } from "~/ExchangeRate";
 import { filter, some, values, sum } from "lodash-es";
 import { useRepertoireState, quick, getAppState } from "~/utils/app_state";
 import { SidebarTemplate } from "./SidebarTemplate";

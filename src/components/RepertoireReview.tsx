@@ -1,4 +1,3 @@
-// import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { isNil, filter, range, forEach, find, first } from "lodash-es";
@@ -193,7 +192,7 @@ export const RepertoireReview = (props: {}) => {
       actions={filter(actions(), (a) => !a.hidden)}
       bodyPadding={true}
     >
-      <div class={"row w-full items-center justify-between"}>
+      <div class={"row w-full items-end justify-between"}>
         <SidebarHeader>
           {isMobile()
             ? "Practice"
@@ -205,19 +204,12 @@ export const RepertoireReview = (props: {}) => {
               return (
                 <div class="row items-center">
                   <p
-                    class={clsx(
-                      i.class,
-                      "text-sm font-semibold lg:text-[20px]"
-                    )}
+                    class={clsx(i.class, "text-sm font-semibold lg:text-base")}
                   >
                     {i.text}
                   </p>
                   <i
-                    class={clsx(
-                      i.class,
-                      i.icon,
-                      " ml-2 text-sm lg:text-[20px]"
-                    )}
+                    class={clsx(i.class, i.icon, " ml-2 text-sm lg:text-base")}
                   />
                 </div>
               );
