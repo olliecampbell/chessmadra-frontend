@@ -110,7 +110,7 @@ export const getMoveRatingIcon = (rating: MoveRating) => {
     >
       <Switch>
         <Match when={rating === MoveRating.Inaccuracy}>
-          <CMText style={s(c.fg(c.gray[55]), styles)}>?!</CMText>
+          <CMText style={s(c.fg(c.yellow[60]), styles)}>?!</CMText>
         </Match>
         <Match when={rating === MoveRating.Mistake}>
           <CMText style={s(c.fg(c.yellow[60]), styles)}>?</CMText>

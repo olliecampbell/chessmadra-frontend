@@ -51,7 +51,7 @@ export const PreBuild = (props: { side: Side }) => {
         },
         text: `Go to the biggest gap in your repertoire`,
         right: <i class="fa fa-arrow-right text-secondary" />,
-        style: "secondary",
+        style: "focus",
       });
     }
     actions.push({
@@ -64,7 +64,7 @@ export const PreBuild = (props: { side: Side }) => {
       },
       text: `Choose something else to work on`,
       right: <i class="fa fa-arrow-right text-secondary" />,
-      style: "secondary",
+      style: "primary",
     });
     return actions;
   };
