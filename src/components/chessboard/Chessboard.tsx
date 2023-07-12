@@ -755,6 +755,11 @@ export function ChessboardView(props: {
                       >(null);
 
                       createEffect(() => {
+                        if (chessboardStore()._animatePosition) {
+                          setHighlightColor(null);
+                          setHighlightType(null);
+                          return;
+                        }
                         if (manuallyHighlightedSquares().has(square())) {
                           setHighlightColor("next");
                           setHighlightType("full");
