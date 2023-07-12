@@ -330,9 +330,7 @@ const getBuildModeSections = ({
                   <CMText
                     style={s(c.weightHeavy, c.fontSize(10))}
                     class={clsx(
-                      isBadMove
-                        ? `text-red-${backgroundSide}`
-                        : backgroundSide === "white"
+                      backgroundSide === "white"
                         ? "text-gray-10"
                         : "text-gray-90"
                     )}

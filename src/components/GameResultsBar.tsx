@@ -21,12 +21,6 @@ export const GameResultsBar = (props: {
   const showPercentageThreshold = 0.35;
   const fontSize = 10;
   const percentWhite = props.gameResults.white / total;
-  const winrateMovement = () =>
-    getWinrateMovement({
-      side: props.activeSide,
-      results: props.gameResults,
-      previous: props.previousResults,
-    });
   const whiteResults = (
     <div
       style={s(
@@ -42,13 +36,7 @@ export const GameResultsBar = (props: {
         <>
           <CMText
             class={clsx(
-              props.activeSide === "white"
-                ? winrateMovement() === "up"
-                  ? "text-green-white"
-                  : winrateMovement() === "down"
-                  ? "text-red-white"
-                  : "text-gray-10"
-                : "text-gray-10",
+              props.activeSide === "white" ? "text-gray-10" : "text-gray-10",
               "text-[10px] font-bold"
             )}
           >
@@ -75,13 +63,7 @@ export const GameResultsBar = (props: {
         <>
           <CMText
             class={clsx(
-              props.activeSide === "black"
-                ? winrateMovement() === "up"
-                  ? "text-green-black"
-                  : winrateMovement() === "down"
-                  ? "text-red-black"
-                  : "text-gray-90"
-                : "text-gray-90",
+              props.activeSide === "black" ? "text-gray-90" : "text-gray-90",
               "text-[10px] font-bold"
             )}
           >

@@ -428,7 +428,7 @@ class PlanConsumer {
       this.addSection(() => {
         return (
           <>
-            The {developmentPieceDescription} is {this.nextAdverb}{" "}
+            The {developmentPieceDescription} is {this.nextAdverb()}{" "}
             <PlanMoveText plan={plan}>
               fianchettoed on {plan.plan.toSquare}
             </PlanMoveText>

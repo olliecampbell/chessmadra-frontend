@@ -24,6 +24,7 @@ import {
   BySide,
   getAllRepertoireMoves,
   lineToPgn,
+  pgnToLine,
   Repertoire,
   RepertoireGrade,
   RepertoireMove,
@@ -59,9 +60,9 @@ import { ChessboardInterface } from "./chessboard_interface";
 import { JSXElement } from "solid-js";
 
 const TEST_LINE = isDevelopment
-  ? //pgnToLine("1.e4 d5 2.exd5")
-    []
-  : [];
+  ? pgnToLine("1.d4 Nf6 2.Nf3 e6 3.Bf4 d5 4.e3 Bd6 5.Bg3")
+  : // []
+    [];
 console.log("TEST_LINE", TEST_LINE);
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
 // const TEST_LINE = null;
@@ -298,11 +299,7 @@ export const getInitialRepertoireState = (
           s.hasCompletedRepertoireInitialization = true;
         });
       }, "addTemplates"),
-    initializeRepertoire: ({
-      lichessUsername,
-      blackPgn,
-      whitePgn,
-    }) =>
+    initializeRepertoire: ({ lichessUsername, blackPgn, whitePgn }) =>
       set(async ([s]) => {
         let lichessGames = [];
         // const chessComGames = [];
