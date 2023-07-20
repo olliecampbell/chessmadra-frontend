@@ -506,55 +506,49 @@ export function ChessboardView(props: {
                 });
 
                 return (
-                  <TransitionIn id={`plan-line-${i()}`} open={() => true}>
-                    <div
-                      style={s(
-                        c.absoluteFull,
-                        c.noPointerEvents,
-                        c.zIndex(focused() ? 101 : 100),
-                        c.opacity(opacity()),
-                      )}
-                    >
-                      <svg width="100%" height="100%" viewBox="0 0 1 1">
-                        <line
-                          // stroke={`url(#${`plan-line-gradient-${i}`})`}
-                          stroke={color()}
-                          stroke-width={1.4 / 100}
-                          stroke-linecap="round"
-                          x1={from().x + 1 / 8 / 2}
-                          y1={from().y + 1 / 8 / 2}
-                          x2={
-                            from().x + 1 / 8 / 2 + length() * Math.cos(angle())
-                          }
-                          y2={
-                            from().y + 1 / 8 / 2 + length() * Math.sin(angle())
-                          }
-                        />
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width={(1 / 8) * 0.04}
-                          fill={color()}
-                          stroke={color()}
-                          transform={`rotate(${
-                            angleDeg() - 90
-                          } ${toSquareCenterX()} ${toSquareCenterY()})`}
-                          d={`M ${toSquareCenterX() - 2 / 100},${
-                            toSquareCenterY() - 2.8 / 100
-                          } ${toSquareCenterX()},${toSquareCenterY() - 0.004} ${
-                            toSquareCenterX() + 2 / 100
-                          },${toSquareCenterY() - 2.8 / 100} Z`}
-                        />
-                        {/*<circle
+                  <div
+                    style={s(
+                      c.absoluteFull,
+                      c.noPointerEvents,
+                      c.zIndex(focused() ? 101 : 100),
+                      c.opacity(opacity()),
+                    )}
+                  >
+                    <svg width="100%" height="100%" viewBox="0 0 1 1">
+                      <line
+                        // stroke={`url(#${`plan-line-gradient-${i}`})`}
+                        stroke={color()}
+                        stroke-width={1.4 / 100}
+                        stroke-linecap="round"
+                        x1={from().x + 1 / 8 / 2}
+                        y1={from().y + 1 / 8 / 2}
+                        x2={from().x + 1 / 8 / 2 + length() * Math.cos(angle())}
+                        y2={from().y + 1 / 8 / 2 + length() * Math.sin(angle())}
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width={(1 / 8) * 0.04}
+                        fill={color()}
+                        stroke={color()}
+                        transform={`rotate(${
+                          angleDeg() - 90
+                        } ${toSquareCenterX()} ${toSquareCenterY()})`}
+                        d={`M ${toSquareCenterX() - 2 / 100},${
+                          toSquareCenterY() - 2.8 / 100
+                        } ${toSquareCenterX()},${toSquareCenterY() - 0.004} ${
+                          toSquareCenterX() + 2 / 100
+                        },${toSquareCenterY() - 2.8 / 100} Z`}
+                      />
+                      {/*<circle
                         cx={to.x + 1 / 8 / 2}
                         cy={to.y + 1 / 8 / 2}
                         r={(1 / 8) * 0.12}
                         fill={gradientColor}
                         // fill={`url(#${`plan-line-gradient-${i}`})`}
                       />*/}
-                      </svg>
-                    </div>
-                  </TransitionIn>
+                    </svg>
+                  </div>
                 );
               }}
             </For>

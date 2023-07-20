@@ -212,9 +212,9 @@ type Stack = [RepertoireState, AppState];
 const selector = (s: AppState): Stack => [s.repertoireState, s];
 
 export const getInitialRepertoireState = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // rome-ignore lint: ignore
   _set: StateSetter<AppState, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // rome-ignore lint: ignore
   _get: StateGetter<AppState, any>,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
