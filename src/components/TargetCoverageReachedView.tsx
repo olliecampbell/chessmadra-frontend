@@ -94,7 +94,7 @@ export const PlayFromHere = (props: { isolated?: boolean }) => {
         >
           How to play from here
         </CMText>
-        <Spacer height={12} />
+        <Spacer height={18} />
       </Show>
       <div class={"space-y-2 lg:space-y-4"}>
         <For each={planSections()}>
