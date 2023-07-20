@@ -71,13 +71,13 @@ export const PracticeComplete = () => {
   const due = () => {
     const totalDue = () =>
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
-    let side = activeOptions()?.side;
-    let due = side ? numMovesDueBySide()[side] : totalDue();
+    const side = activeOptions()?.side;
+    const due = side ? numMovesDueBySide()[side] : totalDue();
     return due;
   };
 
   const actions = () => {
-    let actions: SidebarAction[] = [];
+    const actions: SidebarAction[] = [];
     if (due() > 0 && activeOptions()?.filter === "common") {
       actions.push({
         onPress: () => {
@@ -87,10 +87,10 @@ export const PracticeComplete = () => {
               side: activeOptions()?.side ?? null,
               filter: "common",
             });
-            trackEvent(`pre_review.common_moves`);
+            trackEvent("pre_review.common_moves");
           });
         },
-        text: `Practice next most common moves`,
+        text: "Practice next most common moves",
         right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
         style: "secondary",
       });
@@ -102,7 +102,7 @@ export const PracticeComplete = () => {
           if (s.repertoireState.onboarding.isOnboarding) {
             trackEvent("onboarding.practice_complete.continue");
             s.repertoireState.browsingState.pushView(
-              ChooseToCreateAccountOnboarding
+              ChooseToCreateAccountOnboarding,
             );
             s.repertoireState.updateRepertoireStructures();
           } else {
@@ -126,7 +126,7 @@ export const PracticeComplete = () => {
         <span class={clsx("text-highlight font-semibold")}>
           {pluralize(total(), "move")}
         </span>
-      </>
+      </>,
     );
     bullets.push(
       <>
@@ -135,7 +135,7 @@ export const PracticeComplete = () => {
           {pluralize(numCorrect(), "time")}
         </span>{" "}
         ({Math.round((100 * numCorrect()) / total())}%)
-      </>
+      </>,
     );
     if (totalDue > 0) {
       bullets.push(
@@ -145,7 +145,7 @@ export const PracticeComplete = () => {
             {pluralize(totalDue, "move")}
           </span>{" "}
           due for review now
-        </>
+        </>,
       );
     } else {
       bullets.push(
@@ -154,7 +154,7 @@ export const PracticeComplete = () => {
           <span class={clsx("text-highlight font-semibold")}>
             {getHumanTimeUntil(earliestDue())}
           </span>
-        </>
+        </>,
       );
     }
     return bullets;

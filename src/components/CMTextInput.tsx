@@ -25,7 +25,7 @@ export const CMTextInput: Component<{
         c.br(4),
         c.keyedProp("outline")("none"),
         c.fg(c.colors.text.primary),
-        props.style ?? {}
+        props.style ?? {},
       )}
       placeholder={props.placeholder}
       onInput={(e) => {

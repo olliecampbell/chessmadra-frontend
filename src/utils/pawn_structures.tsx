@@ -27,7 +27,7 @@ export function getPawnOnlyEpd(epd: string) {
     });
     addNumberIfPresent();
     if (i !== 7) {
-      newEpd = newEpd + "/";
+      newEpd = `${newEpd}/`;
     }
   });
   return newEpd;
@@ -58,7 +58,7 @@ export function reversePawnEpd(epd: string) {
     });
     addNumberIfPresent();
     if (i !== 0) {
-      newEpd = "/" + newEpd;
+      newEpd = `/${newEpd}`;
     }
   });
   return newEpd;

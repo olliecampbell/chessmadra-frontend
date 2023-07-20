@@ -1,0 +1,25 @@
+{
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "useKeyWithMouseEvents": "off",
+        "noSvgWithoutTitle": "off",
+        "useAltText": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "nursery": {
+        "noForEach": "off"
+      }
+    }
+
+  }
+}
+

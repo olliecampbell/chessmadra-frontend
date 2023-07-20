@@ -53,7 +53,7 @@ export const ChessMadra = (props: { initialTool: string }) => {
             style={s(c.row, c.alignStretch)}
             class={clsx(
               "w-full",
-              responsive().isMobile ? "padding-sidebar" : ""
+              responsive().isMobile ? "padding-sidebar" : "",
             )}
           >
             <button
@@ -62,14 +62,14 @@ export const ChessMadra = (props: { initialTool: string }) => {
                 c.height(60),
                 c.py(0),
                 c.fontSize(22),
-                c.overflowHidden
+                c.overflowHidden,
               )}
               class={clsx(
                 "row w-full cursor-pointer items-center justify-center rounded-sm bg-blue-50",
-                flashPlayButton() && "animate-pulse"
+                flashPlayButton() && "animate-pulse",
               )}
               onClick={() => {
-                trackEvent(`visualization.play_hidden_moves`);
+                trackEvent("visualization.play_hidden_moves");
                 quick((s) => {
                   s.trainersState.visualizationState.visualizeHiddenMoves();
                 });
@@ -137,7 +137,7 @@ const BackSection = () => {
       id="back-button"
       style={s(
         c.column,
-        !vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
+        !vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12),
       )}
       open={() => isOpen()}
       // className="transition-height"
@@ -166,14 +166,14 @@ const BackSection = () => {
           style={s()}
           class={clsx(
             "text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors md:self-end md:pb-8",
-            activeTool() === "visualization" ? "" : "hidden"
+            activeTool() === "visualization" ? "" : "hidden",
           )}
           onPress={() => {
             quick((s) => {
               window.open(
                 // @ts-ignore
                 `https://lichess.org/training/${puzzle().id}`,
-                "_blank"
+                "_blank",
               );
             });
           }}

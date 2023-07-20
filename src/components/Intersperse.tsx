@@ -1,9 +1,4 @@
-import {
-  Accessor,
-  Index,
-  JSXElement,
-  Show,
-} from "solid-js";
+import { Accessor, Index, JSXElement, Show } from "solid-js";
 
 // Use the For component, but if the index isn't the last one, insert another element at the end
 export const Intersperse = <T,>(props: {

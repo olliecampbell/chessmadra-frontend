@@ -77,7 +77,7 @@ export const getMetaPlans = (_plans: Plan[], activeSide: Side): MetaPlan[] => {
       if (!includes(["B", "N", "Q", "R", "K"], piece)) {
         piece = "p";
       }
-      let pieceSide =
+      const pieceSide =
         plan.side === activeSide ? activeSide : otherSide(activeSide);
       if (piece && pieceSide === side) {
         byFromSquare[plan.fromSquare].forEach((p) => {
@@ -97,7 +97,7 @@ export const getMetaPlans = (_plans: Plan[], activeSide: Side): MetaPlan[] => {
     metaPlans = uniqBy(
       metaPlans,
       // at(0) is a shortcut to get the piece, we want to uniq between Nbd5 and Nd5, so it doesn't show two arrows in one place
-      (p) => `${p.plan.san.at(0)}-${p.plan.toSquare}-${p.plan.toSquare}`
+      (p) => `${p.plan.san.at(0)}-${p.plan.toSquare}-${p.plan.toSquare}`,
     );
     metaPlans = sortBy(metaPlans, (p) => -p.plan.occurences);
 
@@ -172,20 +172,20 @@ class PlanConsumer {
     this.planPrecedingCaptures = keyBy(
       sortBy(
         filter(this.metaPlans, (p) => p.plan.side !== side),
-        (p) => p.plan.occurences
+        (p) => p.plan.occurences,
       ),
-      (p) => p.plan.toSquare
+      (p) => p.plan.toSquare,
     );
     // @ts-ignore
     this.capturePieces = mapValues(
       keyBy(
         sortBy(
           filter(plans, (p) => p.side !== side),
-          (p) => p.occurences
+          (p) => p.occurences,
         ),
-        (p) => p.toSquare
+        (p) => p.toSquare,
       ),
-      (p) => getPlanPiece(p)
+      (p) => getPlanPiece(p),
     );
     forEach(SQUARES, (_, square) => {
       const piece = position.get(square);
@@ -258,7 +258,7 @@ class PlanConsumer {
       const allCapturers = filter(
         this.remainingPlans(),
         (p) =>
-          p.plan.toSquare === plan.plan.toSquare && p.plan.san.includes("x")
+          p.plan.toSquare === plan.plan.toSquare && p.plan.san.includes("x"),
       );
       if (!capturedPiece || isEmpty(allCapturers)) {
         return;
@@ -268,7 +268,7 @@ class PlanConsumer {
       if (planBeforeCapture) {
         const opponentHasPieceOnCaptureSquare =
           // @ts-ignore
-          toSide(this.position.get(plan.plan.toSquare)?.color) ==
+          toSide(this.position.get(plan.plan.toSquare)?.color) ===
           otherSide(plan.plan.side);
         if (
           planBeforeCapture.plan.san.includes("x") &&
@@ -287,7 +287,7 @@ class PlanConsumer {
             items={allCapturers.map(
               (p) =>
                 getDevelopmentPieceDescription(p) ||
-                `${pieceSymbolToPieceName(p.piece)} on ${plan.plan.fromSquare}`
+                `${pieceSymbolToPieceName(p.piece)} on ${plan.plan.fromSquare}`,
             )}
           />{" "}
           {this.nextAdverb()}{" "}
@@ -303,8 +303,8 @@ class PlanConsumer {
     const plans = this.remainingPlans();
     let pawnPlans = filter(plans, (p) =>
       some(["a", "b", "c", "d", "e", "f", "g", "h"], (f) =>
-        p.plan.san?.startsWith(f)
-      )
+        p.plan.san?.startsWith(f),
+      ),
     );
     pawnPlans = sortBy(pawnPlans, (p) => p.plan.san);
     if (this.side === "black") {
@@ -334,16 +334,16 @@ class PlanConsumer {
     return take(
       filter(
         this.metaPlans,
-        (p) => !this.consumed.has(p.id) && p.plan.side === this.side
+        (p) => !this.consumed.has(p.id) && p.plan.side === this.side,
       ),
-      7 - mineConsumed
+      7 - mineConsumed,
     );
   }
 
   piecePlansConsumer() {
     const piecePlans = sortBy(
       filter(this.remainingPlans(), (p) => p.piece !== "p"),
-      (p) => -p.plan.occurences
+      (p) => -p.plan.occurences,
     );
     if (isEmpty(piecePlans)) {
       return null;
@@ -371,7 +371,7 @@ class PlanConsumer {
       const finalDestination = find(
         this.remainingPlans(),
         (p) =>
-          p.plan.fromSquare === plan.plan.toSquare && p.piece === plan.piece
+          p.plan.fromSquare === plan.plan.toSquare && p.piece === plan.piece,
       );
       if (!finalDestination) {
         return;
@@ -404,7 +404,7 @@ class PlanConsumer {
       const isFianchetto = some(
         pairs,
         ([from, to]) =>
-          plan.plan.fromSquare === from && plan.plan.toSquare === to
+          plan.plan.fromSquare === from && plan.plan.toSquare === to,
       );
       if (!isFianchetto) {
         return;
@@ -418,7 +418,7 @@ class PlanConsumer {
         (p) =>
           p.plan.fromSquare === plan.plan.fromSquare &&
           p.piece === plan.piece &&
-          p.id !== plan.id
+          p.id !== plan.id,
       );
       if (!isEmpty(otherDevelopmentPlans)) {
         return;
@@ -461,7 +461,7 @@ class PlanConsumer {
         (p) =>
           p.plan.fromSquare === plan.plan.fromSquare &&
           p.piece === plan.piece &&
-          !this.consumed.has(p.id)
+          !this.consumed.has(p.id),
       );
       if (isEmpty(allDevelopmentPlans)) {
         return;
@@ -517,7 +517,7 @@ class PlanConsumer {
 export const parsePlans = (
   plans: Plan[],
   side: Side,
-  position: Chess
+  position: Chess,
 ): PlanConsumer => {
   const consumer = new PlanConsumer(plans, side, position);
   consumer.fianchettoConsumer();
@@ -533,7 +533,7 @@ export const parsePlans = (
 export const parsePlansToQuizMoves = (
   plans: Plan[],
   side: Side,
-  position: Chess
+  position: Chess,
 ): QuizPlan[] => {
   const consumer = new PlanQuizConsumer(plans, side, position);
   // consumer.fianchettoConsumer();
@@ -577,7 +577,7 @@ const PlanMoves = (props: {
                 : ", "}
             </CMText>
           );
-        }
+        },
       )}
     </CMText>
   );
@@ -627,14 +627,14 @@ const PlanMoveText = (props: {
           c.focusedPlans = [];
         });
       });
-    }
+    },
   );
   return (
     <div style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
       <CMText
         style={s(
           c.weightSemiBold,
-          c.fg(hovering() ? c.purple[65] : c.arrowColors[55])
+          c.fg(hovering() ? c.purple[65] : c.arrowColors[55]),
         )}
       >
         {props.children}
@@ -711,20 +711,20 @@ class PlanQuizConsumer {
     this.planPrecedingCaptures = keyBy(
       sortBy(
         filter(this.metaPlans, (p) => p.plan.side !== side),
-        (p) => p.plan.occurences
+        (p) => p.plan.occurences,
       ),
-      (p) => p.plan.toSquare
+      (p) => p.plan.toSquare,
     );
     // @ts-ignore
     this.capturePieces = mapValues(
       keyBy(
         sortBy(
           filter(plans, (p) => p.side !== side),
-          (p) => p.occurences
+          (p) => p.occurences,
         ),
-        (p) => p.toSquare
+        (p) => p.toSquare,
       ),
-      (p) => getPlanPiece(p)
+      (p) => getPlanPiece(p),
     );
     forEach(SQUARES, (_, square) => {
       const piece = position.get(square);
@@ -760,9 +760,9 @@ class PlanQuizConsumer {
     return take(
       filter(
         this.metaPlans,
-        (p) => !this.consumed.has(p.id) && p.plan.side === this.side
+        (p) => !this.consumed.has(p.id) && p.plan.side === this.side,
       ),
-      7 - mineConsumed
+      7 - mineConsumed,
     );
   }
 
@@ -780,7 +780,7 @@ class PlanQuizConsumer {
     } else if (queenside && kingside) {
       return null;
     }
-    let castle: MetaPlan = cloneDeep((kingside ?? queenside) as MetaPlan);
+    const castle: MetaPlan = cloneDeep((kingside ?? queenside) as MetaPlan);
     castle.plan.toSquare = castle.plan.toSquare
       .replace("h", "g")
       .replace("a", "c") as Square;
@@ -818,7 +818,7 @@ class PlanQuizConsumer {
         (p) =>
           p.plan.fromSquare === plan.plan.fromSquare &&
           p.piece === plan.piece &&
-          !this.consumed.has(p.id)
+          !this.consumed.has(p.id),
       );
       if (isEmpty(allDevelopmentPlans)) {
         return;

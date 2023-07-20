@@ -147,7 +147,7 @@ export const RepertoireOverview = (props: {}) => {
         style: "secondary",
       },
       {
-        hidden: modelGames()?.length == 0,
+        hidden: modelGames()?.length === 0,
         onPress: () => {
           trackEvent("side_overview.view_instructive_games");
           quick((s) => {
@@ -155,7 +155,7 @@ export const RepertoireOverview = (props: {}) => {
               SidebarInstructiveGames,
               {
                 props: { games: modelGames() },
-              }
+              },
             );
           });
         },
@@ -193,7 +193,7 @@ export const RepertoireOverview = (props: {}) => {
           trackEvent("side_overview.import");
           quick((s) => {
             s.repertoireState.browsingState.pushView(
-              ChooseImportSourceOnboarding
+              ChooseImportSourceOnboarding,
             );
           });
         },
@@ -230,7 +230,7 @@ export const RepertoireOverview = (props: {}) => {
           quick((s) => {
             trackEvent("side_overview.delete_repertoire");
             s.repertoireState.browsingState.replaceView(
-              ConfirmDeleteRepertoire
+              ConfirmDeleteRepertoire,
             );
           });
         },
@@ -256,10 +256,10 @@ export const RepertoireOverview = (props: {}) => {
   });
   const repertoireStatus = () => {
     if (empty()) {
-      return `Your repertoire is empty`;
+      return "Your repertoire is empty";
     }
     return `Your repertoire is ${Math.round(
-      progressState().percentComplete
+      progressState().percentComplete,
     )}% complete`;
   };
   return (
@@ -291,7 +291,7 @@ export const CoverageAndBar = (props: {
       c.fg(inverse() ? c.colors.text.inverse : c.colors.text.secondary),
       !props.home && c.fg(c.colors.text.secondary),
       c.weightSemiBold,
-      c.fontSize(12)
+      c.fontSize(12),
     );
   const [progressState] = useRepertoireState((s) => [
     s.browsingState.repertoireProgressState[props.side],
@@ -313,7 +313,7 @@ export const CoverageAndBar = (props: {
             style={s(
               c.height(props.home ? 4 : 4),
               c.width(props.home ? 100 : 80),
-              c.row
+              c.row,
             )}
           >
             <CoverageBar isInSidebar={!props.home} side={props.side} />

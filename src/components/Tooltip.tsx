@@ -10,7 +10,7 @@ export const initTooltip = ({
   ref: HTMLElement;
   maxWidth: number;
 }) => {
-  let tip = tippy(ref, {
+  const tip = tippy(ref, {
     content: content() as any,
     placement: "bottom",
     animation: "shift-away",

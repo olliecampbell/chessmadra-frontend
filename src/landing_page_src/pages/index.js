@@ -87,7 +87,7 @@ export default (props) => {
                   background: "white",
                   opacity: "0.35",
                 }}
-               />
+              />
               <Link
                 onClick={() => {
                   props.onClick("signup");

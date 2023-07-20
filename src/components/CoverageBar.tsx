@@ -28,7 +28,7 @@ export const CoverageBar = (props: {
           c.fullWidth,
           c.bg(backgroundColor),
           c.br(props.rounded ? 999 : 2),
-          c.relative
+          c.relative,
         )}
       >
         <View
@@ -38,11 +38,11 @@ export const CoverageBar = (props: {
             c.top(0),
             c.bottom(0),
             c.left(0),
-            c.width(progressState().percentComplete + "%"),
+            c.width(`${progressState().percentComplete}%`),
             c.bg(progressState().completed ? completedColor : inProgressColor),
-            c.fullHeight
+            c.fullHeight,
           )}
-         />
+        />
       </div>
     </Show>
   );

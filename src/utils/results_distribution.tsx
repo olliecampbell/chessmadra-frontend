@@ -33,7 +33,7 @@ export function getDrawAdjustedWinRate(x: GameResultsDistribution, side: Side) {
 
 export function getWinRateRange(
   x: GameResultsDistribution,
-  side: string
+  side: string,
 ): [number, number, number] {
   // @ts-ignore
   const w = x[side];
@@ -45,7 +45,7 @@ export function getWinRateRange(
 export const getPlayRate = (
   m: SuggestedMove,
   report: PositionReport,
-  masters?: boolean
+  masters?: boolean,
 ): number => {
   const k = masters ? "masterResults" : "results";
   const total = getTotalGames(report[k]);

@@ -9,7 +9,7 @@ export const hsl = (h: number, s: number, l: number, a?: number) => {
 const genShades = (
   hue: number,
   _minSaturation?: number,
-  _maxSaturation?: number
+  _maxSaturation?: number,
 ): Record<number, string> => {
   const shades: Record<number, string> = {};
   const minSaturation = _minSaturation ?? 20;
@@ -34,7 +34,7 @@ function easeInOutSine(x: number): number {
 const genGrays = (
   hue: number,
   minSat: number,
-  maxSat: number
+  maxSat: number,
 ): Record<number, string> => {
   const grays: Record<number, string> = {};
   for (let i = 0; i <= 100; i = i + 1) {

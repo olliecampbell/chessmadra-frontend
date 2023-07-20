@@ -85,12 +85,12 @@ export const SetRatingOnboarding = () => {
       Promise.all([
         // this is dumb, but just so we get the latest elo range from the backend
         s.userState.setRatingRange(
-          range ?? s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-")
+          range ?? s.userState.user?.ratingRange ?? DEFAULT_ELO_RANGE.join("-"),
         ),
       ]).then(() => {
         quick((s) => {
           const recommendedThreshold = getRecommendedMissThreshold(
-            s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-")
+            s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-"),
           );
           s.userState.setTargetDepth(recommendedThreshold);
           s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
@@ -187,7 +187,7 @@ export const Dropdown: Component<{
   renderChoice: (
     _: TFake,
     inDropdown: boolean,
-    onPress: (e: MouseEvent) => void
+    onPress: (e: MouseEvent) => void,
   ) => any;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
@@ -206,7 +206,7 @@ export const Dropdown: Component<{
       <p class={"text-secondary pb-2 text-sm font-bold"}>{props.title}</p>
       <div
         class={clsx(
-          "bg-gray-4 row cursor-pointer items-center rounded-sm px-4"
+          "bg-gray-4 row cursor-pointer items-center rounded-sm px-4",
         )}
         ref={setRef}
         onClick={() => {
@@ -235,7 +235,7 @@ export const Dropdown: Component<{
             c.border(`1px solid ${c.gray[26]}`),
             c.overflowHidden,
             c.gridColumn({ gap: 0 }),
-            c.alignStretch
+            c.alignStretch,
           )}
           class={clsx("bg-gray-4 rounded-sm p-2")}
         >
@@ -271,7 +271,7 @@ const ChooseColorOnboarding = () => {
             trackEvent("onboarding.choose_color", { color: side });
             s.repertoireState.onboarding.side = side;
             s.repertoireState.browsingState.pushView(
-              AskAboutExistingRepertoireOnboarding
+              AskAboutExistingRepertoireOnboarding,
             );
           });
         },
@@ -291,8 +291,8 @@ export const OnboardingComplete = () => {
       <>
         Practice every day{" "}
         {!responsive().isMobile &&
-          `(visit Chessbook.com on your phone to practice on the go)`}
-      </>
+          "(visit Chessbook.com on your phone to practice on the go)"}
+      </>,
     );
 
     return bullets;
@@ -452,7 +452,7 @@ const PracticeIntroOnboarding = () => {
               trackEvent("onboarding.practice_intro.continue");
               s.repertoireState.reviewState.reviewLine(
                 currentLine(),
-                onboarding().side!
+                onboarding().side!,
               );
             });
           },
@@ -485,7 +485,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
             trackEvent("onboarding.ask_about_existing_repertoire.has_existing");
             quick((s) => {
               s.repertoireState.browsingState.pushView(
-                ChooseImportSourceOnboarding
+                ChooseImportSourceOnboarding,
               );
             });
           },
@@ -645,7 +645,7 @@ export const ImportOnboarding = (props: {
     setLoading("Importing");
     quick((s) => {
       const params = {} as any;
-      if (side() == "white") {
+      if (side() === "white") {
         params.whitePgn = pgn();
       } else {
         params.blackPgn = pgn();
@@ -672,7 +672,7 @@ export const ImportOnboarding = (props: {
           when={importType() === SidebarOnboardingImportType.LichessUsername}
         >
           <div style={s(c.pt(20))}>
-            <form ref={form} class={`col gap-8`}>
+            <form ref={form} class={"col gap-8"}>
               <TextInput
                 placeholder="yourusername"
                 type="text"
@@ -730,7 +730,7 @@ export const TrimRepertoireOnboarding = () => {
     // repertoire response
     const numMoves = getNumResponsesBelowThreshold()(userThreshold(), side()!);
     actions.push({
-      text: `Trim rare lines below your coverage goal`,
+      text: "Trim rare lines below your coverage goal",
       subtext: `${numMoves} moves will be trimmed`,
       onPress: () => {
         trimToThreshold(userThreshold());
@@ -773,7 +773,7 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
   const [pgn, setPgn] = createSignal("" as string | null);
   const [textInputPgn, setTextInputPgn] = createSignal<string | null>("");
   const [pgnUploadRef, setPgnUploadRef] = createSignal(
-    null as HTMLInputElement | null
+    null as HTMLInputElement | null,
   );
   const [hasUploaded, setHasUploaded] = createSignal(false);
   createEffect(() => {

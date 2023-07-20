@@ -48,7 +48,7 @@ export function TextInput(props: TextInputProps) {
           props.error
             ? "border-red-600/50 dark:border-red-400/50"
             : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50",
-          props.inputClass
+          props.inputClass,
         )}
         aria-invalid={!!props.error}
         aria-errormessage={`${props.name}-error`}
@@ -85,7 +85,7 @@ export function TextArea(props: TextAreaProps) {
           props.error
             ? "border-red-600/50 dark:border-red-400/50"
             : "&hover:border-slate-300 dark:&hover:border-slate-700 border-slate-200 focus:border-sky-600/50 dark:border-slate-800 dark:focus:border-sky-400/50",
-          props.inputClass
+          props.inputClass,
         )}
         id={props.name}
         aria-invalid={!!props.error}

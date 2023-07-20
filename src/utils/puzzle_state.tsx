@@ -27,7 +27,7 @@ export interface PuzzleStateDelegate {
   animatePieceMove: (
     move: Move,
     speed: PlaybackSpeed,
-    callback: (completed: boolean) => void
+    callback: (completed: boolean) => void,
   ) => void;
 }
 
@@ -35,7 +35,7 @@ export const getInitialPuzzleState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<PuzzleState, any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _get: StateGetter<PuzzleState, any>
+  _get: StateGetter<PuzzleState, any>,
 ) => {
   const set = <T,>(fn: (s: PuzzleState) => T, id?: string): T => {
     return _set((s) => fn(s));
@@ -56,7 +56,7 @@ export const getInitialPuzzleState = (
     shouldMakeMove: (move: Move) =>
       set((s) => {
         if (
-          move.san == s.solutionMoves[0].san ||
+          move.san === s.solutionMoves[0].san ||
           isCheckmate(move, s.puzzlePosition)
         ) {
           const otherSideMove = s.solutionMoves[1];
@@ -66,7 +66,7 @@ export const getInitialPuzzleState = (
             s.delegate.animatePieceMove(
               otherSideMove,
               PlaybackSpeed.Normal,
-              noop
+              noop,
             );
           }
           s.solutionMoves.shift();
@@ -74,7 +74,7 @@ export const getInitialPuzzleState = (
           if (!isEmpty(s.solutionMoves)) {
             s.delegate.onPuzzleMoveSuccess();
             s.progressMessage = {
-              message: `Keep going...`,
+              message: "Keep going...",
               // onPromptPress: noop,
               // prompt: "Give up?",
               type: ProgressMessageType.Error,

@@ -15,7 +15,7 @@ type Stack = [NavigationState, AppState];
 
 export const getInitialNavigationState = (
   _set: StateSetter<AppState, any>,
-  _get: StateGetter<AppState, any>
+  _get: StateGetter<AppState, any>,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _set((s) => fn([s.navigationState, s]));

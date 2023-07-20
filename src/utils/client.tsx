@@ -10,7 +10,7 @@ let baseURL = undefined;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://localhost:8040";
 }
-if (import.meta.env.VITE_API_ENV == "production") {
+if (import.meta.env.VITE_API_ENV === "production") {
   baseURL = "https://chessbook.com";
 }
 const client = applyCaseMiddleware(
@@ -38,7 +38,7 @@ const client = applyCaseMiddleware(
         return camelCase(s);
       },
     },
-  }
+  },
 );
 
 client.interceptors.request.use(function (config) {
@@ -77,7 +77,7 @@ client.interceptors.response.use(
       });
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default client;

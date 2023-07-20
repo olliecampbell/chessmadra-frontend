@@ -62,7 +62,7 @@ export default function LandingPageWrapper() {
           });
         },
       }),
-      document.getElementById("root")
+      document.getElementById("root"),
     );
   });
   onCleanup(() => {

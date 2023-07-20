@@ -15,7 +15,7 @@ import { renderThreshold } from "~/utils/threshold";
 export const PreBuild = (props: { side: Side }) => {
   const biggestMiss = createMemo(
     () =>
-      getAppState().repertoireState.repertoireGrades?.[props.side]?.biggestMiss
+      getAppState().repertoireState.repertoireGrades?.[props.side]?.biggestMiss,
   );
   const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
   const miss = () => {
@@ -49,7 +49,7 @@ export const PreBuild = (props: { side: Side }) => {
             });
           });
         },
-        text: `Go to the biggest gap in your repertoire`,
+        text: "Go to the biggest gap in your repertoire",
         right: <i class="fa fa-arrow-right text-secondary" />,
         style: "focus",
       });
@@ -62,7 +62,7 @@ export const PreBuild = (props: { side: Side }) => {
           s.repertoireState.startBrowsing(props.side, "build");
         });
       },
-      text: `Choose something else to work on`,
+      text: "Choose something else to work on",
       right: <i class="fa fa-arrow-right text-secondary" />,
       style: "primary",
     });

@@ -21,7 +21,7 @@ export const SelectOneOf = <T,>(props: {
       style={s(
         c.overflowHidden,
         props.horizontal ? c.row : c.column,
-        props.containerStyles
+        props.containerStyles,
       )}
     >
       <For each={props.choices}>
@@ -30,7 +30,7 @@ export const SelectOneOf = <T,>(props: {
             ? props.equality(choice, props.activeChoice)
             : choice === props.activeChoice;
           console.log("props active choice", props.activeChoice);
-          const isLast = () => i() == props.choices.length - 1;
+          const isLast = () => i() === props.choices.length - 1;
           const rendered = props.renderChoice(choice, active, i());
           if (typeof rendered === "string") {
             return (
@@ -51,9 +51,9 @@ export const SelectOneOf = <T,>(props: {
                   !isLast() &&
                     !props.tabStyle &&
                     (props.horizontal ? c.borderRight : c.borderBottom)(
-                      `1px solid ${c.gray[15]}`
+                      `1px solid ${c.gray[15]}`,
                     ),
-                  props.cellStyles
+                  props.cellStyles,
                 )}
               >
                 <CMText
@@ -63,10 +63,10 @@ export const SelectOneOf = <T,>(props: {
                       : c.fg(
                           active
                             ? c.colors.text.inverse
-                            : c.colors.text.secondary
+                            : c.colors.text.secondary,
                         ),
                     c.weightBold,
-                    props.textStyles
+                    props.textStyles,
                   )}
                 >
                   {rendered}

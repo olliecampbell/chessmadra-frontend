@@ -17,7 +17,7 @@ export function InputLabel(props: InputLabelProps) {
       <label
         class={clsx(
           "text-md inline-block font-medium",
-          !props.margin && "mb-2"
+          !props.margin && "mb-2",
         )}
         for={props.name}
       >

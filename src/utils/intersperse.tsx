@@ -2,7 +2,7 @@ import { chunk, flatMap, filter } from "lodash-es";
 
 export const intersperse = <T,>(
   arr: T[],
-  separator: (k: string, isLast: boolean) => T
+  separator: (k: string, isLast: boolean) => T,
 ): T[] => {
   if (!arr) {
     // @ts-ignore
@@ -18,7 +18,7 @@ export const intersperse = <T,>(
         ...(isLast ? [] : [separator(`spacer-${currentIndex}`, isLastSpacer)]),
       ];
     },
-    []
+    [],
   );
 };
 
@@ -27,7 +27,7 @@ export const chunked = <T,>(
   separator: (n: number) => T,
   chunking?: number,
   chunkSeperator?: (n: number) => T,
-  chunkContainer?: (n: T) => T
+  chunkContainer?: (n: T) => T,
 ): T[] => {
   let segments = chunk(arr, chunking);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

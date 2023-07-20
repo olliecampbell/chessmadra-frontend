@@ -77,12 +77,13 @@ export const SidebarActionsLegacy = () => {
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   positionHistory = positionHistory ?? [];
   const hasPlans = () => {
-    let sidebarState = getAppState().repertoireState.browsingState.sidebarState;
-    let repertoireState = getAppState().repertoireState;
+    const sidebarState =
+      getAppState().repertoireState.browsingState.sidebarState;
+    const repertoireState = getAppState().repertoireState;
     return !isEmpty(
       repertoireState.positionReports[sidebarState.currentSide][
         sidebarState.currentEpd
-      ]?.plans
+      ]?.plans,
     );
   };
   const biggestGapAction = () => useBiggestGapAction();
@@ -140,7 +141,7 @@ export const SidebarActionsLegacy = () => {
             bs.moveSidebarState("right");
             bs.sidebarState.showPlansState.visible = true;
             bs.sidebarState.showPlansState.coverageReached = false;
-            bs.chessboard.set((s) => (s.showPlans = true));
+            bs.chessboard.set((s) => s.showPlans === true);
           });
         },
         text: "How to play from here",
@@ -178,7 +179,7 @@ export const SidebarActionsLegacy = () => {
             });
           });
         },
-        text: `Practice ALL moves from here`,
+        text: "Practice ALL moves from here",
         style: "primary",
       });
     }
@@ -270,7 +271,7 @@ export const SidebarFullWidthButton = (props: {
           !props.action.disabled &&
           "&hover:bg-sidebar_button_primary_hover text-primary",
         props.action.disabled && "text-tertiary !cursor-default",
-        props.action.class
+        props.action.class,
       )}
       style={s(
         c.fullWidth,
@@ -283,7 +284,7 @@ export const SidebarFullWidthButton = (props: {
           c.borderBottom(`1px solid ${c.colors.border}`),
         props.action.style === "secondary" &&
           props.first &&
-          c.borderTop(`1px solid ${c.colors.border}`)
+          c.borderTop(`1px solid ${c.colors.border}`),
       )}
     >
       <div style={s(c.column)}>
@@ -291,7 +292,7 @@ export const SidebarFullWidthButton = (props: {
           style={s(
             props.action.style === "focus" ? c.weightBold : c.weightSemiBold,
             c.fontSize(14),
-            styles().textStyles
+            styles().textStyles,
           )}
         >
           {props.action.text}
@@ -305,7 +306,7 @@ export const SidebarFullWidthButton = (props: {
                 props.action.style === "focus"
                   ? c.weightBold
                   : c.weightSemiBold,
-                c.fontSize(14)
+                c.fontSize(14),
               )}
             >
               {props.action.subtext}
@@ -325,7 +326,7 @@ export const SidebarFullWidthButton = (props: {
                 props.action.style === "focus"
                   ? c.weightBold
                   : c.weightSemiBold,
-                c.fontSize(12)
+                c.fontSize(12),
               )}
             >
               {props.action.right}
@@ -416,7 +417,7 @@ export const SidebarSectionHeader = (props: {
         c.alignCenter,
         c.px(c.getSidebarPadding(responsive())),
         c.pb(12),
-        c.borderBottom(`1px solid ${c.colors.border}`)
+        c.borderBottom(`1px solid ${c.colors.border}`),
       )}
     >
       <CMText style={s(c.fontSize(14), c.fg(c.colors.text.tertiary))}>
@@ -455,7 +456,7 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
     if (isNil(miss)) {
       return;
     }
-    const text = `Go to the next gap in your repertoire`;
+    const text = "Go to the next gap in your repertoire";
     const line = pgnToLine(miss.lines[0]);
     const missPositions = lineToPositions(line);
     const missPositionsSet = new Set(missPositions);
@@ -466,8 +467,8 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
           if (ecoCode) {
             return getNameEcoCodeIdentifier(ecoCode.fullName);
           }
-        })
-      )
+        }),
+      ),
     );
     const openingNameOfMiss = last(
       filter(
@@ -476,8 +477,8 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
           if (ecoCode) {
             return getNameEcoCodeIdentifier(ecoCode.fullName);
           }
-        })
-      )
+        }),
+      ),
     );
 
     const i = findLastIndex(positionHistory(), (epd) => {
@@ -501,7 +502,7 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
                 animated: true,
                 fromEpd: lastMatchingEpd,
                 animateLine: line.slice(i),
-              }
+              },
             );
           });
         },

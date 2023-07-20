@@ -34,13 +34,13 @@ export const scoreTableResponses = (
     playrate: number;
     masterPlayrate: number;
     incidence: number;
-  }
+  },
 ): TableResponse[] => {
   const positionWinRate = report
     ? getWinRateRange(report.results, side)[0]
     : NaN;
   const DEBUG_MOVE = null;
-  if (mode == "browse") {
+  if (mode === "browse") {
     return sortBy(
       tableResponses,
       [
@@ -57,7 +57,7 @@ export const scoreTableResponses = (
           return Infinity;
         },
       ],
-      ["desc", "asc"]
+      ["desc", "asc"],
     );
   }
   return reverse(
@@ -78,13 +78,13 @@ export const scoreTableResponses = (
           // @ts-ignore
           tableResponse?.suggestedMove,
           report,
-          true
+          true,
         );
         if (!isNegligiblePlayrate(masterPlayRate)) {
           const masterRateAdditionalWeight = Math.min(
             // @ts-ignore
             getTotalGames(tableResponse.suggestedMove?.masterResults) / 10,
-            1
+            1,
           );
           const scoreForMasterPlayrate =
             masterPlayRate * 100 * masterRateAdditionalWeight;
@@ -116,8 +116,8 @@ export const scoreTableResponses = (
                 // @ts-ignore
                 (report.stockfish.eval - stockfish.eval) *
                   (side === "black" ? -1 : 1),
-                0
-              )
+                0,
+              ),
             );
             scoreTable.factors.push({
               source: TableResponseScoreSource.Eval,
@@ -136,7 +136,7 @@ export const scoreTableResponses = (
         const rateAdditionalWeight = Math.min(
           // @ts-ignore
           getTotalGames(tableResponse?.suggestedMove.results) / 100,
-          1
+          1,
         );
         // @ts-ignore
         const playRate = getPlayRate(tableResponse.suggestedMove, report);
@@ -151,7 +151,7 @@ export const scoreTableResponses = (
           //     `For ${m.sanPlus}, the playrate is ${playRate}, Score change is ${scoreForPlayrate}`
           //   );
           // }
-        } else if (weights[TableResponseScoreSource.Playrate] != 0) {
+        } else if (weights[TableResponseScoreSource.Playrate] !== 0) {
           scoreTable.notes.push("Insufficient games for playrate");
         }
         // @ts-ignore
@@ -173,7 +173,7 @@ export const scoreTableResponses = (
         const [winrateLowerBound, winrateUpperBound] = getWinRateRange(
           // @ts-ignore
           tableResponse.suggestedMove?.results,
-          side
+          side,
         );
         // console.log(
         //   `for ${tableResponse.suggestedMove?.sanPlus}, winrateLowerBound: ${winrateLowerBound}, winrateUpperBound: ${winrateUpperBound}`
@@ -218,12 +218,12 @@ export const scoreTableResponses = (
       tableResponse.score = sumBy(scoreTable.factors, (f) => {
         return f.total;
       });
-      if (tableResponse.repertoireMove && tableResponse.repertoireMove?.mine) {
+      if (tableResponse.repertoireMove?.mine) {
         return tableResponse.score + 1000000;
       } else {
         return tableResponse.score;
       }
-    })
+    }),
   );
 };
 

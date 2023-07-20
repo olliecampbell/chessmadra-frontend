@@ -30,7 +30,7 @@ export default function ResetPassword() {
         id: params.id,
       })
       .then((resp: AxiosResponse<AuthResponse>) => {
-        trackEvent(`auth.reset_password.success`);
+        trackEvent("auth.reset_password.success");
         quick((s) => {
           s.userState.handleAuthResponse(resp.data);
           s.repertoireState.initState();
@@ -40,7 +40,7 @@ export default function ResetPassword() {
         // todo: actually log them in
       })
       .catch((err) => {
-        trackEvent(`auth.reset_password.error`);
+        trackEvent("auth.reset_password.error");
         setServerError(err?.response?.data?.error ?? "Something went wrong");
       });
   };
@@ -88,9 +88,9 @@ export default function ResetPassword() {
         >
           <div class={clsx(isSubmitting() && "opacity-0")}>
             <div class="col items-center">
-              <div class={`min-w-80 padding-sidebar w-full self-stretch`}>
+              <div class={"min-w-80 padding-sidebar w-full self-stretch"}>
                 <div style={s(c.br(4), c.px(0), c.py(0))}>
-                  <form ref={form} class={`col gap-8`}>
+                  <form ref={form} class={"col gap-8"}>
                     <TextInput
                       placeholder="New password"
                       type="password"

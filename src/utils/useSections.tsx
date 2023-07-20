@@ -78,12 +78,12 @@ export const useSections = ({
     c.fg(c.gray[80]),
     c.weightSemiBold,
     c.fontSize(12),
-    c.lineHeight("1.3rem")
+    c.lineHeight("1.3rem"),
   );
   const side: Accessor<Side> = () => activeSide() as Side;
 
   const [mode] = useSidebarState(([s]) => [s.mode]);
-  if (mode() == "browse") {
+  if (mode() === "browse") {
     sections = sections.concat(
       getReviewModeSections({
         myTurn,
@@ -93,7 +93,7 @@ export const useSections = ({
         debugUi: debugUi(),
         threshold: threshold(),
         activeSide: side(),
-      })
+      }),
     );
   } else {
     sections = sections.concat(
@@ -106,7 +106,7 @@ export const useSections = ({
         debugUi: debugUi(),
         threshold: threshold(),
         activeSide: side(),
-      })
+      }),
     );
   }
   return sections;
@@ -140,7 +140,7 @@ const getBuildModeSections = ({
           props.positionReport &&
           getPlayRate(props.suggestedMove, props.positionReport, false);
         const denominator = Math.round(
-          1 / (props.tableResponse!.suggestedMove?.incidence ?? 0.0001)
+          1 / (props.tableResponse!.suggestedMove?.incidence ?? 0.0001),
         );
         const belowCoverageGoal =
           (props.tableResponse.suggestedMove?.incidence ?? 0) < threshold;
@@ -186,7 +186,7 @@ const getBuildModeSections = ({
                 <CMText
                   style={s(
                     textStyles,
-                    belowCoverageGoal && s(c.fg(c.gray[44]))
+                    belowCoverageGoal && s(c.fg(c.gray[44])),
                   )}
                 >
                   {veryRare ? (
@@ -237,7 +237,7 @@ const getBuildModeSections = ({
           getPlayRate(
             props.suggestedMove,
             props.positionReport,
-            usePeerRates ? false : true
+            usePeerRates ? false : true,
           );
 
         return (
@@ -276,7 +276,7 @@ const getBuildModeSections = ({
         const moveRating: MoveRating = props.tableResponse.moveRating!;
         const isBadMove = !isNil(moveRating);
         const formattedEval = formatStockfishEval(
-          props.suggestedMove?.stockfish!
+          props.suggestedMove?.stockfish!,
         );
         return (
           <>
@@ -290,13 +290,13 @@ const getBuildModeSections = ({
                     c.minWidth(30),
                     c.height(18),
                     c.center,
-                    c.br(2)
+                    c.br(2),
                   )}
                   ref={(ref) => {
                     initTooltip({
                       ref,
                       content: () => {
-                        if (formattedEval == "=") {
+                        if (formattedEval === "=") {
                           return (
                             <p>
                               After this move, the computer evaluates the
@@ -309,7 +309,7 @@ const getBuildModeSections = ({
                           const side = mateMoves > 0 ? "white" : "black";
                           return `This position is a forced mate in ${pluralize(
                             mateMoves,
-                            "move"
+                            "move",
                           )} for ${side}`;
                         } else if (props.suggestedMove?.stockfish?.eval) {
                           const betterSide = whiteWinning ? "white" : "black";
@@ -332,7 +332,7 @@ const getBuildModeSections = ({
                     class={clsx(
                       backgroundSide === "white"
                         ? "text-gray-10"
-                        : "text-gray-90"
+                        : "text-gray-90",
                     )}
                   >
                     {formattedEval}
@@ -375,32 +375,43 @@ const getBuildModeSections = ({
                           <span class="block pb-2">
                             When this is played at your level:
                           </span>
-                          •<span class="pr-2" />
+                          •
+                          <span class="pr-2" />
                           White wins{" "}
                           <b>
                             {formatPlayPercentage(
-                              getWinRate(props.suggestedMove?.results!, "white")
+                              getWinRate(
+                                props.suggestedMove?.results!,
+                                "white",
+                              ),
                             )}
                           </b>{" "}
-                          of games <br />•<span class="pr-2" />
+                          of games <br />
+                          •
+                          <span class="pr-2" />
                           Black wins{" "}
                           <b>
                             {formatPlayPercentage(
-                              getWinRate(props.suggestedMove?.results!, "black")
+                              getWinRate(
+                                props.suggestedMove?.results!,
+                                "black",
+                              ),
                             )}
                           </b>{" "}
-                          of games <br />•<span class="pr-2" />
+                          of games <br />
+                          •
+                          <span class="pr-2" />
                           <b>
                             {formatPlayPercentage(
                               1 -
                                 getWinRate(
                                   props.suggestedMove?.results!,
-                                  "white"
+                                  "white",
                                 ) -
                                 getWinRate(
                                   props.suggestedMove?.results!,
-                                  "black"
-                                )
+                                  "black",
+                                ),
                             )}
                           </b>{" "}
                           of games are drawn
@@ -448,7 +459,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
     let progress = clamp(
       getCoverageProgress(numMovesFromHere(), expectedNumMovesNeeded()),
       5,
-      95
+      95,
     );
     if (!hasResponse()) {
       progress = 0;
@@ -483,14 +494,14 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
           c.bg(backgroundColor),
           c.round,
           c.overflowHidden,
-          c.height(4)
+          c.height(4),
         )}
       >
         <div
           style={s(
             c.width(completed() ? "100%" : `${progress()}%`),
             c.bg(completed() ? completedColor : inProgressColor()),
-            c.fullHeight
+            c.fullHeight,
           )}
         />
       </div>

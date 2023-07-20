@@ -29,7 +29,7 @@ export const GameResultsBar = (props: {
         c.px(4),
         c.alignCenter,
         c.row,
-        props.activeSide === "black" ? c.justifyEnd : c.justifyStart
+        props.activeSide === "black" ? c.justifyEnd : c.justifyStart,
       )}
     >
       {percentWhite > threshold && !props.hideNumbers && (
@@ -37,7 +37,7 @@ export const GameResultsBar = (props: {
           <CMText
             class={clsx(
               props.activeSide === "white" ? "text-gray-10" : "text-gray-10",
-              "text-[10px] font-bold"
+              "text-[10px] font-bold",
             )}
           >
             {formatWinPercentage(props.gameResults.white / total)}
@@ -56,7 +56,7 @@ export const GameResultsBar = (props: {
         c.alignCenter,
         c.row,
         c.px(4),
-        props.activeSide === "black" ? c.justifyStart : c.justifyEnd
+        props.activeSide === "black" ? c.justifyStart : c.justifyEnd,
       )}
     >
       {props.gameResults.black / total > threshold && !props.hideNumbers && (
@@ -64,7 +64,7 @@ export const GameResultsBar = (props: {
           <CMText
             class={clsx(
               props.activeSide === "black" ? "text-gray-90" : "text-gray-90",
-              "text-[10px] font-bold"
+              "text-[10px] font-bold",
             )}
           >
             {formatWinPercentage(props.gameResults.black / total)}
@@ -86,7 +86,7 @@ export const GameResultsBar = (props: {
         c.fullHeight,
         c.height(18),
         c.br(2),
-        c.overflowHidden
+        c.overflowHidden,
       )}
     >
       {first}
@@ -94,7 +94,7 @@ export const GameResultsBar = (props: {
         style={s(
           c.width(`${(props.gameResults.draw / total) * 100}%`),
           c.bg(c.gray[40]),
-          c.center
+          c.center,
         )}
       >
         {props.gameResults.draw / total > threshold &&

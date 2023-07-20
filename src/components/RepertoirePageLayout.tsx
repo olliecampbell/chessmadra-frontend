@@ -25,7 +25,7 @@ export const RepertoirePageLayout = (props: {
         c.fullWidth,
         c.bg(backgroundColor),
         c.grow,
-        s(c.minHeight("100vh"))
+        s(c.minHeight("100vh")),
       )}
     >
       <div
@@ -33,7 +33,7 @@ export const RepertoirePageLayout = (props: {
           isMobile() ? s(c.grow) : c.flexShrink(1),
           props.centered && c.grow,
           props.fullHeight && c.grow,
-          props.loading && c.grow
+          props.loading && c.grow,
         )}
       >
         <Show when={props.loading}>
@@ -53,7 +53,7 @@ export const RepertoirePageLayout = (props: {
               c.flexShrink(1),
               props.fullHeight && s(c.grow),
               !props.flushTop && !props.naked && c.pt(isMobile() ? 24 : 48),
-              props.centered && s(c.grow, c.justifyCenter)
+              props.centered && s(c.grow, c.justifyCenter),
             )}
           >
             <div
@@ -63,7 +63,7 @@ export const RepertoirePageLayout = (props: {
                   c.pb(isMobile() ? 92 : 180),
                 c.center,
                 c.fullWidth,
-                props.fullHeight && c.grow
+                props.fullHeight && c.grow,
               )}
             >
               {props.children}

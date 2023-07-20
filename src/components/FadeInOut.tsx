@@ -26,7 +26,7 @@ export const FadeInOut = (props: {
         props.open() ? "opacity-100" : "opacity-0",
         !props.open() && "pointer-events-none",
         props.className,
-        props.class
+        props.class,
       )}
     >
       {props.children}
@@ -66,7 +66,7 @@ export const TransitionIn = (props: {
         props.open() && entered() ? "opacity-100" : "opacity-0",
         !props.open() && "pointer-events-none",
         props.className,
-        props.class
+        props.class,
       )}
     >
       {props.children}

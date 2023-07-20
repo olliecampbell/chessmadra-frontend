@@ -22,11 +22,11 @@ export default function ForgotPassword() {
     return client
       .post("/api/forgot_password", { email: values.email })
       .then((resp) => {
-        trackEvent(`auth.forgot_password.success`);
+        trackEvent("auth.forgot_password.success");
         alert("Email sent!");
       })
       .catch((err) => {
-        trackEvent(`auth.forgot_password.error`);
+        trackEvent("auth.forgot_password.error");
         setServerError(err?.response?.data?.error ?? "Something went wrong");
       });
   };
@@ -70,9 +70,9 @@ export default function ForgotPassword() {
         >
           <div class={clsx(isSubmitting() && "opacity-0")}>
             <div class="col items-center">
-              <div class={`min-w-80 padding-sidebar w-full self-stretch`}>
+              <div class={"min-w-80 padding-sidebar w-full self-stretch"}>
                 <div style={s(c.br(4), c.px(0), c.py(0))}>
-                  <form ref={form} class={`col gap-8`}>
+                  <form ref={form} class={"col gap-8"}>
                     <TextInput
                       placeholder="example@gmail.com"
                       type="email"

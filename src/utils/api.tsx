@@ -13,7 +13,7 @@ let flipper = 0;
 const MOCK_RESPONSES = false;
 
 export const fetchNewPuzzle = async (
-  args: PuzzleFetchOptions
+  args: PuzzleFetchOptions,
 ): Promise<LichessPuzzle | null> => {
   if (MOCK_RESPONSES && isDevelopment) {
     flipper++;

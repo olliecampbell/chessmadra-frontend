@@ -2,7 +2,7 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { SidebarHeader } from "./RepertoireEditingHeader";
 import { Component, mergeProps, Show } from "solid-js";
@@ -20,7 +20,7 @@ export const SidebarTemplate: Component<{
     {
       actionsPadding: true,
     },
-    props
+    props,
   );
   const responsive = useResponsiveV2();
   return (
@@ -49,7 +49,7 @@ export const SidebarTemplate: Component<{
             c.column,
             props.bodyPadding && c.px(c.getSidebarPadding(responsive())),
             c.zIndex(2),
-            c.relative
+            c.relative,
           )}
         >
           {props.children}

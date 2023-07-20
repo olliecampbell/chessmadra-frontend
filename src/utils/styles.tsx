@@ -154,7 +154,7 @@ const flexible = s(
   keyedProp("flex-basis")(0),
   keyedProp("min-width")(0),
   keyedProp("min-height")(0),
-  grow
+  grow,
 );
 const fontSize = keyedPixelProp("font-size");
 
@@ -209,7 +209,7 @@ const basicButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg(colors.text.inverse)),
-  }
+  },
 );
 const outlineDarkButtonStyles = s(
   br(2),
@@ -221,7 +221,7 @@ const outlineDarkButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg(grays[10])),
-  }
+  },
 );
 const outlineLightButtonStyles = s(
   br(2),
@@ -233,7 +233,7 @@ const outlineLightButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg(grays[80])),
-  }
+  },
 );
 const disabledButtonStyles = s(
   br(2),
@@ -245,7 +245,7 @@ const disabledButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg("white")),
-  }
+  },
 );
 const extraDarkButtonStyles = s(
   br(2),
@@ -257,7 +257,7 @@ const extraDarkButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg(grays[70])),
-  }
+  },
 );
 const basicSecondaryButtonStyles = s(
   br(2),
@@ -269,7 +269,7 @@ const basicSecondaryButtonStyles = s(
   center,
   {
     textStyles: s(weightBold, fontSize(16), fg(grays[70])),
-  }
+  },
 );
 const primaryButtonStyles = s(basicButtonStyles, bg(colors.blue[40]), {
   textStyles: s(weightBold, fg(colors.text.primary), fontSize(16)),
@@ -292,7 +292,7 @@ const buttons = {
     center,
     {
       textStyles: s(weightBold, fontSize(16), fg(grays[70])),
-    }
+    },
   ),
 
   disabled: disabledButtonStyles,
@@ -318,10 +318,10 @@ const transform = keyedProp("transform");
 const oldContainerStyles = (isMobile: boolean, customMaxWidth?: number) =>
   s(
     width(
-      `min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`
+      `min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`,
     ),
     column,
-    selfCenter
+    selfCenter,
   );
 
 const containerStyles = (breakpoint: BP) =>
@@ -329,10 +329,10 @@ const containerStyles = (breakpoint: BP) =>
     width(
       `min(calc(100vw - ${breakpoint <= BP.lg ? 24 : 96}px), ${
         breakpoint >= BP.xxl ? 1440 : 1280
-      }px)`
+      }px)`,
     ),
     column,
-    selfCenter
+    selfCenter,
   );
 
 export const noUserSelect = {
@@ -359,13 +359,13 @@ const grid = ({
   return s(
     c.displayGrid,
     c.keyedProp("grid-template-columns")(
-      templateColumns ? templateColumns.join(" ") : "1fr"
+      templateColumns ? templateColumns.join(" ") : "1fr",
     ),
     c.keyedProp("grid-template-rows")(
-      templateRows ? templateRows.join(" ") : "1fr"
+      templateRows ? templateRows.join(" ") : "1fr",
     ),
     c.keyedProp("row-gap")(rowGap ?? 12),
-    c.keyedProp("column-gap")(columnGap ?? 12)
+    c.keyedProp("column-gap")(columnGap ?? 12),
   );
 };
 
@@ -374,7 +374,7 @@ const gridColumn = ({ gap }: { gap: number }) => {
     c.displayGrid,
     c.keyedProp("grid-template-columns")("1fr"),
     // c.keyedProp("grid-template-rows")("1fr"),
-    c.keyedProp("row-gap")(pixelifyIfNeeded(gap))
+    c.keyedProp("row-gap")(pixelifyIfNeeded(gap)),
     // c.keyedProp("column-gap")(columnGap ?? 12)
   );
 };

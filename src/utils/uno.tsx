@@ -97,7 +97,7 @@ export const unoConfig: VitePluginConfig = {
       return {
         // slice `hover:` prefix and passed to the next variants and rules
         matcher: matcher.slice(7), // The 7 here represents the number of characters in the prefix.
-        parent: [`@media (hover: hover) and (pointer: fine)`],
+        parent: ["@media (hover: hover) and (pointer: fine)"],
         selector: (s) => `${s}:hover`,
       };
     },

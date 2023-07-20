@@ -5,7 +5,6 @@ import { Move, Piece, Square } from "@lubert/chess.ts/dist/types";
 import { ChessColor, COLUMNS, ROWS } from "~/types/Chess";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getSquareOffset } from "../../utils/chess";
-import { useIsMobileV2 } from "~/utils/isMobile";
 import { CMText } from "../CMText";
 import { cloneDeep, find, forEach, range } from "lodash-es";
 import { FadeInOut, TransitionIn } from "../FadeInOut";
@@ -58,8 +57,8 @@ export const PieceView: Component<{
       src={getStatic(
         `/pieces/${props.pieceSet}/${getSvgName(
           props.piece.type,
-          props.piece.color
-        )}.svg`
+          props.piece.color,
+        )}.svg`,
       )}
     />
   );
@@ -109,12 +108,14 @@ export function ChessboardView(props: {
   chessboardInterface: ChessboardInterface;
   shadow?: boolean;
   disableDrag?: boolean;
+  // rome-ignore lint: ignore
   onSquarePress?: any;
+  // rome-ignore lint: ignore
   styles?: any;
   ref?: (_: HTMLElement) => void;
 }) {
   const chessboardStore = createMemo(() =>
-    props.chessboardInterface.get((s) => s)
+    props.chessboardInterface.get((s) => s),
   );
   const preview = true;
   // testing preview move
@@ -155,8 +156,8 @@ export function ChessboardView(props: {
   const user = () => userState.user;
   const combinedTheme: Accessor<CombinedTheme> = createMemo(
     () =>
-      find(combinedThemes, (theme) => theme.boardTheme == user()?.theme) ||
-      COMBINED_THEMES_BY_ID["default"]
+      find(combinedThemes, (theme) => theme.boardTheme === user()?.theme) ||
+      COMBINED_THEMES_BY_ID["default"],
   );
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
@@ -167,7 +168,7 @@ export function ChessboardView(props: {
   const getSquareFromLayoutAndGesture = (
     // @ts-ignore
     chessboardLayout,
-    gesture: XY
+    gesture: XY,
   ): [Square, number, number] => {
     const columnPercent = gesture.x / chessboardLayout.width;
     const rowPercent = gesture.y / chessboardLayout.height;
@@ -235,13 +236,13 @@ export function ChessboardView(props: {
   const frozen = () => chessboardStore().frozen;
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
-    if (!!("ontouchstart" in window) && evt.type == "mousedown") return;
+    if (!!("ontouchstart" in window) && evt.type === "mousedown") return;
     console.log("mouse down", evt);
 
     const tap = getTapOffset(evt, chessboardLayout);
     const [square, centerX, centerY] = getSquareFromLayoutAndGesture(
       chessboardLayout,
-      tap
+      tap,
     );
     if (chessboardStore().mode === "tap") {
       chessboardStore().delegate.tappedSquare?.(square);
@@ -251,7 +252,7 @@ export function ChessboardView(props: {
     console.log("----", drag().square, square, piece);
     const availableMove = find(
       chessboardStore().availableMoves,
-      (m) => m.to == square
+      (m) => m.to === square,
     );
     if (availableMove) {
       console.log("there was an available move", availableMove);
@@ -261,10 +262,10 @@ export function ChessboardView(props: {
       setTapAction(() => () => {
         console.log("doing nothing because made move on mouse down");
       });
-    } else if (chessboardStore().activeFromSquare == square || !piece) {
+    } else if (chessboardStore().activeFromSquare === square || !piece) {
       console.log(
         "should clear if tap, active square is",
-        chessboardStore().activeFromSquare
+        chessboardStore().activeFromSquare,
       );
       setTapAction(() => () => {
         console.log("clear pending because this was the active from square");
@@ -286,7 +287,6 @@ export function ChessboardView(props: {
       const drag = store.drag;
       console.log("evt", evt);
       drag.touch = "TouchEvent" in window && evt instanceof TouchEvent;
-      console.log("is touch?" + drag.touch);
       drag.square = square;
       drag.enoughToDrag = false;
       drag.x = tap.x;
@@ -339,7 +339,7 @@ export function ChessboardView(props: {
       const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, tap);
       if (newSquare !== s.draggedOverSquare) {
         const isOverMovableSquare = s.availableMoves.find(
-          (m) => m.to == newSquare
+          (m) => m.to === newSquare,
         );
         if (isOverMovableSquare) {
           s.draggedOverSquare = newSquare;
@@ -357,7 +357,7 @@ export function ChessboardView(props: {
       });
       if (!newDrag.enoughToDrag) {
         const distance = Math.sqrt(
-          Math.pow(newDrag.transform.x, 2) + Math.pow(newDrag.transform.y, 2)
+          Math.pow(newDrag.transform.x, 2) + Math.pow(newDrag.transform.y, 2),
         );
         newDrag.enoughToDrag = distance > 5;
       }
@@ -375,7 +375,7 @@ export function ChessboardView(props: {
     } else {
       const availableMove = find(
         chessboardStore().availableMoves,
-        (m) => m.to == newSquare
+        (m) => m.to === newSquare,
       );
       if (availableMove) {
         props.chessboardInterface.requestToMakeMove(availableMove as Move);
@@ -390,7 +390,7 @@ export function ChessboardView(props: {
   };
 
   const manuallyHighlightedSquares = createMemo(
-    () => chessboardStore().highlightedSquares
+    () => chessboardStore().highlightedSquares,
   );
   const themeStyles = (light: boolean) =>
     light ? theme().light.styles : theme().dark.styles;
@@ -398,7 +398,7 @@ export function ChessboardView(props: {
     <>
       <div
         ref={props.ref}
-        class={clsx(`relative h-0 w-full touch-none select-none pb-[100%]`)}
+        class={clsx("relative h-0 w-full touch-none select-none pb-[100%]")}
         style={s(
           c.pb("100%"),
           c.relative,
@@ -408,7 +408,7 @@ export function ChessboardView(props: {
           props.shadow && c.cardShadow,
           {
             "-webkit-touch-callout": "none",
-          }
+          },
         )}
       >
         <div
@@ -418,7 +418,7 @@ export function ChessboardView(props: {
               height: "100%",
               position: "absolute",
             },
-            c.brt(2)
+            c.brt(2),
           )}
           ref={setChessboardContainerRef}
           onMouseMove={onMouseMove}
@@ -512,7 +512,7 @@ export function ChessboardView(props: {
                         c.absoluteFull,
                         c.noPointerEvents,
                         c.zIndex(focused() ? 101 : 100),
-                        c.opacity(opacity())
+                        c.opacity(opacity()),
                       )}
                     >
                       <svg width="100%" height="100%" viewBox="0 0 1 1">
@@ -566,7 +566,7 @@ export function ChessboardView(props: {
               c.zIndex(5),
               c.absolute,
               c.center,
-              c.opacity(0)
+              c.opacity(0),
             )}
             ref={(x) => {
               refs.visualizationDotRef = x;
@@ -577,12 +577,12 @@ export function ChessboardView(props: {
                 chessboardStore().visualizedMove?.color === "w"
                   ? "bg-gray-98"
                   : "bg-gray-4",
-                "opacity-70"
+                "opacity-70",
               )}
               style={s(
                 c.size("50%"),
                 c.round,
-                c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50))
+                c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50)),
               )}
             />
           </div>
@@ -599,7 +599,7 @@ export function ChessboardView(props: {
               c.fullHeight,
               c.zIndex(3),
               c.keyedProp("--shadow-color")(chessboardStore().ringColor),
-              c.noPointerEvents
+              c.noPointerEvents,
             )}
           />
           <For each={Object.keys(SQUARES) as Square[]}>
@@ -627,7 +627,7 @@ export function ChessboardView(props: {
                 pos();
                 let posStyles = s(
                   c.top(`${getSquareOffset(square, flipped()).y * 100}%`),
-                  c.left(`${getSquareOffset(square, flipped()).x * 100}%`)
+                  c.left(`${getSquareOffset(square, flipped()).x * 100}%`),
                 );
                 const animated = false;
                 if (dragging() && drag().enoughToDrag) {
@@ -646,25 +646,25 @@ export function ChessboardView(props: {
               const hiddenBecauseTake = createMemo(
                 () =>
                   chessboardStore().previewedMove?.to === square &&
-                  chessboardStore().previewedMove?.color !== piece()?.color
+                  chessboardStore().previewedMove?.color !== piece()?.color,
               );
 
               const priority = createMemo(
                 () =>
                   chessboardStore().activeFromSquare === square ||
                   chessboardStore().availableMoves.some(
-                    (m) => m.from === square
+                    (m) => m.from === square,
                   ) ||
                   chessboardStore().drag.square === square ||
                   chessboardStore().animatingMoveSquare === square,
-                "priority"
+                "priority",
               );
               const containerViewStyles = createMemo(() => {
                 return s(
                   c.absolute,
                   c.zIndex(priority() ? 11 : 2),
                   c.size("12.5%"),
-                  c.noPointerEvents
+                  c.noPointerEvents,
                 );
               });
               return (
@@ -673,7 +673,7 @@ export function ChessboardView(props: {
                     style={s(
                       containerViewStyles(),
                       c.noPointerEvents,
-                      posStyles()
+                      posStyles(),
                     )}
                     id={`piece-${square}`}
                     ref={(v) => {
@@ -687,7 +687,7 @@ export function ChessboardView(props: {
                         <div
                           class={clsx(
                             hiddenBecauseTake() && "opacity-0",
-                            "transition-opacity"
+                            "transition-opacity",
                           )}
                         >
                           <PieceView
@@ -721,11 +721,11 @@ export function ChessboardView(props: {
                     {(j) => {
                       const debugSquare = "e4";
                       const feedback = createMemo(
-                        () => chessboardStore().moveFeedback
+                        () => chessboardStore().moveFeedback,
                       );
-                      const light = (i + j) % 2 == 0;
+                      const light = (i + j) % 2 === 0;
                       const [color, inverseColor] = destructure(() =>
-                        light ? colors() : [colors()[1], colors()[0]]
+                        light ? colors() : [colors()[1], colors()[0]],
                       );
                       // if (state.hideColors) {
                       //   color = c.gray[30];
@@ -737,15 +737,15 @@ export function ChessboardView(props: {
                       const tileNumber = () =>
                         flipped() ? ROWS[i] : ROWS[7 - i];
                       const square = createMemo(
-                        () => `${tileLetter()}${tileNumber()}` as Square
+                        () => `${tileLetter()}${tileNumber()}` as Square,
                       );
                       const isDraggedOverSquare = createMemo(
-                        () => chessboardStore().draggedOverSquare == square()
+                        () => chessboardStore().draggedOverSquare === square(),
                       );
                       const availableMove = createMemo(
                         () =>
-                          availableMoves().find((m) => m.to == square()) !==
-                          undefined
+                          availableMoves().find((m) => m.to === square()) !==
+                          undefined,
                       );
                       const [highlightColor, setHighlightColor] = createSignal<
                         "last" | "next" | null
@@ -795,9 +795,9 @@ export function ChessboardView(props: {
                           return;
                         }
                         const isLastMoveSquare =
-                          props.chessboardInterface.getLastMove()?.to ==
+                          props.chessboardInterface.getLastMove()?.to ===
                             square() ||
-                          props.chessboardInterface.getLastMove()?.from ==
+                          props.chessboardInterface.getLastMove()?.from ===
                             square();
                         if (isLastMoveSquare) {
                           setHighlightColor("last");
@@ -808,10 +808,10 @@ export function ChessboardView(props: {
                         setHighlightType(null);
                         return;
                       });
-                      const isBottomEdge = i == 7;
-                      const isRightEdge = j == 7;
+                      const isBottomEdge = i === 7;
+                      const isRightEdge = j === 7;
                       const [ref, setRef] = createSignal<HTMLDivElement | null>(
-                        null
+                        null,
                       );
                       createEffect(() => {
                         if (ref()) {
@@ -829,13 +829,13 @@ export function ChessboardView(props: {
                             c.center,
                             !frozen() && c.clickable,
                             c.flexible,
-                            c.relative
+                            c.relative,
                           )}
                         >
                           <div class="center z-6 absolute right-0 top-0 h-[40%] w-[40%] -translate-y-1/2 translate-x-1/2">
                             <div
                               class={clsx(
-                                `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `
+                                "center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] ",
                               )}
                               id={`feedback-${square()}`}
                               ref={setRef}
@@ -843,7 +843,7 @@ export function ChessboardView(props: {
                             >
                               <div
                                 class={clsx(
-                                  "absolute inset-0 bg-white opacity-0"
+                                  "absolute inset-0 bg-white opacity-0",
                                 )}
                                 id="white-overlay"
                               />
@@ -852,38 +852,40 @@ export function ChessboardView(props: {
                                   " relative text-[100cqw]",
                                   feedback().type === "correct"
                                     ? "fa fa-circle-check text-[#79c977]"
-                                    : "fa fa-circle-xmark text-[#c92b2b]"
+                                    : "fa fa-circle-xmark text-[#c92b2b]",
                                 )}
                               >
-                                <div class="bg-gray-10 center -z-1 absolute  inset-[2px] rounded-full"></div>
+                                <div class="bg-gray-10 center -z-1 absolute  inset-[2px] rounded-full" />
                               </i>
                             </div>
                           </div>
                           <div class="center z-5 absolute right-0 top-0 h-[40%] w-[40%] -translate-y-1/2 translate-x-1/2">
                             <div
                               class={clsx(
-                                `center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] `
+                                "center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] ",
                               )}
                               id={`option-${square()}`}
                               style={s(
                                 c.zIndex(6),
                                 chessboardStore().tapOptions.has(square())
                                   ? c.opacity(100)
-                                  : c.opacity(0)
+                                  : c.opacity(0),
                               )}
                             >
                               <i
                                 class={clsx(
                                   "bg-gray-10 text-[100cqw] opacity-40",
-                                  "fa fa-circle-question text-[orange]"
+                                  "fa fa-circle-question text-[orange]",
                                 )}
-                              ></i>
+                              />
                             </div>
                           </div>
                           <div
                             class="absolute inset-0 grid place-items-center rounded-full"
                             style={s(
-                              c.zIndex(highlightType() === "indicator" ? 11 : 1)
+                              c.zIndex(
+                                highlightType() === "indicator" ? 11 : 1,
+                              ),
                             )}
                           >
                             <div
@@ -896,7 +898,7 @@ export function ChessboardView(props: {
                               style={s(
                                 c.bg(theme().highlightNextMove),
                                 c.absolute,
-                                c.zIndex(6)
+                                c.zIndex(6),
                               )}
                             />
                           </div>
@@ -911,17 +913,17 @@ export function ChessboardView(props: {
                               c.bg(
                                 highlightColor() === "last"
                                   ? theme().highlightLastMove
-                                  : theme().highlightNextMove
+                                  : theme().highlightNextMove,
                               ),
                               c.absolute,
-                              c.zIndex(1)
+                              c.zIndex(1),
                             )}
                           />
                           {isBottomEdge && (
                             <CMText
                               style={s(c.fg(inverseColor()))}
                               class={clsx(
-                                "left-1px weight-bold absolute bottom-0 text-[10px]  lg:bottom-0.5 lg:left-1 lg:text-sm"
+                                "left-1px weight-bold absolute bottom-0 text-[10px]  lg:bottom-0.5 lg:left-1 lg:text-sm",
                               )}
                             >
                               {tileLetter()}
@@ -931,7 +933,7 @@ export function ChessboardView(props: {
                             <p
                               id={`coord-${square()}`}
                               class={clsx(
-                                "right-1px weight-bold absolute top-0 text-[10px] lg:right-1 lg:top-0.5 lg:text-sm"
+                                "right-1px weight-bold absolute top-0 text-[10px] lg:right-1 lg:top-0.5 lg:text-sm",
                               )}
                               style={s(c.fg(inverseColor()))}
                             >

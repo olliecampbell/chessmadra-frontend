@@ -70,10 +70,10 @@ export const MoveAnnotationsDashboard = () => {
                       c.grow,
                       c.alignCenter,
                       c.borderBottom(
-                        `2px solid ${active ? c.gray[90] : c.gray[20]}`
+                        `2px solid ${active ? c.gray[90] : c.gray[20]}`,
                       ),
                       c.zIndex(5),
-                      c.pb(8)
+                      c.pb(8),
                     )}
                   >
                     <CMText
@@ -81,10 +81,10 @@ export const MoveAnnotationsDashboard = () => {
                         c.fg(
                           active
                             ? c.colors.text.primary
-                            : c.colors.text.secondary
+                            : c.colors.text.secondary,
                         ),
                         c.fontSize(16),
-                        c.weightBold
+                        c.weightBold,
                       )}
                     >
                       {tab === "Needed" ? "Most needed" : "Completed"}
@@ -127,7 +127,7 @@ export const MoveAnnotationRow = (props: {
   const fen = `${ann().previousEpd} 0 1`;
   const position = new Chess(fen);
   const [annotation, setAnnotation] = createSignal(
-    ann().annotation?.text ?? ""
+    ann().annotation?.text ?? "",
   );
   const [saved, setSaved] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
@@ -169,8 +169,8 @@ export const MoveAnnotationRow = (props: {
               s.repertoireState.analyzeMoveOnLichess(
                 fen,
                 ann().sanPlus,
-                position.turn() === "b" ? "black" : "white"
-              )
+                position.turn() === "b" ? "black" : "white",
+              ),
             );
           }}
         >
@@ -186,12 +186,12 @@ export const MoveAnnotationRow = (props: {
                 .acceptMoveAnnotation(
                   ann().previousEpd,
                   ann().sanPlus,
-                  annotation()
+                  annotation(),
                 )
                 .then(() => {
                   setSaved(true);
                   setLoading(false);
-                })
+                }),
             );
           }}
         >

@@ -10,7 +10,7 @@ import {
   useBrowsingState,
   useRepertoireState,
 } from "~/utils/app_state";
-import { BP,  useResponsiveV2 } from "~/utils/useResponsive";
+import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
@@ -98,7 +98,7 @@ export const SettingButton = (props: {
         c.alignCenter,
         c.px(responsive().switch(0, [BP.md, 8])),
         c.mx(responsive().switch(0, [BP.md, -8])),
-        c.py(8)
+        c.py(8),
         // c.bg(hovering ? c.gray[14] : c.gray[6])
       )}
       {...hoveringProps}

@@ -74,8 +74,8 @@ export interface ProgressMessage {
   type: ProgressMessageType;
 }
 export enum ProgressMessageType {
-  Error,
-  Success,
+  Error = 0,
+  Success = 1,
 }
 
 export enum PuzzleDifficulty {

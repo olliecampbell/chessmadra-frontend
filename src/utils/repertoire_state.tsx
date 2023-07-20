@@ -114,7 +114,7 @@ export interface RepertoireState {
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,
-    options?: { pgnToPlay?: string; import?: boolean; keepPosition?: boolean }
+    options?: { pgnToPlay?: string; import?: boolean; keepPosition?: boolean },
   ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
@@ -125,7 +125,7 @@ export interface RepertoireState {
   getMyResponsesLength: (side?: Side) => number;
   getNumResponsesBelowThreshold: (
     threshold: number,
-    side: Side | null
+    side: Side | null,
   ) => number;
   getLineCount: (side?: Side) => number;
   getIsRepertoireEmpty: (side?: Side) => boolean;
@@ -192,8 +192,8 @@ export interface AddNewLineChoice {
 }
 
 export enum AddedLineStage {
-  Initial,
-  AddAnother,
+  Initial = 0,
+  AddAnother = 1,
 }
 
 export interface FetchRepertoireResponse {
@@ -215,7 +215,7 @@ export const getInitialRepertoireState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _get: StateGetter<AppState, any>
+  _get: StateGetter<AppState, any>,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _set((s) => fn(selector(s)));
@@ -275,7 +275,7 @@ export const getInitialRepertoireState = (
           "/api/v1/openings/use_player_template",
           {
             id,
-          }
+          },
         );
         set(([s]) => {
           s.repertoire = data.repertoire;
@@ -290,7 +290,7 @@ export const getInitialRepertoireState = (
           "/api/v1/openings/add_templates",
           {
             templates: Object.values(s.selectedTemplates),
-          }
+          },
         );
         set(([s]) => {
           s.repertoire = data.repertoire;
@@ -308,11 +308,11 @@ export const getInitialRepertoireState = (
           const max = 200;
           const { data }: { data: string } = await client.get(
             `https://lichess.org/api/games/user/${encodeURIComponent(
-              lichessUsername
+              lichessUsername,
             )}?max=${max}&perfType=ultrabullet,bullet,blitz,rapid,classical,correspondence`,
             {
               headers: { Accept: "application/x-ndjson" },
-            }
+            },
           );
           lichessGames = data
             .split("\n")
@@ -327,7 +327,7 @@ export const getInitialRepertoireState = (
             chessComGames: [],
             whitePgn,
             blackPgn,
-          }
+          },
         );
         set(([s, gs]) => {
           s.repertoire = data.repertoire;
@@ -337,7 +337,7 @@ export const getInitialRepertoireState = (
           const side: Side = blackPgn ? "black" : "white";
           const numBelowThreshold = s.getNumResponsesBelowThreshold(
             gs.userState.getCurrentThreshold(),
-            null
+            null,
           );
           if (side && numBelowThreshold > minimumToTrim) {
             s.browsingState.pushView(TrimRepertoireOnboarding);
@@ -352,7 +352,7 @@ export const getInitialRepertoireState = (
           text: (
             <div
               class={clsx(
-                "square-5 col pr-10px -m-2 box-content items-center justify-center p-2"
+                "square-5 col pr-10px -m-2 box-content items-center justify-center p-2",
               )}
             >
               <Logo />
@@ -398,7 +398,7 @@ export const getInitialRepertoireState = (
       }),
     updateShareLink: () =>
       set(([s]) => {
-        client.post(`/api/v1/openings/update-share-link`).then(({ data }) => {
+        client.post("/api/v1/openings/update-share-link").then(({ data }) => {
           set(([s]) => {
             s.repertoireShareId = data.id;
           });
@@ -414,11 +414,11 @@ export const getInitialRepertoireState = (
           [FEN "${fen}"]
 
           ${turn === "white" ? "1." : "1..."} ${move}
-        `
+        `,
         );
         const windowReference = window.open("about:blank", "_blank");
         client
-          .post(`https://lichess.org/api/import`, bodyFormData)
+          .post("https://lichess.org/api/import", bodyFormData)
           .then(({ data }) => {
             const url = data["url"];
             windowReference!.location = `${url}/${turn}#999`;
@@ -428,13 +428,13 @@ export const getInitialRepertoireState = (
       set(([s]) => {
         if (isEmpty(line)) {
           // TODO: figure out a way to open up analysis from black side
-          window.open(`https://lichess.org/analysis`, "_blank");
+          window.open("https://lichess.org/analysis", "_blank");
           return;
         }
         const side = _side ?? sideOfLastmove(line);
         window.open(
           `https://lichess.org/analysis/pgn/${line.join("_")}?color=${side}`,
-          "_blank"
+          "_blank",
         );
       }),
     onMove: () =>
@@ -455,12 +455,12 @@ export const getInitialRepertoireState = (
           const recurse = (
             epd: string,
             seenEpds: Set<string>,
-            lastMove?: RepertoireMove
+            lastMove?: RepertoireMove,
           ) => {
             if (shouldDebugEpd(epd)) {
               console.log(
                 "[updateRepertoireStructures], this is bting debugged",
-                epd
+                epd,
               );
             }
             if (seenEpds.has(epd)) {
@@ -472,7 +472,7 @@ export const getInitialRepertoireState = (
             newSeenEpds.add(epd);
             const allMoves = filter(
               repertoireSide.positionResponses[epd] ?? [],
-              (m) => m.needed
+              (m) => m.needed,
             ) as RepertoireMove[];
             const [mainMove, ...others] = allMoves;
             let additionalExpectedNumMoves = 0;
@@ -485,7 +485,7 @@ export const getInitialRepertoireState = (
                   m.epd === START_EPD &&
                     (m.sanPlus === "d4" ||
                       m.sanPlus === "c4" ||
-                      m.sanPlus == "Nf3")
+                      m.sanPlus === "Nf3"),
                 );
                 additionalExpectedNumMoves += additional;
               });
@@ -500,8 +500,8 @@ export const getInitialRepertoireState = (
                   (m) =>
                     m.sanPlus === "d4" ||
                     m.sanPlus === "c4" ||
-                    m.sanPlus == "Nf3"
-                )
+                    m.sanPlus === "Nf3",
+                ),
             );
             let childAdditionalMovesExpected = 0;
             allMoves.forEach((m) => {
@@ -511,7 +511,7 @@ export const getInitialRepertoireState = (
               const { numMoves, additionalExpectedNumMoves } = recurse(
                 m.epdAfter,
                 newSeenEpds,
-                m
+                m,
               );
               numMovesExpected += additionalExpectedNumMoves;
               childAdditionalMovesExpected += additionalExpectedNumMoves;
@@ -533,12 +533,12 @@ export const getInitialRepertoireState = (
           const recurse = (
             epd: string,
             seenEpds: Set<string>,
-            lastMove?: RepertoireMove
+            lastMove?: RepertoireMove,
           ) => {
             if (shouldDebugEpd(epd)) {
               console.log(
                 "[updateRepertoireStructures], this is bting debugged",
-                epd
+                epd,
               );
             }
             if (seenEpds.has(epd)) {
@@ -586,47 +586,47 @@ export const getInitialRepertoireState = (
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
             return flatten(
-              Object.values(repertoireSide.positionResponses)
+              Object.values(repertoireSide.positionResponses),
             ).filter((m: RepertoireMove) => m.mine);
-          }
+          },
         );
         s.epdNodes = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
             const nodeEpds = {};
             const allEpds = flatten(
-              Object.values(repertoireSide.positionResponses)
+              Object.values(repertoireSide.positionResponses),
             ).flatMap((m) => [m.epd, m.epdAfter]);
             allEpds.forEach((epd) => {
               // @ts-ignore
               nodeEpds[epd] = true;
             });
             return nodeEpds;
-          }
+          },
         );
         s.numResponses = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
             return flatten(Object.values(repertoireSide.positionResponses))
               .length;
-          }
+          },
         );
         s.numMyMoves = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
             return filter(
               flatten(Object.values(repertoireSide.positionResponses)),
-              (m) => m.mine
+              (m) => m.mine,
             ).length;
-          }
+          },
         );
         s.numResponsesAboveThreshold = mapSides(
           s.repertoire,
           (repertoireSide: RepertoireSide) => {
             return flatten(
-              Object.values(repertoireSide.positionResponses)
+              Object.values(repertoireSide.positionResponses),
             ).filter((m) => m.needed).length;
-          }
+          },
         );
       }, "updateRepertoireStructures"),
 
@@ -714,7 +714,7 @@ export const getInitialRepertoireState = (
             return;
           }
           const mainLine = [...line, mainMove.sanPlus];
-          pgn = pgn + getLastMoveWithNumber(lineToPgn(mainLine)) + " ";
+          pgn = `${pgn}${getLastMoveWithNumber(lineToPgn(mainLine))} `;
           forEach(others, (variationMove) => {
             if (seenEpds.has(variationMove.epdAfter)) {
               return;
@@ -725,12 +725,11 @@ export const getInitialRepertoireState = (
             if (sideOfLastmove(variationLine) === "black") {
               const n = Math.floor(variationLine.length / 2);
 
-              pgn +=
-                `${n}... ` +
-                getLastMoveWithNumber(lineToPgn(variationLine)).trim() +
-                " ";
+              pgn += `${n}... ${getLastMoveWithNumber(
+                lineToPgn(variationLine),
+              ).trim()} `;
             } else {
-              pgn += getLastMoveWithNumber(lineToPgn(variationLine)) + " ";
+              pgn += `${getLastMoveWithNumber(lineToPgn(variationLine))} `;
             }
 
             recurse(variationMove.epdAfter, variationLine, seenEpds);
@@ -751,7 +750,7 @@ export const getInitialRepertoireState = (
           recurse(mainMove.epdAfter, mainLine, seenEpds);
         };
         recurse(START_EPD, [], seenEpds);
-        pgn = pgn.trim() + " *";
+        pgn = `${pgn.trim()} *`;
         console.log("pgn", pgn);
 
         const downloadLink = document.createElement("a");
@@ -811,7 +810,7 @@ export const getInitialRepertoireState = (
       }),
     backToOverview: () =>
       set(([s, gs]) => {
-        if (s.browsingState.sidebarState.mode == "review") {
+        if (s.browsingState.sidebarState.mode === "review") {
           s.reviewState.stopReviewing();
         }
         // @ts-ignore
@@ -897,7 +896,7 @@ export const getInitialRepertoireState = (
                 });
               });
             });
-          }
+          },
         );
       }),
     fetchEcoCodes: () =>
@@ -1133,7 +1132,7 @@ function getLastMoveWithNumber(id: string) {
 
 export function mapSides<T, Y>(
   bySide: BySide<T>,
-  fn: (x: T, side: Side) => Y
+  fn: (x: T, side: Side) => Y,
 ): BySide<Y> {
   return {
     white: fn(bySide["white"], "white"),
@@ -1148,7 +1147,7 @@ export const getExpectedNumMovesBetween = (
   current: number,
   destination: number,
   side: Side,
-  high_transposition: boolean
+  high_transposition: boolean,
 ): number => {
   let m = 1;
   let distance_pow = 1.11;

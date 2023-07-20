@@ -40,8 +40,8 @@ export const MoveLog = () => {
   const user = () => userState.user;
   const combinedTheme: Accessor<CombinedTheme> = createMemo(
     () =>
-      find(combinedThemes, (theme) => theme.boardTheme == user()?.theme) ||
-      COMBINED_THEMES_BY_ID["default"]
+      find(combinedThemes, (theme) => theme.boardTheme === user()?.theme) ||
+      COMBINED_THEMES_BY_ID["default"],
   );
   createEffect(() => {
     console.log("user theme", user()?.theme);
@@ -55,21 +55,21 @@ export const MoveLog = () => {
     forEach([...currentLine(), ...forwardLine()], (e, i) => {
       moves.push(e.san);
       const theseMoves = cloneDeep(moves);
-      const last = i == currentLine().length - 1;
+      const last = i === currentLine().length - 1;
       if (i % 2 === 0) {
         elems.push(
           <p
             class={"text-gray-40 pl-2  font-semibold leading-5 tracking-wider"}
           >
             {Math.round(i / 2) + 1}.
-          </p>
+          </p>,
         );
       }
       elems.push(
         <p
           class={clsx(
             "&hover:text-primary  cursor-pointer whitespace-nowrap rounded-sm px-1 font-bold  leading-5 tracking-wider transition-all",
-            last ? "text-primary" : "text-tertiary"
+            last ? "text-primary" : "text-tertiary",
           )}
           style={s(last && c.bg(theme().highlightLastMove))}
           onClick={() => {
@@ -81,7 +81,7 @@ export const MoveLog = () => {
                     ?.backN(currentLine().length - theseMoves.length);
                 } else {
                   s.repertoireState.browsingState.chessboard.forwardN(
-                    theseMoves.length - currentLine().length
+                    theseMoves.length - currentLine().length,
                   );
                 }
               });
@@ -89,12 +89,13 @@ export const MoveLog = () => {
           }}
         >
           {e.san}
-        </p>
+        </p>,
       );
     });
     return elems;
   };
-  const maskImage = `linear-gradient(to left, black calc(100% - 48px), transparent 100%)`;
+  const maskImage =
+    "linear-gradient(to left, black calc(100% - 48px), transparent 100%)";
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
   const [movesRef, setMovesRef] = createSignal<HTMLDivElement>();
   createRenderEffect(() => {
@@ -120,7 +121,7 @@ export const MoveLog = () => {
       <div
         class={clsx(
           "ml-2 h-5 w-px",
-          overflowing() ? "bg-gray-24" : "bg-transparent"
+          overflowing() ? "bg-gray-24" : "bg-transparent",
         )}
       />
       <div
@@ -130,7 +131,7 @@ export const MoveLog = () => {
           overflowing() && {
             "mask-image": maskImage,
             "-webkit-mask-image": maskImage,
-          }
+          },
         )}
       >
         <div class={clsx("row items-center")} ref={setMovesRef}>

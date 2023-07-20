@@ -32,7 +32,7 @@ import { getMoveRatingIcon, MoveRating } from "~/utils/move_inaccuracy";
 import { quick } from "~/utils/app_state";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { TableResponseScoreSource } from "~/utils/table_scoring";
-import { BP,  useResponsiveV2 } from "~/utils/useResponsive";
+import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { TableMeta, useSections } from "~/utils/useSections";
 import { useHovering } from "~/mocks";
 import {
@@ -103,7 +103,7 @@ export const RepertoireMovesTable = (props: {
         const mine = filter(props.responses(), (m) => m.repertoireMove?.mine);
         const anyNeeded = some(
           props.responses(),
-          (m) => m.suggestedMove?.needed
+          (m) => m.suggestedMove?.needed,
         );
         const myTurn = props.side === props.activeSide;
         // todo: solid, prob need to use accessors here
@@ -116,7 +116,7 @@ export const RepertoireMovesTable = (props: {
         const MIN_TRUNCATED = 1;
         const MAX_ONBOARDING = 3;
         const trimmedResponses = filter(props.responses(), (r, i) => {
-          if (mode() == "browse") {
+          if (mode() === "browse") {
             return r.repertoireMove;
           }
           if (onboarding().isOnboarding && !myTurn && i >= MAX_ONBOARDING) {
@@ -157,7 +157,7 @@ export const RepertoireMovesTable = (props: {
           anyMine,
           truncated,
         };
-      })
+      }),
     );
   const widths: Record<string, number | null> = {};
   createEffect(() => {
@@ -193,7 +193,7 @@ export const RepertoireMovesTable = (props: {
   const tableMeta: Accessor<TableMeta> = () => {
     return {
       highestIncidence: max(
-        map(props.responses(), (r) => r.suggestedMove?.incidence ?? 1.0)
+        map(props.responses(), (r) => r.suggestedMove?.incidence ?? 1.0),
       ),
     };
   };
@@ -210,9 +210,9 @@ export const RepertoireMovesTable = (props: {
         const nextEcoCode = ecoCodeLookup()[tr.suggestedMove?.epdAfter];
         if (nextEcoCode) {
           const [name, variations] = getAppropriateEcoName(
-            nextEcoCode.fullName
+            nextEcoCode.fullName,
           );
-          if (name != currentOpeningName) {
+          if (name !== currentOpeningName) {
             includeOpeningName = true;
             return name;
           }
@@ -220,7 +220,7 @@ export const RepertoireMovesTable = (props: {
 
           if (
             name === currentOpeningName &&
-            lastVariation != last(currentVariations)
+            lastVariation !== last(currentVariations)
           ) {
             includeOpeningName = true;
             return last(variations);
@@ -229,8 +229,8 @@ export const RepertoireMovesTable = (props: {
             return last(variations);
           }
         }
-      })
-    )
+      }),
+    ),
   );
   return (
     <div style={s(c.column)}>
@@ -262,8 +262,8 @@ export const RepertoireMovesTable = (props: {
           !editingAnnotations() &&
             s(
               c.borderTop(`1px solid ${c.colors.sidebarBorder}`),
-              c.borderBottom(`1px solid ${c.colors.sidebarBorder}`)
-            )
+              c.borderBottom(`1px solid ${c.colors.sidebarBorder}`),
+            ),
         )}
       >
         <Intersperse
@@ -272,7 +272,7 @@ export const RepertoireMovesTable = (props: {
             <div
               style={s(
                 c.height(editingAnnotations() ? 12 : 1),
-                !editingAnnotations() && c.bg(c.gray[30])
+                !editingAnnotations() && c.bg(c.gray[30]),
               )}
             />
           )}
@@ -295,7 +295,7 @@ export const RepertoireMovesTable = (props: {
                   onMoveRender(
                     tableResponse().suggestedMove?.sanPlus ||
                       tableResponse().repertoireMove?.sanPlus,
-                    e
+                    e,
                   );
                 }}
               />
@@ -310,7 +310,7 @@ export const RepertoireMovesTable = (props: {
         <Show
           when={
             truncated() &&
-            mode() == "build" &&
+            mode() === "build" &&
             !(onboarding().isOnboarding && !myTurn())
           }
         >
@@ -331,7 +331,7 @@ export const RepertoireMovesTable = (props: {
           <Spacer width={16} />
         </Show>
         {!hideAnnotations() &&
-          mode() == "build" &&
+          mode() === "build" &&
           !onboarding().isOnboarding && (
             <>
               <Pressable
@@ -355,15 +355,14 @@ export const RepertoireMovesTable = (props: {
               <Spacer width={16} />
             </>
           )}
-        <Show when={anyMine() && mode() == "build"}>
+        <Show when={anyMine() && mode() === "build"}>
           <Pressable
             class={clsx("pb-1")}
             onPress={() => {
               trackEvent(`${mode()}.moves_table.delete_move`);
               quick((s) => {
                 s.repertoireState.browsingState.moveSidebarState("right");
-                s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
-                  true;
+                s.repertoireState.browsingState.sidebarState.deleteLineState.visible = true;
               });
             }}
           >
@@ -403,7 +402,7 @@ const Response = (props: {
     rs.positionReports?.[activeSide()]?.[currentEpd()],
   ]);
   const [moveWidthRef, setMoveWidthRef] = createSignal(
-    null as HTMLElement | null
+    null as HTMLElement | null,
   );
   onMount(() => {
     if (moveWidthRef) {
@@ -440,12 +439,12 @@ const Response = (props: {
     () => {
       getAppState().repertoireState.browsingState.chessboard?.previewMove(
         // @ts-ignore
-        sanPlus()
+        sanPlus(),
       );
     },
     () => {
       getAppState().repertoireState.browsingState.chessboard?.previewMove(null);
-    }
+    },
   );
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const annotation = createMemo(() => {
@@ -474,7 +473,7 @@ const Response = (props: {
           text="Clear best move"
           icon="fa-duotone fa-trophy"
           style={s(c.fg(c.yellow[60]), c.fontSize(14))}
-        />
+        />,
       );
     }
     if (moveHasTag(props.tableResponse, MoveTag.Transposes)) {
@@ -489,7 +488,7 @@ const Response = (props: {
           text="Transposes to your repertoire"
           icon="fa-solid fa-merge"
           style={s(c.fg(c.colors.success), c.fontSize(14), c.rotate(-90))}
-        />
+        />,
       );
     }
     if (moveHasTag(props.tableResponse, MoveTag.TheoryHeavy)) {
@@ -504,7 +503,7 @@ const Response = (props: {
           text="Warning: heavy theory"
           icon="fa-solid fa-triangle-exclamation"
           style={s(c.fg(c.red[60]), c.fontSize(14))}
-        />
+        />,
       );
     }
     if (moveHasTag(props.tableResponse, MoveTag.RareDangerous)) {
@@ -521,7 +520,7 @@ const Response = (props: {
           text="Rare but dangerous"
           icon="fa fa-radiation"
           style={s(c.fg(c.red[65]), c.fontSize(18))}
-        />
+        />,
       );
     }
     if (moveHasTag(props.tableResponse, MoveTag.CommonMistake)) {
@@ -536,7 +535,7 @@ const Response = (props: {
           text="Common mistake"
           icon="fa fa-person-falling"
           style={s(c.fg(c.gray[80]), c.fontSize(14))}
-        />
+        />,
       );
     }
     return tags;
@@ -567,7 +566,7 @@ const Response = (props: {
             class={clsx("bg-gray-12 row h-[128px] grow rounded-sm")}
             style={s(
               c.lightCardShadow,
-              c.mx(c.getSidebarPadding(responsive()))
+              c.mx(c.getSidebarPadding(responsive())),
             )}
           >
             <div
@@ -577,7 +576,7 @@ const Response = (props: {
                 style={s(
                   c.fg(c.colors.text.secondary),
                   c.weightSemiBold,
-                  c.fontSize(18)
+                  c.fontSize(18),
                 )}
               >
                 {moveNumber}
@@ -590,7 +589,7 @@ const Response = (props: {
                   c.fg(c.colors.text.secondary),
                   c.fontSize(18),
                   c.weightSemiBold,
-                  c.keyedProp("letter-spacing")("0.04rem")
+                  c.keyedProp("letter-spacing")("0.04rem"),
                 )}
               >
                 {sanPlus}
@@ -633,10 +632,9 @@ const Response = (props: {
                   s.repertoireState.browsingState.chessboard.makeMove(
                     // @ts-ignore
                     sanPlus(),
-                    { animate: true }
+                    { animate: true },
                   );
-                  s.repertoireState.browsingState.sidebarState.transposedState.visible =
-                    true;
+                  s.repertoireState.browsingState.sidebarState.transposedState.visible = true;
                   s.repertoireState.browsingState.chessboard.set((s) => {
                     s.showPlans = true;
                   });
@@ -644,13 +642,13 @@ const Response = (props: {
                   s.repertoireState.browsingState.chessboard.makeMove(
                     // @ts-ignore
                     sanPlus(),
-                    { animate: true }
+                    { animate: true },
                   );
                 }
               });
             }}
             class={clsx(
-              "&hover:bg-gray-18 flexible row cursor-pointer rounded-sm py-3 transition-colors"
+              "&hover:bg-gray-18 flexible row cursor-pointer rounded-sm py-3 transition-colors",
             )}
             style={s(c.px(c.getSidebarPadding(responsive())))}
           >
@@ -698,14 +696,14 @@ const Response = (props: {
                     c.grow,
                     c.column,
 
-                    !hasInlineAnnotationOrOpeningName() && c.selfCenter
+                    !hasInlineAnnotationOrOpeningName() && c.selfCenter,
                   )}
                 >
                   <CMText
                     style={s(
                       c.fg(c.gray[80]),
                       c.fontSize(12),
-                      c.lineHeight("1.3rem")
+                      c.lineHeight("1.3rem"),
                     )}
                   >
                     <Show when={props.openingName}>
@@ -740,7 +738,7 @@ const Response = (props: {
                             c.center,
                             section.alignLeft && c.justifyStart,
                             section.alignRight && c.justifyEnd,
-                            c.row
+                            c.row,
                           )}
                           id={`section-${section.header}`}
                         >
@@ -787,7 +785,7 @@ const TableHeader = (props: {
         c.row,
         c.fullWidth,
         c.pl(14),
-        c.px(c.getSidebarPadding(responsive()))
+        c.px(c.getSidebarPadding(responsive())),
       )}
     >
       <Spacer width={12} grow />
@@ -804,14 +802,14 @@ const TableHeader = (props: {
                     ? c.justifyStart
                     : c.center,
                   c.row,
-                  c.textAlign("center")
+                  c.textAlign("center"),
                 )}
               >
                 <CMText
                   style={s(
                     c.fg(c.colors.text.tertiary),
                     c.fontSize(12),
-                    c.whitespace("nowrap")
+                    c.whitespace("nowrap"),
                   )}
                 >
                   {section.header}
@@ -879,7 +877,7 @@ const MoveTagView = (props: {
         c.fontSize(10),
         c.weightBold,
         c.row,
-        c.alignCenter
+        c.alignCenter,
       )}
       ref={(ref) => {
         console.log("ref", ref);

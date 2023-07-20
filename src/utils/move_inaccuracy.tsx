@@ -8,7 +8,7 @@ import { initTooltip } from "~/components/Tooltip";
 
 export const getWinPercentage = (
   stockfish: StockfishReport,
-  side: Side
+  side: Side,
 ): number => {
   const p = getUnsidedWinPercentage(stockfish);
   if (side === "black") {
@@ -30,15 +30,15 @@ const getUnsidedWinPercentage = (stockfish: StockfishReport): number => {
 };
 
 export enum MoveRating {
-  Inaccuracy,
-  Mistake,
-  Blunder,
+  Inaccuracy = 0,
+  Mistake = 1,
+  Blunder = 2,
 }
 
 export const getMoveRating = (
   positionReport: PositionReport,
   suggestedMove: SuggestedMove,
-  side: Side
+  side: Side,
 ) => {
   const before = positionReport?.stockfish;
   const after = suggestedMove?.stockfish;

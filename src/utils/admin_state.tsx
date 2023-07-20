@@ -11,7 +11,7 @@ export interface AdminState {
   acceptMoveAnnotation: (
     epd: string,
     san: string,
-    text: string
+    text: string,
   ) => Promise<void>;
   spoofUser: (email: string) => void;
   editMoveAnnotation: (_: {
@@ -49,7 +49,7 @@ export const getInitialAdminState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _get: StateGetter<AppState, any>
+  _get: StateGetter<AppState, any>,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _set((s) => fn(selector(s)));
@@ -67,7 +67,7 @@ export const getInitialAdminState = (
     fetchMoveAnnotationReviewQueue: () =>
       set(([s]) => {
         client
-          .get(`/api/v1/admin/move-annotation-review-queue`)
+          .get("/api/v1/admin/move-annotation-review-queue")
           .then(({ data }) => {
             set(([s]) => {
               s.moveAnnotationReviewQueue = data;
@@ -120,7 +120,7 @@ export const getInitialAdminState = (
     fetchMoveAnnotationDashboard: () =>
       set(([s]) => {
         client
-          .get(`/api/v1/admin/move-annotations`)
+          .get("/api/v1/admin/move-annotations")
           .then(({ data }: { data: MoveAnnotationsDashboard }) => {
             set(([s]) => {
               s.moveAnnotationsDashboard = data;
@@ -130,13 +130,13 @@ export const getInitialAdminState = (
     acceptMoveAnnotation: (epd: string, san: string, text: string) =>
       set(([s]) => {
         return client
-          .post(`/api/v1/admin/accept-move-annotation`, { epd, san, text })
+          .post("/api/v1/admin/accept-move-annotation", { epd, san, text })
           .then(({ data }) => {});
       }),
     becomeAdmin: (password: string) =>
       set(([s]) => {
         client
-          .post(`/api/v1/admin/submit-password`, { password })
+          .post("/api/v1/admin/submit-password", { password })
           .then(({ data }) => {
             set(([s, appState]) => {
               appState.userState.user!.isAdmin = true;
@@ -146,7 +146,7 @@ export const getInitialAdminState = (
     rejectMoveAnnotations: (epd: string, san: string) =>
       set(([s]) => {
         client
-          .post(`/api/v1/admin/reject-move-annotations`, { epd, san })
+          .post("/api/v1/admin/reject-move-annotations", { epd, san })
           .then(({ data }) => {});
       }),
   } as AdminState;

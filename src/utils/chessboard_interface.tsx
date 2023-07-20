@@ -64,7 +64,7 @@ export interface ChessboardInterface {
   animatePieceMove: (
     move: Move,
     speed: PlaybackSpeed,
-    callback: (completed: boolean) => void
+    callback: (completed: boolean) => void,
   ) => void;
   // @deprecated
   flashRing: (success: boolean) => void;
@@ -89,14 +89,14 @@ export interface ChessboardInterface {
   setPerspective: (_: Side) => void;
   showMoveFeedback(
     arg0: { square: Square; type: MoveFeedbackType },
-    callback: () => void
+    callback: () => void,
   ): unknown;
 
   // Other trainer tool stuff
   visualizeMoves: (
     _: Move[],
     speed: PlaybackSpeed,
-    callback: (() => void) | undefined
+    callback: (() => void) | undefined,
   ) => void;
 }
 
@@ -180,7 +180,7 @@ export interface ChessboardViewState {
 export const createChessboardInterface = (): [
   ChessboardViewState,
   ChessboardInterface,
-  (s: (s: ChessboardViewState) => void) => void
+  (s: (s: ChessboardViewState) => void) => void,
 ] => {
   const [chessboardStore, setChessboardStore] =
     createStore<ChessboardViewState>({
@@ -235,7 +235,7 @@ export const createChessboardInterface = (): [
           } finally {
             pendingState = null;
           }
-        })
+        }),
       );
       return res;
     }
@@ -388,7 +388,7 @@ export const createChessboardInterface = (): [
               top,
               left,
             },
-            0
+            0,
           );
         }
         timeline.play();
@@ -424,7 +424,7 @@ export const createChessboardInterface = (): [
               }
               chessboardInterface.stepAnimationQueue();
             }
-          }
+          },
         );
       });
     },
@@ -501,7 +501,7 @@ export const createChessboardInterface = (): [
               top,
               left,
             },
-            0
+            0,
           );
         }
         timeline.play();
@@ -547,7 +547,7 @@ export const createChessboardInterface = (): [
     animatePieceMove: (
       move: AnimationMove,
       speed: PlaybackSpeed,
-      callback: (completed: boolean) => void
+      callback: (completed: boolean) => void,
     ) => {
       set((s: ChessboardViewState) => {
         const { fadeDuration, moveDuration, stayDuration } =
@@ -613,7 +613,7 @@ export const createChessboardInterface = (): [
             move = (s.position.validateMoves([newMove]) as Move[])[0];
           }
           const makeMove = () => {
-            if (s.previewedMove?.san == move.san) {
+            if (s.previewedMove?.san === move.san) {
               chessboardInterface.makeMove(move, {
                 ...options,
                 animate: false,
@@ -637,7 +637,7 @@ export const createChessboardInterface = (): [
         });
         if (
           !isEmpty(s.availableMoves) &&
-          first(s.availableMoves)?.from == square
+          first(s.availableMoves)?.from === square
         ) {
           return [];
         } else if (!s.frozen) {
@@ -726,7 +726,7 @@ export const createChessboardInterface = (): [
     visualizeMoves: (
       moves: Move[],
       speed: PlaybackSpeed,
-      callback: (() => void) | undefined
+      callback: (() => void) | undefined,
     ) => {
       set((s) => {
         s.movesToVisualize = moves;
@@ -979,12 +979,12 @@ export const createChessboardInterface = (): [
 
 const getAnimationTime = (
   start: { x: number; y: number },
-  end: { x: number; y: number }
+  end: { x: number; y: number },
 ) => {
   const distance =
     Math.sqrt(
       Math.pow(Math.abs(end.x - start.x), 2) +
-        Math.pow(Math.abs(end.y - start.y), 2)
+        Math.pow(Math.abs(end.y - start.y), 2),
     ) * 8;
   return getAnimationTimeForDistance(distance);
 };

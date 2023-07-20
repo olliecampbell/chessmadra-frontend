@@ -31,7 +31,7 @@ export interface UserState {
       ratingSystem: string;
       ratingRange: string;
       missThreshold: number;
-    }>
+    }>,
   ) => Promise<void>;
   updateUserSettings: (_: {
     theme?: BoardThemeId;
@@ -62,7 +62,7 @@ export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _get: StateGetter<AppState, any>
+  _get: StateGetter<AppState, any>,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _set((s) => fn(selector(s)));
@@ -119,9 +119,9 @@ export const getInitialUserState = (
     },
     getUserRatingDescription: () => {
       return get(([s]) => {
-        return `${s.user?.ratingRange || DEFAULT_ELO_RANGE.join("-")} ${
-          s.user?.ratingSystem || DEFAULT_RATING_SYSTEM
-        }`;
+        return `${
+          s.user?.ratingRange || DEFAULT_ELO_RANGE.join("-")
+        } ${s.user?.ratingSystem || DEFAULT_RATING_SYSTEM}`;
       });
     },
     updateUserSettings: ({ theme, pieceSet, flags }) =>
@@ -182,7 +182,7 @@ export const getInitialUserState = (
               if (s.user?.missThreshold) {
                 identifyObj.set(
                   "coverage_target",
-                  `1 in ${Math.round(1 / s.user.missThreshold)} games`
+                  `1 in ${Math.round(1 / s.user.missThreshold)} games`,
                 );
               }
               identify(identifyObj);
@@ -209,7 +209,7 @@ export const getInitialUserState = (
     setTargetDepth: (t: number) => {
       set(([s]) => {
         s.user!.missThreshold = t * 100;
-        trackEvent(`user.update_coverage_target`, {
+        trackEvent("user.update_coverage_target", {
           target: `1 in ${Math.round(1 / t)} games`,
         });
         s.updateUserRatingSettings({ missThreshold: s.user!.missThreshold });
@@ -217,14 +217,14 @@ export const getInitialUserState = (
     },
     setRatingSystem: (system: string) => {
       set(([s]) => {
-        trackEvent(`user.update_rating_system`, { rating_system: system });
+        trackEvent("user.update_rating_system", { rating_system: system });
         s.user!.ratingSystem = system;
         return s.updateUserRatingSettings({ ratingSystem: system });
       });
     },
     setRatingRange: (range: string) => {
       set(([s]) => {
-        trackEvent(`user.update_rating_range`, { rating_range: range });
+        trackEvent("user.update_rating_range", { rating_range: range });
         s.user!.ratingRange = range;
         return s.updateUserRatingSettings({ ratingRange: range });
       });
@@ -247,28 +247,28 @@ export const getInitialUserState = (
 };
 
 export const getRecommendedMissThreshold = (range: string) => {
-  if (range == "0-1100") {
+  if (range === "0-1100") {
     return 1 / 75;
   }
-  if (range == "1100-1300") {
+  if (range === "1100-1300") {
     return 1 / 75;
   }
-  if (range == "1300-1500") {
+  if (range === "1300-1500") {
     return 1 / 100;
   }
-  if (range == "1500-1700") {
+  if (range === "1500-1700") {
     return 1 / 100;
   }
-  if (range == "1700-1900") {
+  if (range === "1700-1900") {
     return 1 / 150;
   }
-  if (range == "1900-2100") {
+  if (range === "1900-2100") {
     return 1 / 200;
   }
-  if (range == "2100-2800") {
+  if (range === "2100-2800") {
     return 1 / 200;
   }
-  if (range == "1900-2800") {
+  if (range === "1900-2800") {
     return 1 / 200;
   }
   return 1 / 50;

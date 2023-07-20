@@ -76,7 +76,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
   });
 
   const [authType, setAuthType] = createSignal(
-    props.authType ?? ("login" as AuthType)
+    props.authType ?? ("login" as AuthType),
   );
   const [serverError, setServerError] = createSignal("");
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -103,14 +103,14 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
           },
         ]}
         header={
-          authType() == "login" ? "Log in" : "Create your Chessbook account"
+          authType() === "login" ? "Log in" : "Create your Chessbook account"
         }
       >
         <div class={clsx(isSubmitting() && "opacity-0")}>
           <div class="col items-center">
-            <div class={`min-w-80 padding-sidebar w-full self-stretch`}>
+            <div class={"min-w-80 padding-sidebar w-full self-stretch"}>
               <div style={s(c.br(4), c.px(0), c.py(0))}>
-                <form ref={form} class={`col gap-8`}>
+                <form ref={form} class={"col gap-8"}>
                   <TextInput
                     placeholder="example@gmail.com"
                     type="email"
@@ -129,7 +129,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
                       onClick={() => {
                         quick((s) => {
                           s.repertoireState.browsingState.pushView(
-                            ForgotPassword
+                            ForgotPassword,
                           );
                         });
                       }}

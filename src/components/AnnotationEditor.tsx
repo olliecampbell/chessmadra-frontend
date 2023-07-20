@@ -31,7 +31,7 @@ export const AnnotationEditor = (props: {
       }, 400);
     },
     400,
-    { leading: true }
+    { leading: true },
   );
   return (
     <div style={s(c.grow, c.relative)}>
@@ -44,7 +44,7 @@ export const AnnotationEditor = (props: {
           c.left(12),
           c.row,
           c.justifyBetween,
-          c.opacity(focus() ? 100 : 0)
+          c.opacity(focus() ? 100 : 0),
         )}
       >
         <FadeInOut open={loading}>
@@ -58,8 +58,8 @@ export const AnnotationEditor = (props: {
             c.fg(
               annotation()?.length > MAX_ANNOTATION_LENGTH
                 ? c.red[60]
-                : c.gray[50]
-            )
+                : c.gray[50],
+            ),
           )}
         >
           {annotation()?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
@@ -79,7 +79,7 @@ export const AnnotationEditor = (props: {
             c.pb(24),
             c.bg(c.gray[20]),
             c.fg(c.gray[90]),
-            c.keyedProp("resize")("none")
+            c.keyedProp("resize")("none"),
           )}
           class={clsx("placeholder-gray-50")}
           placeholder={'ex. "Intending Bg5 after d4"'}

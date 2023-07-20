@@ -79,7 +79,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
             c.bg(c.gray[20]),
             c.opacity(95),
             c.center,
-            c.zIndex(2)
+            c.zIndex(2),
           )}
         >
           <CMText style={s()}>Reviewed!</CMText>
@@ -114,7 +114,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
               c.buttons.darkFloater.textStyles,
               c.fg("white"),
               c.weightRegular,
-              c.fontSize(14)
+              c.fontSize(14),
             )}
           >
             Analyze on Lichess
@@ -175,17 +175,17 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
                         textStyles: s(
                           c.buttons.basicSecondary.textStyles,
                           c.fontSize(14),
-                          c.fg(c.gray[90])
+                          c.fg(c.gray[90]),
                         ),
                       },
-                      c.selfEnd
+                      c.selfEnd,
                     )}
                     onPress={() => {
                       acceptMoveAnnotation(
                         // @ts-ignore
                         props.review.epd,
                         props.review.san,
-                        x.text
+                        x.text,
                       );
                       setReviewed(true);
                     }}
@@ -198,7 +198,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
           }),
           (i) => {
             return <Spacer height={12} />;
-          }
+          },
         )}
         <Spacer height={14} />
         <Button
@@ -211,10 +211,10 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
               textStyles: s(
                 c.buttons.basicSecondary.textStyles,
                 c.fontSize(14),
-                c.fg(c.gray[90])
+                c.fg(c.gray[90]),
               ),
             },
-            c.selfEnd
+            c.selfEnd,
           )}
           onPress={() => {
             rejectMoveAnnotations()(props.review.epd, props.review.san);

@@ -56,8 +56,9 @@ const InstructiveGameView: Component<{
       href={link()}
       target="_blank"
       class={clsx(
-        "bg-gray-18 &hover:bg-gray-24 padding-sidebar min-h-sidebar-button row items-center justify-between py-2"
+        "bg-gray-18 &hover:bg-gray-24 padding-sidebar min-h-sidebar-button row items-center justify-between py-2",
       )}
+      rel="noreferrer"
     >
       <div>
         <p class={clsx("font-bold")}>{lastEcoCode()?.fullName}</p>

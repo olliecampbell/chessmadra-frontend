@@ -36,8 +36,8 @@ export const Button: Component<ButtonProps> = (props) => {
     "backgroundColor",
     "label",
   ]);
-  let [count, setCount] = createSignal(0);
-  let previousCount = createPrevious(count);
+  const [count, setCount] = createSignal(0);
+  const previousCount = createPrevious(count);
 
   return (
     <div>

@@ -65,7 +65,7 @@ export interface RepertoireSide {
 }
 
 export function getAllRepertoireMoves(
-  r: Repertoire | undefined
+  r: Repertoire | undefined,
 ): RepertoireMove[] {
   if (!r) {
     return [];

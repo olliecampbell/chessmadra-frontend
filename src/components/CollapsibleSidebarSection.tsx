@@ -1,7 +1,7 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
-import { BP,  useResponsiveV2 } from "~/utils/useResponsive";
+import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { createSignal, JSXElement } from "solid-js";
 import { Pressable } from "./Pressable";
 import { clsx } from "~/utils/classes";
@@ -22,7 +22,7 @@ export const CollapsibleSidebarSection = (props: {
           c.py(8),
           c.alignCenter,
           c.px(c.getSidebarPadding(responsive())),
-          c.clickable
+          c.clickable,
         )}
         class={clsx("&hover:bg-gray-18 h-sidebar-button")}
         onPress={() => {
@@ -32,7 +32,7 @@ export const CollapsibleSidebarSection = (props: {
         <CMText
           style={s(
             c.fontSize(responsive().switch(14, [BP.lg, 14])),
-            c.fg(c.colors.text.primary)
+            c.fg(c.colors.text.primary),
           )}
         >
           {props.header}
@@ -41,7 +41,7 @@ export const CollapsibleSidebarSection = (props: {
           <i
             class={clsx(
               "fa fa-chevron-right rotate-0 transition-transform",
-              !collapsed() && "rotate-90"
+              !collapsed() && "rotate-90",
             )}
             style={s(c.fg(c.colors.text.primary), c.fontSize(14))}
           />

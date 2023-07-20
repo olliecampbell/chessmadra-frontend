@@ -66,7 +66,7 @@ export const FeedbackView = () => {
       <Spacer height={12} />
       <Show when={!success()}>
         <>
-          <form ref={form} class={`col gap-4`}>
+          <form ref={form} class={"col gap-4"}>
             <Show when={isEmpty(user()?.email)}>
               <TextInput name="email" placeholder={"Email (optional)"} />
             </Show>

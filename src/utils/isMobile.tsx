@@ -1,5 +1,5 @@
 import { createMemo } from "solid-js";
-import {  useResponsiveV2 } from "./useResponsive";
+import { useResponsiveV2 } from "./useResponsive";
 
 export const useIsMobile = () => {
   // solid TODO

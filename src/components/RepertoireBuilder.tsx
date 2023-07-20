@@ -70,13 +70,13 @@ export const RepertoireBuilder = () => {
           <Match when={submitFeedbackState().visible}>
             <FeedbackView />
           </Match>
-          <Match when={mode() == "home"}>
+          <Match when={mode() === "home"}>
             <RepertoireHome />
           </Match>
-          <Match when={mode() == "overview"}>
+          <Match when={mode() === "overview"}>
             <RepertoireOverview />
           </Match>
-          <Match when={mode() == "review"}>
+          <Match when={mode() === "review"}>
             <RepertoireReview />
           </Match>
           <Match when={deleteLineState().visible}>
@@ -97,8 +97,8 @@ export const RepertoireBuilder = () => {
       <SidebarActionsLegacy />
     </>
   );
-  let visibility = createPageVisibility();
-  let [lastVisible, setLastVisible] = createSignal(dayjs());
+  const visibility = createPageVisibility();
+  const [lastVisible, setLastVisible] = createSignal(dayjs());
   createEffect((previousVisibility) => {
     if (visibility() && previousVisibility === false) {
       if (dayjs.duration(dayjs().diff(lastVisible())).hours() >= 1) {

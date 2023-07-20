@@ -1,7 +1,6 @@
 // write a functional component called InstructiveGamesView
 // import { ExchangeRates } from "~/ExchangeRate";
 
-
 export const InstructiveGamesView = ({}: {}) => {
   return null;
   // const [currentEpd, activeSide] = useSidebarState(([s]) => [

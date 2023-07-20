@@ -139,7 +139,7 @@ const PlaypackSpeedSettings = (props: {}) => {
   return (
     <SidebarTemplate actions={[]} header={"Coverage goal"}>
       <SidebarSelectOneOf
-        description={`Set the playback speed of the visualization dot`}
+        description={"Set the playback speed of the visualization dot"}
         choices={[
           PlaybackSpeed.Slow,
           PlaybackSpeed.Normal,
@@ -177,7 +177,7 @@ const NumberHiddenMovesSettings = (props: {}) => {
   return (
     <SidebarTemplate actions={[]} header={"Coverage goal"}>
       <SidebarSelectOneOf
-        description={`Set the number of moves to visualize`}
+        description={"Set the number of moves to visualize"}
         choices={range(1, 20)}
         // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
@@ -213,7 +213,7 @@ const PuzzleDifficultySettings = (props: {}) => {
   return (
     <SidebarTemplate actions={[]} header={"Coverage goal"}>
       <SidebarSelectOneOf
-        description={`Set the playback speed of the visualization dot`}
+        description={"Set the playback speed of the visualization dot"}
         choices={[
           {
             text: "Easy",

@@ -28,12 +28,20 @@ export const Button = (props: {
       <Show when={props.isLoading}>
         <div style={s(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
           <div style={s(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
-            <BarLoader {...props.loaderProps} cssOverride={s(c.width("100%"))} />
+            <BarLoader
+              {...props.loaderProps}
+              cssOverride={s(c.width("100%"))}
+            />
           </div>
         </div>
       </Show>
       <div
-        style={s(c.opacity(props.isLoading ? 0 : 100), c.row, c.center, c.fullWidth)}
+        style={s(
+          c.opacity(props.isLoading ? 0 : 100),
+          c.row,
+          c.center,
+          c.fullWidth,
+        )}
       >
         {inner}
       </div>

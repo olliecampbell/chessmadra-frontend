@@ -57,8 +57,8 @@ export const adjustOpacity = (hsl: string, opacity: number) => {
   return hsl.replace("hsl", "hsla").replace(")", `, ${opacity / 100})`);
 };
 
-const defaultHighlight = `hsla(73, 100%, 39%, 0.41)`;
-const defaultDarkHighlight = `hsla(129, 60%, 21%, 0.5)`;
+const defaultHighlight = "hsla(73, 100%, 39%, 0.41)";
+const defaultDarkHighlight = "hsla(129, 60%, 21%, 0.5)";
 
 export const BOARD_THEMES: BoardTheme[] = [
   {
@@ -86,10 +86,10 @@ export const BOARD_THEMES: BoardTheme[] = [
     highlightLastMove: defaultHighlight,
     highlightNextMove: "hsla(129, 62%, 21%, 0.5)",
     light: {
-      color: `hsl(37, 67%, 83%)`,
+      color: "hsl(37, 67%, 83%)",
     },
     dark: {
-      color: `hsl(27, 36%, 55%)`,
+      color: "hsl(27, 36%, 55%)",
     },
   },
   {
@@ -98,10 +98,10 @@ export const BOARD_THEMES: BoardTheme[] = [
     highlightLastMove: defaultHighlight,
     highlightNextMove: defaultHighlight,
     light: {
-      color: `hsl(60, 44%, 88%)`,
+      color: "hsl(60, 44%, 88%)",
     },
     dark: {
-      color: `hsl(90, 27%, 46%)`,
+      color: "hsl(90, 27%, 46%)",
     },
   },
   {
@@ -111,7 +111,7 @@ export const BOARD_THEMES: BoardTheme[] = [
     highlightNextMove: defaultHighlight,
     light: {
       color: c.hsl(0, 0, 86),
-      styles: c.keyedProp("box-shadow")(`inset 0px 0px 0px 0.5px black`),
+      styles: c.keyedProp("box-shadow")("inset 0px 0px 0px 0.5px black"),
     },
     dark: {
       color: c.hsl(0, 0, 79),
@@ -126,9 +126,9 @@ export const BOARD_THEMES: BoardTheme[] = [
         hsla(0, 0%, 79%, 100%) 6px
       )
 
-      `
+      `,
         ),
-        c.keyedProp("box-shadow")(`    inset 0px 0px 0px 0.5px black `)
+        c.keyedProp("box-shadow")("    inset 0px 0px 0px 0.5px black "),
       ),
     },
   },
@@ -138,7 +138,7 @@ export const BOARD_THEMES: BoardTheme[] = [
 // @ts-ignore
 export const BOARD_THEMES_BY_ID: Record<BoardThemeId, BoardTheme> = keyBy(
   BOARD_THEMES,
-  "id"
+  "id",
 );
 export const combinedThemes = [
   {

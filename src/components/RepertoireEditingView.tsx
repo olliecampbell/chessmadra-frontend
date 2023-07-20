@@ -23,7 +23,7 @@ const desktopHeaderStyles = s(
   c.fg(c.colors.text.primary),
   c.fontSize(22),
   c.mb(12),
-  c.weightBold
+  c.weightBold,
 );
 
 export const Responses = function Responses() {
@@ -33,7 +33,7 @@ export const Responses = function Responses() {
   const [positionReport] = useBrowsingState(
     // TODO: we should have the active side on sidebar too
     // @ts-ignore
-    ([s, rs]) => [rs.positionReports[activeSide()]?.[currentEpd()]]
+    ([s, rs]) => [rs.positionReports[activeSide()]?.[currentEpd()]],
   );
   createEffect(() => {
     // console.log("pos report", positionReport());
@@ -52,17 +52,17 @@ export const Responses = function Responses() {
   const yourMoves = createMemo(() =>
     filter(tableResponses(), (tr) => {
       return !isNil(tr.repertoireMove) && activeSide() === currentSide();
-    })
+    }),
   );
   const otherMoves = createMemo(() =>
     filter(tableResponses(), (tr) => {
       return isNil(tr.repertoireMove) && activeSide() === currentSide();
-    })
+    }),
   );
   const prepareFor = createMemo(() =>
     filter(tableResponses(), (tr) => {
       return activeSide() !== currentSide();
-    })
+    }),
   );
   // TODO: solid
   // createEffect(() => {
@@ -88,7 +88,7 @@ export const Responses = function Responses() {
     if (isPastCoverageGoal()) {
       prepareForHeader = "Most common responses";
     }
-    if (mode() == "browse") {
+    if (mode() === "browse") {
       reviewHeader = "What do you want to review?";
     }
     return { prepareForHeader, reviewHeader };
@@ -140,7 +140,7 @@ export const Responses = function Responses() {
             when={
               !isEmpty(yourMoves()) &&
               !isEmpty(otherMoves()) &&
-              mode() == "build"
+              mode() === "build"
             }
           >
             <div style={s(c.mt(36))} id={`alternate-moves-${currentEpd}`}>
@@ -175,7 +175,7 @@ export const Responses = function Responses() {
               c.selfCenter,
               c.px(12),
               c.maxWidth(240),
-              c.py(48)
+              c.py(48),
             )}
           >
             <CMText>
@@ -215,12 +215,12 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
 function getResponsesHeader(
   currentLine: string[],
   myMoves: number,
-  side: Side
+  side: Side,
 ): string {
   const hasMove = myMoves;
   // TODO: account for multiple moves, "These moves are"
   if (myMoves) {
-    if (myMoves == 1) {
+    if (myMoves === 1) {
       return "This move is in your repertoire";
     } else {
       return "These moves are in your repertoire";

@@ -116,8 +116,8 @@ export const RepertoireReview = (props: {}) => {
   const user = () => userState.user;
   const combinedTheme: Accessor<CombinedTheme> = createMemo(
     () =>
-      find(combinedThemes, (theme) => theme.boardTheme == user()?.theme) ||
-      COMBINED_THEMES_BY_ID["default"]
+      find(combinedThemes, (theme) => theme.boardTheme === user()?.theme) ||
+      COMBINED_THEMES_BY_ID["default"],
   );
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
@@ -125,7 +125,7 @@ export const RepertoireReview = (props: {}) => {
   const numCompleted = () =>
     filter(
       Quiz.getMoves(currentMove()!),
-      (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus])
+      (m) => !isNil(completedReviewPositionMoves()?.[m.sanPlus]),
     ).length;
   const isPlanPractice = () => !!Quiz.getPlans(currentMove()!);
   const reviewState = () => getAppState().repertoireState.reviewState;
@@ -137,9 +137,12 @@ export const RepertoireReview = (props: {}) => {
         return null;
       }
     }
-    let plans = Quiz.getRemainingPlans(currentMove()!, reviewState().planIndex);
+    const plans = Quiz.getRemainingPlans(
+      currentMove()!,
+      reviewState().planIndex,
+    );
     if (isPlanPractice()) {
-      let plan = first(plans);
+      const plan = first(plans);
       if (!plan) {
         return (
           <>
@@ -148,7 +151,7 @@ export const RepertoireReview = (props: {}) => {
           </>
         );
       }
-      if (plan.type == "castling") {
+      if (plan.type === "castling") {
         return (
           <>
             Which side does{" "}
@@ -175,7 +178,7 @@ export const RepertoireReview = (props: {}) => {
         </>
       );
     }
-    let moves = Quiz.getMoves(currentMove()!);
+    const moves = Quiz.getMoves(currentMove()!);
     if (moves?.length === 1) {
       if (moves[0].epd === START_EPD) {
         return "Play your first move on the board";
@@ -230,7 +233,7 @@ export const RepertoireReview = (props: {}) => {
               c.height(12),
               c.round,
               c.alignStretch,
-              c.border(`1px solid ${c.gray[20]}`)
+              c.border(`1px solid ${c.gray[20]}`),
             )}
           >
             {(() => {
@@ -254,7 +257,7 @@ export const RepertoireReview = (props: {}) => {
                   <div
                     class={clsx(
                       hasCompleted() ? "bg-gray-80" : "bg-gray-40",
-                      "transition-colors"
+                      "transition-colors",
                     )}
                     style={s(c.grow)}
                   />

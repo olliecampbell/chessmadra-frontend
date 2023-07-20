@@ -9,7 +9,7 @@ import "./button.css";
 import { createPrevious } from "../utils/signals/createPrevious";
 import { TransitionIn as OG } from "../components/FadeInOut";
 
-export interface ButtonProps {}
+export type ButtonProps = {};
 
 /**
  * Primary UI component for user interaction

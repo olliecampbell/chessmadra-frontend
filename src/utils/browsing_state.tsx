@@ -150,11 +150,11 @@ export interface BrowsingState {
   clearViews: () => void;
   pushView: (
     view: Component<any>,
-    opts?: { direction?: "left" | "right"; props?: any }
+    opts?: { direction?: "left" | "right"; props?: any },
   ) => void;
   replaceView: (
     view: Component<any>,
-    opts?: { direction?: "left" | "right"; props?: any }
+    opts?: { direction?: "left" | "right"; props?: any },
   ) => void;
   popView: () => void;
   updatePlans: () => void;
@@ -231,11 +231,11 @@ export const getInitialBrowsingState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _set: StateSetter<AppState, any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _get: StateGetter<AppState, any>
+  _get: StateGetter<AppState, any>,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _set((s) =>
-      fn([s.repertoireState.browsingState, s.repertoireState, s])
+      fn([s.repertoireState.browsingState, s.repertoireState, s]),
     );
   };
   const setOnly = <T,>(fn: (stack: BrowsingState) => T, id?: string): T => {
@@ -243,7 +243,7 @@ export const getInitialBrowsingState = (
   };
   const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
     return _get((s) =>
-      fn([s.repertoireState.browsingState, s.repertoireState, s])
+      fn([s.repertoireState.browsingState, s.repertoireState, s]),
     );
   };
   const initialState = {
@@ -324,7 +324,7 @@ export const getInitialBrowsingState = (
             hasPlans: !isNil(
               rs.positionReports[s.sidebarState.activeSide!][
                 s.sidebarState.currentEpd
-              ]?.plans
+              ]?.plans,
             ),
           });
           s.sidebarState.showPlansState.visible = true;
@@ -384,7 +384,7 @@ export const getInitialBrowsingState = (
         const ownSide = currentSide === s.sidebarState.activeSide;
         const usePeerRates = shouldUsePeerRates(positionReport);
         let tableResponses = values(_tableResponses);
-        if (mode != "build") {
+        if (mode !== "build") {
           tableResponses = tableResponses.filter((tr) => tr.repertoireMove);
         }
         const biggestMisses =
@@ -402,15 +402,15 @@ export const getInitialBrowsingState = (
           if (ownSide && tr.suggestedMove && positionReport) {
             const positionWinRate = getWinRate(
               positionReport?.results,
-              s.sidebarState.activeSide as Side
+              s.sidebarState.activeSide as Side,
             );
             const [, , ci] = getWinRateRange(
               tr.suggestedMove.results,
-              s.sidebarState.activeSide as Side
+              s.sidebarState.activeSide as Side,
             );
             const moveWinRate = getWinRate(
               tr.suggestedMove.results,
-              s.sidebarState.activeSide as Side
+              s.sidebarState.activeSide as Side,
             );
             if (ci > 0.12 && Math.abs(positionWinRate - moveWinRate) > 0.02) {
               tr.lowConfidence = true;
@@ -418,7 +418,7 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
-          if (!ownSide && mode == "build") {
+          if (!ownSide && mode === "build") {
             if (
               // @ts-ignore
               tr.suggestedMove?.incidence < threshold &&
@@ -429,7 +429,7 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
-          if (s.sidebarState.mode == "browse" && tr.repertoireMove) {
+          if (s.sidebarState.mode === "browse" && tr.repertoireMove) {
             const DEBUG = {
               epd: "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -",
             };
@@ -442,7 +442,7 @@ export const getInitialBrowsingState = (
               // @ts-ignore
               rs.earliestReviewDueFromEpd[s.sidebarState.activeSide][epd];
             const dueAt = tr.repertoireMove.srs?.dueAt;
-            if (epd == DEBUG.epd) {
+            if (epd === DEBUG.epd) {
               console.log("epd", { epd, dueBelow, dueAt, earliestBelow });
             }
             if (dueAt && (dueAt < earliestBelow || !earliestBelow)) {
@@ -457,7 +457,7 @@ export const getInitialBrowsingState = (
           }
         });
         tableResponses.forEach((tr) => {
-          if (!ownSide && mode == "build") {
+          if (!ownSide && mode === "build") {
             if (
               isCommonMistake(tr, positionReport, threshold) &&
               !tr.tags.includes(MoveTag.RareDangerous)
@@ -468,7 +468,7 @@ export const getInitialBrowsingState = (
         });
         tableResponses.forEach((tr) => {
           const epdAfter = tr.suggestedMove?.epdAfter;
-          if (mode != "build") {
+          if (mode !== "build") {
             return;
           }
           if (tr.repertoireMove) {
@@ -493,14 +493,14 @@ export const getInitialBrowsingState = (
             positionReport,
             // @ts-ignore
             tr.suggestedMove,
-            currentSide
+            currentSide,
           );
           // @ts-ignore
           tr.moveRating = moveRating;
         });
         if (ownSide && tableResponses.length >= 3) {
           tableResponses.forEach((tr, i) => {
-            if (mode != "build") {
+            if (mode !== "build") {
               return;
             }
             const allOthersInaccurate = every(tableResponses, (tr, j) => {
@@ -539,12 +539,12 @@ export const getInitialBrowsingState = (
             ? usePeerRates
               ? EFFECTIVENESS_WEIGHTS_PEERS
               : EFFECTIVENESS_WEIGHTS_MASTERS
-            : PLAYRATE_WEIGHTS
+            : PLAYRATE_WEIGHTS,
         );
         s.sidebarState.tableResponses = tableResponses;
         const noneNeeded = every(
           tableResponses,
-          (tr) => !tr.suggestedMove?.needed
+          (tr) => !tr.suggestedMove?.needed,
         );
         if (!ownSide && !isEmpty(tableResponses)) {
           if (noneNeeded) {
@@ -581,7 +581,7 @@ export const getInitialBrowsingState = (
             if (miss?.epd !== sidebarState.currentEpd) {
               return miss;
             }
-          })
+          }),
         );
       }),
     dismissTransientSidebarState: () =>
@@ -651,7 +651,7 @@ export const getInitialBrowsingState = (
           forEach(
             zip(
               s.chessboard.get((s) => s).positionHistory,
-              s.chessboard.get((s) => s).moveLog
+              s.chessboard.get((s) => s).moveLog,
             ),
             ([epd, move], i) => {
               if (move) {
@@ -666,7 +666,7 @@ export const getInitialBrowsingState = (
                 moves: [...moveLog],
                 previousEpds: [...epdLog],
               });
-            }
+            },
           );
           const currentEpd = s.chessboard.getCurrentEpd();
           const currentReport =
@@ -766,12 +766,12 @@ export const getInitialBrowsingState = (
         const consumer = parsePlans(
           cloneDeep(plans),
           s.sidebarState.activeSide,
-          s.chessboard.get((s) => s.position)
+          s.chessboard.get((s) => s.position),
         );
         s.chessboard.set((c) => {
           c.focusedPlans = [];
           c.plans = consumer.metaPlans.filter((p) =>
-            consumer.consumed.has(p.id)
+            consumer.consumed.has(p.id),
           );
           s.sidebarState.planSections = consumer.planSections;
           c.maxPlanOccurence = maxOccurence;
@@ -783,7 +783,7 @@ export const getInitialBrowsingState = (
         s.sidebarState.currentEpd = s.chessboard.getCurrentEpd();
         s.sidebarState.currentSide = s.chessboard.getTurn();
         s.sidebarState.positionHistory = s.chessboard.get(
-          (s) => s.positionHistory
+          (s) => s.positionHistory,
         );
         s.sidebarState.pendingResponses = {};
 
@@ -798,9 +798,9 @@ export const getInitialBrowsingState = (
                 s.chessboard.get((s) => s.positionHistory),
                 (p) => {
                   return rs.ecoCodeLookup[p];
-                }
-              )
-            )
+                },
+              ),
+            ),
           );
         }
         const line = s.chessboard.get((s) => s.moveLog);
@@ -808,7 +808,7 @@ export const getInitialBrowsingState = (
           zip(
             s.chessboard.get((s) => s.positionHistory),
             line,
-            incidences
+            incidences,
           ),
           ([position, san, incidence], i) => {
             if (!san) {
@@ -824,7 +824,7 @@ export const getInitialBrowsingState = (
                 ],
                 (m) => {
                   return m.sanPlus === san;
-                }
+                },
               )
             ) {
               // @ts-ignore
@@ -843,15 +843,15 @@ export const getInitialBrowsingState = (
                 },
               } as RepertoireMove;
             }
-          }
+          },
         );
 
         s.sidebarState.hasAnyPendingResponses = !isEmpty(
-          flatten(values(s.sidebarState.pendingResponses))
+          flatten(values(s.sidebarState.pendingResponses)),
         );
         s.sidebarState.hasPendingLineToAdd = some(
           flatten(values(s.sidebarState.pendingResponses)),
-          (m) => m.mine
+          (m) => m.mine,
         );
         console.log("hasPendingLineToAdd", s.sidebarState.hasPendingLineToAdd);
         if (s.sidebarState.mode !== "review") {
@@ -871,7 +871,7 @@ export const getInitialBrowsingState = (
         return map(
           zip(
             s.chessboard.get((s) => s.positionHistory),
-            s.chessboard.get((s) => s.moveLog)
+            s.chessboard.get((s) => s.moveLog),
           ),
           ([position, san], i) => {
             const positionReport =
@@ -880,7 +880,7 @@ export const getInitialBrowsingState = (
             if (positionReport) {
               const suggestedMove = find(
                 positionReport.suggestedMoves,
-                (sm) => sm.sanPlus === san
+                (sm) => sm.sanPlus === san,
               );
               if (suggestedMove) {
                 incidence = suggestedMove.incidence;
@@ -889,7 +889,7 @@ export const getInitialBrowsingState = (
             }
 
             return incidence;
-          }
+          },
         );
       }),
     // @ts-ignore
@@ -1032,7 +1032,7 @@ function createEmptyRepertoireProgressState(): RepertoireProgressState {
 const isCommonMistake = (
   tr: TableResponse,
   positionReport: PositionReport,
-  threshold: number
+  threshold: number,
 ): boolean => {
   if (!tr.suggestedMove || !positionReport) {
     return false;
@@ -1053,7 +1053,7 @@ const isCommonMistake = (
   const moveRating = getMoveRating(
     positionReport,
     tr.suggestedMove,
-    otherSide(tr.side)
+    otherSide(tr.side),
   );
   if (isNil(moveRating) || moveRating < MoveRating.Mistake) {
     return false;
@@ -1063,7 +1063,7 @@ const isCommonMistake = (
 
 export const getCoverageProgress = (
   numMoves: number,
-  expectedNumMoves: number
+  expectedNumMoves: number,
 ): number => {
   return (
     (1 / (1 + Math.pow(Math.E, -4 * (numMoves / expectedNumMoves))) - 0.5) *

@@ -152,7 +152,7 @@ export const SidebarLayout = (props: {
           !vertical ? c.containerStyles(responsive().bp) : c.fullWidth,
           c.alignCenter,
           c.grow,
-          c.noUserSelect
+          c.noUserSelect,
         )}
       >
         <div
@@ -161,7 +161,7 @@ export const SidebarLayout = (props: {
             vertical() ? c.column : c.row,
             c.grow,
             c.selfStretch,
-            vertical() ? c.justifyStart : c.justifyCenter
+            vertical() ? c.justifyStart : c.justifyCenter,
           )}
         >
           <div
@@ -171,10 +171,10 @@ export const SidebarLayout = (props: {
               vertical() && c.width("min(480px, 100%)"),
               !vertical() && c.minWidth("300px"),
               vertical() && c.grow,
-              vertical() ? c.selfCenter : c.selfStretch
+              vertical() ? c.selfCenter : c.selfStretch,
             )}
             class={clsx(
-              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[520px] 2xl:max-w-[650px]"
+              "md:max-w-[440px] lg:max-w-[440px] xl:max-w-[520px] 2xl:max-w-[650px]",
             )}
           >
             {!vertical() ? (
@@ -190,7 +190,7 @@ export const SidebarLayout = (props: {
                   c.fullWidth,
                   c.justifyBetween,
                   c.px(c.getSidebarPadding(responsive())),
-                  c.py(8)
+                  c.py(8),
                 )}
               >
                 {props.breadcrumbs}
@@ -206,10 +206,10 @@ export const SidebarLayout = (props: {
                     s(
                       c.selfCenter,
                       c.maxWidth(480),
-                      c.px(c.getSidebarPadding(responsive()))
+                      c.px(c.getSidebarPadding(responsive())),
                     ),
                   chessboardFrozen() && c.noPointerEvents,
-                  chessboardHidden() ? c.opacity(20) : c.opacity(100)
+                  chessboardHidden() ? c.opacity(20) : c.opacity(100),
                 )}
               >
                 <ChessboardView
@@ -235,7 +235,7 @@ export const SidebarLayout = (props: {
                   chessboardHeight()
                     ? // @ts-ignore
                       c.mt(!chessboardHidden() ? 0 : -chessboardHeight() + 100)
-                    : c.mt(0)
+                    : c.mt(0),
                 )}
               >
                 <SidebarContainer
@@ -293,7 +293,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
       <Pressable
         style={s()}
         class={clsx(
-          "text-tertiary &hover:text-primary text-md -my-2 shrink-0 py-2 font-semibold transition-colors"
+          "text-tertiary &hover:text-primary text-md -my-2 shrink-0 py-2 font-semibold transition-colors",
         )}
         onPress={() => {
           quick((s) => {
@@ -318,9 +318,9 @@ export const AnalyzeOnLichessButton = (props: {}) => {
       class={clsx("row max-w-full justify-between md:w-full")}
       open={() =>
         !isEmpty(currentLine()) &&
-        (sidebarMode() == "browse" ||
-          sidebarMode() == "review" ||
-          sidebarMode() == "build")
+        (sidebarMode() === "browse" ||
+          sidebarMode() === "review" ||
+          sidebarMode() === "build")
       }
     >
       {button()}
@@ -336,7 +336,7 @@ export const NavBreadcrumbs = () => {
   const mobile = () => responsive().isMobile;
   const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs(mobile())]);
 
-  const hidden = () => breadcrumbs().length == 1;
+  const hidden = () => breadcrumbs().length === 1;
   const [mode] = useSidebarState(([s]) => [s.mode]);
   return (
     // todo: figure out why this is not working
@@ -379,7 +379,7 @@ export const NavBreadcrumbs = () => {
                 class={clsx(
                   "text-tertiary",
                   breadcrumb().onPress &&
-                    "&hover:text-primary text-sm transition-colors"
+                    "&hover:text-primary text-sm transition-colors",
                 )}
               >
                 {breadcrumb().text}

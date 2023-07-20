@@ -29,7 +29,7 @@ export const SidebarSelectOneOf: Component<{
           "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover !text-primary",
         onPress: () => props.onSelect(choice, i),
         right: active && (
-          <i class={`fa fa-check`} style={s(c.fg(c.colors.text.primary))} />
+          <i class={"fa fa-check"} style={s(c.fg(c.colors.text.primary))} />
         ),
       } as SidebarAction;
     });
@@ -42,7 +42,7 @@ export const SidebarSelectOneOf: Component<{
               c.fontSize(14),
               c.weightSemiBold,
               c.fg(c.colors.text.primary),
-              c.px(c.getSidebarPadding(responsive()))
+              c.px(c.getSidebarPadding(responsive())),
             )}
           >
             {props.title}

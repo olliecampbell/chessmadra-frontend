@@ -56,7 +56,7 @@ export const SidebarContainer = (props: {
         c.overflowHidden,
         c.bg(c.gray[14]),
         c.pb(20),
-        c.minHeight("100%")
+        c.minHeight("100%"),
       )}
     >
       <Show when={!vertical()}>
@@ -67,7 +67,7 @@ export const SidebarContainer = (props: {
             c.right(0),
             c.zIndex(15),
             c.pr(c.getSidebarPadding(responsive())),
-            c.pt(c.getSidebarPadding(responsive()))
+            c.pt(c.getSidebarPadding(responsive())),
           )}
         >
           {props.settings}
@@ -81,7 +81,7 @@ export const SidebarContainer = (props: {
           c.fullWidth,
           c.displayGrid,
           c.grow,
-          c.right(0)
+          c.right(0),
         )}
       >
         <div
@@ -90,7 +90,7 @@ export const SidebarContainer = (props: {
           style={s(
             c.keyedProp("grid-area")("1/1"),
             c.displayFlex,
-            c.noPointerEvents
+            c.noPointerEvents,
           )}
         />
         <div

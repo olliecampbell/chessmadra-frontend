@@ -173,11 +173,11 @@ export interface MoveAnnotation {
 }
 
 export enum MoveTag {
-  RareDangerous,
-  CommonMistake,
-  TheoryHeavy,
-  BestMove,
-  Transposes,
+  RareDangerous = 0,
+  CommonMistake = 1,
+  TheoryHeavy = 2,
+  BestMove = 3,
+  Transposes = 4,
 }
 
 export interface Plan {

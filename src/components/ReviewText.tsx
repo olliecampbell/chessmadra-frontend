@@ -14,13 +14,13 @@ export const ReviewText = (props: {
     c.fg(c.gray[80]),
     c.weightSemiBold,
     c.fontSize(12),
-    c.lineHeight("1.3rem")
+    c.lineHeight("1.3rem"),
   );
   const date = () => new Date(props.date || "");
   const numMovesDueFromHere = () => props.numDue;
   const now = new Date();
   const diff = () => date().getTime() - now.getTime();
-  const prefix = () => (props.overview ? `Due in` : `Due in`);
+  const prefix = () => (props.overview ? "Due in" : "Due in");
   const { color, dueString } = destructure(() => {
     let dueString = "";
     let color = c.gray[50];
@@ -39,10 +39,7 @@ export const ReviewText = (props: {
     <>
       <div style={s(c.row, c.alignCenter)}>
         <CMText style={s(textStyles, c.fg(color()))}>{dueString()}</CMText>
-        <i
-          style={s(c.fg(color()), c.fontSize(12))}
-          class="fa fa-clock pl-2"
-         />
+        <i style={s(c.fg(color()), c.fontSize(12))} class="fa fa-clock pl-2" />
       </div>
     </>
   );

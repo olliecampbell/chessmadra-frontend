@@ -71,7 +71,7 @@ export const TargetCoverageReachedView = () => {
           style={s(
             c.weightRegular,
             c.fontSize(14),
-            c.fg(c.colors.text.primary)
+            c.fg(c.colors.text.primary),
           )}
         >
           Do you want to keep adding moves, or save your progress?

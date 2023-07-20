@@ -39,7 +39,7 @@ export const SavedLineView = function SavedLineView() {
         actions={
           filter(
             [useBiggestGapAction(), reviewCurrentLineAction],
-            (a) => !isNil(a)
+            (a) => !isNil(a),
           ) as SidebarAction[]
         }
       >

@@ -42,7 +42,7 @@ export interface QuizItem {
 export const countQueue = (queue: QuizGroup[]) => {
   return queue
     .map((m) => {
-      let moves = Quiz.getMoves(m);
+      const moves = Quiz.getMoves(m);
       if (moves) {
         return moves.length;
       }
@@ -54,17 +54,17 @@ export const countQueue = (queue: QuizGroup[]) => {
 export namespace Quiz {
   export const getRemainingPlans = (
     quizGroup: QuizGroup,
-    planIndex: number
+    planIndex: number,
   ): QuizPlan[] | null => {
-    let plans = Quiz.getPlans(quizGroup);
+    const plans = Quiz.getPlans(quizGroup);
     return drop(plans, planIndex);
   };
 
   export const getCompletedPlans = (
     quizGroup: QuizGroup,
-    planIndex: number
+    planIndex: number,
   ): QuizPlan[] | null => {
-    let plans = Quiz.getPlans(quizGroup);
+    const plans = Quiz.getPlans(quizGroup);
     return take(plans, planIndex);
   };
 

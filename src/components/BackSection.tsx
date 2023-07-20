@@ -9,7 +9,7 @@ import {
   useRepertoireState,
   useSidebarState,
 } from "~/utils/app_state";
-import {  useResponsiveV2 } from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { FadeInOut } from "./FadeInOut";
 import { createEffect, Show } from "solid-js";
 import { Pressable } from "./Pressable";
@@ -89,7 +89,7 @@ export const BackSection = () => {
       }
     }
 
-    if (mode() == "browse") {
+    if (mode() === "browse") {
       if (!isEmpty(moveLog())) {
         backButtonAction = () => {
           quick((s) => {
@@ -102,7 +102,7 @@ export const BackSection = () => {
         };
       }
     }
-    if (mode() == "overview") {
+    if (mode() === "overview") {
       backButtonAction = () => {
         quick((s) => {
           s.repertoireState.backToOverview();
@@ -134,7 +134,7 @@ export const BackSection = () => {
       if (
         includes(
           [OnboardingIntro, FirstLineSavedOnboarding, PracticeComplete],
-          view()?.component
+          view()?.component,
         ) ||
         (onboarding().isOnboarding && mode() === "build" && isEmpty(moveLog()))
       ) {
@@ -154,7 +154,7 @@ export const BackSection = () => {
       id="back-button"
       style={s(
         c.column,
-        !vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12)
+        !vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12),
       )}
       open={() => isOpen()}
       // className="transition-height"

@@ -70,7 +70,7 @@ export const getInitialVisualizationState = (
   _set: StateSetter<AppState, any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _get: StateGetter<AppState, any>,
-  isClimb: boolean
+  isClimb: boolean,
 ) => {
   const set = <T,>(fn: (stack: Stack) => T): T => {
     return _set((s) => fn([s.trainersState.visualizationState, s]));
@@ -87,7 +87,7 @@ export const getInitialVisualizationState = (
   const getPuzzle = <T,>(fn: (s: PuzzleState) => T): T => {
     return _get((s) => fn(s.trainersState.visualizationState.puzzleState));
   };
-  let initialState = {
+  const initialState = {
     pulsePlay: true,
     // @ts-ignore
     chessboard: null as ChessboardInterface,
@@ -104,7 +104,7 @@ export const getInitialVisualizationState = (
     ratingLteUserSetting: new StorageItem("puzzle-rating-lte-v3", 1200),
     playbackSpeedUserSetting: new StorageItem(
       "playback-speed",
-      PlaybackSpeed.Normal
+      PlaybackSpeed.Normal,
     ),
     hiddenMoves: [],
     autoPlay: false,
@@ -159,7 +159,7 @@ export const getInitialVisualizationState = (
         set(([s]) => {
           if (!p) {
             window.alert(
-              "Problem fetching puzzles, please report this if you run into it, to me@mbuffett.com"
+              "Problem fetching puzzles, please report this if you run into it, to me@mbuffett.com",
             );
             return;
           }
@@ -178,7 +178,7 @@ export const getInitialVisualizationState = (
         s.chessboard.visualizeMoves(
           cloneDeep(s.hiddenMoves),
           s.playbackSpeedUserSetting.value,
-          callback
+          callback,
         );
       }),
     setupForPuzzle: () =>
@@ -198,7 +198,7 @@ export const getInitialVisualizationState = (
             currentPosition.move(puzzle.moves[0], { sloppy: true });
             const hiddenMoves = takeRight(
               currentPosition.history({ verbose: true }),
-              state.getPly()
+              state.getPly(),
             );
             const boardForPuzzleMoves = puzzlePosition.clone();
             boardForPuzzleMoves.undo();
@@ -207,7 +207,7 @@ export const getInitialVisualizationState = (
             }
             state.puzzleState.solutionMoves = takeRight(
               boardForPuzzleMoves.history({ verbose: true }),
-              puzzle.moves.length - 1
+              puzzle.moves.length - 1,
             );
             // currentPosition.undo()
 
@@ -264,7 +264,7 @@ export const getInitialVisualizationState = (
       set(([s]) => {
         s.plyUserSetting.value = Math.max(
           s.plyUserSetting.value + increment,
-          1
+          1,
         );
         s.setupForPuzzle();
       }),

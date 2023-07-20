@@ -39,7 +39,7 @@ export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
   const themeId = () => userState().user?.theme;
   const theme = () =>
-    find(combinedThemes, (theme) => theme.boardTheme == themeId()) ||
+    find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
     COMBINED_THEMES_BY_ID["default"];
   const pieceSet = () => userState().user?.pieceSet;
   const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
@@ -47,7 +47,7 @@ export const RepertoireHome = () => {
       bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
       bySide((side) => s.getLineCount(side)),
       bySide((side) => s.earliestReviewDueFromEpd[side][START_EPD]),
-    ]
+    ],
   );
   const [progressState] = useBrowsingState(([s]) => {
     return [bySide((side) => s.repertoireProgressState[side])];
@@ -76,7 +76,7 @@ export const RepertoireHome = () => {
       text: "Practice your repertoire",
       right: <ReviewText date={overallEarliest()} numDue={totalDue} />,
       style: "primary",
-      disabled: totalDue == 0,
+      disabled: totalDue === 0,
       onPress: () => {
         trackEvent("home.practice_all_due");
         quick((s) => {
@@ -112,7 +112,7 @@ export const RepertoireHome = () => {
                       <CMText style={s(c.fg(c.colors.text.secondary))}>
                         {numLines()[side] > 0
                           ? `${Math.round(
-                              progressState()[side].percentComplete
+                              progressState()[side].percentComplete,
                             )}% complete`
                           : "Not started"}
                       </CMText>
@@ -122,12 +122,12 @@ export const RepertoireHome = () => {
                         trackEvent("home.select_side", { side });
                         if (numLines()[side] > 0) {
                           s.repertoireState.browsingState.moveSidebarState(
-                            "right"
+                            "right",
                           );
                           s.repertoireState.startBrowsing(side, "overview");
                         } else {
                           s.repertoireState.browsingState.moveSidebarState(
-                            "right"
+                            "right",
                           );
                           s.repertoireState.startBrowsing(side, "overview");
                         }
@@ -159,13 +159,13 @@ export const RepertoireHome = () => {
                       quick((s) => {
                         trackEvent("home.settings.coverage");
                         s.repertoireState.browsingState.pushView(
-                          CoverageSettings
+                          CoverageSettings,
                         );
                       });
                     },
                     text: "Cover positions seen in",
                     right: `1 in ${Math.round(
-                      1 / userState().getCurrentThreshold()
+                      1 / userState().getCurrentThreshold(),
                     )} games`,
                     style: "secondary",
                   } as SidebarAction,
@@ -174,7 +174,7 @@ export const RepertoireHome = () => {
                       quick((s) => {
                         trackEvent("home.settings.rating");
                         s.repertoireState.browsingState.pushView(
-                          RatingSettings
+                          RatingSettings,
                         );
                       });
                     },
@@ -200,7 +200,7 @@ export const RepertoireHome = () => {
                       quick((s) => {
                         trackEvent("home.settings.beta_features");
                         s.repertoireState.browsingState.pushView(
-                          BetaFeaturesSettings
+                          BetaFeaturesSettings,
                         );
                       });
                     },
@@ -220,7 +220,7 @@ export const RepertoireHome = () => {
                         if (!userState().user?.subscribed) {
                           trackEvent("home.settings.subscribe");
                           s.repertoireState.browsingState.pushView(
-                            UpgradeSubscriptionView
+                            UpgradeSubscriptionView,
                           );
                         } else {
                           trackEvent("home.settings.manage_subscription");
@@ -240,13 +240,13 @@ export const RepertoireHome = () => {
                   } as SidebarAction,
                 ],
                 // @ts-ignore
-                (a) => !a.hidden
+                (a) => !a.hidden,
               )}
             >
               {(action, i) => <SidebarFullWidthButton action={action} />}
             </For>
             <SeeMoreActions
-              text={settingsExpanded() ? "Hide" : `More options...`}
+              text={settingsExpanded() ? "Hide" : "More options..."}
               onClick={() => {
                 setSettingsExpanded(!settingsExpanded());
               }}

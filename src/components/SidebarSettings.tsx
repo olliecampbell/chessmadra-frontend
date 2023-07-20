@@ -56,7 +56,9 @@ export const CoverageSettings = (props: {}) => {
   return (
     <SidebarTemplate actions={[]} header={"Coverage goal"}>
       <SidebarSelectOneOf
-        description={`Your repertoire will be complete when you cover all lines seen in:`}
+        description={
+          "Your repertoire will be complete when you cover all lines seen in:"
+        }
         choices={thresholdOptions}
         // cellStyles={s(c.bg(c.gray[15]))}
         // horizontal={true}
@@ -71,7 +73,7 @@ export const CoverageSettings = (props: {}) => {
                 <div
                   class={clsx(
                     "pl-2 text-xs",
-                    active ? "text-primary" : "text-tertiary"
+                    active ? "text-primary" : "text-tertiary",
                   )}
                 >
                   Recommended for your level
@@ -110,7 +112,7 @@ export const ThemeSettings = (props: {}) => {
           quick((s) => {
             const theme = find(
               combinedThemes,
-              (t) => t.boardTheme === boardThemeId
+              (t) => t.boardTheme === boardThemeId,
             );
             console.log("selected", boardThemeId, theme);
             s.userState.updateUserSettings({
@@ -122,7 +124,7 @@ export const ThemeSettings = (props: {}) => {
         renderChoice={(boardThemeId: BoardThemeId) => {
           const theme = find(
             combinedThemes,
-            (t) => t.boardTheme === boardThemeId
+            (t) => t.boardTheme === boardThemeId,
           );
           const boardTheme = BOARD_THEMES_BY_ID[boardThemeId];
           return (
@@ -176,7 +178,7 @@ export const RatingSelection = (props: {}) => {
             c.selfStart,
             c.alignCenter,
             c.width("fit-content"),
-            c.minWidth(100)
+            c.minWidth(100),
           );
           const inner = (
             <CMText
@@ -220,7 +222,7 @@ export const RatingSelection = (props: {}) => {
             const textStyles = s(
               c.fg(textColor),
               c.fontSize(14),
-              c.weightSemiBold
+              c.weightSemiBold,
             );
             const containerStyles = s(
               c.py(12),
@@ -233,7 +235,7 @@ export const RatingSelection = (props: {}) => {
               c.justifyStart,
               c.alignEnd,
               c.width("fit-content"),
-              c.minWidth(90)
+              c.minWidth(90),
             );
             if (choice === RatingSource.Lichess) {
               return (
@@ -275,8 +277,8 @@ export enum RatingSource {
 }
 
 export const BetaFeaturesSettings = (props: {}) => {
-  let userState = () => getAppState().userState;
-  let features = [
+  const userState = () => getAppState().userState;
+  const features = [
     {
       flag: "quiz_plans" as UserFlag,
       name: "Quiz plans",
@@ -288,7 +290,7 @@ export const BetaFeaturesSettings = (props: {}) => {
     <SidebarTemplate header={"Beta features"} actions={[]}>
       <SidebarActions
         actions={features.map((feature) => {
-          let enabled = () => userState().flagEnabled(feature.flag);
+          const enabled = () => userState().flagEnabled(feature.flag);
           console.log("enabled", enabled());
           return {
             text: feature.name,

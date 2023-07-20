@@ -32,8 +32,7 @@ export const DeleteLineView = function DeleteLineView() {
               s.repertoireState.deleteMove(response).then(() => {
                 quick((s) => {
                   s.repertoireState.browsingState.moveSidebarState("left");
-                  s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
-                    false;
+                  s.repertoireState.browsingState.sidebarState.deleteLineState.visible = false;
                 });
               });
             });
@@ -47,12 +46,11 @@ export const DeleteLineView = function DeleteLineView() {
           onPress: () => {
             quick((s) => {
               s.repertoireState.browsingState.moveSidebarState("left");
-              s.repertoireState.browsingState.sidebarState.deleteLineState.visible =
-                false;
+              s.repertoireState.browsingState.sidebarState.deleteLineState.visible = false;
             });
           },
           style: "primary",
-          text: multiple ? `Nevermind, go back` : `No, I've changed my mind`,
+          text: multiple ? "Nevermind, go back" : `No, I've changed my mind`,
         },
       ]}
     >

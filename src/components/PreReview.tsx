@@ -23,13 +23,13 @@ export const PreReview = (props: { side: Side | null }) => {
     getAppState().repertoireState.reviewState.buildQueue({
       side: props.side,
       filter: "due",
-    })
+    }),
   );
   const actions = () => {
     const actions: SidebarAction[] = [];
     // todo: this could be more performant
     const difficultCount = countQueue(
-      filter(queue(), (m) => some(Quiz.getMoves(m), (m) => isMoveDifficult(m)))
+      filter(queue(), (m) => some(Quiz.getMoves(m), (m) => isMoveDifficult(m))),
     );
     const totalDue =
       (numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
@@ -39,7 +39,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
-            trackEvent(`pre_review.all_due`);
+            trackEvent("pre_review.all_due");
             s.repertoireState.browsingState.popView();
             s.repertoireState.reviewState.startReview({
               side: props.side,
@@ -68,7 +68,7 @@ export const PreReview = (props: { side: Side | null }) => {
               side: props.side,
               filter: "common",
             });
-            trackEvent(`pre_review.common_moves`);
+            trackEvent("pre_review.common_moves");
           });
         },
         text: "Just the most common moves",
@@ -80,7 +80,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
-            trackEvent(`pre_review.difficult_due`);
+            trackEvent("pre_review.difficult_due");
             s.repertoireState.browsingState.popView();
             s.repertoireState.reviewState.startReview({
               side: props.side,
@@ -99,7 +99,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
-            trackEvent(`pre_review.all`);
+            trackEvent("pre_review.all");
             s.repertoireState.browsingState.popView();
             s.repertoireState.reviewState.startReview({
               side: props.side,
@@ -119,7 +119,7 @@ export const PreReview = (props: { side: Side | null }) => {
       actions.push({
         onPress: () => {
           quick((s) => {
-            trackEvent(`pre_review.specific`);
+            trackEvent("pre_review.specific");
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.popView();
             s.repertoireState.startBrowsing(side as Side, "browse");

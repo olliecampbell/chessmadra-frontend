@@ -42,7 +42,7 @@ export default function Root() {
       {
         serverUrl: undefined,
         // serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
-      }
+      },
     );
 
     // Option 1, initialize with API_KEY only
@@ -133,7 +133,7 @@ export default function Root() {
         style={s(
           c.bg(c.gray[7]),
           // c.lineHeight(1.5),
-          c.fg(c.colors.text.primary)
+          c.fg(c.colors.text.primary),
         )}
       >
         <Suspense>

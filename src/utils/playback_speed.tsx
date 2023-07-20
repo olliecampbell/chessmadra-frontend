@@ -12,4 +12,3 @@ export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
       return "Ludicrous";
   }
 };
-

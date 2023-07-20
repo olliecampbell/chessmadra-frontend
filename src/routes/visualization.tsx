@@ -1,3 +1,3 @@
 import { ChessMadra } from "~/components/ChessMadra";
 
-export default <ChessMadra initialTool="visualization" />
+export default <ChessMadra initialTool="visualization" />;

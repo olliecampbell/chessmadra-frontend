@@ -8,7 +8,7 @@ export const BarLoader = () => {
 };
 export const useHovering = (
   onHover?: () => void,
-  onHoverLeave?: () => void
+  onHoverLeave?: () => void,
 ): {
   hovering: Accessor<boolean>;
 
