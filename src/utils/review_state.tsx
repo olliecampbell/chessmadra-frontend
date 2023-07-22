@@ -437,25 +437,25 @@ export const getInitialReviewState = (
       set(([s, rs]) => {
         rs.backToOverview();
         // @ts-ignore
-        const queue = [];
+        const queue: QuizGroup[] = [];
         let epd = START_EPD;
-        // @ts-ignore
-        const lineSoFar = [];
+        const lineSoFar: string[] = [];
         line.map((move) => {
-          // @ts-ignore
-          const responses = rs.repertoire[side].positionResponses[epd];
+          const responses = rs.repertoire![side].positionResponses[epd];
           const response = find(
-            // @ts-ignore
-            rs.repertoire[side].positionResponses[epd],
+            rs.repertoire![side].positionResponses[epd],
             (m) => m.sanPlus === move,
           );
-          // @ts-ignore
-          epd = response?.epdAfter;
-          if (response?.mine) {
+          if (!response) {
+            return;
+          }
+          epd = response.epdAfter;
+          if (response.mine) {
             queue.push({
               moves: responses,
-              // @ts-ignore
               line: lineToPgn(lineSoFar),
+              epd,
+              side,
             });
           } else {
             console.log("Couldn't find a move for ", epd);
