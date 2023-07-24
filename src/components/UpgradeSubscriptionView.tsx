@@ -1,9 +1,10 @@
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onMount, For } from "solid-js";
 import { useSidebarState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { trackEvent } from "~/utils/trackEvent";
+import { Bullet } from "./Bullet";
 
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
   const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -24,6 +25,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
   onMount(() => {
     trackEvent("upgrade.shown");
   });
+  const bullets = [<>Cancel any time (and keep any moves you've added).</>];
   return (
     <SidebarTemplate
       actions={
@@ -56,10 +58,13 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
       bodyPadding={true}
       loading={loading()}
     >
-      <p class={clsx("text-secondary leading-5")}>
+      <p class={clsx("text-secondary leading-5 pb-2")}>
         Free users can add {MAX_MOVES_FREE_TIER} moves per color. Upgrade to add
         unlimited moves.
       </p>
+      <div class={"space-y-2"}>
+        <For each={bullets}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
+      </div>
     </SidebarTemplate>
   );
 };
