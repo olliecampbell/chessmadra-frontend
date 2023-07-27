@@ -168,7 +168,6 @@ export const RepertoireMovesTable = (props: {
     s.chessboard.get((v) => v).moveLog,
   ]);
   const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
-  const hideAnnotations = () => moveNumber() === 1;
   const firstWhiteMove = () =>
     moveNumber() === 1 && props.side === "white" && myTurn() && !anyMine();
   const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
@@ -283,7 +282,7 @@ export const RepertoireMovesTable = (props: {
               <Response
                 openingName={openingName()}
                 tableMeta={tableMeta()}
-                hideAnnotations={hideAnnotations()}
+                moveNumber={moveNumber()}
                 myTurn={myTurn()}
                 anyMine={anyMine()}
                 sections={sections()}
@@ -330,7 +329,7 @@ export const RepertoireMovesTable = (props: {
           </Pressable>
           <Spacer width={16} />
         </Show>
-        {!hideAnnotations() &&
+        {moveNumber() !== 1 &&
           mode() === "build" &&
           !onboarding().isOnboarding && (
             <>
@@ -383,8 +382,8 @@ export const RepertoireMovesTable = (props: {
 const Response = (props: {
   tableResponse: TableResponse;
   anyMine: boolean;
-  hideAnnotations: boolean;
   sections: any[];
+  moveNumber: number;
   myTurn: boolean;
   moveMinWidth: number;
   moveRef: any;
@@ -431,6 +430,7 @@ const Response = (props: {
     props.tableResponse?.repertoireMove?.sanPlus;
   const mine = () => props.tableResponse.repertoireMove?.mine;
   const moveRating = () => props.tableResponse.moveRating;
+  const hideAnnotations = () => props.moveNumber === 1 && props.openingName;
 
   const userState = getAppState().userState;
   const user = () => userState.user;
@@ -448,7 +448,7 @@ const Response = (props: {
   );
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const annotation = createMemo(() => {
-    if (props.hideAnnotations) {
+    if (hideAnnotations()) {
       return null;
     }
     // @ts-ignore
