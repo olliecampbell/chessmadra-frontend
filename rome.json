@@ -10,7 +10,8 @@
       "a11y": {
         "useKeyWithMouseEvents": "off",
         "noSvgWithoutTitle": "off",
-        "useAltText": "off"
+        "useAltText": "off",
+        "useKeyWithClickEvents": "off"
       },
       "style": {
         "noNonNullAssertion": "off"
@@ -19,7 +20,5 @@
         "noForEach": "off"
       }
     }
-
   }
 }
-

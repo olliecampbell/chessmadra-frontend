@@ -60,7 +60,7 @@ import { ChessboardInterface } from "./chessboard_interface";
 import { JSXElement } from "solid-js";
 
 const TEST_LINE = isDevelopment
-  ? pgnToLine("1.e4 e5 2.Nc3 Nf6 3.f4 exf4 4.e5")
+  ? []
   : // []
     [];
 console.log("TEST_LINE", TEST_LINE);

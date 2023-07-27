@@ -289,7 +289,7 @@ export const SidebarFullWidthButton = (props: {
           c.borderTop(`1px solid ${c.colors.border}`),
       )}
     >
-      <div style={s(c.column)}>
+      <div style={s(c.column, c.grow)}>
         <CMText
           style={s(
             props.action.style === "focus" ? c.weightBold : c.weightSemiBold,

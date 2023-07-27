@@ -3,22 +3,19 @@ import { CMText } from "./CMText";
 import { Spacer } from "~/components/Space";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { getAppState, useUserState, quick } from "~/utils/app_state";
-import { useResponsiveV2 } from "~/utils/useResponsive";
-import { cloneDeep, find } from "lodash-es";
+import { cloneDeep, find, last } from "lodash-es";
 import { SidebarTemplate } from "./SidebarTemplate";
 import {
   BoardThemeId,
   BOARD_THEMES_BY_ID,
   combinedThemes,
 } from "~/utils/theming";
-import { createEffect, Show } from "solid-js";
-import { clsx } from "~/utils/classes";
 import { compareFloats } from "~/utils/utils";
-import { Dropdown } from "./SidebarOnboarding";
-import { Pressable } from "./Pressable";
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
 import { UserFlag } from "~/utils/models";
 import { SidebarActions } from "./SidebarActions";
+import { getExpectedNumMovesBetween } from "~/utils/repertoire_state";
+import { RatingSelection } from "./RatingSelection";
 
 export const SidebarSetting = () => {
   return (
@@ -29,14 +26,36 @@ export const SidebarSetting = () => {
   );
 };
 
-export const THRESHOLD_OPTIONS = [
-  1 / 50,
-  1 / 75,
-  1 / 100,
-  1 / 150,
-  1 / 200,
-  1 / 300,
-  1 / 400,
+type ThresholdOption = {
+  name: string;
+  value: number;
+};
+
+const THRESHOLD_OPTIONS: ThresholdOption[] = [
+  {
+    name: "Basic",
+    value: 1 / 75,
+  },
+  {
+    name: "Starter",
+    value: 1 / 100,
+  },
+  {
+    name: "Intermediate",
+    value: 1 / 150,
+  },
+  {
+    name: "Advanced",
+    value: 1 / 200,
+  },
+  {
+    name: "Tournament ready",
+    value: 1 / 300,
+  },
+  {
+    name: "Bulletproof",
+    value: 1 / 400,
+  },
 ];
 
 export const CoverageSettings = (props: {}) => {
@@ -44,32 +63,31 @@ export const CoverageSettings = (props: {}) => {
     s.user,
     s.getCurrentThreshold(),
   ]);
-  const selected = () => missThreshold();
-  const onSelect = (t: number) => {
+  const selected = () =>
+    find(THRESHOLD_OPTIONS, (o) => compareFloats(o.value, missThreshold()));
+  const onSelect = (t: ThresholdOption) => {
     quick((s) => {
-      s.userState.setTargetDepth(t);
+      s.userState.setTargetDepth(t.value);
     });
   };
   // @ts-ignore
   const recommendedDepth = () => getRecommendedMissThreshold(user()?.eloRange);
   const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
+  const getExpectedMoves = (threshold: number) => {
+    return getExpectedNumMovesBetween(1, threshold, "white", false);
+  };
+  const maxMoves = getExpectedMoves(last(thresholdOptions)!.value);
   return (
-    <SidebarTemplate actions={[]} header={"Coverage goal"}>
-      <SidebarSelectOneOf
-        description={
-          "Your repertoire will be complete when you cover all lines seen in:"
-        }
-        choices={thresholdOptions}
-        // cellStyles={s(c.bg(c.gray[15]))}
-        // horizontal={true}
-        activeChoice={selected()}
-        onSelect={onSelect}
-        equality={compareFloats}
-        renderChoice={(r: number, active: boolean) => {
-          return (
-            <div class="row items-end">
-              <div>{`1 in ${Math.round(1 / r)} games`}</div>
-              <Show when={r === recommendedDepth()}>
+    <SidebarTemplate
+      actions={[]}
+      header={"What type of repertoire do you want to create?"}
+    >
+      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pr-6 pb-2 md:pb-3">
+        <div class="grow" />
+        <div class="w-26 mr-6 ">Coverage goal</div>
+        <div class="w-30 shrink-0 ">Size/study time</div>
+        <div class="w-6" />
+        {/*<Show when={r.value === recommendedDepth()}>
                 <div
                   class={clsx(
                     "pl-2 text-xs",
@@ -78,7 +96,42 @@ export const CoverageSettings = (props: {}) => {
                 >
                   Recommended for your level
                 </div>
-              </Show>
+              </Show>*/}
+      </div>
+      <SidebarSelectOneOf
+        description={undefined}
+        choices={thresholdOptions}
+        // cellStyles={s(c.bg(c.gray[15]))}
+        // horizontal={true}
+        activeChoice={selected()}
+        onSelect={onSelect}
+        equality={(a: ThresholdOption, b: ThresholdOption) => {
+          return compareFloats(a.value, b.value);
+        }}
+        renderChoice={(r: ThresholdOption, active: boolean) => {
+          const moves = getExpectedMoves(r.value);
+          return (
+            <div class="row items-center">
+              <div class="grow">{r.name}</div>
+              <div class="w-26 mr-6">{`1 in ${Math.round(
+                1 / r.value,
+              )} games`}</div>
+              <div class="w-30 bg-gray-22 shrink-0 h-1 rounded overflow-hidden">
+                <div
+                  class={"bg-purple-50 h-full"}
+                  style={{ width: `${(moves / maxMoves) * 100}%` }}
+                />
+              </div>
+              {/*<Show when={r.value === recommendedDepth()}>
+                <div
+                  class={clsx(
+                    `pl-2 text-xs`,
+                    active ? "text-primary" : "text-tertiary",
+                  )}
+                >
+                  Recommended for your level
+                </div>
+              </Show>*/}
             </div>
           );
         }}
@@ -139,142 +192,6 @@ export const ThemeSettings = (props: {}) => {
     </SidebarTemplate>
   );
 };
-
-export const RatingSelection = (props: {}) => {
-  console.log("rendering rating selection");
-  const [user] = useUserState((s) => [s.user]);
-  createEffect(() => {
-    console.log("rating system ", user()?.ratingSystem);
-  });
-  return (
-    <div style={s(c.row, c.alignCenter)} class={"space-x-2"}>
-      <Dropdown
-        title={"Rating range"}
-        onSelect={(range) => {
-          quick((s) => {
-            s.userState.setRatingRange(range);
-          });
-        }}
-        choices={[
-          "0-1100",
-          "1100-1300",
-          "1300-1500",
-          "1500-1700",
-          "1700-1900",
-          "1900-2100",
-          "2100+",
-        ]}
-        // @ts-ignore
-        choice={user().ratingRange}
-        renderChoice={(choice, inList, onPress) => {
-          const textColor = c.gray[80];
-          const textStyles = s(c.fg(textColor), c.fontSize(14));
-          const containerStyles = s(
-            c.py(12),
-            inList && c.px(16),
-            c.row,
-            c.clickable,
-            c.justifyStart,
-            c.selfStart,
-            c.alignCenter,
-            c.width("fit-content"),
-            c.minWidth(100),
-          );
-          const inner = (
-            <CMText
-              style={s(textStyles, !inList && s(c.fullWidth))}
-              class={clsx("whitespace-nowrap break-keep")}
-            >
-              {choice}
-            </CMText>
-          );
-          return (
-            <Pressable
-              style={s(containerStyles)}
-              // @ts-ignore
-              onPress={(e) => {
-                onPress(e);
-              }}
-            >
-              {inner}
-            </Pressable>
-          );
-        }}
-      />
-      <div style={s(c.row)}>
-        <Dropdown
-          title={"Platform"}
-          onSelect={(choice) => {
-            console.log("On select", choice);
-            quick((s) => {
-              s.userState.setRatingSystem(choice);
-            });
-          }}
-          choices={[
-            RatingSource.Lichess,
-            RatingSource.ChessCom,
-            RatingSource.FIDE,
-            RatingSource.USCF,
-          ]}
-          choice={user()?.ratingSystem ?? RatingSource.Lichess}
-          renderChoice={(choice, inList, onPress) => {
-            const textColor = c.gray[80];
-            const textStyles = s(
-              c.fg(textColor),
-              c.fontSize(14),
-              c.weightSemiBold,
-            );
-            const containerStyles = s(
-              c.py(12),
-              inList && c.px(16),
-              c.row,
-              c.clickable,
-              !inList && c.justifyEnd,
-              c.fullWidth,
-              c.selfStart,
-              c.justifyStart,
-              c.alignEnd,
-              c.width("fit-content"),
-              c.minWidth(90),
-            );
-            if (choice === RatingSource.Lichess) {
-              return (
-                <Pressable style={s(containerStyles)} onPress={onPress}>
-                  <CMText style={s(textStyles)}>Lichess</CMText>
-                </Pressable>
-              );
-            } else if (choice === RatingSource.USCF) {
-              return (
-                <Pressable style={s(containerStyles)} onPress={onPress}>
-                  <CMText style={s(textStyles)}>USCF</CMText>
-                </Pressable>
-              );
-            } else if (choice === RatingSource.FIDE) {
-              return (
-                <Pressable style={s(containerStyles)} onPress={onPress}>
-                  <CMText style={s(textStyles)}>FIDE</CMText>
-                </Pressable>
-              );
-            } else if (choice === RatingSource.ChessCom) {
-              return (
-                <Pressable style={s(containerStyles)} onPress={onPress}>
-                  <CMText style={s(textStyles)}>Chess.com</CMText>
-                </Pressable>
-              );
-            }
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-export enum RatingSource {
-  Lichess = "Lichess",
-  ChessCom = "Chess.com",
-  USCF = "USCF",
-  FIDE = "FIDE",
-}
 
 export const BetaFeaturesSettings = (props: {}) => {
   const userState = () => getAppState().userState;

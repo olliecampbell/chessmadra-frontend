@@ -290,13 +290,3 @@ export const RepertoireHome = () => {
     </Show>
   );
 };
-
-export const getExpectedNumberOfMovesForTarget = (target: number) => {
-  const [a, b] = [98.76334927, 137.34870497];
-
-  return (1 / (target * a)) * b;
-};
-// THRESHOLD_OPTIONS.forEach((o) => {
-//   console.log("_____THRESHOLDS______");
-//   console.log(o, getExpectedNumberOfMovesForTarget(o));
-// });

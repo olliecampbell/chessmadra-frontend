@@ -4,6 +4,7 @@ import { Spacer } from "~/components/Space";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
 import { Component, For, Show, JSX } from "solid-js";
+import { clsx } from "~/utils/classes";
 
 export const SidebarSelectOneOf: Component<{
   title?: string;
@@ -26,10 +27,16 @@ export const SidebarSelectOneOf: Component<{
         text: props.renderChoice(choice, active),
         class:
           active &&
-          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover !text-primary",
+          "bg-sidebar_button_primary &hover:bg-sidebar_button_primary_hover !text-primary w-full",
         onPress: () => props.onSelect(choice, i),
-        right: active && (
-          <i class={"fa fa-check"} style={s(c.fg(c.colors.text.primary))} />
+        right: (
+          <i
+            class={clsx(
+              "fa fa-check transition-opacity",
+              !active && "opacity-0",
+            )}
+            style={s(c.fg(c.colors.text.primary))}
+          />
         ),
       } as SidebarAction;
     });

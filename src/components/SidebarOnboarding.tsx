@@ -24,10 +24,10 @@ import {
   Switch,
   For,
   onMount,
+  JSX,
 } from "solid-js";
 import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
-import { RatingSelection } from "./SidebarSettings";
 import { clsx } from "~/utils/classes";
 import { TextArea, TextInput } from "./TextInput";
 import { Side, SIDES } from "~/utils/repertoire";
@@ -40,6 +40,7 @@ import { validator } from "@felte/validator-yup";
 import * as yup from "yup";
 import { RepertoireCompletion } from "./RepertoireCompletion";
 import { renderThreshold } from "~/utils/threshold";
+import { RatingSelection } from "./RatingSelection";
 
 export const OnboardingIntro = () => {
   const bullets = [
@@ -188,7 +189,7 @@ export const Dropdown: Component<{
     _: TFake,
     inDropdown: boolean,
     onPress: (e: MouseEvent) => void,
-  ) => any;
+  ) => JSX.Element;
 }> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [ref, setRef] = createSignal(null);
@@ -689,7 +690,6 @@ export const ImportOnboarding = (props: {
 };
 
 export const TrimRepertoireOnboarding = () => {
-  const responsive = useResponsiveV2();
   const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
   const side = () => activeSide() || onboarding().side;

@@ -1,8 +1,9 @@
-import { useRepertoireState, useAppState } from "~/utils/app_state";
+import { useRepertoireState, useAppState, quick } from "~/utils/app_state";
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { noop } from "lodash-es";
+import { CoverageSettings } from "~/components/SidebarSettings";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -36,7 +37,7 @@ export const createDebugStateEffect = () => {
       //   s.repertoireState.browsingState.replaceView(ForgotPassword, {});
       // });
       // quick((s) => {
-      //   s.repertoireState.browsingState.replaceView(OnboardingComplete, {});
+      //   s.repertoireState.browsingState.replaceView(CoverageSettings, {});
       // });
       //   quick((s) => {
       //     s.repertoireState.startBrowsing("white", "build");

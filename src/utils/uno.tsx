@@ -119,5 +119,5 @@ export const unoConfig: VitePluginConfig = {
     [/^square-(.*)$/, ([, c]) => `w-${c} h-${c}`],
     [/^&hover:(.*)$/, ([, c]) => `&hoVer:${c} active:${c}`],
   ],
-  presets: [presetUno(), presetAttributify(), presetTagify()],
+  presets: [presetUno()],
 };
