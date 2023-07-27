@@ -353,14 +353,6 @@ const getBuildModeSections = ({
         if (!props.suggestedMove?.results) {
           return na();
         }
-        if (props.tableResponse.lowConfidence) {
-          return (
-            <CMText style={s(naStyles)}>
-              {props.suggestedMove?.results[activeSide]} out of{" "}
-              {getTotalGames(props.suggestedMove?.results)}
-            </CMText>
-          );
-        }
         return (
           <>
             <Show when={props.suggestedMove}>
@@ -371,59 +363,70 @@ const getBuildModeSections = ({
                     ref,
                     content: () => {
                       return (
-                        <p class="text-left">
-                          <span class="block pb-2">
-                            When this is played at your level:
-                          </span>
-                          •
-                          <span class="pr-2" />
-                          White wins{" "}
-                          <b>
-                            {formatPlayPercentage(
-                              getWinRate(
-                                props.suggestedMove?.results!,
-                                "white",
-                              ),
-                            )}
-                          </b>{" "}
-                          of games <br />
-                          •
-                          <span class="pr-2" />
-                          Black wins{" "}
-                          <b>
-                            {formatPlayPercentage(
-                              getWinRate(
-                                props.suggestedMove?.results!,
-                                "black",
-                              ),
-                            )}
-                          </b>{" "}
-                          of games <br />
-                          •
-                          <span class="pr-2" />
-                          <b>
-                            {formatPlayPercentage(
-                              1 -
+                        <div>
+                          <p class="text-left">
+                            <span class="block pb-2">
+                              When this is played at your level:
+                            </span>
+                            •
+                            <span class="pr-2" />
+                            White wins{" "}
+                            <b>
+                              {formatPlayPercentage(
                                 getWinRate(
                                   props.suggestedMove?.results!,
                                   "white",
-                                ) -
+                                ),
+                              )}
+                            </b>{" "}
+                            of games <br />
+                            •
+                            <span class="pr-2" />
+                            Black wins{" "}
+                            <b>
+                              {formatPlayPercentage(
                                 getWinRate(
                                   props.suggestedMove?.results!,
                                   "black",
                                 ),
-                            )}
-                          </b>{" "}
-                          of games are drawn
-                        </p>
+                              )}
+                            </b>{" "}
+                            of games <br />
+                            •
+                            <span class="pr-2" />
+                            <b>
+                              {formatPlayPercentage(
+                                1 -
+                                  getWinRate(
+                                    props.suggestedMove?.results!,
+                                    "white",
+                                  ) -
+                                  getWinRate(
+                                    props.suggestedMove?.results!,
+                                    "black",
+                                  ),
+                              )}
+                            </b>{" "}
+                            of games are drawn
+                          </p>
+                          {props.tableResponse.lowConfidence && (
+                            <p class="pt-2 text-left">
+                              <i class="fa fa-warning pr-1 text-yellow-50" />{" "}
+                              Small sample size (
+                              {getTotalGames(props.suggestedMove!.results)}{" "}
+                              games)
+                            </p>
+                          )}
+                        </div>
                       );
                     },
-                    maxWidth: 200,
+                    maxWidth: 240,
                   });
                 }}
               >
                 <GameResultsBar
                   previousResults={props.positionReport?.results}
+                  lowConfidence={!!props.tableResponse.lowConfidence}
                   activeSide={activeSide}
                   gameResults={props.suggestedMove.results}
                 />

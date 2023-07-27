@@ -83,7 +83,7 @@ export const getMoveRating = (
 };
 
 export const getMoveRatingIcon = (rating: MoveRating) => {
-  const styles = s(c.weightBold, c.fontSize(16));
+  const styles = s(c.weightBold, c.fontSize(14));
   return (
     <div
       ref={(ref) => {

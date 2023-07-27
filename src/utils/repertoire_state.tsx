@@ -60,8 +60,7 @@ import { ChessboardInterface } from "./chessboard_interface";
 import { JSXElement } from "solid-js";
 
 const TEST_LINE = isDevelopment
-  ? //pgnToLine("1.d4 Nf6 2.Nf3 e6 3.Bf4 d5 4.e3 Bd6 5.Bg3")
-    []
+  ? pgnToLine("1.e4 e5 2.Nc3 Nf6 3.f4 exf4 4.e5")
   : // []
     [];
 console.log("TEST_LINE", TEST_LINE);
@@ -1027,7 +1026,7 @@ export const getInitialRepertoireState = (
                 s.startBrowsing("white", TEST_MODE);
               } else if (!isEmpty(TEST_LINE)) {
                 window.setTimeout(() => {
-                  s.startBrowsing("white", "build", {
+                  s.startBrowsing("black", "build", {
                     pgnToPlay: lineToPgn(TEST_LINE),
                   });
                 }, 100);

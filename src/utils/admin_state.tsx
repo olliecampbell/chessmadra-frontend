@@ -4,6 +4,8 @@ import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { StorageItem } from "./storageItem";
+import Cookies from "js-cookie";
+import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./auth";
 
 export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[];
@@ -74,9 +76,14 @@ export const getInitialAdminState = (
             });
           });
       }),
-    spoofUser: (email: string) => {
+    spoofUser: (email: string | undefined) => {
       set(([s]) => {
         s.spoofedEmail.value = email;
+        if (!email) {
+          Cookies.remove(TEMP_USER_UUID);
+          Cookies.remove(JWT_COOKIE_KEY);
+          window.location.reload();
+        }
       });
     },
     editMoveAnnotation: ({

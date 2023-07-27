@@ -12,6 +12,7 @@ import { clsx } from "~/utils/classes";
 
 export const GameResultsBar = (props: {
   gameResults: GameResultsDistribution;
+  lowConfidence: boolean;
   previousResults?: GameResultsDistribution;
   hideNumbers?: boolean;
   activeSide: Side;
@@ -36,7 +37,7 @@ export const GameResultsBar = (props: {
         <>
           <CMText
             class={clsx(
-              props.activeSide === "white" ? "text-gray-10" : "text-gray-10",
+              props.lowConfidence ? "text-gray-50" : "text-gray-10",
               "text-[10px] font-bold",
             )}
           >
@@ -63,7 +64,7 @@ export const GameResultsBar = (props: {
         <>
           <CMText
             class={clsx(
-              props.activeSide === "black" ? "text-gray-90" : "text-gray-90",
+              props.lowConfidence ? "text-gray-40" : "text-gray-90",
               "text-[10px] font-bold",
             )}
           >
