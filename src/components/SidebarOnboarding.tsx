@@ -373,12 +373,12 @@ export const HowToComplete = (props: {
   const bullets = () => [
     <>
       Your goal is to cover any positions which occur in at least{" "}
-      <b>{renderThreshold(threshold())}</b> games.
+      <b>{renderThreshold(threshold())} games </b>.
     </>,
     props.miss ? (
       <>
         Your biggest gap is in the <b>{props.miss.name}</b>, which you’ll see in{" "}
-        <b>{renderThreshold(threshold())}</b> games
+        <b>{renderThreshold(threshold())} games </b>
       </>
     ) : (
       <>

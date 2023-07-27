@@ -83,7 +83,7 @@ export const PreBuild = (props: { side: Side }) => {
             return (
               <p class="body-text ">
                 Your biggest gap is in the <b>{miss().name}</b>, which you’ll
-                see in <b>{renderThreshold(miss().incidence)}</b> games
+                see in <b>{renderThreshold(miss().incidence)} games</b>
               </p>
             );
           }}

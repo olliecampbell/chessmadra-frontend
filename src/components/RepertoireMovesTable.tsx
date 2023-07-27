@@ -512,7 +512,7 @@ const Response = (props: {
           tip={
             <p>
               This move is seen in less than{" "}
-              <b>{renderThreshold(userState.getCurrentThreshold())}</b> games
+              <b>{renderThreshold(userState.getCurrentThreshold())} games </b>
               but the high win-rate for {currentSide()} means you should still
               prepare for it
             </p>
