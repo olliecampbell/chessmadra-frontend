@@ -141,7 +141,9 @@ export const SidebarActionsLegacy = () => {
             bs.moveSidebarState("right");
             bs.sidebarState.showPlansState.visible = true;
             bs.sidebarState.showPlansState.coverageReached = false;
-            bs.chessboard.set((s) => s.showPlans === true);
+            bs.chessboard.set((s) => {
+              s.showPlans = true;
+            });
           });
         },
         text: "How to play from here",
