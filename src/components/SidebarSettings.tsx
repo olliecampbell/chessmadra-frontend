@@ -82,10 +82,10 @@ export const CoverageSettings = (props: {}) => {
       actions={[]}
       header={"What type of repertoire do you want to create?"}
     >
-      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pr-6 pb-2 md:pb-3">
+      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pb-2 md:pb-3 pr-2">
         <div class="grow" />
-        <div class="w-26 mr-6 ">Coverage goal</div>
-        <div class="w-30 shrink-0 ">Size/study time</div>
+        <div class="w-26 lg:w-28 mr-6 ">Coverage goal</div>
+        <div class="w-28 md:w-30 shrink-0 ">Size/study time</div>
         <div class="w-6" />
         {/*<Show when={r.value === recommendedDepth()}>
                 <div
@@ -112,13 +112,15 @@ export const CoverageSettings = (props: {}) => {
           const moves = getExpectedMoves(r.value);
           return (
             <div class="row items-center">
-              <div class="grow">{r.name}</div>
-              <div class="w-26 mr-6">{`1 in ${Math.round(
+              <div class="grow whitespace-nowrap text-sm lg:text-base">
+                {r.name}
+              </div>
+              <div class="w-26 lg:w-32 mr-6 text-xs lg:text-sm text-right">{`1 in ${Math.round(
                 1 / r.value,
               )} games`}</div>
-              <div class="w-30 bg-gray-22 shrink-0 h-1 rounded overflow-hidden">
+              <div class="w-28 md:w-30  shrink-0 h-1 rounded overflow-hidden">
                 <div
-                  class={"bg-purple-50 h-full"}
+                  class={"bg-purple-55 h-full"}
                   style={{ width: `${(moves / maxMoves) * 100}%` }}
                 />
               </div>
