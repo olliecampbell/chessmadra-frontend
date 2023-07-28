@@ -24,6 +24,7 @@ export const ReviewMoveAnnotationsView = (props: any) => {
       s.fetchMoveAnnotationReviewQueue,
     ]);
   onMount(() => {
+    console.log("fetching communtiry review queue");
     fetchMoveAnnotationReviewQueue();
   });
 

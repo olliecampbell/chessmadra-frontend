@@ -10,7 +10,7 @@ import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
-import { createEffect, createSignal, Index, Show } from "solid-js";
+import { createEffect, createSignal, For, Index, Show } from "solid-js";
 import { A } from "solid-start";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 import { LazyLoad } from "./LazyLoad";
@@ -95,7 +95,7 @@ export const MoveAnnotationsDashboard = () => {
             />
             <div style={s(c.gridColumn({ gap: 24 }))}>
               <Spacer height={24} />
-              <Index
+              <For
                 each={
                   activeTab() === "Needed"
                     ? take(dashboard().needed, 100)
@@ -106,10 +106,10 @@ export const MoveAnnotationsDashboard = () => {
                   <MoveAnnotationRow
                     completed={activeTab() === "Completed"}
                     // @ts-ignore
-                    annotation={ann()}
+                    annotation={ann}
                   />
                 )}
-              </Index>
+              </For>
             </div>
           </div>
         );

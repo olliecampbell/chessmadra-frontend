@@ -26,12 +26,12 @@ export const SelectOneOf = <T,>(props: {
     >
       <For each={props.choices}>
         {(choice, i) => {
-          const active = props.equality
-            ? props.equality(choice, props.activeChoice)
-            : choice === props.activeChoice;
-          console.log("props active choice", props.activeChoice);
+          const active = () =>
+            props.equality
+              ? props.equality(choice, props.activeChoice)
+              : choice === props.activeChoice;
           const isLast = () => i() === props.choices.length - 1;
-          const rendered = props.renderChoice(choice, active, i());
+          const rendered = () => props.renderChoice(choice, active(), i());
           if (typeof rendered === "string") {
             return (
               <Pressable
@@ -40,11 +40,11 @@ export const SelectOneOf = <T,>(props: {
                 }}
                 key={i}
                 style={s(
-                  active &&
+                  active() &&
                     props.tabStyle &&
                     c.borderBottom(`2px solid ${c.gray[90]}`),
                   c.row,
-                  !props.tabStyle && c.bg(active ? c.gray[80] : c.gray[25]),
+                  !props.tabStyle && c.bg(active() ? c.gray[80] : c.gray[25]),
                   !props.tabStyle && c.py(8),
                   props.tabStyle && c.pb(4),
                   c.px(12),
@@ -59,9 +59,9 @@ export const SelectOneOf = <T,>(props: {
                 <CMText
                   style={s(
                     props.tabStyle
-                      ? c.fg(active ? c.colors.text.primary : c.gray[80])
+                      ? c.fg(active() ? c.colors.text.primary : c.gray[80])
                       : c.fg(
-                          active
+                          active()
                             ? c.colors.text.inverse
                             : c.colors.text.secondary,
                         ),
@@ -74,7 +74,7 @@ export const SelectOneOf = <T,>(props: {
               </Pressable>
             );
           } else {
-            return rendered;
+            return <>{rendered}</>;
           }
         }}
       </For>
