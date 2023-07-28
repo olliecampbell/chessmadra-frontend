@@ -16,6 +16,8 @@ import { UserFlag } from "~/utils/models";
 import { SidebarActions } from "./SidebarActions";
 import { getExpectedNumMovesBetween } from "~/utils/repertoire_state";
 import { RatingSelection } from "./RatingSelection";
+import { initTooltip } from "./Tooltip";
+import { renderThreshold } from "~/utils/threshold";
 
 export const SidebarSetting = () => {
   return (
@@ -115,10 +117,37 @@ export const CoverageSettings = (props: {}) => {
               <div class="grow whitespace-nowrap text-sm lg:text-base">
                 {r.name}
               </div>
-              <div class="w-26 lg:w-32 mr-6 text-xs lg:text-sm text-right">{`1 in ${Math.round(
-                1 / r.value,
-              )} games`}</div>
-              <div class="w-28 md:w-30  shrink-0 h-1 rounded overflow-hidden">
+              <div
+                class="w-26 lg:w-32 mr-6 text-xs lg:text-sm text-right"
+                ref={(x) => {
+                  initTooltip({
+                    ref: x,
+                    maxWidth: 200,
+                    content: () => (
+                      <p>
+                        Your repertoire will be complete when you have a
+                        response to all moves you’ll see in at least{" "}
+                        <b>{renderThreshold(r.value)} games</b> at your level
+                      </p>
+                    ),
+                  });
+                }}
+              >{`1 in ${Math.round(1 / r.value)} games`}</div>
+              <div
+                class="w-28 md:w-30  shrink-0 h-1 rounded overflow-hidden"
+                ref={(x) => {
+                  initTooltip({
+                    ref: x,
+                    maxWidth: 200,
+                    content: () => (
+                      <p>
+                        A complete repertoire will have around{" "}
+                        {Math.round(moves / 100) * 100} moves
+                      </p>
+                    ),
+                  });
+                }}
+              >
                 <div
                   class={"bg-purple-55 h-full"}
                   style={{ width: `${(moves / maxMoves) * 100}%` }}
