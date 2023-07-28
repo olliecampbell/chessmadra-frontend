@@ -142,7 +142,7 @@ export const CoverageSettings = (props: {}) => {
                     content: () => (
                       <p>
                         A complete repertoire will have around{" "}
-                        {Math.round(moves / 100) * 100} moves
+                        <b>{Math.round(moves / 100) * 100} moves</b>
                       </p>
                     ),
                   });
