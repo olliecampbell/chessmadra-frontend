@@ -5,10 +5,11 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 import { StorageItem } from "./storageItem";
 import Cookies from "js-cookie";
+import { flatten } from "lodash-es";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./auth";
 
 export interface AdminState {
-  moveAnnotationReviewQueue: MoveAnnotationReview[];
+  moveAnnotationReviewQueue: MoveAnnotationReview[] | null;
   fetchMoveAnnotationReviewQueue: () => void;
   acceptMoveAnnotation: (
     epd: string,
@@ -64,15 +65,36 @@ export const getInitialAdminState = (
   };
   const initialState = {
     ...createQuick<AdminState>(setOnly),
-    moveAnnotationReviewQueue: [],
+    moveAnnotationReviewQueue: null,
     spoofedEmail: new StorageItem("spoofed-email", undefined),
     fetchMoveAnnotationReviewQueue: () =>
       set(([s]) => {
+        console.log("about to fetch");
         client
           .get("/api/v1/admin/move-annotation-review-queue")
           .then(({ data }) => {
             set(([s]) => {
-              s.moveAnnotationReviewQueue = data;
+              s.moveAnnotationReviewQueue = flatten(
+                data.map(
+                  (m: {
+                    epd: string;
+                    san: string;
+                    annotations: {
+                      userId: string;
+                      userEmail: string;
+                      text: string;
+                    }[];
+                  }) => {
+                    return m.annotations.map((a) => ({
+                      epd: m.epd,
+                      san: m.san,
+                      userId: a.userId,
+                      userEmail: a.userEmail,
+                      text: a.text,
+                    }));
+                  },
+                ),
+              );
             });
           });
       }),

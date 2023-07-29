@@ -70,7 +70,7 @@ export const AdminPageLayout = (props: { children: JSXElement }) => {
     return inner;
   };
   return (
-    <div style={s(c.oldContainerStyles(isMobile()), c.center, c.pt(48))}>
+    <div style={s(c.oldContainerStyles(isMobile()), c.pt(48), c.px(24))}>
       {_inner()}
     </div>
   );

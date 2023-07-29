@@ -1054,7 +1054,6 @@ export const createStaticChessState = ({
   side: Side;
   nextMove?: string | Move;
 }) => {
-  console.log("creating static chess state", epd, side, nextMove);
   const [, chessboard] = createChessboardInterface();
   const fen = `${epd} 0 1`;
   chessboard.setPosition(createChessProxy(new Chess(fen)));

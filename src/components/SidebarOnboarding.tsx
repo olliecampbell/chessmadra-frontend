@@ -234,7 +234,6 @@ export const Dropdown: Component<{
             c.left(0),
             c.br(4),
             c.border(`1px solid ${c.gray[26]}`),
-            c.overflowHidden,
             c.gridColumn({ gap: 0 }),
             c.alignStretch,
           )}

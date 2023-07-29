@@ -321,7 +321,6 @@ const oldContainerStyles = (isMobile: boolean, customMaxWidth?: number) =>
       `min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`,
     ),
     column,
-    selfCenter,
   );
 
 const containerStyles = (breakpoint: BP) =>

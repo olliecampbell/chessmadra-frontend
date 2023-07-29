@@ -11,6 +11,7 @@ export const Button = (props: {
   style?: any;
   children: any;
   isLoading?: boolean;
+  class?: string;
 }) => {
   let inner = props.children;
   if (typeof inner === "string") {
@@ -18,6 +19,7 @@ export const Button = (props: {
   }
   return (
     <Pressable
+      class={props.class}
       style={s(c.relative, props.style)}
       onPress={() => {
         if (!props.isLoading) {

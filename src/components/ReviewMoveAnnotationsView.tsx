@@ -1,12 +1,17 @@
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
-import { isEmpty, isNil, capitalize, noop } from "lodash-es";
+import { isEmpty, isNil, capitalize, noop, flatten, filter } from "lodash-es";
 import { Button } from "~/components/Button";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { intersperse } from "~/utils/intersperse";
 import { CMText } from "./CMText";
-import { quick, useAdminState, useUserState } from "~/utils/app_state";
+import {
+  getAdminState,
+  quick,
+  useAdminState,
+  useUserState,
+} from "~/utils/app_state";
 import { Chess } from "@lubert/chess.ts";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
@@ -14,54 +19,132 @@ import { LichessLogoIcon } from "./icons/LichessLogoIcon";
 import { MoveAnnotationReview } from "~/utils/models";
 import { pluralize } from "~/utils/pluralize";
 import { LazyLoad } from "./LazyLoad";
-import { createSignal, For, onMount, Show } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Match,
+  onMount,
+  Show,
+  Switch,
+} from "solid-js";
 import { createStaticChessState } from "~/utils/chessboard_interface";
+import { Dropdown } from "./SidebarOnboarding";
 
 export const ReviewMoveAnnotationsView = (props: any) => {
-  const [moveAnnotationReviewQueue, fetchMoveAnnotationReviewQueue] =
-    useAdminState((s) => [
-      s.moveAnnotationReviewQueue,
-      s.fetchMoveAnnotationReviewQueue,
-    ]);
+  const [moveAnnotationReviewQueue] = useAdminState((s) => [
+    s.moveAnnotationReviewQueue,
+  ]);
   onMount(() => {
     console.log("fetching communtiry review queue");
-    fetchMoveAnnotationReviewQueue();
+    getAdminState().fetchMoveAnnotationReviewQueue();
+  });
+  const userEmails = createMemo(() => {
+    const emails = moveAnnotationReviewQueue()?.map(
+      (review: MoveAnnotationReview) => review.userEmail,
+    );
+    const uniqueEmails = new Set(emails);
+    return Array.from(uniqueEmails).sort();
+  });
+  const [selectedEmail, setSelectedEmail] = createSignal(null);
+  const filteredAnnotations = createMemo(() => {
+    return filter(moveAnnotationReviewQueue(), (review) => {
+      if (selectedEmail()) {
+        return review.userEmail === selectedEmail();
+      } else {
+        return true;
+      }
+    });
   });
 
-  // TEST PERFORMANCE
-  // if (!isEmpty(moveAnnotationReviewQueue)) {
-  // moveAnnotationReviewQueue = range(50).flatMap(
-  //   () => moveAnnotationReviewQueue
-  // );
-  // }
-
+  createEffect(() => {
+    console.log("moveAnnotationReviewQueue", moveAnnotationReviewQueue());
+  });
   return (
     <AdminPageLayout>
-      {(() => {
-        if (isNil(moveAnnotationReviewQueue)) {
-          return <CMText style={s()}>Loading...</CMText>;
-        }
-        if (isEmpty(moveAnnotationReviewQueue)) {
-          return (
-            <CMText style={s()}>
-              Looks like there's nothing left to review
-            </CMText>
-          );
-        }
-        return (
+      <Switch>
+        <Match when={isNil(moveAnnotationReviewQueue())}>
+          <CMText style={s()}>Loading...</CMText>
+        </Match>
+        <Match when={isEmpty(moveAnnotationReviewQueue())}>
+          <CMText style={s()}>Looks like there's nothing left to review</CMText>
+        </Match>
+        <Match when={true}>
+          <div class="row pb-4 items-center">
+            <p>Filtered user: </p>
+            <Dropdown
+              choices={userEmails()}
+              choice={selectedEmail()}
+              onSelect={(email) => {
+                console.log("setting email to ", email);
+                setSelectedEmail(email);
+              }}
+              renderChoice={(choice, inList, onPress) => {
+                console.log("rendering dropdown choice", choice);
+                return <p onClick={onPress}>{choice ?? "No user selected"}</p>;
+              }}
+            />
+          </div>
+          <Show when={selectedEmail() !== null}>
+            <div class="row pb-4 items-center space-x-4">
+              <div
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+                onClick={() => {
+                  quick((s) => {
+                    filteredAnnotations().forEach((annotation) => {
+                      s.adminState.acceptMoveAnnotation(
+                        annotation.epd,
+                        annotation.san,
+                        annotation.text,
+                      );
+                    });
+                    s.adminState.moveAnnotationReviewQueue =
+                      s.adminState.moveAnnotationReviewQueue!.filter(
+                        (review) => {
+                          return review.userEmail !== selectedEmail();
+                        },
+                      );
+                  });
+                }}
+              >
+                Accept {filteredAnnotations().length} annotations
+              </div>
+              <div
+                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+                onClick={() => {
+                  quick((s) => {
+                    filteredAnnotations().forEach((annotation) => {
+                      s.adminState.rejectMoveAnnotations(
+                        annotation.epd,
+                        annotation.san,
+                      );
+                    });
+                    s.adminState.moveAnnotationReviewQueue =
+                      s.adminState.moveAnnotationReviewQueue!.filter(
+                        (review) => {
+                          return review.userEmail !== selectedEmail();
+                        },
+                      );
+                  });
+                }}
+              >
+                Reject {filteredAnnotations().length} annotations
+              </div>
+            </div>
+          </Show>
           <div style={s(c.gridColumn({ gap: 92 }))}>
-            <For each={moveAnnotationReviewQueue()}>
+            <For each={filteredAnnotations()}>
               {(review) => <MoveAnnotationsReview review={review} />}
             </For>
           </div>
-        );
-      })()}
+        </Match>
+      </Switch>
     </AdminPageLayout>
   );
 };
 
 const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
-  console.log("Epd is ", props.review.epd);
   const fen = `${props.review.epd} 0 1`;
   const position = new Chess(fen);
   const isMobile = useIsMobileV2();
@@ -73,7 +156,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
   const [reviewed, setReviewed] = createSignal(false);
   return (
     <div style={s(isMobile() ? c.column : c.row, c.constrainWidth, c.relative)}>
-      <Show when={reviewed}>
+      <Show when={reviewed()}>
         <div
           style={s(
             c.absoluteFull,
@@ -98,7 +181,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
           />
         </LazyLoad>
         <Button
-          style={s(c.buttons.darkFloater)}
+          class="cursor-pointer bg-gray-30 py-2 mt-2"
           onPress={() => {
             const windowReference = window.open("about:blank", "_blank");
             if (windowReference) {
@@ -129,78 +212,40 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
           {props.review.san}
         </CMText>
         <Spacer height={12} />
-        {intersperse(
-          props.review.annotations.map((x, i) => {
-            return (
-              <div
-                style={s(c.pb(12), c.fullWidth, c.width(300), c.bg(c.gray[80]))}
-              >
-                <div style={s(c.height(120))}>
-                  <AnnotationEditor
-                    annotation={() => x.text}
-                    onUpdate={(v) => {
-                      quick((s) => {
-                        s.adminState.editMoveAnnotation({
-                          epd: props.review.epd,
-                          san: props.review.san,
-                          userId: x.userId,
-                          text: v,
-                        });
-                      });
-                    }}
-                  />
-                </div>
+        <div style={s(c.pb(12), c.fullWidth, c.width(300), c.bg(c.gray[80]))}>
+          <div style={s(c.height(120))}>
+            <AnnotationEditor
+              annotation={() => props.review.text}
+              onUpdate={(v) => {
+                quick((s) => {
+                  s.adminState.editMoveAnnotation({
+                    epd: props.review.epd,
+                    san: props.review.san,
+                    userId: props.review.userId,
+                    text: v,
+                  });
+                });
+              }}
+            />
+          </div>
+          <Spacer height={12} />
+          <div style={s(c.row, c.alignCenter, c.justifyBetween)}>
+            {props.review?.userId === user()?.id ? (
+              <>
+                <CMText style={s(c.fg(c.gray[0]), c.px(12), c.caps)}>
+                  mine
+                </CMText>
                 <Spacer height={12} />
-                <div style={s(c.row, c.alignCenter, c.justifyBetween)}>
-                  {x?.userId === user()?.id ? (
-                    <>
-                      <CMText style={s(c.fg(c.gray[0]), c.px(12), c.caps)}>
-                        mine
-                      </CMText>
-                      <Spacer height={12} />
-                    </>
-                  ) : (
-                    <>
-                      <CMText style={s(c.fg(c.gray[0]), c.px(12))}>
-                        {x?.userEmail ?? "Anonymous"}
-                      </CMText>
-                    </>
-                  )}
-                  <Button
-                    style={s(
-                      c.buttons.basicSecondary,
-                      c.py(8),
-                      c.mr(12),
-                      c.px(16),
-                      {
-                        textStyles: s(
-                          c.buttons.basicSecondary.textStyles,
-                          c.fontSize(14),
-                          c.fg(c.gray[90]),
-                        ),
-                      },
-                      c.selfEnd,
-                    )}
-                    onPress={() => {
-                      acceptMoveAnnotation(
-                        // @ts-ignore
-                        props.review.epd,
-                        props.review.san,
-                        x.text,
-                      );
-                      setReviewed(true);
-                    }}
-                  >
-                    Accept
-                  </Button>
-                </div>
-              </div>
-            );
-          }),
-          (i) => {
-            return <Spacer height={12} />;
-          },
-        )}
+              </>
+            ) : (
+              <>
+                <CMText style={s(c.fg(c.gray[0]), c.px(12))}>
+                  {props.review?.userEmail ?? "Anonymous"}
+                </CMText>
+              </>
+            )}
+          </div>
+        </div>
         <Spacer height={14} />
         <Button
           style={s(
@@ -222,7 +267,35 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
             setReviewed(true);
           }}
         >
-          {`Reject ${pluralize(props.review.annotations.length, "annotation")}`}
+          Reject this annotation
+        </Button>
+        <Spacer height={14} />
+        <Button
+          style={s(
+            c.buttons.primary,
+            c.py(8),
+            c.bg(c.green[45]),
+            c.px(16),
+            {
+              textStyles: s(
+                c.buttons.basicSecondary.textStyles,
+                c.fontSize(14),
+                c.fg(c.gray[90]),
+              ),
+            },
+            c.selfEnd,
+          )}
+          onPress={() => {
+            acceptMoveAnnotation(
+              // @ts-ignore
+              props.review.epd,
+              props.review.san,
+              props.review.text,
+            );
+            setReviewed(true);
+          }}
+        >
+          Accept this annotation
         </Button>
       </div>
     </div>

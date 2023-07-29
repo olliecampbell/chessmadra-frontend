@@ -353,11 +353,10 @@ export const useUserState = <T extends any[]>(
   return useStateSliceDestructure(fn, (s) => s.userState, config);
 };
 
-export const useAdminState = <T,>(
+export const useAdminState = <T extends any[],>(
   fn: (_: AdminState) => T,
   config?: Partial<EqualityConfig>,
 ) => {
-  // @ts-ignore
   return useStateSliceDestructure(fn, (s) => s.adminState, config);
 };
 
@@ -371,6 +370,10 @@ export const useAppState = <T,>(
 
 export const getAppState = () => {
   return appState;
+};
+
+export const getAdminState = () => {
+  return appState.adminState;
 };
 
 // @ts-ignore

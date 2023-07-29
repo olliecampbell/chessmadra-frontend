@@ -158,11 +158,9 @@ export interface PawnStructureDetails {
 export interface MoveAnnotationReview {
   epd: string;
   san: string;
-  annotations: {
-    userId: string;
-    userEmail: string;
-    text: string;
-  }[];
+  userId: string;
+  userEmail: string;
+  text: string;
 }
 
 export interface MoveAnnotation {
