@@ -715,11 +715,12 @@ export const getInitialRepertoireState = (
           const mainLine = [...line, mainMove.sanPlus];
           pgn = `${pgn}${getLastMoveWithNumber(lineToPgn(mainLine))} `;
           forEach(others, (variationMove) => {
-            if (seenEpds.has(variationMove.epdAfter)) {
+            if (newSeenEpds.has(variationMove.epdAfter)) {
               return;
             }
             const variationLine = [...line, variationMove.sanPlus];
-            seenEpds.add(variationMove.epdAfter);
+            const variationSeenEpds = new Set(newSeenEpds);
+            variationSeenEpds.add(variationMove.epdAfter);
             pgn += "(";
             if (sideOfLastmove(variationLine) === "black") {
               const n = Math.floor(variationLine.length / 2);
@@ -731,11 +732,11 @@ export const getInitialRepertoireState = (
               pgn += `${getLastMoveWithNumber(lineToPgn(variationLine))} `;
             }
 
-            recurse(variationMove.epdAfter, variationLine, seenEpds);
+            recurse(variationMove.epdAfter, variationLine, variationSeenEpds);
             pgn = pgn.trim();
             pgn += ") ";
           });
-          if (seenEpds.has(mainMove.epdAfter)) {
+          if (newSeenEpds.has(mainMove.epdAfter)) {
             return;
           }
           if (
@@ -745,8 +746,8 @@ export const getInitialRepertoireState = (
             pgn += `${getMoveNumber(lineToPgn(mainLine))}... `;
           }
 
-          seenEpds.add(mainMove.epdAfter);
-          recurse(mainMove.epdAfter, mainLine, seenEpds);
+          newSeenEpds.add(mainMove.epdAfter);
+          recurse(mainMove.epdAfter, mainLine, newSeenEpds);
         };
         recurse(START_EPD, [], seenEpds);
         pgn = `${pgn.trim()} *`;
