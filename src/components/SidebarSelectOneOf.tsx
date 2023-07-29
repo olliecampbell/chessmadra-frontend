@@ -9,7 +9,7 @@ import { clsx } from "~/utils/classes";
 export const SidebarSelectOneOf: Component<{
   title?: string;
   description?: string;
-  equality?: (a: any, b: any) => boolean;
+  equality?: (choice: any, activeChoice: any) => boolean;
   choices: any[];
   activeChoice: any;
   onSelect: (_: any, i?: number) => void;

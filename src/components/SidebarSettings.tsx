@@ -19,15 +19,6 @@ import { RatingSelection } from "./RatingSelection";
 import { initTooltip } from "./Tooltip";
 import { renderThreshold } from "~/utils/threshold";
 
-export const SidebarSetting = () => {
-  return (
-    <SidebarTemplate actions={[]} header={"Settings"}>
-      <Spacer height={24} />
-      <CoverageSettings />
-    </SidebarTemplate>
-  );
-};
-
 type ThresholdOption = {
   name: string;
   value: number;
@@ -107,8 +98,9 @@ export const CoverageSettings = (props: {}) => {
         // horizontal={true}
         activeChoice={selected()}
         onSelect={onSelect}
-        equality={(a: ThresholdOption, b: ThresholdOption) => {
-          return compareFloats(a.value, b.value);
+        equality={(choice: ThresholdOption, activeChoice?: ThresholdOption) => {
+          if (!activeChoice) return false;
+          return compareFloats(choice.value, activeChoice.value);
         }}
         renderChoice={(r: ThresholdOption, active: boolean) => {
           const moves = getExpectedMoves(r.value);
