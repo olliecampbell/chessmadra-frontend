@@ -40,6 +40,7 @@ export interface MoveAnnotationsDashboard {
 }
 
 export interface AdminMoveAnnotation {
+  createdAt: string;
   epd: string;
   previousEpd: string;
   sanPlus: string;

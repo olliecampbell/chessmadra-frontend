@@ -14,6 +14,7 @@ import { createEffect, createSignal, For, Index, Show } from "solid-js";
 import { A } from "solid-start";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 import { LazyLoad } from "./LazyLoad";
+import dayjs from "dayjs";
 
 export const MoveAnnotationsDashboard = () => {
   const [dashboard] = useAdminState((s) => [s.moveAnnotationsDashboard]);
@@ -160,7 +161,16 @@ export const MoveAnnotationRow = (props: {
       </Show>
       <Spacer height={8} />
       <div style={s(c.row, c.justifyEnd)}>
-        <CMText style={s()}>{ann().games.toLocaleString()} games</CMText>
+        <div>
+          <p style={s()}>{ann().games.toLocaleString()} games</p>
+          {ann().createdAt && (
+            <p style={s()}>
+              Created at: {dayjs(ann().createdAt).format(
+                "YYYY-MM-DD HH:mm",
+              )}{" "}
+            </p>
+          )}
+        </div>
         <Spacer grow />
         <Button
           style={s(c.buttons.basic, c.selfEnd)}

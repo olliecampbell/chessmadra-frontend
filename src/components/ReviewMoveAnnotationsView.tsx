@@ -286,7 +286,7 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
             c.selfEnd,
           )}
           onPress={() => {
-            acceptMoveAnnotation(
+            acceptMoveAnnotation()(
               // @ts-ignore
               props.review.epd,
               props.review.san,

@@ -109,7 +109,7 @@ export interface RepertoireState {
   // TODO: move review state stuff to its own module
   usePlayerTemplate: (id: string) => void;
   backToOverview: () => void;
-  uploadMoveAnnotation: (_: { epd: string; san: string; text: string }) => void;
+  uploadMoveAnnotation: (_: { epd: string; san: string; text: string }) => Promise<void>;
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,
