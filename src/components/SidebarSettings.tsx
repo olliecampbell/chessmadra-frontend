@@ -75,10 +75,10 @@ export const CoverageSettings = (props: {}) => {
       actions={[]}
       header={"What type of repertoire do you want to create?"}
     >
-      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pb-2 md:pb-3 pr-2">
+      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pb-2 md:pb-3 pr-4 md:pr-6 text-xs text-right">
         <div class="grow" />
         <div class="w-26 lg:w-28 mr-6 ">Coverage goal</div>
-        <div class="w-28 md:w-30 shrink-0 ">Size/study time</div>
+        <div class="w-24 md:w-30 shrink-0 ">Size/study time</div>
         <div class="w-6" />
         {/*<Show when={r.value === recommendedDepth()}>
                 <div
@@ -106,7 +106,7 @@ export const CoverageSettings = (props: {}) => {
           const moves = getExpectedMoves(r.value);
           return (
             <div class="row items-center">
-              <div class="grow whitespace-nowrap text-sm lg:text-base">
+              <div class="grow whitespace-nowrap text-xs lg:text-sm">
                 {r.name}
               </div>
               <div
@@ -126,7 +126,7 @@ export const CoverageSettings = (props: {}) => {
                 }}
               >{`1 in ${Math.round(1 / r.value)} games`}</div>
               <div
-                class="w-28 md:w-30  shrink-0 h-1 rounded overflow-hidden"
+                class="w-24 md:w-30  shrink-0 h-1 rounded overflow-hidden"
                 ref={(x) => {
                   initTooltip({
                     ref: x,
@@ -141,7 +141,7 @@ export const CoverageSettings = (props: {}) => {
                 }}
               >
                 <div
-                  class={"bg-purple-55 h-full"}
+                  class={"bg-purple-55 h-full rounded"}
                   style={{ width: `${(moves / maxMoves) * 100}%` }}
                 />
               </div>
