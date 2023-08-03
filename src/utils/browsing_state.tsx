@@ -546,8 +546,11 @@ export const getInitialBrowsingState = (
           tableResponses,
           (tr) => !tr.suggestedMove?.needed,
         );
-        if (!ownSide && !isEmpty(tableResponses)) {
-          if (noneNeeded) {
+        if (
+          !isNil(positionReport) &&
+          (!ownSide || (ownSide && isEmpty(tableResponses)))
+        ) {
+          if (noneNeeded || isEmpty(tableResponses)) {
             s.sidebarState.isPastCoverageGoal = true;
           } else {
             s.sidebarState.isPastCoverageGoal = false;

@@ -22,6 +22,7 @@ import { createElementBounds } from "@solid-primitives/bounds";
 import { isChessmadra } from "~/utils/env";
 import { MoveLog } from "./MoveLog";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
+import { getLichessLink } from "~/utils/lichess";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
@@ -290,18 +291,16 @@ export const AnalyzeOnLichessButton = (props: {}) => {
   };
   const button = () => {
     return (
-      <Pressable
+      <a
         style={s()}
         class={clsx(
           "text-tertiary &hover:text-primary text-md -my-2 shrink-0 py-2 font-semibold transition-colors",
         )}
-        onPress={() => {
-          quick((s) => {
-            trackEvent("chessboard.analyze_on_lichess", {
-              side: activeSide(),
-              mode: sidebarMode(),
-            });
-            s.repertoireState.analyzeLineOnLichess(currentLine(), activeSide());
+        href={getLichessLink(currentLine(), activeSide())}
+        onClick={() => {
+          trackEvent("chessboard.analyze_on_lichess", {
+            side: activeSide(),
+            mode: sidebarMode(),
           });
         }}
       >
@@ -309,7 +308,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
           Analyze on Lichess
           <i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)} />
         </p>
-      </Pressable>
+      </a>
     );
   };
   return (
