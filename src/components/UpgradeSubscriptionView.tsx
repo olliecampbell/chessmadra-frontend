@@ -7,7 +7,6 @@ import { trackEvent } from "~/utils/trackEvent";
 import { Bullet } from "./Bullet";
 
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
-  const [side] = useSidebarState(([s]) => [s.activeSide]);
   const [loading, setLoading] = createSignal(false);
   const requestProPlan = (annual: boolean) => {
     setLoading(true);
@@ -17,7 +16,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
     quick((s) => {
       s.userState.getCheckoutLink(annual).then((url) => {
         // Open in new tab
-        window.open(url, "_blank");
+        window.location.href = url;
       });
     });
   };
