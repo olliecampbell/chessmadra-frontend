@@ -4,6 +4,7 @@ import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { noop } from "lodash-es";
 import { CoverageSettings } from "~/components/SidebarSettings";
+import { Quiz } from "./queues";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -39,6 +40,20 @@ export const createDebugStateEffect = () => {
       // quick((s) => {
       //   s.repertoireState.browsingState.replaceView(CoverageSettings, {});
       // });
+      quick((s) => {
+        setTimeout(() => {
+          s.repertoireState.reviewState.startReview({
+            side: "black",
+            filter: "all",
+          });
+          while (
+            s.repertoireState.reviewState.currentQuizGroup &&
+            !Quiz.getPlans(s.repertoireState.reviewState.currentQuizGroup)
+          ) {
+            s.repertoireState.reviewState.setupNextMove();
+          }
+        });
+      });
       //   quick((s) => {
       //     s.repertoireState.startBrowsing("white", "build");
       //     s.repertoireState.browsingState.sidebarState.addedLineState = {

@@ -10,7 +10,7 @@ import {
   last,
   times,
 } from "lodash-es";
-import { createStore, produce } from "solid-js/store";
+import { createStore, produce, unwrap } from "solid-js/store";
 import { getAnimationDurations } from "~/components/chessboard/Chessboard";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { genEpd, getSquareOffset, START_EPD } from "./chess";
@@ -19,6 +19,8 @@ import { MetaPlan } from "./plans";
 import { lineToPgn, pgnToLine, Side } from "./repertoire";
 import { c } from "./styles";
 import { Option } from "./optional";
+import { Accessor, createSignal } from "solid-js";
+import { logProxy } from "./state";
 
 interface PlayPgnOptions {
   animateLine?: string[];
@@ -42,6 +44,7 @@ export interface ChessboardInterface {
   getDelegate(): ChessboardDelegate | null;
   resetPosition: () => void;
   setPosition: (_: Chess) => void;
+  setRefs: (refs: ChessboardViewState["refs"]) => void;
   makeMove: (_: Move | string, options?: MakeMoveOptions) => void;
   clearPending: () => void;
   backAll: () => void;
@@ -88,7 +91,11 @@ export interface ChessboardInterface {
   setFrozen: (_: boolean) => void;
   setPerspective: (_: Side) => void;
   showMoveFeedback(
-    arg0: { square: Square; type: MoveFeedbackType },
+    arg0: {
+      square: Square;
+      result: MoveFeedbackType;
+      size?: "small" | "large";
+    },
     callback: () => void,
   ): unknown;
 
@@ -113,6 +120,16 @@ export interface ChessboardDelegate {
   askForPromotionPiece?: (requestedMove: Move) => PieceSymbol | null;
 }
 
+export type ChessboardRefs = {
+  ringRef: HTMLDivElement | null;
+  pieceRefs: Partial<Record<Square, HTMLDivElement>>;
+  feedbackRefs: Partial<Record<Square, HTMLDivElement>>;
+  largeFeedbackRefs: Partial<Record<Square, HTMLDivElement>>;
+  visualizationDotRef: HTMLDivElement | null;
+  largeCircleRefs: Partial<Record<Square, HTMLDivElement>>;
+  overlayRefs: Partial<Record<Square, HTMLDivElement>>;
+};
+
 export interface ChessboardViewState {
   highlightedSquares: Set<Square>;
   tapOptions: Set<Square>;
@@ -120,19 +137,14 @@ export interface ChessboardViewState {
   animating: boolean;
   animatingMoveSquare?: Square;
   moveFeedback: {
-    type: MoveFeedbackType;
+    result: MoveFeedbackType;
   };
   flipped: boolean;
   frozen: boolean;
   delegate: ChessboardDelegate;
   notifyingDelegates: any;
   ringColor: string;
-  refs: {
-    ringRef: HTMLDivElement | null;
-    pieceRefs: Partial<Record<Square, HTMLDivElement>>;
-    feedbackRefs: Partial<Record<Square, HTMLDivElement>>;
-    visualizationDotRef: HTMLDivElement | null;
-  };
+  refs: ChessboardRefs;
   _animatePosition?: Chess;
   position: Chess;
   previewPosition?: Chess;
@@ -189,7 +201,7 @@ export const createChessboardInterface = (): [
       highlightedSquares: new Set(),
       tapOptions: new Set(),
       moveFeedback: {
-        type: "incorrect",
+        result: "incorrect",
       },
       // @ts-ignore
       delegate: null,
@@ -208,6 +220,9 @@ export const createChessboardInterface = (): [
         ringRef: null,
         visualizationDotRef: null,
         feedbackRefs: {},
+        largeFeedbackRefs: {},
+        largeCircleRefs: {},
+        overlayRefs: {},
         pieceRefs: {},
       },
       ringColor: c.colors.successColor,
@@ -333,7 +348,6 @@ export const createChessboardInterface = (): [
             s.forwardMoveHistory.shift();
             s.forwardPositionHistory.shift();
           } else {
-            console.log("not equal!", m, s.forwardMoveHistory[0]);
             s.forwardMoveHistory = [];
             s.forwardPositionHistory = [];
           }
@@ -588,7 +602,41 @@ export const createChessboardInterface = (): [
     },
     setTapOptions: (squares: Square[]) => {
       set((s) => {
-        s.tapOptions = new Set(squares);
+        const refs = squares.map((sq) => s.refs.largeCircleRefs[sq]);
+        console.log(
+          "refs is ",
+          logProxy(refs),
+          logProxy(s.refs),
+          logProxy(s.refs.largeCircleRefs),
+          squares,
+        );
+        const otherRefs = Object.values(s.refs.largeCircleRefs).filter(
+          (ref) => !refs.includes(ref),
+        );
+        s.tapOptions = new Set([...squares]);
+        anime({
+          targets: otherRefs,
+          opacity: 0,
+          duration: 250,
+          autoplay: true,
+        });
+        anime
+          .timeline({
+            duration: 250,
+            autoplay: true,
+            easing: "easeInOutSine",
+          })
+          .add({
+            targets: refs,
+            opacity: [0, 1.0],
+            easing: "easeInOutSine",
+          })
+          // .add({
+          //   targets: whiteOverlay,
+          //   opacity: [0.4, 0],
+          //   duration: 100,
+          // })
+          .finished.then(() => {});
       });
     },
     highlightSquare: (square: Square | null) => {
@@ -702,6 +750,11 @@ export const createChessboardInterface = (): [
           chessboardInterface.getDelegate()?.onPositionUpdated?.();
           chessboardInterface.getDelegate()?.onBack?.();
         }
+      });
+    },
+    setRefs: (refs: ChessboardRefs) => {
+      set((s) => {
+        s.refs = refs;
       });
     },
     setPosition: (chess: Chess) => {
@@ -872,10 +925,13 @@ export const createChessboardInterface = (): [
         }
       });
     },
-    showMoveFeedback: ({ square, type }, callback) => {
+    showMoveFeedback: ({ square, result, size = "small" }, callback) => {
       set((state) => {
-        state.moveFeedback.type = type;
-        const ref = state.refs.feedbackRefs[square];
+        state.moveFeedback.result = result;
+        let ref = state.refs.feedbackRefs[square];
+        if (size === "large") {
+          ref = state.refs.largeFeedbackRefs[square];
+        }
         // const whiteOverlay = ref?.querySelector(
         //   "#white-overlay"
         // ) as HTMLDivElement;
@@ -888,7 +944,7 @@ export const createChessboardInterface = (): [
           .add({
             targets: ref,
             opacity: [0, 1.0],
-            scale: [0.8, 1.2, 1.0],
+            scale: size === "large" ? [0.8, 1.0] : [0.8, 1.2, 1.0],
           })
           // .add({
           //   targets: whiteOverlay,

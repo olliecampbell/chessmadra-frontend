@@ -12,7 +12,7 @@ import { RepertoireBuilder } from "./RepertoireBuilder";
 import { useLocation } from "solid-start";
 import { identify, Identify } from "@amplitude/analytics-browser";
 
-export const PageWrapper = (props: { initialView: Component }) => {
+export const PageWrapper = (props: { initialView?: Component }) => {
   const [userState] = useAppState((s) => [s.userState]);
   const token = () => getAppState().userState.token;
   const [repertoireLoading] = useRepertoireState((s) => [

@@ -43,6 +43,7 @@ export interface UserState {
   isSubscribed: () => boolean;
   getCheckoutLink: (annual: boolean) => Promise<string>;
   flagEnabled: (flag: UserFlag) => boolean;
+  getEnabledFlags: () => UserFlag[];
   setFlag(flag: UserFlag, enabled: boolean): void;
 }
 
@@ -56,7 +57,7 @@ export enum AuthStatus {
 type Stack = [UserState, AppState];
 const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
-const DEVELOPMENT_FLAGS: UserFlag[] = []; // ["quiz_plans"];
+const DEVELOPMENT_FLAGS: UserFlag[] = [];
 
 export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +98,11 @@ export const getInitialUserState = (
         if (user.email) {
           setUserId(user.email);
         }
+      });
+    },
+    getEnabledFlags: () => {
+      return get(([s]) => {
+        return [...new Set([...(s.user?.flags ?? []), ...DEVELOPMENT_FLAGS])];
       });
     },
     flagEnabled: (flag: UserFlag) => {

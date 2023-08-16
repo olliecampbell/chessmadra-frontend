@@ -21,7 +21,6 @@ const unoColors: Record<string, Record<string, string>> = {
 // map color mpapins key and values
 const colorMap = Object.entries(colorMapping).forEach(([key, value]) => {
   unoColors[`${key}`] = {};
-  console.log("key", key);
   // @ts-ignore
   unoColors[`${key}`]["DEFAULT"] = colors[key]["50"];
   // @ts-ignore
@@ -35,7 +34,6 @@ unoColors["green"]["black"] = colors.green["60"];
 unoColors["red"]["white"] = colors.red["25"];
 unoColors["green"]["white"] = "#1A9200";
 Object.entries(colors.components).forEach(([color, value]) => {
-  console.log("setting", color, value);
   // @ts-ignore
   unoColors[color] = value;
 });

@@ -30,6 +30,7 @@ import { createElementBounds, NullableBounds } from "@solid-primitives/bounds";
 import { destructure } from "@solid-primitives/destructure";
 import {
   ChessboardInterface,
+  ChessboardRefs,
   ChessboardViewState,
 } from "~/utils/chessboard_interface";
 import { toSide } from "~/utils/repertoire";
@@ -107,6 +108,7 @@ let hasAnimateStarted = false;
 export function ChessboardView(props: {
   chessboardInterface: ChessboardInterface;
   shadow?: boolean;
+  class?: string;
   disableDrag?: boolean;
   // rome-ignore lint: ignore
   onSquarePress?: any;
@@ -185,20 +187,21 @@ export function ChessboardView(props: {
       (row + 0.5) * (chessboardLayout.height / 8),
     ];
   };
-  const refs: ChessboardViewState["refs"] = {
+  const refs: ChessboardRefs = {
     ringRef: null,
-    pieceRefs: {},
-    feedbackRefs: {},
     visualizationDotRef: null,
+    feedbackRefs: {},
+    largeFeedbackRefs: {},
+    largeCircleRefs: {},
+    overlayRefs: {},
+    pieceRefs: {},
   };
-  const updateRefs = () => {
+  const updateRefs = (fn: (refs: ChessboardRefs) => void) => {
+    fn(refs);
     props.chessboardInterface.set((s) => {
-      s.refs = refs;
+      fn(s.refs);
     });
   };
-  createEffect(() => {
-    updateRefs();
-  });
 
   const hiddenColorsBorder = `1px solid ${c.gray[70]}`;
   // const pan: Accessor<{ square: Square | null } & XY> = createSignal({
@@ -233,6 +236,10 @@ export function ChessboardView(props: {
       };
     }
   };
+  // only for debugging purposes
+  const _mode = () =>
+    getAppState().repertoireState.browsingState.sidebarState.mode;
+  console.log("rendering!", _mode());
   const frozen = () => chessboardStore().frozen;
   const onMouseDown = (evt: MouseEvent | TouchEvent) => {
     if (frozen()) return;
@@ -398,7 +405,10 @@ export function ChessboardView(props: {
     <>
       <div
         ref={props.ref}
-        class={clsx("relative h-0 w-full touch-none select-none pb-[100%]")}
+        class={clsx(
+          "relative h-0 w-full touch-none select-none pb-[100%]",
+          props.class,
+        )}
         style={s(
           c.pb("100%"),
           c.relative,
@@ -563,7 +573,9 @@ export function ChessboardView(props: {
               c.opacity(0),
             )}
             ref={(x) => {
-              refs.visualizationDotRef = x;
+              updateRefs((refs) => {
+                refs.visualizationDotRef = x;
+              });
             }}
           >
             <div
@@ -583,7 +595,9 @@ export function ChessboardView(props: {
           <div
             id={"ring-indicator"}
             ref={(x) => {
-              refs.ringRef = x;
+              updateRefs((refs) => {
+                refs.ringRef = x;
+              });
             }}
             class={clsx("opacity-0 shadow-white")}
             style={s(
@@ -671,7 +685,7 @@ export function ChessboardView(props: {
                     )}
                     id={`piece-${square}`}
                     ref={(v) => {
-                      props.chessboardInterface.set((s) => {
+                      updateRefs((refs) => {
                         refs.pieceRefs[square as Square] = v;
                       });
                     }}
@@ -749,14 +763,14 @@ export function ChessboardView(props: {
                       >(null);
 
                       createEffect(() => {
-                        if (chessboardStore()._animatePosition) {
-                          setHighlightColor(null);
-                          setHighlightType(null);
-                          return;
-                        }
                         if (manuallyHighlightedSquares().has(square())) {
                           setHighlightColor("next");
                           setHighlightType("full");
+                          return;
+                        }
+                        if (chessboardStore()._animatePosition) {
+                          setHighlightColor(null);
+                          setHighlightType(null);
                           return;
                         }
                         if (chessboardStore().hideLastMoveHighlight) {
@@ -804,15 +818,6 @@ export function ChessboardView(props: {
                       });
                       const isBottomEdge = i === 7;
                       const isRightEdge = j === 7;
-                      const [ref, setRef] = createSignal<HTMLDivElement | null>(
-                        null,
-                      );
-                      createEffect(() => {
-                        if (ref()) {
-                          refs.feedbackRefs[square()] = ref() as HTMLDivElement;
-                          updateRefs();
-                        }
-                      });
 
                       return (
                         <div
@@ -832,19 +837,19 @@ export function ChessboardView(props: {
                                 "center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] ",
                               )}
                               id={`feedback-${square()}`}
-                              ref={setRef}
+                              ref={(x) => {
+                                createEffect(() => {
+                                  updateRefs((refs) => {
+                                    refs.feedbackRefs[square()] = x;
+                                  });
+                                });
+                              }}
                               style={s(c.zIndex(6))}
                             >
-                              <div
-                                class={clsx(
-                                  "absolute inset-0 bg-white opacity-0",
-                                )}
-                                id="white-overlay"
-                              />
                               <i
                                 class={clsx(
                                   " relative text-[100cqw]",
-                                  feedback().type === "correct"
+                                  feedback().result === "correct"
                                     ? "fa fa-circle-check text-[#79c977]"
                                     : "fa fa-circle-xmark text-[#c92b2b]",
                                 )}
@@ -853,27 +858,43 @@ export function ChessboardView(props: {
                               </i>
                             </div>
                           </div>
-                          <div class="center z-5 absolute right-0 top-0 h-[40%] w-[40%] -translate-y-1/2 translate-x-1/2">
+                          <div class="center z-6 absolute  h-[95%] w-[95%]">
                             <div
                               class={clsx(
-                                "center  @container  h-full w-full  overflow-hidden rounded-full  opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] ",
+                                "center  @container  h-full w-full  overflow-hidden rounded-full opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] ",
                               )}
-                              id={`option-${square()}`}
-                              style={s(
-                                c.zIndex(6),
-                                chessboardStore().tapOptions.has(square())
-                                  ? c.opacity(100)
-                                  : c.opacity(0),
-                              )}
+                              id={`large-feedback-${square()}`}
+                              ref={(x) => {
+                                createEffect(() => {
+                                  updateRefs((refs) => {
+                                    refs.largeFeedbackRefs[square()] = x;
+                                  });
+                                });
+                              }}
+                              style={s(c.zIndex(6))}
                             >
                               <i
                                 class={clsx(
-                                  "bg-gray-10 text-[100cqw] opacity-40",
-                                  "fa fa-circle-question text-[orange]",
+                                  " relative text-[100cqw]",
+                                  feedback().result === "correct"
+                                    ? "fa fa-circle-check text-[#79c977]"
+                                    : "fa fa-circle-xmark text-[#c92b2b]",
                                 )}
-                              />
+                              >
+                                <div class="bg-gray-10 center -z-1 absolute  inset-[2px] rounded-full" />
+                              </i>
                             </div>
                           </div>
+                          <div
+                            class="center z-5  h-[95%] w-[95%]  border-4 border-solid rounded-full border-orange-70 opacity-0"
+                            ref={(ref) => {
+                              createEffect(() => {
+                                updateRefs((refs) => {
+                                  refs.largeCircleRefs[square()] = ref;
+                                });
+                              });
+                            }}
+                          ></div>
                           <div
                             class="absolute inset-0 grid place-items-center rounded-full"
                             style={s(

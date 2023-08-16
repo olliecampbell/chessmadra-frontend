@@ -29,16 +29,18 @@ import { c, s } from "~/utils/styles";
 import { SettingsButtons } from "./Settings";
 import { createPageVisibility } from "@solid-primitives/page-visibility";
 import dayjs from "~/utils/dayjs";
+import { clsx } from "~/utils/classes";
+import { ChessboardView } from "./chessboard/Chessboard";
 
 export const RepertoireBuilder = () => {
   const [mode] = useSidebarState(([s]) => [s.mode]);
 
   const responsive = useResponsiveV2();
   const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
-  const chessboardState = () =>
-    mode() === "review"
-      ? getAppState().repertoireState.reviewState.chessboard
-      : getAppState().repertoireState.browsingState.chessboard;
+  const reviewChessboardInterface = () =>
+    getAppState().repertoireState.reviewState.chessboard;
+  const browsingChessboardInterface = () =>
+    getAppState().repertoireState.browsingState.chessboard;
   const [view] = useSidebarState(([s]) => [s.viewStack.at(-1)]);
   const [
     addedLineState,
@@ -118,7 +120,18 @@ export const RepertoireBuilder = () => {
       breadcrumbs={<NavBreadcrumbs />}
       sidebarContent={sidebarContent}
       settings={<SettingsButtons />}
-      chessboardInterface={chessboardState()}
+      chessboardView={
+        <>
+          <ChessboardView
+            class={clsx(mode() === "review" && "hidden")}
+            chessboardInterface={browsingChessboardInterface()}
+          />
+          <ChessboardView
+            class={clsx(mode() !== "review" && "hidden")}
+            chessboardInterface={reviewChessboardInterface()}
+          />
+        </>
+      }
       backSection={<BackSection />}
       belowChessboard={
         !vertical() &&

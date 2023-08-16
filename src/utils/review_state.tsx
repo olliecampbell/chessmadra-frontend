@@ -41,6 +41,7 @@ import { isMoveDifficult } from "./srs";
 import { COMMON_MOVES_CUTOFF } from "./review";
 import { parsePlansToQuizMoves } from "./plans";
 import { Chess } from "@lubert/chess.ts";
+import { getAllPossibleMoves } from "./move_generation";
 
 export interface ReviewPositionResults {
   side: Side;
@@ -53,6 +54,7 @@ type ReviewMoveKey = string;
 type Epd = string;
 
 export interface ReviewState {
+  setupPlans: () => void;
   moveLog: string[];
   buildQueue: (options: ReviewOptions) => QuizGroup[];
   stopReviewing: () => void;
@@ -193,7 +195,6 @@ export const getInitialReviewState = (
         if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
-          console.log("generating queue");
           s.updateQueue(options);
         }
         s.allReviewPositionMoves = {};
@@ -213,12 +214,47 @@ export const getInitialReviewState = (
         });
         s.setupNextMove();
       }),
+    setupPlans: () =>
+      set(([s, rs]) => {
+        const remaningPlans = Quiz.getRemainingPlans(
+          s.currentQuizGroup!,
+          s.planIndex,
+        );
+        const plan = first(remaningPlans);
+        const completedPlans = Quiz.getCompletedPlans(
+          s.currentQuizGroup!,
+          s.planIndex,
+        );
+        s.chessboard.set((c) => {
+          c.hideLastMoveHighlight = true;
+        });
+        if (!plan) {
+          s.showNext = true;
+          s.chessboard.set((c) => {
+            c.showPlans = true;
+            c.plans = (
+              Quiz.getCompletedPlans(s.currentQuizGroup!, s.planIndex) ?? []
+            ).map((p) => p.metaPlan);
+          });
+          return;
+        }
+        let squares = getAllPossibleMoves({
+          square: plan.fromSquare,
+          side: s.currentQuizGroup!.side,
+          piece: plan.piece,
+        });
+        if (plan.options) {
+          squares = plan.options;
+        }
+        s.chessboard.setTapOptions(squares);
+        s.chessboard.setMode("tap");
+        s.chessboard.highlightSquare(plan?.fromSquare ?? null);
+      }),
     setupNextMove: () =>
       set(([s, rs]) => {
         s.chessboard.setFrozen(false);
         s.showNext = false;
         s.planIndex = 0;
-        console.log("setting up next");
         if (s.currentQuizGroup) {
           const failedMoves = values(s.failedReviewPositionMoves);
           if (!isEmpty(failedMoves)) {
@@ -242,6 +278,10 @@ export const getInitialReviewState = (
                 };
               }),
             );
+          }
+          const plans = Quiz.getPlans(s.currentQuizGroup);
+          if (plans) {
+            s.chessboard.setTapOptions([]);
           }
         }
         s.currentQuizGroup = s.activeQueue.shift();
@@ -270,15 +310,11 @@ export const getInitialReviewState = (
 
         const plans = Quiz.getPlans(currentQuizGroup);
         if (plans) {
-          const plan = plans[0];
-          s.chessboard.set((c) => {
-            c.showPlans = true;
-            c.hideLastMoveHighlight = true;
-          });
-          s.chessboard.highlightSquare(plan.fromSquare);
-          s.chessboard.setTapOptions(plan.options ?? []);
-          s.chessboard.setMode("tap");
+          s.setupPlans();
         } else {
+          s.chessboard.set((c) => {
+            c.showPlans = false;
+          });
           s.chessboard.backOne({ clear: true, skipAnimation: true });
         }
 
@@ -372,7 +408,7 @@ export const getInitialReviewState = (
                     if (!plans) {
                       return;
                     }
-                    const fen = `${epd} 0 1`;
+                    const fen = `${r.epdAfter} 0 1`;
                     const position = new Chess(fen);
                     const quizPlans = parsePlansToQuizMoves(
                       plans,
@@ -517,39 +553,21 @@ export const getInitialReviewState = (
             return;
           }
           const plan = remaningPlans[0];
-          const next = remaningPlans[1];
           const correct = includes(plan.toSquares, square);
           if (correct) {
-            s.chessboard.setTapOptions(next?.options ?? []);
-            s.chessboard.set((c) => {
-              const completedPlans = Quiz.getCompletedPlans(
-                s.currentQuizGroup!,
-                s.planIndex,
-              );
-              c.plans =
-                [...(completedPlans ?? []), plan]?.map((p) => p.metaPlan) ?? [];
-            });
+            s.chessboard.setTapOptions([]);
           }
           s.chessboard.showMoveFeedback(
             {
               square,
-              type: correct ? "correct" : "incorrect",
+              result: correct ? "correct" : "incorrect",
+              size: correct ? "large" : "small",
             },
             () => {
               set(([s]) => {
                 if (correct) {
                   s.planIndex++;
-                  const remaningPlans = Quiz.getRemainingPlans(
-                    s.currentQuizGroup!,
-                    s.planIndex,
-                  );
-                  const plan = first(remaningPlans);
-                  s.chessboard.setTapOptions(plan?.options ?? []);
-                  s.chessboard.highlightSquare(plan?.fromSquare ?? null);
-                  if (isEmpty(remaningPlans)) {
-                    s.showNext = true;
-                    return;
-                  }
+                  s.setupPlans();
                 }
               });
             },
@@ -563,7 +581,6 @@ export const getInitialReviewState = (
           );
           if (matchingResponse) {
             s.reviewStats.correct++;
-            console.log("correct", s.reviewStats.correct);
             s.completedReviewPositionMoves[matchingResponse.sanPlus] =
               matchingResponse;
             const willUndoBecauseMultiple = !isEmpty(
@@ -572,7 +589,7 @@ export const getInitialReviewState = (
             s.chessboard.showMoveFeedback(
               {
                 square: move.to as Square,
-                type: "correct",
+                result: "correct",
               },
               () => {
                 set(([s]) => {
@@ -587,7 +604,6 @@ export const getInitialReviewState = (
                     ].reviewed = true;
                   });
                   const nextMove = s.activeQueue[1];
-                  console.log(s.activeQueue);
                   // todo: make this actually work
                   const continuesCurrentLine =
                     nextMove?.line ===
@@ -620,7 +636,7 @@ export const getInitialReviewState = (
             s.chessboard.showMoveFeedback(
               {
                 square: move.to as Square,
-                type: "incorrect",
+                result: "incorrect",
               },
               () => {
                 s.chessboard.backOne({ clear: true });

@@ -18,6 +18,7 @@ import { getExpectedNumMovesBetween } from "~/utils/repertoire_state";
 import { RatingSelection } from "./RatingSelection";
 import { initTooltip } from "./Tooltip";
 import { renderThreshold } from "~/utils/threshold";
+import { trackEvent } from "~/utils/trackEvent";
 
 type ThresholdOption = {
   name: string;
@@ -239,6 +240,7 @@ export const BetaFeaturesSettings = (props: {}) => {
             subtext: feature.description,
             onPress: () => {
               quick((s) => {
+                trackEvent("user_flag_toggle", { flag: feature.flag });
                 s.userState.setFlag(feature.flag, !enabled);
               });
             },

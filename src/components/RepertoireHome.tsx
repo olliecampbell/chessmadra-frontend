@@ -205,10 +205,10 @@ export const RepertoireHome = () => {
                       });
                     },
                     text: "Beta features",
-                    hidden: !settingsExpanded() || !userState().user?.isAdmin,
+                    hidden: !settingsExpanded(),
                     right: `${
-                      (userState().user?.flags?.length ?? 0) > 0
-                        ? `${userState().user?.flags?.length} enabled`
+                      (userState().getEnabledFlags()?.length ?? 0) > 0
+                        ? `${userState().getEnabledFlags()?.length} enabled`
                         : "None enabled"
                     }`,
                     style: "secondary",

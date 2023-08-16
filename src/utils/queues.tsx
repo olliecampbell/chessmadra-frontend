@@ -63,7 +63,7 @@ export namespace Quiz {
   export const getCompletedPlans = (
     quizGroup: QuizGroup,
     planIndex: number,
-  ): QuizPlan[] | null => {
+  ): QuizPlan[] => {
     const plans = Quiz.getPlans(quizGroup);
     return take(plans, planIndex);
   };

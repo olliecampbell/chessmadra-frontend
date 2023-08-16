@@ -1,5 +1,5 @@
 /* eslint-disable solid/reactivity, @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
-import { Chess, SQUARES } from "@lubert/chess.ts";
+import { Chess, KING, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import { CMText } from "~/components/CMText";
 import { quick } from "~/utils/app_state";
@@ -535,12 +535,13 @@ export const parsePlansToQuizMoves = (
   side: Side,
   position: Chess,
 ): QuizPlan[] => {
+  console.log("all plans before consuming? ", plans);
   const consumer = new PlanQuizConsumer(plans, side, position);
   // consumer.fianchettoConsumer();
-  consumer.consumeCastles();
   // consumer.consumeCaptures();
   // consumer.viaConsumer();
   consumer.pieceDevelopmentConsumer();
+  consumer.consumeCastles();
   // consumer.piecePlansConsumer();
   // consumer.pawnPlansConsumer();
   return consumer.quizPlans;
@@ -807,7 +808,7 @@ class PlanQuizConsumer {
         return;
       }
       const piece = this.position.get(plan.plan.fromSquare);
-      if (!piece) {
+      if (!piece || piece.type === KING) {
         return;
       }
       if (piece.type !== plan.piece || toSide(piece.color) !== this.side) {
@@ -827,7 +828,7 @@ class PlanQuizConsumer {
       this.addQuizPlan({
         type: "piece_movement",
         piece: plan.piece,
-        toSquares: [allDevelopmentPlans[0].plan.toSquare],
+        toSquares: allDevelopmentPlans.map((p) => p.plan.toSquare),
         metaPlan: plan,
         fromSquare: plan.plan.fromSquare,
       });

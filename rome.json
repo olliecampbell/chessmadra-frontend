@@ -11,10 +11,12 @@
         "useKeyWithMouseEvents": "off",
         "noSvgWithoutTitle": "off",
         "useAltText": "off",
-        "useKeyWithClickEvents": "off"
+        "useKeyWithClickEvents": "off",
+        "useValidAnchor": "off"
       },
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "useSelfClosingElements": "off"
       },
       "nursery": {
         "noForEach": "off"

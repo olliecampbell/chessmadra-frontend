@@ -10,7 +10,14 @@ import {
   quick,
   getAppState,
 } from "~/utils/app_state";
-import { createSignal, JSXElement, onCleanup, onMount, Show } from "solid-js";
+import {
+  createSignal,
+  JSX,
+  JSXElement,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import { s, c } from "~/utils/styles";
 import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { Spacer } from "~/components/Space";
@@ -28,11 +35,12 @@ export const VERTICAL_BREAKPOINT = BP.md;
 
 export const SidebarLayout = (props: {
   shared?: boolean;
+  chessboardView?: JSX.Element;
   setAnimateSidebar: (fn: (dir: "right" | "left") => void) => void;
   breadcrumbs: JSXElement;
   sidebarContent: JSXElement;
   belowChessboard: JSXElement;
-  chessboardInterface: ChessboardInterface;
+  chessboardInterface?: ChessboardInterface;
   backSection: JSXElement;
   settings: JSXElement;
   loading: boolean;
@@ -213,9 +221,11 @@ export const SidebarLayout = (props: {
                   chessboardHidden() ? c.opacity(20) : c.opacity(100),
                 )}
               >
-                <ChessboardView
-                  chessboardInterface={props.chessboardInterface}
-                />
+                {props.chessboardView ?? (
+                  <ChessboardView
+                    chessboardInterface={props.chessboardInterface!}
+                  />
+                )}
               </div>
               <Show when={props.belowChessboard}>
                 <Spacer height={responsive().isMobile ? 12 : 32} />
