@@ -656,6 +656,9 @@ export function ChessboardView(props: {
                   chessboardStore().previewedMove?.to === square &&
                   chessboardStore().previewedMove?.color !== piece()?.color,
               );
+              const fadedBecauseTapOption = createMemo(() =>
+                chessboardStore().tapOptions.has(square),
+              );
 
               const priority = createMemo(
                 () =>
@@ -695,6 +698,7 @@ export function ChessboardView(props: {
                         <div
                           class={clsx(
                             hiddenBecauseTake() && "opacity-0",
+                            fadedBecauseTapOption() && "opacity-50",
                             "transition-opacity",
                           )}
                         >
@@ -858,10 +862,10 @@ export function ChessboardView(props: {
                               </i>
                             </div>
                           </div>
-                          <div class="center z-6 absolute  h-[95%] w-[95%]">
+                          <div class="center z-6 absolute  h-[90%] w-[90%]">
                             <div
                               class={clsx(
-                                "center  @container  h-full w-full  overflow-hidden rounded-full opacity-0 shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)] ",
+                                "center  @container  h-full w-full opacity-0 overflow-hidden rounded-full  shadow-[0px_2px_3px_0px_rgba(0,0,0,0.15)]",
                               )}
                               id={`large-feedback-${square()}`}
                               ref={(x) => {
@@ -886,7 +890,7 @@ export function ChessboardView(props: {
                             </div>
                           </div>
                           <div
-                            class="center z-5  h-[95%] w-[95%]  border-4 border-solid rounded-full border-orange-70 opacity-0"
+                            class="center z-5  h-[95%] w-[95%]  border-2 xl:border-4 border-solid rounded-full border-orange-70 opacity-0"
                             ref={(ref) => {
                               createEffect(() => {
                                 updateRefs((refs) => {

@@ -83,4 +83,8 @@ export namespace Quiz {
 
     return null;
   };
+
+  export const isPlansQuiz = (quizGroup: QuizGroup): boolean => {
+    return "plans" in quizGroup;
+  };
 }

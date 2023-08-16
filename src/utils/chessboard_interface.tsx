@@ -628,7 +628,7 @@ export const createChessboardInterface = (): [
           })
           .add({
             targets: refs,
-            opacity: [0, 1.0],
+            opacity: [0, 0.7],
             easing: "easeInOutSine",
           })
           // .add({

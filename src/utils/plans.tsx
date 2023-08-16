@@ -23,10 +23,9 @@ import {
   uniqBy,
   isNil,
   includes,
-  last,
 } from "lodash-es";
 import { useHovering } from "~/mocks";
-import { JSX, JSXElement } from "solid-js";
+import { JSX } from "solid-js";
 import { QuizPlan } from "~/utils/queues";
 
 export interface MetaPlan {
@@ -37,6 +36,10 @@ export interface MetaPlan {
   subsequentMove: boolean;
   piece: PieceSymbol;
 }
+
+export const getMaxPlansForQuizzing = (): number => {
+  return 20;
+};
 
 export const getMetaPlans = (_plans: Plan[], activeSide: Side): MetaPlan[] => {
   return ["white", "black"].flatMap((side) => {

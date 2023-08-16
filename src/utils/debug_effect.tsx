@@ -43,7 +43,7 @@ export const createDebugStateEffect = () => {
       quick((s) => {
         setTimeout(() => {
           s.repertoireState.reviewState.startReview({
-            side: "black",
+            side: "white",
             filter: "all",
           });
           while (

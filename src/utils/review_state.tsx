@@ -15,6 +15,7 @@ import {
   cloneDeep,
   noop,
   includes,
+  countBy,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -39,7 +40,7 @@ import { PracticeComplete } from "~/components/PracticeComplete";
 import { countQueue, Quiz, QuizGroup } from "./queues";
 import { isMoveDifficult } from "./srs";
 import { COMMON_MOVES_CUTOFF } from "./review";
-import { parsePlansToQuizMoves } from "./plans";
+import { getMaxPlansForQuizzing, parsePlansToQuizMoves } from "./plans";
 import { Chess } from "@lubert/chess.ts";
 import { getAllPossibleMoves } from "./move_generation";
 
@@ -280,10 +281,8 @@ export const getInitialReviewState = (
             );
           }
           const plans = Quiz.getPlans(s.currentQuizGroup);
-          if (plans) {
-            s.chessboard.setTapOptions([]);
-          }
         }
+        s.chessboard.setTapOptions([]);
         s.currentQuizGroup = s.activeQueue.shift();
         if (!s.currentQuizGroup) {
           rs.updateRepertoireStructures();
@@ -314,6 +313,7 @@ export const getInitialReviewState = (
         } else {
           s.chessboard.set((c) => {
             c.showPlans = false;
+            c.hideLastMoveHighlight = false;
           });
           s.chessboard.backOne({ clear: true, skipAnimation: true });
         }
@@ -358,6 +358,7 @@ export const getInitialReviewState = (
     stopReviewing: () =>
       set(([s, rs]) => {
         rs.updateRepertoireStructures();
+        s.chessboard.setTapOptions([]);
 
         // @ts-ignore
         s.reviewSide = null;
@@ -456,6 +457,19 @@ export const getInitialReviewState = (
           } else {
             queue = commonQueue;
           }
+        }
+        const countOfPlans = countBy(queue, (q: QuizGroup) =>
+          Quiz.isPlansQuiz(q),
+        ).true;
+        const maxPlans = getMaxPlansForQuizzing();
+        if (countOfPlans > maxPlans) {
+          const ratio = maxPlans / countOfPlans;
+          queue = filter(queue, (q) => {
+            if (Quiz.isPlansQuiz(q)) {
+              return Math.random() < ratio;
+            }
+            return true;
+          });
         }
         return queue;
       }),
