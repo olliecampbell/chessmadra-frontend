@@ -446,8 +446,13 @@ export const getInitialReviewState = (
           const commonCutoff =
             byIncidence[COMMON_MOVES_CUTOFF] ?? first(byIncidence);
           const commonQueue = take(
-            // @ts-ignore
-            filter(queue, (m) => m.moves[0].incidence >= commonCutoff),
+            filter(queue, (m) => {
+              const moves = Quiz.getMoves(m);
+              if (!moves) {
+                return false;
+              }
+              return (moves[0].incidence ?? 0) >= commonCutoff;
+            }),
             COMMON_MOVES_CUTOFF,
           );
           const epds = map(commonQueue, (q) => q.epd);
