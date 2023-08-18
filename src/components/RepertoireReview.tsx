@@ -11,7 +11,7 @@ import {
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
-import { Accessor, createEffect, createMemo, For, Show } from "solid-js";
+import { Accessor, createEffect, createMemo, For, JSX, Show } from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
@@ -35,6 +35,9 @@ export const RepertoireReview = (props: {}) => {
       s.reviewState.currentQuizGroup,
       s.reviewState.showNext,
     ]);
+  const reviewOptions = () =>
+    getAppState().repertoireState.reviewState.activeOptions;
+  const reviewingMistakes = () => reviewOptions()?.lichessMistakes;
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const side = () =>
     getAppState().repertoireState.reviewState.reviewSide as Side;
@@ -129,7 +132,32 @@ export const RepertoireReview = (props: {}) => {
     ).length;
   const isPlanPractice = () => !!Quiz.getPlans(currentMove()!);
   const reviewState = () => getAppState().repertoireState.reviewState;
-  const body = () => {
+  const body: Accessor<JSX.Element> = () => {
+    const lichessMistake = currentMove()?.lichessMistake;
+    if (reviewingMistakes() && lichessMistake) {
+      return (
+        <>
+          In this position in{" "}
+          <a
+            href={`https://lichess.org/${lichessMistake.gameId}`}
+            target={"_blank"}
+            rel="noreferrer"
+            class="font-semibold "
+          >
+            your game against {lichessMistake.opponentName}
+          </a>
+          , you played{" "}
+          <span
+            class={clsx(
+              "bg-red-80 text-red-20 p-px px-1 rounded font-semibold",
+            )}
+          >
+            {lichessMistake.playedSan}
+          </span>
+          . Play the correct move on the board.
+        </>
+      );
+    }
     if (showNext() && !isPlanPractice()) {
       if (num() === 1) {
         return "This move is in your repertoire";
@@ -197,31 +225,42 @@ export const RepertoireReview = (props: {}) => {
     >
       <div class={"row w-full items-end justify-between"}>
         <SidebarHeader>
-          {isMobile()
+          {reviewingMistakes()
+            ? "Reviewing mistakes"
+            : isMobile()
             ? "Practice"
             : `Practicing ${isPlanPractice() ? "plans" : "moves"}`}
         </SidebarHeader>
-        <div class="row items-center space-x-4 lg:space-x-8">
-          <For each={progressIcons()}>
-            {(i) => {
-              return (
-                <div class="row items-center">
-                  <p
-                    class={clsx(i.class, "text-sm font-semibold lg:text-base")}
-                  >
-                    {i.text}
-                  </p>
-                  <i
-                    class={clsx(i.class, i.icon, " ml-2 text-sm lg:text-base")}
-                  />
-                </div>
-              );
-            }}
-          </For>
-        </div>
+        <Show when={!reviewingMistakes()}>
+          <div class="row items-center space-x-4 lg:space-x-8">
+            <For each={progressIcons()}>
+              {(i) => {
+                return (
+                  <div class="row items-center">
+                    <p
+                      class={clsx(
+                        i.class,
+                        "text-sm font-semibold lg:text-base",
+                      )}
+                    >
+                      {i.text}
+                    </p>
+                    <i
+                      class={clsx(
+                        i.class,
+                        i.icon,
+                        " ml-2 text-sm lg:text-base",
+                      )}
+                    />
+                  </div>
+                );
+              }}
+            </For>
+          </div>
+        </Show>
       </div>
       <div class={"h-6 lg:h-10"} />
-      <p class="text-body">{body()}</p>
+      <p class="text-body leading-5">{body()}</p>
       <Show when={num() > 1}>
         <>
           <div

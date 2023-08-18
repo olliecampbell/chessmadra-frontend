@@ -43,7 +43,7 @@ const client = applyCaseMiddleware(
 
 client.interceptors.request.use(function (config) {
   // console.log({ url: config.url });
-  if (config.url?.includes("lichess") && !config.url?.includes("oauth")) {
+  if (config.url?.includes("lichess.org") && !config.url?.includes("oauth")) {
     return config;
   }
   const { token, tempUserUuid } = getAppState().userState;
@@ -55,7 +55,7 @@ client.interceptors.request.use(function (config) {
   }
   if (token) {
     config.headers!.Authorization = token;
-  } else {
+  } else if (tempUserUuid) {
     // @ts-ignore
     config.headers!["temp-user-uuid"] = tempUserUuid;
   }

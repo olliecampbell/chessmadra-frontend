@@ -1,5 +1,8 @@
 /* eslint-disable */
 import { AuthResponse, User, UserFlag } from "~/utils/models";
+import sha256 from "crypto-js/sha256";
+import Base64 from "crypto-js/enc-base64";
+
 import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
@@ -11,6 +14,11 @@ import { BoardThemeId, PieceSetId } from "./theming";
 import { trackEvent } from "~/utils/trackEvent";
 import { noop } from "lodash-es";
 import { isDevelopment } from "./env";
+import cryptoRandomString from "crypto-random-string";
+import { LICHESS_CLIENT_ID, LICHESS_REDIRECT_URI } from "./oauth";
+import Cookies from "js-cookie";
+import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
+import { uuid4 } from "@sentry/utils";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -45,6 +53,11 @@ export interface UserState {
   flagEnabled: (flag: UserFlag) => boolean;
   getEnabledFlags: () => UserFlag[];
   setFlag(flag: UserFlag, enabled: boolean): void;
+  authWithLichess: () => void;
+  setLichessToken: (
+    token: string | null,
+    username: string | null,
+  ) => Promise<void>;
 }
 
 export enum AuthStatus {
@@ -57,7 +70,7 @@ export enum AuthStatus {
 type Stack = [UserState, AppState];
 const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
-const DEVELOPMENT_FLAGS: UserFlag[] = [];
+const DEVELOPMENT_FLAGS: UserFlag[] = ["lichess_oauth"];
 
 export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -235,6 +248,42 @@ export const getInitialUserState = (
         return s.updateUserRatingSettings({ ratingRange: range });
       });
     },
+    setLichessToken: (token, username) => {
+      return client
+        .post("/api/set_lichess_token", { token, username })
+        .then(({ data }: { data: User }) => {
+          console.log("Set lichess token and username", username);
+          set(([s, appState]) => {
+            s.user.authedWithLichess = !!token;
+            appState.repertoireState.fetchLichessMistakes();
+          });
+        })
+        .finally(noop);
+    },
+    authWithLichess: () => {
+      set(([s]) => {
+        console.log("authing");
+        const codeVerifier = cryptoRandomString({ length: 64, type: "base64" });
+        const state = cryptoRandomString({ length: 64, type: "base64" });
+        localStorage.setItem("lichess.code_verifier", codeVerifier);
+        localStorage.setItem("lichess.state", state);
+        console.log("Code verifier is:", codeVerifier);
+        const params = new URLSearchParams({
+          client_id: LICHESS_CLIENT_ID,
+          redirect_uri: LICHESS_REDIRECT_URI,
+          code_challenge: Base64.stringify(sha256(codeVerifier))
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=/g, ""),
+          response_type: "code",
+          scope: "",
+          state,
+          code_challenge_method: "S256",
+        }).toString();
+
+        window.location.href = `https://lichess.org/oauth?${params}`;
+      });
+    },
     setFlag: (flag: UserFlag, enabled: boolean) => {
       set(([s]) => {
         s.user!.flags = s.user!.flags.includes(flag)
@@ -249,6 +298,18 @@ export const getInitialUserState = (
     ...createQuick<UserState>(setOnly),
   } as UserState;
 
+  const cookieToken = Cookies.get(JWT_COOKIE_KEY);
+  if (cookieToken) {
+    initialState.token = cookieToken;
+  } else {
+    initialState.authStatus = AuthStatus.Unauthenticated;
+  }
+  const tempUserUuid = Cookies.get(TEMP_USER_UUID);
+  if (tempUserUuid) {
+    initialState.tempUserUuid = tempUserUuid;
+  } else {
+    initialState.tempUserUuid = uuid4();
+  }
   return initialState;
 };
 

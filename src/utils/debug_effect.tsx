@@ -40,20 +40,20 @@ export const createDebugStateEffect = () => {
       // quick((s) => {
       //   s.repertoireState.browsingState.replaceView(CoverageSettings, {});
       // });
-      quick((s) => {
-        setTimeout(() => {
-          s.repertoireState.reviewState.startReview({
-            side: "white",
-            filter: "all",
-          });
-          while (
-            s.repertoireState.reviewState.currentQuizGroup &&
-            !Quiz.getPlans(s.repertoireState.reviewState.currentQuizGroup)
-          ) {
-            s.repertoireState.reviewState.setupNextMove();
-          }
-        });
-      });
+      // quick((s) => {
+      //   setTimeout(() => {
+      //     s.repertoireState.reviewState.startReview({
+      //       side: "white",
+      //       filter: "all",
+      //     });
+      //     while (
+      //       s.repertoireState.reviewState.currentQuizGroup &&
+      //       !Quiz.getPlans(s.repertoireState.reviewState.currentQuizGroup)
+      //     ) {
+      //       s.repertoireState.reviewState.setupNextMove();
+      //     }
+      //   });
+      // });
       //   quick((s) => {
       //     s.repertoireState.startBrowsing("white", "build");
       //     s.repertoireState.browsingState.sidebarState.addedLineState = {

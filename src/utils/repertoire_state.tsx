@@ -6,6 +6,7 @@ import {
   EcoCode,
   PawnStructureDetails,
   LineReport,
+  LichessMistake,
 } from "~/utils/models";
 import {
   dropRight,
@@ -75,6 +76,8 @@ export interface LichessOauthData {
 }
 
 export interface RepertoireState {
+  lichessMistakes: LichessMistake[] | null;
+  needsToRefetchLichessMistakes: boolean;
   numMyMoves: BySide<number>;
   onboarding: {
     isOnboarding: boolean;
@@ -106,10 +109,15 @@ export interface RepertoireState {
     state?: RepertoireState;
   }) => void;
   initState: () => void;
+  fetchLichessMistakes: () => void;
   // TODO: move review state stuff to its own module
   usePlayerTemplate: (id: string) => void;
   backToOverview: () => void;
-  uploadMoveAnnotation: (_: { epd: string; san: string; text: string }) => Promise<void>;
+  uploadMoveAnnotation: (_: {
+    epd: string;
+    san: string;
+    text: string;
+  }) => Promise<void>;
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,
@@ -228,6 +236,8 @@ export const getInitialRepertoireState = (
   const initialState = {
     ...createQuick<RepertoireState>(setOnly),
     expectedNumMoves: { white: 0, black: 0 },
+    lichessMistakes: null,
+    needsToRefetchLichessMistakes: false,
     numMyMoves: { white: 0, black: 0 },
     numMovesFromEpd: { white: {}, black: {} },
     numMovesDueFromEpd: { white: {}, black: {} },
@@ -267,6 +277,7 @@ export const getInitialRepertoireState = (
         s.repertoire = undefined;
         s.fetchRepertoire(true);
         s.fetchSupplementary();
+        s.fetchLichessMistakes();
       }, "initState"),
     usePlayerTemplate: (id: string) =>
       set(async ([s]) => {
@@ -789,7 +800,7 @@ export const getInitialRepertoireState = (
       text: string;
     }) =>
       get(([s]) => {
-        client
+        return client
           .post("/api/v1/openings/move_annotation", {
             text: text,
             epd: epd,
@@ -823,6 +834,9 @@ export const getInitialRepertoireState = (
         s.divergencePosition = undefined;
         s.divergenceIndex = undefined;
         s.browsingState.sidebarState = makeDefaultSidebarState();
+        if (s.needsToRefetchLichessMistakes) {
+          s.fetchLichessMistakes();
+        }
       }),
     startImporting: (side: Side) =>
       set(([s]) => {
@@ -872,6 +886,7 @@ export const getInitialRepertoireState = (
         s.browsingState.fetchNeededPositionReports();
         s.browsingState.updateRepertoireProgress();
         s.browsingState.updateTableResponses();
+        s.needsToRefetchLichessMistakes = true;
       }),
     fetchSupplementary: () =>
       set(([s]) => {
@@ -1113,6 +1128,21 @@ export const getInitialRepertoireState = (
         }
       }),
     selectedTemplates: {},
+    fetchLichessMistakes: () => {
+      set(([s, gs]) => {
+        const authedWithLichess = gs.userState.user?.authedWithLichess;
+        s.lichessMistakes = null;
+        if (authedWithLichess) {
+          client
+            .get("/api/v1/get_lichess_mistakes")
+            .then(({ data }: { data: LichessMistake[] }) => {
+              set(([s]) => {
+                s.lichessMistakes = data;
+              });
+            });
+        }
+      });
+    },
   } as RepertoireState;
 
   return initialState;

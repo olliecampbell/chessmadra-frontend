@@ -16,6 +16,7 @@ import {
   noop,
   includes,
   countBy,
+  forEach,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -43,6 +44,7 @@ import { COMMON_MOVES_CUTOFF } from "./review";
 import { getMaxPlansForQuizzing, parsePlansToQuizMoves } from "./plans";
 import { Chess } from "@lubert/chess.ts";
 import { getAllPossibleMoves } from "./move_generation";
+import { LichessMistake } from "./models";
 
 export interface ReviewPositionResults {
   side: Side;
@@ -55,6 +57,8 @@ type ReviewMoveKey = string;
 type Epd = string;
 
 export interface ReviewState {
+  markGameMistakeReviewed(lichessMistake: LichessMistake): void;
+  buildQueueFromMistakes(lichessMistakes: LichessMistake[]): QuizGroup[];
   setupPlans: () => void;
   moveLog: string[];
   buildQueue: (options: ReviewOptions) => QuizGroup[];
@@ -109,6 +113,7 @@ interface ReviewOptions {
   cram?: boolean;
   filter?: ReviewFilter;
   customQueue?: QuizGroup[];
+  lichessMistakes?: LichessMistake[];
   includePlans?: boolean;
 }
 
@@ -193,7 +198,9 @@ export const getInitialReviewState = (
         // @ts-ignore
         rs.browsingState.sidebarState.activeSide = options.side;
         s.activeOptions = options ?? null;
-        if (options.customQueue) {
+        if (options.lichessMistakes) {
+          s.activeQueue = s.buildQueueFromMistakes(options.lichessMistakes);
+        } else if (options.customQueue) {
           s.activeQueue = options.customQueue;
         } else {
           s.updateQueue(options);
@@ -251,6 +258,16 @@ export const getInitialReviewState = (
         s.chessboard.setMode("tap");
         s.chessboard.highlightSquare(plan?.fromSquare ?? null);
       }),
+    markGameMistakeReviewed: (lichessMistake: LichessMistake) => {
+      set(([s, rs]) => {
+        rs.lichessMistakes?.shift();
+        client.post("/api/v1/game_mistake_reviewed", {
+          gameId: lichessMistake.gameId,
+          epd: lichessMistake.epd,
+          createdAt: lichessMistake.timestamp,
+        });
+      });
+    },
     setupNextMove: () =>
       set(([s, rs]) => {
         s.chessboard.setFrozen(false);
@@ -258,7 +275,7 @@ export const getInitialReviewState = (
         s.planIndex = 0;
         if (s.currentQuizGroup) {
           const failedMoves = values(s.failedReviewPositionMoves);
-          if (!isEmpty(failedMoves)) {
+          if (!isEmpty(failedMoves) && !s.activeOptions?.lichessMistakes) {
             s.activeQueue.push({
               moves: failedMoves,
               line: s.currentQuizGroup.line,
@@ -267,7 +284,10 @@ export const getInitialReviewState = (
             });
           }
           const moves = Quiz.getMoves(s.currentQuizGroup);
-          if (moves) {
+          const lichessMistake = s.currentQuizGroup.lichessMistake;
+          if (lichessMistake) {
+            s.markGameMistakeReviewed(lichessMistake);
+          } else if (moves) {
             s.markMovesReviewed(
               moves.map((m) => {
                 const failed = s.failedReviewPositionMoves[m.sanPlus];
@@ -476,6 +496,20 @@ export const getInitialReviewState = (
             return true;
           });
         }
+        return queue;
+      }),
+    buildQueueFromMistakes: (mistakes: LichessMistake[]) =>
+      set(([s, rs]) => {
+        const queue: QuizGroup[] = [];
+        forEach(mistakes, (m) => {
+          const responses = rs.repertoire![m.side].positionResponses[m.epd];
+          queue.push({
+            moves: responses,
+            lichessMistake: m,
+            line: m.line,
+            side: m.side,
+          } as QuizGroup);
+        });
         return queue;
       }),
     updateQueue: (options: ReviewOptions) =>

@@ -1,6 +1,7 @@
 import { PieceSymbol } from "@lubert/chess.ts";
 import { Square } from "@lubert/chess.ts/dist/types";
 import { drop, take } from "lodash-es";
+import { LichessMistake } from "./models";
 import { MetaPlan } from "./plans";
 import { RepertoireMove, Side } from "./repertoire";
 
@@ -10,10 +11,12 @@ export interface QuizGroupPlans extends QuizGroupBase {
   plans: QuizPlan[];
   remainingPlans: QuizPlan[];
   completedPlans: QuizPlan[];
+  lichessMistake?: undefined;
 }
 
 export interface QuizGroupMoves extends QuizGroupBase {
   moves: RepertoireMove[];
+  lichessMistake?: LichessMistake;
 }
 
 export interface QuizGroupBase {

@@ -1,7 +1,15 @@
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, upperFirst, find, isEmpty, filter, noop } from "lodash-es";
+import {
+  capitalize,
+  upperFirst,
+  find,
+  isEmpty,
+  filter,
+  noop,
+  isNil,
+} from "lodash-es";
 import { SIDES } from "~/utils/repertoire";
 import { CMText } from "./CMText";
 import {
@@ -34,9 +42,15 @@ import client from "~/utils/client";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
 import { PreReview } from "./PreReview";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
+import { LichessMistake } from "~/utils/models";
+import { isDevelopment } from "~/utils/env";
+import { clsx } from "~/utils/classes";
+import { Puff } from "solid-spinner";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
+  const lichessMistakes = () => getAppState().repertoireState.lichessMistakes;
+  const loadingMistakes = () => isNil(lichessMistakes());
   const themeId = () => userState().user?.theme;
   const theme = () =>
     find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
@@ -139,6 +153,7 @@ export const RepertoireHome = () => {
             }}
           </For>
         </div>
+
         <Spacer height={46} />
         <Show when={!isEmpty(overallActions())}>
           <div style={s()}>
@@ -146,8 +161,76 @@ export const RepertoireHome = () => {
               {(action) => <SidebarFullWidthButton action={action} />}
             </For>
           </div>
-          <Spacer height={46} />
         </Show>
+        <Show
+          when={
+            userState().flagEnabled("lichess_oauth") &&
+            userState().user?.authedWithLichess
+          }
+        >
+          <Spacer height={12} />
+          <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
+            <SidebarFullWidthButton
+              action={{
+                style: "primary",
+                text: "Correct your mistakes",
+                disabled: isEmpty(lichessMistakes()),
+                right: loadingMistakes() ? (
+                  <Puff height={20} color={"white"} />
+                ) : !isEmpty(lichessMistakes()) ? (
+                  <div class={"flex row text-xs"}>
+                    <CMText
+                      style={s(c.fg(c.colors.text.secondary))}
+                      class={clsx("")}
+                    >
+                      {lichessMistakes()?.length ?? 0} games
+                    </CMText>
+                    <i class="fa fa-game-board-simple fa-spin ml-2 hidden" />
+                  </div>
+                ) : (
+                  <CMText>No games to review</CMText>
+                ),
+                onPress: () => {
+                  quick((s) => {
+                    s.repertoireState.reviewState.startReview({
+                      lichessMistakes: lichessMistakes() as LichessMistake[],
+                      side: null,
+                    });
+                  });
+                },
+              }}
+            />
+          </div>
+        </Show>
+        <Show
+          when={
+            userState().flagEnabled("lichess_oauth") &&
+            !userState().user?.authedWithLichess
+          }
+        >
+          <Spacer height={10} />
+          <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
+            <SidebarFullWidthButton
+              action={{
+                style: "primary",
+                text: "Correct your mistakes",
+                subtext: "Review your latest Lichess games",
+                right: (
+                  <CMText class="text-secondary text-xs font-semibold">
+                    Connect
+                    <i class="pl-[6px] fa  fa-link" />
+                  </CMText>
+                ),
+                onPress: () => {
+                  quick((s) => {
+                    userState().authWithLichess();
+                  });
+                },
+              }}
+            />
+          </div>
+        </Show>
+        <Spacer height={46} />
         <>
           <SidebarSectionHeader text="Settings" />
           <div style={s()}>
@@ -211,6 +294,20 @@ export const RepertoireHome = () => {
                         ? `${userState().getEnabledFlags()?.length} enabled`
                         : "None enabled"
                     }`,
+                    style: "secondary",
+                  } as SidebarAction,
+                  {
+                    onPress: () => {
+                      quick((s) => {
+                        s.userState.setLichessToken(null, null);
+                      });
+                    },
+                    text: "Disconnect Lichess",
+                    hidden:
+                      !settingsExpanded() ||
+                      !isDevelopment ||
+                      !userState().user?.authedWithLichess,
+                    right: "",
                     style: "secondary",
                   } as SidebarAction,
                   {

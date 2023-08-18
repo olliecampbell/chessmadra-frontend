@@ -1,9 +1,7 @@
 import client from "~/utils/client";
 import axios from "axios";
 import Cookies from "js-cookie";
-
-export const JWT_COOKIE_KEY = "jwt-token";
-export const TEMP_USER_UUID = "temp-user-uuid";
+import { JWT_COOKIE_KEY } from "./cookies";
 
 export async function signupUser(email: string, password: string) {
   // @ts-ignore

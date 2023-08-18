@@ -2,7 +2,7 @@ import { clsx } from "~/utils/classes";
 import { CMText } from "./CMText";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
-import { createMemo, For, onMount } from "solid-js";
+import { createMemo, For, onMount, Show } from "solid-js";
 import { Bullet } from "./Bullet";
 import { useRepertoireState, quick, getAppState } from "~/utils/app_state";
 import { forEach, min, filter } from "lodash-es";
@@ -161,17 +161,30 @@ export const PracticeComplete = () => {
   };
   return (
     <SidebarTemplate
-      header={"Practice complete!"}
+      header={
+        activeOptions()?.lichessMistakes
+          ? "Done reviewing mistakes"
+          : "Practice complete!"
+      }
       bodyPadding={true}
       actions={actions()}
     >
-      <CMText class={clsx("text-primay font-bold")}>
-        Your stats from this session:
-      </CMText>
-      <Spacer height={12} />
-      <div class={"space-y-2"}>
-        <For each={bullets()}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
-      </div>
+      <Show when={!activeOptions()?.lichessMistakes}>
+        <CMText class={clsx("text-primay font-bold")}>
+          Your stats from this session:
+        </CMText>
+        <Spacer height={12} />
+        <div class={"space-y-2"}>
+          <For each={bullets()}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
+        </div>
+      </Show>
+      <Show when={activeOptions()?.lichessMistakes}>
+        <CMText class={clsx("body-text")}>
+          You're done reviewing your games for mistakes in the opening! Go play
+          more games, or review your repertoire so you won't make these mistakes
+          again.
+        </CMText>
+      </Show>
     </SidebarTemplate>
   );
 };

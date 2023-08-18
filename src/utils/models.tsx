@@ -42,9 +42,10 @@ export interface User {
   pieceSet?: string;
   subscribed: boolean;
   flags: UserFlag[];
+  authedWithLichess: boolean;
 }
 
-export type UserFlag = "quiz_plans";
+export type UserFlag = "quiz_plans" | "lichess_oauth";
 
 export interface LichessGame {
   id: string;
@@ -200,4 +201,17 @@ export interface AuthResponse {
   user: User;
   token: string;
   firstAuthentication?: boolean;
+}
+
+export interface LichessMistake {
+  playedSan: string;
+  epd: string;
+  gameId: string;
+  source: string;
+  opponentName: string;
+  side: Side;
+  line: string;
+  timestamp: string;
+  userId: string;
+  reviewed: boolean;
 }

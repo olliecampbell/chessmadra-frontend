@@ -11,7 +11,7 @@ import {
   useRepertoireState,
 } from "~/utils/app_state";
 import { BP, useResponsiveV2 } from "~/utils/useResponsive";
-import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/auth";
+import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/cookies";
 import { Pressable } from "./Pressable";
 import { trackEvent } from "~/utils/trackEvent";
 import { useHovering } from "~/mocks";

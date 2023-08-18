@@ -6,7 +6,7 @@ import { createQuick } from "./quick";
 import { StorageItem } from "./storageItem";
 import Cookies from "js-cookie";
 import { flatten } from "lodash-es";
-import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./auth";
+import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
 
 export interface AdminState {
   moveAnnotationReviewQueue: MoveAnnotationReview[] | null;
