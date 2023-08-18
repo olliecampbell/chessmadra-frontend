@@ -70,7 +70,8 @@ export enum AuthStatus {
 type Stack = [UserState, AppState];
 const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
-const DEVELOPMENT_FLAGS: UserFlag[] = ["lichess_oauth"];
+const DEVELOPMENT_FLAGS: UserFlag[] = [];
+const ADMIN_FLAGS: UserFlag[] = ["lichess_oauth"];
 
 export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,15 +116,18 @@ export const getInitialUserState = (
     },
     getEnabledFlags: () => {
       return get(([s]) => {
-        return [...new Set([...(s.user?.flags ?? []), ...DEVELOPMENT_FLAGS])];
+        return [
+          ...new Set([
+            ...(s.user?.flags ?? []),
+            ...(isDevelopment ? DEVELOPMENT_FLAGS : []),
+            ...(s.user?.isAdmin ? ADMIN_FLAGS : []),
+          ]),
+        ];
       });
     },
     flagEnabled: (flag: UserFlag) => {
       return get(([s]) => {
-        return (
-          s.user?.flags.includes(flag) ||
-          (isDevelopment && DEVELOPMENT_FLAGS.includes(flag))
-        );
+        return s.getEnabledFlags().includes(flag);
       });
     },
     getCurrentThreshold: () => {
