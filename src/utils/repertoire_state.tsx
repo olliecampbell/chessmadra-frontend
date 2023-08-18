@@ -1132,6 +1132,7 @@ export const getInitialRepertoireState = (
       set(([s, gs]) => {
         const authedWithLichess = gs.userState.user?.authedWithLichess;
         s.lichessMistakes = null;
+        s.needsToRefetchLichessMistakes = false;
         if (authedWithLichess) {
           client
             .get("/api/v1/get_lichess_mistakes")
