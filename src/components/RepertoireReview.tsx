@@ -102,6 +102,17 @@ export const RepertoireReview = (props: {}) => {
     {
       onPress: () => {
         quick((s) => {
+          s.repertoireState.browsingState.moveSidebarState("right");
+          s.repertoireState.reviewState.setupNextMove();
+        });
+      },
+      hidden: !currentMove()?.lichessMistake,
+      style: "primary",
+      text: "Skip this one",
+    },
+    {
+      onPress: () => {
+        quick((s) => {
           trackEvent(`${mode()}.inspect_line`);
           const m = currentMove() as QuizGroup;
           s.repertoireState.backToOverview();
