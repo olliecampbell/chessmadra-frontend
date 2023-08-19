@@ -72,7 +72,7 @@ const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
 const DEVELOPMENT_FLAGS: UserFlag[] = [];
 const ADMIN_FLAGS: UserFlag[] = [];
-const GENERAL_FLAGS: UserFlag[] = ["lichess_oauth"];
+const GENERAL_FLAGS: UserFlag[] = [];
 
 export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

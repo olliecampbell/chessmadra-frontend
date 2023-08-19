@@ -45,7 +45,7 @@ export interface User {
   authedWithLichess: boolean;
 }
 
-export type UserFlag = "quiz_plans" | "lichess_oauth";
+export type UserFlag = "quiz_plans";
 
 export interface LichessGame {
   id: string;

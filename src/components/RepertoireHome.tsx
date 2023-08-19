@@ -162,12 +162,7 @@ export const RepertoireHome = () => {
             </For>
           </div>
         </Show>
-        <Show
-          when={
-            userState().flagEnabled("lichess_oauth") &&
-            userState().user?.authedWithLichess
-          }
-        >
+        <Show when={userState().user?.authedWithLichess}>
           <Spacer height={12} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
@@ -202,12 +197,7 @@ export const RepertoireHome = () => {
             />
           </div>
         </Show>
-        <Show
-          when={
-            userState().flagEnabled("lichess_oauth") &&
-            !userState().user?.authedWithLichess
-          }
-        >
+        <Show when={!userState().user?.authedWithLichess}>
           <Spacer height={10} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
