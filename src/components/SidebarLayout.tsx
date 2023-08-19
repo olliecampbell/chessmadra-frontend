@@ -307,6 +307,8 @@ export const AnalyzeOnLichessButton = (props: {}) => {
           "text-tertiary &hover:text-primary text-md -my-2 shrink-0 py-2 font-semibold transition-colors",
         )}
         href={getLichessLink(currentLine(), activeSide())}
+        target="_blank"
+        rel="noreferrer"
         onClick={() => {
           trackEvent("chessboard.analyze_on_lichess", {
             side: activeSide(),
