@@ -205,7 +205,7 @@ export const ThemeSettings = (props: {}) => {
           );
           const boardTheme = BOARD_THEMES_BY_ID[boardThemeId];
           return (
-            <div style={s(c.row, c.center)}>
+            <div style={s(c.row)}>
               <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
                 {theme!.name}
               </CMText>
