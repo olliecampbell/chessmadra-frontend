@@ -71,7 +71,8 @@ type Stack = [UserState, AppState];
 const selector = (s: AppState): Stack => [s.userState, s];
 const DEFAULT_RATING_SYSTEM = "Lichess";
 const DEVELOPMENT_FLAGS: UserFlag[] = [];
-const ADMIN_FLAGS: UserFlag[] = ["lichess_oauth"];
+const ADMIN_FLAGS: UserFlag[] = [];
+const GENERAL_FLAGS: UserFlag[] = ["lichess_oauth"];
 
 export const getInitialUserState = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,6 +122,7 @@ export const getInitialUserState = (
             ...(s.user?.flags ?? []),
             ...(isDevelopment ? DEVELOPMENT_FLAGS : []),
             ...(s.user?.isAdmin ? ADMIN_FLAGS : []),
+            ...GENERAL_FLAGS,
           ]),
         ];
       });
