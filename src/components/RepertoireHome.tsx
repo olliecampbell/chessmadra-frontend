@@ -305,7 +305,6 @@ export const RepertoireHome = () => {
                     text: "Disconnect Lichess",
                     hidden:
                       !settingsExpanded() ||
-                      !isDevelopment ||
                       !userState().user?.authedWithLichess,
                     right: "",
                     style: "secondary",
