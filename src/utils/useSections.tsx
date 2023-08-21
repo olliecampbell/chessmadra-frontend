@@ -269,14 +269,17 @@ const getBuildModeSections = ({
     sections.push({
       width: 40,
       content: (props: SectionProps) => {
+        const stockfishEval = props.suggestedMove?.stockfish?.eval;
+        const mate = props.suggestedMove?.stockfish?.mate;
         const whiteWinning =
-          props.suggestedMove?.stockfish?.eval! >= 0 ||
-          props.suggestedMove?.stockfish?.mate! > 0;
+          (!isNil(stockfishEval) && stockfishEval >= 0) ||
+          (!isNil(mate) && mate >= 0 && props.side === "white");
         const backgroundSide = whiteWinning ? "white" : "black";
         const moveRating: MoveRating = props.tableResponse.moveRating!;
         const isBadMove = !isNil(moveRating);
         const formattedEval = formatStockfishEval(
           props.suggestedMove?.stockfish!,
+          props.side,
         );
         return (
           <>
@@ -296,6 +299,9 @@ const getBuildModeSections = ({
                     initTooltip({
                       ref,
                       content: () => {
+                        if (props.suggestedMove?.stockfish?.mate === 0) {
+                          return "Checkmate.";
+                        }
                         if (formattedEval === "=") {
                           return (
                             <p>

@@ -5,6 +5,7 @@ import { isDevelopment } from "./env";
 import { noop } from "lodash-es";
 import { CoverageSettings } from "~/components/SidebarSettings";
 import { Quiz } from "./queues";
+import { lineToPgn } from "./repertoire";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -24,14 +25,15 @@ export const createDebugStateEffect = () => {
 
     if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       setHasCalled(true);
-      // quick((s) => {
-      //   console.log("setting past landing page");
-      //   s.userState.pastLandingPage = true;
-      //   s.repertoireState.onboarding.isOnboarding = false;
-      //   s.repertoireState.startBrowsing("white", "build", {
-      //     pgnToPlay: "1.Nf3 Nf6 2.d4 e6 3.Bf4 c5 4.c3 b6",
-      //   });
-      // });
+      quick((s) => {
+        console.log("setting past landing page");
+        s.userState.pastLandingPage = true;
+        s.repertoireState.onboarding.isOnboarding = false;
+        s.repertoireState.startBrowsing("black", "build", {
+          // pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5"]),
+          pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5", "Ke2"]),
+        });
+      });
       // quick((s) => {
       //   console.log("setting past landing page");
       //   s.userState.pastLandingPage = true;

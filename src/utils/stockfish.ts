@@ -1,10 +1,14 @@
 import { isNil } from "lodash-es";
 import { StockfishReport } from "~/utils/models";
+import { Side } from "./repertoire";
 
-export function formatStockfishEval(stockfish: StockfishReport) {
+export function formatStockfishEval(stockfish: StockfishReport, side: Side) {
   // let debug = failOnTrue(false);
   const debug = false;
   let x = "";
+  if (stockfish?.mate === 0) {
+    return side === "white" ? "1-0" : "0-1";
+  }
   if (!isNil(stockfish?.eval)) {
     const rounded = (stockfish.eval / 100).toFixed(1);
     if (rounded === "0.0" || rounded === "-0.0") {

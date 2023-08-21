@@ -748,7 +748,7 @@ const Response = (props: {
                             suggestedMove: props.tableResponse.suggestedMove,
                             positionReport: positionReport(),
                             tableResponse: props.tableResponse,
-                            side: currentSide,
+                            side: currentSide(),
                             tableMeta: props.tableMeta,
                           })}
                         </div>

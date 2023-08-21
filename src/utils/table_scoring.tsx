@@ -98,17 +98,20 @@ export const scoreTableResponses = (
         }
         const stockfish = tableResponse.suggestedMove?.stockfish;
         if (stockfish && !evalOverride) {
-          if (stockfish?.mate < 0 && side === "black") {
-            scoreTable.factors.push({
-              source: TableResponseScoreSource.Eval,
-              value: 10000,
-            });
-          }
-          if (stockfish?.mate > 0 && side === "white") {
-            scoreTable.factors.push({
-              source: TableResponseScoreSource.Eval,
-              value: 10000,
-            });
+          const mate = stockfish?.mate;
+          if (mate) {
+            const mateSide = mate > 0 ? "white" : "black";
+            if (mateSide === side) {
+              scoreTable.factors.push({
+                source: TableResponseScoreSource.Eval,
+                value: 10000,
+              });
+            } else {
+              scoreTable.factors.push({
+                source: TableResponseScoreSource.Eval,
+                value: -10000,
+              });
+            }
           }
           if (!isNil(stockfish?.eval) && !isNil(report.stockfish?.eval)) {
             const eval_loss = Math.abs(
