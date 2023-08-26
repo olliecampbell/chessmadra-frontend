@@ -99,8 +99,8 @@ export const MoveAnnotationsDashboard = () => {
               <For
                 each={
                   activeTab() === "Needed"
-                    ? take(dashboard().needed, 100)
-                    : take(dashboard().completed, 100)
+                    ? take(dashboard()!.needed, 100)
+                    : take(dashboard()!.completed, 100)
                 }
               >
                 {(ann) => (

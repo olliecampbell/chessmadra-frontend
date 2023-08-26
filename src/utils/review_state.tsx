@@ -17,6 +17,7 @@ import {
   includes,
   countBy,
   forEach,
+  dropRight,
 } from "lodash-es";
 import {
   lineToPgn,
@@ -45,6 +46,7 @@ import { getMaxPlansForQuizzing, parsePlansToQuizMoves } from "./plans";
 import { Chess } from "@lubert/chess.ts";
 import { getAllPossibleMoves } from "./move_generation";
 import { LichessMistake } from "./models";
+import { getLineAnimation } from "./get_line_animation";
 
 export interface ReviewPositionResults {
   side: Side;
@@ -317,11 +319,6 @@ export const getInitialReviewState = (
         s.completedReviewPositionMoves = {};
         s.chessboard.setPerspective(currentQuizGroup.side);
         s.chessboard.setMode("normal");
-        s.chessboard.resetPosition();
-        s.chessboard.playPgn(currentQuizGroup.line);
-        const lastOpponentMove = last(
-          s.chessboard.get((s) => s.position).history({ verbose: true }),
-        );
         s.chessboard.highlightSquare(null);
         s.chessboard.set((c) => {
           c.plans = [];
@@ -335,20 +332,11 @@ export const getInitialReviewState = (
             c.showPlans = false;
             c.hideLastMoveHighlight = false;
           });
-          s.chessboard.backOne({ clear: true, skipAnimation: true });
+            s.chessboard.playLine(pgnToLine(currentQuizGroup.line), {
+              animated: true,
+            });
         }
 
-        if (lastOpponentMove) {
-          // TODO: figure out why the setTimeout is needed here, bug is
-          // that practicing doesn't play the first move on the board if
-          // there's no delay. I imagine it's because the piece refs aren't
-          // there yet? Only the first move that breaks
-          window.setTimeout(() => {
-            set(([s]) => {
-              s.chessboard.makeMove(lastOpponentMove, { animate: true });
-            });
-          }, 0);
-        }
       }, "setupNextMove"),
 
     giveUp: () =>

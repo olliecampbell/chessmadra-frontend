@@ -498,12 +498,10 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
             s.repertoireState.browsingState.moveSidebarState("right");
             s.repertoireState.browsingState.dismissTransientSidebarState();
             const lastMatchingEpd = positionHistory()![i];
-            s.repertoireState.browsingState.chessboard.playPgn(
-              lineToPgn(line),
+            s.repertoireState.browsingState.chessboard.playLine(
+              line,
               {
                 animated: true,
-                fromEpd: lastMatchingEpd,
-                animateLine: line.slice(i),
               },
             );
           });

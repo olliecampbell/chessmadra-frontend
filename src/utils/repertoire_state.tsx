@@ -869,8 +869,9 @@ export const getInitialRepertoireState = (
           // just don't show the chessboard
         } else if (mode === "browse" || mode === "build") {
           if (options?.pgnToPlay) {
-            s.browsingState.chessboard.playPgn(options.pgnToPlay, {
+            s.browsingState.chessboard.playLine(pgnToLine(options.pgnToPlay), {
               animated: true,
+              reset: true,
             });
           }
         }

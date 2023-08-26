@@ -21,11 +21,11 @@ import { c } from "./styles";
 import { Option } from "./optional";
 import { Accessor, createSignal } from "solid-js";
 import { logProxy } from "./state";
+import { getLineAnimation } from "./get_line_animation";
 
-interface PlayPgnOptions {
-  animateLine?: string[];
+interface PlayLineOptions {
   animated?: boolean;
-  fromEpd?: string;
+  reset?: boolean;
 }
 type AnimationMove = Move & { reverse: boolean };
 
@@ -82,7 +82,7 @@ export interface ChessboardInterface {
   availableMovesFrom: (square: Square) => Move[];
   getLastMove: () => Move | undefined;
   getCurrentEpd: () => string;
-  playPgn: (pgn: string, options?: PlayPgnOptions) => void;
+  playLine: (line: string[], options?: PlayLineOptions) => void;
   stopNotifyingDelegates: () => void;
   updateMoveLogPgn: () => void;
   resumeNotifyingDelegates: () => void;
@@ -427,7 +427,7 @@ export const createChessboardInterface = (): [
         s.animating = true;
         chessboardInterface.animatePieceMove(
           nextMove,
-          PlaybackSpeed.Normal,
+          PlaybackSpeed.Fast,
           (completed) => {
             s.animating = false;
             if (completed) {
@@ -1007,18 +1007,27 @@ export const createChessboardInterface = (): [
     getLastMove: () => {
       return last(chessboardStore.moveHistory);
     },
-    playPgn: (pgn: string, options?: PlayPgnOptions) => {
+    playLine: (line: string[], options?: PlayLineOptions) => {
       set((s) => {
         chessboardInterface.stopNotifyingDelegates();
-        chessboardInterface.resetPosition();
-        const line = pgnToLine(pgn);
-        line.map((san) => {
+        if (options?.reset) {
+          chessboardInterface.resetPosition();
+        }
+        const {reset, animateLine} = getLineAnimation(
+          chessboardStore.moveLog,
+          line
+        )
+        if (reset) {
+          chessboardInterface.resetPosition();
+        }
+        const epd = chessboardInterface.getCurrentEpd()
+        animateLine.map((san) => {
           chessboardInterface.makeMove(san);
         });
         if (options?.animated) {
-          const fen = `${options.fromEpd ?? START_EPD} 0 1`;
+          const fen = `${epd} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
-          const moves = s._animatePosition.validateMoves(line);
+          const moves = s._animatePosition.validateMoves(animateLine);
           // @ts-ignore
           s.animationQueue = moves;
           chessboardInterface.stepAnimationQueue();
