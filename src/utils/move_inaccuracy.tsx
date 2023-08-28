@@ -10,7 +10,7 @@ export const getWinPercentage = (
   stockfish: StockfishReport,
   side: Side,
 ): number => {
-  const p = getUnsidedWinPercentage(stockfish);
+  const p = getUnsidedWinPercentage(stockfish, side);
   if (side === "black") {
     return 100 - p;
   } else {
@@ -18,8 +18,11 @@ export const getWinPercentage = (
   }
 };
 
-const getUnsidedWinPercentage = (stockfish: StockfishReport): number => {
-  if (stockfish.mate) {
+const getUnsidedWinPercentage = (stockfish: StockfishReport, side: Side): number => {
+  if (!isNil(stockfish.mate)) {
+    if (stockfish.mate === 0) {
+        return side === "white" ? 100 : 0;
+      }
     if (stockfish.mate > 0) {
       return 100;
     } else {
