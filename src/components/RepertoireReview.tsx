@@ -161,7 +161,7 @@ export const RepertoireReview = (props: {}) => {
           , you played{" "}
           <span
             class={clsx(
-              "bg-red-80 text-red-20 p-px px-1 rounded font-semibold",
+              "bg-orange-60 text-orange-10 p-px px-1 rounded font-semibold",
             )}
           >
             {lichessMistake.playedSan}
