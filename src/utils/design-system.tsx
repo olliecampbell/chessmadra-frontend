@@ -34,7 +34,7 @@ const genShadesV2 = (hue: number): Record<number, string> => {
   console.log(`for ${hue}, distance from darkest blue is ${distanceFromDarkestBlue}`);
   for (let i = 0; i <= 90; i = i + 5) {
     // const lightness = -1 * Math.pow((i / 100) - 0.5, 2) + 0.5
-    const lightness = maxDarkness + i / 90 * (90 + maxDarkness)
+    const lightness = maxDarkness + i / 90 * (90 - maxDarkness)
     const saturation = 98
   shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
