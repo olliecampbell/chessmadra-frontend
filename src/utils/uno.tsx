@@ -5,6 +5,7 @@ import { colors } from "./design-system";
 const colorMapping = {
   gray: "grays",
   blue: "blues",
+  teal: "teals",
   red: "reds",
   orange: "oranges",
   yellow: "yellows",
@@ -37,6 +38,12 @@ Object.entries(colors.components).forEach(([color, value]) => {
   // @ts-ignore
   unoColors[color] = value;
 });
+const bgColors = Object.entries(unoColors).flatMap(([hue, shades]) => {
+
+return Object.entries(shades).map(([shade, color]) => {
+  return `bg-${hue}-${shade}`;
+})
+})
 
 export const unoConfig: VitePluginConfig = {
   rules: [
@@ -108,6 +115,7 @@ export const unoConfig: VitePluginConfig = {
       center: "flex items-center justify-center",
       btn: "bg-blue-50 &hover:bg-blue-70 text-primary font-bold py-2 px-4 rounded cursor-pointer",
       ["padding-sidebar"]: "px-3 lg:px-[18px]",
+      ["text-inverse"]: "text-gray-5",
       ["text-primary"]: "text-gray-95",
       ["text-secondary"]: "text-gray-80",
       ["text-tertiary"]: "text-gray-50",
@@ -117,5 +125,9 @@ export const unoConfig: VitePluginConfig = {
     [/^square-(.*)$/, ([, c]) => `w-${c} h-${c}`],
     [/^&hover:(.*)$/, ([, c]) => `&hoVer:${c} active:${c}`],
   ],
+  extraContent: {
+
+plain: bgColors
+    },
   presets: [presetUno()],
 };
