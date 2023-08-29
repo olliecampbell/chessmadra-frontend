@@ -66,7 +66,7 @@ export const RepertoireReview = (props: {}) => {
     return [
       {
         icon: "fa fa-clock",
-        class: "text-orange-70",
+        class: "text-yellow-60",
         text: `${reviewStats().due + 1} Due`,
       },
       {
@@ -76,7 +76,7 @@ export const RepertoireReview = (props: {}) => {
       },
       {
         icon: "fa fa-circle-xmark",
-        class: "text-[#c92b2b]",
+        class: "text-red-60",
         text: reviewStats().incorrect,
       },
     ];
