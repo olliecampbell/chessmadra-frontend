@@ -61,6 +61,9 @@ dependencies:
   '@solidjs/router':
     specifier: ^0.8.3
     version: 0.8.3(solid-js@1.7.11)
+  '@types/chroma-js':
+    specifier: ^2.4.0
+    version: 2.4.0
   '@types/lodash-es':
     specifier: ^4.17.8
     version: 4.17.8
@@ -4561,6 +4564,10 @@ packages:
       '@types/connect': 3.4.35
       '@types/node': 18.17.12
     dev: true
+
+  /@types/chroma-js@2.4.0:
+    resolution: {integrity: sha512-JklMxityrwjBTjGY2anH8JaTx3yjRU3/sEHSblLH1ba5lqcSh1LnImXJZO5peJfXyqKYWjHTGy4s5Wz++hARrw==}
+    dev: false
 
   /@types/connect@3.4.35:
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}

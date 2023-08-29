@@ -69,6 +69,7 @@
     "@solid-primitives/resize-observer": "^2.0.21",
     "@solidjs/meta": "^0.28.6",
     "@solidjs/router": "^0.8.3",
+    "@types/chroma-js": "^2.4.0",
     "@types/lodash-es": "^4.17.8",
     "@unocss/preset-attributify": "^0.50.8",
     "@unocss/preset-mini": "^0.50.8",
