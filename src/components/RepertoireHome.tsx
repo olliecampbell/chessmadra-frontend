@@ -46,6 +46,7 @@ import { LichessMistake } from "~/utils/models";
 import { isDevelopment } from "~/utils/env";
 import { clsx } from "~/utils/classes";
 import { Puff } from "solid-spinner";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
@@ -168,23 +169,20 @@ export const RepertoireHome = () => {
             <SidebarFullWidthButton
               action={{
                 style: "primary",
-                text: "Correct your mistakes",
+                text: "Review your online games",
                 disabled: isEmpty(lichessMistakes()),
                 right: loadingMistakes() ? (
-                  <Puff height={20} color={"white"} />
-                ) : !isEmpty(lichessMistakes()) ? (
-                  <div class={"flex row text-xs"}>
+                  <LoadingSpinner class="text-[12px]" />
+                ) : (
+                  <div class={clsx("flex row text-xs font-semibold", isEmpty(lichessMistakes()) ? "text-tertiary" : "text-orange-60 ")}>
                     <CMText
-                      style={s(c.fg(c.colors.text.secondary))}
                       class={clsx("")}
                     >
-                      {lichessMistakes()?.length ?? 0} games
+                      {lichessMistakes()?.length ? `${lichessMistakes()?.length} mistakes` : "No mistakes"}
                     </CMText>
-                    <i class="fa fa-game-board-simple fa-spin ml-2 hidden" />
+                    <i class={clsx("fa   ml-2", isEmpty(lichessMistakes()) ? "fa-check" : "fa-clock")} />
                   </div>
-                ) : (
-                  <CMText>No games to review</CMText>
-                ),
+                ) ,
                 onPress: () => {
                   quick((s) => {
                     s.repertoireState.reviewState.startReview({
@@ -203,7 +201,7 @@ export const RepertoireHome = () => {
             <SidebarFullWidthButton
               action={{
                 style: "primary",
-                text: "Correct your mistakes",
+                text: "Review your online games",
                 subtext: "Review your latest Lichess games",
                 right: (
                   <CMText class="text-secondary text-xs font-semibold">

@@ -27,15 +27,17 @@ const genShades = (
   return shades;
 };
 
-const genShadesV2 = (hue: number): Record<number, string> => {
+const genShadesV2 = (hue: number, options?: {saturationAdjust?: number}): Record<number, string> => {
   const shades: Record<number, string> = {};
   const distanceFromDarkestBlue = Math.abs((hue - 243) % 360)
   const maxDarkness = 10 - distanceFromDarkestBlue / 40
-  console.log(`for ${hue}, distance from darkest blue is ${distanceFromDarkestBlue}`);
   for (let i = 0; i <= 90; i = i + 5) {
     // const lightness = -1 * Math.pow((i / 100) - 0.5, 2) + 0.5
     const lightness = maxDarkness + i / 90 * (90 - maxDarkness)
-    const saturation = 70
+    let saturation = 70
+    if (options?.saturationAdjust) {
+      saturation += options.saturationAdjust
+    }
   shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
   return shades;
@@ -62,12 +64,12 @@ export const gray = genGrays(grayHue, 8, 5);
 const blue = genShadesV2(210);
 const teal = genShadesV2(180);
 const primary = blue;
-const yellow = genShadesV2(45);
-const orange = genShadesV2(24);
+const yellow = genShadesV2(41, {saturationAdjust: 20});
+const orange = genShadesV2(24, {saturationAdjust: 10});
 const pink = genShadesV2(308);
 const purple = genShadesV2(271);
-const red = genShadesV2(340);
-const green = genShadesV2(111);
+const red = genShadesV2(350);
+const green = genShadesV2(118, {saturationAdjust: -10});
 const success = genShadesV2(164);
 const arrows = genShadesV2(40);
 

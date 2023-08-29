@@ -25,7 +25,7 @@ export const ReviewText = (props: {
     let dueString = "";
     let color = c.gray[50];
     if (!props.date || diff() < 0) {
-      color = props.inverse ? c.orange[30] : c.orange[70];
+      color = props.inverse ? c.yellow[30] : c.yellow[60];
       dueString = `${numMovesDueFromHere().toLocaleString()} Due`;
     } else {
       dueString = `${prefix()} ${getHumanTimeUntil(date())}`;

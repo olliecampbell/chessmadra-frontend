@@ -17,7 +17,7 @@ export const CoverageBar = (props: {
   const inverse = () => props.side === "white";
   const [backgroundColor, inProgressColor, completedColor] = props.isInSidebar
     ? [c.gray[30], c.colors.success, c.colors.success]
-    : [c.gray[30], c.orange[65], c.colors.success];
+    : [c.gray[30], c.yellow[65], c.colors.success];
   const overlap = 8;
   return (
     <Show when={progressState()}>
