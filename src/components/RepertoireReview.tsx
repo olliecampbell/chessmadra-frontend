@@ -118,7 +118,7 @@ export const RepertoireReview = (props: {}) => {
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(m.side, "build", {
             pgnToPlay: m.line,
-            animated: false
+            animated: false,
           });
         });
       },
@@ -156,7 +156,7 @@ export const RepertoireReview = (props: {}) => {
             rel="noreferrer"
             class="font-semibold "
           >
-            your game against {lichessMistake.opponentName}
+            your game {lichessMistake.opponentName && `against ${lichessMistake.opponentName}`}
           </a>
           , you played{" "}
           <span
@@ -272,7 +272,7 @@ export const RepertoireReview = (props: {}) => {
         </Show>
       </div>
       <div class={"h-6 lg:h-10"} />
-      <p class="text-body leading-5">{body()}</p>
+      <p class="body-text leading-5">{body()}</p>
       <Show when={num() > 1}>
         <>
           <div

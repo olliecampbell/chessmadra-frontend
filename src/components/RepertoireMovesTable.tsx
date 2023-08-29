@@ -83,7 +83,7 @@ export interface ScoreFactor {
 
 export const RepertoireMovesTable = (props: {
   header: Accessor<string | undefined | null>;
-  body?: Accessor<string>;
+  body?: string;
   activeSide: Side;
   showOtherMoves?: Accessor<boolean>;
   usePeerRates: Accessor<boolean>;
@@ -243,9 +243,9 @@ export const RepertoireMovesTable = (props: {
       </Show>
       <Show when={props.body}>
         <>
-          <CMText style={s(c.px(c.getSidebarPadding(responsive())))}>
+            <p class="body-text padding-sidebar">
             {props.body}
-          </CMText>
+          </p>
           <Spacer height={24} />
         </>
       </Show>

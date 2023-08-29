@@ -1013,14 +1013,14 @@ export const createChessboardInterface = (): [
         if (options?.reset) {
           chessboardInterface.resetPosition();
         }
-        const {reset, animateLine} = getLineAnimation(
+        const { reset, animateLine } = getLineAnimation(
           chessboardStore.moveLog,
-          line
-        )
+          line,
+        );
         if (reset) {
           chessboardInterface.resetPosition();
         }
-        const epd = chessboardInterface.getCurrentEpd()
+        const epd = chessboardInterface.getCurrentEpd();
         animateLine.map((san) => {
           chessboardInterface.makeMove(san);
         });

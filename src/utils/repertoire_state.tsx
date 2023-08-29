@@ -122,7 +122,12 @@ export interface RepertoireState {
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,
-    options?: {animated?: boolean; pgnToPlay?: string; import?: boolean; keepPosition?: boolean },
+    options?: {
+      animated?: boolean;
+      pgnToPlay?: string;
+      import?: boolean;
+      keepPosition?: boolean;
+    },
   ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;

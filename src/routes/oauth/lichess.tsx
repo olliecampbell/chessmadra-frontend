@@ -97,7 +97,7 @@ export default () => {
               <i class="fa-solid fa-circle-xmark text-2xl text-red-60" />
               <p class="text-xl font-semibold">Error authenticating</p>
             </div>
-            <p class="text-body pt-6">
+            <p class="body-text pt-6">
               {error()} Please try again. <br />
               You can also{"r"}
               <Link href="/" class="underline!">

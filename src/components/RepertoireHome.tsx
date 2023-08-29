@@ -47,6 +47,7 @@ import { isDevelopment } from "~/utils/env";
 import { clsx } from "~/utils/classes";
 import { Puff } from "solid-spinner";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { pluralize } from "~/utils/pluralize";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
@@ -174,15 +175,27 @@ export const RepertoireHome = () => {
                 right: loadingMistakes() ? (
                   <LoadingSpinner class="text-[12px]" />
                 ) : (
-                  <div class={clsx("flex row text-xs font-semibold", isEmpty(lichessMistakes()) ? "text-tertiary" : "text-orange-60 ")}>
-                    <CMText
-                      class={clsx("")}
-                    >
-                      {lichessMistakes()?.length ? `${lichessMistakes()?.length} mistakes` : "No mistakes"}
+                  <div
+                    class={clsx(
+                      "flex row text-xs font-semibold",
+                      isEmpty(lichessMistakes())
+                        ? "text-tertiary"
+                        : "text-orange-60 ",
+                    )}
+                  >
+                    <CMText class={clsx("")}>
+                      {lichessMistakes()?.length
+                      ? `${pluralize(lichessMistakes()?.length, "Mistake")}`
+                        : "No mistakes"}
                     </CMText>
-                    <i class={clsx("fa   ml-2", isEmpty(lichessMistakes()) ? "fa-check" : "fa-clock")} />
+                    <i
+                      class={clsx(
+                        "fa   ml-2",
+                        isEmpty(lichessMistakes()) ? "fa-circle-check" : "fa-circle-exclamation",
+                      )}
+                    />
                   </div>
-                ) ,
+                ),
                 onPress: () => {
                   quick((s) => {
                     s.repertoireState.reviewState.startReview({

@@ -332,11 +332,10 @@ export const getInitialReviewState = (
             c.showPlans = false;
             c.hideLastMoveHighlight = false;
           });
-            s.chessboard.playLine(pgnToLine(currentQuizGroup.line), {
-              animated: true,
-            });
+          s.chessboard.playLine(pgnToLine(currentQuizGroup.line), {
+            animated: true,
+          });
         }
-
       }, "setupNextMove"),
 
     giveUp: () =>

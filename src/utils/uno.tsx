@@ -39,11 +39,10 @@ Object.entries(colors.components).forEach(([color, value]) => {
   unoColors[color] = value;
 });
 const bgColors = Object.entries(unoColors).flatMap(([hue, shades]) => {
-
-return Object.entries(shades).map(([shade, color]) => {
-  return `bg-${hue}-${shade}`;
-})
-})
+  return Object.entries(shades).map(([shade, color]) => {
+    return `bg-${hue}-${shade}`;
+  });
+});
 
 export const unoConfig: VitePluginConfig = {
   rules: [
@@ -126,8 +125,7 @@ export const unoConfig: VitePluginConfig = {
     [/^&hover:(.*)$/, ([, c]) => `&hoVer:${c} active:${c}`],
   ],
   extraContent: {
-
-plain: bgColors
-    },
+    plain: bgColors,
+  },
   presets: [presetUno()],
 };

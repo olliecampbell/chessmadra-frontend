@@ -9,14 +9,24 @@ import {
   useUserState,
   useBrowsingState,
   useSidebarState,
+  useRepertoireState,
 } from "~/utils/app_state";
 import { RepertoireMovesTable } from "./RepertoireMovesTable";
 import { shouldUsePeerRates } from "~/utils/table_scoring";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
 import { InstructiveGamesView } from "./InstructiveGamesView";
-import { createEffect, createMemo, Match, Show, Switch } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  Match,
+  onCleanup,
+  onMount,
+  Show,
+  Switch,
+} from "solid-js";
 import { destructure } from "@solid-primitives/destructure";
 import { Puff } from "solid-spinner";
+import { isServer } from "solid-js/web";
 // import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 const desktopHeaderStyles = s(
@@ -47,6 +57,7 @@ export const Responses = function Responses() {
     ]);
   const [tableResponses] = useSidebarState(([s]) => [s.tableResponses]);
 
+  const [onboarding] = useRepertoireState((s) => [s.onboarding]);
   const usePeerRates = () => shouldUsePeerRates(positionReport());
   const [mode] = useSidebarState(([s]) => [s.mode]);
   const yourMoves = createMemo(() =>
@@ -64,45 +75,46 @@ export const Responses = function Responses() {
       return activeSide() !== currentSide();
     }),
   );
-  // TODO: solid
+  if (!isServer) {
+    const beforeUnloadListener = (event) => {
+      if (hasPendingLine()) {
+        event.preventDefault();
+        const prompt =
+          "You have an unsaved line, are you sure you want to exit?";
+        event.returnValue = prompt;
+        return prompt;
+      }
+    };
+    addEventListener("beforeunload", beforeUnloadListener, { capture: true });
+    onCleanup(() => {
+      removeEventListener("beforeunload", beforeUnloadListener, {
+        capture: true,
+      });
+    });
+  }
   // createEffect(() => {
-  //   const beforeUnloadListener = (event) => {
-  //     if (hasPendingLine()) {
-  //       event.preventDefault();
-  //       let prompt = "You have an unsaved line, are you sure you want to exit?";
-  //       event.returnValue = prompt;
-  //       return prompt;
-  //     }
-  //   };
-  //   addEventListener("beforeunload", beforeUnloadListener, { capture: true });
-  //   return () => {
-  //     removeEventListener("beforeunload", beforeUnloadListener, {
-  //       capture: true,
-  //     });
-  //   };
   // }, [hasPendingLine]);
-  const body = null;
-  const { prepareForHeader, reviewHeader } = destructure(() => {
+  const { reviewHeader } = destructure(() => {
     let reviewHeader = null;
-    let prepareForHeader: any = "Choose a move to prepare for";
-    if (isPastCoverageGoal()) {
-      prepareForHeader = "Most common responses";
-    }
+
     if (mode() === "browse") {
       reviewHeader = "What do you want to review?";
     }
-    return { prepareForHeader, reviewHeader };
+    return { reviewHeader };
   });
-  const header = () => {
+  const { header, body } = destructure(() => {
     if (reviewHeader()) {
-      return reviewHeader();
+      return { header: reviewHeader(), body: undefined };
     }
-    if (!isEmpty(prepareFor())) {
-      return prepareForHeader();
-    }
-    // @ts-ignore
-    return getResponsesHeader(currentLine(), yourMoves().length, activeSide());
-  };
+    return getResponsesHeader(
+      currentLine(),
+      yourMoves().length,
+      activeSide()!,
+      currentSide(),
+      isPastCoverageGoal()!,
+      onboarding().isOnboarding,
+    );
+  });
   const responses = createMemo(() => {
     if (!isEmpty(yourMoves())) {
       return yourMoves();
@@ -127,6 +139,7 @@ export const Responses = function Responses() {
               <RepertoireMovesTable
                 {...{
                   header: header,
+                  body: body?.(),
                   usePeerRates,
                   activeSide: activeSide()!,
                   side: currentSide()!,
@@ -215,24 +228,45 @@ const isGoodStockfishEval = (stockfish: StockfishReport, side: Side) => {
 function getResponsesHeader(
   currentLine: string[],
   myMoves: number,
-  side: Side,
-): string {
+  activeSide: Side,
+  currentSide: Side,
+  pastCoverageGoal: boolean,
+  onboarding = false,
+): { header: string; body?: string } {
   const hasMove = myMoves;
-  // TODO: account for multiple moves, "These moves are"
+  if (activeSide !== currentSide) {
+    let prepareForHeader: any = "Choose a move to prepare for";
+    if (pastCoverageGoal) {
+      prepareForHeader = "Most common responses";
+    }
+    return {header: prepareForHeader, body: onboarding && currentLine.length < 2 ? "You'll need to cover all of these eventually, but you can just pick the one you're most familiar with for now." : undefined};
+  }
   if (myMoves) {
     if (myMoves === 1) {
-      return "This move is in your repertoire";
+      return { header: "This move is in your repertoire" };
     } else {
-      return "These moves are in your repertoire";
+      return { header: "These moves are in your repertoire" };
     }
   }
   if (!hasMove && isEmpty(currentLine)) {
-    return "Which first move do you play as white?";
+    if (onboarding) {
+      return {
+        header: "Let's add the first line to your repertoire",
+        body: "To start with, choose the first move you play as white...",
+      };
+    }
+    return { header: "Which first move do you play as white?" };
   }
-  if (side === "black" && currentLine.length === 1) {
-    return `What do you play as black against 1. ${currentLine[0]}?`;
+  if (activeSide === "black" && currentLine.length === 1) {
+    return {
+      header: `What do you play as black against 1. ${currentLine[0]}?`,
+      body: currentLine.length < 2 && onboarding ? "Not sure what to play? Check the stats beside each move to help decide." : undefined,
+    };
   }
-  return `${hasMove ? "Your" : "Choose your"} ${
-    isEmpty(currentLine) ? "first" : "next"
-  } move`;
+  return {
+    header: `${hasMove ? "Your" : "Choose your"} ${
+      isEmpty(currentLine) ? "first" : "next"
+    } move`,
+      body: currentLine.length < 2 && onboarding ? "Not sure what to play? Check the stats beside each move to help decide." : undefined,
+  };
 }
