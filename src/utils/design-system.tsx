@@ -35,7 +35,7 @@ const genShadesV2 = (hue: number): Record<number, string> => {
   for (let i = 0; i <= 90; i = i + 5) {
     // const lightness = -1 * Math.pow((i / 100) - 0.5, 2) + 0.5
     const lightness = maxDarkness + i / 90 * (90 - maxDarkness)
-    const saturation = 90
+    const saturation = 70
   shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
   return shades;

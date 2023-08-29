@@ -71,7 +71,7 @@ export const RepertoireReview = (props: {}) => {
       },
       {
         icon: "fa fa-circle-check",
-        class: "text-[#79c977]",
+        class: "text-green-60",
         text: reviewStats().correct,
       },
       {
