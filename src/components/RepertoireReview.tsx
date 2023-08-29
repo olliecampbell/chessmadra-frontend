@@ -118,6 +118,7 @@ export const RepertoireReview = (props: {}) => {
           s.repertoireState.backToOverview();
           s.repertoireState.startBrowsing(m.side, "build", {
             pgnToPlay: m.line,
+            animated: false
           });
         });
       },

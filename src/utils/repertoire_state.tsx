@@ -20,6 +20,7 @@ import {
   values,
   capitalize,
   noop,
+  isNil,
 } from "lodash-es";
 import {
   BySide,
@@ -121,7 +122,7 @@ export interface RepertoireState {
   startBrowsing: (
     side: Side,
     mode: BrowsingMode,
-    options?: { pgnToPlay?: string; import?: boolean; keepPosition?: boolean },
+    options?: {animated?: boolean; pgnToPlay?: string; import?: boolean; keepPosition?: boolean },
   ) => void;
   showImportView?: boolean;
   startImporting: (side: Side) => void;
@@ -870,7 +871,7 @@ export const getInitialRepertoireState = (
         } else if (mode === "browse" || mode === "build") {
           if (options?.pgnToPlay) {
             s.browsingState.chessboard.playLine(pgnToLine(options.pgnToPlay), {
-              animated: true,
+              animated: !isNil(options.animated) ? options.animated : true,
               reset: true,
             });
           }
