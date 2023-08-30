@@ -8,7 +8,7 @@ import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
 import { posthog } from "posthog-js";
 export default (props => {
-  const stickyHomepageCTA = posthog.getFeatureFlag('sticky-homepage-cta');
+  const stickyHomepageCTA = posthog.getFeatureFlag("sticky-homepage-cta");
   console.log("feature?", stickyHomepageCTA, HomePageStickyNav());
   return /*#__PURE__*/React.createElement(Theme, {
     theme: theme
@@ -21,7 +21,9 @@ export default (props => {
     "md-padding": "18px 0 18px 0"
   }, /*#__PURE__*/React.createElement("div", {
     ref: x => {
-      x.appendChild(HomePageStickyNav());
+      x.appendChild(HomePageStickyNav({
+        onClick: props.onClick("sticky-homepage-cta")
+      }));
     }
   }), /*#__PURE__*/React.createElement(Box, {
     display: "flex",

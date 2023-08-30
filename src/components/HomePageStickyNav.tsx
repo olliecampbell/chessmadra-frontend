@@ -2,7 +2,7 @@ import { clsx } from "~/utils/classes";
 import { createScrollPosition } from "@solid-primitives/scroll";
 import { getFeatureLoaded } from "~/utils/experiments";
 
-export const HomePageStickyNav = () => {
+export const HomePageStickyNav = ({ onClick }: { onClick: () => void }) => {
   // const visible = true;
   const scroll = createScrollPosition();
   const featureEnabled = () => getFeatureLoaded("sticky-homepage-cta");
@@ -20,7 +20,12 @@ export const HomePageStickyNav = () => {
           src="/homepage_imgs/chessbook.svg?v=2023-04-11T09:44:19.974Z"
           class="h-4 lg:h-6"
         />
-        <div class="bg-orange-45 hover:bg-orange-50 px-4 lg:px-6 py-2 lg:py-4 rounded cursor-pointer text-md lg:text-lg font-semibold">
+        <div
+          class="bg-orange-45 hover:bg-orange-50 px-4 lg:px-6 py-2 lg:py-4 rounded cursor-pointer text-md lg:text-lg font-semibold"
+          onClick={() => {
+            onClick();
+          }}
+        >
           Get started
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import theme from "../theme";
-import {HomePageStickyNav} from "../../components/HomePageStickyNav";
+import { HomePageStickyNav } from "../../components/HomePageStickyNav";
 import {
   Theme,
   Link,
@@ -19,7 +19,7 @@ import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
 import { posthog } from "posthog-js";
 export default (props) => {
-  const stickyHomepageCTA = posthog.getFeatureFlag('sticky-homepage-cta')
+  const stickyHomepageCTA = posthog.getFeatureFlag("sticky-homepage-cta");
   console.log("feature?", stickyHomepageCTA, HomePageStickyNav());
 
   return (
@@ -31,9 +31,15 @@ export default (props) => {
       </Helmet>
 
       <Section md-padding="18px 0 18px 0">
-                  <div ref={(x) => {
-x.appendChild(HomePageStickyNav());
-                  }}/>
+        <div
+          ref={(x) => {
+            x.appendChild(
+              HomePageStickyNav({
+                onClick: props.onClick("sticky-homepage-cta"),
+              }),
+            );
+          }}
+        />
 
         <Box
           display="flex"
