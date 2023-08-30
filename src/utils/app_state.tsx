@@ -32,7 +32,7 @@ export interface AppState {
   trackEvent: (
     name: string,
     props?: Object,
-    options: { posthogOnly?: boolean },
+    options?: { posthogOnly?: boolean },
   ) => void;
 }
 
@@ -93,7 +93,11 @@ const initialState = {
   navigationState: getInitialNavigationState(set, get),
   experimentationState: {},
   userState: getInitialUserState(set, get),
-  trackEvent: (name: string, props?: Object, options) => {
+  trackEvent: (
+    name: string,
+    props?: Object,
+    options?: { posthogOnly?: boolean },
+  ) => {
     get((s: AppState) => {
       console.log(
         `[EVENT] %c${name} %c ${Object.entries(props ?? {})
