@@ -33,11 +33,13 @@ export default (props) => {
       <Section md-padding="18px 0 18px 0">
         <div
           ref={(x) => {
-            x.appendChild(
-              HomePageStickyNav({
-                onClick: props.onClick("sticky-homepage-cta"),
-              }),
-            );
+            if (x) {
+              x.appendChild(
+                HomePageStickyNav({
+                  onClick: () => props?.onClick("sticky-homepage-cta"),
+                }),
+              );
+            }
           }}
         />
 

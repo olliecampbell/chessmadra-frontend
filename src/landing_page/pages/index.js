@@ -21,9 +21,11 @@ export default (props => {
     "md-padding": "18px 0 18px 0"
   }, /*#__PURE__*/React.createElement("div", {
     ref: x => {
-      x.appendChild(HomePageStickyNav({
-        onClick: props.onClick("sticky-homepage-cta")
-      }));
+      if (x) {
+        x.appendChild(HomePageStickyNav({
+          onClick: () => props?.onClick("sticky-homepage-cta")
+        }));
+      }
     }
   }), /*#__PURE__*/React.createElement(Box, {
     display: "flex",
