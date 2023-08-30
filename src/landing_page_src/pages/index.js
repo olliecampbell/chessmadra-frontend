@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import theme from "../theme";
+import {HomePageStickyNav} from "../../components/HomePageStickyNav";
 import {
   Theme,
   Link,
@@ -16,7 +17,11 @@ import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "../global-page-styles";
 import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
+import { posthog } from "posthog-js";
 export default (props) => {
+  const stickyHomepageCTA = posthog.getFeatureFlag('sticky-homepage-cta')
+  console.log("feature?", stickyHomepageCTA, HomePageStickyNav());
+
   return (
     <Theme theme={theme}>
       <GlobalQuarklyPageStyles pageUrl={"index"} />
@@ -24,7 +29,12 @@ export default (props) => {
         <title>Chessbook</title>
         <meta property={"og:title"} content={"Chessbook"} />
       </Helmet>
+
       <Section md-padding="18px 0 18px 0">
+                  <div ref={(x) => {
+x.appendChild(HomePageStickyNav());
+                  }}/>
+
         <Box
           display="flex"
           padding="12px 0"

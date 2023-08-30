@@ -15,6 +15,7 @@ import { Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { destructure } from "@solid-primitives/destructure";
 import { getInitialTrainersState, TrainersState } from "./trainers_state";
+import { posthog } from "posthog-js";
 
 const DEBUG_STATE = true;
 
@@ -25,9 +26,14 @@ export interface AppState {
   repertoireState: RepertoireState;
   debugState: DebugState;
   navigationState: NavigationState;
+  experimentationState: ExperimentationState;
   userState: UserState;
   trainersState: TrainersState;
   trackEvent: (name: string, props?: Object) => void;
+}
+
+export interface ExperimentationState {
+
 }
 
 let pendingState: AppState | null = null;
@@ -83,6 +89,9 @@ const initialState = {
   // gameMemorizationState: getInitialGameMemorizationState(set, get),
   debugState: getInitialDebugState(set, get),
   navigationState: getInitialNavigationState(set, get),
+  experimentationState: {
+
+    },
   userState: getInitialUserState(set, get),
   trackEvent: (name: string, props?: Object) => {
     get((s: AppState) => {
@@ -94,6 +103,7 @@ const initialState = {
         "color: hsl(217, 92%, 76%); font-weight: bold;",
       );
       amplitude.track(name, props);
+      posthog.capture(name, props);
     });
   },
   quick: set,

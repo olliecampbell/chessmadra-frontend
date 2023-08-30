@@ -11,6 +11,7 @@ import { AuthStatus } from "~/utils/user_state";
 import { RepertoireBuilder } from "./RepertoireBuilder";
 import { useLocation } from "solid-start";
 import { identify, Identify } from "@amplitude/analytics-browser";
+import { posthog } from "posthog-js";
 
 export const PageWrapper = (props: { initialView?: Component }) => {
   const [userState] = useAppState((s) => [s.userState]);
@@ -23,6 +24,7 @@ export const PageWrapper = (props: { initialView?: Component }) => {
 
   onMount(() => {
     const identifyObj = new Identify();
+    posthog.setPersonProperties(undefined, { initial_page: location.pathname });
     identifyObj.setOnce("initial_page", location.pathname);
     identify(identifyObj);
   });
