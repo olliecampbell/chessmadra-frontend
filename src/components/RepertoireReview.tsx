@@ -63,6 +63,15 @@ export const RepertoireReview = (props: {}) => {
     return moves;
   });
   const progressIcons = () => {
+    if (reviewingMistakes()) {
+      return [
+        {
+          icon: "fa fa-circle-xmark",
+          class: "text-orange-60",
+          text: `${reviewStats().due + 1} Due`,
+        },
+      ];
+    }
     return [
       {
         icon: "fa fa-clock",
@@ -156,14 +165,12 @@ export const RepertoireReview = (props: {}) => {
             rel="noreferrer"
             class="font-semibold "
           >
-            your game {lichessMistake.opponentName && `against ${lichessMistake.opponentName}`}
+            your game
+            {lichessMistake.opponentName &&
+              ` against ${lichessMistake.opponentName}`}
           </a>
           , you played{" "}
-          <span
-            class={clsx(
-              "bg-orange-60 text-orange-10 p-px px-1 rounded font-semibold",
-            )}
-          >
+          <span class={clsx("text-orange-60 font-semibold")}>
             {lichessMistake.playedSan}
           </span>
           . Play the correct move on the board.
@@ -243,33 +250,24 @@ export const RepertoireReview = (props: {}) => {
             ? "Practice"
             : `Practicing ${isPlanPractice() ? "plans" : "moves"}`}
         </SidebarHeader>
-        <Show when={!reviewingMistakes()}>
-          <div class="row items-center space-x-4 lg:space-x-8">
-            <For each={progressIcons()}>
-              {(i) => {
-                return (
-                  <div class="row items-center">
-                    <p
-                      class={clsx(
-                        i.class,
-                        "text-sm font-semibold lg:text-base",
-                      )}
-                    >
-                      {i.text}
-                    </p>
-                    <i
-                      class={clsx(
-                        i.class,
-                        i.icon,
-                        " ml-2 text-sm lg:text-base",
-                      )}
-                    />
-                  </div>
-                );
-              }}
-            </For>
-          </div>
-        </Show>
+        <div class="row items-center space-x-4 lg:space-x-8">
+          <For each={progressIcons()}>
+            {(i) => {
+              return (
+                <div class="row items-center">
+                  <p
+                    class={clsx(i.class, "text-sm font-semibold lg:text-base")}
+                  >
+                    {i.text}
+                  </p>
+                  <i
+                    class={clsx(i.class, i.icon, " ml-2 text-sm lg:text-base")}
+                  />
+                </div>
+              );
+            }}
+          </For>
+        </div>
       </div>
       <div class={"h-6 lg:h-10"} />
       <p class="body-text leading-5">{body()}</p>

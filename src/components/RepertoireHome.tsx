@@ -51,7 +51,7 @@ import { pluralize } from "~/utils/pluralize";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
-  const lichessMistakes = () => getAppState().repertoireState.lichessMistakes;
+  const lichessMistakes = () => null;
   const loadingMistakes = () => isNil(lichessMistakes());
   const themeId = () => userState().user?.theme;
   const theme = () =>
@@ -185,13 +185,15 @@ export const RepertoireHome = () => {
                   >
                     <CMText class={clsx("")}>
                       {lichessMistakes()?.length
-                      ? `${pluralize(lichessMistakes()?.length, "Mistake")}`
+                        ? `${pluralize(lichessMistakes()?.length, "Mistake")}`
                         : "No mistakes"}
                     </CMText>
                     <i
                       class={clsx(
-                        "fa   ml-2",
-                        isEmpty(lichessMistakes()) ? "fa-circle-check" : "fa-circle-exclamation",
+                        "fa ml-2",
+                        isEmpty(lichessMistakes())
+                          ? "fa-circle-check"
+                          : "fa-circle-x",
                       )}
                     />
                   </div>
