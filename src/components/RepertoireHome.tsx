@@ -51,7 +51,7 @@ import { pluralize } from "~/utils/pluralize";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
-  const lichessMistakes = () => null;
+  const lichessMistakes = () => getAppState().repertoireState.lichessMistakes;
   const loadingMistakes = () => isNil(lichessMistakes());
   const themeId = () => userState().user?.theme;
   const theme = () =>
