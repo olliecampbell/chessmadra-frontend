@@ -41,6 +41,7 @@ const QAPI = {
 
 export default function LandingPageWrapper() {
   onMount(() => {
+    trackEvent("landing_page_loaded", {}, { posthogOnly: true });
     // @ts-ignore
     window.QAPI = QAPI;
     ReactDOM.render(

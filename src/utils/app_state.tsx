@@ -29,12 +29,14 @@ export interface AppState {
   experimentationState: ExperimentationState;
   userState: UserState;
   trainersState: TrainersState;
-  trackEvent: (name: string, props?: Object) => void;
+  trackEvent: (
+    name: string,
+    props?: Object,
+    options: { posthogOnly?: boolean },
+  ) => void;
 }
 
-export interface ExperimentationState {
-
-}
+export interface ExperimentationState {}
 
 let pendingState: AppState | null = null;
 const set = (fn: (state: AppState) => AppState) => {
@@ -89,11 +91,9 @@ const initialState = {
   // gameMemorizationState: getInitialGameMemorizationState(set, get),
   debugState: getInitialDebugState(set, get),
   navigationState: getInitialNavigationState(set, get),
-  experimentationState: {
-
-    },
+  experimentationState: {},
   userState: getInitialUserState(set, get),
-  trackEvent: (name: string, props?: Object) => {
+  trackEvent: (name: string, props?: Object, options) => {
     get((s: AppState) => {
       console.log(
         `[EVENT] %c${name} %c ${Object.entries(props ?? {})
@@ -102,7 +102,9 @@ const initialState = {
         "color: salmon; font-weight: bold;",
         "color: hsl(217, 92%, 76%); font-weight: bold;",
       );
-      amplitude.track(name, props);
+      if (!options?.posthogOnly) {
+        amplitude.track(name, props);
+      }
       posthog.capture(name, props);
     });
   },
