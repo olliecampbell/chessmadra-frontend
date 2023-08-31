@@ -40,6 +40,7 @@ export default function Root() {
   onMount(() => {
     posthog.init("phc_atElVsO6VniR0N7SppwOvz56DB3pRkkGiL0kRFdKYwu", {
       api_host: "https://eu.posthog.com",
+      autocapture: false,
     });
     posthog.onFeatureFlags((x, y) => {
       setPosthogFeaturesLoaded(true);
