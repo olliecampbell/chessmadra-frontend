@@ -2,6 +2,10 @@ import React, { useRef, useEffect } from "react";
 import theme from "../theme";
 import { HomePageStickyNav } from "../../components/HomePageStickyNav";
 import {
+  HomePageHeader,
+  HomePageSubheader,
+} from "../../components/HomePageHeaders";
+import {
   Theme,
   Link,
   Image,
@@ -168,7 +172,13 @@ export default (props) => {
             lg-font="--headline1Sm"
             lg-margin="0px 0px 16px 0px"
           >
-            Your personal opening book
+            <div
+              ref={(x) => {
+                if (x) {
+                  x.appendChild(HomePageHeader());
+                }
+              }}
+            />
           </Text>
           <Text
             margin="0px 0px 36px 0px"
@@ -180,9 +190,17 @@ export default (props) => {
             md-margin="0px 0px 27px 0px"
             sm-font="--headline3Sm"
             lg-margin="0px 0px 24px 0px"
+            style={{
+              lineHeight: "1.5",
+            }}
           >
-            Chessbook is the fastest way to build a bulletproof opening
-            repertoire.
+            <div
+              ref={(x) => {
+                if (x) {
+                  x.appendChild(HomePageSubheader());
+                }
+              }}
+            />
           </Text>
           <Link
             onClick={() => {

@@ -6,12 +6,14 @@ import { isDevelopment } from "./env";
 export const [posthogStore, setPosthogStore] = createStore({
   featuresLoaded: false,
 });
-type PosthogFeature = "sticky-homepage-cta";
 
-export const getFeatureLoaded = (feature: PosthogFeature) =>
-  posthogStore.featuresLoaded && posthog.getFeatureFlag(feature);
-
+type PosthogFeature = "sticky-homepage-cta" | "homepage-header-cta";
+const overrides: Record<PosthogFeature, string> = {};
 // overrides
 if (isDevelopment && !isServer) {
-  // posthog.featureFlags.override({ "sticky-homepage-cta": "enabled" });
+  overrides["homepage-header-cta"] = "2";
 }
+
+export const getFeatureLoaded = (feature: PosthogFeature) =>
+  posthogStore.featuresLoaded &&
+  (overrides[feature] ?? posthog.getFeatureFlag(feature));

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import theme from "../theme";
 import { HomePageStickyNav } from "../../components/HomePageStickyNav";
+import { HomePageHeader, HomePageSubheader } from "../../components/HomePageHeaders";
 import { Theme, Link, Image, Box, Section, Text, Strong, Span, Icon, LinkBox } from "@quarkly/widgets";
 import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "../global-page-styles";
@@ -136,7 +137,13 @@ export default (props => {
     "md-margin": "0px 0px 15px 0px",
     "lg-font": "--headline1Sm",
     "lg-margin": "0px 0px 16px 0px"
-  }, "Your\xA0personal opening\xA0book"), /*#__PURE__*/React.createElement(Text, {
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: x => {
+      if (x) {
+        x.appendChild(HomePageHeader());
+      }
+    }
+  })), /*#__PURE__*/React.createElement(Text, {
     margin: "0px 0px 36px 0px",
     color: "--lightD1",
     font: "--headline3",
@@ -145,8 +152,17 @@ export default (props => {
     "md-font": "--headline3Md",
     "md-margin": "0px 0px 27px 0px",
     "sm-font": "--headline3Sm",
-    "lg-margin": "0px 0px 24px 0px"
-  }, "Chessbook is the fastest way to build a bulletproof opening repertoire."), /*#__PURE__*/React.createElement(Link, {
+    "lg-margin": "0px 0px 24px 0px",
+    style: {
+      lineHeight: "1.5"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: x => {
+      if (x) {
+        x.appendChild(HomePageSubheader());
+      }
+    }
+  })), /*#__PURE__*/React.createElement(Link, {
     onClick: () => {
       props.onClick("splash_cta");
     },
