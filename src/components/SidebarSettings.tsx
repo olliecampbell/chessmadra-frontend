@@ -19,6 +19,7 @@ import { RatingSelection } from "./RatingSelection";
 import { initTooltip } from "./Tooltip";
 import { renderThreshold } from "~/utils/threshold";
 import { trackEvent } from "~/utils/trackEvent";
+import { useIsMobileV2 } from "~/utils/isMobile";
 
 type ThresholdOption = {
   name: string;
@@ -70,11 +71,16 @@ export const CoverageSettings = (props: {}) => {
   const getExpectedMoves = (threshold: number) => {
     return getExpectedNumMovesBetween(1, threshold, "white", false);
   };
+  const isMobile = useIsMobileV2();
   const maxMoves = getExpectedMoves(last(thresholdOptions)!.value);
   return (
     <SidebarTemplate
       actions={[]}
-      header={"What type of repertoire do you want to create?"}
+      header={
+        isMobile()
+          ? "What size repertoire do you want?"
+          : "What size repertoire do you want to create?"
+      }
     >
       <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pb-2 md:pb-3 pr-4 md:pr-6 text-xs text-right">
         <div class="grow" />
