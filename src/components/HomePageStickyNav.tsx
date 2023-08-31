@@ -21,7 +21,7 @@ export const HomePageStickyNav = (props: { onClick: () => void }) => {
           class="h-4 lg:h-6"
         />
         <div
-          class="bg-orange-45 hover:bg-orange-50 px-4 lg:px-6 py-2 lg:py-4 rounded cursor-pointer text-md lg:text-lg font-semibold"
+          class="bg-green-45 hover:bg-green-50 px-4 lg:px-6 py-2 lg:py-4 rounded cursor-pointer text-md lg:text-lg font-semibold"
           onClick={() => {
             props.onClick();
           }}

@@ -7,11 +7,15 @@ export const [posthogStore, setPosthogStore] = createStore({
   featuresLoaded: false,
 });
 
-type PosthogFeature = "sticky-homepage-cta" | "homepage-header-cta";
+type PosthogFeature =
+  | "sticky-homepage-cta"
+  | "homepage-header-cta"
+  | "homepage-cta";
 const overrides: Record<PosthogFeature, string> = {};
 // overrides
 if (isDevelopment && !isServer) {
-  overrides["homepage-header-cta"] = "2";
+  overrides["homepage-cta"] = "2";
+  // overrides["homepage-header-cta"] = "2";
 }
 
 export const getFeatureLoaded = (feature: PosthogFeature) =>

@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import theme from "../theme";
 import { HomePageStickyNav } from "../../components/HomePageStickyNav";
 import { HomePageHeader, HomePageSubheader } from "../../components/HomePageHeaders";
+import { HomePageCTA } from "../../components/HomePageCTA";
 import { Theme, Link, Image, Box, Section, Text, Strong, Span, Icon, LinkBox } from "@quarkly/widgets";
 import { Helmet } from "react-helmet";
 import { GlobalQuarklyPageStyles } from "../global-page-styles";
@@ -166,7 +167,6 @@ export default (props => {
     onClick: () => {
       props.onClick("splash_cta");
     },
-    padding: "12px 24px 12px 24px",
     color: "--dark",
     "text-decoration-line": "initial",
     font: "--headline3",
@@ -178,9 +178,14 @@ export default (props => {
     "hover-background": "--color-orange",
     transition: "background-color 0.2s linear 0s",
     background: "--color-light",
-    "md-font": "--headline3Md",
-    "md-padding": "9px 18px 9px 18px"
-  }, "Try it for free"), /*#__PURE__*/React.createElement(Text, {
+    "md-font": "--headline3Md"
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: x => {
+      if (x) {
+        x.appendChild(HomePageCTA());
+      }
+    }
+  })), /*#__PURE__*/React.createElement(Text, {
     margin: "0px 0px 0px 0px",
     color: "--grey",
     font: "--small",

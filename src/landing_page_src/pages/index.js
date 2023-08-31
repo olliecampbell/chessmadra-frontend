@@ -5,6 +5,7 @@ import {
   HomePageHeader,
   HomePageSubheader,
 } from "../../components/HomePageHeaders";
+import { HomePageCTA } from "../../components/HomePageCTA";
 import {
   Theme,
   Link,
@@ -206,22 +207,21 @@ export default (props) => {
             onClick={() => {
               props.onClick("splash_cta");
             }}
-            padding="12px 24px 12px 24px"
             color="--dark"
             text-decoration-line="initial"
             font="--headline3"
-            border-radius="8px"
             margin="0px 0px 0px 0px"
             sm-margin="0px 0px 0px 0px"
             sm-text-align="center"
-            hover-transition="background-color 0.2s linear 0s"
-            hover-background="--color-orange"
-            transition="background-color 0.2s linear 0s"
-            background="--color-light"
             md-font="--headline3Md"
-            md-padding="9px 18px 9px 18px"
           >
-            Try it for free
+            <div
+              ref={(x) => {
+                if (x) {
+                  x.appendChild(HomePageCTA());
+                }
+              }}
+            />
           </Link>
           <Text
             margin="0px 0px 0px 0px"

@@ -69,7 +69,7 @@ const orange = genShadesV2(24, { saturation: 80 });
 const pink = genShadesV2(308);
 const purple = genShadesV2(271);
 const red = genShadesV2(350);
-const green = genShadesV2(130, { saturation: 70 });
+const green = genShadesV2(130, { saturation: 50 });
 const success = genShadesV2(164);
 const arrows = genShadesV2(40);
 
