@@ -51,7 +51,12 @@ import { pluralize } from "~/utils/pluralize";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
-  const lichessMistakes = () => getAppState().repertoireState.lichessMistakes;
+  const lichessMistakes = () => {
+    if (isDevelopment) {
+      // return [];
+    }
+    return getAppState().repertoireState.lichessMistakes;
+  };
   const loadingMistakes = () => isNil(lichessMistakes());
   const themeId = () => userState().user?.theme;
   const theme = () =>
@@ -219,7 +224,7 @@ export const RepertoireHome = () => {
                 text: "Review your online games",
                 subtext: "Review your latest Lichess games",
                 right: (
-                  <CMText class="text-secondary text-xs font-semibold">
+                  <CMText class="text-secondary text-xs">
                     Connect
                     <i class="pl-[6px] fa  fa-link" />
                   </CMText>

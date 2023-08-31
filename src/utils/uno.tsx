@@ -47,6 +47,8 @@ const bgColors = Object.entries(unoColors).flatMap(([hue, shades]) => {
 export const unoConfig: VitePluginConfig = {
   rules: [
     ["custom-rule", { color: "red" }],
+    ["font-semibold", { "font-weight": "500" }],
+    ["font-bold", { "font-weight": "600" }],
     ["text-highlight", { color: colors.components.arrows[55] }],
     [
       /^text-(.*)$/,
