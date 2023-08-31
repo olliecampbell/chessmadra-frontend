@@ -18,14 +18,14 @@ if (isDevelopment && !isServer) {
   // overrides["homepage-header-cta"] = "2";
 }
 
-export const getFeature = (feature: PosthogFeature): false | string => {
+export const getFeature = (feature: PosthogFeature): boolean | string => {
   if (!posthogFeaturesLoaded()) {
     return false;
   }
 
   const val = overrides[feature] || posthog.getFeatureFlag(feature);
-  if (val !== "control") {
-    return feature;
+  if (val !== "control" && val) {
+    return val;
   }
   return false;
 };

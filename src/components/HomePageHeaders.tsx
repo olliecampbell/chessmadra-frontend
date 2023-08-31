@@ -1,18 +1,12 @@
-import { clsx } from "~/utils/classes";
-import { createScrollPosition } from "@solid-primitives/scroll";
 import { getFeature } from "~/utils/experiments";
 
 export const HomePageHeader = (props: { onClick: () => void }) => {
-  // const visible = true;
-  const scroll = createScrollPosition();
   const ctas = () => {
     return getHomepageHeadersCopy(getFeature("homepage-header-cta"));
   };
   return <span> {ctas().header}</span>;
 };
 export const HomePageSubheader = (props: { onClick: () => void }) => {
-  // const visible = true;
-  const scroll = createScrollPosition();
   const ctas = () => {
     return getHomepageHeadersCopy(getFeature("homepage-header-cta"));
   };
@@ -20,6 +14,7 @@ export const HomePageSubheader = (props: { onClick: () => void }) => {
 };
 
 const getHomepageHeadersCopy = (feature?: string | boolean) => {
+  console.log("getting header copy, feature", feature);
   if (feature === "1") {
     return {
       header: "The opening builder that respects your time",
