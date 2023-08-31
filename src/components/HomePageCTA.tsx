@@ -3,9 +3,10 @@ import { createScrollPosition } from "@solid-primitives/scroll";
 import { getFeature } from "~/utils/experiments";
 import { Match, Switch } from "solid-js";
 
-export const HomePageCTA = (props: { onClick: () => void }) => {
+export const HomePageCTA = () => {
   const ctas = () => {
     const feature = getFeature("homepage-cta");
+    console.log("CTA???", feature);
     if (feature === "1") {
       return "Get started";
     } else if (feature === "2") {

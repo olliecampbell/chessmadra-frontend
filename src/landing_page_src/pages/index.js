@@ -23,6 +23,7 @@ import { GlobalQuarklyPageStyles } from "../global-page-styles";
 import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
 import { posthog } from "posthog-js";
+import { render } from "solid-js/web";
 export default (props) => {
   const stickyHomepageCTA = posthog.getFeatureFlag("sticky-homepage-cta");
   console.log("feature?", stickyHomepageCTA, HomePageStickyNav());
@@ -39,10 +40,12 @@ export default (props) => {
         <div
           ref={(x) => {
             if (x) {
-              x.appendChild(
-                HomePageStickyNav({
-                  onClick: () => props?.onClick("sticky-homepage-cta"),
-                }),
+              render(
+                () =>
+                  HomePageStickyNav({
+                    onClick: () => props?.onClick("sticky-homepage-cta"),
+                  }),
+                x,
               );
             }
           }}
@@ -176,7 +179,7 @@ export default (props) => {
             <div
               ref={(x) => {
                 if (x) {
-                  x.appendChild(HomePageHeader());
+                  render(() => HomePageHeader(), x);
                 }
               }}
             />
@@ -198,7 +201,7 @@ export default (props) => {
             <div
               ref={(x) => {
                 if (x) {
-                  x.appendChild(HomePageSubheader());
+                  render(() => HomePageSubheader(), x);
                 }
               }}
             />
@@ -218,7 +221,7 @@ export default (props) => {
             <div
               ref={(x) => {
                 if (x) {
-                  x.appendChild(HomePageCTA());
+                  render(() => HomePageCTA(), x);
                 }
               }}
             />

@@ -1,16 +1,16 @@
 import { posthog } from "posthog-js";
-import { createStore } from "solid-js/store";
+import { createSignal } from "solid-js";
 import { isServer } from "solid-js/web";
 import { isDevelopment } from "./env";
 
-export const [posthogStore, setPosthogStore] = createStore({
-  featuresLoaded: false,
-});
+export const [posthogFeaturesLoaded, setPosthogFeaturesLoaded] =
+  createSignal(false);
 
 type PosthogFeature =
   | "sticky-homepage-cta"
   | "homepage-header-cta"
   | "homepage-cta";
+
 const overrides: Record<PosthogFeature, string> = {};
 // overrides
 if (isDevelopment && !isServer) {
@@ -19,7 +19,7 @@ if (isDevelopment && !isServer) {
 }
 
 export const getFeature = (feature: PosthogFeature): false | string => {
-  if (!posthogStore.featuresLoaded) {
+  if (!posthogFeaturesLoaded()) {
     return false;
   }
 

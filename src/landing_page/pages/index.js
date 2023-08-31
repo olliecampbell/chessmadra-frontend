@@ -9,6 +9,7 @@ import { GlobalQuarklyPageStyles } from "../global-page-styles";
 import { RawHtml, Override, Menu } from "@quarkly/components";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
 import { posthog } from "posthog-js";
+import { render } from "solid-js/web";
 export default (props => {
   const stickyHomepageCTA = posthog.getFeatureFlag("sticky-homepage-cta");
   console.log("feature?", stickyHomepageCTA, HomePageStickyNav());
@@ -24,9 +25,9 @@ export default (props => {
   }, /*#__PURE__*/React.createElement("div", {
     ref: x => {
       if (x) {
-        x.appendChild(HomePageStickyNav({
+        render(() => HomePageStickyNav({
           onClick: () => props?.onClick("sticky-homepage-cta")
-        }));
+        }), x);
       }
     }
   }), /*#__PURE__*/React.createElement(Box, {
@@ -141,7 +142,7 @@ export default (props => {
   }, /*#__PURE__*/React.createElement("div", {
     ref: x => {
       if (x) {
-        x.appendChild(HomePageHeader());
+        render(() => HomePageHeader(), x);
       }
     }
   })), /*#__PURE__*/React.createElement(Text, {
@@ -160,7 +161,7 @@ export default (props => {
   }, /*#__PURE__*/React.createElement("div", {
     ref: x => {
       if (x) {
-        x.appendChild(HomePageSubheader());
+        render(() => HomePageSubheader(), x);
       }
     }
   })), /*#__PURE__*/React.createElement(Link, {
@@ -170,19 +171,14 @@ export default (props => {
     color: "--dark",
     "text-decoration-line": "initial",
     font: "--headline3",
-    "border-radius": "8px",
     margin: "0px 0px 0px 0px",
     "sm-margin": "0px 0px 0px 0px",
     "sm-text-align": "center",
-    "hover-transition": "background-color 0.2s linear 0s",
-    "hover-background": "--color-orange",
-    transition: "background-color 0.2s linear 0s",
-    background: "--color-light",
     "md-font": "--headline3Md"
   }, /*#__PURE__*/React.createElement("div", {
     ref: x => {
       if (x) {
-        x.appendChild(HomePageCTA());
+        render(() => HomePageCTA(), x);
       }
     }
   })), /*#__PURE__*/React.createElement(Text, {

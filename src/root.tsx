@@ -27,25 +27,23 @@ import { getAppState, quick } from "~/utils/app_state";
 import { HeadSiteMeta } from "./components/HeadSiteMeta";
 import { isChessmadra, isDevelopment } from "./utils/env";
 import posthog from "posthog-js";
-import { setPosthogStore } from "./utils/experiments";
+import {
+  posthogFeaturesLoaded,
+  setPosthogFeaturesLoaded,
+} from "./utils/experiments";
+import { produce } from "solid-js/store";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-if (!isServer) {
-  posthog.init("phc_atElVsO6VniR0N7SppwOvz56DB3pRkkGiL0kRFdKYwu", {
-    api_host: "https://eu.posthog.com",
-  });
-    posthog.onFeatureFlags(() => {
-      setPosthogStore((state) => {
-        state.featuresLoaded = true;
-        return state;
-      });
-    });
-}
 
 export default function Root() {
   onMount(() => {
-
+    posthog.init("phc_atElVsO6VniR0N7SppwOvz56DB3pRkkGiL0kRFdKYwu", {
+      api_host: "https://eu.posthog.com",
+    });
+    posthog.onFeatureFlags((x, y) => {
+      setPosthogFeaturesLoaded(true);
+    });
     // amplitude
     amplitudeInit(
       development
