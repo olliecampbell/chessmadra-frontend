@@ -239,7 +239,13 @@ function getResponsesHeader(
     if (pastCoverageGoal) {
       prepareForHeader = "Most common responses";
     }
-    return {header: prepareForHeader, body: onboarding && currentLine.length < 2 ? "You'll need to cover all of these eventually, but you can just pick the one you're most familiar with for now." : undefined};
+    return {
+      header: prepareForHeader,
+      body:
+        onboarding && currentLine.length < 2
+          ? "You'll need to cover all of these eventually, but just pick one you're familiar with for now."
+          : undefined,
+    };
   }
   if (myMoves) {
     if (myMoves === 1) {
@@ -260,13 +266,19 @@ function getResponsesHeader(
   if (activeSide === "black" && currentLine.length === 1) {
     return {
       header: `What do you play as black against 1. ${currentLine[0]}?`,
-      body: currentLine.length < 2 && onboarding ? "Not sure what to play? Check the stats beside each move to help decide." : undefined,
+      body:
+        currentLine.length < 4 && onboarding
+          ? "Not sure what to play? Check the stats beside each move to help decide."
+          : undefined,
     };
   }
   return {
     header: `${hasMove ? "Your" : "Choose your"} ${
       isEmpty(currentLine) ? "first" : "next"
     } move`,
-      body: currentLine.length < 2 && onboarding ? "Not sure what to play? Check the stats beside each move to help decide." : undefined,
+    body:
+      currentLine.length < 2 && onboarding
+        ? "Not sure what to play? Check the stats beside each move to help decide."
+        : undefined,
   };
 }
