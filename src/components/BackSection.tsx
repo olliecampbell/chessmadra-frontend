@@ -124,11 +124,7 @@ export const BackSection = () => {
       };
     }
     if (view()?.component === PracticeComplete) {
-      backButtonAction = () => {
-        quick((s) => {
-          s.repertoireState.backToOverview();
-        });
-      };
+      backButtonAction = null;
     }
     if (onboarding().isOnboarding) {
       if (

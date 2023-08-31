@@ -64,13 +64,7 @@ export const RepertoireReview = (props: {}) => {
   });
   const progressIcons = () => {
     if (reviewingMistakes()) {
-      return [
-        {
-          icon: "fa fa-circle-xmark",
-          class: "text-orange-60",
-          text: `${reviewStats().due + 1} Due`,
-        },
-      ];
+      return [];
     }
     return [
       {
@@ -117,7 +111,7 @@ export const RepertoireReview = (props: {}) => {
       },
       hidden: !currentMove()?.lichessMistake,
       style: "primary",
-      text: "Skip this one",
+      text: "Skip this move, I meant to play it",
     },
     {
       onPress: () => {
