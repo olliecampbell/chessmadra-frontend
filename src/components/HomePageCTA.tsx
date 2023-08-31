@@ -1,11 +1,11 @@
 import { clsx } from "~/utils/classes";
 import { createScrollPosition } from "@solid-primitives/scroll";
-import { getFeatureLoaded } from "~/utils/experiments";
+import { getFeature } from "~/utils/experiments";
 import { Match, Switch } from "solid-js";
 
 export const HomePageCTA = (props: { onClick: () => void }) => {
   const ctas = () => {
-    const feature = getFeatureLoaded("homepage-cta");
+    const feature = getFeature("homepage-cta");
     if (feature === "1") {
       return "Get started";
     } else if (feature === "2") {
@@ -27,7 +27,7 @@ export const HomePageCTA = (props: { onClick: () => void }) => {
           </div>
         }
       >
-        <Match when={!!getFeatureLoaded("homepage-cta")}>
+        <Match when={!!getFeature("homepage-cta")}>
           <div
             class={clsx(
               "px-[18px] lg:px-[24px] py-[9px] lg:py-[12px] flex justify-center items-center bg-green-40 transition-all hover:bg-green-50 rounded text-gray-95",

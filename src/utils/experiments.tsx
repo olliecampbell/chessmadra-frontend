@@ -14,10 +14,18 @@ type PosthogFeature =
 const overrides: Record<PosthogFeature, string> = {};
 // overrides
 if (isDevelopment && !isServer) {
-  overrides["homepage-cta"] = "2";
+  // overrides["homepage-cta"] = "2";
   // overrides["homepage-header-cta"] = "2";
 }
 
-export const getFeatureLoaded = (feature: PosthogFeature) =>
-  posthogStore.featuresLoaded &&
-  (overrides[feature] ?? posthog.getFeatureFlag(feature));
+export const getFeature = (feature: PosthogFeature): false | string => {
+  if (!posthogStore.featuresLoaded) {
+    return false;
+  }
+
+  const val = overrides[feature] || posthog.getFeatureFlag(feature);
+  if (val !== "control") {
+    return feature;
+  }
+  return false;
+};

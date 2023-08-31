@@ -1,11 +1,11 @@
 import { clsx } from "~/utils/classes";
 import { createScrollPosition } from "@solid-primitives/scroll";
-import { getFeatureLoaded } from "~/utils/experiments";
+import { getFeature } from "~/utils/experiments";
 
 export const HomePageStickyNav = (props: { onClick: () => void }) => {
   // const visible = true;
   const scroll = createScrollPosition();
-  const featureEnabled = () => getFeatureLoaded("sticky-homepage-cta");
+  const featureEnabled = () => getFeature("sticky-homepage-cta");
   console.log("featureEnabled", featureEnabled());
   const visible = () => scroll.y > 100 && featureEnabled();
   return (

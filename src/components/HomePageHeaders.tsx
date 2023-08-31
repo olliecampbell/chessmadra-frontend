@@ -1,12 +1,12 @@
 import { clsx } from "~/utils/classes";
 import { createScrollPosition } from "@solid-primitives/scroll";
-import { getFeatureLoaded } from "~/utils/experiments";
+import { getFeature } from "~/utils/experiments";
 
 export const HomePageHeader = (props: { onClick: () => void }) => {
   // const visible = true;
   const scroll = createScrollPosition();
   const ctas = () => {
-    return getHomepageHeadersCopy(getFeatureLoaded("homepage-header-cta"));
+    return getHomepageHeadersCopy(getFeature("homepage-header-cta"));
   };
   return <span> {ctas().header}</span>;
 };
@@ -14,7 +14,7 @@ export const HomePageSubheader = (props: { onClick: () => void }) => {
   // const visible = true;
   const scroll = createScrollPosition();
   const ctas = () => {
-    return getHomepageHeadersCopy(getFeatureLoaded("homepage-header-cta"));
+    return getHomepageHeadersCopy(getFeature("homepage-header-cta"));
   };
   return <span> {ctas().subheader}</span>;
 };
