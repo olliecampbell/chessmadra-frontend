@@ -47,7 +47,7 @@ export interface ChessboardInterface {
   setPosition: (_: Chess) => void;
   setRefs: (refs: ChessboardViewState["refs"]) => void;
   makeMove: (_: Move | string, options?: MakeMoveOptions) => void;
-  clearPending: () => void;
+  clearPending: (partial?: boolean) => void;
   backAll: () => void;
   backOne: (opts?: { clear?: boolean; skipAnimation?: boolean }) => void;
   backN: (n: number) => void;
@@ -436,6 +436,7 @@ export const createChessboardInterface = (): [
           (completed) => {
             s.animating = false;
             if (completed) {
+              console.log("completed animation");
               if (nextMove.reverse) {
                 const m = s._animatePosition?.undo();
               } else {
@@ -532,7 +533,7 @@ export const createChessboardInterface = (): [
         });
       });
     },
-    clearPending: () => {
+    clearPending: (partial: boolean) => {
       set((s: ChessboardViewState) => {
         s.movesToVisualize = [];
 
@@ -548,18 +549,23 @@ export const createChessboardInterface = (): [
           y: 0,
           transform: { x: 0, y: 0 },
         };
-        s.previewPosition = undefined;
-        s.nextPreviewMove = undefined;
-        s.previewedMove = undefined;
-        s._animatePosition = undefined;
-        s._animationSpeed = undefined;
-        if (s.animatingMoveSquare) {
-          const pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
-          if (pieceRef) {
-            anime.remove(pieceRef);
-            const { x, y } = getSquareOffset(s.animatingMoveSquare, s.flipped);
-            pieceRef.style.top = `${y * 100}%`;
-            pieceRef.style.left = `${x * 100}%`;
+        if (!partial) {
+          s.previewPosition = undefined;
+          s.nextPreviewMove = undefined;
+          s.previewedMove = undefined;
+          s._animatePosition = undefined;
+          s._animationSpeed = undefined;
+          if (s.animatingMoveSquare) {
+            const pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
+            if (pieceRef) {
+              anime.remove(pieceRef);
+              const { x, y } = getSquareOffset(
+                s.animatingMoveSquare,
+                s.flipped,
+              );
+              pieceRef.style.top = `${y * 100}%`;
+              pieceRef.style.left = `${x * 100}%`;
+            }
           }
         }
       });
@@ -668,12 +674,14 @@ export const createChessboardInterface = (): [
           }
           const makeMove = () => {
             if (s.previewedMove?.san === move.san) {
+              console.log("previewed move matched, no animation");
               chessboardInterface.makeMove(move, {
                 ...options,
                 animate: false,
               });
+            } else {
+              chessboardInterface.makeMove(move, options);
             }
-            chessboardInterface.makeMove(move, options);
           };
           if (chessboardInterface.getDelegate()?.shouldMakeMove?.(move)) {
             chessboardInterface.getDelegate()?.madeManualMove?.();

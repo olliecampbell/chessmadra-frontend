@@ -43,10 +43,6 @@ export const MoveLog = () => {
       find(combinedThemes, (theme) => theme.boardTheme === user()?.theme) ||
       COMBINED_THEMES_BY_ID["default"],
   );
-  createEffect(() => {
-    console.log("user theme", user()?.theme);
-    console.log("combined theme", combinedTheme());
-  });
   const theme: Accessor<BoardTheme> = () =>
     BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
   const currentLineElements = () => {

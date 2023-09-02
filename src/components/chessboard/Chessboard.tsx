@@ -378,16 +378,21 @@ export function ChessboardView(props: {
     evt.preventDefault();
     const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, drag());
     if (newSquare === drag().square && tapAction()) {
+      console.log("this mouse up triggered the tap action");
       tapAction()?.();
     } else {
       const availableMove = find(
         chessboardStore().availableMoves,
         (m) => m.to === newSquare,
       );
+      console.log(
+        "this mouse up triggered the request to make move",
+        availableMove,
+      );
       if (availableMove) {
         props.chessboardInterface.requestToMakeMove(availableMove as Move);
       } else {
-        props.chessboardInterface.clearPending();
+        props.chessboardInterface.clearPending(true);
       }
     }
     props.chessboardInterface.set((s) => {

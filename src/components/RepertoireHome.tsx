@@ -385,16 +385,6 @@ export const RepertoireHome = () => {
                 {
                   onPress: () => {
                     quick((s) => {
-                      trackEvent("home.contact.feedback");
-                      s.repertoireState.browsingState.pushView(FeedbackView);
-                    });
-                  },
-                  text: "Share your feedback",
-                  style: "secondary",
-                } as SidebarAction,
-                {
-                  onPress: () => {
-                    quick((s) => {
                       trackEvent("home.contact.discord");
                       window.open("https://discord.gg/vNzfu5VetQ", "_blank");
                     });
@@ -410,6 +400,16 @@ export const RepertoireHome = () => {
                     });
                   },
                   text: "Follow us on Twitter",
+                  style: "secondary",
+                } as SidebarAction,
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.contact.feedback");
+                      s.repertoireState.browsingState.pushView(FeedbackView);
+                    });
+                  },
+                  text: "Share your feedback",
                   style: "secondary",
                 } as SidebarAction,
               ]}
