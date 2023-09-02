@@ -292,17 +292,17 @@ export const RepertoireHome = () => {
                   {
                     onPress: () => {
                       quick((s) => {
-                        trackEvent("home.settings.reviewSpeed");
+                        trackEvent("home.settings.pieceAnimationSpeed");
                         s.repertoireState.browsingState.pushView(
                           FrontendSettingView,
-                          { props: { setting: SETTINGS.reviewAnimation } },
+                          { props: { setting: SETTINGS.pieceAnimation } },
                         );
                       });
                     },
                     hidden: !settingsExpanded(),
-                    text: SETTINGS.reviewAnimation.title,
+                    text: SETTINGS.pieceAnimation.title,
                     right:
-                      userState().getFrontendSetting("reviewAnimation").label,
+                      userState().getFrontendSetting("pieceAnimation").label,
                     style: "secondary",
                   } as SidebarAction,
                   {

@@ -22,10 +22,14 @@ import { Option } from "./optional";
 import { Accessor, createSignal } from "solid-js";
 import { logProxy } from "./state";
 import { getLineAnimation } from "./get_line_animation";
+import { getAppState } from "./app_state";
+import {
+  PieceAnimation,
+  pieceAnimationToPlaybackSpeed,
+} from "./frontend_settings";
 
 interface PlayLineOptions {
   animated?: boolean;
-  animationSpeed?: PlaybackSpeed;
   reset?: boolean;
 }
 type AnimationMove = Move & { reverse: boolean };
@@ -67,7 +71,6 @@ export interface ChessboardInterface {
   // ) => void;
   animatePieceMove: (
     move: Move,
-    speed: PlaybackSpeed,
     callback: (completed: boolean) => void,
   ) => void;
   // @deprecated
@@ -421,31 +424,28 @@ export const createChessboardInterface = (): [
       set((s: ChessboardViewState) => {
         if (isEmpty(s.animationQueue)) {
           s._animatePosition = undefined;
-          s._animationSpeed = undefined;
         }
         if (isNil(s._animatePosition) || s.animating) {
           return;
         }
         const nextMove = s.animationQueue?.shift() as AnimationMove;
         s.animating = true;
-        const animationSpeed = s._animationSpeed ?? PlaybackSpeed.Fast;
-        console.log("animation speed is", animationSpeed);
-        chessboardInterface.animatePieceMove(
-          nextMove,
-          animationSpeed,
-          (completed) => {
-            s.animating = false;
-            if (completed) {
-              console.log("completed animation");
-              if (nextMove.reverse) {
-                const m = s._animatePosition?.undo();
-              } else {
-                s._animatePosition?.move(nextMove);
-              }
-              chessboardInterface.stepAnimationQueue();
-            }
-          },
+        const animationSpeed = pieceAnimationToPlaybackSpeed(
+          getAppState().userState.getFrontendSetting("pieceAnimation")
+            .value as PieceAnimation,
         );
+        chessboardInterface.animatePieceMove(nextMove, (completed) => {
+          s.animating = false;
+          if (completed) {
+            console.log("completed animation");
+            if (nextMove.reverse) {
+              const m = s._animatePosition?.undo();
+            } else {
+              s._animatePosition?.move(nextMove);
+            }
+            chessboardInterface.stepAnimationQueue();
+          }
+        });
       });
     },
     stepPreviewMove: () => {
@@ -554,7 +554,6 @@ export const createChessboardInterface = (): [
           s.nextPreviewMove = undefined;
           s.previewedMove = undefined;
           s._animatePosition = undefined;
-          s._animationSpeed = undefined;
           if (s.animatingMoveSquare) {
             const pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
             if (pieceRef) {
@@ -572,12 +571,15 @@ export const createChessboardInterface = (): [
     },
     animatePieceMove: (
       move: AnimationMove,
-      speed: PlaybackSpeed,
       callback: (completed: boolean) => void,
     ) => {
       set((s: ChessboardViewState) => {
+        const animationSpeed = pieceAnimationToPlaybackSpeed(
+          getAppState().userState.getFrontendSetting("pieceAnimation")
+            .value as PieceAnimation,
+        );
         const { fadeDuration, moveDuration, stayDuration } =
-          getAnimationDurations(speed);
+          getAnimationDurations(animationSpeed);
         // @ts-ignore
         const [start, end]: Square[] = move.reverse
           ? [move.to, move.from]
@@ -1041,7 +1043,6 @@ export const createChessboardInterface = (): [
         if (options?.animated) {
           const fen = `${epd} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
-          s._animationSpeed = options?.animationSpeed ?? PlaybackSpeed.Normal;
           const moves = s._animatePosition.validateMoves(animateLine);
           // @ts-ignore
           s.animationQueue = moves;

@@ -1,5 +1,8 @@
-export enum ReviewAnimation {
+import { PlaybackSpeed } from "~/types/VisualizationState";
+
+export enum PieceAnimation {
   Slow = "slow",
+  Normal = "normal",
   Fast = "fast",
   None = "none",
 }
@@ -18,16 +21,30 @@ export type FrontendSettingOption<T> = {
 };
 
 export const SETTINGS = {
-  reviewAnimation: {
-    default: ReviewAnimation.Slow,
-    key: "reviewAnimation",
-    title: "Animation when practicing",
+  pieceAnimation: {
+    default: PieceAnimation.Slow,
+    key: "pieceAnimation",
+    title: "Piece animation",
     options: [
-      { value: ReviewAnimation.Slow, label: "Slow" },
-      { value: ReviewAnimation.Fast, label: "Fast" },
-      { value: ReviewAnimation.None, label: "None" },
+      { value: PieceAnimation.Slow, label: "Slow" },
+      { value: PieceAnimation.Normal, label: "Normal" },
+      { value: PieceAnimation.Fast, label: "Fast" },
     ],
-  } as FrontendSetting<ReviewAnimation>,
+  } as FrontendSetting<PieceAnimation>,
 };
 
 export type FrontendSettings = Record<keyof typeof SETTINGS, string>;
+
+export const pieceAnimationToPlaybackSpeed = (
+  pieceAnimation: PieceAnimation,
+): PlaybackSpeed => {
+  switch (pieceAnimation) {
+    case PieceAnimation.Slow:
+      return PlaybackSpeed.Slow;
+    case PieceAnimation.Normal:
+      return PlaybackSpeed.Normal;
+    case PieceAnimation.Fast:
+      return PlaybackSpeed.Fast;
+  }
+  return PlaybackSpeed.Normal;
+};
