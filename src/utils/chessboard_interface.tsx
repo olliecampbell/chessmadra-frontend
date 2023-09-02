@@ -600,6 +600,7 @@ export const createChessboardInterface = (): [
           duration: moveDuration,
           easing: "easeInOutSine",
           autoplay: true,
+          endDelay: stayDuration,
         }).finished.then(() => {
           s.animatedMove = undefined;
           s.animatingMoveSquare = undefined;
