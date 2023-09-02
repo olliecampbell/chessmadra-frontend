@@ -21,7 +21,7 @@ export const SETTINGS = {
   reviewAnimation: {
     default: ReviewAnimation.Slow,
     key: "reviewAnimation",
-    title: "Review animation",
+    title: "Animation when practicing",
     options: [
       { value: ReviewAnimation.Slow, label: "Slow" },
       { value: ReviewAnimation.Fast, label: "Fast" },

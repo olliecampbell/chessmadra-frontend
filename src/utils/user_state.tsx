@@ -164,7 +164,8 @@ export const getInitialUserState = (
     ): FrontendSettingOption<string> => {
       return get(([s]) => {
         const value =
-          s.user?.frontendSettings[settingKey] ?? SETTINGS[settingKey].default;
+          s.user?.frontendSettings?.[settingKey] ??
+          SETTINGS[settingKey].default;
         const option = SETTINGS[settingKey].options.find(
           (option) => option.value === value,
         );

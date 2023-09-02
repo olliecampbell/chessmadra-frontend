@@ -88,10 +88,10 @@ export const CoverageSettings = (props: {}) => {
           : "What size repertoire do you want to create?"
       }
     >
-      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pb-2 md:pb-3 pr-4 md:pr-6 text-xs text-right">
+      <div class="row items-center border-0 border-b border-border border-solid  text-tertiary font-semibold pb-2 md:pb-3 pr-4 md:pr-4 lg:pr-6 text-xs text-right">
         <div class="grow" />
         <div class="w-26 lg:w-28 mr-6 ">Coverage goal</div>
-        <div class="w-24 md:w-30 shrink-0 ">Size/study time</div>
+        <div class="w-16 md:w-30 shrink-0 text-left">Study time</div>
         <div class="w-6" />
         {/*<Show when={r.value === recommendedDepth()}>
                 <div
@@ -119,8 +119,10 @@ export const CoverageSettings = (props: {}) => {
           const moves = getExpectedMoves(r.value);
           return (
             <div class="row items-center">
-              <div class="grow whitespace-nowrap text-xs lg:text-sm">
-                {r.name}
+              <div class="grow whitespace-nowrap text-sm">
+                {isMobile() && r.name.includes("Tournament")
+                  ? "Tournament"
+                  : r.name}
               </div>
               <div
                 class="w-26 lg:w-32 mr-6 text-xs lg:text-sm text-right"
@@ -139,7 +141,7 @@ export const CoverageSettings = (props: {}) => {
                 }}
               >{`1 in ${Math.round(1 / r.value)} games`}</div>
               <div
-                class="w-24 md:w-30  shrink-0 h-1 rounded overflow-hidden"
+                class="w-16 md:w-30  shrink-0 h-1 rounded overflow-hidden"
                 ref={(x) => {
                   initTooltip({
                     ref: x,

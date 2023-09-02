@@ -300,7 +300,7 @@ export const RepertoireHome = () => {
                       });
                     },
                     hidden: !settingsExpanded(),
-                    text: "Animation when practicing",
+                    text: SETTINGS.reviewAnimation.title,
                     right:
                       userState().getFrontendSetting("reviewAnimation").label,
                     style: "secondary",
@@ -400,6 +400,16 @@ export const RepertoireHome = () => {
                     });
                   },
                   text: "Join our Discord",
+                  style: "secondary",
+                } as SidebarAction,
+                {
+                  onPress: () => {
+                    quick((s) => {
+                      trackEvent("home.contact.twitter");
+                      window.open("https://twitter.com/chessbookcom", "_blank");
+                    });
+                  },
+                  text: "Follow us on Twitter",
                   style: "secondary",
                 } as SidebarAction,
               ]}
