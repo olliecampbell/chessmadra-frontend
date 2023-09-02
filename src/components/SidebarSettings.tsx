@@ -20,6 +20,12 @@ import { initTooltip } from "./Tooltip";
 import { renderThreshold } from "~/utils/threshold";
 import { trackEvent } from "~/utils/trackEvent";
 import { useIsMobileV2 } from "~/utils/isMobile";
+import {
+  FrontendSetting,
+  SETTINGS,
+  FrontendSettings,
+  FrontendSettingOption,
+} from "~/utils/frontend_settings";
 
 type ThresholdOption = {
   name: string;
@@ -238,7 +244,6 @@ export const BetaFeaturesSettings = (props: {}) => {
       <SidebarActions
         actions={features.map((feature) => {
           const enabled = () => userState().flagEnabled(feature.flag);
-          console.log("enabled", enabled());
           return {
             text: feature.name,
             style: enabled() ? "focus" : "primary",
@@ -252,6 +257,50 @@ export const BetaFeaturesSettings = (props: {}) => {
             },
           };
         })}
+      />
+    </SidebarTemplate>
+  );
+};
+
+export const FrontendSettingView = (props: {
+  setting: FrontendSetting<string>;
+}) => {
+  const user = () => getAppState().userState?.user;
+  return (
+    <SidebarTemplate header={props.setting.title} actions={[]}>
+      <SidebarSelectOneOf
+        choices={props.setting.options}
+        activeChoice={getAppState().userState.getFrontendSetting(
+          props.setting.key as keyof FrontendSettings,
+        )}
+        onSelect={(option: FrontendSettingOption<string>) => {
+          quick((s) => {
+            trackEvent(`frontend_setting.${props.setting.key}.change`, {
+              value: option.value,
+            });
+            s.userState.user!.frontendSettings[
+              props.setting.key as keyof FrontendSettings
+            ] = option.value;
+            s.userState.updateUserSettings({
+              frontendSettings: s.userState.user!.frontendSettings,
+            });
+          });
+        }}
+        equality={(
+          option: FrontendSettingOption<string>,
+          activeOption?: FrontendSettingOption<string>,
+        ) => {
+          return option.value === activeOption?.value;
+        }}
+        renderChoice={(option: FrontendSettingOption<string>) => {
+          return (
+            <div style={s(c.row)}>
+              <CMText style={s(c.weightSemiBold, c.fontSize(14))}>
+                {option.label}
+              </CMText>
+            </div>
+          );
+        }}
       />
     </SidebarTemplate>
   );

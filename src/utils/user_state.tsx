@@ -19,6 +19,12 @@ import { LICHESS_CLIENT_ID, LICHESS_REDIRECT_URI } from "./oauth";
 import Cookies from "js-cookie";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
 import { uuid4 } from "@sentry/utils";
+import {
+  FrontendSetting,
+  FrontendSettingOption,
+  FrontendSettings,
+  SETTINGS,
+} from "./frontend_settings";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -45,6 +51,7 @@ export interface UserState {
     theme?: BoardThemeId;
     pieceSet?: PieceSetId;
     flags?: UserFlag[];
+    frontendSettings?: FrontendSettings;
   }) => void;
   isUpdatingEloRange: boolean;
   pastLandingPage?: boolean;
@@ -58,6 +65,9 @@ export interface UserState {
     token: string | null,
     username: string | null,
   ) => Promise<void>;
+  getFrontendSetting: (
+    settingKey: keyof FrontendSettings,
+  ) => FrontendSettingOption<unknown>;
 }
 
 export enum AuthStatus {
@@ -149,7 +159,23 @@ export const getInitialUserState = (
         } ${s.user?.ratingSystem || DEFAULT_RATING_SYSTEM}`;
       });
     },
-    updateUserSettings: ({ theme, pieceSet, flags }) =>
+    getFrontendSetting: (
+      settingKey: keyof FrontendSettings,
+    ): FrontendSettingOption<string> => {
+      return get(([s]) => {
+        const value =
+          s.user?.frontendSettings[settingKey] ?? SETTINGS[settingKey].default;
+        const option = SETTINGS[settingKey].options.find(
+          (option) => option.value === value,
+        );
+        if (option) {
+          return option;
+        } else {
+          return SETTINGS[settingKey].options[0];
+        }
+      });
+    },
+    updateUserSettings: ({ theme, pieceSet, flags, frontendSettings }) =>
       set(([s]) => {
         if (pieceSet) {
           s.user!.pieceSet = pieceSet;
@@ -162,6 +188,7 @@ export const getInitialUserState = (
             theme,
             pieceSet,
             flags,
+            frontendSettings,
           })
           .then(({ data }: { data: User }) => {
             set(([s, appState]) => {

@@ -538,7 +538,6 @@ export const parsePlansToQuizMoves = (
   side: Side,
   position: Chess,
 ): QuizPlan[] => {
-  console.log("all plans before consuming? ", plans);
   const consumer = new PlanQuizConsumer(plans, side, position);
   // consumer.fianchettoConsumer();
   // consumer.consumeCaptures();

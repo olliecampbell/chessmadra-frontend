@@ -32,6 +32,7 @@ import { bySide } from "~/utils/repertoire";
 import {
   BetaFeaturesSettings,
   CoverageSettings,
+  FrontendSettingView,
   RatingSettings,
   ThemeSettings,
 } from "./SidebarSettings";
@@ -48,6 +49,7 @@ import { clsx } from "~/utils/classes";
 import { Puff } from "solid-spinner";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { pluralize } from "~/utils/pluralize";
+import { SETTINGS } from "~/utils/frontend_settings";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
@@ -286,6 +288,23 @@ export const RepertoireHome = () => {
                     right: `${upperFirst(theme().name)}`,
                     style: "secondary",
                   } as SidebarAction,
+
+                  {
+                    onPress: () => {
+                      quick((s) => {
+                        trackEvent("home.settings.reviewSpeed");
+                        s.repertoireState.browsingState.pushView(
+                          FrontendSettingView,
+                          { props: { setting: SETTINGS.reviewAnimation } },
+                        );
+                      });
+                    },
+                    hidden: !settingsExpanded(),
+                    text: "Animation when practicing",
+                    right:
+                      userState().getFrontendSetting("reviewAnimation").label,
+                    style: "secondary",
+                  } as SidebarAction,
                   {
                     onPress: () => {
                       quick((s) => {
@@ -296,7 +315,7 @@ export const RepertoireHome = () => {
                       });
                     },
                     text: "Beta features",
-                    hidden: !settingsExpanded(),
+                    hidden: !settingsExpanded() || !isDevelopment,
                     right: `${
                       (userState().getEnabledFlags()?.length ?? 0) > 0
                         ? `${userState().getEnabledFlags()?.length} enabled`

@@ -25,6 +25,7 @@ import { getLineAnimation } from "./get_line_animation";
 
 interface PlayLineOptions {
   animated?: boolean;
+  animationSpeed?: PlaybackSpeed;
   reset?: boolean;
 }
 type AnimationMove = Move & { reverse: boolean };
@@ -146,6 +147,7 @@ export interface ChessboardViewState {
   ringColor: string;
   refs: ChessboardRefs;
   _animatePosition?: Chess;
+  _animationSpeed?: PlaybackSpeed;
   position: Chess;
   previewPosition?: Chess;
   animatedMove?: AnimationMove;
@@ -419,15 +421,18 @@ export const createChessboardInterface = (): [
       set((s: ChessboardViewState) => {
         if (isEmpty(s.animationQueue)) {
           s._animatePosition = undefined;
+          s._animationSpeed = undefined;
         }
         if (isNil(s._animatePosition) || s.animating) {
           return;
         }
         const nextMove = s.animationQueue?.shift() as AnimationMove;
         s.animating = true;
+        const animationSpeed = s._animationSpeed ?? PlaybackSpeed.Fast;
+        console.log("animation speed is", animationSpeed);
         chessboardInterface.animatePieceMove(
           nextMove,
-          PlaybackSpeed.Fast,
+          animationSpeed,
           (completed) => {
             s.animating = false;
             if (completed) {
@@ -547,6 +552,7 @@ export const createChessboardInterface = (): [
         s.nextPreviewMove = undefined;
         s.previewedMove = undefined;
         s._animatePosition = undefined;
+        s._animationSpeed = undefined;
         if (s.animatingMoveSquare) {
           const pieceRef = s.refs.pieceRefs[s.animatingMoveSquare as Square];
           if (pieceRef) {
@@ -1007,7 +1013,7 @@ export const createChessboardInterface = (): [
     getLastMove: () => {
       return last(chessboardStore.moveHistory);
     },
-    playLine: (line: string[], options?: PlayLineOptions) => {
+    playLine: (line: string[], options) => {
       set((s) => {
         chessboardInterface.stopNotifyingDelegates();
         if (options?.reset) {
@@ -1027,6 +1033,7 @@ export const createChessboardInterface = (): [
         if (options?.animated) {
           const fen = `${epd} 0 1`;
           s._animatePosition = createChessProxy(new Chess(fen));
+          s._animationSpeed = options?.animationSpeed ?? PlaybackSpeed.Normal;
           const moves = s._animatePosition.validateMoves(animateLine);
           // @ts-ignore
           s.animationQueue = moves;

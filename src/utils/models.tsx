@@ -1,4 +1,5 @@
 import { Square } from "@lubert/chess.ts/dist/types";
+import { FrontendSettings } from "./frontend_settings";
 import { BySide, RepertoireGrade, Side } from "./repertoire";
 
 export interface LichessPuzzle {
@@ -43,6 +44,7 @@ export interface User {
   subscribed: boolean;
   flags: UserFlag[];
   authedWithLichess: boolean;
+  frontendSettings: FrontendSettings;
 }
 
 export type UserFlag = "quiz_plans";

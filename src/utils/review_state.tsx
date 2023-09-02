@@ -47,6 +47,8 @@ import { Chess } from "@lubert/chess.ts";
 import { getAllPossibleMoves } from "./move_generation";
 import { LichessMistake } from "./models";
 import { getLineAnimation } from "./get_line_animation";
+import { ReviewAnimation } from "./frontend_settings";
+import { PlaybackSpeed } from "~/types/VisualizationState";
 
 export interface ReviewPositionResults {
   side: Side;
@@ -271,7 +273,7 @@ export const getInitialReviewState = (
       });
     },
     setupNextMove: () =>
-      set(([s, rs]) => {
+      set(([s, rs, gs]) => {
         s.chessboard.setFrozen(false);
         s.showNext = false;
         s.planIndex = 0;
@@ -332,8 +334,15 @@ export const getInitialReviewState = (
             c.showPlans = false;
             c.hideLastMoveHighlight = false;
           });
+          const reviewAnimationSetting = gs.userState.getFrontendSetting(
+            "reviewAnimation",
+          ).value as ReviewAnimation;
           s.chessboard.playLine(pgnToLine(currentQuizGroup.line), {
-            animated: true,
+            animated: reviewAnimationSetting !== "none",
+            animationSpeed:
+              reviewAnimationSetting === "fast"
+                ? PlaybackSpeed.Fast
+                : PlaybackSpeed.Normal,
           });
         }
       }, "setupNextMove"),

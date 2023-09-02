@@ -86,11 +86,11 @@ export enum PuzzleDifficulty {
 }
 
 export enum PlaybackSpeed {
-  DebugSlow = 5,
-  Slow = 0,
-  Normal = 1,
-  Fast = 2,
-  Ludicrous = 3,
+  DebugSlow = "debug-slow",
+  Slow = "slow",
+  Normal = "normal",
+  Fast = "fast",
+  Ludicrous = "ludicrous",
 }
 
 export const getPuzzleDifficultyRating = (pd: PuzzleDifficulty) => {
