@@ -22,7 +22,7 @@ export type FrontendSettingOption<T> = {
 
 export const SETTINGS = {
   pieceAnimation: {
-    default: PieceAnimation.Slow,
+    default: PieceAnimation.Normal,
     key: "pieceAnimation",
     title: "Piece animation",
     options: [
