@@ -353,7 +353,7 @@ export const RepertoireHome = () => {
                       });
                     },
                     // todo: enable handling of xs breakpoint stuff
-                    text: responsive().switch("Connected accounts", [
+                    text: responsive().switch("Connections", [
                       BP.sm,
                       "Connected accounts",
                     ]),
