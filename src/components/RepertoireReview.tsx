@@ -154,7 +154,11 @@ export const RepertoireReview = (props: {}) => {
         <>
           In this position in{" "}
           <a
-            href={`https://lichess.org/${lichessMistake.gameId}`}
+            href={
+              lichessMistake.source === "lichess"
+                ? `https://lichess.org/${lichessMistake.gameId}`
+                : `https://chess.com/game/live/${lichessMistake.gameId}`
+            }
             target={"_blank"}
             rel="noreferrer"
             class="font-semibold "

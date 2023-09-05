@@ -336,7 +336,7 @@ export const RepertoireHome = () => {
                       });
                     },
                     text: "Beta features",
-                    hidden: true,
+                    hidden: !settingsExpanded(),
                     right: `${
                       (userState().getEnabledFlags()?.length ?? 0) > 0
                         ? `${userState().getEnabledFlags()?.length} enabled`
