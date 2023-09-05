@@ -43,8 +43,9 @@ export interface User {
   pieceSet?: string;
   subscribed: boolean;
   flags: UserFlag[];
-  authedWithLichess: boolean;
   frontendSettings: FrontendSettings;
+  lichessUsername?: string;
+  chesscomUsername?: string;
 }
 
 export type UserFlag = "quiz_plans";

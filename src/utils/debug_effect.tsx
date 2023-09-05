@@ -6,6 +6,7 @@ import { noop } from "lodash-es";
 import { CoverageSettings } from "~/components/SidebarSettings";
 import { Quiz } from "./queues";
 import { lineToPgn } from "./repertoire";
+import { ConnectChesscom } from "~/components/ConnectedAccounts";
 
 export const createDebugStateEffect = () => {
   console.log("calling the debug effect thing");
@@ -37,7 +38,7 @@ export const createDebugStateEffect = () => {
       // quick((s) => {
       //   console.log("setting past landing page");
       //   s.userState.pastLandingPage = true;
-      //   s.repertoireState.browsingState.replaceView(ForgotPassword, {});
+      //   // s.repertoireState.browsingState.replaceView(ConnectChesscom, {});
       // });
       // quick((s) => {
       //   s.repertoireState.browsingState.replaceView(CoverageSettings, {});

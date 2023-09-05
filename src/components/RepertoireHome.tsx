@@ -50,6 +50,15 @@ import { Puff } from "solid-spinner";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { pluralize } from "~/utils/pluralize";
 import { SETTINGS } from "~/utils/frontend_settings";
+import {
+  ConnectAccountsSetting,
+  ConnectedAccountIconAndText,
+} from "./ConnectedAccounts";
+import {
+  useResponsiveV2,
+  BP,
+  ResponsiveBreakpoint,
+} from "~/utils/useResponsive";
 
 export const RepertoireHome = () => {
   const userState = () => getAppState().userState;
@@ -72,6 +81,7 @@ export const RepertoireHome = () => {
       bySide((side) => s.earliestReviewDueFromEpd[side][START_EPD]),
     ],
   );
+  const responsive = useResponsiveV2();
   const [progressState] = useBrowsingState(([s]) => {
     return [bySide((side) => s.repertoireProgressState[side])];
   });
@@ -171,7 +181,12 @@ export const RepertoireHome = () => {
             </For>
           </div>
         </Show>
-        <Show when={userState().user?.authedWithLichess}>
+        <Show
+          when={
+            userState().user?.lichessUsername ||
+            userState().user?.chesscomUsername
+          }
+        >
           <Spacer height={12} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
@@ -217,14 +232,18 @@ export const RepertoireHome = () => {
             />
           </div>
         </Show>
-        <Show when={!userState().user?.authedWithLichess}>
+        <Show
+          when={
+            !userState().user?.lichessUsername &&
+            !userState().user?.chesscomUsername
+          }
+        >
           <Spacer height={10} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
               action={{
                 style: "primary",
                 text: "Review your online games",
-                subtext: "Review your latest Lichess games",
                 right: (
                   <CMText class="text-secondary text-xs">
                     Connect
@@ -233,7 +252,9 @@ export const RepertoireHome = () => {
                 ),
                 onPress: () => {
                   quick((s) => {
-                    userState().authWithLichess();
+                    s.repertoireState.browsingState.pushView(
+                      ConnectAccountsSetting,
+                    );
                   });
                 },
               }}
@@ -326,14 +347,29 @@ export const RepertoireHome = () => {
                   {
                     onPress: () => {
                       quick((s) => {
-                        s.userState.setLichessToken(null, null);
+                        s.repertoireState.browsingState.pushView(
+                          ConnectAccountsSetting,
+                        );
                       });
                     },
-                    text: "Disconnect Lichess",
-                    hidden:
-                      !settingsExpanded() ||
-                      !userState().user?.authedWithLichess,
-                    right: "",
+                    // todo: enable handling of xs breakpoint stuff
+                    text: responsive().switch("Connected accounts", [
+                      BP.sm,
+                      "Connected accounts",
+                    ]),
+                    hidden: !settingsExpanded(),
+                    right: (
+                      <div class="flex row space-x-4">
+                        <ConnectedAccountIconAndText
+                          text="Lichess"
+                          connected={!!userState().user?.lichessUsername}
+                        />
+                        <ConnectedAccountIconAndText
+                          text="Chess.com"
+                          connected={!!userState().user?.chesscomUsername}
+                        />
+                      </div>
+                    ),
                     style: "secondary",
                   } as SidebarAction,
                   {

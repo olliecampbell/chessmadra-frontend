@@ -1137,10 +1137,12 @@ export const getInitialRepertoireState = (
     selectedTemplates: {},
     fetchLichessMistakes: () => {
       set(([s, gs]) => {
-        const authedWithLichess = gs.userState.user?.authedWithLichess;
+        const connected =
+          gs.userState.user?.lichessUsername ||
+          gs.userState.user?.chesscomUsername;
         s.lichessMistakes = null;
         s.needsToRefetchLichessMistakes = false;
-        if (authedWithLichess) {
+        if (connected) {
           client
             .get("/api/v1/get_lichess_mistakes")
             .then(({ data }: { data: LichessMistake[] }) => {

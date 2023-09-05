@@ -50,6 +50,7 @@ export interface UserState {
   updateUserSettings: (_: {
     theme?: BoardThemeId;
     pieceSet?: PieceSetId;
+    chesscomUsername?: string | null;
     flags?: UserFlag[];
     frontendSettings?: FrontendSettings;
   }) => void;
@@ -61,6 +62,8 @@ export interface UserState {
   getEnabledFlags: () => UserFlag[];
   setFlag(flag: UserFlag, enabled: boolean): void;
   authWithLichess: () => void;
+  setChesscomUsername: (username: string | null) => Promise<void>;
+  isConnectedToExternal: () => boolean;
   setLichessToken: (
     token: string | null,
     username: string | null,
@@ -176,7 +179,13 @@ export const getInitialUserState = (
         }
       });
     },
-    updateUserSettings: ({ theme, pieceSet, flags, frontendSettings }) =>
+    updateUserSettings: ({
+      theme,
+      pieceSet,
+      flags,
+      frontendSettings,
+      chesscomUsername,
+    }) =>
       set(([s]) => {
         if (pieceSet) {
           s.user!.pieceSet = pieceSet;
@@ -189,6 +198,7 @@ export const getInitialUserState = (
             theme,
             pieceSet,
             flags,
+            chesscomUsername,
             frontendSettings,
           })
           .then(({ data }: { data: User }) => {
@@ -282,13 +292,23 @@ export const getInitialUserState = (
         return s.updateUserRatingSettings({ ratingRange: range });
       });
     },
+    isConnectedToExternal: () => {
+      get(([s]) => {
+        return s.user?.lichessUsername || s.user?.chesscomUsername;
+      });
+    },
+    setChesscomUsername: (username) => {
+      set(([s]) => {
+        return s.updateUserSettings({ chesscomUsername: username });
+      });
+    },
     setLichessToken: (token, username) => {
       return client
         .post("/api/set_lichess_token", { token, username })
         .then(({ data }: { data: User }) => {
           console.log("Set lichess token and username", username);
           set(([s, appState]) => {
-            s.user.authedWithLichess = !!token;
+            s.setUser(data);
             appState.repertoireState.fetchLichessMistakes();
           });
         })
