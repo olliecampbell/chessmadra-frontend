@@ -163,8 +163,10 @@ export const getInitialReviewState = (
     activeOptions: null,
     planIndex: 0,
     markMovesReviewed: (results: ReviewPositionResults[]) => {
-      trackEvent("reviewing.reviewed_move");
       set(([s, rs]) => {
+        trackEvent("reviewing.reviewed_move", {
+          filter: s.activeOptions?.filter,
+        });
         results.forEach((r, i) => {
           // @ts-ignore
           rs.repertoire[r.side].positionResponses[r.epd]?.forEach(

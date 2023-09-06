@@ -34,7 +34,6 @@ export const useHovering = (
         const isTouchDevice =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
         if (isTouchDevice) {
-          console.log("touch device");
           return;
         }
         onHover?.();
@@ -44,7 +43,6 @@ export const useHovering = (
         const isTouchDevice =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
         if (isTouchDevice) {
-          console.log("touch device");
           return;
         }
         onHoverLeave?.();

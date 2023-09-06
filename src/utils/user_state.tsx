@@ -65,7 +65,7 @@ export interface UserState {
   getEnabledFlags: () => UserFlag[];
   setFlag(flag: UserFlag, enabled: boolean): void;
   authWithLichess: () => void;
-  setChesscomUsername: (username: string | null) => Promise<void>;
+  setChesscomUsername: (username: string | null) => void;
   isConnectedToExternal: () => boolean;
   setLichessToken: (
     token: string | null,
@@ -285,22 +285,22 @@ export const getInitialUserState = (
       });
     },
     setRatingSystem: (system: string) => {
-      set(([s]) => {
+      return set(([s]) => {
         trackEvent("user.update_rating_system", { rating_system: system });
         s.user!.ratingSystem = system;
         return s.updateUserRatingSettings({ ratingSystem: system });
       });
     },
     setRatingRange: (range: string) => {
-      set(([s]) => {
+      return set(([s]) => {
         trackEvent("user.update_rating_range", { rating_range: range });
         s.user!.ratingRange = range;
         return s.updateUserRatingSettings({ ratingRange: range });
       });
     },
     isConnectedToExternal: () => {
-      get(([s]) => {
-        return s.user?.lichessUsername || s.user?.chesscomUsername;
+      return get(([s]) => {
+        return !!(s.user?.lichessUsername || s.user?.chesscomUsername);
       });
     },
     setChesscomUsername: (username) => {

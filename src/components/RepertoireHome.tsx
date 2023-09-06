@@ -181,12 +181,7 @@ export const RepertoireHome = () => {
             </For>
           </div>
         </Show>
-        <Show
-          when={
-            userState().user?.lichessUsername ||
-            userState().user?.chesscomUsername
-          }
-        >
+        <Show when={userState().isConnectedToExternal()}>
           <Spacer height={12} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
