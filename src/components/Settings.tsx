@@ -65,9 +65,7 @@ export const SettingsButtons = () => {
             onPress={() => {
               quick((s) => {
                 trackEvent("top_buttons.log_out.clicked");
-                Cookies.remove(JWT_COOKIE_KEY);
-                Cookies.remove(TEMP_USER_UUID);
-                window.location.reload();
+                s.userState.logout()
               });
             }}
           />

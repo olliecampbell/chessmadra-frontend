@@ -16,7 +16,15 @@ export default () => {
   const [error, setError] = createSignal<string | null>(null);
   const navigate = useNavigate();
   onMount(() => {
-    const { code, state, error } = searchParams;
+    const {
+      code,
+      state,
+      error,
+      error_description: errorDescription,
+    } = searchParams;
+    if (errorDescription === "user cancelled authorization") {
+      navigate("/");
+    }
     const storedState = localStorage.getItem("lichess.state");
     const storedCodeVerifier = localStorage.getItem("lichess.code_verifier");
     if (state !== storedState) {

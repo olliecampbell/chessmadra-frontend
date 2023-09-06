@@ -64,7 +64,10 @@ export const SidebarSelectOneOf: Component<{
           <Spacer height={12} />
         </>
       </Show>
-      <div style={s(c.fullWidth)}>
+      <div
+        style={s(c.fullWidth)}
+        class="border-t-1 border-t-solid border-t-border"
+      >
         <For each={actions()}>
           {(action, i) => {
             return <SidebarFullWidthButton action={action} />;

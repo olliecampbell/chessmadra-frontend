@@ -35,13 +35,9 @@ const AuthHandler = ({ children }: { children: JSXElement }) => {
           .catch((e) => {
             console.log("error fetching user", e);
             const status = e?.response?.status || 0;
-            if (status === 401 || status === 500) {
+            if (status === 401) {
               userState.quick((s) => {
-                s.token = undefined;
-                s.user = undefined;
-                s.authStatus = AuthStatus.Unauthenticated;
-                Cookies.remove(JWT_COOKIE_KEY);
-                Cookies.remove(TEMP_USER_UUID);
+                s.logout();
               });
             }
           });

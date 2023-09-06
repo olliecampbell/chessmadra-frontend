@@ -30,6 +30,7 @@ import { clsx } from "~/utils/classes";
 export interface SidebarAction {
   rightText?: string;
   onPress?: () => void;
+  static?: boolean;
   class?: string;
   text: string | JSXElement;
   submitsForm?: string;
@@ -261,7 +262,10 @@ export const SidebarFullWidthButton = (props: {
         "cursor-pointer transition-colors",
         props.action.style !== "wide" && "min-h-sidebar-button",
         props.action.style === "secondary" &&
-          "text-secondary &hover:bg-gray-18 &hover:text-primary",
+          clsx(
+            "text-primary",
+            !props.action.static && "&hover:bg-gray-18 &hover:text-primary",
+          ),
         props.action.style === "tertiary" &&
           "text-tertiary &hover:text-primary",
         props.action.style === "wide" &&
@@ -272,7 +276,8 @@ export const SidebarFullWidthButton = (props: {
         props.action.style === "primary" &&
           !props.action.disabled &&
           "&hover:bg-sidebar_button_primary_hover text-primary",
-        props.action.disabled && "text-tertiary !cursor-default",
+        props.action.disabled && "text-tertiary",
+        (props.action.disabled || props.action.static) && " !cursor-default",
         props.action.class,
       )}
       style={s(

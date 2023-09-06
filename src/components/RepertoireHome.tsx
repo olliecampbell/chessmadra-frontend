@@ -232,12 +232,7 @@ export const RepertoireHome = () => {
             />
           </div>
         </Show>
-        <Show
-          when={
-            !userState().user?.lichessUsername &&
-            !userState().user?.chesscomUsername
-          }
-        >
+        <Show when={!userState().isConnectedToExternal()}>
           <Spacer height={10} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
@@ -246,8 +241,7 @@ export const RepertoireHome = () => {
                 text: "Review your online games",
                 right: (
                   <CMText class="text-secondary text-xs">
-                    Connect
-                    <i class="pl-[6px] fa  fa-link" />
+                    {responsive().isMobile ? "Connect" : "Connect account"}…
                   </CMText>
                 ),
                 onPress: () => {
@@ -301,6 +295,31 @@ export const RepertoireHome = () => {
                   {
                     onPress: () => {
                       quick((s) => {
+                        s.repertoireState.browsingState.pushView(
+                          ConnectAccountsSetting,
+                        );
+                      });
+                    },
+                    // todo: enable handling of xs breakpoint stuff
+                    text: "Connected to",
+                    hidden: false,
+                    right: (
+                      <div class="flex row space-x-4">
+                        <ConnectedAccountIconAndText
+                          text="Lichess"
+                          connected={!!userState().user?.lichessUsername}
+                        />
+                        <ConnectedAccountIconAndText
+                          text="Chess.com"
+                          connected={!!userState().user?.chesscomUsername}
+                        />
+                      </div>
+                    ),
+                    style: "secondary",
+                  } as SidebarAction,
+                  {
+                    onPress: () => {
+                      quick((s) => {
                         trackEvent("home.settings.theme");
                         s.repertoireState.browsingState.pushView(ThemeSettings);
                       });
@@ -342,34 +361,6 @@ export const RepertoireHome = () => {
                         ? `${userState().getEnabledFlags()?.length} enabled`
                         : "None enabled"
                     }`,
-                    style: "secondary",
-                  } as SidebarAction,
-                  {
-                    onPress: () => {
-                      quick((s) => {
-                        s.repertoireState.browsingState.pushView(
-                          ConnectAccountsSetting,
-                        );
-                      });
-                    },
-                    // todo: enable handling of xs breakpoint stuff
-                    text: responsive().switch("Connections", [
-                      BP.sm,
-                      "Connected accounts",
-                    ]),
-                    hidden: !settingsExpanded(),
-                    right: (
-                      <div class="flex row space-x-4">
-                        <ConnectedAccountIconAndText
-                          text="Lichess"
-                          connected={!!userState().user?.lichessUsername}
-                        />
-                        <ConnectedAccountIconAndText
-                          text="Chess.com"
-                          connected={!!userState().user?.chesscomUsername}
-                        />
-                      </div>
-                    ),
                     style: "secondary",
                   } as SidebarAction,
                   {

@@ -7,7 +7,6 @@ import { AppState } from "./app_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { createQuick } from "./quick";
 // solid TODO
-import { identify, Identify, setUserId } from "@amplitude/analytics-browser";
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import client from "~/utils/client";
 import { BoardThemeId, PieceSetId } from "./theming";
@@ -25,6 +24,10 @@ import {
   FrontendSettings,
   SETTINGS,
 } from "./frontend_settings";
+import posthog from "posthog-js";
+import { identify } from "./user_properties";
+import { setUserId } from "@amplitude/analytics-browser";
+import { renderThreshold } from "./threshold";
 
 export interface UserState {
   quick: (fn: (_: UserState) => void) => void;
@@ -71,6 +74,7 @@ export interface UserState {
   getFrontendSetting: (
     settingKey: keyof FrontendSettings,
   ) => FrontendSettingOption<unknown>;
+  logout: () => void;
 }
 
 export enum AuthStatus {
@@ -116,6 +120,14 @@ export const getInitialUserState = (
         appState.repertoireState.fetchRepertoire(false);
       });
     },
+    logout: () => {
+      set(([s, appState]) => {
+        posthog.reset();
+        Cookies.remove(JWT_COOKIE_KEY);
+        Cookies.remove(TEMP_USER_UUID);
+        window.location.reload();
+      });
+    },
     setUser: (user: User) => {
       set(([s, appState]) => {
         s.user = user;
@@ -125,6 +137,24 @@ export const getInitialUserState = (
 
         if (user.email) {
           setUserId(user.email);
+          posthog.identify(user.id, {}, {});
+          identify({
+            email: user.email,
+            subscribed: user.subscribed,
+            admin: user.isAdmin,
+            rating_range: user.ratingRange,
+            rating_system: user.ratingSystem,
+            computed_rating: user.eloRange,
+            theme: user.theme,
+            piece_set: user.pieceSet,
+            ...(user.missThreshold
+              ? {
+                  coverage_target: `${renderThreshold(
+                    user.missThreshold / 100,
+                  )}`,
+                }
+              : {}),
+          });
         }
       });
     },
@@ -204,12 +234,6 @@ export const getInitialUserState = (
           .then(({ data }: { data: User }) => {
             set(([s, appState]) => {
               s.setUser(data);
-              const identifyObj = new Identify();
-              if (s.user?.theme && s.user?.pieceSet) {
-                identifyObj.set("theme", s.user!.theme);
-                identifyObj.set("piece_set", s.user!.pieceSet);
-              }
-              identify(identifyObj);
             });
           })
           .finally(() => {
@@ -231,24 +255,6 @@ export const getInitialUserState = (
               };
               appState.repertoireState.browsingState.fetchNeededPositionReports();
               appState.repertoireState.fetchRepertoire();
-
-              const identifyObj = new Identify();
-              if (
-                s.user!.ratingRange &&
-                s.user!.ratingSystem &&
-                s.user!.eloRange
-              ) {
-                identifyObj.set("rating_range", s.user!.ratingRange);
-                identifyObj.set("rating_system", s.user!.ratingSystem);
-                identifyObj.set("computed_rating", s.user!.eloRange);
-              }
-              if (s.user?.missThreshold) {
-                identifyObj.set(
-                  "coverage_target",
-                  `1 in ${Math.round(1 / s.user.missThreshold)} games`,
-                );
-              }
-              identify(identifyObj);
             });
           })
           .finally(() => {
@@ -396,8 +402,7 @@ export const getRecommendedMissThreshold = (range: string) => {
 };
 
 export const DEFAULT_THRESHOLD = 1 / 50;
+
 export const trackModule = (module: string) => {
-  const identifyObj = new Identify();
-  identifyObj.set("last_module", module);
-  identify(identifyObj);
+  identify({ last_module: module });
 };

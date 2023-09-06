@@ -52,10 +52,8 @@ import { getMoveRating, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "~/utils/trackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { parsePlans } from "./plans";
-// import { Identify, identify } from "@amplitude/analytics-browser";
 import client from "./client";
 import { Component, JSXElement } from "solid-js";
-import { identify, Identify } from "@amplitude/analytics-browser";
 import {
   ChessboardInterface,
   createChessboardInterface,
@@ -66,6 +64,7 @@ import { PAYMENT_ENABLED } from "./payment";
 import { FirstLineSavedOnboarding } from "~/components/SidebarOnboarding";
 import { View } from "~/types/View";
 import * as Sentry from "@sentry/browser";
+import { identify } from "./user_properties";
 
 export interface GetIncidenceOptions {
   placeholder: void;
@@ -290,25 +289,9 @@ export const getInitialBrowsingState = (
             ? 100
             : getCoverageProgress(numMoves, expectedNumMoves);
           progressState.percentComplete = savedProgress;
-          // TODO: solid
-          // Animated.timing(progressState.headerOpacityAnim, {
-          //   toValue: progressState.showPopover ? 0 : 1,
-          //   duration: 300,
-          //   useNativeDriver: true,
-          // }).start();
-          // Animated.timing(progressState.popoverOpacityAnim, {
-          //   toValue: progressState.showPopover ? 100 : 0,
-          //   duration: 300,
-          //   useNativeDriver: true,
-          // }).start();
-          // Animated.timing(progressState.savedProgressAnim, {
-          //   toValue: savedProgress,
-          //   duration: 1000,
-          //   useNativeDriver: true,
-          // }).start();
-          const identifyObj = new Identify();
-          identifyObj.set(`completed_${side}`, progressState.completed);
-          identify(identifyObj);
+          identify({
+            [`completed_${side}`]: progressState.completed,
+          });
         });
       }),
     checkShowTargetDepthReached: () => {
@@ -343,7 +326,6 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         if (!s.sidebarState.activeSide || !rs.repertoire) {
           s.sidebarState.tableResponses = [];
-          console.log("Aborting updateTableResponses");
           return;
         }
         const threshold = gs.userState.getCurrentThreshold();

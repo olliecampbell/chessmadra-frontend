@@ -19,7 +19,7 @@ export const ConnectAccountsSetting = () => {
       bodyPadding={false}
       actions={[]}
     >
-      <p class="body-text mb-12 padding-sidebar">
+      <p class="body-text mb-8 md:mb-12 padding-sidebar">
         This will let you review the opening mistakes in your online games.
       </p>
       <ConnectedAccount
@@ -36,7 +36,7 @@ export const ConnectAccountsSetting = () => {
           });
         }}
       />
-      <Spacer height={48} />
+      <div class="h-8 md:h-12" />
       <ConnectedAccount
         username={user()?.chesscomUsername}
         platform="Chess.com"
@@ -68,16 +68,20 @@ const ConnectedAccount = (props: {
           style: "secondary",
           text: props.platform,
           class: "border-t-1 border-t-border border-t-solid",
+          static: !!props.username,
           onPress: props.onClick,
           right: (
             <ConnectedAccountIconAndText
-              text={props.username ?? "Connect"}
-              connected={props.username}
+              text={props.username ?? "Connect…"}
+              connected={!!props.username}
+              hideIcon={!props.username}
             />
           ),
         }}
       />
-      <SeeMoreActions text="Disconnect" onClick={props.onDisconnect} />
+      {props.username && (
+        <SeeMoreActions text="Disconnect" onClick={props.onDisconnect} />
+      )}
     </div>
   );
 };
@@ -85,6 +89,7 @@ const ConnectedAccount = (props: {
 export const ConnectedAccountIconAndText = (props: {
   text: string;
   connected: boolean;
+  hideIcon?: boolean;
 }) => {
   return (
     <div
@@ -94,13 +99,15 @@ export const ConnectedAccountIconAndText = (props: {
       )}
     >
       <p>{props.text}</p>
-      <i
-        class={clsx(
-          "ml-2",
-          "fa fa-solid text-[12px]",
-          props.connected ? "fa-check" : "fa-xmark",
-        )}
-      />
+      {!props.hideIcon && (
+        <i
+          class={clsx(
+            "ml-2",
+            "fa fa-solid text-[12px]",
+            props.connected ? "fa-check" : "fa-xmark",
+          )}
+        />
+      )}
     </div>
   );
 };
