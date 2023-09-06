@@ -81,9 +81,9 @@ export const getAnimationDurations = (playbackSpeed: PlaybackSpeed) => {
       };
     case PlaybackSpeed.Normal:
       return {
-        moveDuration: 250,
+        moveDuration: 200,
         fadeDuration: 150,
-        stayDuration: 200,
+        stayDuration: 100,
       };
     case PlaybackSpeed.Fast:
       return {
