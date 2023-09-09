@@ -30,7 +30,7 @@ export default defineConfig({
             UnoCSS(unoConfig),
           ]),
     ],
-    [...(IS_STORYBOOK || process.env.VITEST ? [] : [solid()])],
+    [...(IS_STORYBOOK || process.env.VITEST ? [] : [solid({})])],
     sentryVitePlugin({
       org: "marcus-lr",
       project: "chessmadra",

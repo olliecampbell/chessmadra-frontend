@@ -11,7 +11,7 @@ import { AnnotationEditor } from "./AnnotationEditor";
 import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { SelectOneOf } from "./SelectOneOf";
 import { createEffect, createSignal, For, Index, Show } from "solid-js";
-import { A } from "solid-start";
+import { A } from "@solidjs/router";
 import { createStaticChessState } from "~/utils/chessboard_interface";
 import { LazyLoad } from "./LazyLoad";
 import dayjs from "dayjs";

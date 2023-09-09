@@ -32,71 +32,18 @@ import {
   setPosthogFeaturesLoaded,
 } from "./utils/experiments";
 import { produce } from "solid-js/store";
+import { App } from "./app";
 
 const development =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 
 export default function Root() {
-  onMount(() => {
-    posthog.init("phc_atElVsO6VniR0N7SppwOvz56DB3pRkkGiL0kRFdKYwu", {
-      api_host: "https://eu.posthog.com",
-      autocapture: false,
-    });
-    posthog.onFeatureFlags((x, y) => {
-      setPosthogFeaturesLoaded(true);
-    });
-    // amplitude
-    amplitudeInit(
-      development
-        ? "a15d3fdaf95400ebeae67dafbb5e8929"
-        : isChessmadra
-        ? "5691c416a07b218210dba749f3638067"
-        : "3709b7c3cbe8ef56eecec29da70f3d3c",
-      undefined,
-      {
-        serverUrl: undefined,
-        // serverUrl: development ? undefined : "https://chessmadra.com/amplitude",
-      },
-    );
-
-    // Option 1, initialize with API_KEY only
-
-    Sentry.init({
-      dsn: isDevelopment
-        ? "https://5c4df4321e7b4428afef85ec9f08cbd1@o1268497.ingest.sentry.io/6456185"
-        : undefined,
-      integrations: [new BrowserTracing()],
-
-      debug: !(!process.env.NODE_ENV || process.env.NODE_ENV === "development"),
-      // We recommend adjusting this value in production, or using tracesSampler
-      // for finer control
-      tracesSampleRate: 1.0,
-      beforeBreadcrumb: (breadcrumb, hint) => {
-        if (breadcrumb.category === "xhr") {
-          // @ts-ignore
-          const xhr = hint.xhr as XMLHttpRequest;
-          const data = {
-            // @ts-ignore
-            requestBody: xhr.__sentry_xhr__.body,
-            responseCode: xhr.status,
-            response: xhr.response,
-            responseUrl: xhr.responseURL,
-          };
-          return { ...breadcrumb, data };
-        }
-        return breadcrumb;
-      },
-      // ...
-      // Note: if you want to override the automatic release value, do not set a
-      // `release` value here - use the environment variable `SENTRY_RELEASE`, so
-      // that it will also get attached to your source maps
-    });
-  });
+  onMount(() => {});
   return (
     <Html lang="en">
       <Head>
         <meta charset="utf-8" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta
           http-equiv="Cache-Control"
           content="no-cache, no-store, must-revalidate"
@@ -150,30 +97,17 @@ export default function Root() {
           c.fg(c.colors.text.primary),
         )}
       >
-        <Suspense>
-          <ErrorBoundary>
-            <RouteProvider />
-            <Show when={!isServer} fallback={null}>
-              <AuthHandler>
-                <Routes>
-                  <FileRoutes />
-                </Routes>
-              </AuthHandler>
-            </Show>
-          </ErrorBoundary>
-        </Suspense>
+        <ErrorBoundary
+          fallback={(e) => {
+            console.log("error!", e);
+          }}
+        >
+          <Show when={!isServer} fallback={null}>
+            <App />
+          </Show>
+        </ErrorBoundary>
         <Scripts />
       </Body>
     </Html>
   );
 }
-
-const RouteProvider = () => {
-  const navigate = useNavigate();
-  onMount(() => {
-    quick((s) => {
-      s.navigationState.setNavigate(navigate);
-    });
-  });
-  return null;
-};

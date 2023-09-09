@@ -2,7 +2,7 @@ import { c, s } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { CMText } from "./CMText";
 import { AdminPageLayout } from "./AdminPageLayout";
-import { A } from "solid-start";
+import { A } from "@solidjs/router";
 
 export const AdminView = () => {
   return (

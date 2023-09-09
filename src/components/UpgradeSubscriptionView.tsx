@@ -5,6 +5,7 @@ import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { trackEvent } from "~/utils/trackEvent";
 import { Bullet } from "./Bullet";
+import { isIos } from "~/utils/env";
 
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
   const [loading, setLoading] = createSignal(false);
@@ -24,11 +25,13 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
   onMount(() => {
     trackEvent("upgrade.shown");
   });
-  const bullets = [<>Cancel any time (and keep any moves you've added).</>];
+  const bullets = isIos
+    ? []
+    : [<>Cancel any time (and keep any moves you've added).</>];
   return (
     <SidebarTemplate
       actions={
-        loading()
+        loading() || isIos
           ? []
           : [
               {
@@ -58,8 +61,8 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
       loading={loading()}
     >
       <p class={clsx("text-secondary leading-5 pb-2")}>
-        Free users can add {MAX_MOVES_FREE_TIER} moves per color. Upgrade to add
-        unlimited moves.
+        Free users can add {MAX_MOVES_FREE_TIER} moves per color.{" "}
+        {!isIos && <>Upgrade to add unlimited moves.</>}
       </p>
       <div class={"space-y-2"}>
         <For each={bullets}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>

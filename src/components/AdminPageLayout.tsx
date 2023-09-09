@@ -10,7 +10,7 @@ import { AuthStatus } from "~/utils/user_state";
 import { CMTextInput } from "./CMTextInput";
 import { isNil } from "lodash-es";
 import { createSignal, JSXElement } from "solid-js";
-import { A } from "solid-start";
+import { A } from "@solidjs/router";
 
 export const AdminPageLayout = (props: { children: JSXElement }) => {
   const isMobile = useIsMobileV2();

@@ -7,7 +7,6 @@ import { TextInput } from "./TextInput";
 type AuthType = "login" | "register";
 const AUTH_TYPES: AuthType[] = ["login", "register"];
 import { InputError } from "./forms/InputError";
-import { useSearchParams } from "solid-start";
 import { quick } from "~/utils/app_state";
 import { AxiosResponse } from "axios";
 import { AuthResponse } from "~/utils/models";
@@ -16,6 +15,7 @@ import * as yup from "yup";
 import { createForm } from "@felte/solid";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { clsx } from "~/utils/classes";
+import { useSearchParams } from "@solidjs/router";
 
 type ResetPasswordForm = {
   password: string;
@@ -59,6 +59,7 @@ export default function ResetPassword() {
 
   const [serverError, setServerError] = createSignal("");
   const [params] = useSearchParams();
+
   const handleSubmit = createSubmitHandler({
     onSubmit,
   });

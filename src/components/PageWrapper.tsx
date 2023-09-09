@@ -1,7 +1,6 @@
 import {
   getAppState,
   useAppState,
-  useSidebarState,
   useRepertoireState,
   quick,
 } from "~/utils/app_state";
@@ -9,8 +8,9 @@ import { Component, createEffect, Match, onMount, Switch } from "solid-js";
 import LandingPageWrapper from "~/components/LandingPageWrapper";
 import { AuthStatus } from "~/utils/user_state";
 import { RepertoireBuilder } from "./RepertoireBuilder";
-import { useLocation } from "solid-start";
-import { identify } from "~/utils/user_properties";
+import { isIos } from "~/utils/env";
+import { useLocation } from "@solidjs/router";
+import { identify, identifyOnce } from "~/utils/user_properties";
 
 export const PageWrapper = (props: { initialView?: Component }) => {
   const [userState] = useAppState((s) => [s.userState]);
@@ -22,7 +22,7 @@ export const PageWrapper = (props: { initialView?: Component }) => {
   const location = useLocation();
 
   onMount(() => {
-    identify({ initial_page: location.pathname });
+    identifyOnce({ initial_page: location.pathname });
   });
 
   createEffect(() => {
@@ -46,7 +46,9 @@ export const PageWrapper = (props: { initialView?: Component }) => {
   return (
     <Switch fallback={<LandingPageWrapper />}>
       <Match
-        when={token() || userState().pastLandingPage || repertoireLoading()}
+        when={
+          token() || userState().pastLandingPage || repertoireLoading() || isIos
+        }
       >
         <RepertoireBuilder />
       </Match>

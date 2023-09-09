@@ -1,5 +1,7 @@
 import { Setter } from "solid-js";
 import { Accessor, createSignal } from "solid-js";
+import { Preferences } from '@capacitor/preferences';
+
 
 export class StorageItem<T> {
   key: string;

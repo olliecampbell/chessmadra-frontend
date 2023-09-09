@@ -27,6 +27,7 @@ export const RepertoirePageLayout = (props: {
         c.grow,
         s(c.minHeight("100vh")),
       )}
+      class="pt-[env(safe-area-inset-top)]"
     >
       <div
         style={s(

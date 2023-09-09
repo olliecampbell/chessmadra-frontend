@@ -44,7 +44,7 @@ import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
 import { PreReview } from "./PreReview";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
 import { LichessMistake } from "~/utils/models";
-import { isDevelopment } from "~/utils/env";
+import { isDevelopment, isIos } from "~/utils/env";
 import { clsx } from "~/utils/classes";
 import { Puff } from "solid-spinner";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -181,7 +181,7 @@ export const RepertoireHome = () => {
             </For>
           </div>
         </Show>
-        <Show when={userState().isConnectedToExternal()}>
+        <Show when={userState().isConnectedToExternal() && !isIos}>
           <Spacer height={12} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
@@ -227,7 +227,7 @@ export const RepertoireHome = () => {
             />
           </div>
         </Show>
-        <Show when={!userState().isConnectedToExternal()}>
+        <Show when={!userState().isConnectedToExternal() && !isIos}>
           <Spacer height={10} />
           <div style={s(c.column, c.fullWidth, c.gap("10px"))}>
             <SidebarFullWidthButton
@@ -297,7 +297,7 @@ export const RepertoireHome = () => {
                     },
                     // todo: enable handling of xs breakpoint stuff
                     text: "Connected to",
-                    hidden: false,
+                    hidden: isIos,
                     right: (
                       <div class="flex row space-x-4">
                         <ConnectedAccountIconAndText
@@ -359,7 +359,7 @@ export const RepertoireHome = () => {
                     style: "secondary",
                   } as SidebarAction,
                   {
-                    hidden: !settingsExpanded(),
+                    hidden: !settingsExpanded() || isIos,
                     onPress: () => {
                       quick((s) => {
                         if (!userState().user?.subscribed) {
