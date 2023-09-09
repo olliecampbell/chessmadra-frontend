@@ -32,15 +32,9 @@ export const createDebugStateEffect = () => {
         //   s.repertoireState.onboarding.isOnboarding = false;
         s.repertoireState.startBrowsing("black", "build", {
           // pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5"]),
-          pgnToPlay: lineToPgn(["e4", "d5"]),
+          pgnToPlay: "1.e4 e5 2.Nf3 Bc5 3.Nxe5 Qh4",
           animated: false,
         });
-        s.repertoireState.browsingState.chessboard.playLine(
-          ["e4", "d5", "exd5", "Qxd5", "Ke2"],
-          {
-            animated: true,
-          },
-        );
       });
       // quick((s) => {
       //   console.log("setting past landing page");

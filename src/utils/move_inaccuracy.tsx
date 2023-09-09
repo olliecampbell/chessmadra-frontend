@@ -43,10 +43,11 @@ export enum MoveRating {
 
 export const getMoveRating = (
   positionReport: PositionReport,
+  bestStockfishReport: StockfishReport | undefined,
   suggestedMove: SuggestedMove,
   side: Side,
 ) => {
-  const before = positionReport?.stockfish;
+  const before = bestStockfishReport;
   const after = suggestedMove?.stockfish;
   // Modern
   if (

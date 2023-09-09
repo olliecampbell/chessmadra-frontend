@@ -1,5 +1,10 @@
 import { Move } from "@lubert/chess.ts/dist/types";
-import { EcoCode, MoveTag, PositionReport } from "~/utils/models";
+import {
+  EcoCode,
+  MoveTag,
+  PositionReport,
+  StockfishReport,
+} from "~/utils/models";
 import {
   isEmpty,
   last,
@@ -18,6 +23,7 @@ import {
   uniqBy,
   includes,
   noop,
+  maxBy,
 } from "lodash-es";
 import {
   RepertoireMove,
@@ -48,7 +54,7 @@ import {
   scoreTableResponses,
   shouldUsePeerRates,
 } from "./table_scoring";
-import { getMoveRating, MoveRating } from "./move_inaccuracy";
+import { getMoveRating, getWinPercentage, MoveRating } from "./move_inaccuracy";
 import { trackEvent } from "~/utils/trackEvent";
 import { isTheoryHeavy } from "./theory_heavy";
 import { parsePlans } from "./plans";
@@ -438,10 +444,22 @@ export const getInitialBrowsingState = (
             };
           }
         });
+        const stockfishReports: StockfishReport[] = filter(
+          map(tableResponses, (tr) => {
+            return tr.suggestedMove?.stockfish;
+          }),
+          (stockfish) => !isNil(stockfish),
+        ) as StockfishReport[];
+        const bestStockfishReport = maxBy(
+          stockfishReports,
+          (stockfish: StockfishReport) => {
+            return getWinPercentage(stockfish, s.sidebarState.activeSide!);
+          },
+        );
         tableResponses.forEach((tr) => {
           if (!ownSide && mode === "build") {
             if (
-              isCommonMistake(tr, positionReport, threshold) &&
+              isCommonMistake(tr, positionReport, bestStockfishReport) &&
               !tr.tags.includes(MoveTag.RareDangerous)
             ) {
               tr.tags.push(MoveTag.CommonMistake);
@@ -473,6 +491,7 @@ export const getInitialBrowsingState = (
         tableResponses.forEach((tr) => {
           const moveRating = getMoveRating(
             positionReport,
+            bestStockfishReport,
             // @ts-ignore
             tr.suggestedMove,
             currentSide,
@@ -719,7 +738,6 @@ export const getInitialBrowsingState = (
       set(([s, rs, gs]) => {
         const subscribed = gs.userState.isSubscribed();
 
-        console.log("subscribed? ", subscribed);
         if (
           !subscribed &&
           // @ts-ignore
@@ -1017,7 +1035,7 @@ function createEmptyRepertoireProgressState(): RepertoireProgressState {
 const isCommonMistake = (
   tr: TableResponse,
   positionReport: PositionReport,
-  threshold: number,
+  bestStockfishReport: StockfishReport | undefined,
 ): boolean => {
   if (!tr.suggestedMove || !positionReport) {
     return false;
@@ -1037,6 +1055,7 @@ const isCommonMistake = (
   }
   const moveRating = getMoveRating(
     positionReport,
+    bestStockfishReport,
     tr.suggestedMove,
     otherSide(tr.side),
   );
