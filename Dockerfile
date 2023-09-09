@@ -1,10 +1,10 @@
 FROM node:18 AS base
-RUN npm install -g bun
+# RUN npm install -g bun
 RUN npm install -g pnpm
 WORKDIR /base
 COPY package.json ./
-COPY bun.lockb ./
-RUN bun install
+COPY pnpm-lock.yaml ./
+RUN pnpm install
 COPY . .
 ENV NODE_ENV=production
 ARG SENTRY_AUTH_TOKEN
