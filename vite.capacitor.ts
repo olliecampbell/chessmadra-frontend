@@ -4,7 +4,6 @@ import devtools from "solid-devtools/vite";
 import UnoCSS from "unocss/vite";
 import { fileURLToPath } from "node:url";
 import { unoConfig } from "./src/utils/uno";
-import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 const IS_STORYBOOK = !!process.env.IS_STORYBOOK;
 
