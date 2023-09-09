@@ -372,7 +372,9 @@ export const RepertoireHome = () => {
                           return client
                             .post("/api/stripe/create-billing-portal-link")
                             .then(({ data }: { data: { url: string } }) => {
-                              window.open(data.url, "_blank");
+                              if (!window.open(data.url, "_blank")) {
+                                window.location.href = data.url;
+                              }
                             })
                             .finally(noop);
                         }
