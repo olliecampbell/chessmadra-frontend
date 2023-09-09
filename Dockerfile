@@ -1,5 +1,6 @@
 FROM node:18 AS base
 RUN npm install -g bun
+RUN npm install -g pnpm
 WORKDIR /base
 COPY package.json ./
 COPY bun.lockb ./
