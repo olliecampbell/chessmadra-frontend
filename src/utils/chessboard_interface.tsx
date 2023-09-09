@@ -19,7 +19,7 @@ import { MetaPlan } from "./plans";
 import { lineToPgn, pgnToLine, Side } from "./repertoire";
 import { c } from "./styles";
 import { Option } from "./optional";
-import { Accessor, createSignal } from "solid-js";
+import { Accessor, createSignal, JSXElement } from "solid-js";
 import { logProxy } from "./state";
 import { getLineAnimation } from "./get_line_animation";
 import { getAppState } from "./app_state";
@@ -135,6 +135,7 @@ export type ChessboardRefs = {
   visualizationDotRef: HTMLDivElement | null;
   largeCircleRefs: Partial<Record<Square, HTMLDivElement>>;
   overlayRefs: Partial<Record<Square, HTMLDivElement>>;
+  arrowsContainerRef: HTMLDivElement;
 };
 
 export interface ChessboardViewState {

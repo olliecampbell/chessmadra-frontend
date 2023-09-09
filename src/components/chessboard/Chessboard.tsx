@@ -35,6 +35,7 @@ import {
 } from "~/utils/chessboard_interface";
 import { toSide } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
+import { ChessboardArrowView } from "../ChessboardArrow";
 
 export const EMPTY_DRAG = {
   square: null,
@@ -445,6 +446,15 @@ export function ChessboardView(props: {
           onMouseDown={onMouseDown}
           onMouseUp={onMouseUp}
         >
+          <div
+            class="absolute inset-0 pointer-events-none z-10"
+            id="arrows-container"
+            ref={(x) => {
+              updateRefs((refs) => {
+                refs.arrowsContainerRef = x;
+              });
+            }}
+          />
           <FadeInOut
             maxOpacity={1.0}
             style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
@@ -453,117 +463,25 @@ export function ChessboardView(props: {
             <For each={chessboardStore().plans}>
               {(metaPlan, i) => {
                 const { plan } = metaPlan;
-                const {
-                  focused,
-                  opacity,
-                  length,
-                  color,
-                  from,
-                  to,
-                  xDiff,
-                  yDiff,
-                  duration,
-                  toSquareCenterX,
-                  toSquareCenterY,
-                  angle,
-                  angleDeg,
-                } = destructure(() => {
-                  const from = getSquareOffset(plan.fromSquare, flipped());
-                  const to = getSquareOffset(plan.toSquare, flipped());
-                  const dx = Math.abs(from.x - to.x);
-                  const dy = Math.abs(from.y - to.y);
-                  const length =
-                    Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) -
-                    (1 / 8) * 0.1;
-                  const angle = Math.atan2(to.y - from.y, to.x - from.x);
-                  const angleDeg = (angle * 180) / Math.PI;
-                  let color = metaPlan.mine ? c.arrowColors[55] : c.gray[35];
-                  let gradientColor = c.gray[100];
-                  let focused = false;
-                  let opacity = 80;
-                  if (!metaPlan.mine) {
-                    opacity = 50;
-                  }
-                  if (chessboardStore().focusedPlans?.includes(metaPlan.id)) {
-                    focused = true;
-                    color = c.purple[65];
-                    opacity = 100;
-                    gradientColor = c.purple[30];
-                  }
-                  const duration = "1.0s";
-                  const toSquareCenterX = to.x + 1 / 8 / 2;
-                  const toSquareCenterY = to.y + 1 / 8 / 2;
-                  const x1 = from.x + 1 / 8 / 2;
-                  const x2 = from.x + 1 / 8 / 2 + length * Math.cos(angle);
-                  const y1 = from.y + 1 / 8 / 2;
-                  const y2 = from.y + 1 / 8 / 2 + length * Math.sin(angle);
-                  const xDiff = x2 - x1;
-                  const yDiff = y2 - y1;
-                  return {
-                    focused,
-                    opacity,
-                    from,
-                    to,
-                    color,
-                    x1,
-                    y1,
-                    x2,
-                    y2,
-                    xDiff,
-                    yDiff,
-                    duration,
-                    length,
-                    toSquareCenterX,
-                    toSquareCenterY,
-                    angle,
-                    angleDeg,
-                  };
-                });
+                const focused = () =>
+                  chessboardStore().focusedPlans?.includes(metaPlan.id) ??
+                  false;
 
                 return (
-                  <div
-                    style={s(
-                      c.absoluteFull,
-                      c.noPointerEvents,
-                      c.zIndex(focused() ? 101 : 100),
-                      c.opacity(opacity()),
-                    )}
-                  >
-                    <svg width="100%" height="100%" viewBox="0 0 1 1">
-                      <line
-                        // stroke={`url(#${`plan-line-gradient-${i}`})`}
-                        stroke={color()}
-                        stroke-width={1.4 / 100}
-                        stroke-linecap="round"
-                        x1={from().x + 1 / 8 / 2}
-                        y1={from().y + 1 / 8 / 2}
-                        x2={from().x + 1 / 8 / 2 + length() * Math.cos(angle())}
-                        y2={from().y + 1 / 8 / 2 + length() * Math.sin(angle())}
-                      />
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width={(1 / 8) * 0.04}
-                        fill={color()}
-                        stroke={color()}
-                        transform={`rotate(${
-                          angleDeg() - 90
-                        } ${toSquareCenterX()} ${toSquareCenterY()})`}
-                        d={`M ${toSquareCenterX() - 2 / 100},${
-                          toSquareCenterY() - 2.8 / 100
-                        } ${toSquareCenterX()},${toSquareCenterY() - 0.004} ${
-                          toSquareCenterX() + 2 / 100
-                        },${toSquareCenterY() - 2.8 / 100} Z`}
-                      />
-                      {/*<circle
-                        cx={to.x + 1 / 8 / 2}
-                        cy={to.y + 1 / 8 / 2}
-                        r={(1 / 8) * 0.12}
-                        fill={gradientColor}
-                        // fill={`url(#${`plan-line-gradient-${i}`})`}
-                      />*/}
-                    </svg>
-                  </div>
+                  <ChessboardArrowView
+                    flipped={flipped()}
+                    faded={!metaPlan.mine}
+                    color={
+                      focused()
+                        ? c.purple[50]
+                        : metaPlan.mine
+                        ? c.arrowColors[55]
+                        : c.gray[35]
+                    }
+                    fromSquare={plan.fromSquare}
+                    toSquare={plan.toSquare}
+                    focused={focused()}
+                  />
                 );
               }}
             </For>

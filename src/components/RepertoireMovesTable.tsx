@@ -243,9 +243,7 @@ export const RepertoireMovesTable = (props: {
       </Show>
       <Show when={props.body}>
         <>
-            <p class="body-text padding-sidebar">
-            {props.body}
-          </p>
+          <p class="body-text padding-sidebar">{props.body}</p>
           <Spacer height={24} />
         </>
       </Show>
@@ -880,7 +878,6 @@ const MoveTagView = (props: {
         c.alignCenter,
       )}
       ref={(ref) => {
-        console.log("ref", ref);
         initTooltip({
           ref,
           content: () => {

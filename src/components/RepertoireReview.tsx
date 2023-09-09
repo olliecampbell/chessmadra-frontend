@@ -11,7 +11,15 @@ import {
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { SidebarAction } from "./SidebarActions";
-import { Accessor, createEffect, createMemo, For, JSX, Show } from "solid-js";
+import {
+  Accessor,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  JSX,
+  Show,
+} from "solid-js";
 import { Intersperse } from "./Intersperse";
 import { Side } from "~/utils/repertoire";
 import { clsx } from "~/utils/classes";
@@ -26,6 +34,11 @@ import {
   combinedThemes,
   COMBINED_THEMES_BY_ID,
 } from "~/utils/theming";
+import { Portal } from "solid-js/web";
+import { ChessboardArrowView } from "./ChessboardArrow";
+import { destructure } from "@solid-primitives/destructure";
+import { Chess, Move } from "@lubert/chess.ts";
+import { useHovering } from "~/mocks";
 
 export const RepertoireReview = (props: {}) => {
   const isMobile = useIsMobileV2();
@@ -168,7 +181,12 @@ export const RepertoireReview = (props: {}) => {
               ` against ${lichessMistake.opponentName}`}
           </a>
           , you played{" "}
-          <span class={clsx("text-orange-60 font-semibold")}>
+          <span
+            class={clsx(
+              "text-orange-50 font-semibold cursor-pointer hover:bg-orange-10 p-0.5 rounded-sm",
+            )}
+            {...wrongMoveHoverProps}
+          >
             {lichessMistake.playedSan}
           </span>
           . Play the correct move on the board.
@@ -234,87 +252,129 @@ export const RepertoireReview = (props: {}) => {
       return `You have ${moves?.length} responses to this position in your repertoire. Play all your responses on the board`;
     }
   };
+  const { hovering: wrongMoveHovered, hoveringProps: wrongMoveHoverProps } =
+    useHovering();
+  const [arrowToSquare, arrowFromSquare] = destructure(() => {
+    const lichessMistake = currentMove()?.lichessMistake;
+    if (!lichessMistake) {
+      return [null, null];
+    }
+    const fen = `${lichessMistake.epd} 0 1`;
+    const position = new Chess(fen);
+    const [move] = position.validateMoves([lichessMistake.playedSan]) as [Move];
+    return [move?.to, move?.from];
+  });
+
+  const mountPoint = getAppState().repertoireState.reviewState.chessboard.get(
+    (s) => s.refs.arrowsContainerRef,
+  );
+  console.log("rendering repertoire review!");
   return (
-    <SidebarTemplate
-      header={null}
-      actions={filter(actions(), (a) => !a.hidden)}
-      bodyPadding={true}
-    >
-      <div class={"row w-full items-end justify-between"}>
-        <SidebarHeader>
-          {reviewingMistakes()
-            ? "Reviewing mistakes"
-            : isMobile()
-            ? "Practice"
-            : `Practicing ${isPlanPractice() ? "plans" : "moves"}`}
-        </SidebarHeader>
-        <div class="row items-center space-x-4 lg:space-x-8">
-          <For each={progressIcons()}>
-            {(i) => {
-              return (
-                <div class="row items-center">
-                  <p
-                    class={clsx(i.class, "text-sm font-semibold lg:text-base")}
-                  >
-                    {i.text}
-                  </p>
-                  <i
-                    class={clsx(i.class, i.icon, " ml-2 text-sm lg:text-base")}
-                  />
-                </div>
-              );
-            }}
-          </For>
+    <>
+      <Portal mount={mountPoint}>
+        <div>
+          <Show when={currentMove()?.lichessMistake}>
+            <ChessboardArrowView
+              color={c.orange[55]}
+              focused={wrongMoveHovered()}
+              flipped={getAppState().repertoireState.reviewState.chessboard.get(
+                (c) => c.flipped,
+              )}
+              hidden={!wrongMoveHovered()}
+              toSquare={arrowToSquare()}
+              fromSquare={arrowFromSquare()}
+            />
+          </Show>
         </div>
-      </div>
-      <div class={"h-6 lg:h-10"} />
-      <p class="body-text leading-5">{body()}</p>
-      <Show when={num() > 1}>
-        <>
-          <div
-            class="mt-2"
-            style={s(
-              c.row,
-              c.overflowHidden,
-              c.fullWidth,
-              c.height(12),
-              c.round,
-              c.alignStretch,
-              c.border(`1px solid ${c.gray[20]}`),
-            )}
-          >
-            {(() => {
-              console.log("this gets re-rendered");
-              return null;
-            })()}
-            <Intersperse
-              each={() => range(num())}
-              separator={() => {
+      </Portal>
+      <SidebarTemplate
+        header={null}
+        actions={filter(actions(), (a) => !a.hidden)}
+        bodyPadding={true}
+      >
+        <div class={"row w-full items-end justify-between"}>
+          <SidebarHeader>
+            {reviewingMistakes()
+              ? "Reviewing mistakes"
+              : isMobile()
+              ? "Practice"
+              : `Practicing ${isPlanPractice() ? "plans" : "moves"}`}
+          </SidebarHeader>
+          <div class="row items-center space-x-4 lg:space-x-8">
+            <For each={progressIcons()}>
+              {(i) => {
                 return (
-                  <div
-                    class={clsx("bg-gray-20 w-0.5")}
-                    style={s(c.fullHeight)}
-                  />
+                  <div class="row items-center">
+                    <p
+                      class={clsx(
+                        i.class,
+                        "text-sm font-semibold lg:text-base",
+                      )}
+                    >
+                      {i.text}
+                    </p>
+                    <i
+                      class={clsx(
+                        i.class,
+                        i.icon,
+                        " ml-2 text-sm lg:text-base",
+                      )}
+                    />
+                  </div>
                 );
               }}
-            >
-              {(x: Accessor<number>) => {
-                const hasCompleted = () => x() < numCompleted();
-                return (
-                  <div
-                    class={clsx(
-                      hasCompleted() ? "bg-gray-80" : "bg-gray-40",
-                      "transition-colors",
-                    )}
-                    style={s(c.grow)}
-                  />
-                );
-              }}
-            </Intersperse>
+            </For>
           </div>
-          <Spacer height={12} />
-        </>
-      </Show>
-    </SidebarTemplate>
+        </div>
+        <div class={"h-6 lg:h-10"} />
+        <p class="body-text leading-5">{body()}</p>
+        <Show when={num() > 1}>
+          <>
+            <div
+              class="mt-2"
+              style={s(
+                c.row,
+                c.overflowHidden,
+                c.fullWidth,
+                c.height(12),
+                c.round,
+                c.alignStretch,
+                c.border(`1px solid ${c.gray[20]}`),
+              )}
+            >
+              {(() => {
+                console.log("this gets re-rendered");
+                return null;
+              })()}
+              <Intersperse
+                each={() => range(num())}
+                separator={() => {
+                  return (
+                    <div
+                      class={clsx("bg-gray-20 w-0.5")}
+                      style={s(c.fullHeight)}
+                    />
+                  );
+                }}
+              >
+                {(x: Accessor<number>) => {
+                  const hasCompleted = () => x() < numCompleted();
+                  return (
+                    <div
+                      class={clsx(
+                        hasCompleted() ? "bg-gray-80" : "bg-gray-40",
+                        "transition-colors",
+                      )}
+                      style={s(c.grow)}
+                    />
+                  );
+                }}
+              </Intersperse>
+            </div>
+            <Spacer height={12} />
+          </>
+        </Show>
+      </SidebarTemplate>
+    </>
   );
 };
