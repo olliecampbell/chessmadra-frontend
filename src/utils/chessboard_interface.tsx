@@ -72,6 +72,9 @@ export interface ChessboardInterface {
   animatePieceMove: (
     move: Move,
     callback: (completed: boolean) => void,
+    options?: {
+      firstMove?: boolean;
+    },
   ) => void;
   // @deprecated
   flashRing: (success: boolean) => void;
@@ -79,7 +82,7 @@ export interface ChessboardInterface {
   reversePreviewMove: () => void;
   animatePreviewMove: () => void;
   stepPreviewMove: () => void;
-  stepAnimationQueue: () => void;
+  stepAnimationQueue: (options?: { firstMove?: boolean }) => void;
   requestToMakeMove: (move: Move, options?: MakeMoveOptions) => void;
   highlightSquare: (square: Square | null) => void;
   setTapOptions: (squares: Square[]) => void;
@@ -345,7 +348,7 @@ export const createChessboardInterface = (): [
             ...(s.animationQueue ?? []),
             ...([moveObject] as AnimationMove[]),
           ];
-          chessboardInterface.stepAnimationQueue();
+          chessboardInterface.stepAnimationQueue({ firstMove: true });
         }
         pos.move(m);
         if (moveObject) {
@@ -420,7 +423,7 @@ export const createChessboardInterface = (): [
         });
       });
     },
-    stepAnimationQueue: () => {
+    stepAnimationQueue: (options) => {
       set((s: ChessboardViewState) => {
         if (isEmpty(s.animationQueue)) {
           s._animatePosition = undefined;
@@ -434,18 +437,22 @@ export const createChessboardInterface = (): [
           getAppState().userState.getFrontendSetting("pieceAnimation")
             .value as PieceAnimation,
         );
-        chessboardInterface.animatePieceMove(nextMove, (completed) => {
-          s.animating = false;
-          if (completed) {
-            console.log("completed animation");
-            if (nextMove.reverse) {
-              const m = s._animatePosition?.undo();
-            } else {
-              s._animatePosition?.move(nextMove);
+        chessboardInterface.animatePieceMove(
+          nextMove,
+          (completed) => {
+            s.animating = false;
+            if (completed) {
+              console.log("completed animation");
+              if (nextMove.reverse) {
+                const m = s._animatePosition?.undo();
+              } else {
+                s._animatePosition?.move(nextMove);
+              }
+              chessboardInterface.stepAnimationQueue();
             }
-            chessboardInterface.stepAnimationQueue();
-          }
-        });
+          },
+          { firstMove: options?.firstMove },
+        );
       });
     },
     stepPreviewMove: () => {
@@ -572,6 +579,7 @@ export const createChessboardInterface = (): [
     animatePieceMove: (
       move: AnimationMove,
       callback: (completed: boolean) => void,
+      options,
     ) => {
       set((s: ChessboardViewState) => {
         const animationSpeed = pieceAnimationToPlaybackSpeed(
@@ -593,6 +601,7 @@ export const createChessboardInterface = (): [
         }
         pieceRef.style.top = `${startY * 100}%`;
         pieceRef.style.left = `${startX * 100}%`;
+        s.animatedMove = move;
         anime({
           targets: pieceRef,
           top: `${y * 100}%`,
@@ -600,7 +609,7 @@ export const createChessboardInterface = (): [
           duration: moveDuration,
           easing: "easeInOutSine",
           autoplay: true,
-          endDelay: stayDuration,
+          delay: options?.firstMove ? 0 : stayDuration,
         }).finished.then(() => {
           s.animatedMove = undefined;
           s.animatingMoveSquare = undefined;
@@ -759,7 +768,7 @@ export const createChessboardInterface = (): [
               ...(s.animationQueue ?? []),
               { ...m, reverse: true },
             ];
-            chessboardInterface.stepAnimationQueue();
+            chessboardInterface.stepAnimationQueue({ firstMove: true });
           }
           s.position.undo();
 
@@ -1047,7 +1056,7 @@ export const createChessboardInterface = (): [
           const moves = s._animatePosition.validateMoves(animateLine);
           // @ts-ignore
           s.animationQueue = moves;
-          chessboardInterface.stepAnimationQueue();
+          chessboardInterface.stepAnimationQueue({ firstMove: true });
         }
         chessboardInterface.resumeNotifyingDelegates();
         chessboardInterface.getDelegate()?.onPositionUpdated?.();

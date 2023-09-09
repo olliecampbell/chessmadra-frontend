@@ -664,6 +664,9 @@ export function ChessboardView(props: {
               const fadedBecauseTapOption = createMemo(() =>
                 chessboardStore().tapOptions.has(square),
               );
+              const fadedBecauseCapturing = createMemo(
+                () => chessboardStore().animatedMove?.to === square,
+              );
 
               const priority = createMemo(
                 () =>
@@ -703,7 +706,9 @@ export function ChessboardView(props: {
                         <div
                           class={clsx(
                             hiddenBecauseTake() && "opacity-0",
-                            fadedBecauseTapOption() && "opacity-50",
+                            (fadedBecauseCapturing() ??
+                              fadedBecauseTapOption()) &&
+                              "opacity-50",
                             "transition-opacity",
                           )}
                         >

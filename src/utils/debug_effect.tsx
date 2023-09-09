@@ -26,15 +26,22 @@ export const createDebugStateEffect = () => {
 
     if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
       setHasCalled(true);
-      // quick((s) => {
-      //   console.log("setting past landing page");
-      //   s.userState.pastLandingPage = true;
-      //   s.repertoireState.onboarding.isOnboarding = false;
-      //   s.repertoireState.startBrowsing("black", "build", {
-      //     // pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5"]),
-      //     pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5", "Ke2"]),
-      //   });
-      // });
+      quick((s) => {
+        //   console.log("setting past landing page");
+        //   s.userState.pastLandingPage = true;
+        //   s.repertoireState.onboarding.isOnboarding = false;
+        s.repertoireState.startBrowsing("black", "build", {
+          // pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5"]),
+          pgnToPlay: lineToPgn(["e4", "d5"]),
+          animated: false,
+        });
+        s.repertoireState.browsingState.chessboard.playLine(
+          ["e4", "d5", "exd5", "Qxd5", "Ke2"],
+          {
+            animated: true,
+          },
+        );
+      });
       // quick((s) => {
       //   console.log("setting past landing page");
       //   s.userState.pastLandingPage = true;

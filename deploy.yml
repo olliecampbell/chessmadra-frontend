@@ -57,11 +57,14 @@ spec:
                   number: 80
     - host: chessbook.com
       http: *http_rules
+    - host: www.chessbook.com
+      http: *http_rules
   tls:
     - hosts:
         - chessmadra.com
         - chessbook.com
-      secretName: chessbook-cert-prod
+        - www.chessbook.com
+      secretName: chessbook-cert-prod-v2
 ---
 apiVersion: v1
 kind: Service
@@ -122,8 +125,11 @@ spec:
                   number: 80
     - host: staging.chessbook.com
       http: *http_rules
+    - host: www.staging.chessbook.com
+      http: *http_rules
   tls:
     - hosts:
         - staging.chessmadra.com
         - staging.chessbook.com
-      secretName: chessbook-cert-staging
+        - www.staging.chessbook.com
+      secretName: chessbook-cert-staging-v2

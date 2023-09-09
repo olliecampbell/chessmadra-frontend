@@ -10,9 +10,9 @@ let baseURL = undefined;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseURL = "http://localhost:8040";
 }
-// if (import.meta.env.VITE_API_ENV === "production") {
-baseURL = "https://chessbook.com";
-// }
+if (import.meta.env.VITE_API_ENV === "production") {
+  baseURL = "https://chessbook.com";
+}
 const client = applyCaseMiddleware(
   axios.create({
     baseURL,

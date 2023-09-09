@@ -10,6 +10,7 @@ import { validator } from "@felte/validator-yup";
 import * as yup from "yup";
 import { Show } from "solid-js";
 import { Puff } from "solid-spinner";
+import { noop } from "lodash-es";
 
 export const ConnectAccountsSetting = () => {
   const user = () => getAppState().userState?.user;
@@ -69,7 +70,7 @@ const ConnectedAccount = (props: {
           text: props.platform,
           class: "border-t-1 border-t-border border-t-solid",
           static: !!props.username,
-          onPress: props.onClick,
+          onPress: !props.username ? props.onClick : noop,
           right: (
             <ConnectedAccountIconAndText
               text={props.username ?? "Connect…"}

@@ -1,6 +1,8 @@
 import { PlaybackSpeed } from "~/types/VisualizationState";
+import { isDevelopment } from "./env";
 
 export enum PieceAnimation {
+  DebugSlow = "debug-slow",
   Slow = "slow",
   Normal = "normal",
   Fast = "fast",
@@ -26,6 +28,9 @@ export const SETTINGS = {
     key: "pieceAnimation",
     title: "Piece animation",
     options: [
+      ...(isDevelopment
+        ? [{ value: PieceAnimation.DebugSlow, label: "Debug Slow" }]
+        : []),
       { value: PieceAnimation.Slow, label: "Slow" },
       { value: PieceAnimation.Normal, label: "Normal" },
       { value: PieceAnimation.Fast, label: "Fast" },
@@ -39,6 +44,8 @@ export const pieceAnimationToPlaybackSpeed = (
   pieceAnimation: PieceAnimation,
 ): PlaybackSpeed => {
   switch (pieceAnimation) {
+    case PieceAnimation.DebugSlow:
+      return PlaybackSpeed.DebugSlow;
     case PieceAnimation.Slow:
       return PlaybackSpeed.Slow;
     case PieceAnimation.Normal:

@@ -95,6 +95,16 @@ export const SidebarActionsLegacy = () => {
     }
   };
   const buttonsSig = () => {
+    if (mode() === "review") {
+      return [];
+    }
+    if (mode() === "overview") {
+      return [];
+    }
+    if (mode() === "home") {
+      return [];
+    }
+
     let buttons: SidebarAction[] = [];
     let showTogglePlansButton = true;
     if (onboarding().isOnboarding) {
@@ -185,16 +195,6 @@ export const SidebarActionsLegacy = () => {
         text: "Practice ALL moves from here",
         style: "primary",
       });
-    }
-    // TODO: this is terrible, the views should just define their own actions
-    if (mode() === "review") {
-      buttons = [];
-    }
-    if (mode() === "overview") {
-      buttons = [];
-    }
-    if (mode() === "home") {
-      buttons = [];
     }
     return buttons;
   };
