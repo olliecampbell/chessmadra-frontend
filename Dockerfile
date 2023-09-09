@@ -8,6 +8,6 @@ COPY . .
 ENV NODE_ENV=production
 ARG SENTRY_AUTH_TOKEN
 ENV SENTRY_AUTH_TOKEN ${SENTRY_AUTH_TOKEN}
-RUN bun run build
-CMD bun start --port=80
+RUN pnpm run build
+CMD pnpm run start --port=80
 
