@@ -42,11 +42,20 @@ export const createDebugStateEffect = () => {
         //   console.log("setting past landing page");
         //   s.userState.pastLandingPage = true;
         //   s.repertoireState.onboarding.isOnboarding = false;
-        // s.repertoireState.startBrowsing("black", "build", {
-        //   // pgnToPlay: lineToPgn(["e4", "d5", "exd5", "Qxd5"]),
-        //   pgnToPlay: "1.e4 e5 2.Nf3 Bc5 3.Nxe5 Qh4",
-        //   animated: false,
-        // });
+        s.repertoireState.startBrowsing("white", "build", {
+          pgnToPlay: lineToPgn([
+            "d4",
+            "Nf6",
+            "c4",
+            "e6",
+            "Nc3",
+            "Bb4",
+            "Qc2",
+            "c5",
+          ]),
+          // pgnToPlay: "1.e4 e5 2.Nf3 Bc5 3.Nxe5 Qh4",
+          animated: false,
+        });
       });
       // quick((s) => {
       //   console.log("setting past landing page");

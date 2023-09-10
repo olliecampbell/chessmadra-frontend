@@ -453,7 +453,7 @@ export const getInitialBrowsingState = (
         const bestStockfishReport = maxBy(
           stockfishReports,
           (stockfish: StockfishReport) => {
-            return getWinPercentage(stockfish, s.sidebarState.activeSide!);
+            return getWinPercentage(stockfish, s.sidebarState.currentSide!);
           },
         );
         tableResponses.forEach((tr) => {
