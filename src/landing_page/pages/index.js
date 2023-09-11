@@ -183,11 +183,11 @@ export default (props => {
     }
   })), /*#__PURE__*/React.createElement(Text, {
     margin: "0px 0px 0px 0px",
-    color: "--grey",
     font: "--small",
     padding: "8px 0px 0px 0px",
     "md-font": "--smallMd",
-    "md-padding": "6px 0px 0px 0px"
+    "md-padding": "6px 0px 0px 0px",
+    className: "text-gray-50"
   }, "No signup required")), /*#__PURE__*/React.createElement(Box, {
     display: "flex",
     width: "100%",

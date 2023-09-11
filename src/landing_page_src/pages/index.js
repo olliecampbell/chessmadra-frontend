@@ -228,11 +228,11 @@ export default (props) => {
           </Link>
           <Text
             margin="0px 0px 0px 0px"
-            color="--grey"
             font="--small"
             padding="8px 0px 0px 0px"
             md-font="--smallMd"
             md-padding="6px 0px 0px 0px"
+            className="text-gray-50"
           >
             No signup required
           </Text>
