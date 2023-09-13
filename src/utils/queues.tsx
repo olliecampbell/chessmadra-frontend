@@ -8,86 +8,86 @@ import { RepertoireMove, Side } from "./repertoire";
 export type QuizGroup = QuizGroupPlans | QuizGroupMoves;
 
 export interface QuizGroupPlans extends QuizGroupBase {
-  plans: QuizPlan[];
-  remainingPlans: QuizPlan[];
-  completedPlans: QuizPlan[];
-  lichessMistake?: undefined;
+	plans: QuizPlan[];
+	remainingPlans: QuizPlan[];
+	completedPlans: QuizPlan[];
+	lichessMistake?: undefined;
 }
 
 export interface QuizGroupMoves extends QuizGroupBase {
-  moves: RepertoireMove[];
-  lichessMistake?: LichessMistake;
+	moves: RepertoireMove[];
+	lichessMistake?: LichessMistake;
 }
 
 export interface QuizGroupBase {
-  line: string;
-  epd: string;
-  side: Side;
+	line: string;
+	epd: string;
+	side: Side;
 }
 
 export interface QuizPlan {
-  type: "piece_movement" | "castling";
-  metaPlan: MetaPlan;
-  piece: PieceSymbol;
-  toSquares: Square[];
-  options?: Square[];
-  fromSquare: Square;
+	type: "piece_movement" | "castling";
+	metaPlan: MetaPlan;
+	piece: PieceSymbol;
+	toSquares: Square[];
+	options?: Square[];
+	fromSquare: Square;
 }
 
 export interface QuizMoves {
-  moves: RepertoireMove[];
+	moves: RepertoireMove[];
 }
 
 export interface QuizItem {
-  move?: RepertoireMove;
+	move?: RepertoireMove;
 }
 
 export const countQueue = (queue: QuizGroup[]) => {
-  return queue
-    .map((m) => {
-      const moves = Quiz.getMoves(m);
-      if (moves) {
-        return moves.length;
-      }
-      return 1;
-    })
-    .reduce((a, b) => a + b, 0);
+	return queue
+		.map((m) => {
+			const moves = Quiz.getMoves(m);
+			if (moves) {
+				return moves.length;
+			}
+			return 1;
+		})
+		.reduce((a, b) => a + b, 0);
 };
 
 export namespace Quiz {
-  export const getRemainingPlans = (
-    quizGroup: QuizGroup,
-    planIndex: number,
-  ): QuizPlan[] | null => {
-    const plans = Quiz.getPlans(quizGroup);
-    return drop(plans, planIndex);
-  };
+	export const getRemainingPlans = (
+		quizGroup: QuizGroup,
+		planIndex: number,
+	): QuizPlan[] | null => {
+		const plans = Quiz.getPlans(quizGroup);
+		return drop(plans, planIndex);
+	};
 
-  export const getCompletedPlans = (
-    quizGroup: QuizGroup,
-    planIndex: number,
-  ): QuizPlan[] => {
-    const plans = Quiz.getPlans(quizGroup);
-    return take(plans, planIndex);
-  };
+	export const getCompletedPlans = (
+		quizGroup: QuizGroup,
+		planIndex: number,
+	): QuizPlan[] => {
+		const plans = Quiz.getPlans(quizGroup);
+		return take(plans, planIndex);
+	};
 
-  export const getMoves = (quizGroup: QuizGroup): RepertoireMove[] | null => {
-    if ("moves" in quizGroup) {
-      return (quizGroup as QuizGroupMoves).moves;
-    }
+	export const getMoves = (quizGroup: QuizGroup): RepertoireMove[] | null => {
+		if ("moves" in quizGroup) {
+			return (quizGroup as QuizGroupMoves).moves;
+		}
 
-    return null;
-  };
+		return null;
+	};
 
-  export const getPlans = (quizGroup: QuizGroup): QuizPlan[] | null => {
-    if ("plans" in quizGroup) {
-      return (quizGroup as QuizGroupPlans).plans;
-    }
+	export const getPlans = (quizGroup: QuizGroup): QuizPlan[] | null => {
+		if ("plans" in quizGroup) {
+			return (quizGroup as QuizGroupPlans).plans;
+		}
 
-    return null;
-  };
+		return null;
+	};
 
-  export const isPlansQuiz = (quizGroup: QuizGroup): boolean => {
-    return "plans" in quizGroup;
-  };
+	export const isPlansQuiz = (quizGroup: QuizGroup): boolean => {
+		return "plans" in quizGroup;
+	};
 }

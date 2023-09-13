@@ -2,9 +2,9 @@ import { expect, test } from "vitest";
 import { getAllPossibleMoves } from "./move_generation";
 
 test("move generation", () => {
-  expect(
-    getAllPossibleMoves({ piece: "k", square: "e4", side: "white" }),
-  ).toMatchInlineSnapshot(`
+	expect(
+		getAllPossibleMoves({ piece: "k", square: "e4", side: "white" }),
+	).toMatchInlineSnapshot(`
       [
         "d5",
         "e5",
@@ -16,9 +16,9 @@ test("move generation", () => {
         "d4",
       ]
     `);
-  expect(
-    getAllPossibleMoves({ piece: "b", square: "b2", side: "white" }),
-  ).toMatchInlineSnapshot(`
+	expect(
+		getAllPossibleMoves({ piece: "b", square: "b2", side: "white" }),
+	).toMatchInlineSnapshot(`
       [
         "a3",
         "c3",
@@ -31,9 +31,9 @@ test("move generation", () => {
         "a1",
       ]
     `);
-  expect(
-    getAllPossibleMoves({ piece: "n", square: "e4", side: "white" }),
-  ).toMatchInlineSnapshot(`
+	expect(
+		getAllPossibleMoves({ piece: "n", square: "e4", side: "white" }),
+	).toMatchInlineSnapshot(`
       [
         "c5",
         "d6",
@@ -45,9 +45,9 @@ test("move generation", () => {
         "c3",
       ]
     `);
-  expect(
-    getAllPossibleMoves({ piece: "q", square: "e4", side: "white" }),
-  ).toMatchInlineSnapshot(`
+	expect(
+		getAllPossibleMoves({ piece: "q", square: "e4", side: "white" }),
+	).toMatchInlineSnapshot(`
       [
         "d5",
         "c6",
@@ -78,17 +78,17 @@ test("move generation", () => {
         "a4",
       ]
     `);
-  expect(
-    getAllPossibleMoves({ piece: "p", square: "e2", side: "white" }),
-  ).toMatchInlineSnapshot(`
+	expect(
+		getAllPossibleMoves({ piece: "p", square: "e2", side: "white" }),
+	).toMatchInlineSnapshot(`
       [
         "e3",
         "e4",
       ]
     `);
-  expect(
-    getAllPossibleMoves({ piece: "p", square: "e2", side: "black" }),
-  ).toMatchInlineSnapshot(`
+	expect(
+		getAllPossibleMoves({ piece: "p", square: "e2", side: "black" }),
+	).toMatchInlineSnapshot(`
       [
         "e1",
       ]

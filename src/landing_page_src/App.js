@@ -1,7 +1,7 @@
 import React from "react";
-import Index from "./pages/index";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
+import Index from "./pages/index";
 
 const GlobalStyles = createGlobalStyle`
     body {
@@ -12,12 +12,12 @@ const GlobalStyles = createGlobalStyle`
 `;
 
 export default (props) => (
-  <Router>
-    <GlobalStyles />
-    <Switch>
-      <Route>
-        <Index onClick={props.onClick} onLogin={props.onLogin} />
-      </Route>
-    </Switch>
-  </Router>
+	<Router>
+		<GlobalStyles />
+		<Switch>
+			<Route>
+				<Index onClick={props.onClick} onLogin={props.onLogin} />
+			</Route>
+		</Switch>
+	</Router>
 );

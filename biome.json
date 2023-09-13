@@ -1,12 +1,12 @@
 {
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space"
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
+	"$schema": "https://biomejs.dev/schemas/1.1.2/schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
       "a11y": {
         "useKeyWithMouseEvents": "off",
         "noSvgWithoutTitle": "off",
@@ -17,10 +17,7 @@
       "style": {
         "noNonNullAssertion": "off",
         "useSelfClosingElements": "off"
-      },
-      "nursery": {
-        "noForEach": "off"
       }
-    }
-  }
+		}
+	}
 }

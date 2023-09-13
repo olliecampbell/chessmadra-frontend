@@ -1,8 +1,8 @@
 export const failOnAny = (setting: void) => {
-  return setting;
+	return setting;
 };
 export const failOnTrue = (setting: false) => {
-  return setting;
+	return setting;
 };
 export const DEBUG_MOCK_FETCH = failOnTrue(false);
 export const DEBUG_DONE_BLUNDER_VIEW = failOnTrue(false);

@@ -1,7 +1,7 @@
 import React from "react";
-import Index from "./pages/index";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
+import Index from "./pages/index";
 const GlobalStyles = createGlobalStyle`
     body {
         margin: 0;
@@ -9,7 +9,21 @@ const GlobalStyles = createGlobalStyle`
         font-family: sans-serif;
     }
 `;
-export default (props => /*#__PURE__*/React.createElement(Router, null, /*#__PURE__*/React.createElement(GlobalStyles, null), /*#__PURE__*/React.createElement(Switch, null, /*#__PURE__*/React.createElement(Route, null, /*#__PURE__*/React.createElement(Index, {
-  onClick: props.onClick,
-  onLogin: props.onLogin
-})))));
+export default (props) =>
+	/*#__PURE__*/ React.createElement(
+		Router,
+		null,
+		/*#__PURE__*/ React.createElement(GlobalStyles, null),
+		/*#__PURE__*/ React.createElement(
+			Switch,
+			null,
+			/*#__PURE__*/ React.createElement(
+				Route,
+				null,
+				/*#__PURE__*/ React.createElement(Index, {
+					onClick: props.onClick,
+					onLogin: props.onLogin,
+				}),
+			),
+		),
+	);
