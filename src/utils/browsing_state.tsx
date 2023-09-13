@@ -295,9 +295,6 @@ export const getInitialBrowsingState = (
 						? 100
 						: getCoverageProgress(numMoves, expectedNumMoves);
 					progressState.percentComplete = savedProgress;
-					identify({
-						[`completed_${side}`]: progressState.completed,
-					});
 				});
 			}),
 		checkShowTargetDepthReached: () => {
