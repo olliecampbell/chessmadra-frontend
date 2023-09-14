@@ -50,12 +50,9 @@ export const SidebarActionsLegacy = () => {
 		deleteLineState,
 		currentLine,
 		currentEpd,
-		nearestMiss,
-		lineMiss,
 		positionHistory,
 		showPlansState,
 		transposedState,
-		mode,
 		numDue,
 		view,
 	] = useSidebarState(([s, bs, rs]) => [
@@ -66,15 +63,13 @@ export const SidebarActionsLegacy = () => {
 		s.deleteLineState,
 		s.moveLog,
 		s.currentEpd,
-		cloneDeep(bs.getNearestMiss(s)),
-		cloneDeep(bs.getMissInThisLine(s)),
 		s.positionHistory,
 		s.showPlansState,
 		s.transposedState,
-		s.mode,
 		rs.numMovesDueFromEpd?.[s.activeSide!]?.[s.currentEpd],
 		rs.browsingState.currentView(),
 	]);
+
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	positionHistory = positionHistory ?? [];
 	const hasPlans = () => {
@@ -95,6 +90,11 @@ export const SidebarActionsLegacy = () => {
 		}
 	};
 	const buttonsSig = () => {
+		const mode = () =>
+			getAppState().repertoireState.browsingState.sidebarState.mode;
+		// if (mode() === "browse") {
+		// 	debugger;
+		// }
 		if (mode() === "review") {
 			return [];
 		}
@@ -196,6 +196,7 @@ export const SidebarActionsLegacy = () => {
 				style: "primary",
 			});
 		}
+		console.log(`Mode is ${mode()}, buttons length: ${buttons.length}`);
 		return buttons;
 	};
 	return (
