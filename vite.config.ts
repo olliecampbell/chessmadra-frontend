@@ -9,35 +9,35 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 const IS_STORYBOOK = !!process.env.IS_STORYBOOK;
 
 export default defineConfig({
-  define: {
-    "process.env": JSON.stringify({}),
-  },
-  resolve: {
-    alias: {
-      "~": fileURLToPath(new URL("./src", import.meta.url)),
-    },
-  },
+	define: {
+		"process.env": JSON.stringify({}),
+	},
+	resolve: {
+		alias: {
+			"~": fileURLToPath(new URL("./src", import.meta.url)),
+		},
+	},
 
-  plugins: [
-    [
-      ...(process.env.VITEST
-        ? []
-        : [
-            devtools({
-              /* additional options */
-              autoname: true, // e.g. enable autoname
-            }),
-            UnoCSS(unoConfig),
-          ]),
-    ],
-    [...(IS_STORYBOOK || process.env.VITEST ? [] : [solid({})])],
-    sentryVitePlugin({
-      org: "marcus-lr",
-      project: "chessmadra",
+	plugins: [
+		[
+			...(process.env.VITEST
+				? []
+				: [
+						devtools({
+							/* additional options */
+							autoname: true, // e.g. enable autoname
+						}),
+						UnoCSS(unoConfig),
+				  ]),
+		],
+		[...(IS_STORYBOOK || process.env.VITEST ? [] : [solid({})])],
+		sentryVitePlugin({
+			org: "marcus-lr",
+			project: "chessmadra",
 
-      // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
-      // and need `project:releases` and `org:read` scopes
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-    }),
-  ],
+			// Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
+			// and need `project:releases` and `org:read` scopes
+			authToken: process.env.SENTRY_AUTH_TOKEN,
+		}),
+	],
 });
