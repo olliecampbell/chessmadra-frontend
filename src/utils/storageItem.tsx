@@ -18,6 +18,9 @@ export class StorageItem<T> {
 	}
 
 	async load() {
+		if (typeof window === "undefined") {
+			return;
+		}
 		return Preferences.get({ key: this.key }).then(({ value }) => {
 			this._loaded = true;
 			if (value) {
