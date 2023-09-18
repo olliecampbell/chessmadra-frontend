@@ -1,4 +1,4 @@
-import { filter, some, sum, values } from "lodash-es";
+import { filter, isEmpty, some, sum, values } from "lodash-es";
 import { createMemo } from "solid-js";
 import { getAppState, quick, useRepertoireState } from "~/utils/app_state";
 import { START_EPD } from "~/utils/chess";
@@ -25,6 +25,9 @@ export const PreReview = (props: { side: Side | null }) => {
 			filter: "due",
 		}),
 	);
+	const isQuizzing = () => {
+		return !isEmpty(getAppState().repertoireState.reviewState.activeQueue);
+	};
 	const actions = () => {
 		const actions: SidebarAction[] = [];
 		// todo: this could be more performant
@@ -35,6 +38,34 @@ export const PreReview = (props: { side: Side | null }) => {
 			(numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
 		const due = props.side ? numMovesDueBySide()[props.side] : totalDue;
 		const isMobile = useIsMobileV2();
+		if (isQuizzing()) {
+			actions.push({
+				onPress: () => {
+					quick((s) => {
+						trackEvent("pre_review.resume");
+						s.repertoireState.browsingState.popView();
+						s.repertoireState.browsingState.moveSidebarState("right");
+						s.repertoireState.reviewState.resumeReview();
+					});
+				},
+				text: (
+					<div class={clsx("row items-center")}>
+						<p class={clsx()}>Continue your practice session</p>
+					</div>
+				),
+				right: (
+					<ReviewText
+						class="!text-primary"
+icon="fa fa-forward"
+						descriptor="Left"
+						numDue={
+							getAppState().repertoireState.reviewState.activeQueue.length
+						}
+					/>
+				),
+				style: "primary",
+			});
+		}
 		if (due > 0) {
 			actions.push({
 				onPress: () => {
@@ -51,7 +82,7 @@ export const PreReview = (props: { side: Side | null }) => {
 					<div class={clsx("row items-center")}>
 						<p class={clsx()}>
 							Everything that's due {isMobile() ? "" : "for review"}
-							<Label>Recommended</Label>
+							{!isQuizzing && <Label>Recommended</Label>}
 						</p>
 					</div>
 				),

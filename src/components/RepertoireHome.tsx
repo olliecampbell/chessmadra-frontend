@@ -68,6 +68,12 @@ export const RepertoireHome = () => {
 		}
 		return getAppState().repertoireState.lichessMistakes;
 	};
+	const quizQueue = () => {
+		return getAppState().repertoireState.reviewState.activeQueue;
+	};
+	const isQuizzing = () => {
+		return !isEmpty(quizQueue());
+	};
 	const loadingMistakes = () => isNil(lichessMistakes());
 	const themeId = () => userState().user?.theme;
 	const theme = () =>
@@ -175,13 +181,11 @@ export const RepertoireHome = () => {
 
 				<Spacer height={46} />
 				<Show when={!isEmpty(overallActions())}>
-					<div style={s()}>
-						<For each={overallActions()}>
-							{(action) => <SidebarFullWidthButton action={action} />}
-						</For>
-					</div>
+					<For each={overallActions()}>
+						{(action) => <SidebarFullWidthButton action={action} />}
+					</For>
 				</Show>
-				<Show when={userState().isConnectedToExternal() && !isIos}>
+				<Show when={userState().isConnectedToExternal()}>
 					<Spacer height={12} />
 					<div style={s(c.column, c.fullWidth, c.gap("10px"))}>
 						<SidebarFullWidthButton
@@ -227,7 +231,7 @@ export const RepertoireHome = () => {
 						/>
 					</div>
 				</Show>
-				<Show when={!userState().isConnectedToExternal() && !isIos}>
+				<Show when={!userState().isConnectedToExternal()}>
 					<Spacer height={10} />
 					<div style={s(c.column, c.fullWidth, c.gap("10px"))}>
 						<SidebarFullWidthButton
@@ -297,7 +301,6 @@ export const RepertoireHome = () => {
 										},
 										// todo: enable handling of xs breakpoint stuff
 										text: "Connected to",
-										hidden: isIos,
 										right: (
 											<div class="flex row space-x-4">
 												<ConnectedAccountIconAndText

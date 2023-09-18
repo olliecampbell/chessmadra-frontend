@@ -927,7 +927,7 @@ export const getInitialBrowsingState = (
 				gs.animateSidebarState?.(direction);
 			}),
 		addPendingLine: (cfg) =>
-			set(([s, gs]) => {
+			set(([s, rs]) => {
 				const { replace } = cfg ?? { replace: false };
 				s.sidebarState.showPlansState.hasShown = false;
 				s.dismissTransientSidebarState();

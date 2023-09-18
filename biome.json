@@ -7,17 +7,17 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
-      "a11y": {
-        "useKeyWithMouseEvents": "off",
-        "noSvgWithoutTitle": "off",
-        "useAltText": "off",
-        "useKeyWithClickEvents": "off",
-        "useValidAnchor": "off"
-      },
-      "style": {
-        "noNonNullAssertion": "off",
-        "useSelfClosingElements": "off"
-      }
+			"a11y": {
+				"useKeyWithMouseEvents": "off",
+				"noSvgWithoutTitle": "off",
+				"useAltText": "off",
+				"useKeyWithClickEvents": "off",
+				"useValidAnchor": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off",
+				"useSelfClosingElements": "off"
+			}
 		}
 	}
 }

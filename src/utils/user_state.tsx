@@ -3,6 +3,8 @@ import sha256 from "crypto-js/sha256";
 /* eslint-disable */
 import { AuthResponse, User, UserFlag } from "~/utils/models";
 
+import { Browser } from "@capacitor/browser";
+
 import { setUserId } from "@amplitude/analytics-browser";
 import { uuid4 } from "@sentry/utils";
 import cryptoRandomString from "crypto-random-string";
@@ -13,7 +15,7 @@ import client from "~/utils/client";
 import { trackEvent } from "~/utils/trackEvent";
 import { AppState } from "./app_state";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
-import { isDevelopment } from "./env";
+import { isDevelopment, isIos } from "./env";
 import {
 	FrontendSetting,
 	FrontendSettingOption,
@@ -28,10 +30,14 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { BoardThemeId, PieceSetId } from "./theming";
 import { renderThreshold } from "./threshold";
 import { identify } from "./user_properties";
+import { StorageItem } from "./storageItem";
+import { Preferences } from "@capacitor/preferences";
+import { Capacitor } from "@capacitor/core";
 
 export interface UserState {
 	quick: (fn: (_: UserState) => void) => void;
-	token?: string;
+	token: StorageItem<string | undefined>;
+	tempUserUuid: StorageItem<string | undefined>;
 	user?: User;
 	profileModalOpen?: boolean;
 	setUser: (user: User) => void;
@@ -42,7 +48,6 @@ export interface UserState {
 	getUserRatingDescription: () => string;
 	getCurrentThreshold: () => number;
 	authStatus: AuthStatus;
-	tempUserUuid?: string;
 	updateUserRatingSettings: (
 		params: Partial<{
 			ratingSystem: string;
@@ -71,6 +76,7 @@ export interface UserState {
 		token: string | null,
 		username: string | null,
 	) => Promise<void>;
+	loadAuthData: () => Promise<void>;
 	getFrontendSetting: (
 		settingKey: keyof FrontendSettings,
 	) => FrontendSettingOption<unknown>;
@@ -107,6 +113,8 @@ export const getInitialUserState = (
 		return _get((s) => fn(selector(s)));
 	};
 	const initialState = {
+		tempUserUuid: new StorageItem(TEMP_USER_UUID, undefined),
+		token: new StorageItem(JWT_COOKIE_KEY, undefined),
 		isUpdatingEloRange: false,
 		handleAuthResponse: (response: AuthResponse) => {
 			set(([s, appState]) => {
@@ -114,24 +122,43 @@ export const getInitialUserState = (
 				if (firstAuthentication) {
 					trackEvent("login.first_login");
 				}
-				s.token = token;
+				s.token.value = token;
+				s.tempUserUuid.value = user?.id;
 				s.setUser(user);
 				s.authStatus = AuthStatus.Authenticated;
 				appState.repertoireState.fetchRepertoire(false);
 			});
 		},
+		loadAuthData: () => {
+			return set(([s]) => {
+				return Promise.all([s.token.load(), s.tempUserUuid.load()]).then(
+					([cookieToken, tempUserUuid]) => {
+						set(([s]) => {
+							console.log("cookieToken", cookieToken, tempUserUuid);
+							if (!cookieToken) {
+								s.authStatus = AuthStatus.Unauthenticated;
+							}
+							if (!tempUserUuid) {
+								const uuid = uuid4();
+								s.tempUserUuid.value = uuid;
+							}
+						});
+					},
+				);
+			});
+		},
 		logout: () => {
 			set(([s, appState]) => {
 				posthog.reset();
-				Cookies.remove(JWT_COOKIE_KEY);
-				Cookies.remove(TEMP_USER_UUID);
-				window.location.reload();
+				s.token.value = undefined;
+				s.tempUserUuid.value = uuid4();
+				s.authStatus = AuthStatus.Unauthenticated;
+				appState.repertoireState.fetchRepertoire(false);
 			});
 		},
 		setUser: (user: User) => {
 			set(([s, appState]) => {
 				s.user = user;
-				s.tempUserUuid = user.id;
 				// because could be diff goal
 				appState.repertoireState.updateRepertoireStructures();
 
@@ -325,23 +352,36 @@ export const getInitialUserState = (
 				console.log("authing");
 				const codeVerifier = cryptoRandomString({ length: 64, type: "base64" });
 				const state = cryptoRandomString({ length: 64, type: "base64" });
-				localStorage.setItem("lichess.code_verifier", codeVerifier);
-				localStorage.setItem("lichess.state", state);
-				console.log("Code verifier is:", codeVerifier);
-				const params = new URLSearchParams({
-					client_id: LICHESS_CLIENT_ID,
-					redirect_uri: LICHESS_REDIRECT_URI,
-					code_challenge: Base64.stringify(sha256(codeVerifier))
-						.replace(/\+/g, "-")
-						.replace(/\//g, "_")
-						.replace(/=/g, ""),
-					response_type: "code",
-					scope: "",
-					state,
-					code_challenge_method: "S256",
-				}).toString();
-
-				window.location.href = `https://lichess.org/oauth?${params}`;
+				Promise.all([
+					Preferences.set({
+						key: "lichess.code_verifier",
+						value: codeVerifier,
+					}),
+					Preferences.set({ key: "lichess.state", value: state }),
+				]).then(() => {
+					console.log("Code verifier is:", codeVerifier);
+					const params = new URLSearchParams({
+						client_id: LICHESS_CLIENT_ID,
+						redirect_uri: LICHESS_REDIRECT_URI,
+						code_challenge: Base64.stringify(sha256(codeVerifier))
+							.replace(/\+/g, "-")
+							.replace(/\//g, "_")
+							.replace(/=/g, ""),
+						response_type: "code",
+						scope: "",
+						state,
+						code_challenge_method: "S256",
+					}).toString();
+					const url = `https://lichess.org/oauth?${params}`;
+					if (isIos) {
+						Browser.open({ url });
+						Browser.addListener("browserPageLoaded", (info: any) => {
+							console.log("info");
+						});
+					} else {
+						window.location.href = url;
+					}
+				});
 			});
 		},
 		setFlag: (flag: UserFlag, enabled: boolean) => {
@@ -352,24 +392,11 @@ export const getInitialUserState = (
 				return s.updateUserSettings({ flags: s.user!.flags });
 			});
 		},
-		token: undefined,
 		user: undefined,
 		authStatus: AuthStatus.Initial,
 		...createQuick<UserState>(setOnly),
 	} as UserState;
 
-	const cookieToken = Cookies.get(JWT_COOKIE_KEY);
-	if (cookieToken) {
-		initialState.token = cookieToken;
-	} else {
-		initialState.authStatus = AuthStatus.Unauthenticated;
-	}
-	const tempUserUuid = Cookies.get(TEMP_USER_UUID);
-	if (tempUserUuid) {
-		initialState.tempUserUuid = tempUserUuid;
-	} else {
-		initialState.tempUserUuid = uuid4();
-	}
 	return initialState;
 };
 

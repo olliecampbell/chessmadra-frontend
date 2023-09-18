@@ -3,15 +3,19 @@ import { pluralize } from "~/utils/pluralize";
 // import { ExchangeRates } from "~/ExchangeRate";
 import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
+import { clsx } from "~/utils/classes";
 
 export const ReviewText = (props: {
 	date?: string;
 	inverse?: boolean;
 	overview?: boolean;
 	numDue: number;
+	descriptor?: string;
+	class?: string;
+	icon?: string;
 }) => {
+	const descriptor = () => props.descriptor || "Due";
 	const textStyles = s(
-		c.fg(c.gray[80]),
 		c.weightSemiBold,
 		c.fontSize(12),
 		c.lineHeight("1.3rem"),
@@ -20,13 +24,14 @@ export const ReviewText = (props: {
 	const numMovesDueFromHere = () => props.numDue;
 	const now = new Date();
 	const diff = () => date().getTime() - now.getTime();
-	const prefix = () => (props.overview ? "Due in" : "Due in");
+	const prefix = () =>
+		props.overview ? `${descriptor()} in` : `${descriptor()} in`;
 	const { color, dueString } = destructure(() => {
 		let dueString = "";
-		let color = c.gray[50];
+		let color = "text-gray-50";
 		if (!props.date || diff() < 0) {
-			color = props.inverse ? c.yellow[30] : c.yellow[60];
-			dueString = `${numMovesDueFromHere().toLocaleString()} Due`;
+			color = props.inverse ? "text-yellow-30" : "text-yellow-50";
+			dueString = `${numMovesDueFromHere().toLocaleString()} ${descriptor()}`;
 		} else {
 			dueString = `${prefix()} ${getHumanTimeUntil(date())}`;
 		}
@@ -37,9 +42,12 @@ export const ReviewText = (props: {
 	});
 	return (
 		<>
-			<div style={s(c.row, c.alignCenter)}>
-				<CMText style={s(textStyles, c.fg(color()))}>{dueString()}</CMText>
-				<i style={s(c.fg(color()), c.fontSize(12))} class="fa fa-clock pl-2" />
+			<div style={s(c.row, c.alignCenter)} class={clsx(color(), props.class)}>
+				<CMText style={s(textStyles)}>{dueString()}</CMText>
+				<i
+					style={s(c.fontSize(12))}
+					class={clsx(props.icon ? props.icon : "fa fa-clock", "pl-2")}
+				/>
 			</div>
 		</>
 	);

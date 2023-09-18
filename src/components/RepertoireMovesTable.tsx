@@ -50,6 +50,7 @@ import { Intersperse } from "./Intersperse";
 import { Pressable } from "./Pressable";
 import { SidebarHeader } from "./RepertoireEditingHeader";
 import { initTooltip } from "./Tooltip";
+import { createPrevious } from "~/utils/signals/createPrevious";
 
 const DELETE_WIDTH = 30;
 
@@ -167,6 +168,12 @@ export const RepertoireMovesTable = (props: {
 	const [currentLine] = useBrowsingState(([s, rs]) => [
 		s.chessboard.get((v) => v).moveLog,
 	]);
+	const previousLineLength = createPrevious(() => currentLine().length);
+	createEffect(() => {
+		if (previousLineLength() !== currentLine().length) {
+			setExpandedLength(0);
+		}
+	});
 	const moveNumber = () => Math.floor(currentLine().length / 2) + 1;
 	const firstWhiteMove = () =>
 		moveNumber() === 1 && props.side === "white" && myTurn() && !anyMine();

@@ -1,5 +1,4 @@
-import { uuid4 } from "@sentry/utils";
-import Cookies from "js-cookie";
+import { Preferences } from "@capacitor/preferences";
 import { JSXElement, createEffect, onMount } from "solid-js";
 import { getAppState } from "~/utils/app_state";
 import { fetchUser } from "~/utils/auth";
@@ -9,20 +8,10 @@ import { AuthStatus } from "~/utils/user_state";
 
 const AuthHandler = ({ children }: { children: JSXElement }) => {
 	const userState = getAppState().userState;
-	createEffect(() => {
-		if (userState.token) {
-			Cookies.set(JWT_COOKIE_KEY, userState.token, { expires: 5000 });
-		}
-		if (userState.tempUserUuid) {
-			Cookies.set(TEMP_USER_UUID, userState.tempUserUuid, { expires: 5000 });
-		}
-	});
-	createEffect(() => {
-		(async () => {
-			if (
-				userState.authStatus === AuthStatus.Initial ||
-				userState.authStatus === AuthStatus.Unauthenticated
-			) {
+	onMount(() => {
+		getAppState()
+			.userState.loadAuthData()
+			.then(() => {
 				fetchUser()
 					.then((user: User) => {
 						console.log("fetched user", user);
@@ -35,15 +24,15 @@ const AuthHandler = ({ children }: { children: JSXElement }) => {
 					.catch((e) => {
 						console.log("error fetching user", e);
 						const status = e?.response?.status || 0;
-						if (status === 401) {
-							userState.quick((s) => {
-								s.logout();
-							});
-						}
+						// if (status === 401) {
+						// 	userState.quick((s) => {
+						// 		s.logout();
+						// 	});
+						// }
 					});
-			}
-		})();
+			});
 	});
+
 	return children;
 };
 

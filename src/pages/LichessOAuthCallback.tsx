@@ -1,12 +1,13 @@
 import { Link } from "@solidjs/router";
 import { Show, createSignal, onMount } from "solid-js";
-import { useNavigate, useSearchParams } from "solid-start";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import { LichessLogoIcon } from "~/components/icons/LichessLogoIcon";
 import { Logo } from "~/components/icons/Logo";
 import { getAppState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import client from "~/utils/client";
 import { LICHESS_CLIENT_ID, LICHESS_REDIRECT_URI } from "~/utils/oauth";
+import { Preferences } from "@capacitor/preferences";
 
 export default () => {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -25,53 +26,56 @@ export default () => {
 		if (errorDescription === "user cancelled authorization") {
 			navigate("/");
 		}
-		const storedState = localStorage.getItem("lichess.state");
-		const storedCodeVerifier = localStorage.getItem("lichess.code_verifier");
-		if (state !== storedState) {
-			setStatus("error");
-			setError("The stored state did not match the state from Lichess.");
-		}
-		if (code && storedCodeVerifier && storedState) {
-			const params = new URLSearchParams();
-			params.append("grant_type", "authorization_code");
-			params.append("code", code);
-			params.append("client_id", LICHESS_CLIENT_ID);
-			params.append("code_verifier", storedCodeVerifier);
-			params.append("redirect_uri", LICHESS_REDIRECT_URI);
+		Promise.all([
+			Preferences.get({ key: "lichess.code_verifier" }),
+			Preferences.get({ key: "lichess.state" }),
+		]).then(([storedCodeVerifier, storedState]) => {
+			if (state !== storedState.value) {
+				setStatus("error");
+				setError("The stored state did not match the state from Lichess.");
+			}
+			if (code && storedCodeVerifier && storedState) {
+				const params = new URLSearchParams();
+				params.append("grant_type", "authorization_code");
+				params.append("code", code);
+				params.append("client_id", LICHESS_CLIENT_ID);
+				params.append("code_verifier", storedCodeVerifier.value!);
+				params.append("redirect_uri", LICHESS_REDIRECT_URI);
 
-			client
-				.post("https://lichess.org/api/token", params)
-				.then((resp) => {
-					const token = resp.data.accessToken;
-					client
-						.get("https://lichess.org/api/account", {
-							headers: {
-								authorization: `Bearer ${token}`,
-							},
-						})
-						.then((resp) => {
-							getAppState().userState.setLichessToken(
-								token,
-								resp.data.username,
-							);
-							setStatus("success");
-							quick((s) => {
-								s.repertoireState.fetchLichessMistakes();
-								setTimeout(() => {
-									navigate("/");
-								}, 1000);
+				client
+					.post("https://lichess.org/api/token", params)
+					.then((resp) => {
+						const token = resp.data.accessToken;
+						client
+							.get("https://lichess.org/api/account", {
+								headers: {
+									authorization: `Bearer ${token}`,
+								},
+							})
+							.then((resp) => {
+								getAppState().userState.setLichessToken(
+									token,
+									resp.data.username,
+								);
+								setStatus("success");
+								quick((s) => {
+									s.repertoireState.fetchLichessMistakes();
+									setTimeout(() => {
+										navigate("/");
+									}, 1000);
+								});
+							})
+							.catch((err) => {
+								setStatus("error");
+								setError("Failed to get Lichess profile");
 							});
-						})
-						.catch((err) => {
-							setStatus("error");
-							setError("Failed to get Lichess profile");
-						});
-				})
-				.catch((err) => {
-					setStatus("error");
-					setError("Failed to fetch a token from Lichess.");
-				});
-		}
+					})
+					.catch((err) => {
+						setStatus("error");
+						setError("Failed to fetch a token from Lichess.");
+					});
+			}
+		});
 	});
 
 	return (
@@ -107,7 +111,7 @@ export default () => {
 						</div>
 						<p class="body-text pt-6">
 							{error()} Please try again. <br />
-							You can also{"r"}
+							You can also{" "}
 							<Link href="/" class="underline!">
 								go back home
 							</Link>

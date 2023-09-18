@@ -3,19 +3,13 @@ import applyCaseMiddleware from "axios-case-converter";
 import { camelCase } from "camel-case";
 import { getAppState, quick } from "./app_state";
 import { clearCookies } from "./auth";
+import { BASE_API_URL } from "./base_url";
 
 const EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
 
-let baseURL = undefined;
-if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-	baseURL = "http://localhost:8040";
-}
-if (import.meta.env.VITE_API_ENV === "production") {
-	baseURL = "https://chessbook.com";
-}
 const client = applyCaseMiddleware(
 	axios.create({
-		baseURL,
+		baseURL: BASE_API_URL,
 	}),
 	{
 		preservedKeys: (input) => {
@@ -53,11 +47,11 @@ client.interceptors.request.use(function (config) {
 		config.headers!["spoof-user-email"] = spoofedEmail.value;
 		config.headers!["spoof-key"] = spoofKey;
 	}
-	if (token) {
-		config.headers!.Authorization = token;
-	} else if (tempUserUuid) {
+	if (token.value) {
+		config.headers!.Authorization = token.value;
+	} else if (tempUserUuid.value) {
 		// @ts-ignore
-		config.headers!["temp-user-uuid"] = tempUserUuid;
+		config.headers!["temp-user-uuid"] = tempUserUuid.value;
 	}
 	return config;
 });
@@ -69,12 +63,12 @@ client.interceptors.response.use(
 	function (error) {
 		console.log({ error });
 		if (error?.response?.status === 401) {
-			quick((s) => {
-				s.userState.token = undefined;
-				clearCookies();
-				window.location.href = `${window.location.origin}/login`;
-				// window.location = "/login";
-			});
+			// quick((s) => {
+			// 	s.userState.token = undefined;
+			// 	s.userState.logout();
+			// 	window.location.href = `${window.location.origin}/login`;
+			// 	// window.location = "/login";
+			// });
 		}
 		return Promise.reject(error);
 	},

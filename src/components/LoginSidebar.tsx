@@ -125,7 +125,8 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 										autocomplete="current-password"
 									/>
 									<Show when={authType() === "login"}>
-										<a
+										<button
+											type="button"
 											onClick={() => {
 												quick((s) => {
 													s.repertoireState.browsingState.pushView(
@@ -138,7 +139,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 											}
 										>
 											Forgot your password?
-										</a>
+										</button>
 									</Show>
 									<InputError
 										name={"Server error"}

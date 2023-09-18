@@ -3,7 +3,7 @@ import { BrowserTracing } from "@sentry/browser";
 import { useNavigate } from "@solidjs/router";
 import posthog from "posthog-js";
 import { onMount } from "solid-js";
-import { Route, Routes } from "solid-start";
+import { Router, Route, Routes } from "@solidjs/router";
 import { quick } from "~/utils/app_state";
 import { AdminView } from "./components/AdminView";
 import AuthHandler from "./components/AuthHandler";
@@ -69,35 +69,40 @@ export const App = () => {
 	});
 	return (
 		<AuthHandler>
-			<RouteProvider />
-			<Routes>
-				<Route path="/" component={isChessmadra ? ChessMadra : PageWrapper} />
-				<Route
-					path="/admin/move-annotations/community"
-					component={ReviewMoveAnnotationsView}
-				/>
-				<Route
-					path="/admin/move-annotations"
-					component={MoveAnnotationsDashboard}
-				/>
-				<Route path="/admin" component={AdminView} />
-				<Route path="/oauth/lichess" component={LichessOAuthCallback} />
-				<Route path="/chessnuke" component={PageWrapper} />
-				<Route path="/stupactlyo" component={PageWrapper} />
-				<Route path="/willtaylorchess" component={PageWrapper} />
-				<Route path="/design-system" component={DesignSytem} />
-				<Route path="/forgot-password" component={ForgotPassword} />
-				<Route path="/reset-password" component={ResetPassword} />
-				<Route
-					path="/login"
-					component={() => <PageWrapper initialView={LoginSidebar} />}
-				/>
-				<Route
-					path="/visualization"
-					component={() => <ChessMadra initialTool="visualization" />}
-				/>
-				<Route path="/*" component={isChessmadra ? ChessMadra : PageWrapper} />
-			</Routes>
+			<Router>
+				<RouteProvider />
+				<Routes>
+					<Route path="/" component={isChessmadra ? ChessMadra : PageWrapper} />
+					<Route
+						path="/admin/move-annotations/community"
+						component={ReviewMoveAnnotationsView}
+					/>
+					<Route
+						path="/admin/move-annotations"
+						component={MoveAnnotationsDashboard}
+					/>
+					<Route path="/admin" component={AdminView} />
+					<Route path="/oauth/lichess" component={LichessOAuthCallback} />
+					<Route path="/chessnuke" component={PageWrapper} />
+					<Route path="/stupactlyo" component={PageWrapper} />
+					<Route path="/willtaylorchess" component={PageWrapper} />
+					<Route path="/design-system" component={DesignSytem} />
+					<Route path="/forgot-password" component={ForgotPassword} />
+					<Route path="/reset-password" component={ResetPassword} />
+					<Route
+						path="/login"
+						component={() => <PageWrapper initialView={LoginSidebar} />}
+					/>
+					<Route
+						path="/visualization"
+						component={() => <ChessMadra initialTool="visualization" />}
+					/>
+					<Route
+						path="/*"
+						component={isChessmadra ? ChessMadra : PageWrapper}
+					/>
+				</Routes>
+			</Router>
 		</AuthHandler>
 	);
 };

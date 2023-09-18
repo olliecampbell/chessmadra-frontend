@@ -27,7 +27,3 @@ export async function fetchUser() {
 	const { data: user } = await client.get("/api/user");
 	return user;
 }
-
-export function clearCookies() {
-	Cookies.remove(JWT_COOKIE_KEY);
-}

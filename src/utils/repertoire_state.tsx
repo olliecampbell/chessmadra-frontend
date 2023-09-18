@@ -894,6 +894,7 @@ export const getInitialRepertoireState = (
 				s.browsingState.updateRepertoireProgress();
 				s.browsingState.updateTableResponses();
 				s.needsToRefetchLichessMistakes = true;
+				s.reviewState.invalidateSession();
 			}),
 		fetchSupplementary: () =>
 			set(([s]) => {

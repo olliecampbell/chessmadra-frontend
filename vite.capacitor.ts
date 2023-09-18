@@ -5,29 +5,32 @@ import UnoCSS from "unocss/vite";
 import { fileURLToPath } from "node:url";
 import { unoConfig } from "./src/utils/uno";
 
-const IS_STORYBOOK = !!process.env.IS_STORYBOOK;
-
 export default defineConfig({
-  define: {
-    "process.env": JSON.stringify({}),
-  },
-  resolve: {
-    alias: {
-      "~": fileURLToPath(new URL("./src", import.meta.url)),
-    },
-  },
+	root: "./capacitor",
+	define: {
+		"process.env": JSON.stringify({}),
+	},
+	resolve: {
+		alias: {
+			"~": fileURLToPath(new URL("./src", import.meta.url)),
+		},
+	},
 
-  plugins: [
-    [
-      solidPlugin(),
-      devtools({
-        /* additional options */
-        autoname: true, // e.g. enable autoname
-      }),
-      UnoCSS(unoConfig),
-    ],
-  ],
-  build: {
-    target: "esnext",
-  },
+	plugins: [
+		[
+			solidPlugin(),
+			devtools({
+				/* additional options */
+				autoname: true, // e.g. enable autoname
+			}),
+			UnoCSS(unoConfig),
+		],
+	],
+	build: {
+		target: "esnext",
+		outDir: "../dist",
+		rollupOptions: {
+			input: "./capacitor/index.html",
+		},
+	},
 });

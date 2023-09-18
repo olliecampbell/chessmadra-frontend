@@ -98,10 +98,12 @@ export interface ReviewState {
 	giveUp: () => void;
 	setupNextMove: () => void;
 	startReview: (options: ReviewOptions) => void;
+	resumeReview: () => void;
 	markMovesReviewed: (results: ReviewPositionResults[]) => void;
 	getRemainingReviewPositionMoves: () => RepertoireMove[];
 	getNextReviewPositionMove(): RepertoireMove;
 	updateQueue: (options: ReviewOptions) => void;
+	invalidateSession: () => void;
 }
 
 type Stack = [ReviewState, RepertoireState, AppState];
@@ -198,6 +200,11 @@ export const getInitialReviewState = (
 						//   rs.updateRepertoireStructures();
 					});
 				});
+		},
+		resumeReview: () => {
+			set(([s, rs, gs]) => {
+				rs.browsingState.sidebarState.mode = "review";
+			});
 		},
 		startReview: (options: ReviewOptions) =>
 			set(([s, rs, gs]) => {
@@ -376,13 +383,6 @@ export const getInitialReviewState = (
 			set(([s, rs]) => {
 				rs.updateRepertoireStructures();
 				s.chessboard.setTapOptions([]);
-
-				// @ts-ignore
-				s.reviewSide = null;
-				if (s.currentQuizGroup) {
-					s.activeQueue = [];
-				}
-				s.currentQuizGroup = undefined;
 			}),
 		buildQueue: (options: ReviewOptions) =>
 			get(([_s, rs, gs]) => {
@@ -508,6 +508,10 @@ export const getInitialReviewState = (
 					} as QuizGroup);
 				});
 				return queue;
+			}),
+		invalidateSession: () =>
+			set(([s, rs]) => {
+				s.activeQueue = [];
 			}),
 		updateQueue: (options: ReviewOptions) =>
 			set(([s, rs]) => {

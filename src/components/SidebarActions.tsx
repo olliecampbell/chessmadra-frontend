@@ -69,6 +69,9 @@ export const SidebarActionsLegacy = () => {
 		rs.numMovesDueFromEpd?.[s.activeSide!]?.[s.currentEpd],
 		rs.browsingState.currentView(),
 	]);
+	const isQuizzing = () => {
+		return !isEmpty(getAppState().repertoireState.reviewState.activeQueue);
+	};
 
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	positionHistory = positionHistory ?? [];
@@ -158,6 +161,28 @@ export const SidebarActionsLegacy = () => {
 					});
 				},
 				text: "How to play from here",
+				style: "primary",
+			});
+		}
+		if (isQuizzing()) {
+			buttons.push({
+				onPress: () => {
+					quick((s) => {
+						const bs = s.repertoireState.browsingState;
+						bs.moveSidebarState("right");
+						bs.sidebarState.showPlansState.visible = true;
+						bs.sidebarState.showPlansState.coverageReached = false;
+						bs.chessboard.set((s) => {
+							s.showPlans = true;
+						});
+					});
+				},
+				text: "Continue practice session",
+				right: (
+					<div class={clsx("flex row text-xs font-semibold text-tertiary")}>
+						<i class={clsx("fa  fa-forward")} />
+					</div>
+				),
 				style: "primary",
 			});
 		}

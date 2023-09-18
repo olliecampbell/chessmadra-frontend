@@ -100,12 +100,10 @@ export const getInitialAdminState = (
 					});
 			}),
 		spoofUser: (email: string | undefined) => {
-			set(([s]) => {
+			set(([s, gs]) => {
 				s.spoofedEmail.value = email;
 				if (!email) {
-					Cookies.remove(TEMP_USER_UUID);
-					Cookies.remove(JWT_COOKIE_KEY);
-					window.location.reload();
+					gs.userState.logout();
 				}
 			});
 		},
