@@ -13,6 +13,10 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
 	}
 }
 
+if (typeof window !== "undefined") {
+	baseFrontendUrl = window.location.origin;
+}
+
 if (import.meta.env.VITE_API_ENV === "production") {
 	baseApiUrl = "https://chessbook.com";
 }

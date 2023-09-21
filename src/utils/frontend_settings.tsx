@@ -26,7 +26,7 @@ export const SETTINGS = {
 	pieceAnimation: {
 		default: PieceAnimation.Normal,
 		key: "pieceAnimation",
-		title: "Piece animation",
+		title: "Piece animation speed",
 		options: [
 			...(isDevelopment
 				? [{ value: PieceAnimation.DebugSlow, label: "Debug Slow" }]
