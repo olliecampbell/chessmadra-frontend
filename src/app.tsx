@@ -23,6 +23,8 @@ import {
 	posthogFeaturesLoaded,
 	setPosthogFeaturesLoaded,
 } from "./utils/experiments";
+import { Capacitor } from "@capacitor/core";
+import { App as CapacitorApp, URLOpenListenerEvent } from "@capacitor/app";
 
 export const App = () => {
 	onMount(() => {
@@ -71,6 +73,7 @@ export const App = () => {
 		<AuthHandler>
 			<Router>
 				<RouteProvider />
+				<AppUrlListener />
 				<Routes>
 					<Route path="/" component={isChessmadra ? ChessMadra : PageWrapper} />
 					<Route
@@ -114,5 +117,32 @@ const RouteProvider = () => {
 			s.navigationState.setNavigate(navigate);
 		});
 	});
+	return null;
+};
+const AppUrlListener = () => {
+	const navigate = useNavigate();
+	onMount(() => {
+		if (Capacitor.getPlatform() === "ios") {
+			CapacitorApp.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
+				const url = new URL(event.url);
+
+				// Concatenate the pathname (route) and search (query params)
+				const route = url.pathname + url.search;
+				console.log("url", url);
+				console.log("route is ", route);
+				navigate(route);
+
+				// Example url: https://beerswift.app/tabs/tab2
+				// slug = /tabs/tab2
+				// const slug = event.url.split(".com").pop();
+				// if (slug) {
+				// 	history.push(slug);
+				// }
+				// If no match, do nothing - let regular routing
+				// logic take over
+			});
+		}
+	});
+
 	return null;
 };

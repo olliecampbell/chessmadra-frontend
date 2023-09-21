@@ -41,6 +41,7 @@ export default () => {
 				params.append("client_id", LICHESS_CLIENT_ID);
 				params.append("code_verifier", storedCodeVerifier.value!);
 				params.append("redirect_uri", LICHESS_REDIRECT_URI);
+				console.log("params", params);
 
 				client
 					.post("https://lichess.org/api/token", params)
@@ -72,6 +73,7 @@ export default () => {
 					})
 					.catch((err) => {
 						setStatus("error");
+						console.log("err", err);
 						setError("Failed to fetch a token from Lichess.");
 					});
 			}

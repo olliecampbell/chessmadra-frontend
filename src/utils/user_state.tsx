@@ -33,6 +33,7 @@ import { identify } from "./user_properties";
 import { StorageItem } from "./storageItem";
 import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
+import { AppLauncher } from "@capacitor/app-launcher";
 
 export interface UserState {
 	quick: (fn: (_: UserState) => void) => void;
@@ -374,10 +375,11 @@ export const getInitialUserState = (
 					}).toString();
 					const url = `https://lichess.org/oauth?${params}`;
 					if (isIos) {
-						Browser.open({ url });
-						Browser.addListener("browserPageLoaded", (info: any) => {
-							console.log("info");
-						});
+						AppLauncher.openUrl({ url });
+						// Browser.open({ url });
+						// Browser.addListener("browserPageLoaded", (info: any) => {
+						// 	console.log("info");
+						// });
 					} else {
 						window.location.href = url;
 					}
