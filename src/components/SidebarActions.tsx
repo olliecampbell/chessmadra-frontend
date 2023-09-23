@@ -168,13 +168,10 @@ export const SidebarActionsLegacy = () => {
 			buttons.push({
 				onPress: () => {
 					quick((s) => {
-						const bs = s.repertoireState.browsingState;
-						bs.moveSidebarState("right");
-						bs.sidebarState.showPlansState.visible = true;
-						bs.sidebarState.showPlansState.coverageReached = false;
-						bs.chessboard.set((s) => {
-							s.showPlans = true;
-						});
+						trackEvent(`${mode()}.resume_practice`);
+						s.repertoireState.browsingState.popView();
+						s.repertoireState.browsingState.moveSidebarState("right");
+						s.repertoireState.reviewState.resumeReview();
 					});
 				},
 				text: "Continue practice session",
