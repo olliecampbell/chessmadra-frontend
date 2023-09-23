@@ -19,6 +19,7 @@ import {
 	CombinedTheme,
 	combinedThemes,
 } from "~/utils/theming";
+import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 
 export const MoveLog = () => {
 	const [mode] = useSidebarState(([s]) => [s.mode]);
@@ -116,22 +117,27 @@ export const MoveLog = () => {
 		<div class={"row  shrink-1 ml-2 min-w-0 items-center"}>
 			<div
 				class={clsx(
-					"ml-2 h-5 w-px",
-					overflowing() ? "bg-gray-24" : "bg-transparent",
+					"ml-2 h-full w-px shrink-0",
+					overflowing() ? "bg-gray-14" : "bg-transparent",
 				)}
 			/>
-			<div
-				class="row align-center no-scrollbar h-full overflow-x-scroll"
-				ref={setContainerRef}
-				style={s(
-					overflowing() && {
-						"mask-image": maskImage,
-						"-webkit-mask-image": maskImage,
-					},
-				)}
-			>
-				<div class={clsx("row items-center")} ref={setMovesRef}>
-					<For each={currentLineElements()}>{(e) => e}</For>
+			<div class="col gap-2 items-end min-w-0">
+				<div
+					class="row align-center no-scrollbar h-full overflow-x-scroll max-w-full"
+					ref={setContainerRef}
+					style={s(
+						overflowing() && {
+							"mask-image": maskImage,
+							"-webkit-mask-image": maskImage,
+						},
+					)}
+				>
+					<div class={clsx("row items-center")} ref={setMovesRef}>
+						<For each={currentLineElements()}>{(e) => e}</For>
+					</div>
+				</div>
+				<div class="hidden md:block">
+					<AnalyzeOnLichessButton />
 				</div>
 			</div>
 		</div>

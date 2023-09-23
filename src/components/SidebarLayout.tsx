@@ -228,8 +228,7 @@ export const SidebarLayout = (props: {
 								)}
 							</div>
 							<Show when={props.belowChessboard}>
-								<Spacer height={responsive().isMobile ? 12 : 32} />
-								<div class="row w-full justify-center">
+								<div class="row w-full justify-center pt-3 md:pt-5">
 									{props.belowChessboard}
 								</div>
 							</Show>

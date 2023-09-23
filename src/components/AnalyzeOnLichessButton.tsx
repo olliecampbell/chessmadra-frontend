@@ -11,7 +11,6 @@ import { MoveLog } from "./MoveLog";
 
 export const AnalyzeOnLichessButton = (props: {}) => {
 	const responsive = useResponsiveV2();
-	const iconStyles = s(c.fontSize(responsive().switch(12, [BP.md, 14])));
 	const padding = 8;
 	const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
@@ -25,7 +24,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
 	return (
 		<FadeInOut
 			style={s(c.row)}
-			class={clsx("shrink-0")}
+			class={clsx("shrink-0 ")}
 			open={() =>
 				!isEmpty(currentLine()) &&
 				(sidebarMode() === "browse" ||
@@ -36,7 +35,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
 			<a
 				style={s()}
 				class={clsx(
-					"text-tertiary &hover:text-primary text-md -my-2 shrink-0 py-2 font-semibold transition-colors",
+					"text-sm text-tertiary &hover:text-primary  -my-2 shrink-0 py-2 font-medium transition-colors",
 				)}
 				href={getLichessLink(currentLine(), activeSide())}
 				target="_blank"
@@ -50,7 +49,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
 			>
 				<p>
 					Analyze on Lichess
-					<i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)} />
+					<i class="fa fa-up-right-from-square pl-2 " />
 				</p>
 			</a>
 		</FadeInOut>

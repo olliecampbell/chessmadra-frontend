@@ -35,7 +35,7 @@ import {
 	pieceAnimationToPlaybackSpeed,
 } from "./frontend_settings";
 import { getLineAnimation } from "./get_line_animation";
-import { LichessMistake } from "./models";
+import { EcoCode, LichessMistake } from "./models";
 import { getAllPossibleMoves } from "./move_generation";
 import { getMaxPlansForQuizzing, parsePlansToQuizMoves } from "./plans";
 import { Quiz, QuizGroup, countQueue } from "./queues";
@@ -64,6 +64,7 @@ type ReviewMoveKey = string;
 type Epd = string;
 
 export interface ReviewState {
+	lastEcoCode?: EcoCode;
 	markGameMistakeReviewed(lichessMistake: LichessMistake): void;
 	buildQueueFromMistakes(lichessMistakes: LichessMistake[]): QuizGroup[];
 	setupPlans: () => void;
@@ -591,8 +592,20 @@ export const getInitialReviewState = (
 				});
 			},
 			onPositionUpdated: () => {
-				set(([s]) => {
+				set(([s, rs]) => {
 					s.moveLog = s.chessboard.get((s) => s.moveLog);
+					if (rs.ecoCodeLookup) {
+						s.lastEcoCode = last(
+							filter(
+								map(
+									s.chessboard.get((s) => s.positionHistory),
+									(p) => {
+										return rs.ecoCodeLookup[p];
+									},
+								),
+							),
+						);
+					}
 				});
 			},
 			// eslint-disable-next-line @typescript-eslint/no-empty-function
