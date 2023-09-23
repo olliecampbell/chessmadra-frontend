@@ -11,6 +11,8 @@ import { isIos } from "~/utils/env";
 import { identify, identifyOnce } from "~/utils/user_properties";
 import { AuthStatus } from "~/utils/user_state";
 import { RepertoireBuilder } from "./RepertoireBuilder";
+import { trackEvent } from "~/utils/trackEvent";
+import { OnboardingIntro } from "./SidebarOnboarding";
 
 export const PageWrapper = (props: { initialView?: Component }) => {
 	const [userState] = useAppState((s) => [s.userState]);
@@ -41,15 +43,23 @@ export const PageWrapper = (props: { initialView?: Component }) => {
 			}
 		});
 	});
+	const showLandingPage = () =>
+		!(token().value || userState().pastLandingPage || repertoireLoading());
+	createEffect(() => {
+		if (showLandingPage() && isIos) {
+			quick((s) => {
+				trackEvent("onboarding.started");
+				s.repertoireState.onboarding.isOnboarding = true;
+				s.repertoireState.browsingState.pushView(OnboardingIntro);
+				s.userState.pastLandingPage = true;
+			});
+		}
+	});
 
 	// return <SidebarLayout mode={mode()} />;
 	return (
 		<Switch fallback={<LandingPageWrapper />}>
-			<Match
-				when={
-					token() || userState().pastLandingPage || repertoireLoading() || isIos
-				}
-			>
+			<Match when={!showLandingPage() || isIos}>
 				<RepertoireBuilder />
 			</Match>
 		</Switch>

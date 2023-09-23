@@ -11,9 +11,6 @@ export const LazyLoad = (props: {
 		rootMargin: "300px",
 		threshold: 0.8,
 	})(ref);
-	createEffect(() => {
-		console.log("visible?", visible());
-	});
 
 	return (
 		<div ref={setRef} style={props.style}>
