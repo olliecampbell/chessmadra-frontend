@@ -31,6 +31,7 @@ import { Spacer } from "./Space";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
 import { TransposedView } from "./TransposedView";
 import { ChessboardView } from "./chessboard/Chessboard";
+import { ChessboardFooter } from "./ChessboardFooter";
 
 export const RepertoireBuilder = () => {
 	const [mode] = useSidebarState(([s]) => [s.mode]);
@@ -133,12 +134,7 @@ export const RepertoireBuilder = () => {
 				</>
 			}
 			backSection={<BackSection />}
-			belowChessboard={
-				!vertical() &&
-				(mode() === "build" || mode() === "browse" || mode() === "review") && (
-					<AnalyzeOnLichessButton />
-				)
-			}
+			belowChessboard={<ChessboardFooter />}
 			setAnimateSidebar={(fn) => {
 				quick((s) => {
 					s.repertoireState.animateSidebarState = fn;

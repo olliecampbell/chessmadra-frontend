@@ -282,17 +282,10 @@ export const RepertoireOverview = (props: {}) => {
 
 export const CoverageAndBar = (props: {
 	side: Side;
-	home: boolean;
 	hideBar?: boolean;
 }) => {
-	const inverse = () => props.home && props.side === "white";
 	const textStyles = () =>
-		s(
-			c.fg(inverse() ? c.colors.text.inverse : c.colors.text.secondary),
-			!props.home && c.fg(c.colors.text.secondary),
-			c.weightSemiBold,
-			c.fontSize(12),
-		);
+		s(c.fg(c.colors.text.secondary), c.weightSemiBold, c.fontSize(12));
 	const [progressState] = useRepertoireState((s) => [
 		s.browsingState.repertoireProgressState[props.side],
 	]);
@@ -309,14 +302,8 @@ export const CoverageAndBar = (props: {
 			<Show when={!props.hideBar}>
 				<>
 					<Spacer width={8} />
-					<div
-						style={s(
-							c.height(props.home ? 4 : 4),
-							c.width(props.home ? 100 : 80),
-							c.row,
-						)}
-					>
-						<CoverageBar isInSidebar={!props.home} side={props.side} />
+					<div style={s(c.height(4), c.width(80), c.row)}>
+						<CoverageBar side={props.side} />
 					</div>
 				</>
 			</Show>

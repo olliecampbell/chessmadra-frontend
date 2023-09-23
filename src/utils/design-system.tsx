@@ -103,7 +103,7 @@ export const colors = {
 	debugColor: hsl(71, 100, 42),
 	debugColorDark: hsl(71, 100, 28),
 	components: {
-		sidebar_button_primary: gray[24],
+		sidebar_button_primary: gray[22],
 		sidebar_button_primary_hover: gray[32],
 		arrows: arrows,
 	},

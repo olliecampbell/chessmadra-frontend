@@ -14,8 +14,9 @@ import { CMText } from "./CMText";
 import { FadeInOut } from "./FadeInOut";
 import { PracticeComplete } from "./PracticeComplete";
 import { Pressable } from "./Pressable";
-import { AnalyzeOnLichessButton, VERTICAL_BREAKPOINT } from "./SidebarLayout";
+import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { FirstLineSavedOnboarding, OnboardingIntro } from "./SidebarOnboarding";
+import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 export const BackSection = () => {
 	const [
 		addedLineState,
