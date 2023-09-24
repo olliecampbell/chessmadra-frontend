@@ -189,11 +189,13 @@ export const RepertoireMovesTable = (props: {
 			widths[sanPlus] = null;
 			return;
 		}
-		const width = e.getBoundingClientRect().width;
-		widths[sanPlus] = width;
-		if (width > moveMaxWidth()) {
-			setMoveMaxWidth(width);
-		}
+		requestAnimationFrame(() => {
+			const width = e.getBoundingClientRect().width;
+			widths[sanPlus] = width;
+			if (width > moveMaxWidth()) {
+				setMoveMaxWidth(width);
+			}
+		});
 	};
 	// @ts-ignore
 	const tableMeta: Accessor<TableMeta> = () => {

@@ -295,7 +295,7 @@ export const NavBreadcrumbs = () => {
 	return (
 		// todo: figure out why this is not working
 		<FadeInOut
-			open={() => !hidden()}
+			open={!hidden()}
 			style={s(c.row, c.alignCenter, c.constrainWidth)}
 		>
 			<Intersperse

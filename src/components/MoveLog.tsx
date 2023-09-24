@@ -20,6 +20,7 @@ import {
 	combinedThemes,
 } from "~/utils/theming";
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
+import { debugElementBounds } from "~/utils/debug_element_bounds";
 
 export const MoveLog = () => {
 	const [mode] = useSidebarState(([s]) => [s.mode]);
@@ -98,15 +99,19 @@ export const MoveLog = () => {
 	createRenderEffect(() => {
 		currentLine().length;
 		// scroll to right of container ref, smoothly
-		if (containerRef()) {
-			containerRef()!.scrollTo({
-				left: containerRef()!.scrollWidth,
-				behavior: "smooth",
-			});
-		}
+		requestAnimationFrame(() => {
+			if (containerRef()) {
+				containerRef()!.scrollTo({
+					left: containerRef()!.scrollWidth,
+					behavior: "smooth",
+				});
+			}
+		});
 	});
-	const containerLayout = createElementBounds(containerRef);
-	const movesLayout = createElementBounds(movesRef);
+	const containerLayout = createElementBounds(containerRef, {
+		trackMutation: false,
+	});
+	const movesLayout = createElementBounds(movesRef, { trackMutation: false });
 	const overflowing = () => {
 		if (movesLayout && containerLayout) {
 			return movesLayout.width! > containerLayout.width!;

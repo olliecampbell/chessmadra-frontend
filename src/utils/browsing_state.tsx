@@ -332,7 +332,6 @@ export const getInitialBrowsingState = (
 					return;
 				}
 				const threshold = gs.userState.getCurrentThreshold();
-				const eloRange = gs.userState.user?.eloRange;
 				const mode = s.sidebarState.mode;
 				const currentSide: Side = s.chessboard.getTurn();
 				const currentEpd = s.chessboard.getCurrentEpd();
@@ -529,6 +528,7 @@ export const getInitialBrowsingState = (
 				tableResponses = scoreTableResponses(
 					tableResponses,
 					positionReport,
+					bestStockfishReport,
 					currentSide,
 					currentEpd,
 					s.sidebarState.mode,

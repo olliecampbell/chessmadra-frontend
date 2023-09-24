@@ -47,7 +47,7 @@ export const AnnotationEditor = (props: {
 					c.opacity(focus() ? 100 : 0),
 				)}
 			>
-				<FadeInOut open={loading}>
+				<FadeInOut open={loading()}>
 					<CMText style={s(c.fg(c.gray[50]))}>
 						<i class="fas fa-circle-notch fa-spin" />
 					</CMText>

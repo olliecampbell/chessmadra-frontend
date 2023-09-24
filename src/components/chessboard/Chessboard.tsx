@@ -35,7 +35,7 @@ import {
 import { getSquareOffset } from "../../utils/chess";
 import { CMText } from "../CMText";
 import { ChessboardArrowView } from "../ChessboardArrow";
-import { FadeInOut, TransitionIn } from "../FadeInOut";
+import { FadeInOut } from "../FadeInOut";
 
 export const EMPTY_DRAG = {
 	square: null,
@@ -458,7 +458,7 @@ export function ChessboardView(props: {
 					<FadeInOut
 						maxOpacity={1.0}
 						style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
-						open={() => !!chessboardStore().showPlans}
+						open={!!chessboardStore().showPlans}
 					>
 						<For each={chessboardStore().plans}>
 							{(metaPlan, i) => {

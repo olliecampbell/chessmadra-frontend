@@ -25,7 +25,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
 		<FadeInOut
 			style={s(c.row)}
 			class={clsx("shrink-0 ")}
-			open={() =>
+			open={
 				!isEmpty(currentLine()) &&
 				(sidebarMode() === "browse" ||
 					sidebarMode() === "review" ||

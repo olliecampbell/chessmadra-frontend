@@ -139,7 +139,7 @@ const BackSection = () => {
 				c.column,
 				!vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12),
 			)}
-			open={() => isOpen()}
+			open={isOpen()}
 			// className="transition-height"
 		>
 			<div class={"row padding-sidebar h-full items-center justify-between"}>
