@@ -238,7 +238,9 @@ export const SidebarLayout = (props: {
 						</div>
 						{vertical() ? (
 							<div
-								class={clsx("transition-mt duration-250 ease-in-out z-10")}
+								class={clsx(
+									"transition-mt duration-250 ease-in-out relative z-10",
+								)}
 								style={s(
 									c.grow,
 
@@ -267,7 +269,7 @@ export const SidebarLayout = (props: {
 							<div
 								// @ts-ignore
 								id="sidebar"
-								class={"max-w-[600px] xl:max-w-[650px]  z-10"}
+								class={"max-w-[600px] xl:max-w-[650px]  z-10 relative"}
 								style={s(c.flexGrow(2), c.flexShrink, c.noBasis)}
 							>
 								<SidebarContainer
