@@ -24,13 +24,11 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	onMount(() => {
 		trackEvent("upgrade.shown");
 	});
-	const bullets = isIos
-		? []
-		: [<>Cancel any time (and keep any moves you've added).</>];
+	const bullets = [<>Cancel any time (and keep any moves you've added).</>];
 	return (
 		<SidebarTemplate
 			actions={
-				loading() || isIos
+				loading()
 					? []
 					: [
 							{
@@ -61,7 +59,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 		>
 			<p class={clsx("text-secondary leading-5 pb-2")}>
 				Free users can add {MAX_MOVES_FREE_TIER} moves per color.{" "}
-				{!isIos && <>Upgrade to add unlimited moves.</>}
+				<>Upgrade to add unlimited moves.</>
 			</p>
 			<div class={"space-y-2"}>
 				<For each={bullets}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
