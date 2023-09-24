@@ -58,8 +58,8 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 			loading={loading()}
 		>
 			<p class={clsx("text-secondary leading-5 pb-2")}>
-				Free users can add {MAX_MOVES_FREE_TIER} moves per color.{" "}
-				<>Upgrade to add unlimited moves.</>
+				Free users can add {MAX_MOVES_FREE_TIER} moves per color. Upgrade to add
+				unlimited moves.
 			</p>
 			<div class={"space-y-2"}>
 				<For each={bullets}>{(bullet) => <Bullet>{bullet}</Bullet>}</For>
