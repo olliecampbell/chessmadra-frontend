@@ -11,13 +11,16 @@ import { c } from "~/utils/styles";
 import { AdminState, getInitialAdminState } from "./admin_state";
 import { BrowsingState, SidebarState } from "./browsing_state";
 import { DebugState, getInitialDebugState } from "./debug_state";
-import { isDevelopment } from "./env";
+import { isDevelopment, isIos } from "./env";
 import { NavigationState, getInitialNavigationState } from "./navigation_state";
 import { RepertoireState, getInitialRepertoireState } from "./repertoire_state";
 import { TrainersState, getInitialTrainersState } from "./trainers_state";
 import { UserState, getInitialUserState } from "./user_state";
+import { InAppProductId } from "./in_app_purchases";
 
-const DEBUG_STATE = true;
+export interface InAppPurchaseState {
+	products: Record<InAppProductId, CdvPurchase.Product>;
+}
 
 export interface AppState {
 	quick: (fn: (_: AppState) => void) => void;
@@ -29,6 +32,7 @@ export interface AppState {
 	experimentationState: ExperimentationState;
 	userState: UserState;
 	trainersState: TrainersState;
+	inAppPurchaseState: InAppPurchaseState;
 	trackEvent: (
 		name: string,
 		props?: Object,
@@ -81,6 +85,9 @@ const initialState = {
 	//       },
 	repertoireState: getInitialRepertoireState(set, get),
 	trainersState: getInitialTrainersState(set, get),
+	inAppPurchaseState: {
+		products: {},
+	},
 	adminState: getInitialAdminState(set, get),
 	// visualizationState: getInitialVisualizationState(set, get, false),
 	// climbState: getInitialVisualizationState(set, get, true),

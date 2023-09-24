@@ -353,7 +353,7 @@ export const RepertoireHome = () => {
 											});
 										},
 										text: "Beta features",
-										hidden: !settingsExpanded(),
+										hidden: !settingsExpanded() || isIos,
 										right: `${
 											(userState().getEnabledFlags()?.length ?? 0) > 0
 												? `${userState().getEnabledFlags()?.length} enabled`
@@ -362,7 +362,9 @@ export const RepertoireHome = () => {
 										style: "secondary",
 									} as SidebarAction,
 									{
-										hidden: !settingsExpanded() || isIos,
+										hidden:
+											!settingsExpanded() ||
+											(!userState().user?.subscribed && isIos),
 										onPress: () => {
 											quick((s) => {
 												if (!userState().user?.subscribed) {

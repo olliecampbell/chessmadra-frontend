@@ -25,6 +25,7 @@ import {
 } from "./utils/experiments";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp, URLOpenListenerEvent } from "@capacitor/app";
+import { InAppPurchases } from "./utils/in_app_purchases";
 
 export const App = () => {
 	onMount(() => {
@@ -35,6 +36,9 @@ export const App = () => {
 		posthog.onFeatureFlags((x, y) => {
 			setPosthogFeaturesLoaded(true);
 		});
+		if (Capacitor.getPlatform() === "ios") {
+			InAppPurchases.loadProducts();
+		}
 
 		// Option 1, initialize with API_KEY only
 
