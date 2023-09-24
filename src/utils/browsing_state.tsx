@@ -345,7 +345,7 @@ export const getInitialBrowsingState = (
 					.filter((sm) => getTotalGames(sm.results) > 0)
 					.map((sm) => {
 						_tableResponses[sm.sanPlus] = {
-							suggestedMove: cloneDeep(sm),
+							suggestedMove: sm,
 							tags: [],
 							side: s.sidebarState.activeSide as Side,
 						};

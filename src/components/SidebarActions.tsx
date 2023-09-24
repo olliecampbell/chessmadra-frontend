@@ -7,7 +7,7 @@ import {
 	last,
 	map,
 } from "lodash-es";
-import { JSXElement, Match, Show, Switch } from "solid-js";
+import { JSXElement, Match, Show, Switch, createMemo } from "solid-js";
 import { Spacer } from "~/components/Space";
 import { useHovering } from "~/mocks";
 import {
@@ -85,7 +85,7 @@ export const SidebarActionsLegacy = () => {
 			]?.plans,
 		);
 	};
-	const biggestGapAction = () => useBiggestGapAction();
+	const biggestGapAction = createMemo(() => useBiggestGapAction());
 	const addBiggestMissAction = (buttons: SidebarAction[]) => {
 		if (biggestGapAction()) {
 			buttons.push(biggestGapAction()!);
@@ -475,7 +475,6 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
 		s.mode,
 	]);
 	positionHistory = positionHistory ?? [];
-	const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
 	const getBiggestGapAction = () => {
 		let miss = null;
 		if (addedLineState().visible) {
@@ -488,36 +487,8 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
 		}
 		const text = "Go to the next gap in your repertoire";
 		const line = pgnToLine(miss.lines[0]);
-		const missPositions = lineToPositions(line);
-		const missPositionsSet = new Set(missPositions);
-		const currentOpeningName = last(
-			filter(
-				map(positionHistory(), (epd) => {
-					const ecoCode = ecoCodeLookup()[epd];
-					if (ecoCode) {
-						return getNameEcoCodeIdentifier(ecoCode.fullName);
-					}
-				}),
-			),
-		);
-		const openingNameOfMiss = last(
-			filter(
-				map(missPositions, (epd) => {
-					const ecoCode = ecoCodeLookup()[epd];
-					if (ecoCode) {
-						return getNameEcoCodeIdentifier(ecoCode.fullName);
-					}
-				}),
-			),
-		);
 
-		const i = findLastIndex(positionHistory(), (epd) => {
-			if (missPositionsSet.has(epd)) {
-				return true;
-			}
-			return false;
-		});
-		const isAtBiggestMiss = currentEpd() === last(missPositions);
+		const isAtBiggestMiss = currentEpd() === miss.epd;
 		if (miss && !isAtBiggestMiss) {
 			return {
 				onPress: () => {
@@ -525,7 +496,6 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
 						trackEvent(`${mode()}.added_line_state.next_gap`);
 						s.repertoireState.browsingState.moveSidebarState("right");
 						s.repertoireState.browsingState.dismissTransientSidebarState();
-						const lastMatchingEpd = positionHistory()![i];
 						s.repertoireState.browsingState.chessboard.playLine(line, {
 							animated: true,
 						});

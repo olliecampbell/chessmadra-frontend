@@ -62,7 +62,7 @@ export interface TableResponse {
 	coverage?: number;
 	moveRating?: MoveRating;
 	repertoireMove?: RepertoireMove;
-	suggestedMove?: SuggestedMove;
+	suggestedMove?: Readonly<SuggestedMove>;
 	score?: number;
 	scoreTable?: ScoreTable;
 	side: Side;
