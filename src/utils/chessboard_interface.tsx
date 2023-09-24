@@ -943,7 +943,8 @@ export const createChessboardInterface = (): [
 			set((s) => {
 				if (m) {
 					// @ts-ignore
-					const [moveObject] = s.position.validateMoves([m]) ?? [];
+					const [moveObject] =
+						s.position.validateMoves([m], { sloppy: true }) ?? [];
 					s.nextPreviewMove = moveObject;
 					chessboardInterface.stepPreviewMove();
 				} else {
