@@ -41,7 +41,9 @@ export const ChessboardFooter = (props: {}) => {
 	return (
 		<FadeInOut
 			style={s(c.row)}
-			class={clsx("row max-w-full justify-between <md:items-center <md:padding-sidebar w-full")}
+			class={clsx(
+				"row max-w-full justify-between <lg:items-center <md:padding-sidebar w-full",
+			)}
 			open={
 				!isEmpty(currentLine()) &&
 				(sidebarMode() === "browse" ||
@@ -53,17 +55,14 @@ export const ChessboardFooter = (props: {}) => {
 				{(ecoName) => {
 					return (
 						<div class="col shrink-0 justify-start">
-							<p class="text-tertiary md:text-secondary font-semibold">
+							<p class="text-sm lg:text-base text-tertiary lg:text-secondary font-semibold">
 								{ecoName()}
 							</p>
-			<Show when={!responsive().isMobile}>
-							<FadeInOut
-								open={!isEmpty(ecoVariation())}
-							>
-								<p class="text-tertiary pt-2 text-sm">{ecoVariation()}</p>
-							</FadeInOut>
-			</Show>
-
+							<Show when={responsive().bp >= BP.lg}>
+								<FadeInOut open={!isEmpty(ecoVariation())}>
+									<p class="text-tertiary pt-2 text-sm">{ecoVariation()}</p>
+								</FadeInOut>
+							</Show>
 						</div>
 					);
 				}}

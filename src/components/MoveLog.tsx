@@ -57,7 +57,9 @@ export const MoveLog = () => {
 			if (i % 2 === 0) {
 				elems.push(
 					<p
-						class={"text-gray-40 pl-2  font-semibold leading-5 tracking-wider"}
+						class={
+							"text-gray-40 pl-1 lg:pl-1  font-semibold leading-5 tracking-wider"
+						}
 					>
 						{Math.round(i / 2) + 1}.
 					</p>,
@@ -66,10 +68,10 @@ export const MoveLog = () => {
 			elems.push(
 				<p
 					class={clsx(
-						"&hover:text-primary  cursor-pointer whitespace-nowrap rounded-sm px-1 font-bold  leading-5 tracking-wider transition-all",
+						"&hover:text-primary  cursor-pointer whitespace-nowrap rounded-sm px-0.5 lg:px-1 font-bold  leading-5 tracking-wider transition-all ml-0.5",
 						last ? "text-primary" : "text-tertiary",
 					)}
-					style={s(last && c.bg(theme().highlightLastMove))}
+					style={s(last && s(c.bg(theme().highlightLastMove)))}
 					onClick={() => {
 						if (mode() !== "review") {
 							quick((s) => {
@@ -119,7 +121,7 @@ export const MoveLog = () => {
 		return false;
 	};
 	return (
-		<div class={"row  shrink-1 ml-2 min-w-0 items-center"}>
+		<div class={"row  shrink-1 ml-2 min-w-0 items-center text-xs lg:text-sm"}>
 			<div
 				class={clsx(
 					"ml-2 h-full w-px shrink-0",
@@ -141,7 +143,7 @@ export const MoveLog = () => {
 						<For each={currentLineElements()}>{(e) => e}</For>
 					</div>
 				</div>
-				<div class="hidden md:block">
+				<div class="hidden lg:block">
 					<AnalyzeOnLichessButton />
 				</div>
 			</div>

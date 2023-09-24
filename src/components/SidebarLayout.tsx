@@ -157,6 +157,7 @@ export const SidebarLayout = (props: {
 		>
 			<div
 				id="page-content"
+				class="md:px-4"
 				style={s(
 					!vertical ? c.containerStyles(responsive().bp) : c.fullWidth,
 					c.alignCenter,
@@ -269,7 +270,9 @@ export const SidebarLayout = (props: {
 							<div
 								// @ts-ignore
 								id="sidebar"
-								class={"max-w-[600px] xl:max-w-[650px]  z-10 relative"}
+								class={
+									"max-w-[440px] lg:max-w-[600px] xl:max-w-[650px]  z-10 relative"
+								}
 								style={s(c.flexGrow(2), c.flexShrink, c.noBasis)}
 							>
 								<SidebarContainer

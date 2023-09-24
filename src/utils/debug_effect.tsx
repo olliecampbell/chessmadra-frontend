@@ -9,7 +9,6 @@ import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
 import { Quiz } from "./queues";
 import { lineToPgn } from "./repertoire";
-import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
 
 export const createDebugStateEffect = () => {
 	console.log("calling the debug effect thing");
@@ -58,11 +57,11 @@ export const createDebugStateEffect = () => {
 			// 		animated: false,
 			// 	});
 			// });
-			quick((s) => {
-			  console.log("setting past landing page");
-			  // s.userState.pastLandingPage = true;
-			  s.repertoireState.browsingState.replaceView(UpgradeSubscriptionView, {});
-			});
+			// quick((s) => {
+			//   console.log("setting past landing page");
+			//   s.userState.pastLandingPage = true;
+			//   // s.repertoireState.browsingState.replaceView(ConnectChesscom, {});
+			// });
 			// quick((s) => {
 			//   s.repertoireState.browsingState.replaceView(CoverageSettings, {});
 			// });
