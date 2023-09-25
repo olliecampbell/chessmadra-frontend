@@ -218,7 +218,7 @@ export const getInitialReviewState = (
 				if (options.lichessMistakes) {
 					s.activeQueue = s.buildQueueFromMistakes(options.lichessMistakes);
 				} else if (options.customQueue) {
-					s.activeQueue = options.customQueue;
+					s.activeQueue = cloneDeep(options.customQueue);
 				} else {
 					s.updateQueue(options);
 				}

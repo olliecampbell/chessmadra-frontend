@@ -87,7 +87,7 @@ export const PracticeComplete = () => {
 							side: activeOptions()?.side ?? null,
 							filter: "common",
 						});
-						trackEvent("pre_review.common_moves");
+						trackEvent("post_review.next_common_moves");
 					});
 				},
 				text: "Practice next most common moves",
@@ -114,6 +114,19 @@ export const PracticeComplete = () => {
 			text: "Continue",
 			style: actions.length > 0 ? "secondary" : "primary",
 		});
+		if (activeOptions()?.customQueue) {
+			actions.push({
+				onPress: () => {
+					quick((s) => {
+						s.repertoireState.browsingState.popView();
+						s.repertoireState.reviewState.startReview(activeOptions()!);
+						trackEvent("post_review.practice_line_again");
+					});
+				},
+				text: "Practice this line again",
+				style: "secondary",
+			});
+		}
 		return actions;
 	};
 	const bullets = () => {
