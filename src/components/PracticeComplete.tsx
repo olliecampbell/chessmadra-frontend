@@ -124,7 +124,7 @@ export const PracticeComplete = () => {
 					});
 				},
 				text: "Practice these moves again",
-				style: "secondary",
+				style: "primary",
 			});
 		}
 		return actions;
