@@ -123,7 +123,7 @@ export const PracticeComplete = () => {
 						trackEvent("post_review.practice_line_again");
 					});
 				},
-				text: "Practice this line again",
+				text: "Practice these moves again",
 				style: "secondary",
 			});
 		}
