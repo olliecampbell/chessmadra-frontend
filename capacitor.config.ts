@@ -6,7 +6,7 @@ let server: CapacitorConfig["server"] = {
 } as object;
 if (process.env.DEV) {
 	const interfaces = networkInterfaces();
-	const ip = interfaces["eth0"][0]["address"];
+	const ip = interfaces.eth0[0].address;
 
 	console.log("IP: ", ip);
 	server = {
@@ -18,6 +18,7 @@ if (process.env.DEV) {
 const config: CapacitorConfig = {
 	appId: "com.chessbook",
 	appName: "Chessbook",
+	backgroundColor: "#131516",
 	webDir: "dist",
 	server,
 	// plugins: {
