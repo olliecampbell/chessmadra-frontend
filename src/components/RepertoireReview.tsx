@@ -292,7 +292,7 @@ export const RepertoireReview = (props: {}) => {
 				actions={filter(actions(), (a) => !a.hidden)}
 				bodyPadding={true}
 			>
-				<div class={"row w-full items-end justify-between"}>
+				<div class={"row w-full items-baseline justify-between"}>
 					<SidebarHeader>
 						{reviewingMistakes()
 							? "Reviewing mistakes"
