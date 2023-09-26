@@ -9,7 +9,7 @@ import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { FadeInOut } from "./FadeInOut";
 import { MoveLog } from "./MoveLog";
 
-export const AnalyzeOnLichessButton = (props: {}) => {
+export const AnalyzeOnLichessButton = (props: { short?: boolean }) => {
 	const responsive = useResponsiveV2();
 	const padding = 8;
 	const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
@@ -48,7 +48,7 @@ export const AnalyzeOnLichessButton = (props: {}) => {
 				}}
 			>
 				<p>
-					Analyze on Lichess
+					{props.short ? "Analyze" : "Analyze on Lichess"}
 					<i class="fa fa-up-right-from-square pl-2 " />
 				</p>
 			</a>

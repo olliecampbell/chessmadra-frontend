@@ -121,14 +121,9 @@ export const MoveLog = () => {
 		return false;
 	};
 	return (
-		<div class={"row  shrink-1 ml-2 min-w-0 items-center text-xs lg:text-sm"}>
-			<div
-				class={clsx(
-					"ml-2 h-full w-px shrink-0",
-					overflowing() ? "bg-gray-14" : "bg-transparent",
-				)}
-			/>
-			<div class="col gap-2 items-end min-w-0">
+		<div class={"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow"}>
+			<Divider overflowing={true} class="mr-2" />
+			<div class="col gap-2 items-end min-w-0 shrink">
 				<div
 					class="row align-center no-scrollbar h-full overflow-x-scroll max-w-full"
 					ref={setContainerRef}
@@ -143,10 +138,23 @@ export const MoveLog = () => {
 						<For each={currentLineElements()}>{(e) => e}</For>
 					</div>
 				</div>
-				<div class="hidden lg:block">
-					<AnalyzeOnLichessButton />
-				</div>
+			</div>
+			<Divider overflowing={overflowing()} class="mr-2" />
+			<div class="grow row justify-end shrink-0">
+				<AnalyzeOnLichessButton short />
 			</div>
 		</div>
+	);
+};
+
+const Divider = (props: { class?: string; overflowing?: boolean }) => {
+	return (
+		<div
+			class={clsx(
+				"ml-2 self-stretch w-px shrink-0",
+				props.overflowing ? "bg-gray-16" : "bg-transparent",
+				props.class,
+			)}
+		/>
 	);
 };

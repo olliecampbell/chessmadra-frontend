@@ -1,5 +1,5 @@
 import { isEmpty, last } from "lodash-es";
-import { Show } from "solid-js";
+import { Show, createEffect } from "solid-js";
 import { getAppState, useSidebarState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { getLichessLink } from "~/utils/lichess";
@@ -34,16 +34,14 @@ export const ChessboardFooter = (props: {}) => {
 			currentLine,
 			currentEcoCode ? getAppropriateEcoName(currentEcoCode.fullName)[0] : null,
 			currentEcoCode
-				? last(getAppropriateEcoName(currentEcoCode.fullName))
+				? last(getAppropriateEcoName(currentEcoCode.fullName)[1])
 				: null,
 		];
 	});
 	return (
 		<FadeInOut
 			style={s(c.row)}
-			class={clsx(
-				"row max-w-full justify-between <lg:items-center <md:padding-sidebar w-full",
-			)}
+			class={clsx("row max-w-full  items-center <md:padding-sidebar w-full")}
 			open={
 				!isEmpty(currentLine()) &&
 				(sidebarMode() === "browse" ||
@@ -51,19 +49,14 @@ export const ChessboardFooter = (props: {}) => {
 					sidebarMode() === "build")
 			}
 		>
-			<Show when={ecoName()} fallback={<div />}>
+			<Show when={ecoName()}>
 				{(ecoName) => {
 					return (
-						<div class="col shrink-0 justify-start">
-							<p class="text-sm lg:text-base text-tertiary lg:text-secondary font-semibold">
+						<>
+							<p class="text-sm lg:text-sm text-tertiary lg:text-secondary font-semibold shrink-0">
 								{ecoName()}
 							</p>
-							<Show when={responsive().bp >= BP.lg}>
-								<FadeInOut open={!isEmpty(ecoVariation())}>
-									<p class="text-tertiary pt-2 text-sm">{ecoVariation()}</p>
-								</FadeInOut>
-							</Show>
-						</div>
+						</>
 					);
 				}}
 			</Show>
