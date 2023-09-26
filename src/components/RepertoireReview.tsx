@@ -183,7 +183,7 @@ export const RepertoireReview = (props: {}) => {
 					, you played{" "}
 					<span
 						class={clsx(
-							"text-orange-50 font-semibold cursor-pointer hover:bg-orange-10 p-0.5 rounded-sm",
+							"text-orange-50 font-semibold cursor-pointer hover:bg-orange-10 p-0.5 -mr-0.5 rounded-sm",
 						)}
 						{...wrongMoveHoverProps}
 					>
