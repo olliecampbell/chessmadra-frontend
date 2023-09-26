@@ -139,8 +139,8 @@ export const MoveLog = () => {
 					</div>
 				</div>
 			</div>
-			<Divider overflowing={overflowing()} class="mr-2" />
-			<div class="grow row justify-end shrink-0">
+			<Divider overflowing={overflowing()} class="mr-2 <md:hidden" />
+			<div class="grow row justify-end shrink-0 <md:hidden">
 				<AnalyzeOnLichessButton short />
 			</div>
 		</div>
