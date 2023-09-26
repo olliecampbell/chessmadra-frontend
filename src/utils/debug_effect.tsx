@@ -29,11 +29,11 @@ export const createDebugStateEffect = () => {
 		if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
 			setHasCalled(true);
 			// Test move log, many moves
-			quick((s) => {
-				s.repertoireState.startBrowsing("white", "build", {
-					pgnToPlay: "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O d6 6.Re1",
-				});
-			});
+			// quick((s) => {
+			// 	s.repertoireState.startBrowsing("white", "build", {
+			// 		pgnToPlay: "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O d6 6.Re1",
+			// 	});
+			// });
 
 			// quick((s) => {
 			// 	const maybeNode = ChessboardArrowView({
@@ -73,18 +73,18 @@ export const createDebugStateEffect = () => {
 			//   s.repertoireState.browsingState.replaceView(CoverageSettings, {});
 			// });
 			// quick((s) => {
-			//   setTimeout(() => {
-			//     s.repertoireState.reviewState.startReview({
-			//       side: "white",
-			//       filter: "all",
-			//     });
-			//     while (
-			//       s.repertoireState.reviewState.currentQuizGroup &&
-			//       !Quiz.getPlans(s.repertoireState.reviewState.currentQuizGroup)
-			//     ) {
-			//       s.repertoireState.reviewState.setupNextMove();
-			//     }
-			//   });
+			// 	setTimeout(() => {
+			// 		s.repertoireState.reviewState.startReview({
+			// 			side: "white",
+			// 			filter: "all",
+			// 		});
+			// 		// while (
+			// 		//   s.repertoireState.reviewState.currentQuizGroup &&
+			// 		//   !Quiz.getPlans(s.repertoireState.reviewState.currentQuizGroup)
+			// 		// ) {
+			// 		//   s.repertoireState.reviewState.setupNextMove();
+			// 		// }
+			// 	});
 			// });
 			//   quick((s) => {
 			//     s.repertoireState.startBrowsing("white", "build");

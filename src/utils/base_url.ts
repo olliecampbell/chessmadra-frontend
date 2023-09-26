@@ -1,10 +1,13 @@
 import { Capacitor } from "@capacitor/core";
 import { isNil } from "lodash-es";
+import { isServer } from "solid-js/web";
 
 let baseApiUrl = undefined;
 let baseFrontendUrl = undefined;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-	baseApiUrl = "http://localhost:8040";
+	baseApiUrl = `${
+		isServer ? "http://localhost" : window.location.origin.split(":3000")[0]
+	}:8040`;
 	if (Capacitor.getPlatform() === "ios") {
 		baseFrontendUrl = "http://localhost:3000";
 	} else {

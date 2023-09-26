@@ -4,6 +4,7 @@ import { createDebugStateEffect } from "~/utils/debug_effect";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { c, s } from "~/utils/styles";
 import { LogoFull } from "./icons/LogoFull";
+import { isIos } from "~/utils/env";
 
 export const RepertoirePageLayout = (props: {
 	children: any;
@@ -20,14 +21,11 @@ export const RepertoirePageLayout = (props: {
 	const backgroundColor = c.gray[8];
 	return (
 		<div
-			style={s(
-				c.column,
-				c.fullWidth,
-				c.bg(backgroundColor),
-				c.grow,
-				s(c.minHeight("100vh")),
+			style={s(c.column, c.fullWidth, c.bg(backgroundColor), c.grow)}
+			class={clsx(
+				!props.loading && "pt-[env(safe-area-inset-top)]",
+				"min-h-[100dvh]",
 			)}
-			class="pt-[env(safe-area-inset-top)]"
 		>
 			<div
 				style={s(

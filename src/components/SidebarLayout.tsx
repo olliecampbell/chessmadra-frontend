@@ -4,6 +4,7 @@ import {
 	JSX,
 	JSXElement,
 	Show,
+	createEffect,
 	createSignal,
 	onCleanup,
 	onMount,
@@ -146,6 +147,16 @@ export const SidebarLayout = (props: {
 		}
 		return false;
 	};
+	createEffect(() => {
+		if (props.loading) {
+			document.documentElement.style.overflow = "hidden";
+		} else {
+			document.documentElement.style.overflow = "auto";
+		}
+		return () => {
+			document.documentElement.style.overflow = "auto";
+		};
+	});
 
 	return (
 		<RepertoirePageLayout
@@ -156,7 +167,7 @@ export const SidebarLayout = (props: {
 			loading={props.loading}
 		>
 			<div
-				id="page-content"
+				id=""
 				class="md:px-4"
 				style={s(
 					!vertical ? c.containerStyles(responsive().bp) : c.fullWidth,

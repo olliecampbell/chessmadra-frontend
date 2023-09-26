@@ -85,8 +85,6 @@ body,
   -webkit-overflow-scrolling: touch;
   margin: 0px;
   padding: 0px;
-  /* Allows content to fill the viewport and go beyond the bottom */
-  min-height: 100%;
 }
 #root {
   flex-shrink: 0;
