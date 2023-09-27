@@ -1,14 +1,10 @@
-import { Chess } from "@lubert/chess.ts";
 import { noop } from "lodash-es";
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { ChessboardArrowView } from "~/components/ChessboardArrow";
-import { ConnectChesscom } from "~/components/ConnectedAccounts";
-import { CoverageSettings } from "~/components/SidebarSettings";
 import { quick, useAppState, useRepertoireState } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
-import { Quiz } from "./queues";
-import { lineToPgn } from "./repertoire";
+
+const TEST_LINE = null; // "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Bxc6 bxc6 5.d4 exd4 6.Qxd4 Nf6 7.Bg5 Be7";
 
 export const createDebugStateEffect = () => {
 	console.log("calling the debug effect thing");
@@ -29,11 +25,13 @@ export const createDebugStateEffect = () => {
 		if (!repertoireLoading() && authStatus() === AuthStatus.Authenticated) {
 			setHasCalled(true);
 			// Test move log, many moves
-			// quick((s) => {
-			// 	s.repertoireState.startBrowsing("white", "build", {
-			// 		pgnToPlay: "1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O d6 6.Re1",
-			// 	});
-			// });
+			quick((s) => {
+				if (TEST_LINE) {
+					s.repertoireState.startBrowsing("white", "build", {
+						pgnToPlay: TEST_LINE,
+					});
+				}
+			});
 
 			// quick((s) => {
 			// 	const maybeNode = ChessboardArrowView({

@@ -35,22 +35,13 @@ export const scoreTableResponses = (
 	report: PositionReport,
 	bestStockfishReport: StockfishReport | undefined,
 	side: Side,
-	epd: string,
 	mode: BrowsingMode,
-	using: "masters" | "effectiveness",
+	ownSide: boolean,
+	useMasters: boolean,
 ): TableResponse[] => {
-	const sorts = [];
-	const weights =
-		using === "effectiveness"
-			? EFFECTIVENESS_WEIGHTS_PEERS
-			: EFFECTIVENESS_WEIGHTS_MASTERS;
-	if (using === "masters") {
-		sorts.push();
-	}
 	const positionWinRate = report
 		? getWinRateRange(report.results, side)[0]
 		: NaN;
-	const DEBUG_MOVE = null;
 	if (mode === "browse") {
 		return sortBy(tableResponses, [
 			(tableResponse: TableResponse) => {
@@ -67,23 +58,33 @@ export const scoreTableResponses = (
 			},
 		]);
 	}
-
-	return sortBy(tableResponses, [
-		(tableResponse: TableResponse) => {
+	const sorts = [];
+	if (!ownSide) {
+		sorts.push((tableResponse: TableResponse) => {
 			if (!tableResponse.suggestedMove) {
 				return undefined;
 			}
-			const masterPlayRate = getPlayRate(
-				tableResponse.suggestedMove,
-				report,
-				true,
-			);
-			if (!isNegligiblePlayrate(masterPlayRate)) {
-				return -masterPlayRate;
-			}
-			return 0;
-		},
-		(tableResponse: TableResponse) => {
+			const playRate = getPlayRate(tableResponse.suggestedMove, report, false);
+			return -playRate;
+		});
+	} else {
+		if (useMasters) {
+			sorts.push((tableResponse: TableResponse) => {
+				if (!tableResponse.suggestedMove) {
+					return undefined;
+				}
+				const masterPlayRate = getPlayRate(
+					tableResponse.suggestedMove,
+					report,
+					true,
+				);
+				if (!isNegligiblePlayrate(masterPlayRate)) {
+					return -masterPlayRate;
+				}
+				return 0;
+			});
+		}
+		sorts.push((tableResponse: TableResponse) => {
 			const score = scoreTableResponseEffectiveness(
 				tableResponse,
 				report,
@@ -92,8 +93,10 @@ export const scoreTableResponses = (
 				side,
 			);
 			return -score;
-		},
-	]);
+		});
+	}
+
+	return sortBy(tableResponses, sorts);
 };
 
 const scoreTableResponseEffectiveness = (
@@ -143,7 +146,7 @@ const scoreTableResponseEffectiveness = (
 				);
 				scoreTable.factors.push({
 					source: TableResponseScoreSource.Eval,
-					value: -eval_loss,
+					value: -eval_loss + 10,
 				});
 				// if (m.sanPlus === DEBUG_MOVE) {
 				//   console.log(
@@ -185,13 +188,6 @@ const scoreTableResponseEffectiveness = (
 				});
 			}
 		}
-		if (tableResponse.suggestedMove?.incidence) {
-			scoreTable.factors.push({
-				source: TableResponseScoreSource.Incidence,
-				value: tableResponse.suggestedMove?.incidence,
-				weight: weights[TableResponseScoreSource.Incidence] ?? 1,
-			});
-		}
 		const [winrateLowerBound, winrateUpperBound] = getWinRateRange(
 			// @ts-ignore
 			tableResponse.suggestedMove?.results,
@@ -202,6 +198,9 @@ const scoreTableResponseEffectiveness = (
 		// );
 		const winrateChange = winrateLowerBound - positionWinRate;
 		if (!isNaN(winrateChange) && !isNil(winrateChange)) {
+			scoreTable.notes.push(
+				`Winrate change: ${winrateChange}, winrateLowerBound: ${winrateLowerBound}, winrateUpperBound: ${winrateUpperBound}`,
+			);
 			const scoreForWinrate = winrateChange;
 			scoreTable.factors.push({
 				source: TableResponseScoreSource.Winrate,
@@ -240,40 +239,21 @@ const scoreTableResponseEffectiveness = (
 	tableResponse.score = sumBy(scoreTable.factors, (f) => {
 		return f.total;
 	});
-	// console.log({
-	// 	san: tableResponse.suggestedMove?.sanPlus,
-	// 	score: tableResponse.score,
-	// 	tableResponse,
-	// 	scoreTable,
-	// });
+	console.log({
+		san: tableResponse.suggestedMove?.sanPlus,
+		score: tableResponse.score,
+		factors: scoreTable.factors,
+		tableResponse,
+		scoreTable,
+	});
 	return tableResponse.score;
 };
 
-export const EFFECTIVENESS_WEIGHTS_MASTERS = {
-	startScore: 0.0,
-	eval: 1.2,
-	winrate: 4.0,
-	playrate: 0.0,
-	masterPlayrate: 8.0,
-};
-
 export const EFFECTIVENESS_WEIGHTS_PEERS = {
-	...EFFECTIVENESS_WEIGHTS_MASTERS,
 	startScore: 1.0,
-	incidence: 0.0,
 	eval: 1 / 50,
-	winrate: 20.0,
+	winrate: 10.0,
 	playrate: 1 / 100,
-	masterPlayrate: 0.0,
-};
-
-export const PLAYRATE_WEIGHTS = {
-	startScore: -3,
-	eval: 0.0,
-	winrate: 0.0,
-	playrate: 0.0,
-	needed: 1.0,
-	incidence: 1.0,
 	masterPlayrate: 0.0,
 };
 

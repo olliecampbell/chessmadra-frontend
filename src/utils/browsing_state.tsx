@@ -62,13 +62,7 @@ import {
 	getWinRateRange,
 } from "./results_distribution";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import {
-	EFFECTIVENESS_WEIGHTS_MASTERS,
-	EFFECTIVENESS_WEIGHTS_PEERS,
-	PLAYRATE_WEIGHTS,
-	scoreTableResponses,
-	shouldUsePeerRates,
-} from "./table_scoring";
+import { scoreTableResponses, shouldUsePeerRates } from "./table_scoring";
 import { isTheoryHeavy } from "./theory_heavy";
 import { identify } from "./user_properties";
 
@@ -530,14 +524,9 @@ export const getInitialBrowsingState = (
 					positionReport,
 					bestStockfishReport,
 					currentSide,
-					currentEpd,
 					s.sidebarState.mode,
-					// @ts-ignore
-					ownSide
-						? usePeerRates
-							? EFFECTIVENESS_WEIGHTS_PEERS
-							: EFFECTIVENESS_WEIGHTS_MASTERS
-						: PLAYRATE_WEIGHTS,
+					ownSide,
+					!usePeerRates,
 				);
 				s.sidebarState.tableResponses = tableResponses;
 				const noneNeeded = every(

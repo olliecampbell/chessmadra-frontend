@@ -78,7 +78,7 @@ export const wilson = function (positiveScore, total) {
 
 	// z is 1-alpha/2 percentile of a standard
 	// normal distribution for error alpha=5%
-	const z = 3.0;
+	const z = 4.0;
 
 	// implement the algorithm
 	// (http://goo.gl/kgmV3g)
