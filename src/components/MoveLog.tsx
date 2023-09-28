@@ -121,9 +121,10 @@ export const MoveLog = () => {
 		return false;
 	};
 	return (
-		<div class={"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow"}>
-			<Divider overflowing={true} class="mr-2" />
-			<div class="col gap-2 items-end min-w-0 shrink">
+		<div class={"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow justify-end"}>
+			<Divider overflowing={overflowing()} class="mr-2" />
+      <div class="grow"/>
+			<div class="col gap-2 items-end min-w-0 shrink justify-end">
 				<div
 					class="row align-center no-scrollbar h-full overflow-x-scroll max-w-full"
 					ref={setContainerRef}
@@ -139,8 +140,8 @@ export const MoveLog = () => {
 					</div>
 				</div>
 			</div>
-			<Divider overflowing={overflowing()} class="mr-2 <md:hidden" />
-			<div class="grow row justify-end shrink-0 <md:hidden">
+			<div class=" row justify-end shrink-0 <md:hidden self-stretch items-center">
+        <Divider overflowing={true} class="mr-2 <md:hidden" />
 				<AnalyzeOnLichessButton short />
 			</div>
 		</div>

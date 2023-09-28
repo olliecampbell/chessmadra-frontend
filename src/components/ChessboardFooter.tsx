@@ -53,7 +53,7 @@ export const ChessboardFooter = (props: {}) => {
 				{(ecoName) => {
 					return (
 						<>
-							<p class="text-sm lg:text-sm text-tertiary lg:text-secondary font-semibold shrink-0">
+							<p class="text-xs lg:text-sm text-tertiary lg:text-secondary font-semibold shrink-0">
 								{ecoName()}
 							</p>
 						</>
