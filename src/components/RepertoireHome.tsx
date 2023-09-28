@@ -364,7 +364,7 @@ export const RepertoireHome = () => {
 									{
 										hidden:
 											!settingsExpanded() ||
-											(!userState().user?.subscribed && isIos),
+											(userState().user?.subscribed && isIos),
 										onPress: () => {
 											quick((s) => {
 												if (!userState().user?.subscribed) {
