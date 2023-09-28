@@ -326,7 +326,7 @@ export const RepertoireReview = (props: {}) => {
 						</For>
 					</div>
 				</div>
-				<div class={"h-6 lg:h-10"} />
+				<div class={"h-4 lg:h-10"} />
 				<p class="body-text leading-5">{body()}</p>
 				<Show when={num() > 1}>
 					<>

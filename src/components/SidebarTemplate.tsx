@@ -30,7 +30,7 @@ export const SidebarTemplate: Component<{
 					<SidebarHeader>{props.header}</SidebarHeader>
 				</div>
 
-				<div class={"h-6 lg:h-10"} />
+				<div class={"h-4 lg:h-10"} />
 			</Show>
 			<Show
 				when={!props.loading}

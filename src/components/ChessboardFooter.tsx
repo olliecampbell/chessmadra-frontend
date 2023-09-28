@@ -12,12 +12,9 @@ import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 import { destructure } from "@solid-primitives/destructure";
 import { getAppropriateEcoName } from "~/utils/eco_codes";
 
-export const ChessboardFooter = (props: {}) => {
+export const ChessboardFooter = () => {
 	const responsive = useResponsiveV2();
-	const iconStyles = s(c.fontSize(responsive().switch(12, [BP.md, 14])));
-	const padding = 8;
 	const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
-	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
 	const [currentLine, ecoName, ecoVariation] = destructure(() => {
 		let currentLine = null;
 		let currentEcoCode = null;
