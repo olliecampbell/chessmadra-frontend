@@ -155,6 +155,7 @@ export const getInitialUserState = (
 				s.tempUserUuid.value = uuid4();
 				s.authStatus = AuthStatus.Unauthenticated;
 				appState.repertoireState.fetchRepertoire(false);
+				appState.repertoireState.fetchLichessMistakes()
 			});
 		},
 		setUser: (user: User) => {
