@@ -8,6 +8,8 @@ export type InAppProductId =
 	| typeof PRODUCT_CHESSBOOK_PRO_MONTHLY
 	| typeof PRODUCT_CHESSBOOK_PRO_ANNUAL;
 
+const PRODUCTS = [PRODUCT_CHESSBOOK_PRO_MONTHLY, PRODUCT_CHESSBOOK_PRO_ANNUAL];
+
 export namespace InAppPurchases {
 	export async function loadProducts() {
 		await import("cordova-plugin-purchase");
@@ -35,7 +37,13 @@ export namespace InAppPurchases {
 					s.inAppPurchaseState.products[x.id as InAppProductId] = x;
 				});
 			})
-			.approved((x) => x.verify())
+			.approved((x) => {
+        console.log("approved?", x)
+        const productId = x.products[0].id
+        if (PRODUCTS.includes(productId)) {
+          x.verify()
+        }
+      })
       .verified((x) => x.finish())
       .finished((x) => {
         const {transactionId, products, platform, currency, purchaseId, amountMicros, parentReceipt} = x

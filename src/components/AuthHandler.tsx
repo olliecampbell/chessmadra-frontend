@@ -24,11 +24,11 @@ const AuthHandler = ({ children }: { children: JSXElement }) => {
 					.catch((e) => {
 						console.log("error fetching user", e);
 						const status = e?.response?.status || 0;
-						// if (status === 401) {
-						// 	userState.quick((s) => {
-						// 		s.logout();
-						// 	});
-						// }
+						if (status === 401) {
+							userState.quick((s) => {
+								s.logout();
+							});
+						}
 					});
 			});
 	});

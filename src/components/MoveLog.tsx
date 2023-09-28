@@ -122,7 +122,7 @@ export const MoveLog = () => {
 	};
 	return (
 		<div class={"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow justify-end"}>
-			<Divider overflowing={overflowing()} class="mr-2" />
+			<Divider overflowing={overflowing()} />
       <div class="grow"/>
 			<div class="col gap-2 items-end min-w-0 shrink justify-end">
 				<div
@@ -141,7 +141,7 @@ export const MoveLog = () => {
 				</div>
 			</div>
 			<div class=" row justify-end shrink-0 <md:hidden self-stretch items-center">
-        <Divider overflowing={true} class="mr-2 <md:hidden" />
+        <Divider overflowing={true} class=" <md:hidden" />
 				<AnalyzeOnLichessButton short />
 			</div>
 		</div>
@@ -152,7 +152,7 @@ const Divider = (props: { class?: string; overflowing?: boolean }) => {
 	return (
 		<div
 			class={clsx(
-				"ml-2 self-stretch w-px shrink-0",
+				"mx-2.5 self-stretch w-px shrink-0",
 				props.overflowing ? "bg-gray-16" : "bg-transparent",
 				props.class,
 			)}

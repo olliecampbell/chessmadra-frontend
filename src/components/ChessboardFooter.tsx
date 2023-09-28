@@ -38,7 +38,7 @@ export const ChessboardFooter = () => {
 	return (
 		<FadeInOut
 			style={s(c.row)}
-			class={clsx("row max-w-full  items-center <md:padding-sidebar w-full")}
+			class={clsx("row max-w-full  items-center <md:padding-sidebar w-full <md:min-h-6")}
 			open={
 				!isEmpty(currentLine()) &&
 				(sidebarMode() === "browse" ||
