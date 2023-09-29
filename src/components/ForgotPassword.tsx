@@ -30,7 +30,7 @@ export default function ForgotPassword() {
 				setServerError(err?.response?.data?.error ?? "Something went wrong");
 			});
 	};
-	const { form, isSubmitting, errors, createSubmitHandler } =
+	const { form, setFields, isSubmitting, errors, createSubmitHandler } =
 		createForm<ForgotPasswordForm>({
 			initialValues: { email: "" },
 			onSubmit,
@@ -74,6 +74,7 @@ export default function ForgotPassword() {
 								<div style={s(c.br(4), c.px(0), c.py(0))}>
 									<form ref={form} class={"col gap-8"}>
 										<TextInput
+                  setFields={setFields}
 											placeholder="example@gmail.com"
 											type="email"
 											name="email"

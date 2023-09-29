@@ -580,7 +580,7 @@ export const ImportOnboarding = (props: {
 			});
 		});
 	};
-	const { form, isSubmitting, errors, createSubmitHandler } =
+	const { form, setFields, isSubmitting, errors, createSubmitHandler } =
 		createForm<LichessUsernameForm>({
 			initialValues: { username: "" },
 			onSubmit,
@@ -674,6 +674,7 @@ export const ImportOnboarding = (props: {
 					<div style={s(c.pt(20))}>
 						<form ref={form} class={"col gap-8"}>
 							<TextInput
+                  setFields={setFields}
 								placeholder="yourusername"
 								type="text"
 								name="username"

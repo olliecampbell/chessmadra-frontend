@@ -44,7 +44,7 @@ export default function ResetPassword() {
 				setServerError(err?.response?.data?.error ?? "Something went wrong");
 			});
 	};
-	const { form, isSubmitting, errors, createSubmitHandler } =
+	const { form, isSubmitting, setFields, errors, createSubmitHandler } =
 		createForm<ResetPasswordForm>({
 			initialValues: { password: "" },
 			onSubmit,

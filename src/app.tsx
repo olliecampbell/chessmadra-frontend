@@ -125,13 +125,13 @@ const RouteProvider = () => {
 };
 const AppUrlListener = () => {
 	const navigate = useNavigate();
-  // current time
-  const lastResume = Date.now();
+  let lastResume = Date.now();
 	onMount(() => {
 			CapacitorApp.addListener("resume", () => {
         quick((s) => {
           // if over 60 seconds since last resume
           if (Date.now() - lastResume > 60 * 1000) {
+            lastResume = Date.now();
             s.repertoireState.fetchLichessMistakes()
           }
         })

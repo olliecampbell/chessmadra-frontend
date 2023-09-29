@@ -126,7 +126,7 @@ export const ConnectChesscom = () => {
 			s.repertoireState.backToOverview();
 		});
 	};
-	const { form, isSubmitting, errors, createSubmitHandler } =
+	const { form, setFields, isSubmitting, errors, createSubmitHandler } =
 		createForm<ConnectChesscomForm>({
 			initialValues: { username: "" },
 			onSubmit,
@@ -167,6 +167,7 @@ export const ConnectChesscom = () => {
 						<div class={"self-stretch"}>
 							<form ref={form} class={"col gap-8"}>
 								<TextInput
+                setFields={setFields}
 									placeholder="username"
 									type="text"
 									name="username"
