@@ -1,4 +1,4 @@
-import { isEmpty, last } from "lodash-es";
+import { isEmpty, isNil, last } from "lodash-es";
 import { Show, createEffect } from "solid-js";
 import { getAppState, useSidebarState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
@@ -57,7 +57,7 @@ export const ChessboardFooter = () => {
 					);
 				}}
 			</Show>
-			<MoveLog />
+			<MoveLog hideLeftDivider={isNil(ecoName())} />
 		</FadeInOut>
 	);
 };

@@ -4,6 +4,7 @@ import {
 	Accessor,
 	For,
 	JSXElement,
+	Show,
 	createEffect,
 	createMemo,
 	createRenderEffect,
@@ -22,7 +23,7 @@ import {
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 import { debugElementBounds } from "~/utils/debug_element_bounds";
 
-export const MoveLog = () => {
+export const MoveLog = (props: {hideLeftDivider?: boolean}) => {
 	const [mode] = useSidebarState(([s]) => [s.mode]);
 	const currentLine = () => {
 		return (
@@ -122,7 +123,9 @@ export const MoveLog = () => {
 	};
 	return (
 		<div class={"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow justify-end"}>
-			<Divider overflowing={overflowing()} />
+      <Show when={!props.hideLeftDivider}>
+        <Divider overflowing={overflowing()} class="ml-[0.7rem] mr-[0.65rem]"/>
+      </Show>
       <div class="grow"/>
 			<div class="col gap-2 items-end min-w-0 shrink justify-end">
 				<div
@@ -141,7 +144,7 @@ export const MoveLog = () => {
 				</div>
 			</div>
 			<div class=" row justify-end shrink-0 <md:hidden self-stretch items-center">
-        <Divider overflowing={true} class=" <md:hidden" />
+        <Divider overflowing={true} class=" <md:hidden ml-[0.75rem] mr[0.6rem]" />
 				<AnalyzeOnLichessButton short />
 			</div>
 		</div>
@@ -152,7 +155,7 @@ const Divider = (props: { class?: string; overflowing?: boolean }) => {
 	return (
 		<div
 			class={clsx(
-				"mx-2.5 self-stretch w-px shrink-0",
+				"self-stretch w-px shrink-0",
 				props.overflowing ? "bg-gray-16" : "bg-transparent",
 				props.class,
 			)}
