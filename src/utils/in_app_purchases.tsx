@@ -13,7 +13,7 @@ const PRODUCTS = [PRODUCT_CHESSBOOK_PRO_MONTHLY, PRODUCT_CHESSBOOK_PRO_ANNUAL];
 export namespace InAppPurchases {
 	export async function loadProducts() {
 		await import("cordova-plugin-purchase");
-    console.log({CdvPurchase});
+		console.log({ CdvPurchase });
 
 		const { store } = CdvPurchase;
 
@@ -32,37 +32,47 @@ export namespace InAppPurchases {
 		store
 			.when()
 			.productUpdated((x) => {
-        console.log("updated? ", x)
+				console.log("updated? ", x);
 				quick((s) => {
 					s.inAppPurchaseState.products[x.id as InAppProductId] = x;
 				});
 			})
 			.approved((x) => {
-        console.log("approved?", x)
-        const productId = x.products[0].id
-        if (PRODUCTS.includes(productId)) {
-          x.verify()
-        }
-      })
-      .verified((x) => x.finish())
-      .finished((x) => {
-        const {transactionId, products, platform, currency, purchaseId, amountMicros, parentReceipt} = x
-				client.post("/api/apple/purchase", {
-          transactionId,
-          products,
-          platform,
-          currency,
-          purchaseId,
-          amountMicros,
-          receipt: parentReceipt
-        }).then(({data}) => {
-          if (data?.user) {
-            quick((s) => {
-              s.userState.handleAuthResponse(data)
-            })
-          }
-        })
-      })
+				console.log("approved?", x);
+				const productId = x.products[0].id;
+				if (PRODUCTS.includes(productId)) {
+					x.verify();
+				}
+			})
+			.verified((x) => x.finish())
+			.finished((x) => {
+				const {
+					transactionId,
+					products,
+					platform,
+					currency,
+					purchaseId,
+					amountMicros,
+					parentReceipt,
+				} = x;
+				client
+					.post("/api/apple/purchase", {
+						transactionId,
+						products,
+						platform,
+						currency,
+						purchaseId,
+						amountMicros,
+						receipt: parentReceipt,
+					})
+					.then(({ data }) => {
+						if (data?.user) {
+							quick((s) => {
+								s.userState.handleAuthResponse(data);
+							});
+						}
+					});
+			});
 
 		store.initialize([CdvPurchase.Platform.APPLE_APPSTORE]);
 	}

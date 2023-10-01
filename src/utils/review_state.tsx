@@ -105,7 +105,7 @@ export interface ReviewState {
 	getNextReviewPositionMove(): RepertoireMove;
 	updateQueue: (options: ReviewOptions) => void;
 	invalidateSession: () => void;
-  onPositionUpdate: () => void
+	onPositionUpdate: () => void;
 }
 
 type Stack = [ReviewState, RepertoireState, AppState];
@@ -208,23 +208,23 @@ export const getInitialReviewState = (
 				rs.browsingState.sidebarState.mode = "review";
 			});
 		},
-    onPositionUpdate: () => {
-      set(([s, rs]) => {
-        s.moveLog = s.chessboard.get((s) => s.moveLog);
-        if (rs.ecoCodeLookup) {
-          s.lastEcoCode = last(
-            filter(
-              map(
-                s.chessboard.get((s) => s.positionHistory),
-                (p) => {
-                  return rs.ecoCodeLookup[p];
-                },
-              ),
-            ),
-          );
-        }
-      })
-    },
+		onPositionUpdate: () => {
+			set(([s, rs]) => {
+				s.moveLog = s.chessboard.get((s) => s.moveLog);
+				if (rs.ecoCodeLookup) {
+					s.lastEcoCode = last(
+						filter(
+							map(
+								s.chessboard.get((s) => s.positionHistory),
+								(p) => {
+									return rs.ecoCodeLookup[p];
+								},
+							),
+						),
+					);
+				}
+			});
+		},
 		startReview: (options: ReviewOptions) =>
 			set(([s, rs, gs]) => {
 				s.reviewStats = cloneDeep(FRESH_REVIEW_STATS);
@@ -611,7 +611,7 @@ export const getInitialReviewState = (
 			},
 			onPositionUpdated: () => {
 				set(([s, rs]) => {
-          s.onPositionUpdate()
+					s.onPositionUpdate();
 				});
 			},
 			// eslint-disable-next-line @typescript-eslint/no-empty-function

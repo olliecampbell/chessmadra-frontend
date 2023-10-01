@@ -23,7 +23,7 @@ import {
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 import { debugElementBounds } from "~/utils/debug_element_bounds";
 
-export const MoveLog = (props: {hideLeftDivider?: boolean}) => {
+export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 	const [mode] = useSidebarState(([s]) => [s.mode]);
 	const currentLine = () => {
 		return (
@@ -122,11 +122,15 @@ export const MoveLog = (props: {hideLeftDivider?: boolean}) => {
 		return false;
 	};
 	return (
-		<div class={"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow justify-end"}>
-      <Show when={!props.hideLeftDivider}>
-        <Divider overflowing={overflowing()} class="ml-[0.7rem] mr-[0.65rem]"/>
-      </Show>
-      <div class="grow"/>
+		<div
+			class={
+				"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow justify-end"
+			}
+		>
+			<Show when={!props.hideLeftDivider}>
+				<Divider overflowing={overflowing()} class="ml-[0.7rem] mr-[0.65rem]" />
+			</Show>
+			<div class="grow" />
 			<div class="col gap-2 items-end min-w-0 shrink justify-end">
 				<div
 					class="row align-center no-scrollbar h-full overflow-x-scroll max-w-full"
@@ -144,7 +148,10 @@ export const MoveLog = (props: {hideLeftDivider?: boolean}) => {
 				</div>
 			</div>
 			<div class=" row justify-end shrink-0 <md:hidden self-stretch items-center">
-        <Divider overflowing={true} class=" <md:hidden ml-[0.75rem] mr[0.6rem]" />
+				<Divider
+					overflowing={true}
+					class=" <md:hidden ml-[0.75rem] mr[0.6rem]"
+				/>
 				<AnalyzeOnLichessButton short />
 			</div>
 		</div>

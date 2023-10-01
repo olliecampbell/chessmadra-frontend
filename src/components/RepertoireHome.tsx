@@ -59,6 +59,7 @@ import {
 } from "./SidebarSettings";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
+import { DeleteAccountView } from "./DeleteAccountView";
 
 export const RepertoireHome = () => {
 	const userState = () => getAppState().userState;
@@ -388,6 +389,19 @@ export const RepertoireHome = () => {
 										text: userState().user?.subscribed
 											? "Manage your subscription"
 											: "Upgrade to add unlimited moves",
+										style: "secondary",
+									} as SidebarAction,
+									{
+										hidden: !settingsExpanded() || (!isDevelopment && (!isIos || !userState().user?.email)),
+										onPress: () => {
+											quick((s) => {
+												trackEvent("home.delete_account");
+												s.repertoireState.browsingState.pushView(
+													DeleteAccountView,
+												);
+											});
+										},
+										text: "Delete your account",
 										style: "secondary",
 									} as SidebarAction,
 								],

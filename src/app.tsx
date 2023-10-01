@@ -125,17 +125,17 @@ const RouteProvider = () => {
 };
 const AppUrlListener = () => {
 	const navigate = useNavigate();
-  let lastResume = Date.now();
+	let lastResume = Date.now();
 	onMount(() => {
-			CapacitorApp.addListener("resume", () => {
-        quick((s) => {
-          // if over 60 seconds since last resume
-          if (Date.now() - lastResume > 60 * 1000) {
-            lastResume = Date.now();
-            s.repertoireState.fetchLichessMistakes()
-          }
-        })
+		CapacitorApp.addListener("resume", () => {
+			quick((s) => {
+				// if over 60 seconds since last resume
+				if (Date.now() - lastResume > 60 * 1000) {
+					lastResume = Date.now();
+					s.repertoireState.fetchLichessMistakes();
+				}
 			});
+		});
 		if (Capacitor.getPlatform() === "ios") {
 			CapacitorApp.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
 				const url = new URL(event.url);

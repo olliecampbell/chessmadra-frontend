@@ -56,7 +56,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				right: (
 					<ReviewText
 						class="!text-primary"
-icon="fa fa-forward"
+						icon="fa fa-forward"
 						descriptor="Left"
 						numDue={
 							getAppState().repertoireState.reviewState.activeQueue.length

@@ -11,7 +11,7 @@ type TextInputProps = {
 	inputClass?: string;
 	label?: string;
 	error?: string;
-  setFields: (a: string, val: string) => void
+	setFields: (a: string, val: string) => void;
 	padding?: "none";
 	errors?: Record<string, string[] | null>;
 } & JSX.InputHTMLAttributes<HTMLInputElement>;
@@ -37,31 +37,30 @@ export function TextInput(props: TextInputProps) {
 	const error = () => {
 		return props.errors?.[props.name]?.[0];
 	};
-    // const { field, onInput, onBlur, onChange } = createField(props.name);
-    //
-    //   function handleInput(e) {
-    //     console.log("On input", e.target.value);
-    //     onChange(e.target.value);
-    //
-    //
-    //   }
+	// const { field, onInput, onBlur, onChange } = createField(props.name);
+	//
+	//   function handleInput(e) {
+	//     console.log("On input", e.target.value);
+	//     onChange(e.target.value);
+	//
+	//
+	//   }
 
 	return (
-		<div class={clsx(!props.padding && "", props.class)} >
+		<div class={clsx(!props.padding && "", props.class)}>
 			<InputLabel
 				name={props.name}
 				label={props.label}
 				required={props.required}
 			/>
 			<input
-      onInput={(e) => {
-            props.setFields(props.name, e.target.value);
-
-      }}
-      onChange={(e) => {
-            console.log("On change?")
-            props.setFields(props.name, e.target.value);
-            }}
+				onInput={(e) => {
+					props.setFields(props.name, e.target.value);
+				}}
+				onChange={(e) => {
+					console.log("On change?");
+					props.setFields(props.name, e.target.value);
+				}}
 				class={clsx(
 					"bg-gray-4 md:text-md w-full rounded border-2 p-4 placeholder:text-gray-50",
 					props.error

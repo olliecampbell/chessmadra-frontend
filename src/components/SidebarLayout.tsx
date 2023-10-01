@@ -147,16 +147,20 @@ export const SidebarLayout = (props: {
 		}
 		return false;
 	};
-	createEffect(() => {
-		if (props.loading) {
-			document.documentElement.style.overflow = "hidden";
-		} else {
-			document.documentElement.style.overflow = "auto";
-		}
-		return () => {
-			document.documentElement.style.overflow = "auto";
-		};
-	});
+	// createEffect(() => {
+	// 	if (props.loading) {
+	// 		document.documentElement.style.overflow = "hidden";
+	// 	} else {
+	// 		document.documentElement.style.overflow = "auto";
+	// 	}
+	//   onCleanup(() => {
+	// 	return () => {
+	//       console.log("CLEANING UP!")
+	// 		document.documentElement.style.overflow = "auto";
+	// 	};
+	//    
+	//   })
+	// });
 
 	return (
 		<RepertoirePageLayout

@@ -82,6 +82,7 @@ export interface UserState {
 		settingKey: keyof FrontendSettings,
 	) => FrontendSettingOption<unknown>;
 	logout: () => void;
+	deleteAccount: () => void;
 }
 
 export enum AuthStatus {
@@ -148,6 +149,15 @@ export const getInitialUserState = (
 				);
 			});
 		},
+		deleteAccount: () => {
+			return set(([s, appState]) => {
+				return client.post("/api/v1/user/delete_account").then(() => {
+					set(([s]) => {
+						s.logout();
+					});
+				});
+			});
+		},
 		logout: () => {
 			set(([s, appState]) => {
 				posthog.reset();
@@ -155,7 +165,7 @@ export const getInitialUserState = (
 				s.tempUserUuid.value = uuid4();
 				s.authStatus = AuthStatus.Unauthenticated;
 				appState.repertoireState.fetchRepertoire(false);
-				appState.repertoireState.fetchLichessMistakes()
+				appState.repertoireState.fetchLichessMistakes();
 			});
 		},
 		setUser: (user: User) => {

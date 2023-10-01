@@ -167,7 +167,7 @@ export const ConnectChesscom = () => {
 						<div class={"self-stretch"}>
 							<form ref={form} class={"col gap-8"}>
 								<TextInput
-                setFields={setFields}
+									setFields={setFields}
 									placeholder="username"
 									type="text"
 									name="username"

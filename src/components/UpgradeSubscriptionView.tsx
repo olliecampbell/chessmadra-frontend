@@ -30,21 +30,21 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 				product
 					.getOffer()!
 					.order()
-          .catch(() => {
-              quick((s) => {
-                  s.repertoireState.browsingState.popView()
-                  s.repertoireState.browsingState.moveSidebarState("left");
-                  })
-              })
-          .then((x) => {
-              quick((s) => {
-                  s.userState.user!.subscribed = true
-                  s.repertoireState.browsingState.popView()
-                  s.repertoireState.browsingState.moveSidebarState("left");
-                  })
-              });
-      } else {
-        s.userState.getCheckoutLink(annual).then((url) => {
+					.catch(() => {
+						quick((s) => {
+							s.repertoireState.browsingState.popView();
+							s.repertoireState.browsingState.moveSidebarState("left");
+						});
+					})
+					.then((x) => {
+						quick((s) => {
+							s.userState.user!.subscribed = true;
+							s.repertoireState.browsingState.popView();
+							s.repertoireState.browsingState.moveSidebarState("left");
+						});
+					});
+			} else {
+				s.userState.getCheckoutLink(annual).then((url) => {
 					window.location.href = url;
 				});
 			}
@@ -54,11 +54,11 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	onMount(() => {
 		trackEvent("upgrade.shown");
 	});
-	const bullets =  ["Cancel any time (and keep any moves you've added"];
+	const bullets = ["Cancel any time (and keep any moves you've added"];
 	return (
 		<SidebarTemplate
 			actions={
-				loading() 
+				loading()
 					? []
 					: [
 							{
@@ -86,7 +86,8 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 												products()[PRODUCT_CHESSBOOK_PRO_ANNUAL].pricing!
 													.priceMicros /
 													(products()[PRODUCT_CHESSBOOK_PRO_MONTHLY].pricing!
-														.priceMicros * 12)) *
+														.priceMicros *
+														12)) *
 												100,
 									  )}%)`
 									: "$4/month (save 20%)",

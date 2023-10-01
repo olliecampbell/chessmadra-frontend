@@ -74,7 +74,7 @@ export default function ForgotPassword() {
 								<div style={s(c.br(4), c.px(0), c.py(0))}>
 									<form ref={form} class={"col gap-8"}>
 										<TextInput
-                  setFields={setFields}
+											setFields={setFields}
 											placeholder="example@gmail.com"
 											type="email"
 											name="email"

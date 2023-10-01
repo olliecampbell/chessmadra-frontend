@@ -56,7 +56,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 	const {
 		form,
 		data: formData,
-    setFields,
+		setFields,
 		isSubmitting,
 		errors,
 		createSubmitHandler,
@@ -65,7 +65,6 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 		onSubmit: onSubmit,
 		extend: [
 			validator({
-        
 				schema: yup.object({
 					email: yup.string().email().required().label("Email"),
 					password: yup.string().min(8).required().label("Password"),
@@ -114,16 +113,15 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 							<div style={s(c.br(4), c.px(0), c.py(0))}>
 								<form ref={form} class={"col gap-8"}>
 									<TextInput
-                  setFields={setFields}
 										placeholder="example@gmail.com"
-                    setFields={setFields}
+										setFields={setFields}
 										type="email"
 										name="email"
 										label="Email"
 										errors={errors()}
 									/>
 									<TextInput
-                  setFields={setFields}
+										setFields={setFields}
 										type="password"
 										name="password"
 										label="Password"

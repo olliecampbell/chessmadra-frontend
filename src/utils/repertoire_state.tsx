@@ -912,13 +912,12 @@ export const getInitialRepertoireState = (
 							s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
 							s.pawnStructures = data.pawnStructures;
 							s.pawnStructureLookup = {};
-              const mode = s.browsingState.sidebarState.mode
-              if (mode === "review") {
-                s.reviewState.onPositionUpdate();
-              } else {
-                s.browsingState.onPositionUpdate();
-
-              }
+							const mode = s.browsingState.sidebarState.mode;
+							if (mode === "review") {
+								s.reviewState.onPositionUpdate();
+							} else {
+								s.browsingState.onPositionUpdate();
+							}
 							forEach(s.pawnStructures, (e) => {
 								forEach(e.pawnEpds, (pawnEpd) => {
 									s.pawnStructureLookup[pawnEpd] = e;

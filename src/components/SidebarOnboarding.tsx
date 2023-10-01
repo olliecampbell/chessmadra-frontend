@@ -674,7 +674,7 @@ export const ImportOnboarding = (props: {
 					<div style={s(c.pt(20))}>
 						<form ref={form} class={"col gap-8"}>
 							<TextInput
-                  setFields={setFields}
+								setFields={setFields}
 								placeholder="yourusername"
 								type="text"
 								name="username"
