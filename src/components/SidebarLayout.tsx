@@ -19,7 +19,7 @@ import {
 } from "~/utils/app_state";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
 import { clsx } from "~/utils/classes";
-import { isChessmadra } from "~/utils/env";
+import { isChessmadra, isIos } from "~/utils/env";
 import { getLichessLink } from "~/utils/lichess";
 import { c, s } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
@@ -147,20 +147,16 @@ export const SidebarLayout = (props: {
 		}
 		return false;
 	};
-	// createEffect(() => {
-	// 	if (props.loading) {
-	// 		document.documentElement.style.overflow = "hidden";
-	// 	} else {
-	// 		document.documentElement.style.overflow = "auto";
-	// 	}
-	//   onCleanup(() => {
-	// 	return () => {
-	//       console.log("CLEANING UP!")
-	// 		document.documentElement.style.overflow = "auto";
-	// 	};
-	//    
-	//   })
-	// });
+	createEffect(() => {
+    if (isIos) {
+
+		if (props.loading) {
+			document.documentElement.style.overflow = "hidden";
+		} else {
+			document.documentElement.style.overflow = "auto";
+		}
+    }
+	});
 
 	return (
 		<RepertoirePageLayout

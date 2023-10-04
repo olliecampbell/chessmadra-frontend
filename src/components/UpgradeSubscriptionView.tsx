@@ -1,6 +1,7 @@
+import { isEmpty } from "lodash-es";
 import { Bullet } from "./Bullet";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { For, createSignal, onMount } from "solid-js";
+import { For, createEffect, createSignal, onMount } from "solid-js";
 import { getAppState, quick, useSidebarState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { isIos } from "~/utils/env";
@@ -14,6 +15,7 @@ import { trackEvent } from "~/utils/trackEvent";
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	const [loading, setLoading] = createSignal(false);
 	const products = () => getAppState().inAppPurchaseState.products;
+  const loadingProducts = () => isIos && isEmpty(products());
 	const requestProPlan = (annual: boolean) => {
 		setLoading(true);
 		trackEvent("upgrade.subscribe", {
@@ -58,7 +60,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	return (
 		<SidebarTemplate
 			actions={
-				loading()
+				loading() || loadingProducts()
 					? []
 					: [
 							{

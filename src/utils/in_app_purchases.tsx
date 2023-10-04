@@ -1,6 +1,6 @@
 import { quick } from "~/utils/app_state";
-export const PRODUCT_CHESSBOOK_PRO_MONTHLY = "pro.monthly";
-export const PRODUCT_CHESSBOOK_PRO_ANNUAL = "pro.annual";
+export const PRODUCT_CHESSBOOK_PRO_MONTHLY = "chessbook_pro.monthly";
+export const PRODUCT_CHESSBOOK_PRO_ANNUAL = "chessbook_pro.annual";
 import { isServer } from "solid-js/web";
 import client from "./client";
 

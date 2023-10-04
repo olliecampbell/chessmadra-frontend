@@ -60,6 +60,7 @@ import {
 import { SidebarTemplate } from "./SidebarTemplate";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
 import { DeleteAccountView } from "./DeleteAccountView";
+import { PrivacyPolicyAndTermsView } from "./PrivacyPolicyAndTermsView";
 
 export const RepertoireHome = () => {
 	const userState = () => getAppState().userState;
@@ -389,6 +390,19 @@ export const RepertoireHome = () => {
 										text: userState().user?.subscribed
 											? "Manage your subscription"
 											: "Upgrade to add unlimited moves",
+										style: "secondary",
+									} as SidebarAction,
+									{
+										hidden: !settingsExpanded() || (!isDevelopment && (!isIos || !userState().user?.email)),
+										onPress: () => {
+											quick((s) => {
+												trackEvent("home.privacy_and_terms");
+												s.repertoireState.browsingState.pushView(
+													PrivacyPolicyAndTermsView,
+												);
+											});
+										},
+										text: "Privacy Policy / Terms of Use",
 										style: "secondary",
 									} as SidebarAction,
 									{
