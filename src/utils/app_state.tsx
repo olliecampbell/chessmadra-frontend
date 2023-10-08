@@ -29,18 +29,15 @@ export interface AppState {
 	repertoireState: RepertoireState;
 	debugState: DebugState;
 	navigationState: NavigationState;
-	experimentationState: ExperimentationState;
 	userState: UserState;
 	trainersState: TrainersState;
 	inAppPurchaseState: InAppPurchaseState;
 	trackEvent: (
 		name: string,
-		props?: Object,
+		props?: any,
 		options?: { posthogOnly?: boolean },
 	) => void;
 }
-
-export type ExperimentationState = {};
 
 let pendingState: AppState | null = null;
 const set = (fn: (state: AppState) => AppState) => {
@@ -98,11 +95,10 @@ const initialState = {
 	// gameMemorizationState: getInitialGameMemorizationState(set, get),
 	debugState: getInitialDebugState(set, get),
 	navigationState: getInitialNavigationState(set, get),
-	experimentationState: {},
 	userState: getInitialUserState(set, get),
 	trackEvent: (
 		name: string,
-		props?: Object,
+		props?: any,
 		options?: { posthogOnly?: boolean },
 	) => {
 		get((s: AppState) => {
@@ -243,7 +239,7 @@ export function equality(a: any, b: any, config: EqualityConfig): boolean {
 	const eq = customEqualityCheck(a, b, "", config);
 	const t2 = performance.now();
 	const duration = t2 - t;
-	if (duration > 0.5 && false) {
+	if (duration > 0.5) {
 		console.log(
 			"slow equality",
 			t2 - t,
