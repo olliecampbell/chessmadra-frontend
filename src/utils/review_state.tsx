@@ -228,7 +228,7 @@ export const getInitialReviewState = (
 		startReview: (options: ReviewOptions) =>
 			set(([s, rs, gs]) => {
 				s.reviewStats = cloneDeep(FRESH_REVIEW_STATS);
-				rs.browsingState.moveSidebarState("right");
+				animateSidebar("right");
 				rs.browsingState.sidebarState.mode = "review";
 				// @ts-ignore
 				rs.browsingState.sidebarState.activeSide = options.side;

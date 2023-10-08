@@ -37,6 +37,7 @@ import {
 	TrimRepertoireOnboarding,
 } from "./SidebarOnboarding";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { animateSidebar } from "./SidebarContainer";
 
 export const RepertoireOverview = (props: {}) => {
 	const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -101,7 +102,7 @@ export const RepertoireOverview = (props: {}) => {
 				onPress: () => {
 					quick((s) => {
 						if (empty() || isNil(biggestMiss())) {
-							s.repertoireState.browsingState.moveSidebarState("right");
+							animateSidebar("right");
 							startBrowsing("build", empty());
 							if (empty()) {
 								trackEvent("side_overview.start_building");

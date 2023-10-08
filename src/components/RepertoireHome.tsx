@@ -61,6 +61,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
 import { DeleteAccountView } from "./DeleteAccountView";
 import { PrivacyPolicyAndTermsView } from "./PrivacyPolicyAndTermsView";
+import { animateSidebar } from "./SidebarContainer";
 
 export const RepertoireHome = () => {
 	const userState = () => getAppState().userState;
@@ -162,12 +163,12 @@ export const RepertoireHome = () => {
 											quick((s) => {
 												trackEvent("home.select_side", { side });
 												if (numLines()[side] > 0) {
-													s.repertoireState.browsingState.moveSidebarState(
+													animateSidebar(
 														"right",
 													);
 													s.repertoireState.startBrowsing(side, "overview");
 												} else {
-													s.repertoireState.browsingState.moveSidebarState(
+													animateSidebar(
 														"right",
 													);
 													s.repertoireState.startBrowsing(side, "overview");
@@ -393,7 +394,7 @@ export const RepertoireHome = () => {
 										style: "secondary",
 									} as SidebarAction,
 									{
-										hidden: !settingsExpanded() || (!isDevelopment && (!isIos || !userState().user?.email)),
+										hidden: !settingsExpanded() || (!isDevelopment && !isIos),
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.privacy_and_terms");

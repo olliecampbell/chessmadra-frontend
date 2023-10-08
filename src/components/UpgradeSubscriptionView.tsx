@@ -11,6 +11,7 @@ import {
 } from "~/utils/in_app_purchases";
 import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
 import { trackEvent } from "~/utils/trackEvent";
+import { animateSidebar } from "./SidebarContainer";
 
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	const [loading, setLoading] = createSignal(false);
@@ -35,14 +36,14 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 					.catch(() => {
 						quick((s) => {
 							s.repertoireState.browsingState.popView();
-							s.repertoireState.browsingState.moveSidebarState("left");
+							animateSidebar("left");
 						});
 					})
 					.then((x) => {
 						quick((s) => {
 							s.userState.user!.subscribed = true;
 							s.repertoireState.browsingState.popView();
-							s.repertoireState.browsingState.moveSidebarState("left");
+							animateSidebar("left");
 						});
 					});
 			} else {

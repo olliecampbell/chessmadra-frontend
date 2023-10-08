@@ -17,6 +17,7 @@ import { Pressable } from "./Pressable";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 import { FirstLineSavedOnboarding, OnboardingIntro } from "./SidebarOnboarding";
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
+import { animateSidebar } from "./SidebarContainer";
 export const BackSection = () => {
 	const [
 		addedLineState,
@@ -161,7 +162,7 @@ export const BackSection = () => {
 					onPress={() => {
 						quick((s) => {
 							if (backButtonAction()) {
-								s.repertoireState.browsingState.moveSidebarState("left");
+								animateSidebar("left");
 								backButtonAction()?.();
 							}
 						});

@@ -135,11 +135,6 @@ export const RepertoireBuilder = () => {
 			}
 			backSection={<BackSection />}
 			belowChessboard={<ChessboardFooter />}
-			setAnimateSidebar={(fn) => {
-				quick((s) => {
-					s.repertoireState.animateSidebarState = fn;
-				});
-			}}
 		/>
 	);
 };

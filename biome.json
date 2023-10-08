@@ -9,6 +9,7 @@
 			"recommended": true,
 			"a11y": {
 				"useKeyWithMouseEvents": "off",
+				"useButtonType": "off",
 				"noSvgWithoutTitle": "off",
 				"useAltText": "off",
 				"useKeyWithClickEvents": "off",

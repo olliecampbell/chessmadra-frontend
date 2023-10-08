@@ -29,5 +29,9 @@ if (
 	baseFrontendUrl = "https://chessbook.com";
 }
 
+if (import.meta.env.VITE_API_ENV === "production") {
+	baseApiUrl = "https://chessbook.com";
+}
+
 export const BASE_API_URL = baseApiUrl;
 export const BASE_FRONTEND_URL = baseFrontendUrl;

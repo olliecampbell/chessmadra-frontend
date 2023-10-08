@@ -15,6 +15,7 @@ import { SidebarAction } from "./SidebarActions";
 import { ChooseToCreateAccountOnboarding } from "./SidebarOnboarding";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
+import { animateSidebar } from "./SidebarContainer";
 
 export const PracticeComplete = () => {
 	const [repertoire] = useRepertoireState((s) => [s.repertoire]);
@@ -106,7 +107,7 @@ export const PracticeComplete = () => {
 						);
 						s.repertoireState.updateRepertoireStructures();
 					} else {
-						s.repertoireState.browsingState.moveSidebarState("left");
+						animateSidebar("left");
 						s.repertoireState.backToOverview();
 					}
 				});

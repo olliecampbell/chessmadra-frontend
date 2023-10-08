@@ -41,6 +41,7 @@ import * as yup from "yup";
 import { RepertoireCompletion } from "./RepertoireCompletion";
 import { renderThreshold } from "~/utils/threshold";
 import { RatingSelection } from "./RatingSelection";
+import { animateSidebar } from "./SidebarContainer";
 
 export const OnboardingIntro = () => {
 	const bullets = [
@@ -312,7 +313,7 @@ export const OnboardingComplete = () => {
 						quick((s) => {
 							trackEvent("onboarding.complete.continue");
 							s.repertoireState.onboarding.isOnboarding = false;
-							s.repertoireState.browsingState.moveSidebarState("left");
+							animateSidebar("left");
 							s.repertoireState.backToOverview();
 						});
 					},
@@ -350,7 +351,7 @@ export const ImportSuccessOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.import_success.continue");
-							s.repertoireState.browsingState.moveSidebarState("right");
+							animateSidebar("right");
 							s.repertoireState.browsingState.goToBuildOnboarding();
 						});
 					},
@@ -496,7 +497,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
 					onPress: () => {
 						trackEvent("onboarding.ask_about_existing_repertoire.no_existing");
 						quick((s) => {
-							s.repertoireState.browsingState.moveSidebarState("right");
+							animateSidebar("right");
 							s.repertoireState.browsingState.goToBuildOnboarding();
 						});
 					},
@@ -551,7 +552,7 @@ export const ChooseImportSourceOnboarding = () => {
 					onPress: () => {
 						trackEvent("onboarding.choose_import_source.nevermind");
 						quick((s) => {
-							s.repertoireState.browsingState.moveSidebarState("right");
+							animateSidebar("right");
 							s.repertoireState.browsingState.goToBuildOnboarding();
 						});
 					},

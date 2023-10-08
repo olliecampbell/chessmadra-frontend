@@ -30,14 +30,13 @@ import { Intersperse } from "./Intersperse";
 import { MoveLog } from "./MoveLog";
 import { Pressable } from "./Pressable";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
-import { SidebarContainer } from "./SidebarContainer";
+import { SidebarContainer, animateSidebar } from "./SidebarContainer";
 
 export const VERTICAL_BREAKPOINT = BP.md;
 
 export const SidebarLayout = (props: {
 	shared?: boolean;
 	chessboardView?: JSX.Element;
-	setAnimateSidebar: (fn: (dir: "right" | "left") => void) => void;
 	breadcrumbs: JSXElement;
 	sidebarContent: JSXElement;
 	belowChessboard: JSXElement;
@@ -264,7 +263,6 @@ export const SidebarLayout = (props: {
 							>
 								<SidebarContainer
 									backSection={props.backSection}
-									setAnimateSidebar={props.setAnimateSidebar}
 									children={props.sidebarContent}
 									settings={props.settings}
 								/>
@@ -288,7 +286,6 @@ export const SidebarLayout = (props: {
 							>
 								<SidebarContainer
 									backSection={props.backSection}
-									setAnimateSidebar={props.setAnimateSidebar}
 									children={props.sidebarContent}
 									settings={props.settings}
 								/>
@@ -338,7 +335,7 @@ export const NavBreadcrumbs = () => {
 									mode,
 									breadcrumb: breadcrumb().text,
 								});
-								s.repertoireState.browsingState.moveSidebarState("left");
+								animateSidebar("left");
 								breadcrumb().onPress?.();
 							});
 						}}

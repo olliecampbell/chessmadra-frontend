@@ -65,6 +65,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { scoreTableResponses, shouldUsePeerRates } from "./table_scoring";
 import { isTheoryHeavy } from "./theory_heavy";
 import { identify } from "./user_properties";
+import { animateSidebar } from "~/components/SidebarContainer";
 
 export interface GetIncidenceOptions {
 	placeholder: void;
@@ -144,7 +145,6 @@ export interface BrowsingState {
 	requestToAddCurrentLine: () => void;
 	quick: (fn: (_: BrowsingState) => void) => void;
 	addPendingLine: (_?: { replace: boolean }) => Promise<void>;
-	moveSidebarState: (direction: "left" | "right") => void;
 	currentView: () => View;
 	clearViews: () => void;
 	pushView: (
@@ -603,7 +603,7 @@ export const getInitialBrowsingState = (
 		finishSidebarOnboarding: () =>
 			set(([s, rs]) => {
 				quick((s) => {
-					s.repertoireState.browsingState.moveSidebarState("right");
+					animateSidebar("right");
 					s.repertoireState.browsingState.sidebarState =
 						makeDefaultSidebarState();
 				});
@@ -842,7 +842,6 @@ export const getInitialBrowsingState = (
 					flatten(values(s.sidebarState.pendingResponses)),
 					(m) => m.mine,
 				);
-				console.log("hasPendingLineToAdd", s.sidebarState.hasPendingLineToAdd);
 				if (s.sidebarState.mode !== "review") {
 					s.fetchNeededPositionReports();
 					s.updateRepertoireProgress();
@@ -896,24 +895,18 @@ export const getInitialBrowsingState = (
 			}),
 		pushView: (view, { direction, props } = {}) =>
 			set(([s, gs]) => {
-				s.moveSidebarState(direction ?? "right");
-				console.log("doing this?");
+				animateSidebar(direction ?? "right");
 				s.sidebarState.viewStack.push({ component: view, props: props ?? {} });
 			}),
 		replaceView: (view, { direction, props } = {}) =>
 			set(([s, gs]) => {
-				s.moveSidebarState(direction ?? "right");
+				animateSidebar(direction ?? "right");
 				s.sidebarState.viewStack.pop();
 				s.sidebarState.viewStack.push({ component: view, props: props ?? {} });
 			}),
 		popView: () =>
 			set(([s, gs]) => {
 				s.sidebarState.viewStack.pop();
-				console.log("view stack", s.sidebarState.viewStack);
-			}),
-		moveSidebarState: (direction: "left" | "right") =>
-			set(([s, gs]) => {
-				gs.animateSidebarState?.(direction);
 			}),
 		addPendingLine: (cfg) =>
 			set(([s, rs]) => {
@@ -1002,7 +995,7 @@ export const getInitialBrowsingState = (
 			},
 			shouldMakeMove: (move: Move) =>
 				set(([s]) => {
-					s.moveSidebarState("right");
+					animateSidebar("right");
 					return true;
 				}),
 		};

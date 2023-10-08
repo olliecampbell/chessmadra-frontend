@@ -4,14 +4,20 @@ import { c, s } from "~/utils/styles";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 
+type AnimateSidebar = (dir: "left" | "right") => void;
+
+let _animateSidebar: AnimateSidebar | null = null;
+export const animateSidebar = (dir: "left" | "right") => {
+	_animateSidebar?.(dir);
+};
+
 export const SidebarContainer = (props: {
-	setAnimateSidebar: (fn: (dir: "left" | "right") => void) => void;
 	settings: JSX.Element;
 	children: JSX.Element;
 	backSection: JSX.Element;
 }) => {
 	onMount(() => {
-		props.setAnimateSidebar((dir: "left" | "right") => {
+		_animateSidebar = (dir: "left" | "right") => {
 			if (!previousRef() || !currentRef()) {
 				return;
 			}
@@ -37,7 +43,7 @@ export const SidebarContainer = (props: {
 				currentRef().style.transform = "translateX(0px)";
 				previousRef().replaceChildren();
 			}, ms);
-		});
+		};
 	});
 	// @ts-ignore
 	const [previousRef, setPreviousRef] = createSignal<HTMLElement>(null);

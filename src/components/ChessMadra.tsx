@@ -19,6 +19,7 @@ import { Pressable } from "./Pressable";
 import { SettingsButtons } from "./Settings";
 import { VisualizationTraining } from "./VisualizationTraining";
 import { DirectorySidebar } from "./chessmadra/DirectorySidebar";
+import { animateSidebar } from "./SidebarContainer";
 
 export const ChessMadra = (props: { initialTool: string }) => {
 	onMount(() => {
@@ -96,11 +97,6 @@ export const ChessMadra = (props: { initialTool: string }) => {
 			chessboardInterface={state().chessboard}
 			backSection={<BackSection />}
 			belowChessboard={belowChessboard}
-			setAnimateSidebar={(fn) => {
-				quick((s) => {
-					s.trainersState.animateSidebarState = fn;
-				});
-			}}
 		/>
 	);
 };
@@ -114,7 +110,7 @@ const BackSection = () => {
 		if (getAppState().trainersState.currentView()) {
 			backButtonAction = () => {
 				quick((s) => {
-					s.trainersState.animateSidebarState?.("left");
+					animateSidebar("left");
 					s.trainersState.popView();
 				});
 			};
@@ -147,7 +143,7 @@ const BackSection = () => {
 					onPress={() => {
 						quick((s) => {
 							if (backButtonAction()) {
-								s.repertoireState.browsingState.moveSidebarState("left");
+								animateSidebar("left");
 								backButtonAction()?.();
 							}
 						});

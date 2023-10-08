@@ -14,6 +14,7 @@ import { Label } from "./Label";
 import { ReviewText } from "./ReviewText";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { animateSidebar } from "./SidebarContainer";
 
 export const PreReview = (props: { side: Side | null }) => {
 	const [numMovesDueBySide] = useRepertoireState((s) => [
@@ -44,7 +45,7 @@ export const PreReview = (props: { side: Side | null }) => {
 					quick((s) => {
 						trackEvent("pre_review.resume");
 						s.repertoireState.browsingState.popView();
-						s.repertoireState.browsingState.moveSidebarState("right");
+						animateSidebar("right");
 						s.repertoireState.reviewState.resumeReview();
 					});
 				},
@@ -151,7 +152,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("pre_review.specific");
-						s.repertoireState.browsingState.moveSidebarState("right");
+						animateSidebar("right");
 						s.repertoireState.browsingState.popView();
 						s.repertoireState.startBrowsing(side as Side, "browse");
 					});

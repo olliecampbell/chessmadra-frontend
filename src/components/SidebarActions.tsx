@@ -26,6 +26,7 @@ import { trackEvent } from "~/utils/trackEvent";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { Intersperse } from "./Intersperse";
+import { animateSidebar } from "./SidebarContainer";
 
 export interface SidebarAction {
 	rightText?: string;
@@ -152,7 +153,7 @@ export const SidebarActionsLegacy = () => {
 				onPress: () => {
 					quick((s) => {
 						const bs = s.repertoireState.browsingState;
-						bs.moveSidebarState("right");
+						animateSidebar("right");
 						bs.sidebarState.showPlansState.visible = true;
 						bs.sidebarState.showPlansState.coverageReached = false;
 						bs.chessboard.set((s) => {
@@ -170,7 +171,7 @@ export const SidebarActionsLegacy = () => {
 					quick((s) => {
 						trackEvent(`${mode()}.resume_practice`);
 						s.repertoireState.browsingState.popView();
-						s.repertoireState.browsingState.moveSidebarState("right");
+						animateSidebar("right");
 						s.repertoireState.reviewState.resumeReview();
 					});
 				},
@@ -494,7 +495,7 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent(`${mode()}.added_line_state.next_gap`);
-						s.repertoireState.browsingState.moveSidebarState("right");
+						animateSidebar("right");
 						s.repertoireState.browsingState.dismissTransientSidebarState();
 						s.repertoireState.browsingState.chessboard.playLine(line, {
 							animated: true,

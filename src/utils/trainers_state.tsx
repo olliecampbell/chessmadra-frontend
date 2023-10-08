@@ -7,6 +7,7 @@ import { AppState } from "./app_state";
 import { createQuick } from "./quick";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { getInitialVisualizationState } from "./visualization_state";
+import { animateSidebar } from "~/components/SidebarContainer";
 
 type TrainerTool = "visualization";
 
@@ -22,7 +23,6 @@ export interface TrainersState {
 		opts?: { direction?: "left" | "right"; props?: object; replace?: boolean },
 	) => void;
 	popView: () => void;
-	animateSidebarState?: (dir: "left" | "right") => void;
 }
 
 export enum AuthStatus {
@@ -74,8 +74,7 @@ export const getInitialTrainersState = (
 			}),
 		pushView: (view, { direction, props, replace } = {}) =>
 			set(([s, gs]) => {
-				s.animateSidebarState?.(direction ?? "right");
-				console.log("doing this?");
+        animateSidebar("right")
 				if (replace) {
 					s.viewStack.pop();
 				}

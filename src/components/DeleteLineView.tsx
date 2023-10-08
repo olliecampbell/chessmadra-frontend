@@ -4,6 +4,7 @@ import { c, s } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { animateSidebar } from "./SidebarContainer";
 
 export const DeleteLineView = function DeleteLineView() {
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
@@ -31,7 +32,7 @@ export const DeleteLineView = function DeleteLineView() {
 						quick((s) => {
 							s.repertoireState.deleteMove(response).then(() => {
 								quick((s) => {
-									s.repertoireState.browsingState.moveSidebarState("left");
+									animateSidebar("left");
 									s.repertoireState.browsingState.sidebarState.deleteLineState.visible = false;
 								});
 							});
@@ -45,7 +46,7 @@ export const DeleteLineView = function DeleteLineView() {
 				{
 					onPress: () => {
 						quick((s) => {
-							s.repertoireState.browsingState.moveSidebarState("left");
+							animateSidebar("left");
 							s.repertoireState.browsingState.sidebarState.deleteLineState.visible = false;
 						});
 					},

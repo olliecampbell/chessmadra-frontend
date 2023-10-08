@@ -39,6 +39,7 @@ import { Intersperse } from "./Intersperse";
 import { SidebarHeader } from "./RepertoireEditingHeader";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { animateSidebar } from "./SidebarContainer";
 
 export const RepertoireReview = (props: {}) => {
 	const isMobile = useIsMobileV2();
@@ -101,7 +102,7 @@ export const RepertoireReview = (props: {}) => {
 		{
 			onPress: () => {
 				quick((s) => {
-					s.repertoireState.browsingState.moveSidebarState("right");
+					animateSidebar("right");
 					if (s.repertoireState.reviewState.showNext) {
 						s.repertoireState.reviewState.setupNextMove();
 					} else {
@@ -118,7 +119,7 @@ export const RepertoireReview = (props: {}) => {
 		{
 			onPress: () => {
 				quick((s) => {
-					s.repertoireState.browsingState.moveSidebarState("right");
+					animateSidebar("right");
 					s.repertoireState.reviewState.setupNextMove();
 				});
 			},

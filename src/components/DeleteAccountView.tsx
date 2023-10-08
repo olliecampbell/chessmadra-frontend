@@ -11,6 +11,7 @@ import {
 import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
 import { trackEvent } from "~/utils/trackEvent";
 import { Dialog } from "@capacitor/dialog";
+import { animateSidebar } from "./SidebarContainer";
 
 export const DeleteAccountView = (props: { pastLimit: boolean }) => {
 	const [loading, setLoading] = createSignal(false);
@@ -28,7 +29,7 @@ export const DeleteAccountView = (props: { pastLimit: boolean }) => {
 								}).then(() => {
 									quick((s) => {
 										s.repertoireState.browsingState.popView();
-										s.repertoireState.browsingState.moveSidebarState("left");
+										animateSidebar("left");
 									});
 								});
 							});

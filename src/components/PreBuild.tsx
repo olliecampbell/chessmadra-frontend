@@ -11,6 +11,7 @@ import { RepertoireCompletion } from "./RepertoireCompletion";
 import { SidebarAction } from "./SidebarActions";
 import { HowToComplete } from "./SidebarOnboarding";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { animateSidebar } from "./SidebarContainer";
 
 export const PreBuild = (props: { side: Side }) => {
 	const biggestMiss = createMemo(
@@ -42,7 +43,7 @@ export const PreBuild = (props: { side: Side }) => {
 				onPress: () => {
 					quick((s) => {
 						s.repertoireState.browsingState.popView();
-						s.repertoireState.browsingState.moveSidebarState("right");
+						animateSidebar("right");
 						const line = pgnToLine(biggestMiss()!.lines[0]);
 						s.repertoireState.startBrowsing(props.side, "build", {
 							pgnToPlay: lineToPgn(line),
@@ -58,7 +59,7 @@ export const PreBuild = (props: { side: Side }) => {
 			onPress: () => {
 				quick((s) => {
 					s.repertoireState.browsingState.popView();
-					s.repertoireState.browsingState.moveSidebarState("right");
+					animateSidebar("right");
 					s.repertoireState.startBrowsing(props.side, "build");
 				});
 			},

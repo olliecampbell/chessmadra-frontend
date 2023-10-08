@@ -7,6 +7,7 @@ import { trackEvent } from "~/utils/trackEvent";
 import { CMText } from "./CMText";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
+import { animateSidebar } from "./SidebarContainer";
 
 export const TargetCoverageReachedView = () => {
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -34,7 +35,7 @@ export const TargetCoverageReachedView = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent(`${mode()}.plans_view.keep_adding`);
-							s.repertoireState.browsingState.moveSidebarState("right");
+							animateSidebar("right");
 							s.repertoireState.browsingState.dismissTransientSidebarState();
 						});
 					},

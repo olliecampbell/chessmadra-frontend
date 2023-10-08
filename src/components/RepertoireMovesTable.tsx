@@ -51,6 +51,7 @@ import { Pressable } from "./Pressable";
 import { SidebarHeader } from "./RepertoireEditingHeader";
 import { initTooltip } from "./Tooltip";
 import { createPrevious } from "~/utils/signals/createPrevious";
+import { animateSidebar } from "./SidebarContainer";
 
 const DELETE_WIDTH = 30;
 
@@ -367,7 +368,7 @@ export const RepertoireMovesTable = (props: {
 						onPress={() => {
 							trackEvent(`${mode()}.moves_table.delete_move`);
 							quick((s) => {
-								s.repertoireState.browsingState.moveSidebarState("right");
+								animateSidebar("right");
 								s.repertoireState.browsingState.sidebarState.deleteLineState.visible = true;
 							});
 						}}
@@ -632,7 +633,7 @@ const Response = (props: {
 						onPress={() => {
 							quick((s) => {
 								trackEvent(`${mode()}.moves_table.select_move`);
-								s.repertoireState.browsingState.moveSidebarState("right");
+								animateSidebar("right");
 								// If has transposition tag, quick make transposition state visible on browser state
 
 								if (props.tableResponse.transposes) {
