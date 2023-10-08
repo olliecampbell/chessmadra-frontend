@@ -6,7 +6,7 @@ import {
 	getWinRateRange,
 	isNegligiblePlayrate,
 } from "./results_distribution";
-import { isNil, orderBy, reverse, sortBy, sumBy } from "lodash-es";
+import { isNil, sortBy, sumBy } from "lodash-es";
 import { ScoreTable, TableResponse } from "~/components/RepertoireMovesTable";
 import { MoveTag, PositionReport, StockfishReport } from "~/utils/models";
 
@@ -20,15 +20,6 @@ export enum TableResponseScoreSource {
 	Incidence = "incidence",
 	BestMove = "bestMove",
 }
-
-type TableResponseWeights = {
-	startScore: number;
-	eval: number;
-	winrate: number;
-	playrate: number;
-	masterPlayrate: number;
-	incidence: number;
-};
 
 export const scoreTableResponses = (
 	tableResponses: TableResponse[],
@@ -238,13 +229,6 @@ const scoreTableResponseEffectiveness = (
 	// @ts-ignore
 	tableResponse.score = sumBy(scoreTable.factors, (f) => {
 		return f.total;
-	});
-	console.log({
-		san: tableResponse.suggestedMove?.sanPlus,
-		score: tableResponse.score,
-		factors: scoreTable.factors,
-		tableResponse,
-		scoreTable,
 	});
 	return tableResponse.score;
 };

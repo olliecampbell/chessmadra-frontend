@@ -1,5 +1,5 @@
 import { createVisibilityObserver } from "@solid-primitives/intersection-observer";
-import { Show, createEffect, createSignal } from "solid-js";
+import { Show,  createSignal } from "solid-js";
 
 export const LazyLoad = (props: {
 	children: any;

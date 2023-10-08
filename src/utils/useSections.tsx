@@ -1,5 +1,3 @@
-/* eslint-disable solid/reactivity, solid/components-return-once */
-
 import { destructure } from "@solid-primitives/destructure";
 import { clamp, isNil } from "lodash-es";
 import { Accessor, JSXElement, Show } from "solid-js";
@@ -10,6 +8,7 @@ import { ReviewText } from "~/components/ReviewText";
 import { initTooltip } from "~/components/Tooltip";
 import {
 	useDebugState,
+	useMode,
 	useRepertoireState,
 	useSidebarState,
 	useUserState,
@@ -25,9 +24,8 @@ import {
 	isNegligiblePlayrate,
 } from "~/utils/results_distribution";
 import { formatStockfishEval } from "~/utils/stockfish";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { clsx } from "./classes";
-import { MoveRating } from "./move_inaccuracy";
 import { pluralize } from "./pluralize";
 
 interface SectionProps {
@@ -74,7 +72,7 @@ export const useSections = ({
 	const [debugUi] = useDebugState((s) => [s.debugUi]);
 	const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
 	let sections: Section[] = [];
-	const textStyles = s(
+	const textStyles = stylex(
 		c.fg(c.gray[80]),
 		c.weightSemiBold,
 		c.fontSize(12),
@@ -82,19 +80,9 @@ export const useSections = ({
 	);
 	const side: Accessor<Side> = () => activeSide() as Side;
 
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	if (mode() === "browse") {
-		sections = sections.concat(
-			getReviewModeSections({
-				myTurn,
-				textStyles,
-				usePeerRates,
-				isMobile,
-				debugUi: debugUi(),
-				threshold: threshold(),
-				activeSide: side(),
-			}),
-		);
+		sections = sections.concat(getReviewModeSections());
 	} else {
 		sections = sections.concat(
 			// @ts-ignore
@@ -128,8 +116,8 @@ const getBuildModeSections = ({
 	textStyles,
 }: GetSectionProps) => {
 	const sections = [];
-	const naStyles = s(textStyles, c.fg(c.gray[50]));
-	const na = () => <p style={s(naStyles)}>0%</p>;
+	const naStyles = stylex(textStyles, c.fg(c.gray[50]));
+	const na = () => <p style={stylex(naStyles)}>0%</p>;
 	if (!myTurn) {
 		sections.push({
 			width: 100,
@@ -159,7 +147,7 @@ const getBuildModeSections = ({
 					<>
 						{
 							<div
-								style={s(c.column)}
+								style={stylex(c.column)}
 								ref={(ref) => {
 									initTooltip({
 										ref,
@@ -184,9 +172,9 @@ const getBuildModeSections = ({
 								}}
 							>
 								<CMText
-									style={s(
+									style={stylex(
 										textStyles,
-										belowCoverageGoal && s(c.fg(c.gray[44])),
+										belowCoverageGoal && stylex(c.fg(c.gray[44])),
 									)}
 								>
 									{veryRare ? (
@@ -199,7 +187,7 @@ const getBuildModeSections = ({
 									)}
 								</CMText>
 								<Show when={debugUi}>
-									<CMText style={s(c.fg(c.colors.debugColorDark))}>
+									<CMText style={stylex(c.fg(c.colors.debugColorDark))}>
 										{(playRate! * 100).toFixed(2)}
 									</CMText>
 								</Show>
@@ -257,7 +245,7 @@ const getBuildModeSections = ({
 						}}
 					>
 						<Show when={!isNegligiblePlayrate(playRate)} fallback={na()}>
-							<p style={s(textStyles)}>{formatPlayPercentage(playRate)}</p>
+							<p style={stylex(textStyles)}>{formatPlayPercentage(playRate)}</p>
 						</Show>
 					</div>
 				);
@@ -275,8 +263,6 @@ const getBuildModeSections = ({
 					(!isNil(stockfishEval) && stockfishEval >= 0) ||
 					(!isNil(mate) && mate >= 0 && props.side === "white");
 				const backgroundSide = whiteWinning ? "white" : "black";
-				const moveRating: MoveRating = props.tableResponse.moveRating!;
-				const isBadMove = !isNil(moveRating);
 				const formattedEval = formatStockfishEval(
 					props.suggestedMove?.stockfish!,
 					props.side,
@@ -286,15 +272,10 @@ const getBuildModeSections = ({
 						<Show when={props.suggestedMove?.stockfish}>
 							<>
 								<div
-									style={s(
-										c.row,
-										c.bg(whiteWinning ? c.gray[90] : c.gray[4]),
-										c.px(4),
-										c.minWidth(30),
-										c.height(18),
-										c.center,
-										c.br(2),
+									class={clsx(
+										"row px-1 min-w-[30px] h-[18px]  items-center justify-center rounder-sm",
 									)}
+									style={stylex(c.bg(whiteWinning ? c.gray[90] : c.gray[4]))}
 									ref={(ref) => {
 										initTooltip({
 											ref,
@@ -334,7 +315,7 @@ const getBuildModeSections = ({
 									}}
 								>
 									<CMText
-										style={s(c.weightHeavy, c.fontSize(10))}
+										style={stylex(c.weightHeavy, c.fontSize(10))}
 										class={clsx(
 											backgroundSide === "white"
 												? "text-gray-10"
@@ -363,7 +344,7 @@ const getBuildModeSections = ({
 					<>
 						<Show when={props.suggestedMove}>
 							<div
-								style={s(c.fullWidth)}
+								style={stylex(c.fullWidth)}
 								ref={(ref) => {
 									initTooltip({
 										ref,
@@ -479,7 +460,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
 	const inProgressColor = () => (progress() < 20 ? c.red[65] : c.orange[65]);
 	return (
 		<div
-			style={s(c.column, c.fullWidth)}
+			style={stylex(c.column, c.fullWidth)}
 			class="py-1"
 			ref={(ref) => {
 				initTooltip({
@@ -498,16 +479,11 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
 			}}
 		>
 			<div
-				style={s(
-					c.fullWidth,
-					c.bg(backgroundColor),
-					c.round,
-					c.overflowHidden,
-					c.height(4),
-				)}
+				class="w-full rounded-full overflow-hidden h-1"
+				style={stylex(c.bg(backgroundColor))}
 			>
 				<div
-					style={s(
+					style={stylex(
 						c.width(completed() ? "100%" : `${progress()}%`),
 						c.bg(completed() ? completedColor : inProgressColor()),
 						c.fullHeight,
@@ -517,15 +493,7 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
 		</div>
 	);
 };
-const getReviewModeSections = ({
-	myTurn,
-	usePeerRates,
-	isMobile,
-	debugUi,
-	activeSide,
-	threshold,
-	textStyles,
-}: GetSectionProps) => {
+const getReviewModeSections = () => {
 	const sections: Section[] = [];
 
 	sections.push({

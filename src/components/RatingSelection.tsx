@@ -1,19 +1,14 @@
-import { createEffect } from "solid-js";
 import { quick, useUserState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
 import { Dropdown } from "./SidebarOnboarding";
 
-export const RatingSelection = (props: {}) => {
-	console.log("rendering rating selection");
+export const RatingSelection = () => {
 	const [user] = useUserState((s) => [s.user]);
-	createEffect(() => {
-		console.log("rating system ", user()?.ratingSystem);
-	});
 	return (
-		<div style={s(c.row, c.alignCenter)} class={"space-x-2"}>
+		<div style={stylex(c.row, c.alignCenter)} class={"space-x-2"}>
 			<Dropdown
 				title={"Rating range"}
 				onSelect={(range) => {
@@ -34,8 +29,8 @@ export const RatingSelection = (props: {}) => {
 				choice={user().ratingRange}
 				renderChoice={(choice, inList, onPress) => {
 					const textColor = c.gray[80];
-					const textStyles = s(c.fg(textColor), c.fontSize(14));
-					const containerStyles = s(
+					const textStyles = stylex(c.fg(textColor), c.fontSize(14));
+					const containerStyles = stylex(
 						c.py(12),
 						inList && c.px(16),
 						c.row,
@@ -48,7 +43,7 @@ export const RatingSelection = (props: {}) => {
 					);
 					const inner = (
 						<CMText
-							style={s(textStyles, !inList && s(c.fullWidth))}
+							style={stylex(textStyles, !inList && stylex(c.fullWidth))}
 							class={clsx("whitespace-nowrap break-keep")}
 						>
 							{choice}
@@ -56,7 +51,7 @@ export const RatingSelection = (props: {}) => {
 					);
 					return (
 						<Pressable
-							style={s(containerStyles)}
+							style={stylex(containerStyles)}
 							// @ts-ignore
 							onPress={(e) => {
 								onPress(e);
@@ -67,7 +62,7 @@ export const RatingSelection = (props: {}) => {
 					);
 				}}
 			/>
-			<div style={s(c.row)}>
+			<div style={stylex(c.row)}>
 				<Dropdown
 					title={"Platform"}
 					onSelect={(choice) => {
@@ -84,50 +79,26 @@ export const RatingSelection = (props: {}) => {
 					]}
 					choice={user()?.ratingSystem ?? RatingSource.Lichess}
 					renderChoice={(choice, inList, onPress) => {
-						const textColor = c.gray[80];
-						const textStyles = s(
-							c.fg(textColor),
-							c.fontSize(14),
-							c.weightSemiBold,
+						const textClasses = "text-gray-80 font-semibold font-sm";
+						const containerClasses = clsx(
+							"py-3 cursor-pointer row w-full self-start items-end w-fit-content min-w-[90px]",
+							inList ? "justify-start px-4" : "justify-end",
 						);
-						const containerStyles = s(
-							c.py(12),
-							inList && c.px(16),
-							c.row,
-							c.clickable,
-							!inList && c.justifyEnd,
-							c.fullWidth,
-							c.selfStart,
-							c.justifyStart,
-							c.alignEnd,
-							c.width("fit-content"),
-							c.minWidth(90),
+						const text =
+							choice === RatingSource.Lichess
+								? "Lichess"
+								: choice === RatingSource.USCF
+								? "USCF"
+								: choice === RatingSource.FIDE
+								? "FIDE"
+								: choice === RatingSource.ChessCom
+								? "Chess.com"
+								: "";
+						return (
+							<Pressable class={containerClasses} onPress={onPress}>
+								<CMText class={textClasses}>{text}</CMText>
+							</Pressable>
 						);
-						if (choice === RatingSource.Lichess) {
-							return (
-								<Pressable style={s(containerStyles)} onPress={onPress}>
-									<CMText style={s(textStyles)}>Lichess</CMText>
-								</Pressable>
-							);
-						} else if (choice === RatingSource.USCF) {
-							return (
-								<Pressable style={s(containerStyles)} onPress={onPress}>
-									<CMText style={s(textStyles)}>USCF</CMText>
-								</Pressable>
-							);
-						} else if (choice === RatingSource.FIDE) {
-							return (
-								<Pressable style={s(containerStyles)} onPress={onPress}>
-									<CMText style={s(textStyles)}>FIDE</CMText>
-								</Pressable>
-							);
-						} else if (choice === RatingSource.ChessCom) {
-							return (
-								<Pressable style={s(containerStyles)} onPress={onPress}>
-									<CMText style={s(textStyles)}>Chess.com</CMText>
-								</Pressable>
-							);
-						}
 					}}
 				/>
 			</div>

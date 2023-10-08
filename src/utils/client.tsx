@@ -1,8 +1,7 @@
 import axios from "axios";
 import applyCaseMiddleware from "axios-case-converter";
 import { camelCase } from "camel-case";
-import { getAppState, quick } from "./app_state";
-import { clearCookies } from "./auth";
+import { getAppState,  } from "./app_state";
 import { BASE_API_URL } from "./base_url";
 
 const EPD_REGEX = /.*\/.*\/.*\/.*\/.*\/.*\/.*\/.*/;
@@ -43,15 +42,16 @@ client.interceptors.request.use(function (config) {
 	const { token, tempUserUuid } = getAppState().userState;
 	const { spoofedEmail } = getAppState().adminState;
 	const spoofKey = import.meta.env.VITE_SPOOF_KEY;
+  // @ts-ignore
+  const headers = config.headers as any;
 	if (spoofedEmail.value) {
-		config.headers!["spoof-user-email"] = spoofedEmail.value;
-		config.headers!["spoof-key"] = spoofKey;
+		headers["spoof-user-email"] = spoofedEmail.value;
+		headers["spoof-key"] = spoofKey;
 	}
 	if (token.value) {
-		config.headers!.Authorization = token.value;
+		headers.Authorization = token.value;
 	} else if (tempUserUuid.value) {
-		// @ts-ignore
-		config.headers!["temp-user-uuid"] = tempUserUuid.value;
+		headers["temp-user-uuid"] = tempUserUuid.value;
 	}
 	return config;
 });

@@ -12,7 +12,7 @@ import { Spacer } from "./Space";
 
 import { isNil } from "lodash-es";
 import { clsx } from "~/utils/classes";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { FadeInOut } from "./FadeInOut";
 import { Pressable } from "./Pressable";
@@ -21,7 +21,7 @@ import { VisualizationTraining } from "./VisualizationTraining";
 import { DirectorySidebar } from "./chessmadra/DirectorySidebar";
 import { animateSidebar } from "./SidebarContainer";
 
-export const ChessMadra = (props: { initialTool: string }) => {
+export const ChessMadra = (props: { initialTool?: string }) => {
 	onMount(() => {
 		if (props.initialTool) {
 			quick((s) => {
@@ -119,13 +119,13 @@ const BackSection = () => {
 	createEffect(() => {
 		console.log("isOpen", isOpen());
 	});
-	const iconStyles = s(c.fontSize(responsive().switch(12, [BP.md, 14])));
+	const iconStyles = stylex(c.fontSize(responsive().switch(12, [BP.md, 14])));
 	const activeTool = () => getAppState().trainersState.getActiveTool();
 
 	return (
 		<FadeInOut
 			id="back-button"
-			style={s(
+			style={stylex(
 				c.column,
 				!vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12),
 			)}

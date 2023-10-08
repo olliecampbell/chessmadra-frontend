@@ -1,14 +1,12 @@
+// @ts-ignore
 import Base64 from "crypto-js/enc-base64";
+// @ts-ignore
 import sha256 from "crypto-js/sha256";
-/* eslint-disable */
 import { AuthResponse, User, UserFlag } from "~/utils/models";
-
-import { Browser } from "@capacitor/browser";
 
 import { setUserId } from "@amplitude/analytics-browser";
 import { uuid4 } from "@sentry/utils";
 import cryptoRandomString from "crypto-random-string";
-import Cookies from "js-cookie";
 import { noop } from "lodash-es";
 import posthog from "posthog-js";
 import client from "~/utils/client";
@@ -17,14 +15,12 @@ import { AppState } from "./app_state";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
 import { isDevelopment, isIos } from "./env";
 import {
-	FrontendSetting,
 	FrontendSettingOption,
 	FrontendSettings,
 	SETTINGS,
 } from "./frontend_settings";
 import { LICHESS_CLIENT_ID, LICHESS_REDIRECT_URI } from "./oauth";
 import { createQuick } from "./quick";
-// solid TODO
 import { DEFAULT_ELO_RANGE } from "./repertoire_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { BoardThemeId, PieceSetId } from "./theming";
@@ -32,7 +28,6 @@ import { renderThreshold } from "./threshold";
 import { identify } from "./user_properties";
 import { StorageItem } from "./storageItem";
 import { Preferences } from "@capacitor/preferences";
-import { Capacitor } from "@capacitor/core";
 import { AppLauncher } from "@capacitor/app-launcher";
 
 export interface UserState {
@@ -82,7 +77,7 @@ export interface UserState {
 		settingKey: keyof FrontendSettings,
 	) => FrontendSettingOption<unknown>;
 	logout: () => void;
-	deleteAccount: () => void;
+	deleteAccount: () => Promise<void>;
 }
 
 export enum AuthStatus {
@@ -100,9 +95,7 @@ const ADMIN_FLAGS: UserFlag[] = [];
 const GENERAL_FLAGS: UserFlag[] = [];
 
 export const getInitialUserState = (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	_set: StateSetter<AppState, any>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	_get: StateGetter<AppState, any>,
 ) => {
 	const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -136,7 +129,6 @@ export const getInitialUserState = (
 				return Promise.all([s.token.load(), s.tempUserUuid.load()]).then(
 					([cookieToken, tempUserUuid]) => {
 						set(([s]) => {
-							console.log("cookieToken", cookieToken, tempUserUuid);
 							if (!cookieToken) {
 								s.authStatus = AuthStatus.Unauthenticated;
 							}
@@ -274,10 +266,6 @@ export const getInitialUserState = (
 						set(([s, appState]) => {
 							s.setUser(data);
 						});
-					})
-					.finally(() => {
-						// set(([s, appState]) => {
-						// });
 					});
 			}),
 		updateUserRatingSettings: (params) =>
@@ -351,7 +339,6 @@ export const getInitialUserState = (
 			return client
 				.post("/api/set_lichess_token", { token, username })
 				.then(({ data }: { data: User }) => {
-					console.log("Set lichess token and username", username);
 					set(([s, appState]) => {
 						s.setUser(data);
 						appState.repertoireState.fetchLichessMistakes();
@@ -361,7 +348,6 @@ export const getInitialUserState = (
 		},
 		authWithLichess: () => {
 			set(([s]) => {
-				console.log("authing");
 				const codeVerifier = cryptoRandomString({ length: 64, type: "base64" });
 				const state = cryptoRandomString({ length: 64, type: "base64" });
 				Promise.all([
@@ -387,10 +373,6 @@ export const getInitialUserState = (
 					const url = `https://lichess.org/oauth?${params}`;
 					if (isIos) {
 						AppLauncher.openUrl({ url });
-						// Browser.open({ url });
-						// Browser.addListener("browserPageLoaded", (info: any) => {
-						// 	console.log("info");
-						// });
 					} else {
 						window.location.href = url;
 					}

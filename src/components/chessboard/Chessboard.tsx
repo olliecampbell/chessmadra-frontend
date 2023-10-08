@@ -19,11 +19,10 @@ import { getStatic } from "~/utils/assets";
 import {
 	ChessboardInterface,
 	ChessboardRefs,
-	ChessboardViewState,
 } from "~/utils/chessboard_interface";
 import { clsx } from "~/utils/classes";
 import { toSide } from "~/utils/repertoire";
-import { c, s as stylex } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import {
 	BOARD_THEMES_BY_ID,
 	BoardTheme,
@@ -105,54 +104,23 @@ interface XY {
 	x: number;
 	y: number;
 }
-let hasAnimateStarted = false;
 export function ChessboardView(props: {
 	chessboardInterface: ChessboardInterface;
 	shadow?: boolean;
 	class?: string;
 	disableDrag?: boolean;
-	// biome-ignore lint: ignore
 	onSquarePress?: any;
-	// biome-ignore lint: ignore
 	styles?: any;
 	ref?: (_: HTMLElement) => void;
 }) {
 	const chessboardStore = createMemo(() =>
 		props.chessboardInterface.get((s) => s),
 	);
-	const preview = true;
-	// testing preview move
 	const availableMoves = () => chessboardStore().availableMoves;
 
 	const pos = () =>
 		chessboardStore()._animatePosition ?? chessboardStore().position;
-	hasAnimateStarted = false;
 
-	// onMount(() => {
-	//   setTimeout(() => {
-	//     hasAnimateStarted = true;
-	//     props.state.playPgn("1.e4 e5 2.f4 exf4", {
-	//       animateLine: pgnToLine("1.e4 e5 2.f4 exf4"),
-	//       animated: true,
-	//       fromEpd: START_EPD,
-	//     });
-	//   }, 1000);
-	// });
-	// const interval = setInterval(() => {
-	//   if (preview) {
-	//     props.state.playPgn("1.e4 e5 2.f4 exf4", {
-	//       animateLine: pgnToLine("1.e4 e5 2.f4 exf4"),
-	//       animated: true,
-	//       fromEpd: START_EPD,
-	//     });
-	//   } else {
-	//     props.state.resetPosition();
-	//   }
-	//   preview = !preview;
-	// }, 6000);
-	// onCleanup(() => {
-	//   clearInterval(interval);
-	// });
 	const drag = () => chessboardStore().drag;
 	// const position = () => props.state._animatePosition ?? props.state.position;
 	const userState = getAppState().userState;
@@ -189,6 +157,7 @@ export function ChessboardView(props: {
 		];
 	};
 	const refs: ChessboardRefs = {
+		arrowsContainerRef: null,
 		ringRef: null,
 		visualizationDotRef: null,
 		feedbackRefs: {},
@@ -204,10 +173,6 @@ export function ChessboardView(props: {
 		});
 	};
 
-	const hiddenColorsBorder = `1px solid ${c.gray[70]}`;
-	// const pan: Accessor<{ square: Square | null } & XY> = createSignal({
-	//   square: null,
-	// });
 	const [tapAction, setTapAction] = createSignal(null as (() => void) | null);
 	let tapSelectedSquare = false;
 	const [chessboardContainerRef, setChessboardContainerRef] =
@@ -215,7 +180,6 @@ export function ChessboardView(props: {
 	const chessboardLayout = createElementBounds(chessboardContainerRef, {
 		trackMutation: false,
 	});
-	const [didImmediatelyTap, setDidImmediatelyTap] = createSignal(false);
 	const position = () =>
 		chessboardStore().futurePosition ?? chessboardStore().position;
 	const getTapOffset = (e: MouseEvent | TouchEvent, parent: NullableBounds) => {
@@ -238,14 +202,10 @@ export function ChessboardView(props: {
 		}
 	};
 	// only for debugging purposes
-	const _mode = () =>
-		getAppState().repertoireState.browsingState.sidebarState.mode;
-	console.log("rendering!", _mode());
 	const frozen = () => chessboardStore().frozen;
 	const onMouseDown = (evt: MouseEvent | TouchEvent) => {
 		if (frozen()) return;
 		if (!!("ontouchstart" in window) && evt.type === "mousedown") return;
-		console.log("mouse down", evt);
 
 		const tap = getTapOffset(evt, chessboardLayout);
 		const [square, centerX, centerY] = getSquareFromLayoutAndGesture(
@@ -257,31 +217,24 @@ export function ChessboardView(props: {
 			return;
 		}
 		const piece = position().get(square);
-		console.log("----", drag().square, square, piece);
 		const availableMove = find(
 			chessboardStore().availableMoves,
 			(m) => m.to === square,
 		);
 		if (availableMove) {
-			console.log("there was an available move", availableMove);
 			props.chessboardInterface.requestToMakeMove(availableMove as Move, {
 				animate: true,
 			});
 			setTapAction(() => () => {
-				console.log("doing nothing because made move on mouse down");
+				// doing nothing because made move on mouse down
 			});
 		} else if (chessboardStore().activeFromSquare === square || !piece) {
-			console.log(
-				"should clear if tap, active square is",
-				chessboardStore().activeFromSquare,
-			);
 			setTapAction(() => () => {
-				console.log("clear pending because this was the active from square");
 				props.chessboardInterface.clearPending();
 			});
 		} else {
 			setTapAction(() => () => {
-				console.log("this tap does nothing");
+				// this tap does nothing
 			});
 		}
 		window.setTimeout(() => {
@@ -293,7 +246,6 @@ export function ChessboardView(props: {
 		}
 		props.chessboardInterface.set((store) => {
 			const drag = store.drag;
-			console.log("evt", evt);
 			drag.touch = "TouchEvent" in window && evt instanceof TouchEvent;
 			drag.square = square;
 			drag.enoughToDrag = false;
@@ -315,10 +267,6 @@ export function ChessboardView(props: {
 			}
 		});
 	};
-	createEffect(() => {
-		// console.log("availableMoves", logProxy(availableMoves()));
-	});
-	// interaction/mouse stuff
 	const onMouseOut = (evt: MouseEvent | TouchEvent) => {
 		props.chessboardInterface.set((store) => {
 			// @ts-ignore
@@ -329,8 +277,6 @@ export function ChessboardView(props: {
 	const onMouseMove = (evt: MouseEvent | TouchEvent) => {
 		if (frozen()) return;
 		evt.preventDefault();
-		// console.log("mouse move", evt);
-		// if (evt.target != chessboardContainerRef()) return;
 
 		if (!drag().square) {
 			return;
@@ -379,16 +325,11 @@ export function ChessboardView(props: {
 		evt.preventDefault();
 		const [newSquare] = getSquareFromLayoutAndGesture(chessboardLayout, drag());
 		if (newSquare === drag().square && tapAction()) {
-			console.log("this mouse up triggered the tap action");
 			tapAction()?.();
 		} else {
 			const availableMove = find(
 				chessboardStore().availableMoves,
 				(m) => m.to === newSquare,
-			);
-			console.log(
-				"this mouse up triggered the request to make move",
-				availableMove,
 			);
 			if (availableMove) {
 				props.chessboardInterface.requestToMakeMove(availableMove as Move);
@@ -412,30 +353,16 @@ export function ChessboardView(props: {
 			<div
 				ref={props.ref}
 				class={clsx(
-					"relative h-0 w-full touch-none select-none pb-[100%]",
+					"relative h-0 w-full touch-none select-none pb-[100%] ",
 					props.class,
 				)}
-				style={stylex(
-					c.pb("100%"),
-					c.relative,
-					c.height(0),
-					c.width("100%"),
-					props.styles,
-					props.shadow && c.cardShadow,
-					{
-						"-webkit-touch-callout": "none",
-					},
-				)}
+				style={stylex(props.styles, props.shadow && c.cardShadow, {
+					"-webkit-touch-callout": "none",
+				})}
 			>
 				<div
-					style={stylex(
-						{
-							width: "100%",
-							height: "100%",
-							position: "absolute",
-						},
-						c.brt(2),
-					)}
+					class={clsx("square-full absolute")}
+					style={stylex(c.brt(2))}
 					ref={setChessboardContainerRef}
 					onMouseMove={onMouseMove}
 					onTouchMove={onMouseMove}
@@ -487,14 +414,8 @@ export function ChessboardView(props: {
 						</For>
 					</FadeInOut>
 					<div
-						style={stylex(
-							c.size("calc(1/8 * 100%)"),
-							c.noPointerEvents,
-							c.zIndex(5),
-							c.absolute,
-							c.center,
-							c.opacity(0),
-						)}
+						class={clsx("absolute opacity-0 pointer-events-none z-5")}
+						style={stylex(c.size("calc(1/8 * 100%)"), c.center)}
 						ref={(x) => {
 							updateRefs((refs) => {
 								refs.visualizationDotRef = x;
@@ -506,13 +427,9 @@ export function ChessboardView(props: {
 								chessboardStore().visualizedMove?.color === "w"
 									? "bg-gray-98"
 									: "bg-gray-4",
-								"opacity-70",
+								"opacity-70 square-[50%] rounded-full",
 							)}
-							style={stylex(
-								c.size("50%"),
-								c.round,
-								c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50)),
-							)}
+							style={stylex(c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50)))}
 						/>
 					</div>
 					<div
@@ -522,26 +439,16 @@ export function ChessboardView(props: {
 								refs.ringRef = x;
 							});
 						}}
-						class={clsx("opacity-0 shadow-white")}
+						class={clsx(
+							"opacity-0 shadow-white absolute square-full z-3 pointer-events-none",
+						)}
 						style={stylex(
-							c.absolute,
-							c.fullWidth,
 							c.shadow(0, 0, 0, 4, "var(--shadow-color)"),
-							c.fullHeight,
-							c.zIndex(3),
 							c.keyedProp("--shadow-color")(chessboardStore().ringColor),
-							c.noPointerEvents,
 						)}
 					/>
 					<For each={Object.keys(SQUARES) as Square[]}>
 						{(square: Square) => {
-							const debug = "e2";
-							// createEffect(() => {
-							//   if (square === debug) {
-							//     console.log("piece", piece(), pos().ascii());
-							//   }
-							// });
-
 							const dragging = createMemo(() => {
 								return drag().square === square;
 							});
@@ -643,26 +550,10 @@ export function ChessboardView(props: {
 							class={clsx("absolute left-0 top-0 z-0 h-full w-full")}
 						/>
 					</Show>
-					<div
-						style={stylex(
-							c.column,
-							c.fullWidth,
-							c.fullHeight,
-							c.noPointerEvents,
-						)}
-						class={clsx("")}
-					>
+					<div class={clsx("col square-full pointer-events-none")}>
 						<For each={range(8)}>
 							{(i) => (
-								<div
-									style={stylex(
-										c.fullWidth,
-										c.row,
-										c.grow,
-										c.flexible,
-										c.relative,
-									)}
-								>
+								<div class={clsx("w-full row grow min-w-0 basis-0 relative")}>
 									<For each={range(8)}>
 										{(j) => {
 											const debugSquare = "e4";
@@ -673,9 +564,6 @@ export function ChessboardView(props: {
 											const [color, inverseColor] = destructure(() =>
 												light ? colors() : [colors()[1], colors()[0]],
 											);
-											// if (state.hideColors) {
-											//   color = c.gray[30];
-											// }
 											const tileLetter = () =>
 												flipped() ? COLUMNS[7 - j] : COLUMNS[j];
 
@@ -842,17 +730,13 @@ export function ChessboardView(props: {
 														)}
 													>
 														<div
-															class={`h-1/3 w-1/3 rounded-full transition-opacity duration-300 ${
+															class={`absolute z-6 square-1/3  rounded-full transition-opacity duration-300 ${
 																highlightType() === "indicator"
 																	? "opacity-100"
 																	: "opacity-0"
 															}`}
 															id={`indicator-${square()}`}
-															style={stylex(
-																c.bg(theme().highlightNextMove),
-																c.absolute,
-																c.zIndex(6),
-															)}
+															style={stylex(c.bg(theme().highlightNextMove))}
 														/>
 													</div>
 													<div

@@ -5,7 +5,7 @@ import { getAppState, quick, useVisualizationState } from "~/utils/app_state";
 import { range } from "lodash-es";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getPlaybackSpeedDescription } from "~/utils/playback_speed";
-import { s } from "~/utils/styles";
+import { stylex } from "~/utils/styles";
 import {
 	SidebarAction,
 	SidebarFullWidthButton,
@@ -14,8 +14,6 @@ import {
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
-
-const eventsIdentifier = "visualization";
 
 export const VisualizationTraining = () => {
 	onMount(() => {
@@ -40,9 +38,6 @@ export const VisualizationSidebar = () => {
 		s.puzzleState.progressMessage,
 		s.isDone,
 	]);
-	createEffect(() => {
-		console.log("progress is ", progressMessage());
-	});
 	const actions = () => {
 		const actions: SidebarAction[] = [];
 		if (isDone()) {
@@ -82,7 +77,7 @@ export const VisualizationSidebar = () => {
 			</SidebarTemplate>
 			<Spacer height={44} />
 			<SidebarSectionHeader text="Settings" />
-			<div style={s()}>
+			<div style={stylex()}>
 				<For
 					each={[
 						{
@@ -124,7 +119,7 @@ export const VisualizationSidebar = () => {
 	);
 };
 
-const PlaypackSpeedSettings = (props: {}) => {
+const PlaypackSpeedSettings = () => {
 	const selected =
 		getAppState().trainersState.visualizationState.playbackSpeedUserSetting;
 	const onSelect = (t: PlaybackSpeed) => {
@@ -162,7 +157,7 @@ const PlaypackSpeedSettings = (props: {}) => {
 	);
 };
 
-const NumberHiddenMovesSettings = (props: {}) => {
+const NumberHiddenMovesSettings = () => {
 	const selected = () =>
 		getAppState().trainersState.visualizationState.plyUserSetting;
 	const onSelect = (t: number) => {
@@ -201,7 +196,7 @@ interface DifficultySetting {
 	text: string;
 }
 
-const PuzzleDifficultySettings = (props: {}) => {
+const PuzzleDifficultySettings = () => {
 	const selected = () =>
 		getAppState().trainersState.visualizationState.playbackSpeedUserSetting;
 	const onSelect = (t: DifficultySetting) => {

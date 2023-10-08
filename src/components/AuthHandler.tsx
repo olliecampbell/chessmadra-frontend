@@ -1,8 +1,6 @@
-import { Preferences } from "@capacitor/preferences";
-import { JSXElement, createEffect, onMount } from "solid-js";
+import { JSXElement, onMount } from "solid-js";
 import { getAppState } from "~/utils/app_state";
 import { fetchUser } from "~/utils/auth";
-import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/cookies";
 import { User } from "~/utils/models";
 import { AuthStatus } from "~/utils/user_state";
 

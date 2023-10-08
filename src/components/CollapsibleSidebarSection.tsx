@@ -1,11 +1,9 @@
 import { JSXElement, createSignal } from "solid-js";
 import { clsx } from "~/utils/classes";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
-// import { StockfishEvalCircle } from "./StockfishEvalCircle";
 
 export const CollapsibleSidebarSection = (props: {
 	children: JSXElement | JSXElement[];
@@ -14,9 +12,9 @@ export const CollapsibleSidebarSection = (props: {
 	const responsive = useResponsiveV2();
 	const [collapsed, setCollapsed] = createSignal(true);
 	return (
-		<div style={s()}>
+		<div style={stylex()}>
 			<Pressable
-				style={s(
+				style={stylex(
 					c.row,
 					c.justifyBetween,
 					c.py(8),
@@ -30,24 +28,24 @@ export const CollapsibleSidebarSection = (props: {
 				}}
 			>
 				<CMText
-					style={s(
+					style={stylex(
 						c.fontSize(responsive().switch(14, [BP.lg, 14])),
 						c.fg(c.colors.text.primary),
 					)}
 				>
 					{props.header}
 				</CMText>
-				<div style={s()}>
+				<div style={stylex()}>
 					<i
 						class={clsx(
 							"fa fa-chevron-right rotate-0 transition-transform",
 							!collapsed() && "rotate-90",
 						)}
-						style={s(c.fg(c.colors.text.primary), c.fontSize(14))}
+						style={stylex(c.fg(c.colors.text.primary), c.fontSize(14))}
 					/>
 				</div>
 			</Pressable>
-			<div style={s()}>{collapsed() ? null : props.children}</div>
+			<div style={stylex()}>{collapsed() ? null : props.children}</div>
 		</div>
 	);
 };

@@ -1,4 +1,3 @@
-// @ts-ignore
 import React from "react";
 // @ts-ignore
 import ReactDOM from "react-dom";
@@ -50,7 +49,7 @@ export default function LandingPageWrapper() {
 					quick((s) => {
 						trackEvent("landing_page_conversion", { source: "login" });
 						s.userState.pastLandingPage = true;
-						s.repertoireState.browsingState.pushView(LoginSidebar);
+						s.repertoireState.ui.pushView(LoginSidebar);
 					});
 				},
 				onClick: (source: string) => {
@@ -58,7 +57,7 @@ export default function LandingPageWrapper() {
 						trackEvent("landing_page_conversion", { source: source });
 						trackEvent("onboarding.started");
 						s.repertoireState.onboarding.isOnboarding = true;
-						s.repertoireState.browsingState.pushView(OnboardingIntro);
+						s.repertoireState.ui.pushView(OnboardingIntro);
 						s.userState.pastLandingPage = true;
 					});
 				},

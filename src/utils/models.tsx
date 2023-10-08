@@ -96,7 +96,6 @@ export interface PositionReport {
 	epd: string;
 	suggestedMoves: SuggestedMove[];
 	instructiveGames: InstructiveGame[];
-	pawnStructure: PawnStructure;
 	stockfish?: StockfishReport;
 	results: GameResultsDistribution;
 	masterResults: GameResultsDistribution;
@@ -112,11 +111,6 @@ export interface InstructiveGame {
 	numberMoves: number;
 	// added client-side
 	epds: string[];
-}
-
-export interface PawnStructure {
-	name: string;
-	reversed: boolean;
 }
 
 export interface StockfishReport {
@@ -148,15 +142,6 @@ export interface EcoCode {
 	epd: string;
 	fullName: string;
 	code: string;
-}
-
-export interface PawnStructureDetails {
-	id: string;
-	name: string;
-	moreInfoLink: string;
-	plans: string;
-	pawnEpds: string;
-	opponentPlans: string;
 }
 
 export interface MoveAnnotationReview {

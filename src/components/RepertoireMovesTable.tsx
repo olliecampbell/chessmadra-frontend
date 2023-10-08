@@ -15,6 +15,7 @@ import {
 import {
 	Accessor,
 	For,
+	JSXElement,
 	Show,
 	createEffect,
 	createMemo,
@@ -26,7 +27,7 @@ import { useHovering } from "~/mocks";
 import {
 	getAppState,
 	useBrowsingState,
-	useDebugState,
+	useMode,
 	useRepertoireState,
 	useSidebarState,
 } from "~/utils/app_state";
@@ -37,8 +38,7 @@ import { useIsMobileV2 } from "~/utils/isMobile";
 import { MoveTag, SuggestedMove } from "~/utils/models";
 import { MoveRating, getMoveRatingIcon } from "~/utils/move_inaccuracy";
 import { RepertoireMiss, RepertoireMove, Side } from "~/utils/repertoire";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { TableResponseScoreSource } from "~/utils/table_scoring";
 import { renderThreshold } from "~/utils/threshold";
 import { trackEvent } from "~/utils/trackEvent";
@@ -94,73 +94,64 @@ export const RepertoireMovesTable = (props: {
 }) => {
 	const responsive = useResponsiveV2();
 	const isMobile = useIsMobileV2();
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const [expandedLength, setExpandedLength] = createSignal(0);
 	const [editingAnnotations, setEditingAnnotations] = createSignal(false);
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	const { trimmedResponses, sections, anyMine, truncated, mine, myTurn } =
-		destructure(
-			createMemo(() => {
-				const anyMine = some(props.responses(), (m) => m.repertoireMove?.mine);
-				const mine = filter(props.responses(), (m) => m.repertoireMove?.mine);
-				const anyNeeded = some(
-					props.responses(),
-					(m) => m.suggestedMove?.needed,
+		destructure(() => {
+			const anyMine = some(props.responses(), (m) => m.repertoireMove?.mine);
+			const mine = filter(props.responses(), (m) => m.repertoireMove?.mine);
+			const anyNeeded = some(props.responses(), (m) => m.suggestedMove?.needed);
+			const myTurn = props.side === props.activeSide;
+			const sections = useSections({
+				myTurn,
+				usePeerRates: props.usePeerRates(),
+				isMobile: isMobile(),
+			});
+			const MIN_TRUNCATED = 1;
+			const MAX_ONBOARDING = 3;
+			const trimmedResponses = filter(props.responses(), (r, i) => {
+				if (mode() === "browse") {
+					return r.repertoireMove;
+				}
+				if (onboarding().isOnboarding && !myTurn && i >= MAX_ONBOARDING) {
+					return false;
+				}
+				if (i < expandedLength()) {
+					return true;
+				}
+				if (r.repertoireMove) {
+					return true;
+				}
+				if (anyNeeded && !r.suggestedMove?.needed) {
+					return false;
+				}
+				if (anyMine) {
+					return false;
+				}
+				if (r.suggestedMove?.needed && !myTurn) {
+					return true;
+				}
+				return (
+					i < MIN_TRUNCATED ||
+					r.repertoireMove ||
+					(myTurn && r.score && r.score > 0) ||
+					moveHasTag(r, MoveTag.RareDangerous) ||
+					(myTurn && moveHasTag(r, MoveTag.Transposes))
 				);
-				const myTurn = props.side === props.activeSide;
-				// todo: solid, prob need to use accessors here
-				const sections = useSections({
-					myTurn,
-					usePeerRates: props.usePeerRates(),
-					isMobile: isMobile(),
-				});
-				// todo: undo this
-				const MIN_TRUNCATED = 1;
-				const MAX_ONBOARDING = 3;
-				const trimmedResponses = filter(props.responses(), (r, i) => {
-					if (mode() === "browse") {
-						return r.repertoireMove;
-					}
-					if (onboarding().isOnboarding && !myTurn && i >= MAX_ONBOARDING) {
-						return false;
-					}
-					if (i < expandedLength()) {
-						return true;
-					}
-					if (r.repertoireMove) {
-						return true;
-					}
-					if (anyNeeded && !r.suggestedMove?.needed) {
-						return false;
-					}
-					if (anyMine) {
-						return false;
-					}
-					if (r.suggestedMove?.needed && !myTurn) {
-						return true;
-					}
-					return (
-						i < MIN_TRUNCATED ||
-						r.repertoireMove ||
-						// @ts-ignore
-						(myTurn && r.score > 0) ||
-						moveHasTag(r, MoveTag.RareDangerous) ||
-						(myTurn && moveHasTag(r, MoveTag.Transposes))
-					);
-				}) as TableResponse[];
-				const numTruncated = props.responses().length - trimmedResponses.length;
-				const truncated = numTruncated > 0;
-				// console.log("returning sections", sections);
-				return {
-					trimmedResponses,
-					sections,
-					mine,
-					myTurn,
-					anyMine,
-					truncated,
-				};
-			}),
-		);
+			}) as TableResponse[];
+			const numTruncated = props.responses().length - trimmedResponses.length;
+			const truncated = numTruncated > 0;
+			return {
+				trimmedResponses,
+				sections,
+				mine,
+				myTurn,
+				anyMine,
+				truncated,
+			};
+		});
 	const widths: Record<string, number | null> = {};
 	createEffect(() => {
 		console.log("trimmedResponses", trimmedResponses());
@@ -180,9 +171,7 @@ export const RepertoireMovesTable = (props: {
 		moveNumber() === 1 && props.side === "white" && myTurn() && !anyMine();
 	const [moveMaxWidth, setMoveMaxWidth] = createSignal(40);
 	const [currentEcoCode] = useSidebarState(([s, rs]) => [s.lastEcoCode]);
-	const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup], {
-		referenceEquality: true,
-	});
+	const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
 	// @ts-ignore
 	const onMoveRender = (sanPlus, e) => {
 		if (isNil(e)) {
@@ -242,7 +231,7 @@ export const RepertoireMovesTable = (props: {
 		),
 	);
 	return (
-		<div style={s(c.column)}>
+		<div style={stylex(c.column)}>
 			<Show when={props.header()}>
 				<>
 					<div class="padding-sidebar">
@@ -257,17 +246,17 @@ export const RepertoireMovesTable = (props: {
 					<Spacer height={24} />
 				</>
 			</Show>
-			<div style={s(c.height(16))}>
+			<div style={stylex(c.height(16))}>
 				<Show when={!editingAnnotations()}>
 					<TableHeader anyMine={anyMine()} sections={sections} />
 				</Show>
 			</div>
 			<Spacer height={responsive().switch(6, [BP.md, 12])} />
 			<div
-				style={s(
+				style={stylex(
 					c.column,
 					!editingAnnotations() &&
-						s(
+						stylex(
 							c.borderTop(`1px solid ${c.colors.sidebarBorder}`),
 							c.borderBottom(`1px solid ${c.colors.sidebarBorder}`),
 						),
@@ -277,7 +266,7 @@ export const RepertoireMovesTable = (props: {
 					each={trimmedResponses}
 					separator={(i) => (
 						<div
-							style={s(
+							style={stylex(
 								c.height(editingAnnotations() ? 12 : 1),
 								!editingAnnotations() && c.bg(c.gray[30]),
 							)}
@@ -311,7 +300,7 @@ export const RepertoireMovesTable = (props: {
 				</Intersperse>
 			</div>
 			<div
-				style={s(c.row, c.px(c.getSidebarPadding(responsive())))}
+				style={stylex(c.row, c.px(c.getSidebarPadding(responsive())))}
 				class={clsx("pt-4")}
 			>
 				<Show
@@ -330,7 +319,7 @@ export const RepertoireMovesTable = (props: {
 					>
 						<CMText
 							class="text-tertiary &hover:text-primary transition-colors"
-							style={s(c.fontSize(12), c.weightSemiBold)}
+							style={stylex(c.fontSize(12), c.weightSemiBold)}
 						>
 							{firstWhiteMove() ? "Something else..." : "Show more moves"}
 						</CMText>
@@ -351,7 +340,7 @@ export const RepertoireMovesTable = (props: {
 								}}
 							>
 								<CMText
-									style={s(c.fontSize(12), c.weightSemiBold)}
+									style={stylex(c.fontSize(12), c.weightSemiBold)}
 									class="text-tertiary &hover:text-primary transition-colors"
 								>
 									{editingAnnotations()
@@ -369,12 +358,12 @@ export const RepertoireMovesTable = (props: {
 							trackEvent(`${mode()}.moves_table.delete_move`);
 							quick((s) => {
 								animateSidebar("right");
-								s.repertoireState.browsingState.sidebarState.deleteLineState.visible = true;
+								s.repertoireState.browsingState.deleteLineState.visible = true;
 							});
 						}}
 					>
 						<CMText
-							style={s(c.fontSize(12), c.weightSemiBold)}
+							style={stylex(c.fontSize(12), c.weightSemiBold)}
 							class="text-tertiary &hover:text-primary transition-colors"
 						>
 							{`Remove ${mine().length > 1 ? "a" : "this"} move`}
@@ -399,14 +388,12 @@ const Response = (props: {
 	editing: boolean;
 	tableMeta: TableMeta;
 }) => {
-	const debugUi = useDebugState((s) => s.debugUi);
 	const [currentEpd, activeSide] = useSidebarState(([s]) => [
-		s.currentEpd,
+		s.chessboard.getCurrentEpd(),
 		s.activeSide,
 	]);
 	const [positionReport] = useBrowsingState(([s, rs]) => [
-		// @ts-ignore
-		rs.positionReports?.[activeSide()]?.[currentEpd()],
+		rs.positionReports?.[activeSide()!]?.[currentEpd()],
 	]);
 	const [moveWidthRef, setMoveWidthRef] = createSignal(
 		null as HTMLElement | null,
@@ -417,18 +404,18 @@ const Response = (props: {
 		}
 	});
 
-	const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => [
-		// @ts-ignore
-		rs.numMovesDueFromEpd[activeSide()][
-			props.tableResponse.repertoireMove?.epdAfter
+	const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(
+		([s, rs]) => [
+			rs.numMovesDueFromEpd[activeSide()!][
+				props.tableResponse.repertoireMove?.epdAfter
+			],
+			rs.earliestReviewDueFromEpd[activeSide()!][
+				props.tableResponse.repertoireMove?.epdAfter
+			],
 		],
-		// @ts-ignore
-		rs.earliestReviewDueFromEpd[activeSide()][
-			props.tableResponse.repertoireMove?.epdAfter
-		],
-	]);
+	);
 	const [currentLine, currentSide] = useSidebarState(([s, rs]) => [
-		s.moveLog,
+		s.chessboard.get((s) => s.moveLog),
 		s.currentSide,
 	]);
 	const isMobile = useIsMobileV2();
@@ -454,7 +441,7 @@ const Response = (props: {
 			getAppState().repertoireState.browsingState.chessboard?.previewMove(null);
 		},
 	);
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const annotation = createMemo(() => {
 		if (hideAnnotations()) {
 			return null;
@@ -462,13 +449,8 @@ const Response = (props: {
 		// @ts-ignore
 		return renderAnnotation(props.tableResponse.suggestedMove?.annotation);
 	});
-	// createEffect(() => {
-	//   if (annotation()) {
-	//   }
-	// });
 	const tags = () => {
 		const tags = [];
-		// newOpeningName = nextEcoCode?.fullName;
 		if (moveHasTag(props.tableResponse, MoveTag.BestMove)) {
 			tags.push(
 				<MoveTagView
@@ -480,7 +462,7 @@ const Response = (props: {
 					}
 					text="Clear best move"
 					icon="fa-duotone fa-trophy"
-					style={s(c.fg(c.yellow[60]), c.fontSize(14))}
+					style={stylex(c.fg(c.yellow[60]), c.fontSize(14))}
 				/>,
 			);
 		}
@@ -495,7 +477,7 @@ const Response = (props: {
 					}
 					text="Transposes to your repertoire"
 					icon="fa-solid fa-merge"
-					style={s(c.fg(c.colors.success), c.fontSize(14), c.rotate(-90))}
+					style={stylex(c.fg(c.colors.success), c.fontSize(14), c.rotate(-90))}
 				/>,
 			);
 		}
@@ -510,7 +492,7 @@ const Response = (props: {
 					}
 					text="Warning: heavy theory"
 					icon="fa-solid fa-triangle-exclamation"
-					style={s(c.fg(c.red[60]), c.fontSize(14))}
+					style={stylex(c.fg(c.red[60]), c.fontSize(14))}
 				/>,
 			);
 		}
@@ -527,7 +509,7 @@ const Response = (props: {
 					}
 					text="Rare but dangerous"
 					icon="fa fa-radiation"
-					style={s(c.fg(c.red[65]), c.fontSize(18))}
+					style={stylex(c.fg(c.red[65]), c.fontSize(18))}
 				/>,
 			);
 		}
@@ -542,7 +524,7 @@ const Response = (props: {
 					}
 					text="Common mistake"
 					icon="fa fa-person-falling"
-					style={s(c.fg(c.gray[80]), c.fontSize(14))}
+					style={stylex(c.fg(c.gray[80]), c.fontSize(14))}
 				/>,
 			);
 		}
@@ -555,7 +537,7 @@ const Response = (props: {
 	const tagsRow = () =>
 		!isEmpty(tags()) && (
 			<div
-				style={s(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}
+				style={stylex(c.grow, c.row, c.flexWrap, c.justifyStart, c.gap(4))}
 				class="gap-4"
 			>
 				<For each={tags()}>
@@ -568,20 +550,26 @@ const Response = (props: {
 	return (
 		<>
 			<Show when={props.editing}>
-				<div style={s(c.row, c.alignCenter)}>
+				<div style={stylex(c.row, c.alignCenter)}>
 					<Pressable
 						onPress={noop}
 						class={clsx("bg-gray-12 row h-[128px] grow rounded-sm")}
-						style={s(
+						style={stylex(
 							c.lightCardShadow,
 							c.mx(c.getSidebarPadding(responsive())),
 						)}
 					>
 						<div
-							style={s(c.width(120), c.selfStretch, c.row, c.px(12), c.py(12))}
+							style={stylex(
+								c.width(120),
+								c.selfStretch,
+								c.row,
+								c.px(12),
+								c.py(12),
+							)}
 						>
 							<CMText
-								style={s(
+								style={stylex(
 									c.fg(c.colors.text.secondary),
 									c.weightSemiBold,
 									c.fontSize(18),
@@ -593,7 +581,7 @@ const Response = (props: {
 							<Spacer width={2} />
 							<CMText
 								key={sanPlus}
-								style={s(
+								style={stylex(
 									c.fg(c.colors.text.secondary),
 									c.fontSize(18),
 									c.weightSemiBold,
@@ -623,7 +611,7 @@ const Response = (props: {
 			</Show>
 			<Show when={!props.editing}>
 				<div
-					style={s(c.row, c.alignStart)}
+					style={stylex(c.row, c.alignStart)}
 					{...responseHoverProps}
 					ref={(ref) => {
 						hoveringRef(ref);
@@ -634,15 +622,13 @@ const Response = (props: {
 							quick((s) => {
 								trackEvent(`${mode()}.moves_table.select_move`);
 								animateSidebar("right");
-								// If has transposition tag, quick make transposition state visible on browser state
-
 								if (props.tableResponse.transposes) {
 									s.repertoireState.browsingState.chessboard.makeMove(
 										// @ts-ignore
 										sanPlus(),
 										{ animate: true },
 									);
-									s.repertoireState.browsingState.sidebarState.transposedState.visible = true;
+									s.repertoireState.browsingState.transposedState.visible = true;
 									s.repertoireState.browsingState.chessboard.set((s) => {
 										s.showPlans = true;
 									});
@@ -658,14 +644,14 @@ const Response = (props: {
 						class={clsx(
 							"&hover:bg-gray-18 flexible row cursor-pointer rounded-sm py-3 transition-colors",
 						)}
-						style={s(c.px(c.getSidebarPadding(responsive())))}
+						style={stylex(c.px(c.getSidebarPadding(responsive())))}
 					>
-						<div style={s(c.column, c.grow, c.constrainWidth)}>
-							<div style={s(c.row, c.fullWidth, c.alignStart)}>
-								<div style={s(c.row, c.alignCenter)}>
-									<div style={s(c.minWidth(props.moveMinWidth))}>
+						<div style={stylex(c.column, c.grow, c.constrainWidth)}>
+							<div style={stylex(c.row, c.fullWidth, c.alignStart)}>
+								<div style={stylex(c.row, c.alignCenter)}>
+									<div style={stylex(c.minWidth(props.moveMinWidth))}>
 										<div
-											style={s(c.row, c.alignCenter)}
+											style={stylex(c.row, c.alignCenter)}
 											ref={(e) => {
 												setMoveWidthRef(e);
 											}}
@@ -699,7 +685,7 @@ const Response = (props: {
 
 								<div
 									class={clsx("pr-4")}
-									style={s(
+									style={stylex(
 										c.width(0),
 										c.grow,
 										c.column,
@@ -708,7 +694,7 @@ const Response = (props: {
 									)}
 								>
 									<CMText
-										style={s(
+										style={stylex(
 											c.fg(c.gray[80]),
 											c.fontSize(12),
 											c.lineHeight("1.3rem"),
@@ -736,12 +722,12 @@ const Response = (props: {
 									)}
 								</div>
 
-								<div style={s(c.row, c.alignCenter)} class="space-x-4">
+								<div style={stylex(c.row, c.alignCenter)} class="space-x-4">
 									<For each={props.sections}>
 										{(section) => {
 											return (
 												<div
-													style={s(
+													style={stylex(
 														c.width(section.width),
 														c.center,
 														section.alignLeft && c.justifyStart,
@@ -765,10 +751,10 @@ const Response = (props: {
 									</For>
 								</div>
 							</div>
-							<div style={s(c.column, c.maxWidth(400))}>
+							<div style={stylex(c.column, c.maxWidth(400))}>
 								<Show when={isMobile() && annotation()}>
-									<CMText style={s(c.grow, c.pt(8), c.minWidth(0))}>
-										<CMText style={s(c.fg(c.gray[70]), c.fontSize(12))}>
+									<CMText style={stylex(c.grow, c.pt(8), c.minWidth(0))}>
+										<CMText style={stylex(c.fg(c.gray[70]), c.fontSize(12))}>
 											{annotation()}
 										</CMText>
 									</CMText>
@@ -789,7 +775,7 @@ const TableHeader = (props: {
 	const responsive = useResponsiveV2();
 	return (
 		<div
-			style={s(
+			style={stylex(
 				c.row,
 				c.fullWidth,
 				c.pl(14),
@@ -797,12 +783,12 @@ const TableHeader = (props: {
 			)}
 		>
 			<Spacer width={12} grow />
-			<div style={s(c.row, c.alignCenter)} class="space-x-4">
+			<div style={stylex(c.row, c.alignCenter)} class="space-x-4">
 				<For each={props.sections()}>
 					{(section, i) => {
 						return (
 							<div
-								style={s(
+								style={stylex(
 									c.width(section.width),
 									section.alignRight
 										? c.justifyEnd
@@ -814,7 +800,7 @@ const TableHeader = (props: {
 								)}
 							>
 								<CMText
-									style={s(
+									style={stylex(
 										c.fg(c.colors.text.tertiary),
 										c.fontSize(12),
 										c.whitespace("nowrap"),
@@ -832,30 +818,6 @@ const TableHeader = (props: {
 	);
 };
 
-export const DebugScoreView = (props: { tableResponse: TableResponse }) => {
-	return (
-		<div style={s()}>
-			<div style={s(c.row, c.textAlign("end"), c.weightBold)}>
-				<CMText style={s(c.width(120))}>Source</CMText>
-				<Spacer width={12} />
-				<CMText style={s(c.width(60))}>Value</CMText>
-				<Spacer width={12} />
-				<CMText style={s(c.width(60))}>Weight</CMText>
-				<Spacer width={12} grow />
-				<CMText style={s(c.width(60))}>Total</CMText>
-			</div>
-			<Spacer height={12} />
-
-			<Spacer height={24} />
-			<div style={s(c.row)}>
-				<CMText style={s(c.weightBold)}>Total</CMText>
-				<Spacer width={12} grow />
-				<CMText style={s()}>{props.tableResponse.score?.toFixed(2)}</CMText>
-			</div>
-		</div>
-	);
-};
-
 function renderAnnotation(_annotation: string) {
 	const annotation = _annotation?.trim();
 	const stops = ["!", "?", "."];
@@ -869,18 +831,14 @@ function renderAnnotation(_annotation: string) {
 }
 
 const MoveTagView = (props: {
-	// @ts-ignore
-	icon;
-	// @ts-ignore
-	text;
-	// @ts-ignore
-	style;
-	// @ts-ignore
-	tip;
+	icon: string;
+	text: string;
+	style: any;
+	tip: JSXElement;
 }) => {
 	return (
 		<p
-			style={s(
+			style={stylex(
 				c.fg(c.gray[80]),
 				c.fontSize(10),
 				c.weightBold,
@@ -897,7 +855,7 @@ const MoveTagView = (props: {
 				});
 			}}
 		>
-			<i class={props.icon} style={s(props.style)} />
+			<i class={props.icon} style={stylex(props.style)} />
 			<Spacer width={8} />
 			{props.text}
 		</p>

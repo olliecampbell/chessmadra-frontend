@@ -5,7 +5,7 @@ import { Puff } from "solid-spinner";
 import * as yup from "yup";
 import { clsx } from "~/utils/classes";
 import client from "~/utils/client";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { TextInput } from "./TextInput";
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
 					<div class={clsx(isSubmitting() && "opacity-0")}>
 						<div class="col items-center">
 							<div class={"min-w-80 padding-sidebar w-full self-stretch"}>
-								<div style={s(c.br(4), c.px(0), c.py(0))}>
+								<div style={stylex(c.br(4), c.px(0), c.py(0))}>
 									<form ref={form} class={"col gap-8"}>
 										<TextInput
 											setFields={setFields}

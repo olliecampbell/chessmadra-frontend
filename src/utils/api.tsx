@@ -3,7 +3,7 @@ import client from "~/utils/client";
 import { BlunderPuzzle, LichessPuzzle } from "~/utils/models";
 import { isDevelopment } from "./env";
 
-interface PuzzleFetchOptions {
+export interface PuzzleFetchOptions {
 	ratingGte?: number;
 	ratingLte?: number;
 	maxPly?: number;

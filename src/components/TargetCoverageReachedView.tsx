@@ -1,8 +1,8 @@
 import { cloneDeep, isEmpty } from "lodash-es";
 import { Accessor, For, Show } from "solid-js";
 import { Spacer } from "~/components/Space";
-import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
-import { c, s } from "~/utils/styles";
+import { quick, useMode, useRepertoireState, useSidebarState } from "~/utils/app_state";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { CMText } from "./CMText";
 import { SidebarAction } from "./SidebarActions";
@@ -46,7 +46,7 @@ export const TargetCoverageReachedView = () => {
 		}
 		return acts;
 	};
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode()
 
 	return (
 		<SidebarTemplate
@@ -69,7 +69,7 @@ export const TargetCoverageReachedView = () => {
 			</Show>
 			<Show when={isEmpty(planSections()) && !onboarding().isOnboarding}>
 				<CMText
-					style={s(
+					style={stylex(
 						c.weightRegular,
 						c.fontSize(14),
 						c.fg(c.colors.text.primary),
@@ -91,7 +91,7 @@ export const PlayFromHere = (props: { isolated?: boolean }) => {
 		<>
 			<Show when={showPlansState().coverageReached || props.isolated}>
 				<CMText
-					style={s(c.weightBold, c.fontSize(14), c.fg(c.colors.text.primary))}
+					style={stylex(c.weightBold, c.fontSize(14), c.fg(c.colors.text.primary))}
 				>
 					How to play from here
 				</CMText>
@@ -101,10 +101,10 @@ export const PlayFromHere = (props: { isolated?: boolean }) => {
 				<For each={planSections()}>
 					{(section, i) => {
 						return (
-							<div style={s(c.row, c.alignStart)}>
+							<div style={stylex(c.row, c.alignStart)}>
 								<i
 									class="fa-solid fa-circle"
-									style={s(c.fontSize(6), c.fg(c.gray[70]), c.mt(6))}
+									style={stylex(c.fontSize(6), c.fg(c.gray[70]), c.mt(6))}
 								/>
 								<Spacer width={8} />
 								<p class={"text-primary"}>{section()}</p>

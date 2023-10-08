@@ -1,5 +1,3 @@
-// import { useEffect } from "react";
-
 import { onCleanup } from "solid-js";
 
 export function useOutsideClick(ref: any, clicked: any) {

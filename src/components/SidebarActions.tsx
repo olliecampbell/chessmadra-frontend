@@ -1,27 +1,17 @@
-import {
-	cloneDeep,
-	filter,
-	findLastIndex,
-	isEmpty,
-	isNil,
-	last,
-	map,
-} from "lodash-es";
+import { isEmpty, isNil } from "lodash-es";
 import { JSXElement, Match, Show, Switch, createMemo } from "solid-js";
 import { Spacer } from "~/components/Space";
 import { useHovering } from "~/mocks";
 import {
 	getAppState,
 	quick,
+	useMode,
 	useRepertoireState,
 	useSidebarState,
 } from "~/utils/app_state";
-import { lineToPositions } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
-import { getNameEcoCodeIdentifier } from "~/utils/eco_codes";
-import { lineToPgn, pgnToLine } from "~/utils/repertoire";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { pgnToLine } from "~/utils/repertoire";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
@@ -47,7 +37,6 @@ export const SidebarActionsLegacy = () => {
 		hasPendingLineToAdd,
 		isPastCoverageGoal,
 		addedLineState,
-		submitFeedbackState,
 		deleteLineState,
 		currentLine,
 		currentEpd,
@@ -60,15 +49,14 @@ export const SidebarActionsLegacy = () => {
 		s.hasPendingLineToAdd,
 		s.isPastCoverageGoal,
 		s.addedLineState,
-		s.submitFeedbackState,
 		s.deleteLineState,
-		s.moveLog,
-		s.currentEpd,
-		s.positionHistory,
+		s.chessboard.getMoveLog(),
+		s.chessboard.getCurrentEpd(),
+		s.chessboard.get((s) => s.positionHistory),
 		s.showPlansState,
 		s.transposedState,
-		rs.numMovesDueFromEpd?.[s.activeSide!]?.[s.currentEpd],
-		rs.browsingState.currentView(),
+		rs.numMovesDueFromEpd?.[s.activeSide!]?.[s.chessboard.getCurrentEpd()],
+		rs.ui.currentView(),
 	]);
 	const isQuizzing = () => {
 		return !isEmpty(getAppState().repertoireState.reviewState.activeQueue);
@@ -77,12 +65,11 @@ export const SidebarActionsLegacy = () => {
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	positionHistory = positionHistory ?? [];
 	const hasPlans = () => {
-		const sidebarState =
-			getAppState().repertoireState.browsingState.sidebarState;
+		const browsingState = getAppState().repertoireState.browsingState;
 		const repertoireState = getAppState().repertoireState;
 		return !isEmpty(
-			repertoireState.positionReports[sidebarState.currentSide][
-				sidebarState.currentEpd
+			repertoireState.positionReports[browsingState.currentSide][
+				browsingState.chessboard.getCurrentEpd()
 			]?.plans,
 		);
 	};
@@ -94,11 +81,7 @@ export const SidebarActionsLegacy = () => {
 		}
 	};
 	const buttonsSig = () => {
-		const mode = () =>
-			getAppState().repertoireState.browsingState.sidebarState.mode;
-		// if (mode() === "browse") {
-		// 	debugger;
-		// }
+		const mode = () => getAppState().repertoireState.ui.mode;
 		if (mode() === "review") {
 			return [];
 		}
@@ -115,10 +98,7 @@ export const SidebarActionsLegacy = () => {
 			showTogglePlansButton = false;
 		}
 
-		if (submitFeedbackState().visible) {
-			showTogglePlansButton = false;
-			// This is taken care of by the delete line view, maybe bad though
-		} else if (transposedState().visible) {
+		if (transposedState().visible) {
 			showTogglePlansButton = false;
 		} else if (showPlansState().visible) {
 			showTogglePlansButton = false;
@@ -154,8 +134,8 @@ export const SidebarActionsLegacy = () => {
 					quick((s) => {
 						const bs = s.repertoireState.browsingState;
 						animateSidebar("right");
-						bs.sidebarState.showPlansState.visible = true;
-						bs.sidebarState.showPlansState.coverageReached = false;
+						bs.showPlansState.visible = true;
+						bs.showPlansState.coverageReached = false;
 						bs.chessboard.set((s) => {
 							s.showPlans = true;
 						});
@@ -170,7 +150,7 @@ export const SidebarActionsLegacy = () => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent(`${mode()}.resume_practice`);
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						animateSidebar("right");
 						s.repertoireState.reviewState.resumeReview();
 					});
@@ -223,7 +203,7 @@ export const SidebarActionsLegacy = () => {
 		return buttons;
 	};
 	return (
-		<div style={s(c.column, c.fullWidth)}>
+		<div style={stylex(c.column, c.fullWidth)}>
 			<Intersperse
 				each={buttonsSig}
 				separator={() => {
@@ -243,13 +223,13 @@ export const SidebarFullWidthButton = (props: {
 	const { hovering, hoveringProps } = useHovering();
 	const styles = () => {
 		let subtextColor = null;
-		let textStyles = s();
+		let textStyles = stylex();
 		let py = 12;
 		if (props.action.style === "focus") {
 			subtextColor = c.gray[20];
 		}
 		if (props.action.style === "wide") {
-			textStyles = s(textStyles, c.fontSize(18), c.weightBold);
+			textStyles = stylex(textStyles, c.fontSize(18), c.weightBold);
 			// subtextColor = c.gray[20];
 			py = 20;
 		}
@@ -304,7 +284,7 @@ export const SidebarFullWidthButton = (props: {
 				(props.action.disabled || props.action.static) && " !cursor-default",
 				props.action.class,
 			)}
-			style={s(
+			style={stylex(
 				c.fullWidth,
 				c.row,
 				c.justifyBetween,
@@ -318,9 +298,9 @@ export const SidebarFullWidthButton = (props: {
 					c.borderTop(`1px solid ${c.colors.border}`),
 			)}
 		>
-			<div style={s(c.column, c.grow)}>
+			<div style={stylex(c.column, c.grow)}>
 				<CMText
-					style={s(
+					style={stylex(
 						props.action.style === "focus" ? c.weightBold : c.weightSemiBold,
 						c.fontSize(14),
 						styles().textStyles,
@@ -332,7 +312,7 @@ export const SidebarFullWidthButton = (props: {
 					<>
 						<Spacer height={4} />
 						<CMText
-							style={s(
+							style={stylex(
 								c.fg(styles().subtextColor),
 								props.action.style === "focus"
 									? c.weightBold
@@ -347,10 +327,10 @@ export const SidebarFullWidthButton = (props: {
 			</div>
 			<Spacer width={16} />
 			<Show when={props.action.right}>
-				<div style={s(c.row, c.center)}>
+				<div style={stylex(c.row, c.center)}>
 					{typeof props.action.right === "string" ? (
 						<CMText
-							style={s(
+							style={stylex(
 								props.action.style === "focus"
 									? c.fg(c.colors.text.inverseSecondary)
 									: c.fg(c.colors.text.secondary),
@@ -363,7 +343,7 @@ export const SidebarFullWidthButton = (props: {
 							{props.action.right}
 						</CMText>
 					) : (
-						<CMText style={s(c.fg(c.colors.text.tertiary), c.fontSize(14))}>
+						<CMText style={stylex(c.fg(c.colors.text.tertiary), c.fontSize(14))}>
 							{props.action.right}
 						</CMText>
 					)}
@@ -378,7 +358,7 @@ export const SidebarActions = (props: {
 	header?: JSXElement;
 }) => {
 	return (
-		<div style={s(c.column, c.fullWidth)}>
+		<div style={stylex(c.column, c.fullWidth)}>
 			{props.header}
 			<Intersperse
 				each={() => props.actions}
@@ -417,11 +397,11 @@ export const SeeMoreActions = (props: {
 	const responsive = useResponsiveV2();
 	return (
 		<div
-			style={s(c.row, c.px(c.getSidebarPadding(responsive())))}
+			style={stylex(c.row, c.px(c.getSidebarPadding(responsive())))}
 			class={clsx("pt-4")}
 		>
 			<div
-				style={s(c.pb(2))}
+				style={stylex(c.pb(2))}
 				class="cursor-pointer"
 				onClick={() => {
 					props.onClick();
@@ -442,7 +422,7 @@ export const SidebarSectionHeader = (props: {
 	const responsive = useResponsiveV2();
 	return (
 		<div
-			style={s(
+			style={stylex(
 				c.row,
 				c.justifyBetween,
 				c.alignCenter,
@@ -451,7 +431,7 @@ export const SidebarSectionHeader = (props: {
 				c.borderBottom(`1px solid ${c.colors.border}`),
 			)}
 		>
-			<CMText style={s(c.fontSize(14), c.fg(c.colors.text.tertiary))}>
+			<CMText style={stylex(c.fontSize(14), c.fg(c.colors.text.tertiary))}>
 				{props.text}
 			</CMText>
 			{props.right}
@@ -460,21 +440,15 @@ export const SidebarSectionHeader = (props: {
 };
 
 export const useBiggestGapAction = (): SidebarAction | undefined => {
-	let [
-		addedLineState,
-		currentEpd,
-		nearestMiss,
-		lineMiss,
-		positionHistory,
-		mode,
-	] = useSidebarState(([s, bs, rs]) => [
-		s.addedLineState,
-		s.currentEpd,
-		bs.getNearestMiss(s),
-		bs.getMissInThisLine(s),
-		s.positionHistory,
-		s.mode,
-	]);
+	let [addedLineState, currentEpd, nearestMiss, lineMiss, positionHistory] =
+		useSidebarState(([s, bs]) => [
+			s.addedLineState,
+			s.chessboard.getCurrentEpd(),
+			bs.getNearestMiss(),
+			bs.getMissInThisLine(),
+			s.chessboard.get((s) => s.positionHistory),
+		]);
+	const mode = useMode();
 	positionHistory = positionHistory ?? [];
 	const getBiggestGapAction = () => {
 		let miss = null;

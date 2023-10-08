@@ -1,5 +1,5 @@
 import { capitalize, isNil } from "lodash-es";
-import { Accessor, Show, createEffect, createSignal } from "solid-js";
+import { Accessor, Show, createSignal } from "solid-js";
 import { Spacer } from "~/components/Space";
 import {
 	getAppState,
@@ -14,17 +14,14 @@ import { isDevelopment } from "~/utils/env";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { InstructiveGame } from "~/utils/models";
 import { Side } from "~/utils/repertoire";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
-import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { CoverageBar } from "./CoverageBar";
 import { Label } from "./Label";
 import { PreBuild } from "./PreBuild";
 import { PreReview } from "./PreReview";
-import { Pressable } from "./Pressable";
 import { ReviewText } from "./ReviewText";
 import {
 	SeeMoreActions,
@@ -39,7 +36,7 @@ import {
 import { SidebarTemplate } from "./SidebarTemplate";
 import { animateSidebar } from "./SidebarContainer";
 
-export const RepertoireOverview = (props: {}) => {
+export const RepertoireOverview = () => {
 	const [side] = useSidebarState(([s]) => [s.activeSide]);
 	const textClasses = "text-primary font-semibold";
 	const appState = getAppState();
@@ -51,30 +48,21 @@ export const RepertoireOverview = (props: {}) => {
 		repertoireState.repertoireGrades[side()]?.biggestMiss;
 	const numMoves = () => repertoireState.getLineCount(side());
 	const numMovesDueFromHere = () =>
-		// @ts-ignore
-		repertoireState.numMovesDueFromEpd[side()][START_EPD];
+		repertoireState.numMovesDueFromEpd[side()!][START_EPD];
 	const earliestDueDate = () =>
-		// @ts-ignore
-		repertoireState.earliestReviewDueFromEpd[side()][START_EPD];
+		repertoireState.earliestReviewDueFromEpd[side()!][START_EPD];
 	const modelGames: Accessor<InstructiveGame[]> = () => {
 		return repertoireState.positionReports[side() as Side][START_EPD]
 			?.instructiveGames;
 	};
 
-	console.log("[HOME] rendering overview");
-	createEffect(() => {
-		console.log("[HOME] empty?", empty());
-	});
 	const empty = () => numMoves() === 0;
-	const responsive = useResponsiveV2();
 	const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
 		quick((s) => {
 			if (skipAnimation) {
-				// @ts-ignore
-				s.repertoireState.startBrowsing(side(), mode);
+				s.repertoireState.startBrowsing(side()!, mode);
 			} else {
-				// @ts-ignore
-				s.repertoireState.startBrowsing(side(), mode);
+				s.repertoireState.startBrowsing(side()!, mode);
 			}
 		});
 	};
@@ -93,8 +81,8 @@ export const RepertoireOverview = (props: {}) => {
 		[
 			{
 				right: !empty() && (
-					<div style={s(c.height(4), c.row)}>
-						<CoverageAndBar home={false} side={side()!} />
+					<div style={stylex(c.height(4), c.row)}>
+						<CoverageAndBar side={side()!} />
 					</div>
 				),
 
@@ -111,7 +99,7 @@ export const RepertoireOverview = (props: {}) => {
 							return;
 						}
 						trackEvent("side_overview.keep_building");
-						s.repertoireState.browsingState.pushView(PreBuild, {
+						s.repertoireState.ui.pushView(PreBuild, {
 							props: { side: side() },
 						});
 					});
@@ -132,13 +120,12 @@ export const RepertoireOverview = (props: {}) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("side_overview.start_review");
-						s.repertoireState.browsingState.pushView(PreReview, {
+						s.repertoireState.ui.pushView(PreReview, {
 							props: { side: side() },
 						});
 					});
 				},
 				right: reviewTimer,
-				// disabled: numMovesDueFromHere() === 0,
 				text: (
 					<CMText class={clsx(textClasses)}>Practice your repertoire</CMText>
 				),
@@ -149,12 +136,9 @@ export const RepertoireOverview = (props: {}) => {
 				onPress: () => {
 					trackEvent("side_overview.view_instructive_games");
 					quick((s) => {
-						s.repertoireState.browsingState.replaceView(
-							SidebarInstructiveGames,
-							{
-								props: { games: modelGames() },
-							},
-						);
+						s.repertoireState.ui.replaceView(SidebarInstructiveGames, {
+							props: { games: modelGames() },
+						});
 					});
 				},
 				text: (
@@ -173,7 +157,7 @@ export const RepertoireOverview = (props: {}) => {
 				onPress: () => {
 					trackEvent("side_overview.trim");
 					quick((s) => {
-						s.repertoireState.browsingState.pushView(TrimRepertoireOnboarding);
+						s.repertoireState.ui.pushView(TrimRepertoireOnboarding);
 					});
 				},
 				text: <CMText class={clsx(textClasses)}>Trim repertoire</CMText>,
@@ -186,9 +170,7 @@ export const RepertoireOverview = (props: {}) => {
 				onPress: () => {
 					trackEvent("side_overview.import");
 					quick((s) => {
-						s.repertoireState.browsingState.pushView(
-							ChooseImportSourceOnboarding,
-						);
+						s.repertoireState.ui.pushView(ChooseImportSourceOnboarding);
 					});
 				},
 				text: <CMText class={clsx(textClasses)}>Import</CMText>,
@@ -215,9 +197,7 @@ export const RepertoireOverview = (props: {}) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("side_overview.delete_repertoire");
-						s.repertoireState.browsingState.replaceView(
-							ConfirmDeleteRepertoire,
-						);
+						s.repertoireState.ui.replaceView(ConfirmDeleteRepertoire);
 					});
 				},
 				text: <CMText class={clsx(textClasses)}>Delete repertoire</CMText>,
@@ -229,21 +209,6 @@ export const RepertoireOverview = (props: {}) => {
 			return !o.hidden;
 		}) as SidebarAction[];
 	const [expanded, setExpanded] = createSignal(false);
-	// let reviewStatus = `You have ${pluralize(
-	//   numMovesDueFromHere,
-	//   "move"
-	// )} due for review`;
-	createEffect(() => {
-		console.log("options", options());
-	});
-	const repertoireStatus = () => {
-		if (empty()) {
-			return "Your repertoire is empty";
-		}
-		return `Your repertoire is ${Math.round(
-			progressState().percentComplete,
-		)}% complete`;
-	};
 	return (
 		<SidebarTemplate
 			header={`${capitalize(side())} Repertoire`}
@@ -271,7 +236,7 @@ export const CoverageAndBar = (props: {
 	]);
 
 	return (
-		<div style={s(c.row, c.alignCenter)}>
+		<div style={stylex(c.row, c.alignCenter)}>
 			<CMText class="text-secondary font-semibold text-xs">
 				{progressState().completed ? (
 					<>Completed</>
@@ -282,7 +247,7 @@ export const CoverageAndBar = (props: {
 			<Show when={!props.hideBar}>
 				<>
 					<Spacer width={8} />
-					<div style={s(c.height(4), c.width(80), c.row)}>
+					<div style={stylex(c.height(4), c.width(80), c.row)}>
 						<CoverageBar side={props.side} />
 					</div>
 				</>

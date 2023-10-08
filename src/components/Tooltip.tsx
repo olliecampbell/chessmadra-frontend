@@ -16,7 +16,6 @@ export const initTooltip = ({
 		animation: "shift-away",
 		touch: false,
 		theme: "tooltip",
-		// showOnCreate: isDevelopment && true,
 		maxWidth: maxWidth ? `${maxWidth}px` : undefined,
 	});
 	onCleanup(() => {

@@ -3,17 +3,15 @@ import { Match, Switch, createEffect, createSignal } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
 	getAppState,
-	quick,
+	useMode,
 	useRepertoireState,
 	useSidebarState,
 } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import dayjs from "~/utils/dayjs";
-import { c, s } from "~/utils/styles";
-import { useResponsiveV2 } from "~/utils/useResponsive";
+import { c, stylex } from "~/utils/styles";
 import { BackSection } from "./BackSection";
 import { DeleteLineView } from "./DeleteLineView";
-import { FeedbackView } from "./FeedbackView";
 import { Responses } from "./RepertoireEditingView";
 import { RepertoireHome } from "./RepertoireHome";
 import { RepertoireReview } from "./RepertoireReview";
@@ -21,12 +19,7 @@ import { RepertoireOverview } from "./RepertoirtOverview";
 import { SavedLineView } from "./SavedLineView";
 import { SettingsButtons } from "./Settings";
 import { SidebarActionsLegacy } from "./SidebarActions";
-import {
-	AnalyzeOnLichessButton,
-	NavBreadcrumbs,
-	SidebarLayout,
-	VERTICAL_BREAKPOINT,
-} from "./SidebarLayout";
+import { NavBreadcrumbs, SidebarLayout } from "./SidebarLayout";
 import { Spacer } from "./Space";
 import { TargetCoverageReachedView } from "./TargetCoverageReachedView";
 import { TransposedView } from "./TransposedView";
@@ -34,44 +27,30 @@ import { ChessboardView } from "./chessboard/Chessboard";
 import { ChessboardFooter } from "./ChessboardFooter";
 
 export const RepertoireBuilder = () => {
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 
-	const responsive = useResponsiveV2();
-	const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
 	const reviewChessboardInterface = () =>
 		getAppState().repertoireState.reviewState.chessboard;
 	const browsingChessboardInterface = () =>
 		getAppState().repertoireState.browsingState.chessboard;
-	const [view] = useSidebarState(([s]) => [s.viewStack.at(-1)]);
-	const [
-		addedLineState,
-		deleteLineState,
-		submitFeedbackState,
-		showPlansState,
-		transposedState,
-	] = useSidebarState(([s]) => [
-		s.addedLineState,
-		s.deleteLineState,
-		s.submitFeedbackState,
-		s.showPlansState,
-		s.transposedState,
-	]);
-	createEffect(() => {
-		console.log("View in sidebar", view());
-	});
+	const [view] = useRepertoireState((s) => [s.ui.currentView()]);
+	const [addedLineState, deleteLineState, showPlansState, transposedState] =
+		useSidebarState(([s]) => [
+			s.addedLineState,
+			s.deleteLineState,
+			s.showPlansState,
+			s.transposedState,
+		]);
 	const [repertoireLoading] = useRepertoireState((s) => [
 		s.repertoire === undefined,
 	]);
 
 	const sidebarContent = (
 		<>
-			<div id="sidebar-inner" style={s(c.relative, c.zIndex(100))}>
+			<div id="sidebar-inner" style={stylex(c.relative, c.zIndex(100))}>
 				<Switch fallback={<Responses />}>
 					<Match when={view()}>
 						<Dynamic component={view()?.component} {...view()?.props} />
-					</Match>
-					<Match when={submitFeedbackState().visible}>
-						<FeedbackView />
 					</Match>
 					<Match when={mode() === "home"}>
 						<RepertoireHome />

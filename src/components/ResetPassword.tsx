@@ -1,11 +1,10 @@
 import { Show, createSignal } from "solid-js";
 import { Puff } from "solid-spinner";
 import client from "~/utils/client";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { TextInput } from "./TextInput";
 type AuthType = "login" | "register";
-const AUTH_TYPES: AuthType[] = ["login", "register"];
 import { createForm } from "@felte/solid";
 import { validator } from "@felte/validator-yup";
 import { useSearchParams } from "@solidjs/router";
@@ -34,7 +33,7 @@ export default function ResetPassword() {
 				quick((s) => {
 					s.userState.handleAuthResponse(resp.data);
 					s.repertoireState.initState();
-					s.repertoireState.browsingState.clearViews();
+					s.repertoireState.ui.clearViews();
 					window.history.replaceState({}, "", "/");
 				});
 				// todo: actually log them in
@@ -90,7 +89,7 @@ export default function ResetPassword() {
 					<div class={clsx(isSubmitting() && "opacity-0")}>
 						<div class="col items-center">
 							<div class={"min-w-80 padding-sidebar w-full self-stretch"}>
-								<div style={s(c.br(4), c.px(0), c.py(0))}>
+								<div style={stylex(c.br(4), c.px(0), c.py(0))}>
 									<form ref={form} class={"col gap-8"}>
 										<TextInput
 											placeholder="New password"
@@ -99,6 +98,7 @@ export default function ResetPassword() {
 											autocomplete="new-password"
 											label="New password"
 											errors={errors()}
+											setFields={setFields}
 										/>
 										<InputError
 											name={"Server error"}

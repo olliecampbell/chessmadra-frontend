@@ -15,17 +15,17 @@ import {
 	last,
 	map,
 	maxBy,
+	merge,
 	noop,
 	some,
 	uniqBy,
 	values,
 	zip,
 } from "lodash-es";
-import { Component, JSXElement } from "solid-js";
+import { JSXElement } from "solid-js";
 import { TableResponse } from "~/components/RepertoireMovesTable";
 import { FirstLineSavedOnboarding } from "~/components/SidebarOnboarding";
 import { UpgradeSubscriptionView } from "~/components/UpgradeSubscriptionView";
-import { View } from "~/types/View";
 import {
 	EcoCode,
 	MoveTag,
@@ -64,13 +64,7 @@ import {
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { scoreTableResponses, shouldUsePeerRates } from "./table_scoring";
 import { isTheoryHeavy } from "./theory_heavy";
-import { identify } from "./user_properties";
 import { animateSidebar } from "~/components/SidebarContainer";
-
-export interface GetIncidenceOptions {
-	placeholder: void;
-	// onlyCovered?: boolean;
-}
 
 export enum SidebarOnboardingImportType {
 	LichessUsername = "lichess_username",
@@ -94,10 +88,34 @@ export const modeToUI = (mode: BrowsingMode) => {
 	}
 };
 
-export interface SidebarState {
-	viewStack: View[];
+export interface BrowsingState {
+	// Functions
+	fetchNeededPositionReports: () => void;
+	updateRepertoireProgress: () => void;
+	reviewFromCurrentLine: () => void;
+	finishSidebarOnboarding: () => void;
+	getIncidenceOfCurrentLine: () => number;
+	getLineIncidences: () => number[];
+	dismissTransientSidebarState: () => void;
+	getNearestMiss: () => RepertoireMiss;
+	getMissInThisLine: () => RepertoireMiss;
+	onPositionUpdate: () => void;
+	updateTableResponses: () => void;
+	requestToAddCurrentLine: () => void;
+	quick: (fn: (_: BrowsingState) => void) => void;
+	addPendingLine: (_?: { replace: boolean }) => Promise<void>;
+	updatePlans: () => void;
+	checkShowTargetDepthReached: () => void;
+	goToBuildOnboarding(): unknown;
+	reset: () => void;
+
+	// Fields
+	chessboard: ChessboardInterface;
+	chessboardShown: boolean;
+	repertoireProgressState: BySide<RepertoireProgressState>;
+
+	// from sidebar state
 	isPastCoverageGoal?: boolean;
-	mode: BrowsingMode;
 	tableResponses: TableResponse[];
 	hasAnyPendingResponses?: boolean;
 	transposedState: {
@@ -111,61 +129,16 @@ export interface SidebarState {
 	deleteLineState: {
 		visible: boolean;
 	};
-	submitFeedbackState: {
-		visible: boolean;
-	};
 	addedLineState: {
 		visible: boolean;
 		loading: boolean;
 	};
-	pendingResponses?: Record<string, RepertoireMove>;
+	activeSide?: Side;
 	currentSide: Side;
+	pendingResponses?: Record<string, RepertoireMove>;
 	hasPendingLineToAdd: boolean;
-	moveLog: string[];
-	positionHistory: string[] | null;
-	currentEpd: string;
 	lastEcoCode?: EcoCode;
 	planSections?: (() => JSXElement)[];
-	activeSide?: Side;
-}
-
-export interface BrowsingState {
-	// Functions
-	fetchNeededPositionReports: () => void;
-	updateRepertoireProgress: () => void;
-	reviewFromCurrentLine: () => void;
-	finishSidebarOnboarding: () => void;
-	getIncidenceOfCurrentLine: () => number;
-	getLineIncidences: (_: GetIncidenceOptions) => number[];
-	dismissTransientSidebarState: () => void;
-	getNearestMiss: () => RepertoireMiss;
-	getMissInThisLine: () => RepertoireMiss;
-	onPositionUpdate: () => void;
-	updateTableResponses: () => void;
-	requestToAddCurrentLine: () => void;
-	quick: (fn: (_: BrowsingState) => void) => void;
-	addPendingLine: (_?: { replace: boolean }) => Promise<void>;
-	currentView: () => View;
-	clearViews: () => void;
-	pushView: (
-		view: Component<any>,
-		opts?: { direction?: "left" | "right"; props?: any },
-	) => void;
-	replaceView: (
-		view: Component<any>,
-		opts?: { direction?: "left" | "right"; props?: any },
-	) => void;
-	popView: () => void;
-	updatePlans: () => void;
-	checkShowTargetDepthReached: () => void;
-	goToBuildOnboarding(): unknown;
-
-	// Fields
-	chessboard: ChessboardInterface;
-	sidebarState: SidebarState;
-	chessboardShown: boolean;
-	repertoireProgressState: BySide<RepertoireProgressState>;
-	showPlans: boolean;
 }
 
 interface RepertoireProgressState {
@@ -192,15 +165,12 @@ export interface BrowserSection {
 
 type Stack = [BrowsingState, RepertoireState, AppState];
 
-export const makeDefaultSidebarState = () => {
+export const uiStateReset = () => {
 	return {
-		viewStack: [],
-		moveLog: [],
 		positionHistory: null,
-		mode: "home",
 		currentEpd: START_EPD,
 		isPastCoverageGoal: false,
-		tableResponses: [],
+		tableResponses: [] as BrowsingState["tableResponses"],
 		hasAnyPendingResponses: false,
 		transposedState: {
 			visible: false,
@@ -213,9 +183,6 @@ export const makeDefaultSidebarState = () => {
 		deleteLineState: {
 			visible: false,
 		},
-		submitFeedbackState: {
-			visible: false,
-		},
 		addedLineState: {
 			visible: false,
 			loading: false,
@@ -223,13 +190,11 @@ export const makeDefaultSidebarState = () => {
 		pendingResponses: {},
 		currentSide: "white",
 		hasPendingLineToAdd: false,
-	} as SidebarState;
+	} as const;
 };
 
 export const getInitialBrowsingState = (
-	// biome-ignore lint: ignore
 	_set: StateSetter<AppState, any>,
-	// biome-ignore lint: ignore
 	_get: StateGetter<AppState, any>,
 ) => {
 	const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -247,23 +212,26 @@ export const getInitialBrowsingState = (
 	};
 	const initialState = {
 		...createQuick(setOnly),
+		...uiStateReset(),
 		// @ts-ignore
 		chessboard: undefined as ChessboardInterface,
 		activeSide: "white",
-		sidebarState: makeDefaultSidebarState(),
 		hasPendingLineToAdd: false,
-		// TODO: solid
 		chessboardShown: false,
 		plans: {},
-		showPlans: false,
 		repertoireProgressState: {
 			white: createEmptyRepertoireProgressState(),
 			black: createEmptyRepertoireProgressState(),
 		},
 
+		reset: () => {
+			set(([s]) => {
+				merge(s, uiStateReset());
+			});
+		},
 		goToBuildOnboarding: () =>
 			set(([s, rs]) => {
-				s.clearViews();
+				rs.ui.clearViews();
 				const side = rs.onboarding.side;
 				if (!side) {
 					return;
@@ -294,45 +262,42 @@ export const getInitialBrowsingState = (
 		checkShowTargetDepthReached: () => {
 			set(([s, rs, gs]) => {
 				if (
-					s.sidebarState.isPastCoverageGoal &&
-					s.sidebarState.activeSide !== s.sidebarState.currentSide &&
-					s.sidebarState.hasPendingLineToAdd &&
-					!s.sidebarState.showPlansState.hasShown &&
-					s.sidebarState.mode === "build"
+					s.isPastCoverageGoal &&
+					s.activeSide !== s.currentSide &&
+					s.hasPendingLineToAdd &&
+					!s.showPlansState.hasShown &&
+					rs.ui.mode === "build"
 				) {
-					trackEvent(`${s.sidebarState.mode}.coverage_reached`, {
+					trackEvent(`${rs.ui.mode}.coverage_reached`, {
 						hasPlans: !isNil(
-							rs.positionReports[s.sidebarState.activeSide!][
-								s.sidebarState.currentEpd
-							]?.plans,
+							rs.positionReports[s.activeSide!][s.chessboard.getCurrentEpd()]
+								?.plans,
 						),
 					});
-					s.sidebarState.showPlansState.visible = true;
-					s.sidebarState.showPlansState.hasShown = true;
-					s.sidebarState.showPlansState.coverageReached = true;
+					s.showPlansState.visible = true;
+					s.showPlansState.hasShown = true;
+					s.showPlansState.coverageReached = true;
 					s.chessboard.set((c) => {
 						c.showPlans = true;
 					});
 				}
-				if (!s.sidebarState.isPastCoverageGoal) {
-					s.sidebarState.showPlansState.hasShown = false;
+				if (!s.isPastCoverageGoal) {
+					s.showPlansState.hasShown = false;
 				}
 			});
 		},
 		updateTableResponses: () =>
 			set(([s, rs, gs]) => {
-				if (!s.sidebarState.activeSide || !rs.repertoire) {
-					s.sidebarState.tableResponses = [];
+				if (!s.activeSide || !rs.repertoire) {
+					s.tableResponses = [];
 					return;
 				}
 				const threshold = gs.userState.getCurrentThreshold();
-				const mode = s.sidebarState.mode;
+				const mode = rs.ui.mode;
 				const currentSide: Side = s.chessboard.getTurn();
 				const currentEpd = s.chessboard.getCurrentEpd();
 				const positionReport =
-					rs.positionReports[s.sidebarState.activeSide][
-						s.sidebarState.currentEpd
-					];
+					rs.positionReports[s.activeSide][s.chessboard.getCurrentEpd()];
 				const _tableResponses: Record<string, TableResponse> = {};
 				positionReport?.suggestedMoves
 					// @ts-ignore
@@ -341,11 +306,11 @@ export const getInitialBrowsingState = (
 						_tableResponses[sm.sanPlus] = {
 							suggestedMove: sm,
 							tags: [],
-							side: s.sidebarState.activeSide as Side,
+							side: s.activeSide as Side,
 						};
 					});
 				const existingMoves =
-					rs.repertoire[s.sidebarState.activeSide].positionResponses[
+					rs.repertoire[s.activeSide].positionResponses[
 						s.chessboard.getCurrentEpd()
 					];
 				existingMoves?.map((r) => {
@@ -355,11 +320,11 @@ export const getInitialBrowsingState = (
 						_tableResponses[r.sanPlus] = {
 							repertoireMove: r,
 							tags: [],
-							side: s.sidebarState.activeSide as Side,
+							side: s.activeSide as Side,
 						};
 					}
 				});
-				const ownSide = currentSide === s.sidebarState.activeSide;
+				const ownSide = currentSide === s.activeSide;
 				const usePeerRates = shouldUsePeerRates(positionReport);
 				let tableResponses = values(_tableResponses);
 				if (mode !== "build") {
@@ -367,7 +332,7 @@ export const getInitialBrowsingState = (
 				}
 				const biggestMisses =
 					// @ts-ignore
-					rs.repertoireGrades[s.sidebarState.activeSide].biggestMisses ?? {};
+					rs.repertoireGrades[s.activeSide].biggestMisses ?? {};
 				tableResponses.forEach((tr) => {
 					const epd = tr.suggestedMove?.epdAfter;
 					// @ts-ignore
@@ -380,15 +345,15 @@ export const getInitialBrowsingState = (
 					if (ownSide && tr.suggestedMove && positionReport) {
 						const positionWinRate = getWinRate(
 							positionReport?.results,
-							s.sidebarState.activeSide as Side,
+							s.activeSide as Side,
 						);
 						const [, , ci] = getWinRateRange(
 							tr.suggestedMove.results,
-							s.sidebarState.activeSide as Side,
+							s.activeSide as Side,
 						);
 						const moveWinRate = getWinRate(
 							tr.suggestedMove.results,
-							s.sidebarState.activeSide as Side,
+							s.activeSide as Side,
 						);
 						if (ci > 0.12 && Math.abs(positionWinRate - moveWinRate) > 0.02) {
 							tr.lowConfidence = true;
@@ -407,7 +372,7 @@ export const getInitialBrowsingState = (
 					}
 				});
 				tableResponses.forEach((tr) => {
-					if (s.sidebarState.mode === "browse" && tr.repertoireMove) {
+					if (rs.ui.mode === "browse" && tr.repertoireMove) {
 						const DEBUG = {
 							epd: "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -",
 						};
@@ -415,10 +380,10 @@ export const getInitialBrowsingState = (
 							tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
 						let dueBelow =
 							// @ts-ignore
-							rs.numMovesDueFromEpd[s.sidebarState.activeSide][epd];
+							rs.numMovesDueFromEpd[s.activeSide][epd];
 						let earliestBelow =
 							// @ts-ignore
-							rs.earliestReviewDueFromEpd[s.sidebarState.activeSide][epd];
+							rs.earliestReviewDueFromEpd[s.activeSide][epd];
 						const dueAt = tr.repertoireMove.srs?.dueAt;
 						if (epd === DEBUG.epd) {
 							console.log("epd", { epd, dueBelow, dueAt, earliestBelow });
@@ -443,7 +408,7 @@ export const getInitialBrowsingState = (
 				const bestStockfishReport = maxBy(
 					stockfishReports,
 					(stockfish: StockfishReport) => {
-						return getWinPercentage(stockfish, s.sidebarState.currentSide!);
+						return getWinPercentage(stockfish, s.currentSide!);
 					},
 				);
 				tableResponses.forEach((tr) => {
@@ -468,7 +433,7 @@ export const getInitialBrowsingState = (
 					if (
 						!tr.repertoireMove &&
 						// @ts-ignore
-						rs.epdNodes[s.sidebarState.activeSide][epdAfter]
+						rs.epdNodes[s.activeSide][epdAfter]
 					) {
 						tr.transposes = true;
 						tr.tags.push(MoveTag.Transposes);
@@ -511,24 +476,16 @@ export const getInitialBrowsingState = (
 						}
 					});
 				}
-				// if (!ownSide) {
-				//   tableResponses.forEach((tr) => {
-				//     let incidence = tr.incidenceUpperBound ?? tr.incidence;
-				//     let dangerous =
-				//       tr.suggestedMove?.dangerous?.[eloRange] ||
-				//       (tr.suggestedMove && isDangerous(tr.suggestedMove, s.sidebarState.activeSide));
-				//   });
-				// }
 				tableResponses = scoreTableResponses(
 					tableResponses,
 					positionReport,
 					bestStockfishReport,
 					currentSide,
-					s.sidebarState.mode,
+					rs.ui.mode,
 					ownSide,
 					!usePeerRates,
 				);
-				s.sidebarState.tableResponses = tableResponses;
+				s.tableResponses = tableResponses;
 				const noneNeeded = every(
 					tableResponses,
 					(tr) => !tr.suggestedMove?.needed,
@@ -538,40 +495,41 @@ export const getInitialBrowsingState = (
 					(!ownSide || (ownSide && isEmpty(tableResponses)))
 				) {
 					if (noneNeeded || isEmpty(tableResponses)) {
-						s.sidebarState.isPastCoverageGoal = true;
+						s.isPastCoverageGoal = true;
 					} else {
-						s.sidebarState.isPastCoverageGoal = false;
+						s.isPastCoverageGoal = false;
 					}
 				}
 			}),
 		getMissInThisLine: () =>
 			get(([s, rs, gs]) => {
-				if (!s.sidebarState.activeSide) {
+				if (!s.activeSide) {
 					return null;
 				}
 				const miss =
-					rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
-						s.sidebarState.currentEpd
+					rs.repertoireGrades[s.activeSide]?.biggestMisses?.[
+						s.chessboard.getCurrentEpd()
 					];
 				return miss;
 			}),
 		getNearestMiss: () =>
 			get(([s, rs, gs]) => {
-				if (!s.sidebarState.activeSide) {
+				if (!s.activeSide) {
 					return null;
 				}
 				const threshold = gs.userState.getCurrentThreshold();
 				return findLast(
-					map(s.sidebarState.positionHistory, (epd) => {
-						const miss =
-							// @ts-ignore
-							rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
-								epd
-							];
-						if (miss?.epd !== s.sidebarState.currentEpd) {
-							return miss;
-						}
-					}),
+					map(
+						s.chessboard.get((c) => c.positionHistory),
+						(epd) => {
+							const miss =
+								// @ts-ignore
+								rs.repertoireGrades[s.activeSide]?.biggestMisses?.[epd];
+							if (miss?.epd !== s.chessboard.getCurrentEpd()) {
+								return miss;
+							}
+						},
+					),
 				);
 			}),
 		dismissTransientSidebarState: () =>
@@ -579,22 +537,19 @@ export const getInitialBrowsingState = (
 				s.chessboard.set((c) => {
 					c.showPlans = false;
 				});
-				if (s.sidebarState.submitFeedbackState.visible) {
-					s.sidebarState.submitFeedbackState.visible = false;
+				if (s.addedLineState.visible) {
+					s.addedLineState.visible = false;
+					s.addedLineState.loading = false;
 				}
-				if (s.sidebarState.addedLineState.visible) {
-					s.sidebarState.addedLineState.visible = false;
-					s.sidebarState.addedLineState.loading = false;
+				if (s.deleteLineState.visible) {
+					s.deleteLineState.visible = false;
 				}
-				if (s.sidebarState.deleteLineState.visible) {
-					s.sidebarState.deleteLineState.visible = false;
+				if (s.transposedState.visible) {
+					s.transposedState.visible = false;
 				}
-				if (s.sidebarState.transposedState.visible) {
-					s.sidebarState.transposedState.visible = false;
-				}
-				if (s.sidebarState.showPlansState.visible) {
-					s.sidebarState.showPlansState.visible = false;
-					s.sidebarState.showPlansState.coverageReached = false;
+				if (s.showPlansState.visible) {
+					s.showPlansState.visible = false;
+					s.showPlansState.coverageReached = false;
 					s.chessboard.set((c) => {
 						c.showPlans = false;
 					});
@@ -602,25 +557,17 @@ export const getInitialBrowsingState = (
 			}),
 		finishSidebarOnboarding: () =>
 			set(([s, rs]) => {
-				quick((s) => {
-					animateSidebar("right");
-					s.repertoireState.browsingState.sidebarState =
-						makeDefaultSidebarState();
-				});
+				animateSidebar("right");
+				s.reset();
 			}),
 		reviewFromCurrentLine: () =>
 			set(([s, rs]) => {
 				// @ts-ignore
 				return rs.positionReports[s.chessboard.getCurrentEpd()];
 			}),
-		getCurrentPositionReport: (sidebarState: SidebarState) =>
-			get(([s, rs]) => {
-				// @ts-ignore
-				return rs.positionReports[sidebarState.currentEpd];
-			}),
 		fetchNeededPositionReports: () =>
 			set(([s, rs]) => {
-				const side = s.sidebarState.activeSide;
+				const side = s.activeSide;
 				let requests: {
 					epd: string;
 					previousEpds: string[];
@@ -661,7 +608,7 @@ export const getInitialBrowsingState = (
 					const currentEpd = s.chessboard.getCurrentEpd();
 					const currentReport =
 						// @ts-ignore
-						rs.positionReports[s.sidebarState.activeSide][currentEpd];
+						rs.positionReports[s.activeSide][currentEpd];
 					if (currentReport) {
 						// @ts-ignore
 						currentReport.suggestedMoves.forEach((sm) => {
@@ -715,9 +662,6 @@ export const getInitialBrowsingState = (
 							s.updatePlans();
 							s.fetchNeededPositionReports();
 						});
-					})
-					.finally(() => {
-						// set(([s]) => {});
 					});
 			}),
 		requestToAddCurrentLine: () =>
@@ -727,34 +671,33 @@ export const getInitialBrowsingState = (
 				if (
 					!subscribed &&
 					// @ts-ignore
-					rs.pastFreeTier(s.sidebarState.activeSide) &&
+					rs.pastFreeTier(s.activeSide) &&
 					PAYMENT_ENABLED &&
 					!rs.onboarding.isOnboarding
 				) {
-					s.replaceView(UpgradeSubscriptionView, {
+					rs.ui.replaceView(UpgradeSubscriptionView, {
 						props: { pastLimit: true },
 					});
 					return;
 				}
-				if (s.sidebarState.hasPendingLineToAdd) {
+				if (s.hasPendingLineToAdd) {
 					s.addPendingLine();
 				}
 			}),
 
 		updatePlans: () =>
 			set(([s, rs]) => {
-				if (!s.sidebarState.activeSide) {
+				if (!s.activeSide) {
 					return;
 				}
 				const plans =
-					rs.positionReports[s.sidebarState.activeSide][
-						s.sidebarState.currentEpd
-					]?.plans ?? [];
+					rs.positionReports[s.activeSide][s.chessboard.getCurrentEpd()]
+						?.plans ?? [];
 
 				const maxOccurence = plans[0]?.occurences ?? 0;
 				const consumer = parsePlans(
 					cloneDeep(plans),
-					s.sidebarState.activeSide,
+					s.activeSide,
 					s.chessboard.get((s) => s.position),
 				);
 				s.chessboard.set((c) => {
@@ -762,26 +705,21 @@ export const getInitialBrowsingState = (
 					c.plans = consumer.metaPlans.filter((p) =>
 						consumer.consumed.has(p.id),
 					);
-					s.sidebarState.planSections = consumer.planSections;
+					s.planSections = consumer.planSections;
 					c.maxPlanOccurence = maxOccurence;
 				});
 			}),
 		onPositionUpdate: () =>
 			set(([s, rs]) => {
-				s.sidebarState.moveLog = s.chessboard.get((s) => s.moveLog);
-				s.sidebarState.currentEpd = s.chessboard.getCurrentEpd();
-				s.sidebarState.currentSide = s.chessboard.getTurn();
-				s.sidebarState.positionHistory = s.chessboard.get(
-					(s) => s.positionHistory,
-				);
-				s.sidebarState.pendingResponses = {};
+				s.currentSide = s.chessboard.getTurn();
+				s.pendingResponses = {};
 
 				s.updatePlans();
 
 				// @ts-ignore
 				const incidences = s.getLineIncidences({});
 				if (rs.ecoCodeLookup) {
-					s.sidebarState.lastEcoCode = last(
+					s.lastEcoCode = last(
 						filter(
 							map(
 								s.chessboard.get((s) => s.positionHistory),
@@ -803,25 +741,20 @@ export const getInitialBrowsingState = (
 						if (!san) {
 							return;
 						}
-						const mine =
-							i % 2 === (s.sidebarState.activeSide === "white" ? 0 : 1);
+						const mine = i % 2 === (s.activeSide === "white" ? 0 : 1);
 						if (
 							!some(
-								// @ts-ignore
-								rs.repertoire?.[s.sidebarState.activeSide]?.positionResponses[
-									position!
-								],
+								rs.repertoire?.[s.activeSide!]?.positionResponses[position!],
 								(m) => {
 									return m.sanPlus === san;
 								},
 							)
 						) {
-							// @ts-ignore
-							s.sidebarState.pendingResponses[position] = {
+							s.pendingResponses![position!] = {
 								epd: position,
 								epdAfter: s.chessboard.get((s) => s.positionHistory)[i + 1],
 								sanPlus: san,
-								side: s.sidebarState.activeSide,
+								side: s.activeSide,
 								pending: true,
 								mine: mine,
 								incidence: incidence,
@@ -835,23 +768,23 @@ export const getInitialBrowsingState = (
 					},
 				);
 
-				s.sidebarState.hasAnyPendingResponses = !isEmpty(
-					flatten(values(s.sidebarState.pendingResponses)),
+				s.hasAnyPendingResponses = !isEmpty(
+					flatten(values(s.pendingResponses)),
 				);
-				s.sidebarState.hasPendingLineToAdd = some(
-					flatten(values(s.sidebarState.pendingResponses)),
+				s.hasPendingLineToAdd = some(
+					flatten(values(s.pendingResponses)),
 					(m) => m.mine,
 				);
-				if (s.sidebarState.mode !== "review") {
+				if (rs.ui.mode !== "review") {
 					s.fetchNeededPositionReports();
 					s.updateRepertoireProgress();
 					s.updateTableResponses();
 				}
 			}),
 		// @ts-ignore
-		getLineIncidences: (options: GetIncidenceOptions = {}) =>
+		getLineIncidences: () =>
 			get(([s, rs]) => {
-				if (!s.sidebarState.activeSide) {
+				if (!s.activeSide) {
 					return [];
 				}
 
@@ -864,7 +797,7 @@ export const getInitialBrowsingState = (
 					([position, san], i) => {
 						const positionReport =
 							// @ts-ignore
-							rs.positionReports[s.sidebarState.activeSide][position];
+							rs.positionReports[s.activeSide][position];
 						if (positionReport) {
 							const suggestedMove = find(
 								positionReport.suggestedMoves,
@@ -881,54 +814,31 @@ export const getInitialBrowsingState = (
 				);
 			}),
 		// @ts-ignore
-		getIncidenceOfCurrentLine: (options: GetIncidenceOptions = {}) =>
+		getIncidenceOfCurrentLine: () =>
 			get(([s, rs]) => {
-				return last(s.getLineIncidences(options));
-			}),
-		clearViews: () =>
-			set(([s, gs]) => {
-				s.sidebarState.viewStack = [];
-			}),
-		currentView: () =>
-			get(([s, gs]) => {
-				return last(s.sidebarState.viewStack);
-			}),
-		pushView: (view, { direction, props } = {}) =>
-			set(([s, gs]) => {
-				animateSidebar(direction ?? "right");
-				s.sidebarState.viewStack.push({ component: view, props: props ?? {} });
-			}),
-		replaceView: (view, { direction, props } = {}) =>
-			set(([s, gs]) => {
-				animateSidebar(direction ?? "right");
-				s.sidebarState.viewStack.pop();
-				s.sidebarState.viewStack.push({ component: view, props: props ?? {} });
-			}),
-		popView: () =>
-			set(([s, gs]) => {
-				s.sidebarState.viewStack.pop();
+				return last(s.getLineIncidences());
 			}),
 		addPendingLine: (cfg) =>
 			set(([s, rs]) => {
 				const { replace } = cfg ?? { replace: false };
-				s.sidebarState.showPlansState.hasShown = false;
+				s.showPlansState.hasShown = false;
 				s.dismissTransientSidebarState();
-				s.sidebarState.addedLineState = {
+				s.addedLineState = {
 					visible: true,
 					loading: true,
 				};
 				return client
 					.post("/api/v1/openings/add_moves", {
-						moves: flatten(cloneDeep(values(s.sidebarState.pendingResponses))),
-						side: s.sidebarState.activeSide,
+						moves: flatten(cloneDeep(values(s.pendingResponses))),
+						side: s.activeSide,
 						replace: replace,
 					})
 					.then(({ data }: { data: FetchRepertoireResponse }) => {
 						set(([s, rs]) => {
 							if (rs.onboarding.isOnboarding) {
-								rs.browsingState.pushView(FirstLineSavedOnboarding);
+								rs.ui.pushView(FirstLineSavedOnboarding);
 							} else {
-								s.sidebarState.addedLineState = {
+								s.addedLineState = {
 									visible: true,
 									loading: false,
 								};
@@ -945,7 +855,7 @@ export const getInitialBrowsingState = (
 					})
 					.finally(() => {
 						set(([s]) => {
-							s.sidebarState.addedLineState.loading = false;
+							s.addedLineState.loading = false;
 						});
 					});
 			}),
@@ -962,32 +872,32 @@ export const getInitialBrowsingState = (
 			},
 
 			madeManualMove: () => {
-				get(([s]) => {
-					trackEvent(`${s.sidebarState.mode}.chessboard.played_move`);
+				get(([s, rs]) => {
+					trackEvent(`${rs.ui.mode}.chessboard.played_move`);
 				});
 			},
 			onBack: () => {
 				set(([s]) => {
 					s.dismissTransientSidebarState();
-					s.sidebarState.addedLineState.visible = false;
+					s.addedLineState.visible = false;
 				});
 			},
 			onReset: () => {
 				set(([s]) => {
 					s.dismissTransientSidebarState();
-					s.sidebarState.showPlansState.hasShown = false;
+					s.showPlansState.hasShown = false;
 				});
 			},
 			onMovePlayed: () => {
 				set(([s, rs]) => {
-					if (includes(["home", "overview"], s.sidebarState.mode)) {
-						s.clearViews();
-						rs.startBrowsing(s.sidebarState.activeSide ?? "white", "build", {
+					if (includes(["home", "overview"], rs.ui.mode)) {
+						rs.ui.clearViews();
+						rs.startBrowsing(s.activeSide ?? "white", "build", {
 							keepPosition: true,
 						});
 					}
-					if (s.sidebarState.transposedState.visible) {
-						s.sidebarState.transposedState.visible = false;
+					if (s.transposedState.visible) {
+						s.transposedState.visible = false;
 					}
 
 					s.checkShowTargetDepthReached();
@@ -1051,10 +961,4 @@ export const getCoverageProgress = (
 	return (
 		(1 / (1 + Math.E ** (-4 * (numMoves / expectedNumMoves))) - 0.5) * 2 * 100
 	);
-	// let k = 0 - (1 / expectedNumMoves) * 3;
-	// let y = (1 / (1 + Math.exp(k * numMoves)) - 0.5) * 2;
-	// return y * 100;
-	// return (
-	//   (Math.atan((x / expectedNumMoves) * magic) / (Math.PI / 2)) * 100
-	// );
 };

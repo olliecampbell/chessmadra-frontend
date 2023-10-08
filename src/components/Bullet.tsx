@@ -1,7 +1,8 @@
+import { JSXElement } from "solid-js";
 import { CMText } from "./CMText";
 import { Spacer } from "./Space";
 
-export const Bullet = (props: { children: any }) => {
+export const Bullet = (props: { children: JSXElement }) => {
 	return (
 		<div class={"row items-start pl-2"}>
 			<i class="fas fa-circle text-secondary mt-1.5 text-[5px]" />

@@ -1,8 +1,8 @@
 import { isEmpty } from "lodash-es";
 import { Bullet } from "./Bullet";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { For, createEffect, createSignal, onMount } from "solid-js";
-import { getAppState, quick, useSidebarState } from "~/utils/app_state";
+import { For, createSignal, onMount } from "solid-js";
+import { getAppState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { isIos } from "~/utils/env";
 import {
@@ -16,7 +16,7 @@ import { animateSidebar } from "./SidebarContainer";
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	const [loading, setLoading] = createSignal(false);
 	const products = () => getAppState().inAppPurchaseState.products;
-  const loadingProducts = () => isIos && isEmpty(products());
+	const loadingProducts = () => isIos && isEmpty(products());
 	const requestProPlan = (annual: boolean) => {
 		setLoading(true);
 		trackEvent("upgrade.subscribe", {
@@ -35,14 +35,14 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 					.order()
 					.catch(() => {
 						quick((s) => {
-							s.repertoireState.browsingState.popView();
+							s.repertoireState.ui.popView();
 							animateSidebar("left");
 						});
 					})
 					.then((x) => {
 						quick((s) => {
 							s.userState.user!.subscribed = true;
-							s.repertoireState.browsingState.popView();
+							s.repertoireState.ui.popView();
 							animateSidebar("left");
 						});
 					});
@@ -53,7 +53,6 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 			}
 		});
 	};
-	console.log("re-rendering!");
 	onMount(() => {
 		trackEvent("upgrade.shown");
 	});

@@ -8,7 +8,6 @@ import {
 	upperFirst,
 } from "lodash-es";
 import { Accessor, For, Show, createSignal } from "solid-js";
-import { Puff } from "solid-spinner";
 import { Spacer } from "~/components/Space";
 import {
 	getAppState,
@@ -26,15 +25,10 @@ import { pluralize } from "~/utils/pluralize";
 import { SIDES } from "~/utils/repertoire";
 import { bySide } from "~/utils/repertoire";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { COMBINED_THEMES_BY_ID, combinedThemes } from "~/utils/theming";
 import { trackEvent } from "~/utils/trackEvent";
-import {
-	BP,
-	ResponsiveBreakpoint,
-	useResponsiveV2,
-} from "~/utils/useResponsive";
+import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import {
 	ConnectAccountsSetting,
@@ -71,18 +65,11 @@ export const RepertoireHome = () => {
 		}
 		return getAppState().repertoireState.lichessMistakes;
 	};
-	const quizQueue = () => {
-		return getAppState().repertoireState.reviewState.activeQueue;
-	};
-	const isQuizzing = () => {
-		return !isEmpty(quizQueue());
-	};
 	const loadingMistakes = () => isNil(lichessMistakes());
 	const themeId = () => userState().user?.theme;
 	const theme = () =>
 		find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
 		COMBINED_THEMES_BY_ID.default;
-	const pieceSet = () => userState().user?.pieceSet;
 	const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
 		(s) => [
 			bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -123,7 +110,7 @@ export const RepertoireHome = () => {
 				trackEvent("home.practice_all_due");
 				quick((s) => {
 					if (totalDue > LOTS_DUE_MINIMUM) {
-						s.repertoireState.browsingState.pushView(PreReview, {
+						s.repertoireState.ui.pushView(PreReview, {
 							props: { side: null },
 						});
 						return;
@@ -142,7 +129,7 @@ export const RepertoireHome = () => {
 	return (
 		<Show when={userState().user}>
 			<SidebarTemplate header={null} actions={[]} bodyPadding={false}>
-				<div style={s(c.column, c.fullWidth, c.gap("10px"))}>
+				<div style={stylex(c.column, c.fullWidth, c.gap("10px"))}>
 					<For each={SIDES}>
 						{(side) => {
 							return (
@@ -151,7 +138,7 @@ export const RepertoireHome = () => {
 										style: "wide",
 										text: `${capitalize(side)} repertoire`,
 										right: (
-											<CMText style={s(c.fg(c.colors.text.secondary))}>
+											<CMText style={stylex(c.fg(c.colors.text.secondary))}>
 												{numLines()[side] > 0
 													? `${Math.round(
 															progressState()[side].percentComplete,
@@ -163,14 +150,10 @@ export const RepertoireHome = () => {
 											quick((s) => {
 												trackEvent("home.select_side", { side });
 												if (numLines()[side] > 0) {
-													animateSidebar(
-														"right",
-													);
+													animateSidebar("right");
 													s.repertoireState.startBrowsing(side, "overview");
 												} else {
-													animateSidebar(
-														"right",
-													);
+													animateSidebar("right");
 													s.repertoireState.startBrowsing(side, "overview");
 												}
 											});
@@ -190,7 +173,7 @@ export const RepertoireHome = () => {
 				</Show>
 				<Show when={userState().isConnectedToExternal()}>
 					<Spacer height={12} />
-					<div style={s(c.column, c.fullWidth, c.gap("10px"))}>
+					<div style={stylex(c.column, c.fullWidth, c.gap("10px"))}>
 						<SidebarFullWidthButton
 							action={{
 								style: "primary",
@@ -209,7 +192,7 @@ export const RepertoireHome = () => {
 									>
 										<CMText class={clsx("")}>
 											{lichessMistakes()?.length
-												? `${pluralize(lichessMistakes()?.length, "Mistake")}`
+												? `${pluralize(lichessMistakes()!.length, "Mistake")}`
 												: "No mistakes"}
 										</CMText>
 										<i
@@ -236,7 +219,7 @@ export const RepertoireHome = () => {
 				</Show>
 				<Show when={!userState().isConnectedToExternal()}>
 					<Spacer height={10} />
-					<div style={s(c.column, c.fullWidth, c.gap("10px"))}>
+					<div style={stylex(c.column, c.fullWidth, c.gap("10px"))}>
 						<SidebarFullWidthButton
 							action={{
 								style: "primary",
@@ -248,9 +231,7 @@ export const RepertoireHome = () => {
 								),
 								onPress: () => {
 									quick((s) => {
-										s.repertoireState.browsingState.pushView(
-											ConnectAccountsSetting,
-										);
+										s.repertoireState.ui.pushView(ConnectAccountsSetting);
 									});
 								},
 							}}
@@ -260,7 +241,7 @@ export const RepertoireHome = () => {
 				<Spacer height={46} />
 				<>
 					<SidebarSectionHeader text="Settings" />
-					<div style={s()}>
+					<div style={stylex()}>
 						<For
 							each={filter(
 								[
@@ -268,9 +249,7 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.settings.coverage");
-												s.repertoireState.browsingState.pushView(
-													CoverageSettings,
-												);
+												s.repertoireState.ui.pushView(CoverageSettings);
 											});
 										},
 										text: "Cover positions seen in",
@@ -283,9 +262,7 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.settings.rating");
-												s.repertoireState.browsingState.pushView(
-													RatingSettings,
-												);
+												s.repertoireState.ui.pushView(RatingSettings);
 											});
 										},
 										text: "Your rating",
@@ -297,9 +274,7 @@ export const RepertoireHome = () => {
 									{
 										onPress: () => {
 											quick((s) => {
-												s.repertoireState.browsingState.pushView(
-													ConnectAccountsSetting,
-												);
+												s.repertoireState.ui.pushView(ConnectAccountsSetting);
 											});
 										},
 										// todo: enable handling of xs breakpoint stuff
@@ -322,7 +297,7 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.settings.theme");
-												s.repertoireState.browsingState.pushView(ThemeSettings);
+												s.repertoireState.ui.pushView(ThemeSettings);
 											});
 										},
 										text: "Board appearance",
@@ -334,10 +309,9 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.settings.pieceAnimationSpeed");
-												s.repertoireState.browsingState.pushView(
-													FrontendSettingView,
-													{ props: { setting: SETTINGS.pieceAnimation } },
-												);
+												s.repertoireState.ui.pushView(FrontendSettingView, {
+													props: { setting: SETTINGS.pieceAnimation },
+												});
 											});
 										},
 										hidden: !settingsExpanded(),
@@ -350,9 +324,7 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.settings.beta_features");
-												s.repertoireState.browsingState.pushView(
-													BetaFeaturesSettings,
-												);
+												s.repertoireState.ui.pushView(BetaFeaturesSettings);
 											});
 										},
 										text: "Beta features",
@@ -372,7 +344,7 @@ export const RepertoireHome = () => {
 											quick((s) => {
 												if (!userState().user?.subscribed) {
 													trackEvent("home.settings.subscribe");
-													s.repertoireState.browsingState.pushView(
+													s.repertoireState.ui.pushView(
 														UpgradeSubscriptionView,
 													);
 												} else {
@@ -398,7 +370,7 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.privacy_and_terms");
-												s.repertoireState.browsingState.pushView(
+												s.repertoireState.ui.pushView(
 													PrivacyPolicyAndTermsView,
 												);
 											});
@@ -407,13 +379,13 @@ export const RepertoireHome = () => {
 										style: "secondary",
 									} as SidebarAction,
 									{
-										hidden: !settingsExpanded() || (!isDevelopment && (!isIos || !userState().user?.email)),
+										hidden:
+											!settingsExpanded() ||
+											(!isDevelopment && (!isIos || !userState().user?.email)),
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.delete_account");
-												s.repertoireState.browsingState.pushView(
-													DeleteAccountView,
-												);
+												s.repertoireState.ui.pushView(DeleteAccountView);
 											});
 										},
 										text: "Delete your account",
@@ -437,7 +409,7 @@ export const RepertoireHome = () => {
 				</>
 				<>
 					<SidebarSectionHeader text="Contact us" />
-					<div style={s()}>
+					<div style={stylex()}>
 						<For
 							each={[
 								{
@@ -464,7 +436,7 @@ export const RepertoireHome = () => {
 									onPress: () => {
 										quick((s) => {
 											trackEvent("home.contact.feedback");
-											s.repertoireState.browsingState.pushView(FeedbackView);
+											s.repertoireState.ui.pushView(FeedbackView);
 										});
 									},
 									text: "Share your feedback",

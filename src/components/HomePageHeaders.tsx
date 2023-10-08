@@ -1,12 +1,12 @@
 import { getFeature } from "~/utils/experiments";
 
-export const HomePageHeader = (props: { onClick: () => void }) => {
+export const HomePageHeader = () => {
 	const ctas = () => {
 		return getHomepageHeadersCopy(getFeature("homepage-header-cta"));
 	};
 	return <span> {ctas().header}</span>;
 };
-export const HomePageSubheader = (props: { onClick: () => void }) => {
+export const HomePageSubheader = () => {
 	const ctas = () => {
 		return getHomepageHeadersCopy(getFeature("homepage-header-cta"));
 	};

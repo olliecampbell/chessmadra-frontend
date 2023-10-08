@@ -1,8 +1,7 @@
 import { Component, Show, mergeProps } from "solid-js";
 import { Puff } from "solid-spinner";
 import { Spacer } from "~/components/Space";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { SidebarHeader } from "./RepertoireEditingHeader";
@@ -24,7 +23,7 @@ export const SidebarTemplate: Component<{
 	);
 	const responsive = useResponsiveV2();
 	return (
-		<div style={s(c.column)}>
+		<div style={stylex(c.column)}>
 			<Show when={props.header}>
 				<div class={"padding-sidebar"}>
 					<SidebarHeader>{props.header}</SidebarHeader>
@@ -35,9 +34,9 @@ export const SidebarTemplate: Component<{
 			<Show
 				when={!props.loading}
 				fallback={
-					<div style={s(c.selfCenter, c.pt(48), c.center)}>
+					<div style={stylex(c.selfCenter, c.pt(48), c.center)}>
 						<CMText
-							style={s(c.fontSize(14), c.weightSemiBold, c.fg(c.gray[75]))}
+							style={stylex(c.fontSize(14), c.weightSemiBold, c.fg(c.gray[75]))}
 						>
 							<Puff color={c.primaries[65]} />
 						</CMText>
@@ -45,7 +44,7 @@ export const SidebarTemplate: Component<{
 				}
 			>
 				<div
-					style={s(
+					style={stylex(
 						c.column,
 						props.bodyPadding && c.px(c.getSidebarPadding(responsive())),
 						c.zIndex(2),

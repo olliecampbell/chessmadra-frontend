@@ -1,5 +1,3 @@
-// import { useWindowDimensions } from "react-native";
-
 import { useWindowSize } from "@solid-primitives/resize-observer";
 import { Accessor, createEffect, createMemo, on } from "solid-js";
 
@@ -13,15 +11,6 @@ export enum ResponsiveBreakpoint {
 }
 
 export { ResponsiveBreakpoint as BP };
-
-const BREAKPOINTS = [
-	ResponsiveBreakpoint.xsm,
-	ResponsiveBreakpoint.sm,
-	ResponsiveBreakpoint.md,
-	ResponsiveBreakpoint.lg,
-	ResponsiveBreakpoint.xl,
-	ResponsiveBreakpoint.xxl,
-];
 
 const getBreakpoint = (x: number): ResponsiveBreakpoint => {
 	if (x < 640) {
@@ -42,24 +31,10 @@ const getBreakpoint = (x: number): ResponsiveBreakpoint => {
 	return ResponsiveBreakpoint.xxl;
 };
 
-// const RESPONSIVE_BREAKPOINTS = {
-//
-//   }
-
 export interface Responsive {
 	isMobile: boolean;
 	bp: ResponsiveBreakpoint;
 	switch: <T>(def: T, ...xs: [ResponsiveBreakpoint, T][]) => T;
-	//     => {
-	//     let result = def;
-	//     xs.forEach(([bp, val]) => {
-	//       if (breakpoint >= bp) {
-	//         result = val;
-	//       }
-	//     });
-	//     return result;
-	//   },
-	// }
 }
 
 export const useResponsiveV2 = (): Accessor<Responsive> => {

@@ -2,14 +2,14 @@ import { Chess } from "@lubert/chess.ts";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import { isEmpty, isNil, take } from "lodash-es";
-import { For, Index, Show, createEffect, createSignal } from "solid-js";
+import { For, Show, createEffect, createSignal } from "solid-js";
 import { Button } from "~/components/Button";
 import { Spacer } from "~/components/Space";
 import { ChessboardView } from "~/components/chessboard/Chessboard";
 import { AdminMoveAnnotation } from "~/utils/admin_state";
 import { quick, useAdminState } from "~/utils/app_state";
 import { createStaticChessState } from "~/utils/chessboard_interface";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { CMText } from "./CMText";
@@ -29,31 +29,31 @@ export const MoveAnnotationsDashboard = () => {
 		<AdminPageLayout>
 			{(() => {
 				if (isNil(dashboard())) {
-					return <CMText style={s()}>Loading...</CMText>;
+					return <CMText style={stylex()}>Loading...</CMText>;
 				}
 				if (isEmpty(dashboard())) {
 					return (
-						<CMText style={s()}>
+						<CMText style={stylex()}>
 							Looks like there's nothing left to review
 						</CMText>
 					);
 				}
 				return (
-					<div style={s(c.column)}>
-						<CMText style={s(c.weightSemiBold, c.selfEnd)}>
+					<div style={stylex(c.column)}>
+						<CMText style={stylex(c.weightSemiBold, c.selfEnd)}>
 							<A
 								href="/admin/move-annotations/community"
 								class="row place-items-center"
 							>
 								Go to community review queue
 								<Spacer width={8} />
-								<i class="fa fa-arrow-right" style={s()} />
+								<i class="fa fa-arrow-right" style={stylex()} />
 							</A>
 						</CMText>
 						<Spacer height={32} />
 						<SelectOneOf
 							tabStyle
-							containerStyles={s(c.fullWidth, c.justifyBetween)}
+							containerStyles={stylex(c.fullWidth, c.justifyBetween)}
 							choices={["Needed", "Completed"]}
 							activeChoice={activeTab()}
 							horizontal
@@ -66,7 +66,7 @@ export const MoveAnnotationsDashboard = () => {
 												setActiveTab(tab);
 											});
 										}}
-										style={s(
+										style={stylex(
 											c.column,
 											c.grow,
 											c.alignCenter,
@@ -78,7 +78,7 @@ export const MoveAnnotationsDashboard = () => {
 										)}
 									>
 										<CMText
-											style={s(
+											style={stylex(
 												c.fg(
 													active
 														? c.colors.text.primary
@@ -94,7 +94,7 @@ export const MoveAnnotationsDashboard = () => {
 								);
 							}}
 						/>
-						<div style={s(c.gridColumn({ gap: 24 }))}>
+						<div style={stylex(c.gridColumn({ gap: 24 }))}>
 							<Spacer height={24} />
 							<For
 								each={
@@ -123,7 +123,6 @@ export const MoveAnnotationRow = (props: {
 	annotation: AdminMoveAnnotation;
 	completed: boolean;
 }) => {
-	console.log("re-rendering the row");
 	const ann = () => props.annotation;
 	const fen = `${ann().previousEpd} 0 1`;
 	const position = new Chess(fen);
@@ -138,33 +137,33 @@ export const MoveAnnotationRow = (props: {
 		nextMove: props.annotation.sanPlus,
 	});
 	return (
-		<div style={s(c.bg(c.gray[30]), c.br(2), c.px(12), c.py(12), c.column)}>
-			<div style={s(c.row)}>
-				<div style={s(c.size(180))}>
+		<div style={stylex(c.bg(c.gray[30]), c.br(2), c.px(12), c.py(12), c.column)}>
+			<div style={stylex(c.row)}>
+				<div style={stylex(c.size(180))}>
 					<LazyLoad>
 						<ChessboardView chessboardInterface={chessState} />
 					</LazyLoad>
 				</div>
 
 				<Spacer width={24} />
-				<div style={s(c.width(400))}>
+				<div style={stylex(c.width(400))}>
 					<AnnotationEditor annotation={annotation} onUpdate={setAnnotation} />
 				</div>
 			</div>
 			<Show when={props.completed}>
 				<>
 					<Spacer height={8} />
-					<CMText style={s()}>
+					<CMText style={stylex()}>
 						Reviewer: {ann().reviewerEmail ?? "me@mbuffett.com"}
 					</CMText>
 				</>
 			</Show>
 			<Spacer height={8} />
-			<div style={s(c.row, c.justifyEnd)}>
+			<div style={stylex(c.row, c.justifyEnd)}>
 				<div>
-					<p style={s()}>{ann().games.toLocaleString()} games</p>
+					<p style={stylex()}>{ann().games.toLocaleString()} games</p>
 					{ann().createdAt && (
-						<p style={s()}>
+						<p style={stylex()}>
 							Created at: {dayjs(ann().createdAt).format(
 								"YYYY-MM-DD HH:mm",
 							)}{" "}
@@ -173,7 +172,7 @@ export const MoveAnnotationRow = (props: {
 				</div>
 				<Spacer grow />
 				<Button
-					style={s(c.buttons.basic, c.selfEnd)}
+					style={stylex(c.buttons.basic, c.selfEnd)}
 					onPress={() => {
 						quick((s) =>
 							s.repertoireState.analyzeMoveOnLichess(
@@ -188,7 +187,7 @@ export const MoveAnnotationRow = (props: {
 				</Button>
 				<Spacer width={12} />
 				<Button
-					style={s(c.buttons.primary, c.selfEnd)}
+					style={stylex(c.buttons.primary, c.selfEnd)}
 					onPress={() => {
 						setLoading(true);
 						quick((s) =>
@@ -205,9 +204,9 @@ export const MoveAnnotationRow = (props: {
 						);
 					}}
 				>
-					<CMText style={s(c.buttons.primary.textStyles)}>
+					<CMText style={stylex(c.buttons.primary.textStyles)}>
 						<Show when={saved}>
-							<i class="fa fa-check" style={s(c.fg(c.gray[90]), c.mr(4))} />
+							<i class="fa fa-check" style={stylex(c.fg(c.gray[90]), c.mr(4))} />
 						</Show>
 						{loading() ? "Loading.." : saved() ? "Saved" : "Save"}
 					</CMText>

@@ -36,7 +36,6 @@ export const PracticeComplete = () => {
 		});
 		return moves;
 	});
-	const [reviewStats] = useRepertoireState((s) => [s.reviewState.reviewStats]);
 	const numFailed = () => {
 		return moves().filter((m) => m.failed).length;
 	};
@@ -83,7 +82,7 @@ export const PracticeComplete = () => {
 			actions.push({
 				onPress: () => {
 					quick((s) => {
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.reviewState.startReview({
 							side: activeOptions()?.side ?? null,
 							filter: "common",
@@ -102,9 +101,7 @@ export const PracticeComplete = () => {
 					trackEvent("practice_complete.continue");
 					if (s.repertoireState.onboarding.isOnboarding) {
 						trackEvent("onboarding.practice_complete.continue");
-						s.repertoireState.browsingState.pushView(
-							ChooseToCreateAccountOnboarding,
-						);
+						s.repertoireState.ui.pushView(ChooseToCreateAccountOnboarding);
 						s.repertoireState.updateRepertoireStructures();
 					} else {
 						animateSidebar("left");
@@ -119,7 +116,7 @@ export const PracticeComplete = () => {
 			actions.push({
 				onPress: () => {
 					quick((s) => {
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.reviewState.startReview(activeOptions()!);
 						trackEvent("post_review.practice_line_again");
 					});

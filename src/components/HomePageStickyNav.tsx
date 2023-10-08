@@ -3,7 +3,6 @@ import { clsx } from "~/utils/classes";
 import { getFeature } from "~/utils/experiments";
 
 export const HomePageStickyNav = (props: { onClick: () => void }) => {
-	// const visible = true;
 	const scroll = createScrollPosition();
 	const featureEnabled = () => getFeature("sticky-homepage-cta");
 	console.log("featureEnabled", featureEnabled());

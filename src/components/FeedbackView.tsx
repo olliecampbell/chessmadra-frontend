@@ -33,7 +33,7 @@ export const FeedbackView = () => {
 				setLoading(false);
 			});
 	};
-	const { form, data } = createForm<Form>({
+	const { form, data, setFields } = createForm<Form>({
 		initialValues: { email: user()?.email },
 	});
 	createEffect(() => {
@@ -68,7 +68,11 @@ export const FeedbackView = () => {
 				<>
 					<form ref={form} class={"col gap-4"}>
 						<Show when={isEmpty(user()?.email)}>
-							<TextInput name="email" placeholder={"Email (optional)"} />
+							<TextInput
+								name="email"
+								placeholder={"Email (optional)"}
+								setFields={setFields}
+							/>
 						</Show>
 						<TextArea name="feedback" placeholder={"Your feedback here..."} />
 					</form>

@@ -1,8 +1,7 @@
 import { throttle } from "lodash-es";
 import { Accessor, createSignal } from "solid-js";
 import { clsx } from "~/utils/classes";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { FadeInOut } from "./FadeInOut";
 
@@ -15,8 +14,6 @@ export const AnnotationEditor = (props: {
 	const [focus, setFocus] = createSignal(false);
 	const [loading, setLoading] = createSignal(false);
 	const [annotation, setAnnotation] = createSignal(props.annotation());
-	// TODO: solid
-	// const { fadeStyling } = useFadeAnimation(loading(), { duration: 300 });
 	let lastTimer: number | null = null;
 	const updateDebounced = throttle(
 		(annotation: string) => {
@@ -34,9 +31,9 @@ export const AnnotationEditor = (props: {
 		{ leading: true },
 	);
 	return (
-		<div style={s(c.grow, c.relative)}>
+		<div style={stylex(c.grow, c.relative)}>
 			<div
-				style={s(
+				style={stylex(
 					c.absolute,
 					c.bottom(12),
 					c.zIndex(100),
@@ -48,12 +45,12 @@ export const AnnotationEditor = (props: {
 				)}
 			>
 				<FadeInOut open={loading()}>
-					<CMText style={s(c.fg(c.gray[50]))}>
+					<CMText style={stylex(c.fg(c.gray[50]))}>
 						<i class="fas fa-circle-notch fa-spin" />
 					</CMText>
 				</FadeInOut>
 				<CMText
-					style={s(
+					style={stylex(
 						annotation()?.length > MAX_ANNOTATION_LENGTH && c.weightBold,
 						c.fg(
 							annotation()?.length > MAX_ANNOTATION_LENGTH
@@ -65,10 +62,10 @@ export const AnnotationEditor = (props: {
 					{annotation()?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
 				</CMText>
 			</div>
-			<div style={s(c.bg(c.gray[20]), c.py(12), c.grow)}>
+			<div style={stylex(c.bg(c.gray[20]), c.py(12), c.grow)}>
 				<textarea
 					value={annotation() ?? ""}
-					style={s(
+					style={stylex(
 						{
 							fontFamily: "Inter",
 						},

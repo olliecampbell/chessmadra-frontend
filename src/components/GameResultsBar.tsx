@@ -7,7 +7,7 @@ import {
 	getTotalGames,
 	getWinRate,
 } from "~/utils/results_distribution";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 
 export const GameResultsBar = (props: {
@@ -24,7 +24,7 @@ export const GameResultsBar = (props: {
 	const percentWhite = props.gameResults.white / total;
 	const whiteResults = (
 		<div
-			style={s(
+			style={stylex(
 				c.width(`${(props.gameResults.white / total) * 100}%`),
 				c.bg(c.gray[90]),
 				c.px(4),
@@ -51,7 +51,7 @@ export const GameResultsBar = (props: {
 	const percentBlack = props.gameResults.black / total;
 	const blackResults = (
 		<div
-			style={s(
+			style={stylex(
 				c.width(`${(props.gameResults.black / total) * 100}%`),
 				c.bg(c.gray[6]),
 				c.alignCenter,
@@ -81,7 +81,7 @@ export const GameResultsBar = (props: {
 			: [blackResults, whiteResults];
 	return (
 		<div
-			style={s(
+			style={stylex(
 				c.row,
 				c.fullWidth,
 				c.fullHeight,
@@ -92,7 +92,7 @@ export const GameResultsBar = (props: {
 		>
 			{first}
 			<div
-				style={s(
+				style={stylex(
 					c.width(`${(props.gameResults.draw / total) * 100}%`),
 					c.bg(c.gray[40]),
 					c.center,
@@ -102,7 +102,7 @@ export const GameResultsBar = (props: {
 					!props.hideNumbers &&
 					!props.activeSide && (
 						<CMText
-							style={s(c.fg(c.gray[75]), c.weightBold, c.fontSize(fontSize))}
+							style={stylex(c.fg(c.gray[75]), c.weightBold, c.fontSize(fontSize))}
 						>
 							{formatWinPercentage(props.gameResults.draw / total)}
 						</CMText>

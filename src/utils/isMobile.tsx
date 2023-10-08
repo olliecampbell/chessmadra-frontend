@@ -2,8 +2,6 @@ import { createMemo } from "solid-js";
 import { useResponsiveV2 } from "./useResponsive";
 
 export const useIsMobile = () => {
-	// solid TODO
-	// const { width: windowWidth } = useWindowDimensions();
 	const responsive = useResponsiveV2();
 	return responsive().isMobile;
 };

@@ -1,7 +1,6 @@
 import { destructure } from "@solid-primitives/destructure";
 import { pluralize } from "~/utils/pluralize";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { clsx } from "~/utils/classes";
 
@@ -37,10 +36,10 @@ export const ReviewText = (props: {
 	});
 	return (
 		<>
-			<div style={s(c.row, c.alignCenter)} class={clsx(color(), props.class)}>
+			<div style={stylex(c.row, c.alignCenter)} class={clsx(color(), props.class)}>
 				<CMText class="font-semibold text-xs leading-5">{dueString()}</CMText>
 				<i
-					style={s(c.fontSize(12))}
+					style={stylex(c.fontSize(12))}
 					class={clsx(props.icon ? props.icon : "fa fa-clock", "pl-2")}
 				/>
 			</div>

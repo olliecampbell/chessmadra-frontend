@@ -1,10 +1,8 @@
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
 import { capitalize, noop } from "lodash-es";
 import { CMText } from "./CMText";
 import {
-	getAppState,
 	quick,
 	useRepertoireState,
 	useSidebarState,
@@ -56,7 +54,7 @@ export const OnboardingIntro = () => {
 				{
 					onPress: () => {
 						quick((s) => {
-							s.repertoireState.browsingState.pushView(SetRatingOnboarding);
+							s.repertoireState.ui.pushView(SetRatingOnboarding);
 							trackEvent("onboarding.get_started");
 						});
 					},
@@ -71,7 +69,7 @@ export const OnboardingIntro = () => {
 			</CMText>
 			<Spacer height={12} />
 			<p class={"body-text"}>This walkthrough will cover:</p>
-			<div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
+			<div style={stylex(c.gridColumn({ gap: 8 }), c.pt(12))}>
 				{bullets.map((bullet, i) => (
 					<Bullet>{bullet}</Bullet>
 				))}
@@ -95,7 +93,7 @@ export const SetRatingOnboarding = () => {
 						s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-"),
 					);
 					s.userState.setTargetDepth(recommendedThreshold);
-					s.repertoireState.browsingState.pushView(ChooseColorOnboarding);
+					s.repertoireState.ui.pushView(ChooseColorOnboarding);
 				});
 			});
 		});
@@ -151,7 +149,7 @@ export const ChooseToCreateAccountOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.create_account.yes");
-							s.repertoireState.browsingState.pushView(LoginSidebar, {
+							s.repertoireState.ui.pushView(LoginSidebar, {
 								props: { authType: "register" },
 							});
 						});
@@ -163,7 +161,7 @@ export const ChooseToCreateAccountOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.create_account.skip");
-							s.repertoireState.browsingState.pushView(OnboardingComplete);
+							s.repertoireState.ui.pushView(OnboardingComplete);
 						});
 					},
 					style: "primary",
@@ -204,7 +202,7 @@ export const Dropdown: Component<{
 		}
 	});
 	return (
-		<div style={s(c.zIndex(10), c.relative)} class={"col"}>
+		<div style={stylex(c.zIndex(10), c.relative)} class={"col"}>
 			<p class={"text-secondary pb-2 text-sm font-bold"}>{props.title}</p>
 			<div
 				class={clsx(
@@ -221,24 +219,15 @@ export const Dropdown: Component<{
 				<Spacer width={8} />
 				<i
 					class="fas fa-angle-down"
-					style={s(c.fontSize(18), c.fg(c.gray[80]))}
+					style={stylex(c.fontSize(18), c.fg(c.gray[80]))}
 				/>
 				<Motion
 					animate={{ opacity: isOpen() ? 1 : 0 }}
-					style={s(
-						c.absolute,
-						c.minWidth("fit-content"),
-						!isOpen() && c.noPointerEvents,
-						c.zIndex(100),
-						c.top("calc(100% + 8px)"),
-						c.right(0),
-						c.left(0),
-						c.br(4),
-						c.border(`1px solid ${c.gray[26]}`),
-						c.gridColumn({ gap: 0 }),
-						c.alignStretch,
+					style={stylex(c.top("calc(100% + 8px)"), c.gridColumn({ gap: 0 }))}
+					class={clsx(
+						"bg-gray-4  p-2 absolute min-w-fit z-100 inset-x-0 rounded-[4px] items-stretch border border-solid border-gray-26",
+						!isOpen() && "pointer-events-none",
 					)}
-					class={clsx("bg-gray-4 rounded-sm p-2")}
 				>
 					<For each={props.choices}>
 						{(c) => (
@@ -271,9 +260,7 @@ const ChooseColorOnboarding = () => {
 					quick((s) => {
 						trackEvent("onboarding.choose_color", { color: side });
 						s.repertoireState.onboarding.side = side;
-						s.repertoireState.browsingState.pushView(
-							AskAboutExistingRepertoireOnboarding,
-						);
+						s.repertoireState.ui.pushView(AskAboutExistingRepertoireOnboarding);
 					});
 				},
 				text: capitalize(side),
@@ -287,7 +274,7 @@ export const OnboardingComplete = () => {
 	const responsive = useResponsiveV2();
 	const bullets = () => {
 		const bullets = [];
-		bullets.push(<>Keep adding moves to your repertoire to get to 100%</>);
+		bullets.push("Keep adding moves to your repertoire to get to 100%");
 		bullets.push(
 			<>
 				Practice every day{" "}
@@ -393,7 +380,7 @@ export const HowToComplete = (props: {
 			<CMText class={"body-text font-bold"}>
 				How to complete your repertoire:
 			</CMText>
-			<div style={s(c.gridColumn({ gap: 8 }), c.pt(12))}>
+			<div style={stylex(c.gridColumn({ gap: 8 }), c.pt(12))}>
 				{bullets().map((bullet, i) => (
 					<Bullet>{bullet}</Bullet>
 				))}
@@ -403,12 +390,7 @@ export const HowToComplete = (props: {
 };
 
 export const FirstLineSavedOnboarding = () => {
-	const responsive = useResponsiveV2();
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
-	const [progressState] = useRepertoireState((s) => [
-		s.browsingState.repertoireProgressState[onboarding().side as Side],
-	]);
-	const [threshold] = useUserState((s) => [s.getCurrentThreshold()]);
 	onMount(() => {
 		trackEvent("onboarding.first_line_saved.shown");
 	});
@@ -421,7 +403,7 @@ export const FirstLineSavedOnboarding = () => {
 					onPress: () => {
 						trackEvent("onboarding.first_line_saved.continue");
 						quick((s) => {
-							s.repertoireState.browsingState.pushView(PracticeIntroOnboarding);
+							s.repertoireState.ui.pushView(PracticeIntroOnboarding);
 						});
 					},
 					text: "Ok, got it",
@@ -437,7 +419,7 @@ export const FirstLineSavedOnboarding = () => {
 };
 
 const PracticeIntroOnboarding = () => {
-	const [currentLine] = useSidebarState(([s]) => [s.moveLog]);
+	const [currentLine] = useSidebarState(([s]) => [s.chessboard.getMoveLog()]);
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	onMount(() => {
 		trackEvent("onboarding.practice_intro.shown");
@@ -471,8 +453,6 @@ const PracticeIntroOnboarding = () => {
 };
 
 const AskAboutExistingRepertoireOnboarding = () => {
-	const responsive = useResponsiveV2();
-	const repertoireState = getAppState().repertoireState;
 	onMount(() => {
 		trackEvent("onboarding.ask_about_existing_repertoire.shown");
 	});
@@ -485,9 +465,7 @@ const AskAboutExistingRepertoireOnboarding = () => {
 					onPress: () => {
 						trackEvent("onboarding.ask_about_existing_repertoire.has_existing");
 						quick((s) => {
-							s.repertoireState.browsingState.pushView(
-								ChooseImportSourceOnboarding,
-							);
+							s.repertoireState.ui.pushView(ChooseImportSourceOnboarding);
 						});
 					},
 					text: "Yes, import an existing repertoire",
@@ -526,7 +504,7 @@ export const ChooseImportSourceOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.choose_import_source.pgn");
-							s.repertoireState.browsingState.pushView(ImportOnboarding, {
+							s.repertoireState.ui.pushView(ImportOnboarding, {
 								props: { importType: SidebarOnboardingImportType.PGN },
 							});
 						});
@@ -538,7 +516,7 @@ export const ChooseImportSourceOnboarding = () => {
 					onPress: () => {
 						trackEvent("onboarding.choose_import_source.lichess");
 						quick((s) => {
-							s.repertoireState.browsingState.pushView(ImportOnboarding, {
+							s.repertoireState.ui.pushView(ImportOnboarding, {
 								props: {
 									importType: SidebarOnboardingImportType.LichessUsername,
 								},
@@ -665,14 +643,14 @@ export const ImportOnboarding = (props: {
 		>
 			<Switch>
 				<Match when={importType() === SidebarOnboardingImportType.PGN}>
-					<div style={s()} class={"flex flex-col space-y-8"}>
+					<div class={"flex flex-col space-y-8"}>
 						<PGNUpload onChange={setPgn} side={"white"} />
 					</div>
 				</Match>
 				<Match
 					when={importType() === SidebarOnboardingImportType.LichessUsername}
 				>
-					<div style={s(c.pt(20))}>
+					<div style={stylex(c.pt(20))}>
 						<form ref={form} class={"col gap-8"}>
 							<TextInput
 								setFields={setFields}
@@ -716,7 +694,7 @@ export const TrimRepertoireOnboarding = () => {
 		quick((s) => {
 			s.repertoireState.trimRepertoire(threshold, [side()!]).then(() => {
 				if (onboarding().isOnboarding) {
-					s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
+					s.repertoireState.ui.pushView(ImportSuccessOnboarding);
 				} else {
 					s.repertoireState.backToOverview();
 				}
@@ -744,9 +722,9 @@ export const TrimRepertoireOnboarding = () => {
 				trackEvent("onboarding.trim_repertoire.skip");
 				quick((s) => {
 					if (onboarding().isOnboarding) {
-						s.repertoireState.browsingState.pushView(ImportSuccessOnboarding);
+						s.repertoireState.ui.pushView(ImportSuccessOnboarding);
 					} else {
-						s.repertoireState.browsingState.clearViews();
+						s.repertoireState.ui.clearViews();
 						s.repertoireState.startBrowsing(side()!, "home");
 					}
 				});
@@ -771,7 +749,6 @@ export const TrimRepertoireOnboarding = () => {
 };
 
 const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
-	const [pgn, setPgn] = createSignal("" as string | null);
 	const [textInputPgn, setTextInputPgn] = createSignal<string | null>("");
 	const [pgnUploadRef, setPgnUploadRef] = createSignal(
 		null as HTMLInputElement | null,
@@ -779,15 +756,11 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
 	const [hasUploaded, setHasUploaded] = createSignal(false);
 	createEffect(() => {
 		const input = pgnUploadRef();
-		console.log("creating change watcher thing", input);
 		if (input) {
 			input.addEventListener("change", async (e) => {
-				console.log("file upload");
 				const file = input.files?.[0];
-				console.log("file upload", file);
 				if (file) {
 					const body = await file.text();
-					setPgn(body);
 					setTextInputPgn(null);
 					props.onChange(body);
 					setHasUploaded(true);
@@ -798,7 +771,7 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
 		}
 	});
 	return (
-		<div style={s()}>
+		<div>
 			<div class={"bg-gray-6 rounded-sm p-4"}>
 				<div
 					class={
@@ -824,7 +797,6 @@ const PGNUpload = (props: { onChange: (pgn: string) => void; side: Side }) => {
 					placeholder="Paste your PGN here"
 					onInput={(v) => {
 						setTextInputPgn(v.target.value);
-						setPgn(null);
 						props.onChange(v.target.value);
 						setHasUploaded(false);
 					}}

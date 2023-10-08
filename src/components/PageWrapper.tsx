@@ -39,7 +39,7 @@ export const PageWrapper = (props: { initialView?: Component }) => {
 			if (props.initialView) {
 				s.userState.pastLandingPage = true;
 				s.repertoireState.onboarding.isOnboarding = false;
-				s.repertoireState.browsingState.pushView(props.initialView);
+				s.repertoireState.ui.pushView(props.initialView);
 			}
 		});
 	});
@@ -50,7 +50,7 @@ export const PageWrapper = (props: { initialView?: Component }) => {
 			quick((s) => {
 				trackEvent("onboarding.started");
 				s.repertoireState.onboarding.isOnboarding = true;
-				s.repertoireState.browsingState.pushView(OnboardingIntro);
+				s.repertoireState.ui.pushView(OnboardingIntro);
 				s.userState.pastLandingPage = true;
 			});
 		}

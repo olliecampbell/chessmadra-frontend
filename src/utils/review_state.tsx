@@ -3,7 +3,6 @@ import { Move, Square } from "@lubert/chess.ts/dist/types";
 import {
 	cloneDeep,
 	countBy,
-	dropRight,
 	filter,
 	find,
 	first,
@@ -21,7 +20,6 @@ import {
 	values,
 } from "lodash-es";
 import { PracticeComplete } from "~/components/PracticeComplete";
-import { PlaybackSpeed } from "~/types/VisualizationState";
 import client from "~/utils/client";
 import { trackEvent } from "~/utils/trackEvent";
 import { AppState } from "./app_state";
@@ -30,11 +28,7 @@ import {
 	ChessboardInterface,
 	createChessboardInterface,
 } from "./chessboard_interface";
-import {
-	PieceAnimation,
-	pieceAnimationToPlaybackSpeed,
-} from "./frontend_settings";
-import { getLineAnimation } from "./get_line_animation";
+import { PieceAnimation } from "./frontend_settings";
 import { EcoCode, LichessMistake } from "./models";
 import { getAllPossibleMoves } from "./move_generation";
 import { getMaxPlansForQuizzing, parsePlansToQuizMoves } from "./plans";
@@ -52,6 +46,7 @@ import { COMMON_MOVES_CUTOFF } from "./review";
 import { isMoveDifficult } from "./srs";
 import { logProxy } from "./state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
+import { animateSidebar } from "~/components/SidebarContainer";
 
 export interface ReviewPositionResults {
 	side: Side;
@@ -60,7 +55,6 @@ export interface ReviewPositionResults {
 	sanPlus: string;
 }
 
-type ReviewMoveKey = string;
 type Epd = string;
 
 export interface ReviewState {
@@ -72,7 +66,6 @@ export interface ReviewState {
 	buildQueue: (options: ReviewOptions) => QuizGroup[];
 	stopReviewing: () => void;
 	chessboard: ChessboardInterface;
-	// getQueueLength: (side?: Side) => number;
 	showNext?: boolean;
 	allReviewPositionMoves: Record<
 		Epd,
@@ -135,9 +128,7 @@ const FRESH_REVIEW_STATS = {
 } as ReviewStats;
 
 export const getInitialReviewState = (
-	// biome-ignore lint: ignore
 	_set: StateSetter<AppState, any>,
-	// biome-ignore lint: ignore
 	_get: StateGetter<AppState, any>,
 ) => {
 	const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -145,9 +136,6 @@ export const getInitialReviewState = (
 			fn([s.repertoireState.reviewState, s.repertoireState, s]),
 		);
 	};
-	// const setOnly = <T,>(fn: (stack: ReviewState) => T, id?: string): T => {
-	//   return _set((s) => fn(s.repertoireState.reviewState));
-	// };
 	const get = <T,>(fn: (stack: Stack) => T, id?: string): T => {
 		return _get((s) =>
 			fn([s.repertoireState.reviewState, s.repertoireState, s]),
@@ -196,16 +184,12 @@ export const getInitialReviewState = (
 								},
 							);
 						});
-						// todo: this could be optimized in the future to only re-compute some stuff
-						// rs.updateRepertoireStructures();
-						// if (rs.browsingState.sidebarState.mode !== "review")
-						//   rs.updateRepertoireStructures();
 					});
 				});
 		},
 		resumeReview: () => {
 			set(([s, rs, gs]) => {
-				rs.browsingState.sidebarState.mode = "review";
+				rs.ui.mode = "review";
 			});
 		},
 		onPositionUpdate: () => {
@@ -229,9 +213,8 @@ export const getInitialReviewState = (
 			set(([s, rs, gs]) => {
 				s.reviewStats = cloneDeep(FRESH_REVIEW_STATS);
 				animateSidebar("right");
-				rs.browsingState.sidebarState.mode = "review";
-				// @ts-ignore
-				rs.browsingState.sidebarState.activeSide = options.side;
+				rs.ui.mode = "review";
+				rs.browsingState.activeSide = options.side ?? undefined;
 				s.activeOptions = options ?? null;
 				if (options.lichessMistakes) {
 					s.activeQueue = s.buildQueueFromMistakes(options.lichessMistakes);
@@ -341,7 +324,7 @@ export const getInitialReviewState = (
 				s.currentQuizGroup = s.activeQueue.shift();
 				if (!s.currentQuizGroup) {
 					rs.updateRepertoireStructures();
-					rs.browsingState.pushView(PracticeComplete);
+					rs.ui.pushView(PracticeComplete);
 					trackEvent("review.review_complete");
 					return;
 				}
@@ -422,8 +405,7 @@ export const getInitialReviewState = (
 						if (responses?.[0]?.mine) {
 							const needsToReviewAny = some(
 								responses,
-								// @ts-ignore
-								(r) => r.srs.needsReview,
+								(r) => r.srs!.needsReview,
 							);
 							const shouldAdd =
 								(options.filter === "difficult-due" &&
@@ -515,7 +497,7 @@ export const getInitialReviewState = (
 				return queue;
 			}),
 		buildQueueFromMistakes: (mistakes: LichessMistake[]) =>
-			set(([s, rs]) => {
+			set(([_s, rs]) => {
 				const queue: QuizGroup[] = [];
 				forEach(mistakes, (m) => {
 					const responses = rs.repertoire![m.side].positionResponses[m.epd];
@@ -529,11 +511,11 @@ export const getInitialReviewState = (
 				return queue;
 			}),
 		invalidateSession: () =>
-			set(([s, rs]) => {
+			set(([s]) => {
 				s.activeQueue = [];
 			}),
 		updateQueue: (options: ReviewOptions) =>
-			set(([s, rs]) => {
+			set(([s]) => {
 				s.activeQueue = s.buildQueue(options);
 				s.reviewStats = {
 					due: countQueue(s.activeQueue),
@@ -544,7 +526,6 @@ export const getInitialReviewState = (
 		reviewLine: (line: string[], side: Side) =>
 			set(([s, rs]) => {
 				rs.backToOverview();
-				// @ts-ignore
 				const queue: QuizGroup[] = [];
 				let epd = START_EPD;
 				const lineSoFar: string[] = [];
@@ -571,7 +552,6 @@ export const getInitialReviewState = (
 					lineSoFar.push(move);
 				});
 
-				// @ts-ignore
 				s.startReview({ side: side, customQueue: queue });
 			}, "reviewLine"),
 		getNextReviewPositionMove: () =>
@@ -610,7 +590,7 @@ export const getInitialReviewState = (
 				});
 			},
 			onPositionUpdated: () => {
-				set(([s, rs]) => {
+				set(([s]) => {
 					s.onPositionUpdate();
 				});
 			},
@@ -676,20 +656,6 @@ export const getInitialReviewState = (
 											move.sanPlus
 										].reviewed = true;
 									});
-									const nextMove = s.activeQueue[1];
-									// todo: make this actually work
-									const continuesCurrentLine =
-										nextMove?.line ===
-										lineToPgn([
-											...pgnToLine(s.currentQuizGroup!.line),
-											move.san,
-										]);
-									// console.log(
-									//   "continuesCurrentLine",
-									//   continuesCurrentLine,
-									//   nextMove?.line,
-									//   lineToPgn([...pgnToLine(s.currentMove.line), move.san])
-									// );
 
 									// @ts-ignore
 									if (s.currentQuizGroup?.moves.length > 1) {

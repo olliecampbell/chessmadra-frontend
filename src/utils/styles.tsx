@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { assign } from "lodash-es";
 import { colors, gray as grays, hsl } from "./design-system";
 import { BP, Responsive } from "./useResponsive";
 
-export const s = (...args: any[]) => assign({}, ...args);
+export const stylex = (...args: any[]) => assign({}, ...args);
 
 const keyedProp = (key: string) => (x: any) => {
 	return {
@@ -50,16 +48,16 @@ const pt = keyedPixelProp("padding-top");
 const pb = keyedPixelProp("padding-bottom");
 const pl = keyedPixelProp("padding-left");
 const pr = keyedPixelProp("padding-right");
-const px = (x: any) => s(pl(x), pr(x));
-const py = (x: any) => s(pt(x), pb(x));
+const px = (x: any) => stylex(pl(x), pr(x));
+const py = (x: any) => stylex(pt(x), pb(x));
 
 const m = keyedPixelProp("margin");
 const mt = keyedPixelProp("margin-top");
 const mb = keyedPixelProp("margin-bottom");
 const ml = keyedPixelProp("margin-left");
 const mr = keyedPixelProp("margin-right");
-const mx = (x: number) => s(ml(x), mr(x));
-const my = (x: number) => s(mt(x), mb(x));
+const mx = (x: number) => stylex(ml(x), mr(x));
+const my = (x: number) => stylex(mt(x), mb(x));
 
 const weightThin = keyedProp("font-weight")(300);
 const weightRegular = keyedProp("font-weight")(400);
@@ -70,7 +68,10 @@ const weightBlack = keyedProp("font-weight")(800);
 
 const flexGrow = keyedProp("flex-grow");
 const flexShrink = keyedProp("flex-shrink");
-const flexStatic = s(keyedProp("flex-grow")(0), keyedProp("flex-shrink")(0));
+const flexStatic = stylex(
+	keyedProp("flex-grow")(0),
+	keyedProp("flex-shrink")(0),
+);
 const unshrinkable = keyedProp("flex-shrink")(0);
 const grow = keyedProp("flex-grow")(1);
 const flex = keyedProp("flex");
@@ -87,7 +88,7 @@ const width = keyedPixelProp("width");
 const minWidth = keyedPixelProp("min-width");
 const minHeight = keyedPixelProp("min-height");
 const size = (x: string | number) => {
-	return s(height(x), width(x));
+	return stylex(height(x), width(x));
 };
 
 const selfStart = keyedProp("align-self")("flex-start");
@@ -112,9 +113,9 @@ const displayFlex = keyedProp("display")("flex");
 const displayNone = keyedProp("display")("none");
 const displayGrid = keyedProp("display")("grid");
 
-const row = s(displayFlex, keyedProp("flex-direction")("row"));
+const row = stylex(displayFlex, keyedProp("flex-direction")("row"));
 const gap = keyedProp("gap");
-const column = s(displayFlex, keyedProp("flex-direction")("column"));
+const column = stylex(displayFlex, keyedProp("flex-direction")("column"));
 const absolute = keyedProp("position")("absolute");
 const fixed = keyedProp("position")("fixed");
 const relative = keyedProp("position")("relative");
@@ -126,7 +127,7 @@ const borderTop = keyedProp("border-top");
 const borderRight = keyedProp("border-right");
 const borderLeft = keyedProp("border-left");
 
-const center = s(alignCenter, justifyCenter, displayFlex);
+const center = stylex(alignCenter, justifyCenter, displayFlex);
 
 const br = keyedPixelProp("border-radius");
 const rounded = br(2);
@@ -135,22 +136,22 @@ const brtr = keyedPixelProp("border-top-right-radius");
 const brbl = keyedPixelProp("border-bottom-left-radius");
 const brbr = keyedPixelProp("border-bottom-right-radius");
 const brt = (x: number) => {
-	return s(brtl(x), brtr(x));
+	return stylex(brtl(x), brtr(x));
 };
 const brb = (x: number) => {
-	return s(brbr(x), brbl(x));
+	return stylex(brbr(x), brbl(x));
 };
 const brl = (x: number) => {
-	return s(brtl(x), brbl(x));
+	return stylex(brtl(x), brbl(x));
 };
-const brr = (x: number) => s(brtr(x), brbr(x));
+const brr = (x: number) => stylex(brtr(x), brbr(x));
 const maxWidth = keyedPixelProp("max-width");
 const maxHeight = keyedPixelProp("max-height");
 const clickable = keyedProp("cursor")("pointer");
 const unclickable = keyedProp("cursor")("default");
 const noBasis = keyedProp("flex-basis")(0);
 const round = keyedPixelProp("border-radius")(999);
-const flexible = s(
+const flexible = stylex(
 	keyedProp("flex-basis")(0),
 	keyedProp("min-width")(0),
 	keyedProp("min-height")(0),
@@ -167,10 +168,10 @@ const right = keyedPixelProp("right");
 const bottom = keyedPixelProp("bottom");
 const top = keyedPixelProp("top");
 
-const absoluteFull = s(absolute, top(0), left(0), fullWidth, fullHeight);
+const absoluteFull = stylex(absolute, top(0), left(0), fullWidth, fullHeight);
 
 // Compount style objects
-const dashboardTitle = s(fontSize(40), weightBold, fg("#2e2e3c"));
+const dashboardTitle = stylex(fontSize(40), weightBold, fg("#2e2e3c"));
 const zIndex = keyedProp("z-index");
 const overflowHidden = keyedProp("overflow")("hidden");
 const overflowY = keyedProp("overflow");
@@ -200,7 +201,7 @@ function easeInOutCubic(x: number): number {
 }
 const extraDarkBorder = border(`1px solid ${grays[7]}`);
 
-const basicButtonStyles = s(
+const basicButtonStyles = stylex(
 	br(2),
 	py(16),
 	px(16),
@@ -208,10 +209,10 @@ const basicButtonStyles = s(
 	clickable,
 	center,
 	{
-		textStyles: s(weightBold, fontSize(16), fg(colors.text.inverse)),
+		textStyles: stylex(weightBold, fontSize(16), fg(colors.text.inverse)),
 	},
 );
-const outlineDarkButtonStyles = s(
+const outlineDarkButtonStyles = stylex(
 	br(2),
 	py(16),
 	px(16),
@@ -220,10 +221,10 @@ const outlineDarkButtonStyles = s(
 	clickable,
 	center,
 	{
-		textStyles: s(weightBold, fontSize(16), fg(grays[10])),
+		textStyles: stylex(weightBold, fontSize(16), fg(grays[10])),
 	},
 );
-const outlineLightButtonStyles = s(
+const outlineLightButtonStyles = stylex(
 	br(2),
 	py(16),
 	px(16),
@@ -232,10 +233,10 @@ const outlineLightButtonStyles = s(
 	clickable,
 	center,
 	{
-		textStyles: s(weightBold, fontSize(16), fg(grays[80])),
+		textStyles: stylex(weightBold, fontSize(16), fg(grays[80])),
 	},
 );
-const disabledButtonStyles = s(
+const disabledButtonStyles = stylex(
 	br(2),
 	py(16),
 	px(16),
@@ -244,10 +245,10 @@ const disabledButtonStyles = s(
 	clickable,
 	center,
 	{
-		textStyles: s(weightBold, fontSize(16), fg("white")),
+		textStyles: stylex(weightBold, fontSize(16), fg("white")),
 	},
 );
-const extraDarkButtonStyles = s(
+const extraDarkButtonStyles = stylex(
 	br(2),
 	py(16),
 	px(16),
@@ -256,10 +257,10 @@ const extraDarkButtonStyles = s(
 	clickable,
 	center,
 	{
-		textStyles: s(weightBold, fontSize(16), fg(grays[70])),
+		textStyles: stylex(weightBold, fontSize(16), fg(grays[70])),
 	},
 );
-const basicSecondaryButtonStyles = s(
+const basicSecondaryButtonStyles = stylex(
 	br(2),
 	py(16),
 	px(16),
@@ -268,21 +269,21 @@ const basicSecondaryButtonStyles = s(
 	clickable,
 	center,
 	{
-		textStyles: s(weightBold, fontSize(16), fg(grays[70])),
+		textStyles: stylex(weightBold, fontSize(16), fg(grays[70])),
 	},
 );
-const primaryButtonStyles = s(basicButtonStyles, bg(colors.blue[40]), {
-	textStyles: s(weightBold, fg(colors.text.primary), fontSize(16)),
+const primaryButtonStyles = stylex(basicButtonStyles, bg(colors.blue[40]), {
+	textStyles: stylex(weightBold, fg(colors.text.primary), fontSize(16)),
 });
-const primaryDisabledButtonStyles = s(basicButtonStyles, bg(grays[40]), {
-	textStyles: s(weightBold, fg(grays[75]), fontSize(16)),
+const primaryDisabledButtonStyles = stylex(basicButtonStyles, bg(grays[40]), {
+	textStyles: stylex(weightBold, fg(grays[75]), fontSize(16)),
 });
-const squareBottomRowButtonStyles = s(basicButtonStyles, size(48));
+const squareBottomRowButtonStyles = stylex(basicButtonStyles, size(48));
 const buttons = {
 	basic: basicButtonStyles,
 	basicSecondary: basicSecondaryButtonStyles,
 	extraDark: extraDarkButtonStyles,
-	darkFloater: s(
+	darkFloater: stylex(
 		br(2),
 		py(16),
 		px(16),
@@ -291,7 +292,7 @@ const buttons = {
 		clickable,
 		center,
 		{
-			textStyles: s(weightBold, fontSize(16), fg(grays[70])),
+			textStyles: stylex(weightBold, fontSize(16), fg(grays[70])),
 		},
 	),
 
@@ -311,12 +312,12 @@ const duotone = (primary: string, secondary: string) => {
 	};
 };
 
-const fillNoExpand = s(minWidth("100%"), width(0));
+const fillNoExpand = stylex(minWidth("100%"), width(0));
 
 const noPointerEvents = keyedProp("pointer-events")("none");
 const transform = keyedProp("transform");
 const oldContainerStyles = (isMobile: boolean, customMaxWidth?: number) =>
-	s(
+	stylex(
 		width(
 			`min(calc(100vw - ${isMobile ? 24 : 24}px), ${customMaxWidth ?? 1280}px)`,
 		),
@@ -324,7 +325,7 @@ const oldContainerStyles = (isMobile: boolean, customMaxWidth?: number) =>
 	);
 
 const containerStyles = (breakpoint: BP) =>
-	s(
+	stylex(
 		width(
 			`min(calc(100vw - ${breakpoint <= BP.lg ? 24 : 96}px), ${
 				breakpoint >= BP.xxl ? 1440 : 1280
@@ -355,7 +356,7 @@ const grid = ({
 	rowGap: number;
 	columnGap: number;
 }) => {
-	return s(
+	return stylex(
 		c.displayGrid,
 		c.keyedProp("grid-template-columns")(
 			templateColumns ? templateColumns.join(" ") : "1fr",
@@ -369,7 +370,7 @@ const grid = ({
 };
 
 const gridColumn = ({ gap }: { gap: number }) => {
-	return s(
+	return stylex(
 		c.displayGrid,
 		c.keyedProp("grid-template-columns")("1fr"),
 		// c.keyedProp("grid-template-rows")("1fr"),
@@ -388,7 +389,7 @@ const calc = (c: string) => {
 	return `calc(${c})`;
 };
 const sidebarDescriptionStyles = (responsive: Responsive) => {
-	return s(c.fg(c.gray[70]));
+	return stylex(c.fg(c.gray[70]));
 };
 
 const getSidebarPadding = (responsive: Responsive) => {

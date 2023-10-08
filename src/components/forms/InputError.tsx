@@ -1,5 +1,3 @@
-// import { Expandable } from "./Expandable";
-
 import { Show } from "solid-js";
 
 type InputErrorProps = {

@@ -14,7 +14,12 @@ export class StorageItem<T> {
 		this._value = value;
 		this._setValue = setValue;
 		this._loaded = false;
-		this.load().then((value) => setValue(value));
+		this.load().then((value) => {
+			if (value) {
+				// @ts-ignore
+				setValue(value);
+			}
+		});
 	}
 
 	async load() {
@@ -25,8 +30,6 @@ export class StorageItem<T> {
 			this._loaded = true;
 			if (value) {
 				this.value = JSON.parse(value);
-			} else {
-				this.value = null;
 			}
 			return this.value;
 		});
@@ -43,6 +46,13 @@ export class StorageItem<T> {
 	get value(): T | undefined {
 		if (!this._loaded) {
 			return undefined;
+		}
+		return this._value();
+	}
+
+	async valueAsync(): Promise<T | undefined> {
+		if (!this._loaded) {
+			return this.load();
 		}
 		return this._value();
 	}

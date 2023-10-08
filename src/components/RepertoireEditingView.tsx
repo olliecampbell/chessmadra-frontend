@@ -7,51 +7,40 @@ import {
 	createEffect,
 	createMemo,
 	onCleanup,
-	onMount,
 } from "solid-js";
 import { isServer } from "solid-js/web";
 import { Puff } from "solid-spinner";
 import { Spacer } from "~/components/Space";
 import {
 	useBrowsingState,
+	useMode,
 	useRepertoireState,
 	useSidebarState,
 	useUserState,
 } from "~/utils/app_state";
 import { StockfishReport } from "~/utils/models";
 import { Side } from "~/utils/repertoire";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { shouldUsePeerRates } from "~/utils/table_scoring";
 import { CMText } from "./CMText";
 import { CollapsibleSidebarSection } from "./CollapsibleSidebarSection";
-import { InstructiveGamesView } from "./InstructiveGamesView";
 import { RepertoireMovesTable } from "./RepertoireMovesTable";
-// import { StockfishEvalCircle } from "./StockfishEvalCircle";
-
-const desktopHeaderStyles = s(
-	c.fg(c.colors.text.primary),
-	c.fontSize(22),
-	c.mb(12),
-	c.weightBold,
-);
 
 export const Responses = function Responses() {
-	const [currentEpd] = useSidebarState(([s]) => [s.currentEpd]);
+	const [currentEpd] = useBrowsingState(([s]) => [
+		s.chessboard.getCurrentEpd(),
+	]);
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-	const [user] = useUserState((s) => [s.user]);
-	const [positionReport] = useBrowsingState(
-		// TODO: we should have the active side on sidebar too
-		// @ts-ignore
-		([s, rs]) => [rs.positionReports[activeSide()]?.[currentEpd()]],
-	);
+	const [positionReport] = useBrowsingState(([s, rs]) => [
+		rs.positionReports[activeSide()!]?.[currentEpd()],
+	]);
 	createEffect(() => {
 		// console.log("pos report", positionReport());
 	});
 	const [currentSide, currentLine, hasPendingLine, isPastCoverageGoal] =
 		useSidebarState(([s]) => [
 			s.currentSide,
-			s.moveLog,
+			s.chessboard.get((s) => s.moveLog),
 			s.hasPendingLineToAdd,
 			s.isPastCoverageGoal,
 		]);
@@ -59,7 +48,7 @@ export const Responses = function Responses() {
 
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	const usePeerRates = () => shouldUsePeerRates(positionReport());
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const yourMoves = createMemo(() =>
 		filter(tableResponses(), (tr) => {
 			return !isNil(tr.repertoireMove) && activeSide() === currentSide();
@@ -71,16 +60,17 @@ export const Responses = function Responses() {
 		}),
 	);
 	const prepareFor = createMemo(() =>
-		filter(tableResponses(), (tr) => {
+		filter(tableResponses(), () => {
 			return activeSide() !== currentSide();
 		}),
 	);
 	if (!isServer) {
-		const beforeUnloadListener = (event) => {
+		const beforeUnloadListener = (event: Event) => {
 			if (hasPendingLine()) {
 				event.preventDefault();
 				const prompt =
 					"You have an unsaved line, are you sure you want to exit?";
+				// @ts-ignore
 				event.returnValue = prompt;
 				return prompt;
 			}
@@ -125,7 +115,7 @@ export const Responses = function Responses() {
 		}
 	});
 	return (
-		<div style={s(c.column, c.constrainWidth)}>
+		<div style={stylex(c.column, c.constrainWidth)}>
 			<Show when={positionReport()}>
 				<>
 					<Show
@@ -135,7 +125,7 @@ export const Responses = function Responses() {
 							!isEmpty(prepareFor())
 						}
 					>
-						<div style={s()} id={`your-moves-play-${currentEpd()}`}>
+						<div style={stylex()} id={`your-moves-play-${currentEpd()}`}>
 							<RepertoireMovesTable
 								{...{
 									header: header,
@@ -156,7 +146,7 @@ export const Responses = function Responses() {
 							mode() === "build"
 						}
 					>
-						<div style={s(c.mt(36))} id={`alternate-moves-${currentEpd}`}>
+						<div style={stylex(c.mt(36))} id={`alternate-moves-${currentEpd}`}>
 							<CollapsibleSidebarSection header="Add an alternative move">
 								<Spacer height={12} />
 								<RepertoireMovesTable
@@ -173,16 +163,15 @@ export const Responses = function Responses() {
 					</Show>
 				</>
 			</Show>
-			{user()?.isAdmin && <InstructiveGamesView />}
 			<Switch>
 				<Match when={!positionReport()}>
-					<div style={s(c.center, c.column, c.py(48))}>
+					<div style={stylex(c.center, c.column, c.py(48))}>
 						<Puff color={c.primaries[60]} />
 					</div>
 				</Match>
 				<Match when={isEmpty(tableResponses()) && isEmpty(yourMoves())}>
 					<div
-						style={s(
+						style={stylex(
 							c.column,
 							c.alignCenter,
 							c.selfCenter,
@@ -194,11 +183,11 @@ export const Responses = function Responses() {
 						<CMText>
 							<i
 								class="fa-light fa-empty-set"
-								style={s(c.fg(c.gray[50]), c.fontSize(24))}
+								style={stylex(c.fg(c.gray[50]), c.fontSize(24))}
 							/>
 						</CMText>
 						<Spacer height={18} />
-						<CMText style={s(c.fg(c.gray[75]))}>
+						<CMText style={stylex(c.fg(c.gray[75]))}>
 							No moves available for this position. You can still add a move by
 							playing it on the board.
 						</CMText>

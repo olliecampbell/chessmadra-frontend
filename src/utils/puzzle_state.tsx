@@ -32,9 +32,9 @@ export interface PuzzleStateDelegate {
 }
 
 export const getInitialPuzzleState = (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint: ignore
 	_set: StateSetter<PuzzleState, any>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint: ignore
 	_get: StateGetter<PuzzleState, any>,
 ) => {
 	const set = <T,>(fn: (s: PuzzleState) => T, id?: string): T => {

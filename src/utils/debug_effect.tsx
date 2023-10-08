@@ -65,10 +65,10 @@ export const createDebugStateEffect = () => {
 			// quick((s) => {
 			//   console.log("setting past landing page");
 			//   s.userState.pastLandingPage = true;
-			//   // s.repertoireState.browsingState.replaceView(ConnectChesscom, {});
+			//   // s.repertoireState.ui.replaceView(ConnectChesscom, {});
 			// });
 			// quick((s) => {
-			//   s.repertoireState.browsingState.replaceView(CoverageSettings, {});
+			//   s.repertoireState.ui.replaceView(CoverageSettings, {});
 			// });
 			// quick((s) => {
 			// 	setTimeout(() => {

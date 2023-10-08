@@ -1,7 +1,7 @@
 import { filter, isNil } from "lodash-es";
 import { Show } from "solid-js";
 import { Puff } from "solid-spinner";
-import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
+import { quick, useMode, useSidebarState } from "~/utils/app_state";
 import { c } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { RepertoireCompletion } from "./RepertoireCompletion";
@@ -13,7 +13,8 @@ export const SavedLineView = function SavedLineView() {
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
 	const [addedLineState] = useSidebarState(([s]) => [s.addedLineState]);
 
-	const [mode, currentLine] = useSidebarState(([s]) => [s.mode, s.moveLog]);
+	const [currentLine] = useSidebarState(([s]) => [s.chessboard.getMoveLog()]);
+	const mode = useMode();
 	const reviewCurrentLineAction: SidebarAction = {
 		onPress: () => {
 			trackEvent(`${mode()}.added_line_state.practice_line`);

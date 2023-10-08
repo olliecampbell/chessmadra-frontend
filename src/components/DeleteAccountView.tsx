@@ -1,15 +1,7 @@
-import { Bullet } from "./Bullet";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { For, createSignal, onMount } from "solid-js";
-import { getAppState, quick, useSidebarState } from "~/utils/app_state";
+import { createSignal } from "solid-js";
+import { quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
-import { isIos } from "~/utils/env";
-import {
-	PRODUCT_CHESSBOOK_PRO_ANNUAL,
-	PRODUCT_CHESSBOOK_PRO_MONTHLY,
-} from "~/utils/in_app_purchases";
-import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
-import { trackEvent } from "~/utils/trackEvent";
 import { Dialog } from "@capacitor/dialog";
 import { animateSidebar } from "./SidebarContainer";
 
@@ -28,7 +20,7 @@ export const DeleteAccountView = (props: { pastLimit: boolean }) => {
 										"Your account has been deleted and you have been logged out.",
 								}).then(() => {
 									quick((s) => {
-										s.repertoireState.browsingState.popView();
+										s.repertoireState.ui.popView();
 										animateSidebar("left");
 									});
 								});

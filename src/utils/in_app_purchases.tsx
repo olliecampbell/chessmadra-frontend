@@ -1,7 +1,6 @@
 import { quick } from "~/utils/app_state";
 export const PRODUCT_CHESSBOOK_PRO_MONTHLY = "chessbook_pro.monthly";
 export const PRODUCT_CHESSBOOK_PRO_ANNUAL = "chessbook_pro.annual";
-import { isServer } from "solid-js/web";
 import client from "./client";
 
 export type InAppProductId =
@@ -12,6 +11,7 @@ const PRODUCTS = [PRODUCT_CHESSBOOK_PRO_MONTHLY, PRODUCT_CHESSBOOK_PRO_ANNUAL];
 
 export namespace InAppPurchases {
 	export async function loadProducts() {
+    // @ts-ignore
 		await import("cordova-plugin-purchase");
 		console.log({ CdvPurchase });
 

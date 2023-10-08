@@ -1,5 +1,5 @@
 import { Chess } from "@lubert/chess.ts";
-import { capitalize, filter, flatten, isEmpty, isNil, noop } from "lodash-es";
+import { capitalize, filter, isEmpty, isNil, noop } from "lodash-es";
 import {
 	For,
 	Match,
@@ -20,11 +20,9 @@ import {
 	useUserState,
 } from "~/utils/app_state";
 import { createStaticChessState } from "~/utils/chessboard_interface";
-import { intersperse } from "~/utils/intersperse";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { MoveAnnotationReview } from "~/utils/models";
-import { pluralize } from "~/utils/pluralize";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { AdminPageLayout } from "./AdminPageLayout";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { CMText } from "./CMText";
@@ -65,10 +63,10 @@ export const ReviewMoveAnnotationsView = (props: any) => {
 		<AdminPageLayout>
 			<Switch>
 				<Match when={isNil(moveAnnotationReviewQueue())}>
-					<CMText style={s()}>Loading...</CMText>
+					<CMText style={stylex()}>Loading...</CMText>
 				</Match>
 				<Match when={isEmpty(moveAnnotationReviewQueue())}>
-					<CMText style={s()}>Looks like there's nothing left to review</CMText>
+					<CMText style={stylex()}>Looks like there's nothing left to review</CMText>
 				</Match>
 				<Match when={true}>
 					<div class="row pb-4 items-center">
@@ -81,7 +79,6 @@ export const ReviewMoveAnnotationsView = (props: any) => {
 								setSelectedEmail(email);
 							}}
 							renderChoice={(choice, inList, onPress) => {
-								console.log("rendering dropdown choice", choice);
 								return <p onClick={onPress}>{choice ?? "No user selected"}</p>;
 							}}
 						/>
@@ -133,7 +130,7 @@ export const ReviewMoveAnnotationsView = (props: any) => {
 							</div>
 						</div>
 					</Show>
-					<div style={s(c.gridColumn({ gap: 92 }))}>
+					<div style={stylex(c.gridColumn({ gap: 92 }))}>
 						<For each={filteredAnnotations()}>
 							{(review) => <MoveAnnotationsReview review={review} />}
 						</For>
@@ -155,10 +152,10 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 	]);
 	const [reviewed, setReviewed] = createSignal(false);
 	return (
-		<div style={s(isMobile() ? c.column : c.row, c.constrainWidth, c.relative)}>
+		<div style={stylex(isMobile() ? c.column : c.row, c.constrainWidth, c.relative)}>
 			<Show when={reviewed()}>
 				<div
-					style={s(
+					style={stylex(
 						c.absoluteFull,
 						c.bg(c.gray[20]),
 						c.opacity(95),
@@ -166,11 +163,11 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 						c.zIndex(2),
 					)}
 				>
-					<CMText style={s()}>Reviewed!</CMText>
+					<CMText style={stylex()}>Reviewed!</CMText>
 				</div>
 			</Show>
-			<div style={s(c.width(400), c.constrainWidth)}>
-				<LazyLoad style={s(c.pb("100%"), c.height(0), c.width("100%"))}>
+			<div style={stylex(c.width(400), c.constrainWidth)}>
+				<LazyLoad style={stylex(c.pb("100%"), c.height(0), c.width("100%"))}>
 					<ChessboardView
 						onSquarePress={noop}
 						chessboardInterface={createStaticChessState({
@@ -189,12 +186,12 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 						}
 					}}
 				>
-					<div style={s(c.size(isMobile() ? 20 : 22))}>
+					<div style={stylex(c.size(isMobile() ? 20 : 22))}>
 						<LichessLogoIcon color={"white"} />
 					</div>
 					<Spacer width={8} />
 					<CMText
-						style={s(
+						style={stylex(
 							c.buttons.darkFloater.textStyles,
 							c.fg("white"),
 							c.weightRegular,
@@ -206,14 +203,14 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 				</Button>
 			</div>
 			<Spacer width={24} />
-			<div style={s(c.column, c.flexShrink(1))}>
-				<CMText style={s(c.fontSize(24), c.weightBold)}>
+			<div style={stylex(c.column, c.flexShrink(1))}>
+				<CMText style={stylex(c.fontSize(24), c.weightBold)}>
 					{capitalize(position.turn() === "b" ? "Black" : "White")} plays{" "}
 					{props.review.san}
 				</CMText>
 				<Spacer height={12} />
-				<div style={s(c.pb(12), c.fullWidth, c.width(300), c.bg(c.gray[80]))}>
-					<div style={s(c.height(120))}>
+				<div style={stylex(c.pb(12), c.fullWidth, c.width(300), c.bg(c.gray[80]))}>
+					<div style={stylex(c.height(120))}>
 						<AnnotationEditor
 							annotation={() => props.review.text}
 							onUpdate={(v) => {
@@ -229,17 +226,17 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 						/>
 					</div>
 					<Spacer height={12} />
-					<div style={s(c.row, c.alignCenter, c.justifyBetween)}>
+					<div style={stylex(c.row, c.alignCenter, c.justifyBetween)}>
 						{props.review?.userId === user()?.id ? (
 							<>
-								<CMText style={s(c.fg(c.gray[0]), c.px(12), c.caps)}>
+								<CMText style={stylex(c.fg(c.gray[0]), c.px(12), c.caps)}>
 									mine
 								</CMText>
 								<Spacer height={12} />
 							</>
 						) : (
 							<>
-								<CMText style={s(c.fg(c.gray[0]), c.px(12))}>
+								<CMText style={stylex(c.fg(c.gray[0]), c.px(12))}>
 									{props.review?.userEmail ?? "Anonymous"}
 								</CMText>
 							</>
@@ -248,13 +245,13 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 				</div>
 				<Spacer height={14} />
 				<Button
-					style={s(
+					style={stylex(
 						c.buttons.primary,
 						c.py(8),
 						c.bg(c.red[45]),
 						c.px(16),
 						{
-							textStyles: s(
+							textStyles: stylex(
 								c.buttons.basicSecondary.textStyles,
 								c.fontSize(14),
 								c.fg(c.gray[90]),
@@ -271,13 +268,13 @@ const MoveAnnotationsReview = (props: { review: MoveAnnotationReview }) => {
 				</Button>
 				<Spacer height={14} />
 				<Button
-					style={s(
+					style={stylex(
 						c.buttons.primary,
 						c.py(8),
 						c.bg(c.green[45]),
 						c.px(16),
 						{
-							textStyles: s(
+							textStyles: stylex(
 								c.buttons.basicSecondary.textStyles,
 								c.fontSize(14),
 								c.fg(c.gray[90]),

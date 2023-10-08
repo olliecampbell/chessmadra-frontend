@@ -1,4 +1,3 @@
-/* eslint-disable solid/reactivity, @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
 import { Chess, KING, SQUARES } from "@lubert/chess.ts";
 import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import {
@@ -24,7 +23,7 @@ import { useHovering } from "~/mocks";
 import { quick } from "~/utils/app_state";
 import { Plan } from "~/utils/models";
 import { QuizPlan } from "~/utils/queues";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { intersperse } from "./intersperse";
 import { Side, otherSide, toSide } from "./repertoire";
 
@@ -539,13 +538,8 @@ export const parsePlansToQuizMoves = (
 	position: Chess,
 ): QuizPlan[] => {
 	const consumer = new PlanQuizConsumer(plans, side, position);
-	// consumer.fianchettoConsumer();
-	// consumer.consumeCaptures();
-	// consumer.viaConsumer();
 	consumer.pieceDevelopmentConsumer();
 	consumer.consumeCastles();
-	// consumer.piecePlansConsumer();
-	// consumer.pawnPlansConsumer();
 	return consumer.quizPlans;
 };
 
@@ -557,7 +551,7 @@ const PlanMoves = (props: {
 }) => {
 	const combinator = props.exclusive ? "or" : "and";
 	return (
-		<CMText style={s(c.fg(c.colors.text.primary))}>
+		<CMText style={stylex(c.fg(c.colors.text.primary))}>
 			{intersperse(
 				props.metaPlans.map((metaPlan, i) => {
 					return (
@@ -572,7 +566,7 @@ const PlanMoves = (props: {
 				}),
 				(k, isLast) => {
 					return (
-						<CMText key={k} style={s(c.fg(c.colors.text.primary))}>
+						<CMText key={k} style={stylex(c.fg(c.colors.text.primary))}>
 							{isLast
 								? props.metaPlans.length > 2
 									? `, ${combinator} `
@@ -590,10 +584,10 @@ const EnglishSeparator = (props: { exclusive?: boolean; items: any[] }) => {
 	const combinator = props.exclusive ? "or" : "and";
 
 	return (
-		<CMText style={s(c.fg(c.colors.text.primary))}>
+		<CMText style={stylex(c.fg(c.colors.text.primary))}>
 			{intersperse(props.items, (k, isLast) => {
 				return (
-					<CMText key={k} style={s()}>
+					<CMText key={k} style={stylex()}>
 						{isLast
 							? props.items.length > 2
 								? `, ${combinator} `
@@ -633,9 +627,9 @@ const PlanMoveText = (props: {
 		},
 	);
 	return (
-		<div style={s(c.inlineBlock, c.clickable)} {...hoveringProps}>
+		<div style={stylex(c.inlineBlock, c.clickable)} {...hoveringProps}>
 			<CMText
-				style={s(
+				style={stylex(
 					c.weightSemiBold,
 					c.fg(hovering() ? c.purple[65] : c.arrowColors[55]),
 				)}

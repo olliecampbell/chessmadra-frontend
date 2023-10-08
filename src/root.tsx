@@ -1,44 +1,24 @@
-// @refresh reload
-import { Show, Suspense, onMount } from "solid-js";
+import { Show } from "solid-js";
 import {
 	Body,
 	ErrorBoundary,
-	FileRoutes,
 	Head,
 	Html,
 	Meta,
-	Routes,
 	Scripts,
 	Style,
-	useNavigate,
 } from "solid-start";
 import "tippy.js/animations/shift-away.css";
 import "tippy.js/dist/tippy.css";
 
-import { init as amplitudeInit } from "@amplitude/analytics-browser";
-import * as Sentry from "@sentry/browser";
-import { BrowserTracing } from "@sentry/tracing";
-import posthog from "posthog-js";
-import { produce } from "solid-js/store";
 import { isServer } from "solid-js/web";
 import "~/global.css";
-import { getAppState, quick } from "~/utils/app_state";
 import { App } from "./app";
-import AuthHandler from "./components/AuthHandler";
 import { HeadSiteMeta } from "./components/HeadSiteMeta";
-import { isChessmadra, isDevelopment } from "./utils/env";
-import {
-	posthogFeaturesLoaded,
-	setPosthogFeaturesLoaded,
-} from "./utils/experiments";
-import { c, s } from "./utils/styles";
+import { c, stylex } from "./utils/styles";
 import "virtual:uno.css";
 
-const development =
-	!process.env.NODE_ENV || process.env.NODE_ENV === "development";
-
 export default function Root() {
-	onMount(() => {});
 	return (
 		<Html lang="en">
 			<Head>
@@ -90,12 +70,11 @@ export default function Root() {
   `}
 			</Style>
 
-			<Body
-      class="bg-gray-7 text-primary"
-			>
+			<Body class="bg-gray-7 text-primary">
 				<ErrorBoundary
 					fallback={(e) => {
 						console.log("error!", e);
+						return null;
 					}}
 				>
 					<Show when={!isServer} fallback={null}>

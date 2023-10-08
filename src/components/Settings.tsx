@@ -1,16 +1,13 @@
-import Cookies from "js-cookie";
 import { Match, Show, Switch } from "solid-js";
 import { Spacer } from "~/components/Space";
 import { useHovering } from "~/mocks";
 import {
 	quick,
 	useAppState,
-	useBrowsingState,
+	useMode,
 	useRepertoireState,
-	useSidebarState,
 } from "~/utils/app_state";
-import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "~/utils/cookies";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { AuthStatus } from "~/utils/user_state";
@@ -19,20 +16,18 @@ import { LoginSidebar } from "./LoginSidebar";
 import { Pressable } from "./Pressable";
 
 export const SettingsButtons = () => {
-	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
-	const [view] = useBrowsingState(([s]) => [s.currentView()]);
-	const [user, ratingDescription, authStatus] = useAppState((s) => [
+	const [view] = useRepertoireState((s) => [s.ui.currentView()]);
+	const [user, authStatus] = useAppState((s) => [
 		s.userState.user,
-		s.userState.getUserRatingDescription(),
 		s.userState.authStatus,
 	]);
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const needsLogin = () =>
 		authStatus() === AuthStatus.Unauthenticated ||
 		(authStatus() === AuthStatus.Authenticated && user()?.temporary);
 	const responsive = useResponsiveV2();
 	return (
-		<div style={s(c.row, c.gap(responsive().switch(12, [BP.md, 16])))}>
+		<div style={stylex(c.row, c.gap(responsive().switch(12, [BP.md, 16])))}>
 			<Show when={mode() === "home" && false}>
 				<SettingButton
 					title={"Other tools"}
@@ -53,7 +48,7 @@ export const SettingsButtons = () => {
 						onPress={() => {
 							quick((s) => {
 								trackEvent("top_buttons.log_in.clicked");
-								s.repertoireState.browsingState.pushView(LoginSidebar);
+								s.repertoireState.ui.pushView(LoginSidebar);
 							});
 						}}
 					/>
@@ -91,7 +86,7 @@ export const SettingButton = (props: {
 	return (
 		<Pressable
 			onPress={props.onPress}
-			style={s(
+			style={stylex(
 				c.row,
 				c.alignCenter,
 				c.px(responsive().switch(0, [BP.md, 8])),
@@ -101,9 +96,9 @@ export const SettingButton = (props: {
 			)}
 			{...hoveringProps}
 		>
-			<i style={s(c.fg(color()), c.fontSize(12))} class={props.icon} />
+			<i style={stylex(c.fg(color()), c.fontSize(12))} class={props.icon} />
 			<Spacer width={responsive().switch(4, [BP.md, 8])} />
-			<CMText style={s(c.fg(color()), c.weightSemiBold)}>{props.title}</CMText>
+			<CMText style={stylex(c.fg(color()), c.weightSemiBold)}>{props.title}</CMText>
 		</Pressable>
 	);
 };

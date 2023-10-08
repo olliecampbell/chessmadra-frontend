@@ -1,51 +1,40 @@
 import { isEmpty, isNil, last } from "lodash-es";
-import { Show, createEffect } from "solid-js";
-import { getAppState, useSidebarState } from "~/utils/app_state";
+import { Show } from "solid-js";
+import { getAppState, useMode, useSidebarState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
-import { getLichessLink } from "~/utils/lichess";
-import { c, s } from "~/utils/styles";
-import { trackEvent } from "~/utils/trackEvent";
-import { BP, useResponsiveV2 } from "~/utils/useResponsive";
+import { c, stylex } from "~/utils/styles";
 import { FadeInOut } from "./FadeInOut";
 import { MoveLog } from "./MoveLog";
-import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 import { destructure } from "@solid-primitives/destructure";
 import { getAppropriateEcoName } from "~/utils/eco_codes";
 
 export const ChessboardFooter = () => {
-	const responsive = useResponsiveV2();
-	const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
-	const [currentLine, ecoName, ecoVariation] = destructure(() => {
+	const mode = useMode();
+	const [currentLine, ecoName] = destructure(() => {
 		let currentLine = null;
 		let currentEcoCode = null;
-		if (sidebarMode() === "review") {
+		if (mode() === "review") {
 			currentLine = getAppState().repertoireState.reviewState.moveLog;
 			currentEcoCode = getAppState().repertoireState.reviewState.lastEcoCode;
 		} else {
 			currentLine =
-				getAppState().repertoireState.browsingState.sidebarState.moveLog;
-			currentEcoCode =
-				getAppState().repertoireState.browsingState.sidebarState.lastEcoCode;
+				getAppState().repertoireState.browsingState.chessboard.getMoveLog();
+			currentEcoCode = getAppState().repertoireState.browsingState.lastEcoCode;
 		}
 		return [
 			currentLine,
 			currentEcoCode ? getAppropriateEcoName(currentEcoCode.fullName)[0] : null,
-			currentEcoCode
-				? last(getAppropriateEcoName(currentEcoCode.fullName)[1])
-				: null,
 		];
 	});
 	return (
 		<FadeInOut
-			style={s(c.row)}
+			style={stylex(c.row)}
 			class={clsx(
 				"row max-w-full  items-center <md:padding-sidebar w-full <md:min-h-6",
 			)}
 			open={
 				!isEmpty(currentLine()) &&
-				(sidebarMode() === "browse" ||
-					sidebarMode() === "review" ||
-					sidebarMode() === "build")
+				(mode() === "browse" || mode() === "review" || mode() === "build")
 			}
 		>
 			<Show when={ecoName()}>

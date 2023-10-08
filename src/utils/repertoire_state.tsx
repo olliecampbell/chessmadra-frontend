@@ -13,25 +13,15 @@ import {
 	values,
 } from "lodash-es";
 import client from "~/utils/client";
-import {
-	EcoCode,
-	LichessMistake,
-	LineReport,
-	PawnStructureDetails,
-	PlayerTemplate,
-	PositionReport,
-	RepertoireTemplate,
-} from "~/utils/models";
+import { EcoCode, LichessMistake, PositionReport } from "~/utils/models";
 import { AppState, quick } from "./app_state";
 import {
 	BrowsingMode,
 	BrowsingState,
 	getInitialBrowsingState,
-	makeDefaultSidebarState,
 	modeToUI,
 } from "./browsing_state";
 import { START_EPD } from "./chess";
-import { getPawnOnlyEpd, reversePawnEpd } from "./pawn_structures";
 import { createQuick } from "./quick";
 import {
 	BySide,
@@ -47,9 +37,8 @@ import {
 } from "./repertoire";
 import { ReviewState, getInitialReviewState } from "./review_state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-const NUM_MOVES_DEBUG_PAWN_STRUCTURES = 10;
 import dedent from "dedent-js";
-import { JSXElement } from "solid-js";
+import { Component, JSXElement } from "solid-js";
 import {
 	ImportSuccessOnboarding,
 	TrimRepertoireOnboarding,
@@ -60,14 +49,11 @@ import { clsx } from "./classes";
 import { shouldDebugEpd } from "./debug";
 import { isDevelopment } from "./env";
 import { MAX_MOVES_FREE_TIER } from "./payment";
+import { View } from "~/types/View";
+import { animateSidebar } from "~/components/SidebarContainer";
 
-const TEST_LINE = isDevelopment
-	? []
-	: // []
-	  [];
-console.log("TEST_LINE", TEST_LINE);
+const TEST_LINE = isDevelopment ? [] : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
-// const TEST_LINE = null;
 
 export interface LichessOauthData {
 	codeVerifier: string;
@@ -77,6 +63,7 @@ export interface LichessOauthData {
 }
 
 export interface RepertoireState {
+	repertoire: Repertoire | undefined;
 	lichessMistakes: LichessMistake[] | null;
 	needsToRefetchLichessMistakes: boolean;
 	numMyMoves: BySide<number>;
@@ -84,22 +71,31 @@ export interface RepertoireState {
 		isOnboarding: boolean;
 		side?: Side;
 	};
-	lineReports: Record<string, LineReport>;
 	numMovesFromEpd: BySide<Record<string, number>>;
 	numMovesDueFromEpd: BySide<Record<string, number>>;
 	earliestReviewDueFromEpd: BySide<Record<string, string>>;
 	expectedNumMovesFromEpd: BySide<Record<string, number>>;
 	quick: (fn: (_: RepertoireState) => void) => void;
-	repertoire: Repertoire | undefined;
 	numResponsesAboveThreshold?: BySide<number>;
 	numResponses?: BySide<number>;
 	positionReports: BySide<Record<string, PositionReport>>;
-	failedToFetchSharedRepertoire?: boolean;
 	repertoireGrades: BySide<RepertoireGrade | null>;
-	repertoireShareId?: string;
-	fetchSharedRepertoire: (id: string) => void;
+	ui: {
+		mode: BrowsingMode;
+		viewStack: View[];
+		currentView: () => View;
+		clearViews: () => void;
+		pushView: (
+			view: Component<any>,
+			opts?: { direction?: "left" | "right"; props?: any },
+		) => void;
+		replaceView: (
+			view: Component<any>,
+			opts?: { direction?: "left" | "right"; props?: any },
+		) => void;
+		popView: () => void;
+	};
 	fetchRepertoire: (initial?: boolean) => void;
-	// startLichessOauthFlow: () => void;
 	fetchEcoCodes: () => void;
 	fetchSupplementary: () => Promise<void>;
 	initializeRepertoire: (_: {
@@ -110,8 +106,6 @@ export interface RepertoireState {
 	}) => void;
 	initState: () => void;
 	fetchLichessMistakes: () => void;
-	// TODO: move review state stuff to its own module
-	usePlayerTemplate: (id: string) => void;
 	backToOverview: () => void;
 	uploadMoveAnnotation: (_: {
 		epd: string;
@@ -148,24 +142,17 @@ export interface RepertoireState {
 	deleteMove: (response: RepertoireMove) => Promise<void>;
 	trimRepertoire: (threshold: number, sides: Side[]) => Promise<void>;
 	exportPgn: (side: Side) => void;
-	addTemplates: () => void;
 	onRepertoireUpdate: () => void;
 	editingSide?: Side;
 	myResponsesLookup?: BySide<RepertoireMove[]>;
 	moveLookup?: BySide<Record<string, RepertoireMove>>;
 	currentLine?: string[];
 	hasCompletedRepertoireInitialization?: boolean;
-	repertoireTemplates?: RepertoireTemplate[];
-	playerTemplates?: PlayerTemplate[];
-	selectedTemplates: Record<string, string>;
-	conflictingId?: string;
 	// The first position where the user does not have a response for
 	divergencePosition?: string;
 	divergenceIndex?: number;
 	ecoCodes: EcoCode[];
-	pawnStructures: PawnStructureDetails[];
 	ecoCodeLookup: Record<string, EcoCode>;
-	pawnStructureLookup: Record<string, PawnStructureDetails>;
 	browsingState: BrowsingState;
 	reviewState: ReviewState;
 	deleteMoveState: {
@@ -173,19 +160,7 @@ export interface RepertoireState {
 		response?: RepertoireMove;
 		isDeletingMove: boolean;
 	};
-	updateShareLink: () => void;
-	//
-	overviewState: {
-		isShowingShareModal: boolean;
-	};
-
-	repertoireSettingsModalSide?: Side;
-	// Nav bar stuff
 	getBreadCrumbs: (mobile: boolean) => NavBreadcrumb[];
-
-	fetchDebugGames: () => void;
-	// fetchDebugPawnStructureForPosition: () => void;
-	selectDebugGame: (i: number) => void;
 	pastFreeTier: (side: Side) => boolean;
 	getChessboard: () => ChessboardInterface | null;
 }
@@ -211,11 +186,6 @@ export enum AddedLineStage {
 export interface FetchRepertoireResponse {
 	repertoire: Repertoire;
 	grades: BySide<RepertoireGrade>;
-	shareId: string;
-}
-
-interface GetSharedRepertoireResponse {
-	repertoire: Repertoire;
 }
 
 export const DEFAULT_ELO_RANGE = [1300, 1500] as [number, number];
@@ -240,6 +210,33 @@ export const getInitialRepertoireState = (
 	};
 	const initialState = {
 		...createQuick<RepertoireState>(setOnly),
+		ui: {
+			viewStack: [],
+			mode: "home",
+			clearViews: () =>
+				set(([s, gs]) => {
+					s.ui.viewStack = [];
+				}),
+			currentView: () =>
+				get(([s, gs]) => {
+					return last(s.ui.viewStack);
+				}),
+			pushView: (view, { direction, props } = {}) =>
+				set(([s, gs]) => {
+					animateSidebar(direction ?? "right");
+					s.ui.viewStack.push({ component: view, props: props ?? {} });
+				}),
+			replaceView: (view, { direction, props } = {}) =>
+				set(([s, gs]) => {
+					animateSidebar(direction ?? "right");
+					s.ui.viewStack.pop();
+					s.ui.viewStack.push({ component: view, props: props ?? {} });
+				}),
+			popView: () =>
+				set(([s, gs]) => {
+					s.ui.viewStack.pop();
+				}),
+		},
 		expectedNumMoves: { white: 0, black: 0 },
 		lichessMistakes: null,
 		needsToRefetchLichessMistakes: false,
@@ -258,20 +255,14 @@ export const getInitialRepertoireState = (
 		ecoCodes: [],
 		addedLineState: null,
 		numResponsesAboveThreshold: undefined,
-		pawnStructures: [],
 		isUpdatingEloRange: false,
 		repertoire: undefined,
 		browsingState: getInitialBrowsingState(_set, _get),
 		reviewState: getInitialReviewState(_set, _get),
-		overviewState: {
-			isShowingShareModal: false,
-		},
 		repertoireGrades: { white: null, black: null },
 		ecoCodeLookup: {},
-		pawnStructureLookup: {},
 		pendingResponses: {},
 		positionReports: { white: {}, black: {} },
-		lineReports: {},
 		onboarding: {
 			isOnboarding: false,
 		},
@@ -284,37 +275,6 @@ export const getInitialRepertoireState = (
 				s.fetchSupplementary();
 				s.fetchLichessMistakes();
 			}, "initState"),
-		usePlayerTemplate: (id: string) =>
-			set(async ([s]) => {
-				const { data }: { data: FetchRepertoireResponse } = await client.post(
-					"/api/v1/openings/use_player_template",
-					{
-						id,
-					},
-				);
-				set(([s]) => {
-					s.repertoire = data.repertoire;
-					s.repertoireGrades = data.grades;
-					s.onRepertoireUpdate();
-					s.browsingState.finishSidebarOnboarding();
-				});
-			}, "usePlayerTemplate"),
-		addTemplates: () =>
-			set(async ([s]) => {
-				const { data }: { data: FetchRepertoireResponse } = await client.post(
-					"/api/v1/openings/add_templates",
-					{
-						templates: Object.values(s.selectedTemplates),
-					},
-				);
-				set(([s]) => {
-					s.repertoire = data.repertoire;
-					s.repertoireGrades = data.grades;
-					s.onRepertoireUpdate();
-					s.backToOverview();
-					s.hasCompletedRepertoireInitialization = true;
-				});
-			}, "addTemplates"),
 		initializeRepertoire: ({ lichessUsername, blackPgn, whitePgn }) =>
 			set(async ([s]) => {
 				let lichessGames = [];
@@ -355,9 +315,9 @@ export const getInitialRepertoireState = (
 						null,
 					);
 					if (side && numBelowThreshold > minimumToTrim) {
-						s.browsingState.pushView(TrimRepertoireOnboarding);
+						s.ui.pushView(TrimRepertoireOnboarding);
 					} else {
-						s.browsingState.pushView(ImportSuccessOnboarding);
+						s.ui.pushView(ImportSuccessOnboarding);
 					}
 				}, "initializeRepertoire");
 			}),
@@ -381,8 +341,8 @@ export const getInitialRepertoireState = (
 				};
 
 				const breadcrumbs: NavBreadcrumb[] = [homeBreadcrumb];
-				const mode = s.browsingState.sidebarState.mode;
-				const side = s.browsingState.sidebarState.activeSide;
+				const mode = s.ui.mode;
+				const side = s.browsingState.activeSide;
 				if (side) {
 					breadcrumbs.push({
 						text: capitalize(side),
@@ -410,14 +370,6 @@ export const getInitialRepertoireState = (
 					});
 				}
 				return breadcrumbs;
-			}),
-		updateShareLink: () =>
-			set(([s]) => {
-				client.post("/api/v1/openings/update-share-link").then(({ data }) => {
-					set(([s]) => {
-						s.repertoireShareId = data.id;
-					});
-				});
 			}),
 		analyzeMoveOnLichess: (fen: string, move: string, turn: Side) =>
 			set(([s]) => {
@@ -452,12 +404,7 @@ export const getInitialRepertoireState = (
 					"_blank",
 				);
 			}),
-		onMove: () =>
-			set(([s]) => {
-				// if (s.debugPawnStructuresState) {
-				//   // s.fetchDebugPawnStructureForPosition();
-				// }
-			}, "onMove"),
+		onMove: () => set(([s]) => {}, "onMove"),
 		updateRepertoireStructures: () =>
 			set(([s, gs]) => {
 				if (!s.repertoire) {
@@ -657,7 +604,7 @@ export const getInitialRepertoireState = (
 							s.repertoire = data.repertoire;
 							s.repertoireGrades = data.grades;
 							s.onRepertoireUpdate();
-							if (s.browsingState.sidebarState.mode !== "review") {
+							if (s.ui.mode !== "review") {
 								s.browsingState.onPositionUpdate();
 							}
 						});
@@ -676,7 +623,7 @@ export const getInitialRepertoireState = (
 							s.repertoire = data.repertoire;
 							s.repertoireGrades = data.grades;
 							s.onRepertoireUpdate();
-							if (s.browsingState.sidebarState.mode !== "review") {
+							if (s.ui.mode !== "review") {
 								s.browsingState.onPositionUpdate();
 							}
 						});
@@ -781,20 +728,6 @@ export const getInitialRepertoireState = (
 				downloadLink.click();
 			}, "exportPgn"),
 
-		getPawnStructure: (epd: string) =>
-			get(([s]) => {
-				const pawnEpd = getPawnOnlyEpd(epd);
-				let pawnStructure = s.pawnStructureLookup[pawnEpd];
-				if (pawnStructure) {
-					return { reversed: false, pawnStructure };
-				}
-				const reversed = reversePawnEpd(pawnEpd);
-				pawnStructure = s.pawnStructureLookup[reversed];
-				if (pawnStructure) {
-					return { reversed: true, pawnStructure };
-				}
-				return {};
-			}),
 		uploadMoveAnnotation: ({
 			epd,
 			san,
@@ -813,7 +746,7 @@ export const getInitialRepertoireState = (
 					})
 					.then(({ data }) => {
 						set(([s]) => {
-							s.positionReports[s.browsingState.sidebarState.activeSide!][
+							s.positionReports[s.browsingState.activeSide!][
 								epd
 							]?.suggestedMoves?.forEach((sm) => {
 								if (sm.sanPlus === san) {
@@ -826,19 +759,19 @@ export const getInitialRepertoireState = (
 			}),
 		backToOverview: () =>
 			set(([s, gs]) => {
-				if (s.browsingState.sidebarState.mode === "review") {
+				if (s.ui.mode === "review") {
 					s.reviewState.stopReviewing();
 				}
 				// @ts-ignore
 				s.startBrowsing(null, "home");
 				gs.navigationState.push("/");
 				s.showImportView = false;
-				s.browsingState.clearViews();
+				s.ui.clearViews();
 				s.backToStartPosition();
-				s.browsingState.sidebarState.activeSide = undefined;
+				s.browsingState.activeSide = undefined;
 				s.divergencePosition = undefined;
 				s.divergenceIndex = undefined;
-				s.browsingState.sidebarState = makeDefaultSidebarState();
+				s.browsingState.reset();
 				if (s.needsToRefetchLichessMistakes) {
 					s.fetchLichessMistakes();
 				}
@@ -856,19 +789,19 @@ export const getInitialRepertoireState = (
 				) {
 					s.browsingState.chessboard.resetPosition();
 				}
-				s.browsingState.sidebarState.showPlansState = {
+				s.browsingState.showPlansState = {
 					visible: false,
 					coverageReached: false,
 					hasShown: false,
 				};
 				// TODO: should just reset to a default state here, instead of doing it one by one
-				s.browsingState.sidebarState.mode = mode;
-				s.browsingState.sidebarState.activeSide = side;
-				s.browsingState.sidebarState.addedLineState.visible = false;
-				s.browsingState.sidebarState.isPastCoverageGoal = false;
+				s.ui.mode = mode;
+				s.browsingState.activeSide = side;
+				s.browsingState.addedLineState.visible = false;
+				s.browsingState.isPastCoverageGoal = false;
 				s.browsingState.onPositionUpdate();
 				s.browsingState.chessboard.set((c) => {
-					c.flipped = s.browsingState.sidebarState.activeSide === "black";
+					c.flipped = s.browsingState.activeSide === "black";
 				});
 				if (options?.import) {
 					// just don't show the chessboard
@@ -903,25 +836,17 @@ export const getInitialRepertoireState = (
 					}: {
 						data: {
 							ecoCodes: EcoCode[];
-							pawnStructures: PawnStructureDetails[];
 						};
 					}) => {
 						set(([s]) => {
 							s.ecoCodes = data.ecoCodes;
 							s.ecoCodeLookup = keyBy(s.ecoCodes, (e) => e.epd);
-							s.pawnStructures = data.pawnStructures;
-							s.pawnStructureLookup = {};
-							const mode = s.browsingState.sidebarState.mode;
+							const mode = s.ui.mode;
 							if (mode === "review") {
 								s.reviewState.onPositionUpdate();
 							} else {
 								s.browsingState.onPositionUpdate();
 							}
-							forEach(s.pawnStructures, (e) => {
-								forEach(e.pawnEpds, (pawnEpd) => {
-									s.pawnStructureLookup[pawnEpd] = e;
-								});
-							});
 						});
 					},
 				);
@@ -937,104 +862,15 @@ export const getInitialRepertoireState = (
 						});
 					});
 			}),
-		fetchDebugGames: () =>
-			set(([s]) => {
-				// s.debugPawnStructuresState = {
-				//   games: [],
-				//   loadingGames: true,
-				//   byPosition: {},
-				//   mode: "games",
-				//   i: 0,
-				// };
-				// client
-				//   .post("/api/v1/debug/master_games", {
-				//     move_number: NUM_MOVES_DEBUG_PAWN_STRUCTURES,
-				//   })
-				//   .then(({ data }: { data: any }) => {
-				//     set(([s]) => {
-				//       s.debugPawnStructuresState.i = 0;
-				//       s.debugPawnStructuresState.loadingGames = false;
-				//       s.debugPawnStructuresState.games = sortBy(data.games, (g) => {
-				//         return !some(g.pawnStructures, (s) => s.passed);
-				//       });
-				//       if (s.debugPawnStructuresState.mode === "games") {
-				//         s.selectDebugGame(0);
-				//       }
-				//     });
-				//   });
-			}),
-		selectDebugGame: (i: number) =>
-			set(([s]) => {
-				// const { game, pawnStructures } = s.debugPawnStructuresState.games[i];
-				// s.debugPawnStructuresState.i = i;
-				// s.debugPawnStructuresState.game = game;
-				// s.debugPawnStructuresState.moves = NUM_MOVES_DEBUG_PAWN_STRUCTURES;
-				// s.debugPawnStructuresState.pawnStructures = sortBy(
-				//   pawnStructures,
-				//   (p) => {
-				//     return !p.passed;
-				//   }
-				// );
-				// s.debugPawnStructuresState.r
-				// s.chessboardState.playPgn(
-				//   lineToPgn(take(game.moves, NUM_MOVES_DEBUG_PAWN_STRUCTURES))
-				// );
-			}),
 		getChessboard: () => {
 			return get(([s]) => {
-				if (s.browsingState.sidebarState.mode === "review") {
+				if (s.ui.mode === "review") {
 					return s.reviewState.chessboard;
 				} else {
 					return s.browsingState.chessboard;
 				}
 			});
 		},
-		fetchSharedRepertoire: (id: string) =>
-			set(([s]) => {
-				Promise.all([
-					s.fetchSupplementary(),
-
-					client
-						.get(`/api/v1/openings/shared/${id}`)
-						.then(({ data }: { data: GetSharedRepertoireResponse }) => {
-							set(([s]) => {
-								s.repertoire = data.repertoire;
-								s.onRepertoireUpdate();
-							});
-						})
-						.catch(() => {
-							set(([s]) => {
-								s.failedToFetchSharedRepertoire = true;
-							});
-						}),
-				]).then(() => {
-					set(([s, appState]) => {
-						// window.location.search = "";
-						s.startBrowsing("white", "build");
-					});
-				});
-			}),
-		// startLichessOauthFlow: () =>
-		//   set(([s]) => {
-		//     let pkce = pkceChallenge();
-		//     let redirectUri = window.location.origin + "/oauth/lichess/callback";
-		//     let lichessOauthData = {
-		//       codeVerifier: pkce.code_verifier,
-		//       redirectUri: redirectUri,
-		//       clientId: "chess-madra",
-		//       codeChallenge: pkce.code_challenge,
-		//     } as LichessOauthData;
-		//     let url = `https://lichess.org/oauth/authorize?response_type=code&client_id=chess-madra&redirect_uri=${encodeURIComponent(
-		//       redirectUri
-		//     )}&scope=email:read&state=&code_challenge=${
-		//       pkce.code_challenge
-		//     }&code_challenge_method=S256`;
-		//     window.sessionStorage.setItem(
-		//       "lichess-oauth-data",
-		//       JSON.stringify(lichessOauthData)
-		//     );
-		//     window.location.href = url;
-		//   }),
 		fetchRepertoire: (initial?: boolean) =>
 			set(([s, appState]) => {
 				const user = appState.userState.user;
@@ -1044,7 +880,6 @@ export const getInitialRepertoireState = (
 						set(([s]) => {
 							s.repertoire = data.repertoire;
 							s.repertoireGrades = data.grades;
-							s.repertoireShareId = data.shareId;
 							s.hasCompletedRepertoireInitialization = true;
 							s.onRepertoireUpdate();
 							if (!s.getIsRepertoireEmpty()) {
@@ -1134,12 +969,11 @@ export const getInitialRepertoireState = (
 			}),
 		backToStartPosition: () =>
 			set(([s]) => {
-				if (s.browsingState.sidebarState.mode !== "review") {
+				if (s.ui.mode !== "review") {
 					s.browsingState.chessboard.resetPosition();
 					return;
 				}
 			}),
-		selectedTemplates: {},
 		fetchLichessMistakes: () => {
 			set(([s, gs]) => {
 				const connected =

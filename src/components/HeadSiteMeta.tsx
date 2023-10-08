@@ -1,7 +1,6 @@
-import { Link, Meta, MetaProvider, Title } from "@solidjs/meta";
-import { Show, mergeProps } from "solid-js";
+import { Meta, Title } from "@solidjs/meta";
+import { mergeProps } from "solid-js";
 import { isChessmadra } from "~/utils/env";
-import { c } from "~/utils/styles";
 
 export interface SiteMetadata {
 	title?: string;

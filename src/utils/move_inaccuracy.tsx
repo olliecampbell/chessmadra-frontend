@@ -3,7 +3,7 @@ import { Match, Switch } from "solid-js";
 import { CMText } from "~/components/CMText";
 import { initTooltip } from "~/components/Tooltip";
 import { PositionReport, StockfishReport, SuggestedMove } from "~/utils/models";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { Side } from "./repertoire";
 
 export const getWinPercentage = (
@@ -90,7 +90,7 @@ export const getMoveRating = (
 };
 
 export const getMoveRatingIcon = (rating: MoveRating) => {
-	const styles = s(c.weightBold, c.fontSize(14));
+	const styles = stylex(c.weightBold, c.fontSize(14));
 	return (
 		<div
 			ref={(ref) => {
@@ -117,13 +117,13 @@ export const getMoveRatingIcon = (rating: MoveRating) => {
 		>
 			<Switch>
 				<Match when={rating === MoveRating.Inaccuracy}>
-					<CMText style={s(c.fg(c.yellow[60]), styles)}>?!</CMText>
+					<CMText style={stylex(c.fg(c.yellow[60]), styles)}>?!</CMText>
 				</Match>
 				<Match when={rating === MoveRating.Mistake}>
-					<CMText style={s(c.fg(c.orange[60]), styles)}>?</CMText>
+					<CMText style={stylex(c.fg(c.orange[60]), styles)}>?</CMText>
 				</Match>
 				<Match when={rating === MoveRating.Blunder}>
-					<CMText style={s(c.fg(c.red[60]), styles)}>??</CMText>
+					<CMText style={stylex(c.fg(c.red[60]), styles)}>??</CMText>
 				</Match>
 			</Switch>
 		</div>

@@ -1,6 +1,6 @@
 import { isNil } from "lodash-es";
 import { quick, useRepertoireState, useSidebarState } from "~/utils/app_state";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
@@ -33,7 +33,7 @@ export const DeleteLineView = function DeleteLineView() {
 							s.repertoireState.deleteMove(response).then(() => {
 								quick((s) => {
 									animateSidebar("left");
-									s.repertoireState.browsingState.sidebarState.deleteLineState.visible = false;
+									s.repertoireState.browsingState.deleteLineState.visible = false;
 								});
 							});
 						});
@@ -47,7 +47,7 @@ export const DeleteLineView = function DeleteLineView() {
 					onPress: () => {
 						quick((s) => {
 							animateSidebar("left");
-							s.repertoireState.browsingState.sidebarState.deleteLineState.visible = false;
+							s.repertoireState.browsingState.deleteLineState.visible = false;
 						});
 					},
 					style: "primary",
@@ -56,7 +56,7 @@ export const DeleteLineView = function DeleteLineView() {
 			]}
 		>
 			<div>
-				<CMText style={s()}>
+				<CMText style={stylex()}>
 					{multiple
 						? "Select the line you want to delete. This cannot be undone."
 						: "This will also delete any moves past this one. This cannot be undone."}

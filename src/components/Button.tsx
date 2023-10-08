@@ -1,15 +1,14 @@
-import { Show } from "solid-js";
+import { JSXElement, Show } from "solid-js";
 import { BarLoader } from "~/mocks";
-import { c, s } from "~/utils/styles";
-// import { LoaderSizeMarginProps } from "react-spinners/interfaces";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
 
 export const Button = (props: {
-	onPress?: any;
+	onPress?: (e: MouseEvent) => void;
 	loaderProps?: any;
 	style?: any;
-	children: any;
+	children: JSXElement;
 	isLoading?: boolean;
 	class?: string;
 }) => {
@@ -20,25 +19,25 @@ export const Button = (props: {
 	return (
 		<Pressable
 			class={props.class}
-			style={s(c.relative, props.style)}
-			onPress={() => {
+			style={stylex(c.relative, props.style)}
+			onPress={(e: MouseEvent) => {
 				if (!props.isLoading) {
-					props.onPress();
+					props.onPress?.(e);
 				}
 			}}
 		>
 			<Show when={props.isLoading}>
-				<div style={s(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
-					<div style={s(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
+				<div style={stylex(c.absolute, c.fullHeight, c.fullWidth, c.center)}>
+					<div style={stylex(c.maxWidth("calc(100% - 18px)"), c.fullWidth)}>
 						<BarLoader
 							{...props.loaderProps}
-							cssOverride={s(c.width("100%"))}
+							cssOverride={stylex(c.width("100%"))}
 						/>
 					</div>
 				</div>
 			</Show>
 			<div
-				style={s(
+				style={stylex(
 					c.opacity(props.isLoading ? 0 : 100),
 					c.row,
 					c.center,

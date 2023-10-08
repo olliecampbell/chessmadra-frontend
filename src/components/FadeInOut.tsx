@@ -1,7 +1,5 @@
-import { Accessor, createSignal, onMount } from "solid-js";
 import { clsx } from "~/utils/classes";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 
 export const FadeInOut = (props: {
 	children: any;
@@ -13,14 +11,10 @@ export const FadeInOut = (props: {
 	id?: string;
 }) => {
 	const maxOpacity = props.maxOpacity ?? 100;
-	const opacity = () => (props.open ? maxOpacity : 0);
-	// createEffect(() => {
-	//   console.log(`opacity is ${opacity()}, open is ${props.open()}`);
-	// });
 	return (
 		<div
 			id={props.id}
-			style={s(!props.open && c.noPointerEvents, props.style)}
+			style={stylex(!props.open && c.noPointerEvents, props.style)}
 			class={clsx(
 				"transition-opacity",
 				props.open ? "opacity-100" : "opacity-0",

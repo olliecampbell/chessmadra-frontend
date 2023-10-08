@@ -1,6 +1,5 @@
 import { JSX, Show, createSignal, onMount } from "solid-js";
-import { DOMElement } from "solid-js/jsx-runtime";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { VERTICAL_BREAKPOINT } from "./SidebarLayout";
 
@@ -55,7 +54,7 @@ export const SidebarContainer = (props: {
 
 	return (
 		<div
-			style={s(
+			style={stylex(
 				c.column,
 				c.zIndex(4),
 				c.relative,
@@ -67,7 +66,7 @@ export const SidebarContainer = (props: {
 		>
 			<Show when={!vertical()}>
 				<div
-					style={s(
+					style={stylex(
 						c.absolute,
 						c.top(0),
 						c.right(0),
@@ -81,7 +80,7 @@ export const SidebarContainer = (props: {
 			</Show>
 			{!vertical() && props.backSection}
 			<div
-				style={s(
+				style={stylex(
 					c.column,
 					// c.top(200),
 					c.fullWidth,
@@ -93,7 +92,7 @@ export const SidebarContainer = (props: {
 				<div
 					id="prev-sidebar"
 					ref={setPreviousRef}
-					style={s(
+					style={stylex(
 						c.keyedProp("grid-area")("1/1"),
 						c.displayFlex,
 						c.noPointerEvents,
@@ -101,7 +100,7 @@ export const SidebarContainer = (props: {
 				/>
 				<div
 					ref={setCurrentRef}
-					style={s(c.keyedProp("grid-area")("1/1"), c.displayFlex)}
+					style={stylex(c.keyedProp("grid-area")("1/1"), c.displayFlex)}
 				>
 					<Show when={vertical()}>{props.backSection}</Show>
 					{props.children}

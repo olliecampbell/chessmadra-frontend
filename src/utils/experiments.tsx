@@ -12,7 +12,7 @@ type PosthogFeature =
 	| "homepage-cta"
 	| "homepage-image";
 
-const overrides: Record<PosthogFeature, string> = {};
+const overrides: Partial<Record<PosthogFeature, string>> = {};
 // overrides
 if (isDevelopment && !isServer) {
 	overrides["homepage-image"] = "2";

@@ -1,8 +1,7 @@
-import { JSX, createEffect, splitProps } from "solid-js";
+import { JSX,  splitProps } from "solid-js";
 import { clsx } from "~/utils/classes";
 import { InputError } from "./forms/InputError";
 import { InputLabel } from "./forms/InputLabel";
-import { createField } from "@felte/solid";
 
 type TextInputProps = {
 	name: string;
@@ -37,14 +36,6 @@ export function TextInput(props: TextInputProps) {
 	const error = () => {
 		return props.errors?.[props.name]?.[0];
 	};
-	// const { field, onInput, onBlur, onChange } = createField(props.name);
-	//
-	//   function handleInput(e) {
-	//     console.log("On input", e.target.value);
-	//     onChange(e.target.value);
-	//
-	//
-	//   }
 
 	return (
 		<div class={clsx(!props.padding && "", props.class)}>
@@ -85,9 +76,6 @@ export function TextArea(props: TextAreaProps) {
 		"error",
 		"padding",
 	]);
-	createEffect(() => {
-		console.log(`errors, ${props.name}`, props.error);
-	});
 	return (
 		<div class={clsx(!props.padding && "", props.class)}>
 			<InputLabel

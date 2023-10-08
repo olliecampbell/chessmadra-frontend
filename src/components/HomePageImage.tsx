@@ -1,6 +1,6 @@
 import { getFeature } from "~/utils/experiments";
 
-export const HomePageImage = (props: { onClick: () => void }) => {
+export const HomePageImage = () => {
 	const src = () => {
 		if (getFeature("homepage-image")) {
 			return "/homepage_imgs/hero_overview_overview.png";

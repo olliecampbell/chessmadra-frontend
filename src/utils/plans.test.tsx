@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { getAllPossibleMoves } from "./move_generation";
 import { getMaxPlansForQuizzing } from "./plans";
 
 test("getting number of plan quizzes", () => {

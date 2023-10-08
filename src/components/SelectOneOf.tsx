@@ -1,5 +1,5 @@
 import { For, JSXElement } from "solid-js";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { Pressable } from "./Pressable";
 
@@ -18,7 +18,7 @@ export const SelectOneOf = <T,>(props: {
 }) => {
 	return (
 		<div
-			style={s(
+			style={stylex(
 				c.overflowHidden,
 				props.horizontal ? c.row : c.column,
 				props.containerStyles,
@@ -39,7 +39,7 @@ export const SelectOneOf = <T,>(props: {
 									props.onSelect(choice, i());
 								}}
 								key={i}
-								style={s(
+								style={stylex(
 									active() &&
 										props.tabStyle &&
 										c.borderBottom(`2px solid ${c.gray[90]}`),
@@ -57,7 +57,7 @@ export const SelectOneOf = <T,>(props: {
 								)}
 							>
 								<CMText
-									style={s(
+									style={stylex(
 										props.tabStyle
 											? c.fg(active() ? c.colors.text.primary : c.gray[80])
 											: c.fg(

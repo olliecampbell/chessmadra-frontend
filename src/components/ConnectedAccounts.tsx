@@ -4,7 +4,6 @@ import { noop } from "lodash-es";
 import { Show } from "solid-js";
 import { Puff } from "solid-spinner";
 import * as yup from "yup";
-import { Spacer } from "~/components/Space";
 import { getAppState, quick, useUserState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { SeeMoreActions, SidebarFullWidthButton } from "./SidebarActions";
@@ -43,7 +42,7 @@ export const ConnectAccountsSetting = () => {
 				platform="Chess.com"
 				onClick={() => {
 					quick((s) => {
-						s.repertoireState.browsingState.pushView(ConnectChesscom);
+						s.repertoireState.ui.pushView(ConnectChesscom);
 					});
 				}}
 				onDisconnect={() => {
@@ -171,7 +170,6 @@ export const ConnectChesscom = () => {
 									placeholder="username"
 									type="text"
 									name="username"
-									label={null}
 									errors={errors()}
 								/>
 								<InputError

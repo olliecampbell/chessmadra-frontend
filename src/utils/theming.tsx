@@ -1,5 +1,5 @@
 import { keyBy } from "lodash-es";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 export type BoardTheme = {
 	light: TileTheme;
 	dark: TileTheme;
@@ -115,7 +115,7 @@ export const BOARD_THEMES: BoardTheme[] = [
 		},
 		dark: {
 			color: c.hsl(0, 0, 79),
-			styles: s(
+			styles: stylex(
 				c.keyedProp("background")(
 					`
       repeating-linear-gradient(

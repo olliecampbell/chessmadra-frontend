@@ -3,7 +3,6 @@ import { flatten } from "lodash-es";
 import client from "~/utils/client";
 import { MoveAnnotation, MoveAnnotationReview } from "~/utils/models";
 import { AppState } from "./app_state";
-import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
 import { createQuick } from "./quick";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { StorageItem } from "./storageItem";
@@ -128,7 +127,8 @@ export const getInitialAdminState = (
 					})
 					.then(({ data }: { data: MoveAnnotation }) => {
 						set(([s, gs]) => {
-							s.moveAnnotationReviewQueue.forEach((r) => {
+							s.moveAnnotationReviewQueue!.forEach((r) => {
+								// @ts-ignore
 								r.annotations.forEach((ann) => {
 									if (
 										r.epd === epd &&

@@ -1,6 +1,6 @@
 import { useRepertoireState } from "~/utils/app_state";
 import { Side } from "~/utils/repertoire";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { CoverageBar } from "./CoverageBar";
 import { Spacer } from "./Space";
 
@@ -12,7 +12,7 @@ export const RepertoireCompletion = (props: { side: Side }) => {
 		<div>
 			<p class="body-text">
 				Your {props.side} repertoire is{" "}
-				<b style={s(c.fg(c.gray[80]), c.weightSemiBold)}>
+				<b style={stylex(c.fg(c.gray[80]), c.weightSemiBold)}>
 					{Math.round(progressState().percentComplete)}%
 				</b>{" "}
 				complete.

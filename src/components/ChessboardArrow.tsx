@@ -1,7 +1,7 @@
 import { Square } from "@lubert/chess.ts/dist/types";
 import { destructure } from "@solid-primitives/destructure";
 import { getSquareOffset } from "~/utils/chess";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 
 export const ChessboardArrowView = (props: {
 	faded: boolean;
@@ -70,7 +70,7 @@ export const ChessboardArrowView = (props: {
 	});
 	return (
 		<div
-			style={s(
+			style={stylex(
 				c.absoluteFull,
 				c.noPointerEvents,
 				c.zIndex(props.focused ? 101 : 100),

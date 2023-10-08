@@ -1,39 +1,32 @@
 import { isEmpty } from "lodash-es";
-import { Show } from "solid-js";
-import { getAppState, useSidebarState } from "~/utils/app_state";
+import { getAppState, useMode, useSidebarState } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { getLichessLink } from "~/utils/lichess";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
-import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { FadeInOut } from "./FadeInOut";
-import { MoveLog } from "./MoveLog";
 
 export const AnalyzeOnLichessButton = (props: { short?: boolean }) => {
-	const responsive = useResponsiveV2();
-	const padding = 8;
-	const [sidebarMode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
 	const currentLine = () => {
-		if (sidebarMode() === "review") {
+		if (mode() === "review") {
 			return getAppState().repertoireState.reviewState.moveLog;
 		} else {
-			return getAppState().repertoireState.browsingState.sidebarState.moveLog;
+			return getAppState().repertoireState.browsingState.chessboard.getMoveLog();
 		}
 	};
 	return (
 		<FadeInOut
-			style={s(c.row)}
+			style={stylex(c.row)}
 			class={clsx("shrink-0 ")}
 			open={
 				!isEmpty(currentLine()) &&
-				(sidebarMode() === "browse" ||
-					sidebarMode() === "review" ||
-					sidebarMode() === "build")
+				(mode() === "browse" || mode() === "review" || mode() === "build")
 			}
 		>
 			<a
-				style={s()}
+				style={stylex()}
 				class={clsx(
 					"text-sm text-tertiary &hover:text-primary  -my-2 shrink-0 py-2 font-medium transition-colors",
 				)}
@@ -43,7 +36,7 @@ export const AnalyzeOnLichessButton = (props: { short?: boolean }) => {
 				onClick={() => {
 					trackEvent("chessboard.analyze_on_lichess", {
 						side: activeSide(),
-						mode: sidebarMode(),
+						mode: mode(),
 					});
 				}}
 			>

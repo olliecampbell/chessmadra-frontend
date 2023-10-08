@@ -6,27 +6,6 @@ export const hsl = (h: number, s: number, l: number, a?: number) => {
 	}
 };
 
-const genShades = (
-	hue: number,
-	_minSaturation?: number,
-	_maxSaturation?: number,
-): Record<number, string> => {
-	const shades: Record<number, string> = {};
-	const minSaturation = _minSaturation ?? 20;
-	const maxSaturation = _maxSaturation ?? 80;
-	const minLightness = 4;
-	const maxLightness = 80;
-	for (let i = 0; i <= 100; i = i + 1) {
-		const lightness_y = easeInOutSine(i / 100);
-		const saturation =
-			minSaturation + ((maxSaturation - minSaturation) * (100 - i)) / 100;
-		const lightness =
-			minLightness + (maxLightness - minLightness) * lightness_y;
-		shades[i] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-	}
-	return shades;
-};
-
 const genShadesV2 = (
 	hue: number,
 	options?: { saturation?: number },
@@ -44,9 +23,6 @@ const genShadesV2 = (
 };
 
 export const grayHue = 200;
-function easeInOutSine(x: number): number {
-	return -(Math.cos(Math.PI * x) - 1) / 2;
-}
 const genGrays = (
 	hue: number,
 	minSat: number,

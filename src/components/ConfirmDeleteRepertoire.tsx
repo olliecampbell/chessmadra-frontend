@@ -1,6 +1,4 @@
 import { quick, useSidebarState } from "~/utils/app_state";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { CMText } from "./CMText";
 import { SidebarTemplate } from "./SidebarTemplate";
@@ -18,7 +16,7 @@ export const ConfirmDeleteRepertoire = function DeleteLineView() {
 					onPress: () => {
 						quick((s) => {
 							s.repertoireState.deleteRepertoire(side()!);
-							s.repertoireState.browsingState.popView();
+							s.repertoireState.ui.popView();
 							trackEvent("repertoire.delete_side");
 						});
 					},

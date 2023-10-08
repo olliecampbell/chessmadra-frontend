@@ -1,23 +1,15 @@
 import { Chess, Move } from "@lubert/chess.ts";
 import { destructure } from "@solid-primitives/destructure";
 import { filter, find, first, forEach, isNil, range } from "lodash-es";
-import {
-	Accessor,
-	For,
-	JSX,
-	Show,
-	createEffect,
-	createMemo,
-	createSignal,
-} from "solid-js";
+import { Accessor, For, JSX, Show, createMemo } from "solid-js";
 import { Portal } from "solid-js/web";
 import { Spacer } from "~/components/Space";
 import { useHovering } from "~/mocks";
 import {
 	getAppState,
 	quick,
+	useMode,
 	useRepertoireState,
-	useSidebarState,
 } from "~/utils/app_state";
 import { START_EPD } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
@@ -25,7 +17,7 @@ import { useIsMobileV2 } from "~/utils/isMobile";
 import { pieceSymbolToPieceName } from "~/utils/plans";
 import { Quiz, QuizGroup } from "~/utils/queues";
 import { Side } from "~/utils/repertoire";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import {
 	BOARD_THEMES_BY_ID,
 	BoardTheme,
@@ -40,8 +32,9 @@ import { SidebarHeader } from "./RepertoireEditingHeader";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { animateSidebar } from "./SidebarContainer";
+import { Square } from "@lubert/chess.ts/dist/types";
 
-export const RepertoireReview = (props: {}) => {
+export const RepertoireReview = () => {
 	const isMobile = useIsMobileV2();
 	const [completedReviewPositionMoves, currentMove, showNext] =
 		useRepertoireState((s) => [
@@ -52,7 +45,7 @@ export const RepertoireReview = (props: {}) => {
 	const reviewOptions = () =>
 		getAppState().repertoireState.reviewState.activeOptions;
 	const reviewingMistakes = () => reviewOptions()?.lichessMistakes;
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const side = () =>
 		getAppState().repertoireState.reviewState.reviewSide as Side;
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
@@ -263,27 +256,27 @@ export const RepertoireReview = (props: {}) => {
 		const fen = `${lichessMistake.epd} 0 1`;
 		const position = new Chess(fen);
 		const [move] = position.validateMoves([lichessMistake.playedSan]) as [Move];
-		return [move?.to, move?.from];
+		return [move?.to as Square, move?.from as Square];
 	});
 
 	const mountPoint = getAppState().repertoireState.reviewState.chessboard.get(
 		(s) => s.refs.arrowsContainerRef,
 	);
-	console.log("rendering repertoire review!");
 	return (
 		<>
-			<Portal mount={mountPoint}>
+			<Portal mount={mountPoint ?? undefined}>
 				<div>
 					<Show when={currentMove()?.lichessMistake}>
 						<ChessboardArrowView
+							faded={false}
 							color={c.orange[55]}
 							focused={wrongMoveHovered()}
 							flipped={getAppState().repertoireState.reviewState.chessboard.get(
 								(c) => c.flipped,
 							)}
 							hidden={!wrongMoveHovered()}
-							toSquare={arrowToSquare()}
-							fromSquare={arrowFromSquare()}
+							toSquare={arrowToSquare()!}
+							fromSquare={arrowFromSquare()!}
 						/>
 					</Show>
 				</div>
@@ -332,19 +325,10 @@ export const RepertoireReview = (props: {}) => {
 				<Show when={num() > 1}>
 					<>
 						<div
-							class="mt-2"
-							style={s(
-								c.row,
-								c.overflowHidden,
-								c.fullWidth,
-								c.height(12),
-								c.round,
-								c.alignStretch,
-								c.border(`1px solid ${c.gray[20]}`),
-							)}
+							class="mt-2 row overflow-hidden w-full h-3 rounded-full items-stretch"
+							style={stylex(c.border(`1px solid ${c.gray[20]}`))}
 						>
 							{(() => {
-								console.log("this gets re-rendered");
 								return null;
 							})()}
 							<Intersperse
@@ -353,7 +337,7 @@ export const RepertoireReview = (props: {}) => {
 									return (
 										<div
 											class={clsx("bg-gray-20 w-0.5")}
-											style={s(c.fullHeight)}
+											style={stylex(c.fullHeight)}
 										/>
 									);
 								}}
@@ -366,7 +350,7 @@ export const RepertoireReview = (props: {}) => {
 												hasCompleted() ? "bg-gray-80" : "bg-gray-40",
 												"transition-colors",
 											)}
-											style={s(c.grow)}
+											style={stylex(c.grow)}
 										/>
 									);
 								}}

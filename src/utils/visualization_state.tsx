@@ -1,19 +1,11 @@
-/* eslint-disable */
 import { Chess, Move } from "@lubert/chess.ts";
 import { cloneDeep, noop, takeRight } from "lodash-es";
-import {
-	PlaybackSpeed,
-	ProgressMessage,
-	ProgressMessageType,
-	VisualizationState,
-} from "~/types/VisualizationState";
+import { PlaybackSpeed, VisualizationState } from "~/types/VisualizationState";
 import { fensTheSame } from "~/utils/fens";
 import { StorageItem } from "~/utils/storageItem";
-import { times } from "~/utils/times";
 import { fetchNewPuzzle } from "./api";
 import { AppState } from "./app_state";
 import {
-	ChessboardDelegate,
 	ChessboardInterface,
 	createChessboardInterface,
 } from "./chessboard_interface";
@@ -26,49 +18,12 @@ import {
 import { createQuick } from "./quick";
 import { toSide } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import {
-	DEBUG_CLIMB_START_PLAYING,
-	DEBUG_PASS_FAIL_BUTTONS,
-} from "./test_settings";
+import { DEBUG_PASS_FAIL_BUTTONS } from "./test_settings";
 
 type Stack = [VisualizationState, AppState];
 
-const generateClimb = () => {
-	let puzzleDifficulty = 1000;
-	let hiddenMoves = 1;
-	const cutoff = 2400;
-	const climb = [{ puzzleDifficulty, hiddenMoves }];
-	const addRampingPuzzleDifficulty = () => {
-		times(80)(() => {
-			puzzleDifficulty += 8;
-			climb.push({ puzzleDifficulty, hiddenMoves });
-		});
-	};
-	const addRampingHiddenMoves = () => {
-		times(1)(() => {
-			hiddenMoves += 1;
-			if (puzzleDifficulty < cutoff) {
-				puzzleDifficulty -= 600;
-			}
-			climb.push({ puzzleDifficulty, hiddenMoves });
-		});
-	};
-	times(30)(() => {
-		if (puzzleDifficulty < cutoff) {
-			addRampingPuzzleDifficulty();
-		}
-		addRampingHiddenMoves();
-	});
-	return climb;
-};
-
-// const CLIMB = generateClimb();
-// const TIME_SUCCESSFUL_SOLVE = 30 * 1000;
-
 export const getInitialVisualizationState = (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	_set: StateSetter<AppState, any>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	_get: StateGetter<AppState, any>,
 	isClimb: boolean,
 ) => {
@@ -115,28 +70,32 @@ export const getInitialVisualizationState = (
 		focusedMove: null,
 		canFocusNextMove: false,
 		canFocusLastMove: false,
-		// onSuccess: onSuccess,
-		// onFail: onFail,
 		helpOpen: false,
 		currentPosition: new Chess(),
 		showPuzzlePosition: false,
 		getFetchOptions: () =>
 			get(([s]) => {
-				const ply = s.step?.hiddenMoves ?? s.plyUserSetting.value;
-				if (s.step) {
+				return Promise.all([
+					s.plyUserSetting.valueAsync(),
+					s.ratingGteUserSetting.valueAsync(),
+					s.ratingLteUserSetting.valueAsync(),
+				]).then(([userPly, userRatingGte, userRatingLte]) => {
+					const ply = s.step?.hiddenMoves ?? userPly;
+					if (s.step) {
+						return {
+							ratingGte: s.step.puzzleDifficulty - 25,
+							ratingLte: s.step.puzzleDifficulty + 25,
+							maxPly: ply,
+							solidMovesGte: ply,
+						};
+					}
 					return {
-						ratingGte: s.step.puzzleDifficulty - 25,
-						ratingLte: s.step.puzzleDifficulty + 25,
+						ratingGte: userRatingGte,
+						ratingLte: userRatingLte,
 						maxPly: ply,
 						solidMovesGte: ply,
 					};
-				}
-				return {
-					ratingGte: s.ratingGteUserSetting.value,
-					ratingLte: s.ratingLteUserSetting.value,
-					maxPly: ply,
-					solidMovesGte: ply,
-				};
+				});
 			}),
 		getPly: () =>
 			get(([s]) => {
@@ -154,7 +113,8 @@ export const getInitialVisualizationState = (
 			set(async ([s]) => {
 				let p = s.nextPuzzle;
 				if (!p) {
-					p = await fetchNewPuzzle(s.getFetchOptions());
+					const fetchOptions = await s.getFetchOptions();
+					p = await fetchNewPuzzle(fetchOptions);
 				}
 				set(([s]) => {
 					if (!p) {
@@ -272,8 +232,8 @@ export const getInitialVisualizationState = (
 
 	initialState.puzzleState = getInitialPuzzleState(setPuzzle, getPuzzle);
 	initialState.puzzleState.delegate = {
-		animatePieceMove: (...args) => {
-			initialState.chessboard.animatePieceMove(...args);
+		animatePieceMove: (move, speed, callback) => {
+			initialState.chessboard.animatePieceMove(move, callback, { speed });
 		},
 		onPuzzleMoveSuccess: () => {
 			set(([state]) => {
@@ -334,98 +294,5 @@ export const getInitialVisualizationState = (
 	initialState.chessboard.set((c) => {
 		c.frozen = false;
 	});
-	// if (isClimb) {
-	//   initialState = {
-	//     ...initialState,
-	//     ...{
-	//       isPlayingClimb: DEBUG_CLIMB_START_PLAYING,
-	//       scoreOpacityAnim: 0.0,
-	//       // TODO: bring back intro screen
-	//       score: new StorageItem("climb-score", 0),
-	//       highScore: new StorageItem("climb-high-score", 0),
-	//       delta: 0,
-	//       step: null,
-	//       puzzleStartTime: null,
-	//       startPlayingClimb: () =>
-	//         set(([s]) => {
-	//           s.isPlayingClimb = true;
-	//           s.visualizeHiddenMoves(() => {
-	//             set(([s]) => {
-	//               if (s.onAutoPlayEnd && !s.finishedAutoPlaying) {
-	//                 s.onAutoPlayEnd();
-	//               }
-	//               s.chessboardState.isVisualizingMoves = false;
-	//               s.finishedAutoPlaying = true;
-	//               s.focusedMoveIndex = null;
-	//             });
-	//           });
-	//         }),
-	//       onFail: () =>
-	//         set(([s]) => {
-	//           // TODO: fix repetition here
-	//           if (!s.currentPuzzleFailed) {
-	//             const delta = -10;
-	//             s.delta = delta;
-	//             s.lastPuzzleSuccess = false;
-	//             s.animatePointChange();
-	//             s.score.value = Math.max(s.score.value + delta, 0);
-	//             s.updateStep();
-	//           }
-	//           s.currentPuzzleFailed = true;
-	//         }),
-	//       onSuccess: () =>
-	//         set(([s]) => {
-	//           if (s.currentPuzzleFailed) {
-	//             return;
-	//           }
-	//           const timeTaken = performance.now() - s.puzzleStartTime;
-	//           const delta = Math.round(
-	//             Math.max(1, 10 - (timeTaken / TIME_SUCCESSFUL_SOLVE) * 10)
-	//           );
-	//           s.lastPuzzleSuccess = true;
-	//           s.delta = delta;
-	//           s.animatePointChange();
-	//           s.score.value = s.score.value + delta;
-	//           if (s.score.value > s.highScore.value) {
-	//             s.highScore.value = s.score.value;
-	//           }
-	//           s.updateStep();
-	//         }),
-	//       lastPuzzleSuccess: false,
-	//       currentPuzzleFailed: false,
-	//       animatePointChange: () =>
-	//         set(([s]) => {
-	//           const animDuration = 300;
-	//           Animated.sequence([
-	//             Animated.timing(s.scoreOpacityAnim, {
-	//               toValue: 1,
-	//               duration: animDuration,
-	//               useNativeDriver: true,
-	//             }),
-	//
-	//             Animated.timing(s.scoreOpacityAnim, {
-	//               toValue: 0,
-	//               duration: animDuration,
-	//               useNativeDriver: true,
-	//             }),
-	//           ]).start();
-	//         }),
-	//       onAutoPlayEnd: () =>
-	//         set(([s]) => {
-	//           s.puzzleStartTime = performance.now();
-	//           s.currentPuzzleFailed = false;
-	//         }),
-	//       initState: () =>
-	//         set(([s]) => {
-	//           s.updateStep();
-	//           s.refreshPuzzle();
-	//         }),
-	//       updateStep: () =>
-	//         set(([s]) => {
-	//           s.step = CLIMB[s.score.value];
-	//         }),
-	//     },
-	//   };
-	// }
 	return initialState;
 };

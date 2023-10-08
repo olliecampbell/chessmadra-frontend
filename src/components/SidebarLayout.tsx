@@ -14,20 +14,19 @@ import { ChessboardView } from "~/components/chessboard/Chessboard";
 import {
 	getAppState,
 	quick,
+	useMode,
 	useRepertoireState,
 	useSidebarState,
 } from "~/utils/app_state";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
 import { clsx } from "~/utils/classes";
 import { isChessmadra, isIos } from "~/utils/env";
-import { getLichessLink } from "~/utils/lichess";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { BP, useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { FadeInOut } from "./FadeInOut";
 import { Intersperse } from "./Intersperse";
-import { MoveLog } from "./MoveLog";
 import { Pressable } from "./Pressable";
 import { RepertoirePageLayout } from "./RepertoirePageLayout";
 import { SidebarContainer, animateSidebar } from "./SidebarContainer";
@@ -45,9 +44,8 @@ export const SidebarLayout = (props: {
 	settings: JSXElement;
 	loading: boolean;
 }) => {
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const [showingPlans] = useSidebarState(([s]) => [s.showPlansState.visible]);
-	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	const chessboardFrozen = () => {
 		let frozen = false;
 		if (showingPlans()) {
@@ -58,29 +56,6 @@ export const SidebarLayout = (props: {
 	};
 	const activeTool = () => getAppState().trainersState.getActiveTool();
 
-	// const event = useKeyDownEvent();
-	// console.log("renderign sidebar layout");
-	//
-	// createEffect(() => {
-	//   const e = event();
-	//   console.log(e); // => KeyboardEvent | null
-	//
-	//   if (e) {
-	//     console.log("key is", e.key); // => "Q" | "ALT" | ... or null
-	//     if (mode() === "review") {
-	//       return;
-	//     }
-	//     if (e.key === "ArrowLeft") {
-	//       e.preventDefault(); // prevent default behavior or last keydown event
-	//       e.stopPropagation();
-	//       quick((s) => s.repertoireState.backOne());
-	//     }
-	//     if (e.key === "ArrowRight") {
-	//       quick((s) => s.repertoireState.backOne());
-	//       e.preventDefault(); // prevent default behavior or last keydown event
-	//     }
-	//   }
-	// });
 	const keydownListener = function (event: KeyboardEvent) {
 		const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
 		// todo: allow in review too
@@ -120,14 +95,6 @@ export const SidebarLayout = (props: {
 		document.removeEventListener("keydown", keydownListener);
 	});
 
-	// let { side: paramSide } = useParams();
-	// useEffect(() => {
-	//   if (mode && !sideBarMode) {
-	//     quick((s) => {
-	//       s.navigationState.push("/");
-	//     });
-	//   }
-	// }, [mode, sideBarMode]);
 	const responsive = useResponsiveV2();
 	const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
 	const [chessboardContainerRef, setChessboardContainerRef] =
@@ -166,27 +133,24 @@ export const SidebarLayout = (props: {
 		>
 			<div
 				id=""
-				class="md:px-4"
-				style={s(
+				class="md:px-4 items-center grow"
+				style={stylex(
 					!vertical ? c.containerStyles(responsive().bp) : c.fullWidth,
-					c.alignCenter,
-					c.grow,
 					c.noUserSelect,
 				)}
 			>
 				<div
-					style={s(
+					class="grow self-stretch"
+					style={stylex(
 						vertical() ? c.width(c.min(600, "100%")) : c.fullWidth,
 						vertical() ? c.column : c.row,
-						c.grow,
-						c.selfStretch,
 						vertical() ? c.justifyStart : c.justifyCenter,
 					)}
 				>
 					<div
-						style={s(
+						style={stylex(
 							c.column,
-							!vertical() && s(c.grow, c.noBasis, c.flexShrink),
+							!vertical() && stylex(c.grow, c.noBasis, c.flexShrink),
 							vertical() && c.width("min(480px, 100%)"),
 							!vertical() && c.minWidth("300px"),
 							vertical() && c.grow,
@@ -197,21 +161,12 @@ export const SidebarLayout = (props: {
 						)}
 					>
 						{!vertical() ? (
-							<div style={s(c.height(140), c.column, c.justifyEnd)}>
+							<div style={stylex(c.height(140), c.column, c.justifyEnd)}>
 								{props.breadcrumbs}
 								<Spacer height={32} />
 							</div>
 						) : (
-							<div
-								style={s(
-									c.row,
-									c.alignCenter,
-									c.fullWidth,
-									c.justifyBetween,
-									c.px(c.getSidebarPadding(responsive())),
-									c.py(8),
-								)}
-							>
+							<div class="row items-center w-full justify-between padding-sidebar py-2">
 								{props.breadcrumbs}
 								{props.settings}
 							</div>
@@ -243,11 +198,9 @@ export const SidebarLayout = (props: {
 						{vertical() ? (
 							<div
 								class={clsx(
-									"transition-mt duration-250 ease-in-out relative z-10",
+									"transition-mt duration-250 ease-in-out relative z-10 grow",
 								)}
-								style={s(
-									c.grow,
-
+								style={stylex(
 									chessboardHeight()
 										? // @ts-ignore
 										  c.mt(!chessboardHidden() ? 0 : -chessboardHeight() + 100)
@@ -275,7 +228,7 @@ export const SidebarLayout = (props: {
 								class={
 									"max-w-[440px] lg:max-w-[600px] xl:max-w-[650px]  z-10 relative"
 								}
-								style={s(c.flexGrow(2), c.flexShrink, c.noBasis)}
+								style={stylex(c.flexGrow(2), c.flexShrink, c.noBasis)}
 							>
 								<SidebarContainer
 									backSection={props.backSection}
@@ -297,18 +250,17 @@ export const NavBreadcrumbs = () => {
 	const [breadcrumbs] = useRepertoireState((s) => [s.getBreadCrumbs(mobile())]);
 
 	const hidden = () => breadcrumbs().length === 1;
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	return (
-		// todo: figure out why this is not working
 		<FadeInOut
 			open={!hidden()}
-			style={s(c.row, c.alignCenter, c.constrainWidth)}
+			style={stylex(c.row, c.alignCenter, c.constrainWidth)}
 		>
 			<Intersperse
 				separator={() => {
 					return (
-						<div style={s(c.mx(responsive().switch(6, [BP.lg, 8])))}>
-							<CMText style={s(c.fg(c.gray[40]))}>
+						<div style={stylex(c.mx(responsive().switch(6, [BP.lg, 8])))}>
+							<CMText style={stylex(c.fg(c.gray[40]))}>
 								<i class="fa-light fa-angle-right" />
 							</CMText>
 						</div>
@@ -318,7 +270,7 @@ export const NavBreadcrumbs = () => {
 			>
 				{(breadcrumb) => (
 					<Pressable
-						style={s(breadcrumb().onPress ? c.clickable : c.unclickable)}
+						style={stylex(breadcrumb().onPress ? c.clickable : c.unclickable)}
 						onPress={() => {
 							if (!breadcrumb().onPress) {
 								return;
@@ -333,9 +285,9 @@ export const NavBreadcrumbs = () => {
 							});
 						}}
 					>
-						<div style={s()}>
+						<div style={stylex()}>
 							<CMText
-								style={s(c.weightBold)}
+								style={stylex(c.weightBold)}
 								class={clsx(
 									"text-tertiary",
 									breadcrumb().onPress &&

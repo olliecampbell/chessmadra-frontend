@@ -59,21 +59,13 @@ export interface ChessboardInterface {
 	forwardOne: () => void;
 	forwardAll: () => void;
 	getTurn: () => Side;
-	// visualizeMove: (
-	//   move: Move,
-	//   speed: PlaybackSpeed,
-	//   callback: () => void
-	// ) => void;
-	// visualizeMoves: (
-	//   moves: Move[],
-	//   speed: PlaybackSpeed,
-	//   callback: () => void
-	// ) => void;
+	getMoveLog: () => string[];
 	animatePieceMove: (
 		move: Move,
 		callback: (completed: boolean) => void,
 		options?: {
 			firstMove?: boolean;
+			speed?: PlaybackSpeed;
 		},
 	) => void;
 	// @deprecated
@@ -135,7 +127,7 @@ export type ChessboardRefs = {
 	visualizationDotRef: HTMLDivElement | null;
 	largeCircleRefs: Partial<Record<Square, HTMLDivElement>>;
 	overlayRefs: Partial<Record<Square, HTMLDivElement>>;
-	arrowsContainerRef: HTMLDivElement;
+	arrowsContainerRef: HTMLDivElement | null;
 };
 
 export interface ChessboardViewState {
@@ -226,6 +218,7 @@ export const createChessboardInterface = (): [
 			forwardMoveHistory: [],
 			forwardPositionHistory: [],
 			refs: {
+				arrowsContainerRef: null,
 				ringRef: null,
 				visualizationDotRef: null,
 				feedbackRefs: {},
@@ -269,6 +262,9 @@ export const createChessboardInterface = (): [
 		set,
 		get: <T,>(s?: (s: ChessboardViewState) => T) => {
 			return s ? s(chessboardStore) : chessboardStore;
+		},
+		getMoveLog: () => {
+			return chessboardStore.moveLog;
 		},
 		getTurn: () => {
 			return (
@@ -583,10 +579,12 @@ export const createChessboardInterface = (): [
 			options,
 		) => {
 			set((s: ChessboardViewState) => {
-				const animationSpeed = pieceAnimationToPlaybackSpeed(
-					getAppState().userState.getFrontendSetting("pieceAnimation")
-						.value as PieceAnimation,
-				);
+				const animationSpeed =
+					options?.speed ??
+					pieceAnimationToPlaybackSpeed(
+						getAppState().userState.getFrontendSetting("pieceAnimation")
+							.value as PieceAnimation,
+					);
 				const { fadeDuration, moveDuration, stayDuration } =
 					getAnimationDurations(animationSpeed);
 				// @ts-ignore
@@ -825,7 +823,6 @@ export const createChessboardInterface = (): [
 					const { x, y } = getSquareOffset(end, s.flipped);
 					const { x: startX, y: startY } = getSquareOffset(start, s.flipped);
 					const dotRef = s.refs.visualizationDotRef;
-					console.log("dot ref", dotRef);
 					if (!dotRef) {
 						return;
 					}
@@ -942,8 +939,8 @@ export const createChessboardInterface = (): [
 		previewMove: (m: string | null | Move) => {
 			set((s) => {
 				if (m) {
-					// @ts-ignore
 					const [moveObject] =
+						// @ts-ignore
 						s.position.validateMoves([m], { sloppy: true }) ?? [];
 					s.nextPreviewMove = moveObject;
 					chessboardInterface.stepPreviewMove();

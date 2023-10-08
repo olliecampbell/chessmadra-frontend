@@ -1,4 +1,3 @@
-import { isServer } from "solid-js/web";
 import { BASE_FRONTEND_URL } from "./base_url";
 import { isDevelopment, isIos } from "./env";
 

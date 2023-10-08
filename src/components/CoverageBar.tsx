@@ -1,9 +1,7 @@
 import { Show } from "solid-js";
 import { useBrowsingState } from "~/utils/app_state";
 import { Side } from "~/utils/repertoire";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
-import { View } from "./View";
+import { c, stylex } from "~/utils/styles";
 import { clsx } from "~/utils/classes";
 
 export const CoverageBar = (props: {
@@ -16,16 +14,11 @@ export const CoverageBar = (props: {
 		const progressState = s.repertoireProgressState[props.side];
 		return [progressState];
 	});
-	const [inProgressColor, completedColor] = [
-		c.colors.success,
-		c.colors.success,
-	];
-	const overlap = 8;
 	return (
 		<Show when={progressState()}>
 			<div
 				class="bg-gray-30"
-				style={s(
+				style={stylex(
 					c.relative,
 					c.fullHeight,
 					c.fullWidth,
@@ -40,7 +33,7 @@ export const CoverageBar = (props: {
 							? "bg-gradient-to-r from-green-35 to-green-45 "
 							: "bg-green-40",
 					)}
-					style={s(
+					style={stylex(
 						c.absolute,
 						c.top(0),
 						c.bottom(0),

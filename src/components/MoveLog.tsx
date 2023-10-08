@@ -5,14 +5,13 @@ import {
 	For,
 	JSXElement,
 	Show,
-	createEffect,
 	createMemo,
 	createRenderEffect,
 	createSignal,
 } from "solid-js";
-import { getAppState, quick, useSidebarState } from "~/utils/app_state";
+import { getAppState, quick, useMode } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import {
 	BOARD_THEMES_BY_ID,
 	BoardTheme,
@@ -21,10 +20,9 @@ import {
 	combinedThemes,
 } from "~/utils/theming";
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
-import { debugElementBounds } from "~/utils/debug_element_bounds";
 
 export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
-	const [mode] = useSidebarState(([s]) => [s.mode]);
+	const mode = useMode();
 	const currentLine = () => {
 		return (
 			getAppState()
@@ -59,7 +57,7 @@ export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 				elems.push(
 					<p
 						class={
-							"text-gray-40 pl-1 lg:pl-1  font-semibold leading-5 tracking-wider"
+							"text-gray-40 pl-1 lg:pl-1 font-semibold leading-5 tracking-wider"
 						}
 					>
 						{Math.round(i / 2) + 1}.
@@ -69,10 +67,10 @@ export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 			elems.push(
 				<p
 					class={clsx(
-						"&hover:text-primary  cursor-pointer whitespace-nowrap rounded-sm px-0.5 lg:px-1 font-bold  leading-5 tracking-wider transition-all ml-0.5",
+						"&hover:text-primary cursor-pointer whitespace-nowrap rounded-sm px-0.5 lg:px-1 font-bold leading-5 tracking-wider transition-all ml-0.5",
 						last ? "text-primary" : "text-tertiary",
 					)}
-					style={s(last && s(c.bg(theme().highlightLastMove)))}
+					style={stylex(last && stylex(c.bg(theme().highlightLastMove)))}
 					onClick={() => {
 						if (mode() !== "review") {
 							quick((s) => {
@@ -124,7 +122,7 @@ export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 	return (
 		<div
 			class={
-				"row  shrink-1  min-w-0 items-center text-xs lg:text-sm grow justify-end"
+				"row shrink-1 min-w-0 items-center text-xs lg:text-sm grow justify-end"
 			}
 		>
 			<Show when={!props.hideLeftDivider}>
@@ -135,7 +133,7 @@ export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 				<div
 					class="row align-center no-scrollbar h-full overflow-x-scroll max-w-full"
 					ref={setContainerRef}
-					style={s(
+					style={stylex(
 						overflowing() && {
 							"mask-image": maskImage,
 							"-webkit-mask-image": maskImage,

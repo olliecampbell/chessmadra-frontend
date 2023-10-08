@@ -1,7 +1,7 @@
 import { Component, For, JSX, Show } from "solid-js";
 import { Spacer } from "~/components/Space";
 import { clsx } from "~/utils/classes";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { SidebarAction, SidebarFullWidthButton } from "./SidebarActions";
@@ -35,17 +35,17 @@ export const SidebarSelectOneOf: Component<{
 							"fa fa-check transition-opacity",
 							!active && "opacity-0",
 						)}
-						style={s(c.fg(c.colors.text.primary))}
+						style={stylex(c.fg(c.colors.text.primary))}
 					/>
 				),
 			} as SidebarAction;
 		});
 	return (
-		<div style={s(c.column, c.fullWidth)}>
+		<div style={stylex(c.column, c.fullWidth)}>
 			<Show when={props.title}>
 				<>
 					<CMText
-						style={s(
+						style={stylex(
 							c.fontSize(14),
 							c.weightSemiBold,
 							c.fg(c.colors.text.primary),
@@ -65,7 +65,7 @@ export const SidebarSelectOneOf: Component<{
 				</>
 			</Show>
 			<div
-				style={s(c.fullWidth)}
+				style={stylex(c.fullWidth)}
 				class="border-t-1 border-t-solid border-t-border"
 			>
 				<For each={actions()}>

@@ -1,14 +1,13 @@
 import { includes, isEmpty, isNil } from "lodash-es";
 import { Show, createEffect } from "solid-js";
 import {
-	getAppState,
 	quick,
+	s,
 	useBrowsingState,
+	useMode,
 	useRepertoireState,
-	useSidebarState,
 } from "~/utils/app_state";
-// import { ExchangeRates } from "~/ExchangeRate";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { FadeInOut } from "./FadeInOut";
@@ -19,26 +18,15 @@ import { FirstLineSavedOnboarding, OnboardingIntro } from "./SidebarOnboarding";
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
 import { animateSidebar } from "./SidebarContainer";
 export const BackSection = () => {
-	const [
-		addedLineState,
-		deleteLineState,
-		submitFeedbackState,
-		showPlansState,
-		transposedState,
-		mode,
-		side,
-	] = useSidebarState(([s]) => [
-		s.addedLineState,
-		s.deleteLineState,
-		s.submitFeedbackState,
-		s.showPlansState,
-		s.transposedState,
-		s.mode,
-		s.activeSide,
-	]);
-	const [view] = useBrowsingState(([s]) => [s.currentView()]);
+	const addedLineState = () => s().repertoireState.browsingState.addedLineState;
+	const deleteLineState = () =>
+		s().repertoireState.browsingState.deleteLineState;
+	const showPlansState = () => s().repertoireState.browsingState.showPlansState;
+	const transposedState = () =>
+		s().repertoireState.browsingState.transposedState;
+	const mode = useMode();
+	const [view] = useRepertoireState((s) => [s.ui.currentView()]);
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
-	const repertoireState = getAppState().repertoireState;
 	const [moveLog] = useBrowsingState(([s, rs]) => [
 		s.chessboard.get((v) => v).moveLog,
 	]);
@@ -46,9 +34,8 @@ export const BackSection = () => {
 	const paddingTop = 140;
 	const vertical = () => responsive().bp < VERTICAL_BREAKPOINT;
 	const backToOverview = () => {
-		console.log("back to overview");
 		quick((s) => {
-			s.repertoireState.startBrowsing(side()!, "overview");
+			s.repertoireState.backToOverview();
 		});
 	};
 	const backButtonAction = () => {
@@ -111,17 +98,10 @@ export const BackSection = () => {
 				});
 			};
 		}
-		if (submitFeedbackState().visible) {
-			backButtonAction = () => {
-				quick((s) => {
-					s.repertoireState.browsingState.dismissTransientSidebarState();
-				});
-			};
-		}
 		if (view()) {
 			backButtonAction = () => {
 				quick((s) => {
-					s.repertoireState.browsingState.popView();
+					s.repertoireState.ui.popView();
 				});
 			};
 		}
@@ -150,7 +130,7 @@ export const BackSection = () => {
 	return (
 		<FadeInOut
 			id="back-button"
-			style={s(
+			style={stylex(
 				c.column,
 				!vertical() ? c.height(paddingTop) : c.height(isOpen() ? 52 : 12),
 			)}
@@ -167,12 +147,12 @@ export const BackSection = () => {
 							}
 						});
 					}}
-					style={s(c.unshrinkable, c.column, c.justifyCenter)}
+					style={stylex(c.unshrinkable, c.column, c.justifyCenter)}
 					class={
 						"text-md text-tertiary &hover:text-secondary place-items-center py-2 md:self-end md:pb-8"
 					}
 				>
-					<CMText style={s(c.weightBold, c.row, c.alignCenter)}>
+					<CMText style={stylex(c.weightBold, c.row, c.alignCenter)}>
 						<i class="fa fa-arrow-left pr-2" />
 						Back
 					</CMText>

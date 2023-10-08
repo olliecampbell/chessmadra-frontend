@@ -44,7 +44,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("pre_review.resume");
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						animateSidebar("right");
 						s.repertoireState.reviewState.resumeReview();
 					});
@@ -72,7 +72,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("pre_review.all_due");
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.reviewState.startReview({
 							side: props.side,
 							filter: "due",
@@ -95,7 +95,7 @@ export const PreReview = (props: { side: Side | null }) => {
 			actions.push({
 				onPress: () => {
 					quick((s) => {
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.reviewState.startReview({
 							side: props.side,
 							filter: "common",
@@ -113,7 +113,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("pre_review.difficult_due");
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.reviewState.startReview({
 							side: props.side,
 							filter: "difficult-due",
@@ -132,7 +132,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				onPress: () => {
 					quick((s) => {
 						trackEvent("pre_review.all");
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.reviewState.startReview({
 							side: props.side,
 							filter: "all",
@@ -153,7 +153,7 @@ export const PreReview = (props: { side: Side | null }) => {
 					quick((s) => {
 						trackEvent("pre_review.specific");
 						animateSidebar("right");
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						s.repertoireState.startBrowsing(side as Side, "browse");
 					});
 				},

@@ -5,20 +5,17 @@ import {
 	FrontendSetting,
 	FrontendSettingOption,
 	FrontendSettings,
-	SETTINGS,
 } from "~/utils/frontend_settings";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { UserFlag } from "~/utils/models";
 import { getExpectedNumMovesBetween } from "~/utils/repertoire_state";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import {
-	BOARD_THEMES_BY_ID,
 	BoardThemeId,
 	combinedThemes,
 } from "~/utils/theming";
 import { renderThreshold } from "~/utils/threshold";
 import { trackEvent } from "~/utils/trackEvent";
-import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { compareFloats } from "~/utils/utils";
 import { CMText } from "./CMText";
 import { RatingSelection } from "./RatingSelection";
@@ -59,11 +56,8 @@ const THRESHOLD_OPTIONS: ThresholdOption[] = [
 	},
 ];
 
-export const CoverageSettings = (props: {}) => {
-	const [user, missThreshold] = useUserState((s) => [
-		s.user,
-		s.getCurrentThreshold(),
-	]);
+export const CoverageSettings = () => {
+	const [missThreshold] = useUserState((s) => [s.getCurrentThreshold()]);
 	const selected = () =>
 		find(THRESHOLD_OPTIONS, (o) => compareFloats(o.value, missThreshold()));
 	const onSelect = (t: ThresholdOption) => {
@@ -71,8 +65,6 @@ export const CoverageSettings = (props: {}) => {
 			s.userState.setTargetDepth(t.value);
 		});
 	};
-	// @ts-ignore
-	const recommendedDepth = () => getRecommendedMissThreshold(user()?.eloRange);
 	const thresholdOptions = cloneDeep(THRESHOLD_OPTIONS);
 	const getExpectedMoves = (threshold: number) => {
 		return getExpectedNumMovesBetween(1, threshold, "white", false);
@@ -93,22 +85,10 @@ export const CoverageSettings = (props: {}) => {
 				<div class="w-26 lg:w-28 mr-6 ">Coverage goal</div>
 				<div class="w-16 md:w-30 shrink-0 text-left">Study time</div>
 				<div class="w-6" />
-				{/*<Show when={r.value === recommendedDepth()}>
-                <div
-                  class={clsx(
-                    "pl-2 text-xs",
-                    active ? "text-primary" : "text-tertiary",
-                  )}
-                >
-                  Recommended for your level
-                </div>
-              </Show>*/}
 			</div>
 			<SidebarSelectOneOf
 				description={undefined}
 				choices={thresholdOptions}
-				// cellStyles={s(c.bg(c.gray[15]))}
-				// horizontal={true}
 				activeChoice={selected()}
 				onSelect={onSelect}
 				equality={(choice: ThresholdOption, activeChoice?: ThresholdOption) => {
@@ -160,16 +140,6 @@ export const CoverageSettings = (props: {}) => {
 									style={{ width: `${(moves / maxMoves) * 100}%` }}
 								/>
 							</div>
-							{/*<Show when={r.value === recommendedDepth()}>
-                <div
-                  class={clsx(
-                    `pl-2 text-xs`,
-                    active ? "text-primary" : "text-tertiary",
-                  )}
-                >
-                  Recommended for your level
-                </div>
-              </Show>*/}
 						</div>
 					);
 				}}
@@ -177,10 +147,10 @@ export const CoverageSettings = (props: {}) => {
 		</SidebarTemplate>
 	);
 };
-export const RatingSettings = (props: {}) => {
+export const RatingSettings = () => {
 	return (
 		<SidebarTemplate actions={[]} header={"Your rating"} bodyPadding={true}>
-			<CMText style={s()} class={"text-secondary"}>
+			<CMText style={stylex()} class={"text-secondary"}>
 				This is used to determine which moves your opponents are likely to play.
 			</CMText>
 			<Spacer height={24} />
@@ -189,15 +159,12 @@ export const RatingSettings = (props: {}) => {
 	);
 };
 
-export const ThemeSettings = (props: {}) => {
+export const ThemeSettings = () => {
 	const user = () => getAppState().userState?.user;
-	const height = 24;
 	return (
 		<SidebarTemplate header={"Board appearance"} actions={[]}>
 			<SidebarSelectOneOf
 				choices={combinedThemes.map((t) => t.boardTheme)}
-				// cellStyles={s(c.bg(c.gray[15]))}
-				// horizontal={true}
 				activeChoice={user()?.theme ?? "default"}
 				onSelect={(boardThemeId: BoardThemeId) => {
 					quick((s) => {
@@ -217,10 +184,9 @@ export const ThemeSettings = (props: {}) => {
 						combinedThemes,
 						(t) => t.boardTheme === boardThemeId,
 					);
-					const boardTheme = BOARD_THEMES_BY_ID[boardThemeId];
 					return (
-						<div style={s(c.row)}>
-							<CMText style={s(c.weightSemiBold, c.fontSize(14))}>
+						<div style={stylex(c.row)}>
+							<CMText style={stylex(c.weightSemiBold, c.fontSize(14))}>
 								{theme!.name}
 							</CMText>
 						</div>
@@ -231,7 +197,7 @@ export const ThemeSettings = (props: {}) => {
 	);
 };
 
-export const BetaFeaturesSettings = (props: {}) => {
+export const BetaFeaturesSettings = () => {
 	const userState = () => getAppState().userState;
 	const features = [
 		{
@@ -267,7 +233,6 @@ export const BetaFeaturesSettings = (props: {}) => {
 export const FrontendSettingView = (props: {
 	setting: FrontendSetting<string>;
 }) => {
-	const user = () => getAppState().userState?.user;
 	return (
 		<SidebarTemplate header={props.setting.title} actions={[]}>
 			<SidebarSelectOneOf
@@ -296,8 +261,8 @@ export const FrontendSettingView = (props: {
 				}}
 				renderChoice={(option: FrontendSettingOption<string>) => {
 					return (
-						<div style={s(c.row)}>
-							<CMText style={s(c.weightSemiBold, c.fontSize(14))}>
+						<div style={stylex(c.row)}>
+							<CMText style={stylex(c.weightSemiBold, c.fontSize(14))}>
 								{option.label}
 							</CMText>
 						</div>

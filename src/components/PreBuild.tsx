@@ -1,6 +1,5 @@
 import { findLast, first } from "lodash-es";
 import { Show, createMemo } from "solid-js";
-// import { ExchangeRates } from "~/ExchangeRate";
 import { Spacer } from "~/components/Space";
 import { getAppState, quick, useRepertoireState } from "~/utils/app_state";
 import { lineToPositions } from "~/utils/chess";
@@ -42,7 +41,7 @@ export const PreBuild = (props: { side: Side }) => {
 			actions.push({
 				onPress: () => {
 					quick((s) => {
-						s.repertoireState.browsingState.popView();
+						s.repertoireState.ui.popView();
 						animateSidebar("right");
 						const line = pgnToLine(biggestMiss()!.lines[0]);
 						s.repertoireState.startBrowsing(props.side, "build", {
@@ -58,7 +57,7 @@ export const PreBuild = (props: { side: Side }) => {
 		actions.push({
 			onPress: () => {
 				quick((s) => {
-					s.repertoireState.browsingState.popView();
+					s.repertoireState.ui.popView();
 					animateSidebar("right");
 					s.repertoireState.startBrowsing(props.side, "build");
 				});

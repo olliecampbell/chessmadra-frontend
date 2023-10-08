@@ -3,7 +3,7 @@ import { Show, createSignal } from "solid-js";
 import { quick, useRepertoireState } from "~/utils/app_state";
 import client from "~/utils/client";
 import { AuthResponse } from "~/utils/models";
-import { c, s } from "~/utils/styles";
+import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { TextInput } from "./TextInput";
@@ -14,7 +14,6 @@ import ForgotPassword from "./ForgotPassword";
 import { OnboardingComplete } from "./SidebarOnboarding";
 
 import { createForm } from "@felte/solid";
-// form stuff
 import { validator } from "@felte/validator-yup";
 import * as yup from "yup";
 
@@ -40,7 +39,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 					console.log("onboarding? ", onboarding().isOnboarding);
 					if (onboarding().isOnboarding) {
 						trackEvent(`onboarding.${authType()}.success`);
-						s.repertoireState.browsingState.replaceView(OnboardingComplete);
+						s.repertoireState.ui.replaceView(OnboardingComplete);
 					} else {
 						s.repertoireState.backToOverview();
 					}
@@ -110,7 +109,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 				<div class={clsx(isSubmitting() && "opacity-0")}>
 					<div class="col items-center">
 						<div class={"min-w-80 padding-sidebar w-full self-stretch"}>
-							<div style={s(c.br(4), c.px(0), c.py(0))}>
+							<div style={stylex(c.br(4), c.px(0), c.py(0))}>
 								<form ref={form} class={"col gap-8"}>
 									<TextInput
 										placeholder="example@gmail.com"
@@ -132,7 +131,7 @@ export const LoginSidebar = (props: { authType?: AuthType }) => {
 											type="button"
 											onClick={() => {
 												quick((s) => {
-													s.repertoireState.browsingState.pushView(
+													s.repertoireState.ui.pushView(
 														ForgotPassword,
 													);
 												});

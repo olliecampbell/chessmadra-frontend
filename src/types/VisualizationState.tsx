@@ -1,4 +1,5 @@
 import { Chess, Move } from "@lubert/chess.ts";
+import { PuzzleFetchOptions } from "~/utils/api";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
 import { LichessPuzzle } from "~/utils/models";
 import { PuzzleState } from "~/utils/puzzle_state";
@@ -29,7 +30,7 @@ export interface VisualizationState {
 	canFocusNextMove: boolean;
 	canFocusLastMove: boolean;
 	showNotation: StorageItem<boolean>;
-	getFetchOptions: () => any;
+	getFetchOptions: () => Promise<PuzzleFetchOptions>;
 	getPly: () => number;
 	resetState: () => void;
 	refreshPuzzle: () => void;
