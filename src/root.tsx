@@ -91,11 +91,7 @@ export default function Root() {
 			</Style>
 
 			<Body
-				style={s(
-					c.bg(c.gray[7]),
-					// c.lineHeight(1.5),
-					c.fg(c.colors.text.primary),
-				)}
+      class="bg-gray-7 text-primary"
 			>
 				<ErrorBoundary
 					fallback={(e) => {

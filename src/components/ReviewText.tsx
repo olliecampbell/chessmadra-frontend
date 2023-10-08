@@ -15,11 +15,6 @@ export const ReviewText = (props: {
 	icon?: string;
 }) => {
 	const descriptor = () => props.descriptor || "Due";
-	const textStyles = s(
-		c.weightSemiBold,
-		c.fontSize(12),
-		c.lineHeight("1.3rem"),
-	);
 	const date = () => new Date(props.date || "");
 	const numMovesDueFromHere = () => props.numDue;
 	const now = new Date();
@@ -43,7 +38,7 @@ export const ReviewText = (props: {
 	return (
 		<>
 			<div style={s(c.row, c.alignCenter)} class={clsx(color(), props.class)}>
-				<CMText style={s(textStyles)}>{dueString()}</CMText>
+				<CMText class="font-semibold text-xs leading-5">{dueString()}</CMText>
 				<i
 					style={s(c.fontSize(12))}
 					class={clsx(props.icon ? props.icon : "fa fa-clock", "pl-2")}

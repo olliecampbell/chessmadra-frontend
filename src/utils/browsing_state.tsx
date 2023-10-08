@@ -138,8 +138,8 @@ export interface BrowsingState {
 	getIncidenceOfCurrentLine: () => number;
 	getLineIncidences: (_: GetIncidenceOptions) => number[];
 	dismissTransientSidebarState: () => void;
-	getNearestMiss: (sidebarState: SidebarState) => RepertoireMiss;
-	getMissInThisLine: (sidebarState: SidebarState) => RepertoireMiss;
+	getNearestMiss: () => RepertoireMiss;
+	getMissInThisLine: () => RepertoireMiss;
 	onPositionUpdate: () => void;
 	updateTableResponses: () => void;
 	requestToAddCurrentLine: () => void;
@@ -227,9 +227,9 @@ export const makeDefaultSidebarState = () => {
 };
 
 export const getInitialBrowsingState = (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint: ignore
 	_set: StateSetter<AppState, any>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// biome-ignore lint: ignore
 	_get: StateGetter<AppState, any>,
 ) => {
 	const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
@@ -544,31 +544,31 @@ export const getInitialBrowsingState = (
 					}
 				}
 			}),
-		getMissInThisLine: (sidebarState: SidebarState) =>
+		getMissInThisLine: () =>
 			get(([s, rs, gs]) => {
 				if (!s.sidebarState.activeSide) {
 					return null;
 				}
 				const miss =
 					rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
-						sidebarState.currentEpd
+						s.sidebarState.currentEpd
 					];
 				return miss;
 			}),
-		getNearestMiss: (sidebarState: SidebarState) =>
+		getNearestMiss: () =>
 			get(([s, rs, gs]) => {
 				if (!s.sidebarState.activeSide) {
 					return null;
 				}
 				const threshold = gs.userState.getCurrentThreshold();
 				return findLast(
-					map(sidebarState.positionHistory, (epd) => {
+					map(s.sidebarState.positionHistory, (epd) => {
 						const miss =
 							// @ts-ignore
 							rs.repertoireGrades[s.sidebarState.activeSide]?.biggestMisses?.[
 								epd
 							];
-						if (miss?.epd !== sidebarState.currentEpd) {
+						if (miss?.epd !== s.sidebarState.currentEpd) {
 							return miss;
 						}
 					}),

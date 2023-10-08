@@ -147,14 +147,13 @@ export const SidebarLayout = (props: {
 		return false;
 	};
 	createEffect(() => {
-    if (isIos) {
-
-		if (props.loading) {
-			document.documentElement.style.overflow = "hidden";
-		} else {
-			document.documentElement.style.overflow = "auto";
+		if (isIos) {
+			if (props.loading) {
+				document.documentElement.style.overflow = "hidden";
+			} else {
+				document.documentElement.style.overflow = "auto";
+			}
 		}
-    }
 	});
 
 	return (
@@ -219,17 +218,11 @@ export const SidebarLayout = (props: {
 						)}
 						<div ref={setChessboardContainerRef} class="col">
 							<div
-								class={clsx("duration-250 transition-opacity ease-in-out")}
-								style={s(
-									c.fullWidth,
-									vertical() &&
-										s(
-											c.selfCenter,
-											c.maxWidth(480),
-											c.px(c.getSidebarPadding(responsive())),
-										),
-									chessboardFrozen() && c.noPointerEvents,
-									chessboardHidden() ? c.opacity(20) : c.opacity(100),
+								class={clsx(
+									"w-full duration-250 transition-opacity ease-in-out",
+									vertical() && "self-center max-w-[480px] padding-sidebar",
+									chessboardFrozen() && "pointer-events-none",
+									chessboardHidden() ? "opacity-20" : "opacity-100",
 								)}
 							>
 								{props.chessboardView ?? (

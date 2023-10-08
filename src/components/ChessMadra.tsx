@@ -51,21 +51,14 @@ export const ChessMadra = (props: { initialTool: string }) => {
 			<Match when={activeTool() === "visualization" && !startedSolvingVis()}>
 				<>
 					<div
-						style={s(c.row, c.alignStretch)}
 						class={clsx(
-							"w-full",
+							"row items-stretch w-full",
 							responsive().isMobile ? "padding-sidebar" : "",
 						)}
 					>
 						<button
-							style={s(
-								c.grow,
-								c.height(60),
-								c.py(0),
-								c.fontSize(22),
-								c.overflowHidden,
-							)}
 							class={clsx(
+								"grow h-[60px] py-0 text-[22px] overflow-hidden",
 								"row w-full cursor-pointer items-center justify-center rounded-sm bg-blue-50",
 								flashPlayButton() && "animate-pulse",
 							)}
@@ -77,8 +70,9 @@ export const ChessMadra = (props: { initialTool: string }) => {
 							}}
 						>
 							<i
-								style={s(c.fg(c.colors.text.primary))}
-								class={`fa-sharp ${isPlaying() ? "fa-pause" : "fa-play"}`}
+								class={`text-primary fa-sharp ${
+									isPlaying() ? "fa-pause" : "fa-play"
+								}`}
 							/>
 						</button>
 					</div>
@@ -148,18 +142,16 @@ const BackSection = () => {
 							}
 						});
 					}}
-					style={s(c.unshrinkable, c.column, c.justifyCenter)}
 					class={
-						"text-md text-tertiary &hover:text-secondary place-items-center py-2 md:self-end md:pb-8"
+						"text-md text-tertiary &hover:text-secondary place-items-center py-2 md:self-end md:pb-8 shrink-0 col justify-center"
 					}
 				>
-					<p style={s(c.weightBold, c.row, c.alignCenter)}>
+					<p class="font-bold row items-center">
 						<i class="fa fa-arrow-left pr-2" />
 						Back
 					</p>
 				</Pressable>
 				<Pressable
-					style={s()}
 					class={clsx(
 						"text-tertiary &hover:text-primary text-md py-2 font-semibold transition-colors md:self-end md:pb-8",
 						activeTool() === "visualization" ? "" : "hidden",
@@ -176,7 +168,7 @@ const BackSection = () => {
 				>
 					<p>
 						View on Lichess
-						<i class="fa fa-up-right-from-square pl-2" style={s(iconStyles)} />
+						<i class="fa fa-up-right-from-square pl-2 text-xs md:text-sm" />
 					</p>
 				</Pressable>
 			</div>

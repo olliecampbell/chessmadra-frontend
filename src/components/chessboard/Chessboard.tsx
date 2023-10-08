@@ -23,7 +23,7 @@ import {
 } from "~/utils/chessboard_interface";
 import { clsx } from "~/utils/classes";
 import { toSide } from "~/utils/repertoire";
-import { c, s } from "~/utils/styles";
+import { c, s as stylex } from "~/utils/styles";
 import {
 	BOARD_THEMES_BY_ID,
 	BoardTheme,
@@ -55,7 +55,7 @@ export const PieceView: Component<{
 }> = (props) => {
 	return (
 		<img
-			style={s(c.fullWidth, c.fullHeight)}
+			style={stylex(c.fullWidth, c.fullHeight)}
 			src={getStatic(
 				`/pieces/${props.pieceSet}/${getSvgName(
 					props.piece.type,
@@ -415,7 +415,7 @@ export function ChessboardView(props: {
 					"relative h-0 w-full touch-none select-none pb-[100%]",
 					props.class,
 				)}
-				style={s(
+				style={stylex(
 					c.pb("100%"),
 					c.relative,
 					c.height(0),
@@ -428,7 +428,7 @@ export function ChessboardView(props: {
 				)}
 			>
 				<div
-					style={s(
+					style={stylex(
 						{
 							width: "100%",
 							height: "100%",
@@ -457,7 +457,7 @@ export function ChessboardView(props: {
 					/>
 					<FadeInOut
 						maxOpacity={1.0}
-						style={s(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
+						style={stylex(c.absoluteFull, c.noPointerEvents, c.zIndex(10))}
 						open={!!chessboardStore().showPlans}
 					>
 						<For each={chessboardStore().plans}>
@@ -487,7 +487,7 @@ export function ChessboardView(props: {
 						</For>
 					</FadeInOut>
 					<div
-						style={s(
+						style={stylex(
 							c.size("calc(1/8 * 100%)"),
 							c.noPointerEvents,
 							c.zIndex(5),
@@ -508,7 +508,7 @@ export function ChessboardView(props: {
 									: "bg-gray-4",
 								"opacity-70",
 							)}
-							style={s(
+							style={stylex(
 								c.size("50%"),
 								c.round,
 								c.shadow(0, 0, 4, 0, c.hsl(0, 0, 0, 50)),
@@ -523,7 +523,7 @@ export function ChessboardView(props: {
 							});
 						}}
 						class={clsx("opacity-0 shadow-white")}
-						style={s(
+						style={stylex(
 							c.absolute,
 							c.fullWidth,
 							c.shadow(0, 0, 0, 4, "var(--shadow-color)"),
@@ -556,13 +556,13 @@ export function ChessboardView(props: {
 							const animatedProps = () => {
 								// track
 								pos();
-								let posStyles = s(
+								let posStyles = stylex(
 									c.top(`${getSquareOffset(square, flipped()).y * 100}%`),
 									c.left(`${getSquareOffset(square, flipped()).x * 100}%`),
 								);
 								const animated = false;
 								if (dragging() && drag().enoughToDrag) {
-									posStyles = s(posStyles, {
+									posStyles = stylex(posStyles, {
 										translate: `${drag().transform.x}px ${
 											drag().transform.y
 										}px`,
@@ -596,21 +596,16 @@ export function ChessboardView(props: {
 									chessboardStore().animatingMoveSquare === square,
 								"priority",
 							);
-							const containerViewStyles = createMemo(() => {
-								return s(
-									c.absolute,
-									c.zIndex(priority() ? 11 : 2),
-									c.size("12.5%"),
-									c.noPointerEvents,
-								);
-							});
 							return (
 								<>
 									<div
-										style={s(
-											containerViewStyles(),
-											c.noPointerEvents,
-											posStyles(),
+										style={stylex(posStyles(), {
+											"z-index": priority() ? 11 : 2,
+										})}
+										class={clsx(
+											"absolute",
+											"square-[12.5%]",
+											"pointer-events-none",
 										)}
 										id={`piece-${square}`}
 										ref={(v) => {
@@ -619,7 +614,7 @@ export function ChessboardView(props: {
 											});
 										}}
 									>
-										<div style={s(c.fullWidth, c.fullHeight)}>
+										<div style={stylex(c.fullWidth, c.fullHeight)}>
 											<Show when={piece()}>
 												<div
 													class={clsx(
@@ -649,13 +644,24 @@ export function ChessboardView(props: {
 						/>
 					</Show>
 					<div
-						style={s(c.column, c.fullWidth, c.fullHeight, c.noPointerEvents)}
+						style={stylex(
+							c.column,
+							c.fullWidth,
+							c.fullHeight,
+							c.noPointerEvents,
+						)}
 						class={clsx("")}
 					>
 						<For each={range(8)}>
 							{(i) => (
 								<div
-									style={s(c.fullWidth, c.row, c.grow, c.flexible, c.relative)}
+									style={stylex(
+										c.fullWidth,
+										c.row,
+										c.grow,
+										c.flexible,
+										c.relative,
+									)}
 								>
 									<For each={range(8)}>
 										{(j) => {
@@ -753,7 +759,7 @@ export function ChessboardView(props: {
 
 											return (
 												<div
-													style={s(
+													style={stylex(
 														c.keyedProp("touch-action")("none"),
 														!boardImage() && c.bg(color()),
 														themeStyles(light),
@@ -776,7 +782,7 @@ export function ChessboardView(props: {
 																	});
 																});
 															}}
-															style={s(c.zIndex(6))}
+															style={stylex(c.zIndex(6))}
 														>
 															<i
 																class={clsx(
@@ -803,7 +809,7 @@ export function ChessboardView(props: {
 																	});
 																});
 															}}
-															style={s(c.zIndex(6))}
+															style={stylex(c.zIndex(6))}
 														>
 															<i
 																class={clsx(
@@ -829,7 +835,7 @@ export function ChessboardView(props: {
 													></div>
 													<div
 														class="absolute inset-0 grid place-items-center rounded-full"
-														style={s(
+														style={stylex(
 															c.zIndex(
 																highlightType() === "indicator" ? 11 : 1,
 															),
@@ -842,7 +848,7 @@ export function ChessboardView(props: {
 																	: "opacity-0"
 															}`}
 															id={`indicator-${square()}`}
-															style={s(
+															style={stylex(
 																c.bg(theme().highlightNextMove),
 																c.absolute,
 																c.zIndex(6),
@@ -856,7 +862,7 @@ export function ChessboardView(props: {
 																: "opacity-0"
 														}`}
 														id={`highlight-${square()}`}
-														style={s(
+														style={stylex(
 															c.bg(
 																highlightColor() === "last"
 																	? theme().highlightLastMove
@@ -868,7 +874,7 @@ export function ChessboardView(props: {
 													/>
 													{isBottomEdge && (
 														<CMText
-															style={s(c.fg(inverseColor()))}
+															style={stylex(c.fg(inverseColor()))}
 															class={clsx(
 																"left-1px weight-bold absolute bottom-0 text-[10px]  lg:bottom-0.5 lg:left-1 lg:text-sm",
 															)}
@@ -882,7 +888,7 @@ export function ChessboardView(props: {
 															class={clsx(
 																"right-1px weight-bold absolute top-0 text-[10px] lg:right-1 lg:top-0.5 lg:text-sm",
 															)}
-															style={s(c.fg(inverseColor()))}
+															style={stylex(c.fg(inverseColor()))}
 														>
 															{tileNumber()}
 														</p>

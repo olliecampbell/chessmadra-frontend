@@ -41,8 +41,7 @@ import { animateSidebar } from "./SidebarContainer";
 
 export const RepertoireOverview = (props: {}) => {
 	const [side] = useSidebarState(([s]) => [s.activeSide]);
-	const textStyles = s(c.weightSemiBold);
-	const textClasses = "text-primary";
+	const textClasses = "text-primary font-semibold";
 	const appState = getAppState();
 	const { repertoireState } = appState;
 	const { browsingState } = repertoireState;
@@ -118,7 +117,7 @@ export const RepertoireOverview = (props: {}) => {
 					});
 				},
 				text: (
-					<CMText style={s(textStyles)} class={clsx(textClasses)}>
+					<CMText class={clsx(textClasses)}>
 						{empty()
 							? "Start building your repertoire"
 							: isNil(biggestMiss())
@@ -141,9 +140,7 @@ export const RepertoireOverview = (props: {}) => {
 				right: reviewTimer,
 				// disabled: numMovesDueFromHere() === 0,
 				text: (
-					<CMText style={s(textStyles)} class={clsx(textClasses)}>
-						Practice your repertoire
-					</CMText>
+					<CMText class={clsx(textClasses)}>Practice your repertoire</CMText>
 				),
 				style: "secondary",
 			},
@@ -162,7 +159,7 @@ export const RepertoireOverview = (props: {}) => {
 				},
 				text: (
 					<div class={clsx("row items-center")}>
-						<CMText style={s(textStyles)} class={clsx(textClasses)}>
+						<CMText class={clsx(textClasses)}>
 							View model games in lines you play
 						</CMText>
 						<Label>Beta</Label>
@@ -179,11 +176,7 @@ export const RepertoireOverview = (props: {}) => {
 						s.repertoireState.browsingState.pushView(TrimRepertoireOnboarding);
 					});
 				},
-				text: (
-					<CMText style={s(textStyles)} class={clsx(textClasses)}>
-						Trim repertoire
-					</CMText>
-				),
+				text: <CMText class={clsx(textClasses)}>Trim repertoire</CMText>,
 				icon: "fa-sharp fa-file-import",
 				right: null,
 				style: "secondary",
@@ -198,11 +191,7 @@ export const RepertoireOverview = (props: {}) => {
 						);
 					});
 				},
-				text: (
-					<CMText style={s(textStyles)} class={clsx(textClasses)}>
-						Import
-					</CMText>
-				),
+				text: <CMText class={clsx(textClasses)}>Import</CMText>,
 				icon: "fa-sharp fa-file-import",
 				right: null,
 				style: "secondary",
@@ -216,11 +205,7 @@ export const RepertoireOverview = (props: {}) => {
 					});
 				},
 				hidden: !expanded(),
-				text: (
-					<CMText style={s(textStyles)} class={clsx(textClasses)}>
-						Export repertoire
-					</CMText>
-				),
+				text: <CMText class={clsx(textClasses)}>Export repertoire</CMText>,
 				icon: "fa-sharp fa-arrow-down-to-line",
 				right: null,
 				style: "secondary",
@@ -235,11 +220,7 @@ export const RepertoireOverview = (props: {}) => {
 						);
 					});
 				},
-				text: (
-					<CMText style={s(textStyles)} class={clsx(textClasses)}>
-						Delete repertoire
-					</CMText>
-				),
+				text: <CMText class={clsx(textClasses)}>Delete repertoire</CMText>,
 				icon: "fa-sharp fa-trash",
 				right: null,
 				style: "secondary",
@@ -285,15 +266,13 @@ export const CoverageAndBar = (props: {
 	side: Side;
 	hideBar?: boolean;
 }) => {
-	const textStyles = () =>
-		s(c.fg(c.colors.text.secondary), c.weightSemiBold, c.fontSize(12));
 	const [progressState] = useRepertoireState((s) => [
 		s.browsingState.repertoireProgressState[props.side],
 	]);
 
 	return (
 		<div style={s(c.row, c.alignCenter)}>
-			<CMText style={s(textStyles())}>
+			<CMText class="text-secondary font-semibold text-xs">
 				{progressState().completed ? (
 					<>Completed</>
 				) : (
