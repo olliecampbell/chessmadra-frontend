@@ -33,6 +33,8 @@ export interface SidebarAction {
 
 export const SidebarActionsLegacy = () => {
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
+	const hideContinuePracticing = () =>
+		getAppState().repertoireState.browsingState.hideContinuePracticing;
 	let [
 		hasPendingLineToAdd,
 		isPastCoverageGoal,
@@ -145,7 +147,7 @@ export const SidebarActionsLegacy = () => {
 				style: "primary",
 			});
 		}
-		if (isQuizzing()) {
+		if (isQuizzing() && !hideContinuePracticing()) {
 			buttons.push({
 				onPress: () => {
 					quick((s) => {
@@ -343,7 +345,9 @@ export const SidebarFullWidthButton = (props: {
 							{props.action.right}
 						</CMText>
 					) : (
-						<CMText style={stylex(c.fg(c.colors.text.tertiary), c.fontSize(14))}>
+						<CMText
+							style={stylex(c.fg(c.colors.text.tertiary), c.fontSize(14))}
+						>
 							{props.action.right}
 						</CMText>
 					)}

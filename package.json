@@ -95,6 +95,7 @@
     "axios-case-converter": "^1.1.0",
     "base64url": "^3.0.1",
     "camel-case": "^4.1.2",
+    "capacitor-rate-app": "^4.0.3",
     "cordova-plugin-purchase": "^13.8.3",
     "crypto-js": "^4.1.1",
     "crypto-random-string": "^5.0.0",
@@ -126,6 +127,8 @@
   },
   "patches": {},
   "eslintConfig": {
-    "extends": ["plugin:storybook/recommended"]
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
   }
 }

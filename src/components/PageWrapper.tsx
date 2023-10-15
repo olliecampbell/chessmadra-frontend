@@ -7,7 +7,7 @@ import {
 	useAppState,
 	useRepertoireState,
 } from "~/utils/app_state";
-import { isIos } from "~/utils/env";
+import { isNative } from "~/utils/env";
 import { identify, identifyOnce } from "~/utils/user_properties";
 import { AuthStatus } from "~/utils/user_state";
 import { RepertoireBuilder } from "./RepertoireBuilder";
@@ -46,7 +46,7 @@ export const PageWrapper = (props: { initialView?: Component }) => {
 	const showLandingPage = () =>
 		!(token().value || userState().pastLandingPage || repertoireLoading());
 	createEffect(() => {
-		if (showLandingPage() && isIos) {
+		if (showLandingPage() && isNative) {
 			quick((s) => {
 				trackEvent("onboarding.started");
 				s.repertoireState.onboarding.isOnboarding = true;
@@ -59,7 +59,7 @@ export const PageWrapper = (props: { initialView?: Component }) => {
 	// return <SidebarLayout mode={mode()} />;
 	return (
 		<Switch fallback={<LandingPageWrapper />}>
-			<Match when={!showLandingPage() || isIos}>
+			<Match when={!showLandingPage() || isNative}>
 				<RepertoireBuilder />
 			</Match>
 		</Switch>

@@ -1,7 +1,7 @@
 import { Chess, Move } from "@lubert/chess.ts";
 import { destructure } from "@solid-primitives/destructure";
 import { filter, find, first, forEach, isNil, range } from "lodash-es";
-import { Accessor, For, JSX, Show, createMemo } from "solid-js";
+import { Accessor, For, JSX, Show, createMemo, onMount } from "solid-js";
 import { Portal } from "solid-js/web";
 import { Spacer } from "~/components/Space";
 import { useHovering } from "~/mocks";

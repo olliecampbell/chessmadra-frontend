@@ -16,6 +16,8 @@ import { ChooseToCreateAccountOnboarding } from "./SidebarOnboarding";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
 import { animateSidebar } from "./SidebarContainer";
+import { RateApp } from "capacitor-rate-app";
+import { isNative } from "~/utils/env";
 
 export const PracticeComplete = () => {
 	const [repertoire] = useRepertoireState((s) => [s.repertoire]);
@@ -62,6 +64,15 @@ export const PracticeComplete = () => {
 			num_failed: numFailed(),
 			num_correct: numCorrect(),
 		});
+
+		if (
+			Math.random() < 0.25 &&
+			getAppState().userState.user?.subscribed &&
+			isNative
+		) {
+			trackEvent("prompted_for_app_review");
+			RateApp.requestReview();
+		}
 	});
 	const activeOptions = () =>
 		getAppState().repertoireState.reviewState.activeOptions;

@@ -18,7 +18,7 @@ import {
 import { START_EPD } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
 import client from "~/utils/client";
-import { isDevelopment, isIos } from "~/utils/env";
+import { isDevelopment, isNative } from "~/utils/env";
 import { SETTINGS } from "~/utils/frontend_settings";
 import { LichessMistake } from "~/utils/models";
 import { pluralize } from "~/utils/pluralize";
@@ -328,7 +328,7 @@ export const RepertoireHome = () => {
 											});
 										},
 										text: "Beta features",
-										hidden: !settingsExpanded() || isIos,
+										hidden: !settingsExpanded() || isNative,
 										right: `${
 											(userState().getEnabledFlags()?.length ?? 0) > 0
 												? `${userState().getEnabledFlags()?.length} enabled`
@@ -339,7 +339,7 @@ export const RepertoireHome = () => {
 									{
 										hidden:
 											!settingsExpanded() ||
-											(userState().user?.subscribed && isIos),
+											(userState().user?.subscribed && isNative),
 										onPress: () => {
 											quick((s) => {
 												if (!userState().user?.subscribed) {
@@ -366,7 +366,7 @@ export const RepertoireHome = () => {
 										style: "secondary",
 									} as SidebarAction,
 									{
-										hidden: !settingsExpanded() || (!isDevelopment && !isIos),
+										hidden: !settingsExpanded() || (!isDevelopment && !isNative),
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.privacy_and_terms");
@@ -381,7 +381,7 @@ export const RepertoireHome = () => {
 									{
 										hidden:
 											!settingsExpanded() ||
-											(!isDevelopment && (!isIos || !userState().user?.email)),
+											(!isDevelopment && (!isNative || !userState().user?.email)),
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.delete_account");

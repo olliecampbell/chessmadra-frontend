@@ -990,20 +990,25 @@ export const getInitialRepertoireState = (
 				s.needsToRefetchLichessMistakes = false;
 				if (connected) {
 					client
-						.get("/api/v1/get_lichess_mistakes")
-						.then(({ data }: { data: LichessMistake[] }) => {
-							set(([s]) => {
-								if (isArray(data)) {
-									s.lichessMistakes = data;
-								} else {
+						.get("/api/v2/get_lichess_mistakes")
+						.then(
+							({
+								data,
+							}: {
+								data: {
+									mistakes: LichessMistake[];
+									repertoire: FetchRepertoireResponse;
+								};
+							}) => {
+								set(([s]) => {
 									const { mistakes, repertoire } = data;
 									s.lichessMistakes = mistakes;
 									if (repertoire) {
 										s.repertoireFetched(repertoire);
 									}
-								}
-							});
-						});
+								});
+							},
+						);
 				}
 			});
 		},

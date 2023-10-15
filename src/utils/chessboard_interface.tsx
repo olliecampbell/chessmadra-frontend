@@ -1059,8 +1059,6 @@ export const createChessboardInterface = (): [
 				}
 				chessboardInterface.resumeNotifyingDelegates();
 				chessboardInterface.getDelegate()?.onPositionUpdated?.();
-				chessboardInterface.getDelegate()?.onMovePlayed?.();
-				// const line = pgnToLine(pgn);
 			});
 		},
 	} as ChessboardInterface;

@@ -14,6 +14,8 @@ PODS:
     - Capacitor
   - CapacitorPreferences (5.0.6):
     - Capacitor
+  - CapacitorRateApp (4.0.3):
+    - Capacitor
   - CapacitorSplashScreen (5.0.6):
     - Capacitor
   - CapacitorStatusBar (5.0.6):
@@ -22,39 +24,42 @@ PODS:
     - CapacitorCordova
 
 DEPENDENCIES:
-  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
-  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
-  - "CapacitorAppLauncher (from `../../node_modules/@capacitor/app-launcher`)"
-  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
-  - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
-  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
-  - "CapacitorDialog (from `../../node_modules/@capacitor/dialog`)"
-  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
-  - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
-  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@5.3.0_@capacitor+core@5.3.0/node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/.pnpm/@capacitor+app@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/app`)"
+  - "CapacitorAppLauncher (from `../../node_modules/.pnpm/@capacitor+app-launcher@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/app-launcher`)"
+  - "CapacitorBrowser (from `../../node_modules/.pnpm/@capacitor+browser@5.1.0_@capacitor+core@5.3.0/node_modules/@capacitor/browser`)"
+  - "CapacitorCommunityAppleSignIn (from `../../node_modules/.pnpm/@capacitor-community+apple-sign-in@5.0.0_@capacitor+core@5.3.0/node_modules/@capacitor-community/apple-sign-in`)"
+  - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@5.3.0_@capacitor+core@5.3.0/node_modules/@capacitor/ios`)"
+  - "CapacitorDialog (from `../../node_modules/.pnpm/@capacitor+dialog@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/dialog`)"
+  - "CapacitorPreferences (from `../../node_modules/.pnpm/@capacitor+preferences@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/preferences`)"
+  - "CapacitorRateApp (from `../../node_modules/.pnpm/capacitor-rate-app@4.0.3_@capacitor+core@5.3.0/node_modules/capacitor-rate-app`)"
+  - "CapacitorSplashScreen (from `../../node_modules/.pnpm/@capacitor+splash-screen@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/splash-screen`)"
+  - "CapacitorStatusBar (from `../../node_modules/.pnpm/@capacitor+status-bar@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/status-bar`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
 
 EXTERNAL SOURCES:
   Capacitor:
-    :path: "../../node_modules/@capacitor/ios"
+    :path: "../../node_modules/.pnpm/@capacitor+ios@5.3.0_@capacitor+core@5.3.0/node_modules/@capacitor/ios"
   CapacitorApp:
-    :path: "../../node_modules/@capacitor/app"
+    :path: "../../node_modules/.pnpm/@capacitor+app@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/app"
   CapacitorAppLauncher:
-    :path: "../../node_modules/@capacitor/app-launcher"
+    :path: "../../node_modules/.pnpm/@capacitor+app-launcher@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/app-launcher"
   CapacitorBrowser:
-    :path: "../../node_modules/@capacitor/browser"
+    :path: "../../node_modules/.pnpm/@capacitor+browser@5.1.0_@capacitor+core@5.3.0/node_modules/@capacitor/browser"
   CapacitorCommunityAppleSignIn:
-    :path: "../../node_modules/@capacitor-community/apple-sign-in"
+    :path: "../../node_modules/.pnpm/@capacitor-community+apple-sign-in@5.0.0_@capacitor+core@5.3.0/node_modules/@capacitor-community/apple-sign-in"
   CapacitorCordova:
-    :path: "../../node_modules/@capacitor/ios"
+    :path: "../../node_modules/.pnpm/@capacitor+ios@5.3.0_@capacitor+core@5.3.0/node_modules/@capacitor/ios"
   CapacitorDialog:
-    :path: "../../node_modules/@capacitor/dialog"
+    :path: "../../node_modules/.pnpm/@capacitor+dialog@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/dialog"
   CapacitorPreferences:
-    :path: "../../node_modules/@capacitor/preferences"
+    :path: "../../node_modules/.pnpm/@capacitor+preferences@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/preferences"
+  CapacitorRateApp:
+    :path: "../../node_modules/.pnpm/capacitor-rate-app@4.0.3_@capacitor+core@5.3.0/node_modules/capacitor-rate-app"
   CapacitorSplashScreen:
-    :path: "../../node_modules/@capacitor/splash-screen"
+    :path: "../../node_modules/.pnpm/@capacitor+splash-screen@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
-    :path: "../../node_modules/@capacitor/status-bar"
+    :path: "../../node_modules/.pnpm/@capacitor+status-bar@5.0.6_@capacitor+core@5.3.0/node_modules/@capacitor/status-bar"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
 
@@ -67,10 +72,11 @@ SPEC CHECKSUMS:
   CapacitorCordova: b9374d68e63ce29e96ab5db994cf14fbefd722c9
   CapacitorDialog: 0f3c15dfe9414b83bc64aef4078f1b92bcfead26
   CapacitorPreferences: f03954bcb0ff09c792909e46bff88e3183c16b10
+  CapacitorRateApp: 896df7ec6a237fea72d1955e0cb26394654b00db
   CapacitorSplashScreen: 5fa2ab5e46cf5cc530cf16a51c80c7a986579ccd
   CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
   CordovaPlugins: 8ff2caec60f5f5400cc9cf86eafd95677f422538
 
-PODFILE CHECKSUM: a7d11cfa9172621ffbeac07ffd816f7070eaa502
+PODFILE CHECKSUM: 9740ba48519b04187315884eb56b06a6fa885dea
 
 COCOAPODS: 1.12.1

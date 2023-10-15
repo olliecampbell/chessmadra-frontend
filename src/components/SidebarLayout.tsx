@@ -20,7 +20,7 @@ import {
 } from "~/utils/app_state";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
 import { clsx } from "~/utils/classes";
-import { isChessmadra, isIos } from "~/utils/env";
+import { isChessmadra, isNative } from "~/utils/env";
 import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { BP, useResponsiveV2 } from "~/utils/useResponsive";
@@ -109,12 +109,12 @@ export const SidebarLayout = (props: {
 			return activeTool() !== "visualization";
 		}
 		if (vertical()) {
-			return includes(["overview", "home"], mode());
+			return includes(["home"], mode());
 		}
 		return false;
 	};
 	createEffect(() => {
-		if (isIos) {
+		if (isNative) {
 			if (props.loading) {
 				document.documentElement.style.overflow = "hidden";
 			} else {

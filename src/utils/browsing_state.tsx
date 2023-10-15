@@ -113,6 +113,7 @@ export interface BrowsingState {
 	chessboard: ChessboardInterface;
 	chessboardShown: boolean;
 	repertoireProgressState: BySide<RepertoireProgressState>;
+	hideContinuePracticing?: boolean;
 
 	// from sidebar state
 	isPastCoverageGoal?: boolean;
@@ -167,6 +168,7 @@ type Stack = [BrowsingState, RepertoireState, AppState];
 
 export const uiStateReset = () => {
 	return {
+		hideContinuePracticing: false,
 		positionHistory: null,
 		currentEpd: START_EPD,
 		isPastCoverageGoal: false,
@@ -190,7 +192,7 @@ export const uiStateReset = () => {
 		pendingResponses: {},
 		currentSide: "white",
 		hasPendingLineToAdd: false,
-	} as const;
+	} as Partial<BrowsingState>;
 };
 
 export const getInitialBrowsingState = (
@@ -215,6 +217,7 @@ export const getInitialBrowsingState = (
 		...uiStateReset(),
 		// @ts-ignore
 		chessboard: undefined as ChessboardInterface,
+		hideContinuePracticing: false,
 		activeSide: "white",
 		hasPendingLineToAdd: false,
 		chessboardShown: false,
@@ -880,6 +883,7 @@ export const getInitialBrowsingState = (
 				set(([s]) => {
 					s.dismissTransientSidebarState();
 					s.addedLineState.visible = false;
+					s.hideContinuePracticing = true;
 				});
 			},
 			onReset: () => {
@@ -890,6 +894,7 @@ export const getInitialBrowsingState = (
 			},
 			onMovePlayed: () => {
 				set(([s, rs]) => {
+					s.hideContinuePracticing = true;
 					if (includes(["home", "overview"], rs.ui.mode)) {
 						rs.ui.clearViews();
 						rs.startBrowsing(s.activeSide ?? "white", "build", {

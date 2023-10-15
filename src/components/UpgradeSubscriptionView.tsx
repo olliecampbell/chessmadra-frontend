@@ -4,7 +4,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { For, createSignal, onMount } from "solid-js";
 import { getAppState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
-import { isIos } from "~/utils/env";
+import { isNative } from "~/utils/env";
 import {
 	PRODUCT_CHESSBOOK_PRO_ANNUAL,
 	PRODUCT_CHESSBOOK_PRO_MONTHLY,
@@ -16,14 +16,14 @@ import { animateSidebar } from "./SidebarContainer";
 export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 	const [loading, setLoading] = createSignal(false);
 	const products = () => getAppState().inAppPurchaseState.products;
-	const loadingProducts = () => isIos && isEmpty(products());
+	const loadingProducts = () => isNative && isEmpty(products());
 	const requestProPlan = (annual: boolean) => {
 		setLoading(true);
 		trackEvent("upgrade.subscribe", {
 			type: annual ? "annual" : "monthly",
 		});
 		quick((s) => {
-			if (isIos) {
+			if (isNative) {
 				const product =
 					products()[
 						annual
@@ -68,7 +68,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 									requestProPlan(false);
 								},
 								text: "Upgrade to Chessbook Pro - Monthly",
-								subtext: isIos
+								subtext: isNative
 									? `${
 											products()[PRODUCT_CHESSBOOK_PRO_MONTHLY].pricing!.price
 									  }/month`
@@ -80,7 +80,7 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 									requestProPlan(true);
 								},
 								text: "Upgrade to Chessbook Pro - Annual",
-								subtext: isIos
+								subtext: isNative
 									? `${
 											products()[PRODUCT_CHESSBOOK_PRO_ANNUAL].pricing!.price
 									  }/year (save ${Math.round(

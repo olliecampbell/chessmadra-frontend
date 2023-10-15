@@ -13,7 +13,7 @@ import client from "~/utils/client";
 import { trackEvent } from "~/utils/trackEvent";
 import { AppState } from "./app_state";
 import { JWT_COOKIE_KEY, TEMP_USER_UUID } from "./cookies";
-import { isDevelopment, isIos } from "./env";
+import { isDevelopment, isNative } from "./env";
 import {
 	FrontendSettingOption,
 	FrontendSettings,
@@ -371,7 +371,7 @@ export const getInitialUserState = (
 						code_challenge_method: "S256",
 					}).toString();
 					const url = `https://lichess.org/oauth?${params}`;
-					if (isIos) {
+					if (isNative) {
 						AppLauncher.openUrl({ url });
 					} else {
 						window.location.href = url;
