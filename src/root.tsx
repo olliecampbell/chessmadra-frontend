@@ -17,6 +17,7 @@ import { App } from "./app";
 import { HeadSiteMeta } from "./components/HeadSiteMeta";
 import { c, stylex } from "./utils/styles";
 import "virtual:uno.css";
+import { APPLE_APP_ID } from "./constants";
 
 export default function Root() {
 	return (
@@ -29,6 +30,7 @@ export default function Root() {
 					content="no-cache, no-store, must-revalidate"
 				/>
 				<meta http-equiv="Pragma" content="no-cache" />
+				<meta name="apple-itunes-app" content={`app-id=${APPLE_APP_ID}`} />
 				<meta http-equiv="Expires" content="0" />
 				<meta name="theme-color" content={c.gray[8]} />
 				<meta

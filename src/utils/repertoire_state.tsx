@@ -4,6 +4,7 @@ import {
 	filter,
 	flatten,
 	forEach,
+	isArray,
 	isEmpty,
 	isNil,
 	keyBy,
@@ -96,6 +97,7 @@ export interface RepertoireState {
 		popView: () => void;
 	};
 	fetchRepertoire: (initial?: boolean) => void;
+	repertoireFetched: (_: FetchRepertoireResponse) => void;
 	fetchEcoCodes: () => void;
 	fetchSupplementary: () => Promise<void>;
 	initializeRepertoire: (_: {
@@ -871,6 +873,26 @@ export const getInitialRepertoireState = (
 				}
 			});
 		},
+		repertoireFetched: (repertoireResponse: FetchRepertoireResponse) =>
+			set(([s, appState]) => {
+				const user = appState.userState.user;
+				s.repertoire = repertoireResponse.repertoire;
+				s.repertoireGrades = repertoireResponse.grades;
+				s.hasCompletedRepertoireInitialization = true;
+				s.onRepertoireUpdate();
+				if (!s.getIsRepertoireEmpty()) {
+					appState.userState.pastLandingPage = true;
+				}
+				if (TEST_MODE) {
+					s.startBrowsing("white", TEST_MODE);
+				} else if (!isEmpty(TEST_LINE)) {
+					window.setTimeout(() => {
+						s.startBrowsing("black", "build", {
+							pgnToPlay: lineToPgn(TEST_LINE),
+						});
+					}, 100);
+				}
+			}),
 		fetchRepertoire: (initial?: boolean) =>
 			set(([s, appState]) => {
 				const user = appState.userState.user;
@@ -878,22 +900,7 @@ export const getInitialRepertoireState = (
 					.get("/api/v1/openings")
 					.then(({ data }: { data: FetchRepertoireResponse }) => {
 						set(([s]) => {
-							s.repertoire = data.repertoire;
-							s.repertoireGrades = data.grades;
-							s.hasCompletedRepertoireInitialization = true;
-							s.onRepertoireUpdate();
-							if (!s.getIsRepertoireEmpty()) {
-								appState.userState.pastLandingPage = true;
-							}
-							if (TEST_MODE) {
-								s.startBrowsing("white", TEST_MODE);
-							} else if (!isEmpty(TEST_LINE)) {
-								window.setTimeout(() => {
-									s.startBrowsing("black", "build", {
-										pgnToPlay: lineToPgn(TEST_LINE),
-									});
-								}, 100);
-							}
+							s.repertoireFetched(data);
 						});
 					});
 			}),
@@ -986,7 +993,15 @@ export const getInitialRepertoireState = (
 						.get("/api/v1/get_lichess_mistakes")
 						.then(({ data }: { data: LichessMistake[] }) => {
 							set(([s]) => {
-								s.lichessMistakes = data;
+								if (isArray(data)) {
+									s.lichessMistakes = data;
+								} else {
+									const { mistakes, repertoire } = data;
+									s.lichessMistakes = mistakes;
+									if (repertoire) {
+										s.repertoireFetched(repertoire);
+									}
+								}
 							});
 						});
 				}
