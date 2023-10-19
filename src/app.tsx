@@ -93,6 +93,7 @@ export const App = () => {
 					<Route path="/chessnuke" component={PageWrapper} />
 					<Route path="/stupactlyo" component={PageWrapper} />
 					<Route path="/epicchess2021" component={PageWrapper} />
+					<Route path="/chessjourneys" component={PageWrapper} />
 					<Route path="/willtaylorchess" component={PageWrapper} />
 					<Route path="/design-system" component={DesignSytem} />
 					<Route path="/forgot-password" component={ForgotPassword} />
