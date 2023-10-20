@@ -3,8 +3,10 @@ import { SidebarTemplate } from "../SidebarTemplate";
 import { Spacer } from "../Space";
 import { VisualizationTraining } from "../VisualizationTraining";
 import { OpeningTrainerRedirect } from "./OpeningTrainerRedirect";
+import { useNavigate } from "@solidjs/router";
 
 export const DirectorySidebar = () => {
+	const navigate = useNavigate();
 	return (
 		<SidebarTemplate
 			header="Welcome to Chess Madra!"
@@ -13,6 +15,7 @@ export const DirectorySidebar = () => {
 				{
 					onPress: () => {
 						quick((s) => {
+							navigate("/visualization");
 							s.trainersState.pushView(VisualizationTraining);
 						});
 					},

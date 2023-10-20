@@ -6,7 +6,10 @@ import {
 	ProgressMessageType,
 } from "~/types/VisualizationState";
 import { isCheckmate } from "../utils/chess";
-import { ChessboardDelegate } from "./chessboard_interface";
+import {
+	ChessboardDelegate,
+	ChessboardInterface,
+} from "./chessboard_interface";
 import { LichessPuzzle } from "./models";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 
@@ -21,14 +24,10 @@ export interface PuzzleState extends ChessboardDelegate {
 }
 
 export interface PuzzleStateDelegate {
+	chessboard: ChessboardInterface;
 	onPuzzleMoveSuccess: () => void;
 	onPuzzleMoveFailure: (move: Move) => void;
 	onPuzzleSuccess: () => void;
-	animatePieceMove: (
-		move: Move,
-		speed: PlaybackSpeed,
-		callback: (completed: boolean) => void,
-	) => void;
 }
 
 export const getInitialPuzzleState = (
@@ -62,12 +61,9 @@ export const getInitialPuzzleState = (
 					const otherSideMove = s.solutionMoves[1];
 					s.puzzlePosition.move(move);
 					if (otherSideMove) {
+						s.delegate.chessboard.setPosition(s.puzzlePosition);
 						s.puzzlePosition.move(otherSideMove);
-						s.delegate.animatePieceMove(
-							otherSideMove,
-							PlaybackSpeed.Normal,
-							noop,
-						);
+						s.delegate.chessboard.makeMove(otherSideMove, { animate: true });
 					}
 					s.solutionMoves.shift();
 					s.solutionMoves.shift();

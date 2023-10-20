@@ -66,9 +66,13 @@ export interface RepertoireSide {
 
 export function getAllRepertoireMoves(
 	r: Repertoire | undefined,
+	side?: Side,
 ): RepertoireMove[] {
 	if (!r) {
 		return [];
+	}
+	if (side) {
+		return [...flatten(Object.values(r[side].positionResponses))];
 	}
 	return [
 		...flatten(Object.values(r.black.positionResponses)),

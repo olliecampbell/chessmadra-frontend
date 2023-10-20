@@ -26,6 +26,7 @@ import {
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp, URLOpenListenerEvent } from "@capacitor/app";
 import { InAppPurchases } from "./utils/in_app_purchases";
+import { AccountDeletionView } from "./components/AccountDeletion";
 
 export const App = () => {
 	onMount(() => {
@@ -101,6 +102,10 @@ export const App = () => {
 					<Route
 						path="/login"
 						component={() => <PageWrapper initialView={LoginSidebar} />}
+					/>
+					<Route
+						path="/account-deletion"
+						component={() => <PageWrapper initialView={AccountDeletionView} />}
 					/>
 					<Route
 						path="/visualization"

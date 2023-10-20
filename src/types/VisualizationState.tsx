@@ -2,10 +2,10 @@ import { Chess, Move } from "@lubert/chess.ts";
 import { PuzzleFetchOptions } from "~/utils/api";
 import { ChessboardInterface } from "~/utils/chessboard_interface";
 import { LichessPuzzle } from "~/utils/models";
-import { PuzzleState } from "~/utils/puzzle_state";
+import { PuzzleState, PuzzleStateDelegate } from "~/utils/puzzle_state";
 import { StorageItem } from "~/utils/storageItem";
 
-export interface VisualizationState {
+export type VisualizationState = {
 	pulsePlay: boolean;
 	puzzleState: PuzzleState;
 	startedSolving: boolean;
@@ -61,7 +61,7 @@ export interface VisualizationState {
 	onAutoPlayEnd?: () => void;
 	initState?: () => void;
 	updateStep?: () => void;
-}
+} & PuzzleStateDelegate;
 
 interface Step {
 	puzzleDifficulty: number;

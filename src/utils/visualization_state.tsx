@@ -19,6 +19,7 @@ import { createQuick } from "./quick";
 import { toSide } from "./repertoire";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { DEBUG_PASS_FAIL_BUTTONS } from "./test_settings";
+import { createChessProxy } from "./chess_proxy";
 
 type Stack = [VisualizationState, AppState];
 
@@ -147,8 +148,8 @@ export const getInitialVisualizationState = (
 				state.chessboard.clearPending();
 				state.startedSolving = false;
 				state.focusedMoveIndex = null;
-				const currentPosition = new Chess();
-				const puzzlePosition = new Chess();
+				const currentPosition = createChessProxy(new Chess());
+				const puzzlePosition = createChessProxy(new Chess());
 				const puzzle: LichessPuzzle = state.puzzleState.puzzle as LichessPuzzle;
 				for (const move of puzzle.allMoves) {
 					currentPosition.move(move);
@@ -228,13 +229,6 @@ export const getInitialVisualizationState = (
 				);
 				s.setupForPuzzle();
 			}),
-	} as VisualizationState;
-
-	initialState.puzzleState = getInitialPuzzleState(setPuzzle, getPuzzle);
-	initialState.puzzleState.delegate = {
-		animatePieceMove: (move, speed, callback) => {
-			initialState.chessboard.animatePieceMove(move, callback, { speed });
-		},
 		onPuzzleMoveSuccess: () => {
 			set(([state]) => {
 				// TODO: animate piece move
@@ -263,7 +257,10 @@ export const getInitialVisualizationState = (
 				}
 			});
 		},
-	} as PuzzleStateDelegate;
+	} as VisualizationState;
+
+	initialState.puzzleState = getInitialPuzzleState(setPuzzle, getPuzzle);
+	initialState.puzzleState.delegate = initialState as PuzzleStateDelegate;
 	initialState.chessboard = createChessboardInterface()[1];
 	initialState.chessboard.set((c) => {
 		c.delegate = {
