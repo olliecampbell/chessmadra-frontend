@@ -50,6 +50,7 @@ import {
 	RepertoireMove,
 	SIDES,
 	Side,
+	getAllRepertoireMoves,
 	lineToPgn,
 	otherSide,
 	pgnToLine,
@@ -146,6 +147,7 @@ interface RepertoireProgressState {
 	showNewProgressBar?: boolean;
 	showPending?: boolean;
 	completed: boolean;
+	expectedDepth: number;
 	showPopover: boolean;
 	percentComplete: number;
 	pendingMoves: number;
@@ -251,6 +253,16 @@ export const getInitialBrowsingState = (
 			set(([s, rs, gs]) => {
 				SIDES.forEach((side) => {
 					const progressState = s.repertoireProgressState[side];
+					const expectedDepth = getAllRepertoireMoves(
+						rs.repertoire,
+						side,
+					).reduce((expectedDepth, move) => {
+						if (move.mine && !s.repertoireProgressState[side].pendingMoves) {
+							return expectedDepth + (move.incidence ?? 0);
+						}
+						return expectedDepth;
+					}, 0);
+					progressState.expectedDepth = expectedDepth;
 					const biggestMiss = rs.repertoireGrades[side]?.biggestMiss;
 					const numMoves = rs.numResponsesAboveThreshold?.[side] ?? 0;
 					const completed = isNil(biggestMiss);
@@ -922,6 +934,7 @@ function createEmptyRepertoireProgressState(): RepertoireProgressState {
 	return {
 		pendingMoves: 0,
 		completed: false,
+		expectedDepth: 0,
 		percentComplete: 0,
 		showPopover: false,
 	};
