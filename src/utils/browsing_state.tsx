@@ -66,6 +66,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { scoreTableResponses, shouldUsePeerRates } from "./table_scoring";
 import { isTheoryHeavy } from "./theory_heavy";
 import { animateSidebar } from "~/components/SidebarContainer";
+import { logProxy } from "./state";
 
 export enum SidebarOnboardingImportType {
 	LichessUsername = "lichess_username",
@@ -271,7 +272,14 @@ export const getInitialBrowsingState = (
 					const savedProgress = completed
 						? 1
 						: getCoverageProgress(numMoves / expectedNumMoves);
-					// console.log({ numMoves, expectedNumMoves, savedProgress });
+					// if (side === "white") {
+					// 	console.log({
+					// 		numMoves,
+					// 		expectedNumMoves,
+					// 		savedProgress,
+					// 		biggestMiss: logProxy(biggestMiss),
+					// 	});
+					// }
 					progressState.percentComplete = savedProgress;
 				});
 			}),
@@ -974,17 +982,16 @@ const isCommonMistake = (
 };
 
 export function getCoverageProgress(progress: number) {
-	// Linear progression until 0.95
-	if (progress <= 0.95) {
+	const linearCutoff = 0.9;
+	if (progress <= linearCutoff) {
 		return progress;
 	}
-
-	// For progress > 0.95, we use an ease-out function to approach 1 but never exceed it
+	// For progress > linearCutoff, we use an ease-out function to approach 1 but never exceed it
 	else {
-		const transformedProgress = progress - 0.95;
+		const transformedProgress = progress - linearCutoff;
 
-		const easeOutProgress = 1 - Math.exp(-5 * transformedProgress);
+		const easeOutProgress = 1 - Math.exp(-4 * transformedProgress);
 
-		return 0.95 + easeOutProgress * 0.05;
+		return linearCutoff + easeOutProgress * (1 - linearCutoff);
 	}
 }
