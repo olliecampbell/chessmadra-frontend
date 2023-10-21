@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Chessbook</string>
+    <string name="title_activity_main">Chessbook</string>
+    <string name="package_name">com.chessbook</string>
+    <string name="custom_url_scheme">com.chessbook</string>
+</resources>
