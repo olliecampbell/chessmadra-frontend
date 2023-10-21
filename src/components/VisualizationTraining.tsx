@@ -2,7 +2,7 @@ import { For, onMount } from "solid-js";
 import { Match, Switch, createEffect } from "solid-js";
 import { getAppState, quick, useVisualizationState } from "~/utils/app_state";
 
-import { range } from "lodash-es";
+import { range, upperFirst, find } from "lodash-es";
 import { PlaybackSpeed } from "~/types/VisualizationState";
 import { getPlaybackSpeedDescription } from "~/utils/playback_speed";
 import { stylex } from "~/utils/styles";
@@ -14,6 +14,8 @@ import {
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
+import { ThemeSettings } from "./SidebarSettings";
+import { COMBINED_THEMES_BY_ID, combinedThemes } from "~/utils/theming";
 
 export const VisualizationTraining = () => {
 	onMount(() => {
@@ -26,6 +28,11 @@ export const VisualizationTraining = () => {
 };
 
 export const VisualizationSidebar = () => {
+	const userState = () => getAppState().userState;
+	const themeId = () => userState().user?.theme;
+	const theme = () =>
+		find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
+		COMBINED_THEMES_BY_ID.default;
 	const playbackSpeed =
 		getAppState().trainersState.visualizationState.playbackSpeedUserSetting;
 	const numberHiddenMoves =
@@ -108,6 +115,16 @@ export const VisualizationSidebar = () => {
 							},
 							text: "Puzzle Difficulty",
 							right: `${ratingGte.value} - ${ratingLte.value}`,
+							style: "secondary",
+						} as SidebarAction,
+						{
+							onPress: () => {
+								quick((s) => {
+									s.trainersState.pushView(ThemeSettings);
+								});
+							},
+							text: "Board appearance",
+							right: `${upperFirst(theme().name)}`,
 							style: "secondary",
 						} as SidebarAction,
 					]}
