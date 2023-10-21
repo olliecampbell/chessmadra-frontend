@@ -269,8 +269,9 @@ export const getInitialBrowsingState = (
 					progressState.completed = completed;
 					const expectedNumMoves = rs.expectedNumMovesFromEpd[side][START_EPD];
 					const savedProgress = completed
-						? 100
-						: getCoverageProgress(numMoves, expectedNumMoves);
+						? 1
+						: getCoverageProgress(numMoves / expectedNumMoves);
+					// console.log({ numMoves, expectedNumMoves, savedProgress });
 					progressState.percentComplete = savedProgress;
 				});
 			}),
@@ -972,11 +973,18 @@ const isCommonMistake = (
 	return true;
 };
 
-export const getCoverageProgress = (
-	numMoves: number,
-	expectedNumMoves: number,
-): number => {
-	return (
-		(1 / (1 + Math.E ** (-4 * (numMoves / expectedNumMoves))) - 0.5) * 2 * 100
-	);
-};
+export function getCoverageProgress(progress: number) {
+	// Linear progression until 0.95
+	if (progress <= 0.95) {
+		return progress;
+	}
+
+	// For progress > 0.95, we use an ease-out function to approach 1 but never exceed it
+	else {
+		const transformedProgress = progress - 0.95;
+
+		const easeOutProgress = 1 - Math.exp(-5 * transformedProgress);
+
+		return 0.95 + easeOutProgress * 0.05;
+	}
+}

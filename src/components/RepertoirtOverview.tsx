@@ -241,7 +241,7 @@ export const CoverageAndBar = (props: {
 				{progressState().completed ? (
 					<>Completed</>
 				) : (
-					<>{Math.round(progressState().percentComplete)}% Complete</>
+					<>{Math.round(progressState().percentComplete) * 100}% Complete</>
 				)}
 			</CMText>
 			<Show when={!props.hideBar}>

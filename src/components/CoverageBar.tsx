@@ -38,7 +38,7 @@ export const CoverageBar = (props: {
 						c.top(0),
 						c.bottom(0),
 						c.left(0),
-						c.width(`${progressState().percentComplete}%`),
+						c.width(`${progressState().percentComplete * 100}%`),
 						c.fullHeight,
 					)}
 				/>

@@ -141,7 +141,7 @@ export const RepertoireHome = () => {
 											<CMText style={stylex(c.fg(c.colors.text.secondary))}>
 												{numLines()[side] > 0
 													? `${Math.round(
-															progressState()[side].percentComplete,
+															progressState()[side].percentComplete * 100,
 													  )}% complete`
 													: "Not started"}
 											</CMText>
@@ -366,7 +366,8 @@ export const RepertoireHome = () => {
 										style: "secondary",
 									} as SidebarAction,
 									{
-										hidden: !settingsExpanded() || (!isDevelopment && !isNative),
+										hidden:
+											!settingsExpanded() || (!isDevelopment && !isNative),
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.privacy_and_terms");
@@ -381,7 +382,8 @@ export const RepertoireHome = () => {
 									{
 										hidden:
 											!settingsExpanded() ||
-											(!isDevelopment && (!isNative || !userState().user?.email)),
+											(!isDevelopment &&
+												(!isNative || !userState().user?.email)),
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.delete_account");

@@ -52,6 +52,7 @@ import { isDevelopment } from "./env";
 import { MAX_MOVES_FREE_TIER } from "./payment";
 import { View } from "~/types/View";
 import { animateSidebar } from "~/components/SidebarContainer";
+import { isServer } from "solid-js/web";
 
 const TEST_LINE = isDevelopment ? [] : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
@@ -989,26 +990,24 @@ export const getInitialRepertoireState = (
 				s.lichessMistakes = null;
 				s.needsToRefetchLichessMistakes = false;
 				if (connected) {
-					client
-						.get("/api/v2/get_lichess_mistakes")
-						.then(
-							({
-								data,
-							}: {
-								data: {
-									mistakes: LichessMistake[];
-									repertoire: FetchRepertoireResponse;
-								};
-							}) => {
-								set(([s]) => {
-									const { mistakes, repertoire } = data;
-									s.lichessMistakes = mistakes;
-									if (repertoire) {
-										s.repertoireFetched(repertoire);
-									}
-								});
-							},
-						);
+					client.get("/api/v2/get_lichess_mistakes").then(
+						({
+							data,
+						}: {
+							data: {
+								mistakes: LichessMistake[];
+								repertoire: FetchRepertoireResponse;
+							};
+						}) => {
+							set(([s]) => {
+								const { mistakes, repertoire } = data;
+								s.lichessMistakes = mistakes;
+								if (repertoire) {
+									s.repertoireFetched(repertoire);
+								}
+							});
+						},
+					);
 				}
 			});
 		},
@@ -1064,4 +1063,8 @@ export const getExpectedNumMovesBetween = (
 	const distance = Math.max(0, get_distance(current, destination));
 	return m * distance;
 };
-// window.getExpectedNumMovesBetween = getExpectedNumMovesBetween;
+
+if (!isServer) {
+	// @ts-ignore
+	window.getExpectedNumMovesBetween = getExpectedNumMovesBetween;
+}

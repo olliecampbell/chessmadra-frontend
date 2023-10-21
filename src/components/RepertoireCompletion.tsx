@@ -13,7 +13,7 @@ export const RepertoireCompletion = (props: { side: Side }) => {
 			<p class="body-text">
 				Your {props.side} repertoire is{" "}
 				<b style={stylex(c.fg(c.gray[80]), c.weightSemiBold)}>
-					{Math.round(progressState().percentComplete)}%
+					{Math.round(progressState().percentComplete * 100)}%
 				</b>{" "}
 				complete.
 			</p>
