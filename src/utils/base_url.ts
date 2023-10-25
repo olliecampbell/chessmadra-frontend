@@ -1,14 +1,17 @@
 import { Capacitor } from "@capacitor/core";
 import { isNil } from "lodash-es";
 import { isServer } from "solid-js/web";
-import { isNative } from "./env";
+import { isDevelopment, isNative } from "./env";
 
 let baseApiUrl = undefined;
 let baseFrontendUrl = undefined;
-if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+if (isDevelopment) {
 	baseApiUrl = `${
 		isServer ? "http://localhost" : window.location.origin.split(":3000")[0]
 	}:8040`;
+	if (isNative) {
+		baseApiUrl = "http://localhost:8040";
+	}
 	if (
 		Capacitor.getPlatform() === "ios" ||
 		Capacitor.getPlatform() === "android"

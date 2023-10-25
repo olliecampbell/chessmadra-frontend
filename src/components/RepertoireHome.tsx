@@ -7,7 +7,7 @@ import {
 	noop,
 	upperFirst,
 } from "lodash-es";
-import { Accessor, For, Show, createSignal } from "solid-js";
+import { Accessor, For, Show, createSignal, onMount } from "solid-js";
 import { Spacer } from "~/components/Space";
 import {
 	getAppState,
@@ -56,6 +56,7 @@ import { UpgradeSubscriptionView } from "./UpgradeSubscriptionView";
 import { DeleteAccountView } from "./DeleteAccountView";
 import { PrivacyPolicyAndTermsView } from "./PrivacyPolicyAndTermsView";
 import { animateSidebar } from "./SidebarContainer";
+import { Notifications } from "~/utils/notifications";
 
 export const RepertoireHome = () => {
 	const userState = () => getAppState().userState;
@@ -96,6 +97,11 @@ export const RepertoireHome = () => {
 			return black;
 		}
 	};
+	onMount(() => {
+		if (isDevelopment) {
+			Notifications.registerNotifications();
+		}
+	});
 	const overallActions: Accessor<SidebarAction[]> = () => {
 		const totalDue =
 			(numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);

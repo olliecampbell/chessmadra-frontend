@@ -18,7 +18,7 @@ import ResetPassword from "./components/ResetPassword";
 import { ReviewMoveAnnotationsView } from "./components/ReviewMoveAnnotationsView";
 import DesignSytem from "./pages/DesignSystem";
 import LichessOAuthCallback from "./pages/LichessOAuthCallback";
-import { isChessmadra, isDevelopment } from "./utils/env";
+import { isChessmadra, isDevelopment, isNative } from "./utils/env";
 import {
 	posthogFeaturesLoaded,
 	setPosthogFeaturesLoaded,
@@ -27,6 +27,7 @@ import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp, URLOpenListenerEvent } from "@capacitor/app";
 import { InAppPurchases } from "./utils/in_app_purchases";
 import { AccountDeletionView } from "./components/AccountDeletion";
+import { Notifications } from "./utils/notifications";
 
 export const App = () => {
 	onMount(() => {
@@ -37,11 +38,10 @@ export const App = () => {
 		posthog.onFeatureFlags((x, y) => {
 			setPosthogFeaturesLoaded(true);
 		});
-		if (Capacitor.getPlatform() === "ios") {
+		if (isNative) {
 			InAppPurchases.loadProducts();
+			Notifications.addListeners();
 		}
-
-		// Option 1, initialize with API_KEY only
 
 		Sentry.init({
 			dsn: isDevelopment

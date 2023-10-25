@@ -21,6 +21,11 @@ const config: CapacitorConfig = {
 	backgroundColor: "#131516",
 	webDir: "dist",
 	server,
+	plugins: {
+		PushNotifications: {
+			presentationOptions: ["sound", "alert"],
+		},
+	},
 	// plugins: {
 	//   SplashScreen: {
 	//     launchShowDuration: 500,

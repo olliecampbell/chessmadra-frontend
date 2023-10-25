@@ -18,6 +18,7 @@ import { Spacer } from "./Space";
 import { animateSidebar } from "./SidebarContainer";
 import { RateApp } from "capacitor-rate-app";
 import { isNative } from "~/utils/env";
+import { Notifications } from "~/utils/notifications";
 
 export const PracticeComplete = () => {
 	const [repertoire] = useRepertoireState((s) => [s.repertoire]);
@@ -72,6 +73,8 @@ export const PracticeComplete = () => {
 		) {
 			trackEvent("prompted_for_app_review");
 			RateApp.requestReview();
+		} else {
+			Notifications.registerNotifications();
 		}
 	});
 	const activeOptions = () =>
