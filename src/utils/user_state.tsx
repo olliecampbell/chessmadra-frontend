@@ -55,6 +55,7 @@ export interface UserState {
 		theme?: BoardThemeId;
 		pieceSet?: PieceSetId;
 		chesscomUsername?: string | null;
+		iosDeviceToken?: string;
 		flags?: UserFlag[];
 		frontendSettings?: FrontendSettings;
 	}) => void;
@@ -240,14 +241,9 @@ export const getInitialUserState = (
 				}
 			});
 		},
-		updateUserSettings: ({
-			theme,
-			pieceSet,
-			flags,
-			frontendSettings,
-			chesscomUsername,
-		}) =>
+		updateUserSettings: (settings) =>
 			set(([s]) => {
+				const { theme, pieceSet } = settings;
 				if (pieceSet) {
 					s.user!.pieceSet = pieceSet;
 				}
@@ -255,15 +251,9 @@ export const getInitialUserState = (
 					s.user!.theme = theme;
 				}
 				client
-					.post("/api/v1/user/settings", {
-						theme,
-						pieceSet,
-						flags,
-						chesscomUsername,
-						frontendSettings,
-					})
+					.post("/api/v1/user/settings", settings)
 					.then(({ data }: { data: User }) => {
-						set(([s, appState]) => {
+						set(([s]) => {
 							s.setUser(data);
 						});
 					});
@@ -309,6 +299,12 @@ export const getInitialUserState = (
 					target: `1 in ${Math.round(1 / t)} games`,
 				});
 				s.updateUserRatingSettings({ missThreshold: s.user!.missThreshold });
+			});
+		},
+		setDeviceToken: (token: string) => {
+			return set(([s]) => {
+				trackEvent("user.update_device_token");
+				return s.updateUserSettings({ iosDeviceToken: token });
 			});
 		},
 		setRatingSystem: (system: string) => {

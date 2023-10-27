@@ -1,11 +1,11 @@
-import { filter, isEmpty, some, sum, values } from "lodash-es";
+import { capitalize, filter, isEmpty, some, sum, values } from "lodash-es";
 import { createMemo } from "solid-js";
 import { getAppState, quick, useRepertoireState } from "~/utils/app_state";
 import { START_EPD } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { Quiz, countQueue } from "~/utils/queues";
-import { Side } from "~/utils/repertoire";
+import { SIDES, Side } from "~/utils/repertoire";
 import { bySide } from "~/utils/repertoire";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { isMoveDifficult } from "~/utils/srs";
@@ -147,27 +147,48 @@ export const PreReview = (props: { side: Side | null }) => {
 			});
 		}
 		const side = props.side;
-		if (side) {
-			actions.push({
-				onPress: () => {
-					quick((s) => {
-						trackEvent("pre_review.specific");
+		actions.push({
+			onPress: () => {
+				quick((s) => {
+					trackEvent("pre_review.specific");
+					if (side) {
 						animateSidebar("right");
 						s.repertoireState.ui.popView();
 						s.repertoireState.startBrowsing(side as Side, "browse");
-					});
-				},
-				text: "A specific opening I've added",
-				right: <i class="fa fa-arrow-right" />,
-				style: "secondary",
-			});
-		}
+					} else {
+						s.repertoireState.ui.pushView(ChooseSideForSpecificPractice);
+					}
+				});
+			},
+			text: "A specific opening I've added",
+			right: <i class="fa fa-arrow-right" />,
+			style: "secondary",
+		});
 		return actions;
 	};
 	return (
 		<SidebarTemplate
 			header={"What would you like to practice?"}
 			actions={actions()}
+			bodyPadding={true}
+		/>
+	);
+};
+
+export const ChooseSideForSpecificPractice = () => {
+	return (
+		<SidebarTemplate
+			header={"Which side do you want to practice?"}
+			actions={SIDES.map((side) => ({
+				style: "primary",
+				onPress: () => {
+					quick((s) => {
+						s.repertoireState.ui.clearViews();
+						s.repertoireState.startBrowsing(side, "browse");
+					});
+				},
+				text: capitalize(side),
+			}))}
 			bodyPadding={true}
 		/>
 	);

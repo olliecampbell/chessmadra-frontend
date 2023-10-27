@@ -17,10 +17,7 @@ if (isDevelopment) {
 		Capacitor.getPlatform() === "android"
 	) {
 		baseFrontendUrl = "http://localhost:3000";
-	} else {
-		if (typeof window !== "undefined") {
-			baseFrontendUrl = window.location.origin;
-		}
+		baseApiUrl = "https://chessbook.ngrok.io";
 	}
 }
 
