@@ -42,7 +42,7 @@ import {
 	pgnToLine,
 } from "./repertoire";
 import { RepertoireState } from "./repertoire_state";
-import { COMMON_MOVES_CUTOFF } from "./review";
+import { COMMON_MOVES_CUTOFF, EARLY_MOVES_CUTOFF } from "./review";
 import { isMoveDifficult } from "./srs";
 import { logProxy } from "./state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
@@ -108,7 +108,7 @@ type ReviewStats = {
 	incorrect: number;
 };
 
-type ReviewFilter = "difficult-due" | "all" | "common" | "due";
+type ReviewFilter = "difficult-due" | "all" | "common" | "due" | "early";
 
 interface ReviewOptions {
 	side: Side | null;
@@ -413,7 +413,8 @@ export const getInitialReviewState = (
 									needsToReviewAny) ||
 								(options.filter === "common" && needsToReviewAny) ||
 								(options.filter === "due" && needsToReviewAny) ||
-								options.filter === "all";
+								options.filter === "all" ||
+								options.filter === "early";
 							if (shouldAdd) {
 								// todo: should re-enable
 								queue.push({
@@ -479,6 +480,29 @@ export const getInitialReviewState = (
 						queue = commonWithPlans;
 					} else {
 						queue = commonQueue;
+					}
+				}
+				if (options.filter === "early") {
+					const dues = sortBy(
+						map(queue, (m) => Quiz.getMoves(m)?.[0].srs?.dueAt),
+					);
+					const earlyCutoff = dues[EARLY_MOVES_CUTOFF] ?? "0";
+					const earlyQueue = take(
+						filter(queue, (m) => {
+							const moves = Quiz.getMoves(m);
+							if (!moves?.[0].srs?.dueAt) {
+								return false;
+							}
+							return moves[0].srs?.dueAt < earlyCutoff;
+						}),
+						COMMON_MOVES_CUTOFF,
+					);
+					const epds = map(earlyQueue, (q) => q.epd);
+					if (options.includePlans) {
+						const commonWithPlans = filter(queue, (m) => epds.includes(m.epd));
+						queue = commonWithPlans;
+					} else {
+						queue = earlyQueue;
 					}
 				}
 				const countOfPlans = countBy(queue, (q: QuizGroup) =>

@@ -22,6 +22,7 @@ import { Notifications } from "~/utils/notifications";
 
 export const PracticeComplete = () => {
 	const [repertoire] = useRepertoireState((s) => [s.repertoire]);
+	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	const [allReviewPositionMoves] = useRepertoireState((s) => [
 		s.reviewState.allReviewPositionMoves,
 	]);
@@ -89,6 +90,16 @@ export const PracticeComplete = () => {
 		const due = side ? numMovesDueBySide()[side] : totalDue();
 		return due;
 	};
+	const earlyQueue = createMemo(() => {
+		if (due() === 0 && !onboarding()) {
+			return getAppState().repertoireState.reviewState.buildQueue({
+				side: activeOptions()?.side ?? null,
+				filter: "early",
+			});
+		} else {
+			return null;
+		}
+	});
 
 	const actions = () => {
 		const actions: SidebarAction[] = [];
@@ -106,6 +117,24 @@ export const PracticeComplete = () => {
 				},
 				text: "Practice next most common moves",
 				right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
+				style: "secondary",
+			});
+		}
+		const early = earlyQueue();
+		if (early) {
+			actions.push({
+				onPress: () => {
+					quick((s) => {
+						s.repertoireState.ui.popView();
+						s.repertoireState.reviewState.startReview({
+							side: activeOptions()?.side ?? null,
+							filter: "early",
+						});
+						trackEvent("post_review.next_common_moves");
+					});
+				},
+				text: `Review your next ${pluralize(early.length, "move")} moves early`,
+				right: null,
 				style: "secondary",
 			});
 		}
