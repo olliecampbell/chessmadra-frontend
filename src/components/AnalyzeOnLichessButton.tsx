@@ -5,17 +5,24 @@ import { getLichessLink } from "~/utils/lichess";
 import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { FadeInOut } from "./FadeInOut";
+import { destructure } from "@solid-primitives/destructure";
 
 export const AnalyzeOnLichessButton = (props: { short?: boolean }) => {
 	const mode = useMode();
-	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
-	const currentLine = () => {
+	const [sidebarSide] = useSidebarState(([s]) => [s.activeSide]);
+	const [currentLine, activeSide] = destructure(() => {
 		if (mode() === "review") {
-			return getAppState().repertoireState.reviewState.moveLog;
+			return [
+				getAppState().repertoireState.reviewState.moveLog,
+				getAppState().repertoireState.reviewState.reviewSide,
+			];
 		} else {
-			return getAppState().repertoireState.browsingState.chessboard.getMoveLog();
+			return [
+				getAppState().repertoireState.browsingState.chessboard.getMoveLog(),
+				sidebarSide(),
+			];
 		}
-	};
+	});
 	return (
 		<FadeInOut
 			style={stylex(c.row)}
