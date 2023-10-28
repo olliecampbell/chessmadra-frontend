@@ -339,6 +339,8 @@ export const SidebarFullWidthButton = (props: {
 								props.action.style === "focus"
 									? c.weightBold
 									: c.weightSemiBold,
+								props.action.style === "secondary" &&
+									stylex(c.fg(c.colors.text.tertiary), c.weightBold),
 								c.fontSize(12),
 							)}
 						>

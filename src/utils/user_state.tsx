@@ -29,6 +29,7 @@ import { identify } from "./user_properties";
 import { StorageItem } from "./storageItem";
 import { Preferences } from "@capacitor/preferences";
 import { AppLauncher } from "@capacitor/app-launcher";
+import { Capacitor } from "@capacitor/core";
 
 export interface UserState {
 	quick: (fn: (_: UserState) => void) => void;
@@ -172,6 +173,7 @@ export const getInitialUserState = (
 					posthog.identify(user.id, {}, {});
 					identify({
 						email: user.email,
+						platform: Capacitor.getPlatform(),
 						subscribed: user.subscribed,
 						admin: user.isAdmin,
 						rating_range: user.ratingRange,

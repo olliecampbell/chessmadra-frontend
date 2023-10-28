@@ -618,7 +618,6 @@ export const getInitialReviewState = (
 					s.onPositionUpdate();
 				});
 			},
-			// eslint-disable-next-line @typescript-eslint/no-empty-function
 			madeMove: noop,
 			tappedSquare: (square) =>
 				set(([s]) => {
@@ -681,16 +680,7 @@ export const getInitialReviewState = (
 										].reviewed = true;
 									});
 
-									// @ts-ignore
-									if (s.currentQuizGroup?.moves.length > 1) {
-										s.showNext = true;
-									} else {
-										if (isEmpty(s.failedReviewPositionMoves)) {
-											s.setupNextMove();
-										} else {
-											s.showNext = true;
-										}
-									}
+									s.setupNextMove();
 								});
 							},
 						);

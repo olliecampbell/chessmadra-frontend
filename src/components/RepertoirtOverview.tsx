@@ -1,5 +1,5 @@
-import { capitalize, isNil } from "lodash-es";
-import { Accessor, Show, createSignal } from "solid-js";
+import { capitalize, findLast, first, isNil } from "lodash-es";
+import { Accessor, Show, createMemo, createSignal } from "solid-js";
 import { Spacer } from "~/components/Space";
 import {
 	getAppState,
@@ -8,33 +8,35 @@ import {
 	useSidebarState,
 } from "~/utils/app_state";
 import { BrowsingMode } from "~/utils/browsing_state";
-import { START_EPD } from "~/utils/chess";
+import { START_EPD, lineToPositions } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
+import { getAppropriateEcoName } from "~/utils/eco_codes";
 import { isDevelopment } from "~/utils/env";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { InstructiveGame } from "~/utils/models";
-import { Side } from "~/utils/repertoire";
+import { pluralize } from "~/utils/pluralize";
+import { Side, pgnToLine } from "~/utils/repertoire";
 import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { CMText } from "./CMText";
 import { ConfirmDeleteRepertoire } from "./ConfirmDeleteRepertoire";
 import { CoverageBar } from "./CoverageBar";
 import { Label } from "./Label";
-import { PreBuild } from "./PreBuild";
 import { PreReview } from "./PreReview";
+import { RepertoireCompletion } from "./RepertoireCompletion";
 import { ReviewText } from "./ReviewText";
 import {
 	SeeMoreActions,
 	SidebarAction,
 	SidebarActions,
 } from "./SidebarActions";
+import { animateSidebar } from "./SidebarContainer";
 import { SidebarInstructiveGames } from "./SidebarInstructiveGames";
 import {
 	ChooseImportSourceOnboarding,
 	TrimRepertoireOnboarding,
 } from "./SidebarOnboarding";
 import { SidebarTemplate } from "./SidebarTemplate";
-import { animateSidebar } from "./SidebarContainer";
 
 export const RepertoireOverview = () => {
 	const [side] = useSidebarState(([s]) => [s.activeSide]);
@@ -44,8 +46,7 @@ export const RepertoireOverview = () => {
 	const { browsingState } = repertoireState;
 	const progressState = () => browsingState.repertoireProgressState[side()!];
 	const biggestMiss = () =>
-		// @ts-ignore
-		repertoireState.repertoireGrades[side()]?.biggestMiss;
+		repertoireState.repertoireGrades[side()!]?.biggestMiss;
 	const numMoves = () => repertoireState.getLineCount(side());
 	const numMovesDueFromHere = () =>
 		repertoireState.numMovesDueFromEpd[side()!][START_EPD];
@@ -55,6 +56,23 @@ export const RepertoireOverview = () => {
 		return repertoireState.positionReports[side() as Side][START_EPD]
 			?.instructiveGames;
 	};
+	const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
+	const miss = createMemo(() => {
+		const miss = biggestMiss();
+		if (miss) {
+			const positions = lineToPositions(pgnToLine(first(miss.lines) as string));
+			const ecoCodePosition = findLast(positions, (p) => !!ecoCodeLookup()[p]);
+			if (ecoCodePosition) {
+				const ecoCode = ecoCodeLookup()[ecoCodePosition];
+				const [ecoName] = getAppropriateEcoName(ecoCode.fullName);
+				return {
+					name: ecoName,
+					incidence: miss.incidence,
+				};
+			}
+		}
+		return null;
+	});
 
 	const empty = () => numMoves() === 0;
 	const startBrowsing = (mode: BrowsingMode, skipAnimation?: boolean) => {
@@ -80,28 +98,39 @@ export const RepertoireOverview = () => {
 	const options = () =>
 		[
 			{
+				right: miss()?.name,
+
+				onPress: () => {
+					quick((s) => {
+						animateSidebar("right");
+						startBrowsing("build", empty());
+						if (empty()) {
+							trackEvent("side_overview.start_building");
+						} else {
+							trackEvent("side_overview.keep_building");
+						}
+						return;
+					});
+				},
+				text: <CMText class={clsx(textClasses)}>Go to your biggest gap</CMText>,
+				style: "secondary",
+				hidden: !miss(),
+			},
+			{
 				right: !empty() && (
-					<div style={stylex(c.height(4), c.row)}>
-						<CoverageAndBar side={side()!} />
-					</div>
+					<p class="text-tertiary text-sm">{pluralize(numMoves(), "move")}</p>
 				),
 
 				onPress: () => {
 					quick((s) => {
-						if (empty() || isNil(biggestMiss())) {
-							animateSidebar("right");
-							startBrowsing("build", empty());
-							if (empty()) {
-								trackEvent("side_overview.start_building");
-							} else {
-								trackEvent("side_overview.keep_building");
-							}
-							return;
+						animateSidebar("right");
+						startBrowsing("build", empty());
+						if (empty()) {
+							trackEvent("side_overview.start_building");
+						} else {
+							trackEvent("side_overview.keep_building");
 						}
-						trackEvent("side_overview.keep_building");
-						s.repertoireState.ui.pushView(PreBuild, {
-							props: { side: side() },
-						});
+						return;
 					});
 				},
 				text: (
@@ -110,7 +139,7 @@ export const RepertoireOverview = () => {
 							? "Start building your repertoire"
 							: isNil(biggestMiss())
 							? "Browse / add new moves"
-							: `Keep building ${!isMobile() ? "your repertoire" : ""}`}
+							: "Browse / edit something else"}
 					</CMText>
 				),
 				style: "secondary",
@@ -215,7 +244,10 @@ export const RepertoireOverview = () => {
 			actions={[]}
 			bodyPadding={false}
 		>
-			<Spacer height={24} />
+			<div class="padding-sidebar">
+				<RepertoireCompletion side={side()!} />
+			</div>
+			<Spacer height={48} />
 			<SidebarActions actions={options()} />
 			<Show when={!empty()}>
 				<SeeMoreActions
