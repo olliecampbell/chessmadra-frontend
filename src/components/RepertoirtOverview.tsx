@@ -15,7 +15,7 @@ import { isDevelopment } from "~/utils/env";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { InstructiveGame } from "~/utils/models";
 import { pluralize } from "~/utils/pluralize";
-import { Side, pgnToLine } from "~/utils/repertoire";
+import { Side, lineToPgn, pgnToLine } from "~/utils/repertoire";
 import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { CMText } from "./CMText";
@@ -43,11 +43,9 @@ export const RepertoireOverview = () => {
 	const textClasses = "text-primary font-semibold";
 	const appState = getAppState();
 	const { repertoireState } = appState;
-	const { browsingState } = repertoireState;
-	const progressState = () => browsingState.repertoireProgressState[side()!];
 	const biggestMiss = () =>
 		repertoireState.repertoireGrades[side()!]?.biggestMiss;
-	const numMoves = () => repertoireState.getLineCount(side());
+	const numMoves = () => repertoireState.numMyMoves?.[side()!] ?? 0;
 	const numMovesDueFromHere = () =>
 		repertoireState.numMovesDueFromEpd[side()!][START_EPD];
 	const earliestDueDate = () =>
@@ -84,8 +82,11 @@ export const RepertoireOverview = () => {
 			}
 		});
 	};
-	const isMobile = useIsMobileV2();
 	const reviewTimer = () => {
+		console.log({
+			movesDue: numMovesDueFromHere(),
+			earliest: earliestDueDate(),
+		});
 		const reviewTimer = (
 			<ReviewText
 				date={earliestDueDate()}
@@ -103,12 +104,11 @@ export const RepertoireOverview = () => {
 				onPress: () => {
 					quick((s) => {
 						animateSidebar("right");
-						startBrowsing("build", empty());
-						if (empty()) {
-							trackEvent("side_overview.start_building");
-						} else {
-							trackEvent("side_overview.keep_building");
-						}
+						const line = pgnToLine(biggestMiss()!.lines[0]);
+						s.repertoireState.startBrowsing(side()!, "build", {
+							pgnToPlay: lineToPgn(line),
+						});
+
 						return;
 					});
 				},
@@ -117,9 +117,9 @@ export const RepertoireOverview = () => {
 				hidden: !miss(),
 			},
 			{
-				right: !empty() && (
-					<p class="text-tertiary text-sm">{pluralize(numMoves(), "move")}</p>
-				),
+				// right: !empty() && (
+				// 	<p class="text-tertiary text-sm">{pluralize(numMoves(), "move")}</p>
+				// ),
 
 				onPress: () => {
 					quick((s) => {

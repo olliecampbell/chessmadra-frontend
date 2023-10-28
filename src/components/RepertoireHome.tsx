@@ -71,10 +71,10 @@ export const RepertoireHome = () => {
 	const theme = () =>
 		find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
 		COMBINED_THEMES_BY_ID.default;
-	const [numMovesDueBySide, numLines, earliestDueDate] = useRepertoireState(
+	const [numMovesDueBySide, numMyMoves, earliestDueDate] = useRepertoireState(
 		(s) => [
 			bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
-			bySide((side) => s.getLineCount(side)),
+			bySide((side) => s.numMyMoves?.[side] ?? 0),
 			bySide((side) => s.earliestReviewDueFromEpd[side][START_EPD]),
 		],
 	);
@@ -106,6 +106,7 @@ export const RepertoireHome = () => {
 		const totalDue =
 			(numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
 		const actions = [];
+		console.log({ earliest: overallEarliest(), numDue: totalDue });
 
 		actions.push({
 			text: "Practice your repertoire",
@@ -145,7 +146,7 @@ export const RepertoireHome = () => {
 										text: `${capitalize(side)} repertoire`,
 										right: (
 											<CMText style={stylex(c.fg(c.colors.text.secondary))}>
-												{numLines()[side] > 0
+												{numMyMoves()[side] > 0
 													? `${Math.round(
 															progressState()[side].percentComplete * 100,
 													  )}% complete`
@@ -155,7 +156,7 @@ export const RepertoireHome = () => {
 										onPress: () => {
 											quick((s) => {
 												trackEvent("home.select_side", { side });
-												if (numLines()[side] > 0) {
+												if (numMyMoves()[side] > 0) {
 													animateSidebar("right");
 													s.repertoireState.startBrowsing(side, "overview");
 												} else {

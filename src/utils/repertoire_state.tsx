@@ -131,12 +131,10 @@ export interface RepertoireState {
 	epdIncidences: BySide<Record<string, number>>;
 	epdNodes: BySide<Record<string, boolean>>;
 	onMove: () => void;
-	getMyResponsesLength: (side?: Side) => number;
 	getNumResponsesBelowThreshold: (
 		threshold: number,
 		side: Side | null,
 	) => number;
-	getLineCount: (side?: Side) => number;
 	getIsRepertoireEmpty: (side?: Side) => boolean;
 	analyzeLineOnLichess: (line: string[], side?: Side) => void;
 	analyzeMoveOnLichess: (fen: string, move: string, turn: Side) => void;
@@ -913,36 +911,6 @@ export const getInitialRepertoireState = (
 				const numMoves = s.numResponses?.[side] ?? 0;
 				return numMoves > MAX_MOVES_FREE_TIER;
 			}),
-		getLineCount: (side?: Side) =>
-			get(([s]) => {
-				if (!s.repertoire) {
-					return 0;
-				}
-				const seenEpds = new Set();
-				let lineCount = 0;
-				const recurse = (epd: string) => {
-					if (seenEpds.has(epd)) {
-						return;
-					}
-					seenEpds.add(epd);
-					const moves = s.repertoire?.[side!].positionResponses[epd] ?? [];
-					if (isEmpty(moves)) {
-						return;
-					}
-					if (lineCount === 0) {
-						lineCount = 1;
-					}
-					const additionalLines =
-						filter(moves, (m) => !seenEpds.has(m.epdAfter)).length - 1;
-					lineCount += Math.max(0, additionalLines);
-					forEach(moves, (variationMove) => {
-						// TODO solid
-						// recurse(variationMove.epdAfter);
-					});
-				};
-				recurse(START_EPD);
-				return lineCount;
-			}),
 		getNumResponsesBelowThreshold: (threshold: number, side: Side) =>
 			get(([s]) => {
 				return filter(getAllRepertoireMoves(s.repertoire), (m) => {
@@ -954,19 +922,6 @@ export const getInitialRepertoireState = (
 						return belowThreshold;
 					}
 				}).length;
-			}),
-		getMyResponsesLength: (side?: Side) =>
-			get(([s]) => {
-				if (!s.repertoire) {
-					return 0;
-				}
-				if (side) {
-					return values(s.repertoire[side].positionResponses)
-						.flatMap((v) => v)
-						.filter((v) => v.mine).length;
-				} else {
-					return getAllRepertoireMoves(s.repertoire).length;
-				}
 			}),
 		getIsRepertoireEmpty: (side?: Side) =>
 			get(([s]) => {
