@@ -12,6 +12,7 @@ import {
 	some,
 	takeRight,
 	isEmpty,
+	sortBy,
 } from "lodash-es";
 import { fensTheSame } from "~/utils/fens";
 import { StorageItem } from "~/utils/storageItem";
@@ -34,6 +35,10 @@ import { JSXElement } from "solid-js";
 import { c } from "./styles";
 import { getSquareLookers } from "./move_generation";
 import { isDevelopment } from "./env";
+import { useIsMobileV2 } from "./isMobile";
+import { isNumberObject } from "util/types";
+
+const isMobile = useIsMobileV2();
 
 type Stack = [VisionState, AppState];
 
@@ -160,9 +165,13 @@ export const getInitialVisionState = (
 					if (every(activeStep?.parts, (p) => p.complete)) {
 						activeStep.complete = true;
 						activeStep.active = false;
-						if (activeStepIndex < s.quiz.steps.length - 1) {
-							s.quiz.steps[activeStepIndex + 1].active = true;
+						const next = find(s.quiz.steps, (s) => !s.complete);
+						if (next) {
+							next.active = true;
 						}
+					}
+					if (isMobile()) {
+						s.quiz.steps = sortBy(s.quiz.steps, (s) => (s.active ? 0 : 1));
 					}
 					s.chessboard.showMoveFeedback(
 						{
