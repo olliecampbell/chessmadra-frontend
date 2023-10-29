@@ -2,19 +2,24 @@ import { last } from "lodash-es";
 import { Component } from "solid-js";
 import { VisualizationTraining } from "~/components/VisualizationTraining";
 import { View } from "~/types/View";
-import { VisualizationState } from "~/types/VisualizationState";
 import { AppState } from "./app_state";
 import { createQuick } from "./quick";
 import { StateGetter, StateSetter } from "./state_setters_getters";
-import { getInitialVisualizationState } from "./visualization_state";
+import {
+	VisualizationState,
+	getInitialVisualizationState,
+} from "./visualization_state";
 import { animateSidebar } from "~/components/SidebarContainer";
+import { VisionState, getInitialVisionState } from "./vision_state";
+import { VisionTraining } from "~/components/VisionTraining";
 
-type TrainerTool = "visualization";
+type TrainerTool = "visualization" | "board-vision";
 
 export interface TrainersState {
 	quick: (fn: (_: TrainersState) => void) => void;
 	getActiveTool: () => TrainerTool;
 	visualizationState: VisualizationState;
+	visionState: VisionState;
 	viewStack: View[];
 	currentView: () => View;
 	clearViews: () => void;
@@ -53,12 +58,16 @@ export const getInitialTrainersState = (
 	const initialState = {
 		...createQuick<TrainersState>(setOnly),
 		visualizationState: getInitialVisualizationState(_set, _get, false),
+		visionState: getInitialVisionState(_set, _get, false),
 		viewStack: [],
 		getActiveTool: () => {
 			return get(([s]) => {
 				for (const view of s.viewStack) {
 					if (view.component === VisualizationTraining) {
 						return "visualization";
+					}
+					if (view.component === VisionTraining) {
+						return "board-vision";
 					}
 				}
 				return null;
@@ -74,7 +83,7 @@ export const getInitialTrainersState = (
 			}),
 		pushView: (view, { direction, props, replace } = {}) =>
 			set(([s, gs]) => {
-        animateSidebar("right")
+				animateSidebar("right");
 				if (replace) {
 					s.viewStack.pop();
 				}

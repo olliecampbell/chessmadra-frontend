@@ -3,7 +3,6 @@ import { destructure } from "@solid-primitives/destructure";
 import { posthog } from "posthog-js";
 import { Accessor } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import { VisualizationState } from "~/types/VisualizationState";
 import { AdminState, getInitialAdminState } from "./admin_state";
 import { BrowsingState } from "./browsing_state";
 import { DebugState, getInitialDebugState } from "./debug_state";
@@ -12,6 +11,8 @@ import { RepertoireState, getInitialRepertoireState } from "./repertoire_state";
 import { TrainersState, getInitialTrainersState } from "./trainers_state";
 import { UserState, getInitialUserState } from "./user_state";
 import { InAppProductId } from "./in_app_purchases";
+import { VisualizationState } from "./visualization_state";
+import { VisionState } from "./vision_state";
 
 export interface InAppPurchaseState {
 	products: Record<InAppProductId, CdvPurchase.Product>;
@@ -165,6 +166,15 @@ export const useVisualizationState = <T extends any[]>(
 	return useStateSliceDestructure(
 		fn,
 		(s) => s.trainersState.visualizationState,
+	);
+};
+
+export const useVisionState = <T extends any[]>(
+	fn: (_: VisionState) => T,
+) => {
+	return useStateSliceDestructure(
+		fn,
+		(s) => s.trainersState.visionState,
 	);
 };
 

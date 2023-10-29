@@ -13,7 +13,7 @@ import {
 import { Accessor, JSXElement, createSignal } from "solid-js";
 import { createStore, produce, unwrap } from "solid-js/store";
 import { getAnimationDurations } from "~/components/chessboard/Chessboard";
-import { PlaybackSpeed } from "~/types/VisualizationState";
+import { PlaybackSpeed } from "~/types/PlaybackSpeed";
 import { getAppState } from "./app_state";
 import { START_EPD, genEpd, getSquareOffset } from "./chess";
 import { createChessProxy } from "./chess_proxy";
@@ -77,6 +77,7 @@ export interface ChessboardInterface {
 	stepAnimationQueue: (options?: { firstMove?: boolean }) => void;
 	requestToMakeMove: (move: Move, options?: MakeMoveOptions) => void;
 	highlightSquare: (square: Square | null) => void;
+	colorSquare: (square: Square | null, color: string, opacity: number) => void;
 	setTapOptions: (squares: Square[]) => void;
 	availableMovesFrom: (square: Square) => Move[];
 	getLastMove: () => Move | undefined;
@@ -132,6 +133,7 @@ export type ChessboardRefs = {
 
 export interface ChessboardViewState {
 	highlightedSquares: Set<Square>;
+	coloredSquares: Record<Square, { color: string; opacity: number }>;
 	tapOptions: Set<Square>;
 	hideLastMoveHighlight: boolean;
 	animating: boolean;
@@ -200,6 +202,7 @@ export const createChessboardInterface = (): [
 			flipped: false,
 			frozen: false,
 			highlightedSquares: new Set(),
+			coloredSquares: {},
 			tapOptions: new Set(),
 			moveFeedback: {
 				result: "incorrect",
@@ -660,6 +663,18 @@ export const createChessboardInterface = (): [
 					//   duration: 100,
 					// })
 					.finished.then(() => {});
+			});
+		},
+		colorSquare: (square: Square | null, color: string, opacity: number) => {
+			set((s) => {
+				if (!square) {
+					s.coloredSquares = {};
+					return;
+				}
+				s.coloredSquares[square] = {
+					color,
+					opacity,
+				};
 			});
 		},
 		highlightSquare: (square: Square | null) => {

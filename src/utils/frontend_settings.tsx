@@ -1,4 +1,4 @@
-import { PlaybackSpeed } from "~/types/VisualizationState";
+import { PlaybackSpeed } from "~/types/PlaybackSpeed";
 import { isDevelopment } from "./env";
 
 export enum PieceAnimation {

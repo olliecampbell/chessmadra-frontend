@@ -1,4 +1,4 @@
-import { PlaybackSpeed } from "~/types/VisualizationState";
+import { PlaybackSpeed } from "~/types/PlaybackSpeed";
 
 export const getPlaybackSpeedDescription = (ps: PlaybackSpeed) => {
 	switch (ps) {

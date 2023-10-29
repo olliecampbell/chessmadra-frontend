@@ -108,6 +108,10 @@ export const App = () => {
 						component={() => <PageWrapper initialView={AccountDeletionView} />}
 					/>
 					<Route
+						path="/vision"
+						component={() => <ChessMadra initialTool="vision" />}
+					/>
+					<Route
 						path="/visualization"
 						component={() => <ChessMadra initialTool="visualization" />}
 					/>

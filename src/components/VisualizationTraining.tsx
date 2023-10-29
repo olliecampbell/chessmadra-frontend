@@ -3,7 +3,7 @@ import { Match, Switch, createEffect } from "solid-js";
 import { getAppState, quick, useVisualizationState } from "~/utils/app_state";
 
 import { range, upperFirst, find } from "lodash-es";
-import { PlaybackSpeed } from "~/types/VisualizationState";
+import { PlaybackSpeed } from "~/types/PlaybackSpeed";
 import { getPlaybackSpeedDescription } from "~/utils/playback_speed";
 import { stylex } from "~/utils/styles";
 import {
@@ -16,6 +16,7 @@ import { SidebarTemplate } from "./SidebarTemplate";
 import { Spacer } from "./Space";
 import { ThemeSettings } from "./SidebarSettings";
 import { COMBINED_THEMES_BY_ID, combinedThemes } from "~/utils/theming";
+import { createSharedTrainerSettingActions } from "~/utils/trainer_settings";
 
 export const VisualizationTraining = () => {
 	onMount(() => {
@@ -94,7 +95,9 @@ export const VisualizationSidebar = () => {
 								});
 							},
 							text: "Playback speed",
-							right: getPlaybackSpeedDescription(playbackSpeed.value),
+							right: getPlaybackSpeedDescription(
+								playbackSpeed.value ?? PlaybackSpeed.Normal,
+							),
 							style: "secondary",
 						} as SidebarAction,
 						{
@@ -107,26 +110,7 @@ export const VisualizationSidebar = () => {
 							right: numberHiddenMoves.value,
 							style: "secondary",
 						} as SidebarAction,
-						{
-							onPress: () => {
-								quick((s) => {
-									s.trainersState.pushView(PuzzleDifficultySettings);
-								});
-							},
-							text: "Puzzle Difficulty",
-							right: `${ratingGte.value} - ${ratingLte.value}`,
-							style: "secondary",
-						} as SidebarAction,
-						{
-							onPress: () => {
-								quick((s) => {
-									s.trainersState.pushView(ThemeSettings);
-								});
-							},
-							text: "Board appearance",
-							right: `${upperFirst(theme().name)}`,
-							style: "secondary",
-						} as SidebarAction,
+						...createSharedTrainerSettingActions(),
 					]}
 				>
 					{(action, i) => <SidebarFullWidthButton action={action} />}

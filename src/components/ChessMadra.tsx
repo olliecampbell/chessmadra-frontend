@@ -18,14 +18,21 @@ import { FadeInOut } from "./FadeInOut";
 import { Pressable } from "./Pressable";
 import { SettingsButtons } from "./Settings";
 import { VisualizationTraining } from "./VisualizationTraining";
-import { DirectorySidebar } from "./chessmadra/DirectorySidebar";
 import { animateSidebar } from "./SidebarContainer";
+import { SidebarTemplate } from "./SidebarTemplate";
+import { useNavigate } from "@solidjs/router";
+import { OpeningTrainerRedirect } from "./chessmadra/OpeningTrainerRedirect";
+import { VisionTraining } from "./VisionTraining";
 
 export const ChessMadra = (props: { initialTool?: string }) => {
 	onMount(() => {
-		if (props.initialTool) {
+		if (props.initialTool === "visualization") {
 			quick((s) => {
 				s.trainersState.pushView(VisualizationTraining);
+			});
+		} else if (props.initialTool === "vision") {
+			quick((s) => {
+				s.trainersState.pushView(VisionTraining);
 			});
 		}
 	});
@@ -46,7 +53,7 @@ export const ChessMadra = (props: { initialTool?: string }) => {
 	const [isPlaying] = useVisualizationState((s) => [s.isPlaying]);
 	const [startedSolvingVis] = useVisualizationState((s) => [s.startedSolving]);
 	const [flashPlayButton] = useVisualizationState((s) => [s.pulsePlay]);
-	const belowChessboard = (
+	const belowChessboard = () => (
 		<Switch>
 			<Match when={activeTool() === "visualization" && !startedSolvingVis()}>
 				<>
@@ -88,9 +95,13 @@ export const ChessMadra = (props: { initialTool?: string }) => {
 			breadcrumbs={<NavBreadcrumbs />}
 			sidebarContent={sidebarContent}
 			settings={<SettingsButtons />}
-			chessboardInterface={state().chessboard}
+			chessboardInterface={
+				activeTool() === "board-vision"
+					? getAppState().trainersState.visionState.chessboard
+					: state().chessboard
+			}
 			backSection={<BackSection />}
-			belowChessboard={belowChessboard}
+			belowChessboard={belowChessboard()}
 		/>
 	);
 };
@@ -173,5 +184,49 @@ const BackSection = () => {
 				</Pressable>
 			</div>
 		</FadeInOut>
+	);
+};
+
+export const DirectorySidebar = () => {
+	const navigate = useNavigate();
+	return (
+		<SidebarTemplate
+			header="Welcome to Chess Madra!"
+			bodyPadding={true}
+			actions={[
+				{
+					onPress: () => {
+						quick((s) => {
+							navigate("/visualization");
+							s.trainersState.pushView(VisualizationTraining);
+						});
+					},
+					style: "wide",
+					text: "Visualization",
+				},
+				{
+					onPress: () => {
+						quick((s) => {
+							navigate("/vision");
+							s.trainersState.pushView(VisionTraining);
+						});
+					},
+					style: "wide",
+					text: "Board Vision",
+				},
+				{
+					onPress: () => {
+						quick((s) => {
+							s.trainersState.pushView(OpeningTrainerRedirect);
+						});
+					},
+					style: "wide",
+					text: "Opening Builder",
+				},
+			]}
+		>
+			<p class={"body-text"}>Check out some of our training tools!</p>
+			<Spacer height={12} />
+		</SidebarTemplate>
 	);
 };

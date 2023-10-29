@@ -13,7 +13,7 @@ import {
 	createSignal,
 } from "solid-js";
 import { COLUMNS, ChessColor, ROWS } from "~/types/Chess";
-import { PlaybackSpeed } from "~/types/VisualizationState";
+import { PlaybackSpeed } from "~/types/PlaybackSpeed";
 import { getAppState } from "~/utils/app_state";
 import { getStatic } from "~/utils/assets";
 import {
@@ -346,6 +346,7 @@ export function ChessboardView(props: {
 	const manuallyHighlightedSquares = createMemo(
 		() => chessboardStore().highlightedSquares,
 	);
+	const coloredSquares = createMemo(() => chessboardStore().coloredSquares);
 	const themeStyles = (light: boolean) =>
 		light ? theme().light.styles : theme().dark.styles;
 	const x = (
@@ -644,6 +645,13 @@ export function ChessboardView(props: {
 											});
 											const isBottomEdge = i === 7;
 											const isRightEdge = j === 7;
+											const coloredSquare = createMemo(() => {
+												const coloredSquare = coloredSquares()[square()];
+												if (coloredSquare) {
+													console.log("coloredSquare", coloredSquare, square);
+												}
+												return coloredSquare;
+											});
 
 											return (
 												<div
@@ -739,6 +747,18 @@ export function ChessboardView(props: {
 															style={stylex(c.bg(theme().highlightNextMove))}
 														/>
 													</div>
+													<div
+														class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity`}
+														id={`colored-${square()}`}
+														style={stylex(
+															coloredSquare()
+																? c.opacity(coloredSquare().opacity)
+																: c.opacity(0),
+															c.bg(coloredSquare()?.color),
+															c.absolute,
+															c.zIndex(1),
+														)}
+													/>
 													<div
 														class={`absolute bottom-0 left-0 right-0 top-0 h-full w-full transition-opacity ${
 															highlightType() === "full"

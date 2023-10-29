@@ -10,7 +10,7 @@ export interface PuzzleFetchOptions {
 }
 
 let flipper = 0;
-const MOCK_RESPONSES = false;
+const MOCK_RESPONSES = isDevelopment && false;
 
 export const fetchNewPuzzle = async (
 	args: PuzzleFetchOptions,
