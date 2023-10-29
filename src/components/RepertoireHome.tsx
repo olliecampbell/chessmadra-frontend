@@ -98,9 +98,9 @@ export const RepertoireHome = () => {
 		}
 	};
 	onMount(() => {
-		if (isDevelopment) {
+		setTimeout(() => {
 			Notifications.registerNotifications();
-		}
+		}, 500);
 	});
 	const overallActions: Accessor<SidebarAction[]> = () => {
 		const totalDue =

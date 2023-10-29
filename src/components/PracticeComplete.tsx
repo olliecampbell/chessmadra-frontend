@@ -74,8 +74,6 @@ export const PracticeComplete = () => {
 		) {
 			trackEvent("prompted_for_app_review");
 			RateApp.requestReview();
-		} else {
-			Notifications.registerNotifications();
 		}
 	});
 	const activeOptions = () =>
