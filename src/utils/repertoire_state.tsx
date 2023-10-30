@@ -48,7 +48,7 @@ import { Logo } from "~/components/icons/Logo";
 import { ChessboardInterface } from "./chessboard_interface";
 import { clsx } from "./classes";
 import { shouldDebugEpd } from "./debug";
-import { isDevelopment } from "./env";
+import { isChessmadra, isDevelopment } from "./env";
 import { MAX_MOVES_FREE_TIER } from "./payment";
 import { View } from "~/types/View";
 import { animateSidebar } from "~/components/SidebarContainer";
@@ -342,6 +342,9 @@ export const getInitialRepertoireState = (
 				};
 
 				const breadcrumbs: NavBreadcrumb[] = [homeBreadcrumb];
+				if (isChessmadra) {
+					return breadcrumbs;
+				}
 				const mode = s.ui.mode;
 				const side = s.browsingState.activeSide;
 				if (side) {

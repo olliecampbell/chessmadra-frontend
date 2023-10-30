@@ -30,7 +30,7 @@ import { StateGetter, StateSetter } from "./state_setters_getters";
 import { DEBUG_PASS_FAIL_BUTTONS } from "./test_settings";
 import { createChessProxy } from "./chess_proxy";
 import { PlaybackSpeed } from "~/types/PlaybackSpeed";
-import { Square } from "@lubert/chess.ts/dist/types";
+import { PieceSymbol, Square } from "@lubert/chess.ts/dist/types";
 import { JSXElement } from "solid-js";
 import { c } from "./styles";
 import { getSquareLookers } from "./move_generation";
@@ -171,7 +171,7 @@ export const getInitialVisionState = (
 						}
 					}
 					if (isMobile()) {
-						s.quiz.steps = sortBy(s.quiz.steps, (s) => (s.active ? 0 : 1));
+						s.quiz.steps = sortBy(s.quiz.steps, (s) => (s.complete ? 1 : 0));
 					}
 					s.chessboard.showMoveFeedback(
 						{
@@ -219,12 +219,12 @@ type VisionQuizType =
 
 export const VISION_QUIZ_STEPS: VisionQuizType[] = [
 	"hanging_pieces",
+	"hanging_pawns",
 	"under-defended-pieces",
 	"under-defended-pawns",
 	"undefended_pieces",
 	"undefended_pawns",
 	"overloaded pawns",
-	"hanging_pawns",
 	// "backward pawns",
 	// "checks",
 ];
@@ -277,11 +277,11 @@ export namespace VisionQuiz {
 	export const getDescriptionForStep = (type: VisionQuizType): JSXElement => {
 		switch (type) {
 			case "hanging_pieces":
-				return "Tap on the pieces which are hanging - attacked with no defender, or attacked only by a pawn.";
+				return "Tap on the pieces which are hanging - attacked with no defender, or attacked by a lower-value piece";
 			case "undefended_pieces":
-				return "Tap on the pieces which have no defender";
+				return "Tap on the pieces which have no defenders";
 			case "undefended_pawns":
-				return "Tap on the pawns which have no defender";
+				return "Tap on the pawns which have no defenders";
 			case "overloaded pawns":
 				return "Tap on the pawns which are overloaded";
 			case "backward pawns":
@@ -304,10 +304,12 @@ export namespace VisionQuiz {
 		switch (type) {
 			case "hanging_pieces":
 				return c.colors.red[50];
+			case "hanging_pawns":
+				return c.colors.red[70];
 			case "undefended_pieces":
 				return c.colors.blue[50];
 			case "undefended_pawns":
-				return c.colors.purple[50];
+				return c.colors.blue[60];
 			case "overloaded pawns":
 				return c.colors.blue[50];
 			case "backward pawns":
@@ -316,8 +318,6 @@ export namespace VisionQuiz {
 				return c.colors.red[50];
 			case "under-defended-pawns":
 				return c.colors.orange[50];
-			case "hanging_pawns":
-				return c.colors.red[50];
 			case "under-defended-pieces":
 				return c.colors.orange[50];
 			default: {
@@ -351,7 +351,6 @@ export namespace VisionQuiz {
 			const lookers = squareAttackers[square as Square];
 			const piece = position.get(square);
 			const color = piece?.color;
-			console.log("square", square, color);
 			if (!color) {
 				return;
 			}
@@ -369,7 +368,10 @@ export namespace VisionQuiz {
 			}
 			if (
 				(attackers.length > 0 && defenders.length === 0) ||
-				(some(attackers, (a) => a.type === "p") && piece.type !== "p")
+				some(
+					attackers,
+					(a) => getPieceValue(a.type) < getPieceValue(piece.type),
+				)
 			) {
 				const type = piece.type === "p" ? "hanging_pawns" : "hanging_pieces";
 				addPart(steps, type, {
@@ -416,4 +418,23 @@ function addPart(
 ) {
 	const step = find(steps, (s) => s.type === type);
 	step!.parts.push(part);
+}
+
+function getPieceValue(piece: PieceSymbol) {
+	switch (piece) {
+		case "p":
+			return 1;
+		case "n":
+			return 3;
+		case "b":
+			return 3;
+		case "r":
+			return 5;
+		case "q":
+			return 9;
+		case "k":
+			return 100;
+		default:
+			return 0;
+	}
 }

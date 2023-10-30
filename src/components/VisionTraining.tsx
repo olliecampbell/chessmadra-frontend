@@ -6,6 +6,7 @@ import { every, range } from "lodash-es";
 import { c, stylex } from "~/utils/styles";
 import {
 	SidebarAction,
+	SidebarActions,
 	SidebarFullWidthButton,
 	SidebarSectionHeader,
 } from "./SidebarActions";
@@ -34,9 +35,6 @@ export const VisionSidebar = () => {
 		getAppState().trainersState.visualizationState.ratingLteUserSetting;
 	const quiz = () => getAppState().trainersState.visionState.quiz;
 	const done = () => every(quiz()?.steps, (s) => s.complete);
-	createEffect(() => {
-		console.log("quiz", quiz());
-	});
 	const actions = () => {
 		const actions: SidebarAction[] = [];
 		if (done()) {
@@ -47,16 +45,18 @@ export const VisionSidebar = () => {
 					});
 				},
 				text: "Next",
-				style: "focus",
+				style: "primary",
 			});
 		}
 		return actions;
 	};
 	return (
 		<>
-			<SidebarTemplate header={"Vision training"} actions={actions()}>
+			<SidebarTemplate header={"Vision training"} actions={[]}>
 				<Switch>
-					<Match when={done()}>{null}</Match>
+					<Match when={done()}>
+						<SidebarActions actions={actions()} />
+					</Match>
 				</Switch>
 				<div class={clsx("padding-sidebar col gap-2", done() && "pt-4")}>
 					<For each={quiz()?.steps}>
