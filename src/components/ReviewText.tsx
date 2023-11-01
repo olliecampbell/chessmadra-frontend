@@ -3,21 +3,24 @@ import { pluralize } from "~/utils/pluralize";
 import { c, stylex } from "~/utils/styles";
 import { CMText } from "./CMText";
 import { clsx } from "~/utils/classes";
+import { createEffect } from "solid-js";
 
 export const ReviewText = (props: {
 	date?: string;
+	hideIcon?: boolean;
 	inverse?: boolean;
 	overview?: boolean;
 	numDue: number;
 	descriptor?: string;
 	class?: string;
+	moves?: boolean;
 	icon?: string;
 }) => {
 	const descriptor = () => props.descriptor || "Due";
 	const date = () => new Date(props.date || "");
 	const numMovesDueFromHere = () => props.numDue;
-	const now = new Date();
-	const diff = () => date().getTime() - now.getTime();
+	const now = () => new Date();
+	const diff = () => date().getTime() - now().getTime();
 	const prefix = () =>
 		props.overview ? `${descriptor()} in` : `${descriptor()} in`;
 	const { color, dueString } = destructure(() => {
@@ -25,7 +28,11 @@ export const ReviewText = (props: {
 		let color = "text-gray-50";
 		if (!props.date || diff() < 0) {
 			color = props.inverse ? "text-yellow-30" : "text-yellow-50";
-			dueString = `${numMovesDueFromHere().toLocaleString()} ${descriptor()}`;
+			if (props.moves) {
+				dueString = `${pluralize(numMovesDueFromHere(), "move")}`;
+			} else {
+				dueString = `${numMovesDueFromHere().toLocaleString()} ${descriptor()}`;
+			}
 		} else {
 			dueString = `${prefix()} ${getHumanTimeUntil(date())}`;
 		}
@@ -36,12 +43,17 @@ export const ReviewText = (props: {
 	});
 	return (
 		<>
-			<div style={stylex(c.row, c.alignCenter)} class={clsx(color(), props.class)}>
+			<div
+				style={stylex(c.row, c.alignCenter)}
+				class={clsx(color(), props.class)}
+			>
 				<CMText class="font-semibold text-xs leading-5">{dueString()}</CMText>
-				<i
-					style={stylex(c.fontSize(12))}
-					class={clsx(props.icon ? props.icon : "fa fa-clock", "pl-2")}
-				/>
+				{!props.hideIcon && (
+					<i
+						style={stylex(c.fontSize(12))}
+						class={clsx(props.icon ? props.icon : "fa fa-clock", "pl-2")}
+					/>
+				)}
 			</div>
 		</>
 	);

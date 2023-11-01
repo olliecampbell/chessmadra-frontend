@@ -67,6 +67,7 @@ import { scoreTableResponses, shouldUsePeerRates } from "./table_scoring";
 import { isTheoryHeavy } from "./theory_heavy";
 import { animateSidebar } from "~/components/SidebarContainer";
 import { logProxy } from "./state";
+import { SpacedRepetition } from "~/SpacedRepetition";
 
 export enum SidebarOnboardingImportType {
 	LichessUsername = "lichess_username",
@@ -395,6 +396,7 @@ export const getInitialBrowsingState = (
 						}
 					}
 				});
+				const now = new Date().toISOString();
 				tableResponses.forEach((tr) => {
 					if (rs.ui.mode === "browse" && tr.repertoireMove) {
 						const DEBUG = {
@@ -415,7 +417,10 @@ export const getInitialBrowsingState = (
 						if (dueAt && (dueAt < earliestBelow || !earliestBelow)) {
 							earliestBelow = dueAt;
 						}
-						const isDue = tr.repertoireMove.srs?.needsReview;
+						const isDue = SpacedRepetition.isReviewDue(
+							tr.repertoireMove.srs,
+							now,
+						);
 						dueBelow = dueBelow + (isDue ? 1 : 0);
 						tr.reviewInfo = {
 							earliestDue: earliestBelow,
@@ -783,9 +788,7 @@ export const getInitialBrowsingState = (
 								mine: mine,
 								incidence: incidence,
 								srs: {
-									needsReview: false,
 									difficulty: 0.3,
-									firstReview: false,
 								},
 							} as RepertoireMove;
 						}

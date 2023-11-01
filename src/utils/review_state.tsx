@@ -47,6 +47,7 @@ import { isMoveDifficult } from "./srs";
 import { logProxy } from "./state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { animateSidebar } from "~/components/SidebarContainer";
+import { SpacedRepetition } from "~/SpacedRepetition";
 
 export interface ReviewPositionResults {
 	side: Side;
@@ -108,7 +109,13 @@ type ReviewStats = {
 	incorrect: number;
 };
 
-type ReviewFilter = "difficult-due" | "all" | "common" | "due" | "early";
+type ReviewFilter =
+	| "difficult-due"
+	| "all"
+	| "common"
+	| "due"
+	| "early"
+	| "difficult";
 
 interface ReviewOptions {
 	side: Side | null;
@@ -164,7 +171,9 @@ export const getInitialReviewState = (
 					rs.repertoire[r.side].positionResponses[r.epd]?.forEach(
 						(m: RepertoireMove) => {
 							if (m.sanPlus === r.sanPlus && m.srs) {
-								m.srs.needsReview = !r.correct;
+								if (r.correct) {
+									m.srs.dueAt = null;
+								}
 							}
 						},
 					);
@@ -395,6 +404,7 @@ export const getInitialReviewState = (
 					return null;
 				}
 				let queue: QuizGroup[] = [];
+				const now = new Date().toISOString();
 				shuffle(SIDES).forEach((side) => {
 					const seen_epds = new Set();
 					if (options.side && options.side !== side) {
@@ -403,16 +413,17 @@ export const getInitialReviewState = (
 					const recurse = (epd: string, line: string[]) => {
 						const responses = rs.repertoire![side].positionResponses[epd];
 						if (responses?.[0]?.mine) {
-							const needsToReviewAny = some(
-								responses,
-								(r) => r.srs!.needsReview,
+							const needsToReviewAny = some(responses, (r) =>
+								SpacedRepetition.isReviewDue(r.srs!, now),
 							);
+							const anyDifficult = some(responses, (r) => isMoveDifficult(r));
 							const shouldAdd =
 								(options.filter === "difficult-due" &&
-									some(responses, (r) => isMoveDifficult(r)) &&
+									anyDifficult &&
 									needsToReviewAny) ||
 								(options.filter === "common" && needsToReviewAny) ||
 								(options.filter === "due" && needsToReviewAny) ||
+								(options.filter === "difficult" && anyDifficult) ||
 								options.filter === "all" ||
 								options.filter === "early";
 							if (shouldAdd) {

@@ -66,7 +66,7 @@ export interface RepertoireSide {
 
 export function getAllRepertoireMoves(
 	r: Repertoire | undefined,
-	side?: Side,
+	side?: Side | null,
 ): RepertoireMove[] {
 	if (!r) {
 		return [];
@@ -94,9 +94,9 @@ export interface RepertoireMove {
 }
 
 export interface SpacedRepetitionStatus {
-	needsReview: boolean;
 	firstReview: boolean;
-	dueAt: string;
+	// null means it has been reviewed locally, not due for review
+	dueAt: string | null;
 	difficulty: number;
 	pending?: boolean;
 }

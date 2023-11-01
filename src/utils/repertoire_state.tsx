@@ -1,6 +1,7 @@
 import {
 	capitalize,
 	dropRight,
+	every,
 	filter,
 	flatten,
 	forEach,
@@ -30,6 +31,7 @@ import {
 	RepertoireGrade,
 	RepertoireMove,
 	RepertoireSide,
+	SIDES,
 	Side,
 	getAllRepertoireMoves,
 	lineToPgn,
@@ -53,6 +55,7 @@ import { MAX_MOVES_FREE_TIER } from "./payment";
 import { View } from "~/types/View";
 import { animateSidebar } from "~/components/SidebarContainer";
 import { isServer } from "solid-js/web";
+import { SpacedRepetition } from "~/SpacedRepetition";
 
 const TEST_LINE = isDevelopment ? [] : [];
 const TEST_MODE: BrowsingMode | null = isDevelopment ? null : null;
@@ -494,6 +497,7 @@ export const getInitialRepertoireState = (
 					};
 					recurse(START_EPD, seenEpds, undefined);
 				});
+				const now = new Date().toISOString();
 				mapSides(s.repertoire, (repertoireSide: RepertoireSide, side: Side) => {
 					const seenEpds: Set<string> = new Set();
 					const recurse = (
@@ -537,8 +541,10 @@ export const getInitialRepertoireState = (
 						if (shouldDebugEpd(epd)) {
 							console.log("earliestDueDate", earliestDueDate);
 						}
-						const due = lastMove?.srs?.needsReview;
-						if (due) {
+						if (
+							lastMove?.srs &&
+							SpacedRepetition.isReviewDue(lastMove.srs, now)
+						) {
 							dueMovesFromHere.add(`${lastMove.epd}-${lastMove.sanPlus}`);
 						}
 						return {
@@ -928,10 +934,15 @@ export const getInitialRepertoireState = (
 			}),
 		getIsRepertoireEmpty: (side?: Side) =>
 			get(([s]) => {
-				if (side) {
-					return isEmpty(s.repertoire![side].positionResponses);
+				if (!s.repertoire) {
+					return true;
 				}
-				return isEmpty(getAllRepertoireMoves(s.repertoire));
+				if (side) {
+					return isEmpty(s.repertoire[side].positionResponses);
+				}
+				return every(
+					SIDES.map((side) => isEmpty(s.repertoire![side]?.positionResponses)),
+				);
 			}),
 		backToStartPosition: () =>
 			set(([s]) => {

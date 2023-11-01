@@ -33,9 +33,9 @@ export const createDebugStateEffect = () => {
 				}
 			});
 
-			quick((s) => {
-				s.repertoireState.startBrowsing("white", "overview");
-			});
+			// quick((s) => {
+			// 	s.repertoireState.startBrowsing("white", "overview");
+			// });
 			// quick((s) => {
 			// 	const maybeNode = ChessboardArrowView({
 			// 		faded: false,

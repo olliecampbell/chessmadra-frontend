@@ -60,6 +60,8 @@ import { Notifications } from "~/utils/notifications";
 
 export const RepertoireHome = () => {
 	const userState = () => getAppState().userState;
+	const isRepertoireEmpty = () =>
+		getAppState().repertoireState.getIsRepertoireEmpty();
 	const lichessMistakes = () => {
 		if (isDevelopment) {
 			// return [];
@@ -112,11 +114,17 @@ export const RepertoireHome = () => {
 			text: "Practice your repertoire",
 			right: <ReviewText date={overallEarliest()} numDue={totalDue} />,
 			style: "primary",
-			disabled: totalDue === 0,
+			disabled: isRepertoireEmpty(),
 			onPress: () => {
 				trackEvent("home.practice_all_due");
 				quick((s) => {
 					if (totalDue > LOTS_DUE_MINIMUM) {
+						s.repertoireState.ui.pushView(PreReview, {
+							props: { side: null },
+						});
+						return;
+					}
+					if (totalDue === 0) {
 						s.repertoireState.ui.pushView(PreReview, {
 							props: { side: null },
 						});

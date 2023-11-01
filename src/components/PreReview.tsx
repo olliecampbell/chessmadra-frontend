@@ -5,7 +5,7 @@ import { START_EPD } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { Quiz, countQueue } from "~/utils/queues";
-import { SIDES, Side } from "~/utils/repertoire";
+import { SIDES, Side, getAllRepertoireMoves } from "~/utils/repertoire";
 import { bySide } from "~/utils/repertoire";
 import { COMMON_MOVES_CUTOFF } from "~/utils/review";
 import { isMoveDifficult } from "~/utils/srs";
@@ -15,6 +15,7 @@ import { ReviewText } from "./ReviewText";
 import { SidebarAction } from "./SidebarActions";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { animateSidebar } from "./SidebarContainer";
+import { pluralize } from "~/utils/pluralize";
 
 export const PreReview = (props: { side: Side | null }) => {
 	const [numMovesDueBySide] = useRepertoireState((s) => [
@@ -32,12 +33,17 @@ export const PreReview = (props: { side: Side | null }) => {
 	const actions = () => {
 		const actions: SidebarAction[] = [];
 		// todo: this could be more performant
-		const difficultCount = countQueue(
+		const difficultDueCount = countQueue(
 			filter(queue(), (m) => some(Quiz.getMoves(m), (m) => isMoveDifficult(m))),
 		);
+		const difficultCount = getAllRepertoireMoves(
+			getAppState().repertoireState.repertoire,
+			props.side,
+		).filter((m) => m.mine && isMoveDifficult(m)).length;
 		const totalDue =
 			(numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
 		const due = props.side ? numMovesDueBySide()[props.side] : totalDue;
+		const anyDue = due > 0;
 		const isMobile = useIsMobileV2();
 		if (isQuizzing()) {
 			actions.push({
@@ -108,7 +114,7 @@ export const PreReview = (props: { side: Side | null }) => {
 				style: "secondary",
 			});
 		}
-		if (difficultCount > 0) {
+		if (difficultDueCount > 0) {
 			actions.push({
 				onPress: () => {
 					quick((s) => {
@@ -121,7 +127,45 @@ export const PreReview = (props: { side: Side | null }) => {
 					});
 				},
 				text: "Just the moves I often get wrong",
-				right: <ReviewText numDue={difficultCount} />,
+				right: <ReviewText numDue={difficultDueCount} />,
+				style: "secondary",
+			});
+		}
+		if (!anyDue) {
+			const earlyQueue = getAppState().repertoireState.reviewState.buildQueue({
+				side: props.side,
+				filter: "early",
+			});
+			actions.push({
+				onPress: () => {
+					quick((s) => {
+						trackEvent("pre_review.early");
+						s.repertoireState.ui.popView();
+						s.repertoireState.reviewState.startReview({
+							side: props.side,
+							filter: "early",
+						});
+					});
+				},
+				text: "Moves coming up for review",
+				right: `${pluralize(earlyQueue.length, "move")}`,
+				style: "secondary",
+			});
+		}
+		if (!anyDue && difficultCount > 0) {
+			actions.push({
+				onPress: () => {
+					quick((s) => {
+						trackEvent("pre_review.difficult");
+						s.repertoireState.ui.popView();
+						s.repertoireState.reviewState.startReview({
+							side: props.side,
+							filter: "difficult",
+						});
+					});
+				},
+				text: "Just the moves I often get wrong",
+				right: `${pluralize(difficultCount, "move")}`,
 				style: "secondary",
 			});
 		}
