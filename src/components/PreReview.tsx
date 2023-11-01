@@ -147,7 +147,7 @@ export const PreReview = (props: { side: Side | null }) => {
 						});
 					});
 				},
-				text: "Moves coming up for review",
+				text: "Moves that will be due soon",
 				right: `${pluralize(earlyQueue.length, "move")}`,
 				style: "secondary",
 			});

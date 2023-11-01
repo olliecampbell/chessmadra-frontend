@@ -444,10 +444,15 @@ const CoverageProgressBar = (props: { tableResponse: TableResponse }) => {
 
 	const backgroundColor = c.gray[28];
 	const completedColor = c.colors.success;
+	console.log({
+		numMovesFromHere: numMovesFromHere(),
+		expectedNumMovesNeeded: expectedNumMovesNeeded(),
+		san: props.tableResponse.repertoireMove?.sanPlus,
+	});
 	const { completed, progress } = destructure(() => {
 		let completed = isNil(missFromHere());
 		let progress = clamp(
-			getCoverageProgress(numMovesFromHere(), expectedNumMovesNeeded()),
+			getCoverageProgress(numMovesFromHere() / expectedNumMovesNeeded()) * 100,
 			5,
 			95,
 		);
