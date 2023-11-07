@@ -3,7 +3,7 @@ name: prod-cd
 on:
   push:
     branches:
-      - "master"
+      - "gke"
 
 jobs:
   docker:

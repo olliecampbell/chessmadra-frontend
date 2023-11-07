@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  script: |
+    docker build -t us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest .
+  automapSubstitutions: true
+images:
+- 'us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest'
