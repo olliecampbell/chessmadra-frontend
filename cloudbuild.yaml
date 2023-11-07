@@ -5,4 +5,3 @@ steps:
   automapSubstitutions: true
 images:
 - 'us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest'
-
