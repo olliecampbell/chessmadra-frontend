@@ -19,7 +19,7 @@ steps:
 
 
 images:
-- 'us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest'
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/chessbook/frontend:latest'
 
 substitutions:
   _CLUSTER_NAME: 'chessbook-cluster' # replace with your actual cluster name
