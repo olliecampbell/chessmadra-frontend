@@ -34,17 +34,17 @@ jobs:
           tags: marcusbuffett/chess-frontend:latest
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      - name: Update deploy.yml
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: apply -f deploy.yml
-      - name: Rollout deployment
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: rollout restart deployment chess-frontend
+      # - name: Update deploy.yml
+      #   uses: actions-hub/kubectl@master
+      #   env:
+      #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      #   with:
+      #     args: apply -f deploy.yml
+      # - name: Rollout deployment
+      #   uses: actions-hub/kubectl@master
+      #   env:
+      #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      #   with:
+      #     args: rollout restart deployment chess-frontend
       # - name: Rollout deployment
       #   run: kubectl rollout restart deployment utility
