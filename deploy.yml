@@ -13,7 +13,7 @@ spec:
         app: chess-frontend
     spec:
       containers:
-        - image: us-central1-docker.pkg.dev/$PROJECT_ID/chessbook/frontend:latest
+        - image: us-central1-docker.pkg.dev/chessbook-404210/chessbook/frontend:latest
           name: chess-frontend
           ports:
             - containerPort: 80
@@ -34,8 +34,7 @@ metadata:
   name: chess-frontend
 spec:
   ports:
-    - port: 8080
+    - port: 80
       targetPort: 80
   selector:
     app: chess-frontend
-  type: NodePort
