@@ -14,11 +14,9 @@ steps:
     - '-c'
     - |
       gcloud container clusters get-credentials $_CLUSTER_NAME --zone $_CLUSTER_ZONE --project $PROJECT_ID
-      kubectl rollout restart deployment chess
+      kubectl rollout restart deployment chess-frontend
 
 
-options:
-  logging: CLOUD_LOGGING_ONLY
 
 images:
 - 'us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest'
