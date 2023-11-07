@@ -1,11 +1,11 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest', '.']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/chessbook/frontend:latest', '.']
   automapSubstitutions: true
 
 # Add the step for pushing the Docker image to GCR
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/chessbook/404210/chessbook/frontend:latest']
+  args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/chessbook/frontend:latest']
 
 # Authenticate with the GKE cluster
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -13,7 +13,7 @@ steps:
   args:
     - '-c'
     - |
-      gcloud container clusters get-credentials $CLUSTER_NAME --zone $_CLUSTER_ZONE --project $_PROJECT_ID
+      gcloud container clusters get-credentials $_CLUSTER_NAME --zone $_CLUSTER_ZONE --project $PROJECT_ID
       kubectl rollout restart deployment chess
 
 images:
@@ -22,4 +22,3 @@ images:
 substitutions:
   _CLUSTER_NAME: 'chessbook-cluster' # replace with your actual cluster name
   _CLUSTER_ZONE: 'us-east1' # replace with your actual cluster zone
-  _PROJECT_ID: 'chessbook-404210' # replace with your actual project ID
