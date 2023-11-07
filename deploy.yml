@@ -13,7 +13,7 @@ spec:
         app: chess-frontend
     spec:
       containers:
-        - image: marcusbuffett/chess-frontend:latest
+        - image: us-central1-docker.pkg.dev/$PROJECT_ID/chessbook/frontend:latest
           name: chess-frontend
           ports:
             - containerPort: 80
@@ -27,8 +27,6 @@ spec:
             requests:
               memory: "4Gi"
               cpu: "2"
-      imagePullSecrets:
-        - name: docker-hub-secret-key
 ---
 apiVersion: v1
 kind: Service
