@@ -49,7 +49,7 @@ export const AnnotationEditor = (props: {
 						<i class="fas fa-circle-notch fa-spin" />
 					</CMText>
 				</FadeInOut>
-				<CMText
+				<p
 					style={stylex(
 						annotation()?.length > MAX_ANNOTATION_LENGTH && c.weightBold,
 						c.fg(
@@ -60,7 +60,7 @@ export const AnnotationEditor = (props: {
 					)}
 				>
 					{annotation()?.length ?? 0}/{MAX_ANNOTATION_LENGTH}
-				</CMText>
+				</p>
 			</div>
 			<div style={stylex(c.bg(c.gray[20]), c.py(12), c.grow)}>
 				<textarea
@@ -86,7 +86,7 @@ export const AnnotationEditor = (props: {
 					onBlur={() => {
 						setFocus(false);
 					}}
-					onChange={(e: any) => {
+					onInput={(e: any) => {
 						setAnnotation(e.target.value);
 						if (e.target.value.length < MAX_ANNOTATION_LENGTH) {
 							updateDebounced(e.target.value);
