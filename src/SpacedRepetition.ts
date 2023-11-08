@@ -6,7 +6,7 @@ export namespace SpacedRepetition {
 		_now?: string,
 	): boolean => {
 		const now = _now ?? new Date().toISOString();
-		if (srs.dueAt && srs.dueAt < now) {
+		if (srs?.dueAt && srs.dueAt < now) {
 			return true;
 		}
 		return false;
