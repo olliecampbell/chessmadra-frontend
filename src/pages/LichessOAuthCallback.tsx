@@ -22,7 +22,7 @@ export default () => {
 	const navigate = useNavigate();
 	onMount(() => {
 		const { code, error, error_description: errorDescription } = searchParams;
-		const state = JSON.parse(searchParams.state ?? {});
+		const state = searchParams.state ? JSON.parse(searchParams.state) : {};
 		console.log("state", state);
 		if (errorDescription === "user cancelled authorization") {
 			navigate("/");

@@ -4,7 +4,7 @@ import { getAppState } from "./app_state";
 export namespace Notifications {
 	export const addListeners = async () => {
 		await PushNotifications.addListener("registration", (token) => {
-			console.log("Got a device token!");
+			console.log("Got a device token!", token);
 			// todo: don't send if same as current token
 			getAppState().userState.updateUserSettings({
 				iosDeviceToken: token.value,
@@ -12,7 +12,7 @@ export namespace Notifications {
 		});
 
 		await PushNotifications.addListener("registrationError", (err) => {
-			console.error("Registration error: ", err.error);
+			console.error("Registration error: ", err?.error);
 		});
 
 		await PushNotifications.addListener(

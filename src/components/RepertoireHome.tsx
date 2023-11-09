@@ -18,7 +18,7 @@ import {
 import { START_EPD } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
 import client from "~/utils/client";
-import { isDevelopment, isNative } from "~/utils/env";
+import { isDevelopment, isIos, isNative } from "~/utils/env";
 import { SETTINGS } from "~/utils/frontend_settings";
 import { LichessMistake } from "~/utils/models";
 import { pluralize } from "~/utils/pluralize";
@@ -97,7 +97,9 @@ export const RepertoireHome = () => {
 	};
 	onMount(() => {
 		setTimeout(() => {
-			Notifications.registerNotifications();
+			if (isIos) {
+				Notifications.registerNotifications();
+			}
 		}, 500);
 	});
 	const overallActions: Accessor<SidebarAction[]> = () => {
