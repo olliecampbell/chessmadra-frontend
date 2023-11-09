@@ -98,6 +98,12 @@ export const PracticeComplete = () => {
 			return null;
 		}
 	});
+	const commonQueue = createMemo(() => {
+		return getAppState().repertoireState.reviewState.buildQueue({
+			side: activeOptions()?.side ?? null,
+			filter: "common",
+		});
+	});
 
 	const actions = () => {
 		const actions: SidebarAction[] = [];
@@ -131,7 +137,7 @@ export const PracticeComplete = () => {
 					});
 				},
 				text: "Practice next most common moves",
-				right: <ReviewText numDue={COMMON_MOVES_CUTOFF} />,
+				right: <ReviewText numDue={commonQueue()?.length ?? 0} />,
 				style: "secondary",
 			});
 		}
