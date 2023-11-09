@@ -81,8 +81,8 @@ export const RatingSelection = () => {
 					renderChoice={(choice, inList, onPress) => {
 						const textClasses = "text-gray-80 font-semibold font-sm";
 						const containerClasses = clsx(
-							"py-3 cursor-pointer row w-full self-start items-end w-fit-content min-w-[90px]",
-							inList ? "justify-start px-4" : "justify-end",
+							"py-3 cursor-pointer row w-full self-start items-end w-fit-content min-w-[90px] justify-start",
+							inList && "px-4",
 						);
 						const text =
 							choice === RatingSource.Lichess

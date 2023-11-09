@@ -264,8 +264,8 @@ const ChooseColorOnboarding = () => {
 					quick((s) => {
 						trackEvent("onboarding.choose_color", { color: side });
 						s.repertoireState.onboarding.side = side;
-						s.repertoireState.ui.pushView(ImportOnboarding, {
-							props: { side, importType: SidebarOnboardingImportType.PGN },
+						s.repertoireState.ui.pushView(PGNImportOnboarding, {
+							props: { side },
 						});
 					});
 				},
@@ -525,10 +525,8 @@ export const ChooseImportSourceOnboarding = (props: { side?: Side }) => {
 						quick((s) => {
 							trackEvent("onboarding.choose_import_source.pgn");
 							if (props.side) {
-								s.repertoireState.ui.pushView(ImportOnboarding, {
-									props: {
-										importType: SidebarOnboardingImportType.PGN,
-									},
+								s.repertoireState.ui.pushView(PGNImportOnboarding, {
+									props: { side: props.side },
 								});
 							} else {
 								s.repertoireState.ui.pushView(ChooseColorOnboarding, {});
@@ -542,7 +540,14 @@ export const ChooseImportSourceOnboarding = (props: { side?: Side }) => {
 					onPress: () => {
 						trackEvent("onboarding.choose_import_source.lichess");
 						quick((s) => {
-							s.userState.authWithLichess({ source: "onboarding" });
+							if (s.userState.user?.lichessUsername) {
+								s.repertoireState.ui.pushView(FetchingLichessGames, {});
+							} else {
+								s.userState.authWithLichess({
+									source: onboarding().isOnboarding ? "onboarding" : "import",
+									side: props.side,
+								});
+							}
 						});
 					},
 					text: "From my Lichess games",
@@ -594,9 +599,7 @@ export const ChooseGameImportSourceOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.choose_import_source.pgn");
-							s.repertoireState.ui.pushView(ImportOnboarding, {
-								props: { importType: SidebarOnboardingImportType.PGN },
-							});
+							s.repertoireState.ui.pushView(PGNImportOnboarding);
 						});
 					},
 					text: "From a PGN file",
@@ -606,11 +609,7 @@ export const ChooseGameImportSourceOnboarding = () => {
 					onPress: () => {
 						trackEvent("onboarding.choose_import_source.lichess");
 						quick((s) => {
-							s.repertoireState.ui.pushView(ImportOnboarding, {
-								props: {
-									importType: SidebarOnboardingImportType.LichessUsername,
-								},
-							});
+							s.userState.authWithLichess({ source: "onboarding" });
 						});
 					},
 					text: "From my Lichess games",
@@ -632,30 +631,10 @@ export const ChooseGameImportSourceOnboarding = () => {
 	);
 };
 
-type UsernameForm = {
-	username: string;
-};
-
-export const ImportOnboarding = (props: {
-	importType: SidebarOnboardingImportType;
-	side: Side;
-	comingFromOauth?: boolean;
-}) => {
-	const onSubmit = async (values: UsernameForm) => {
-		trackEvent(`onboarding.import_${importType()}.submit`);
-		setLoading("Importing your games");
-		quick((s) => {
-			trackEvent("import.from_lichess_username");
-			s.repertoireState.initializeRepertoire({
-				chesscomUsername: values.username,
-			});
-		});
-	};
+export const FetchingLichessGames = () => {
 	const user = () => getAppState().userState?.user;
 	createEffect(() => {
-		console.log("checking this effect", user(), props);
-		if (props.comingFromOauth && user()?.lichessUsername) {
-			setLoading("Fetching your games...");
+		if (user()?.lichessUsername) {
 			quick((s) => {
 				s.repertoireState.initializeRepertoire({
 					lichessUsername: user()!.lichessUsername,
@@ -663,21 +642,21 @@ export const ImportOnboarding = (props: {
 			});
 		}
 	});
-	const { form, setFields, isSubmitting, errors, createSubmitHandler } =
-		createForm<UsernameForm>({
-			initialValues: { username: "" },
-			onSubmit,
-			extend: [
-				validator({
-					schema: yup.object({
-						username: yup.string().required().label("Lichess username"),
-					}),
-				}),
-			],
-		});
-	const handleSubmit = createSubmitHandler({
-		onSubmit,
-	});
+	return (
+		<SidebarTemplate
+			actions={[]}
+			bodyPadding={true}
+			header={"Fetching your Lichess games..."}
+			loading={true}
+		></SidebarTemplate>
+	);
+};
+
+export const PGNImportOnboarding = (props: {
+	importType: SidebarOnboardingImportType;
+	side: Side;
+	comingFromOauth?: boolean;
+}) => {
 	const responsive = useResponsiveV2();
 	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	const [activeSide] = useSidebarState(([s]) => [s.activeSide]);
@@ -708,16 +687,6 @@ export const ImportOnboarding = (props: {
 				});
 			}
 		}
-		if (importType() === SidebarOnboardingImportType.ChesscomUsername) {
-			header = "What's your chess.com username?";
-			actions.push({
-				text: "Submit",
-				onPress: () => {
-					handleSubmit();
-				},
-				style: "primary",
-			});
-		}
 		if (loading()) {
 			actions = [];
 		}
@@ -745,29 +714,9 @@ export const ImportOnboarding = (props: {
 			actions={actions()}
 			loading={loading()}
 		>
-			<Switch>
-				<Match when={importType() === SidebarOnboardingImportType.PGN}>
-					<div class={"flex flex-col space-y-8"}>
-						<PGNUpload onChange={setPgn} side={props.side} />
-					</div>
-				</Match>
-				<Match
-					when={importType() === SidebarOnboardingImportType.ChesscomUsername}
-				>
-					<div style={stylex(c.pt(20))}>
-						<form ref={form} class={"col gap-8"}>
-							<TextInput
-								setFields={setFields}
-								placeholder="yourusername"
-								type="text"
-								name="username"
-								label="chess.com username"
-								errors={errors()}
-							/>
-						</form>
-					</div>
-				</Match>
-			</Switch>
+			<div class={"flex flex-col space-y-8"}>
+				<PGNUpload onChange={setPgn} side={props.side} />
+			</div>
 		</SidebarTemplate>
 	);
 };

@@ -3,10 +3,6 @@ import { createEffect, createSignal, onCleanup } from "solid-js";
 import { quick, useAppState, useRepertoireState } from "~/utils/app_state";
 import { AuthStatus } from "~/utils/user_state";
 import { isDevelopment } from "./env";
-import {
-	ChooseImportSourceOnboarding,
-	ImportOnboarding,
-} from "~/components/SidebarOnboarding";
 
 const TEST_LINE = null; // "1.e4 h5 2.Nf3 Nc6 3.Bb5 a6 4.Bxc6 bxc6 5.d4 exd4 6.Qxd4 Nf6 7.Bg5 Be7";
 

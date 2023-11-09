@@ -109,7 +109,6 @@ export interface RepertoireState {
 		chesscomUsername?: string;
 		whitePgn?: string;
 		blackPgn?: string;
-		state?: RepertoireState;
 	}) => void;
 	initState: () => void;
 	fetchLichessMistakes: () => void;
@@ -288,7 +287,6 @@ export const getInitialRepertoireState = (
 		}) =>
 			set(async ([s]) => {
 				let lichessGames = [];
-				// const chessComGames = [];
 				if (lichessUsername) {
 					const max = 200;
 					const { data }: { data: string } = await client.get(
@@ -324,7 +322,9 @@ export const getInitialRepertoireState = (
 						gs.userState.getCurrentThreshold(),
 						null,
 					);
-					if (
+					if (!s.onboarding.isOnboarding && lichessUsername) {
+						s.ui.pushView(TrimRepertoireOnboarding);
+					} else if (
 						side &&
 						numBelowThreshold > minimumToTrim &&
 						!lichessUsername &&

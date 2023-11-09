@@ -30,6 +30,7 @@ import { StorageItem } from "./storageItem";
 import { Preferences } from "@capacitor/preferences";
 import { AppLauncher } from "@capacitor/app-launcher";
 import { Capacitor } from "@capacitor/core";
+import { Side } from "./repertoire";
 
 export interface UserState {
 	quick: (fn: (_: UserState) => void) => void;
@@ -67,7 +68,9 @@ export interface UserState {
 	flagEnabled: (flag: UserFlag) => boolean;
 	getEnabledFlags: () => UserFlag[];
 	setFlag(flag: UserFlag, enabled: boolean): void;
-	authWithLichess: (_: { source: "onboarding" } | null) => void;
+	authWithLichess: (
+		_: { source: "onboarding" | "import"; side?: Side } | null,
+	) => void;
 	setChesscomUsername: (username: string | null) => void;
 	isConnectedToExternal: () => boolean;
 	setLichessToken: (
@@ -344,11 +347,10 @@ export const getInitialUserState = (
 				})
 				.finally(noop);
 		},
-		authWithLichess: (props) => {
+		authWithLichess: (_state) => {
 			set(([s]) => {
-				const source = props?.source ?? null;
 				const codeVerifier = cryptoRandomString({ length: 64, type: "base64" });
-				const state = JSON.stringify({ source });
+				const state = JSON.stringify(_state);
 				Promise.all([
 					Preferences.set({
 						key: "lichess.code_verifier",
