@@ -1,8 +1,9 @@
 import { c, stylex } from "~/utils/styles";
 import { Spacer } from "~/components/Space";
-import { capitalize, noop } from "lodash-es";
+import { capitalize, first, noop } from "lodash-es";
 import { CMText } from "./CMText";
 import {
+	getAppState,
 	quick,
 	useRepertoireState,
 	useSidebarState,
@@ -28,7 +29,7 @@ import { Motion } from "@motionone/solid";
 import { destructure } from "@solid-primitives/destructure";
 import { clsx } from "~/utils/classes";
 import { TextArea, TextInput } from "./TextInput";
-import { Side, SIDES } from "~/utils/repertoire";
+import { pgnToLine, Side, SIDES } from "~/utils/repertoire";
 import { getRecommendedMissThreshold } from "~/utils/user_state";
 import { DEFAULT_ELO_RANGE } from "~/utils/repertoire_state";
 import { Bullet } from "./Bullet";
@@ -40,6 +41,7 @@ import { RepertoireCompletion } from "./RepertoireCompletion";
 import { renderThreshold } from "~/utils/threshold";
 import { RatingSelection } from "./RatingSelection";
 import { animateSidebar } from "./SidebarContainer";
+import { useLineEcoCode } from "~/utils/eco_codes";
 
 export const OnboardingIntro = () => {
 	const bullets = [
@@ -65,7 +67,7 @@ export const OnboardingIntro = () => {
 		>
 			<CMText class={"body-text"}>
 				This setup process will introduce some of the key ideas behind
-				Chessbook. It should only take a few minutes to complete.
+				Chessbook.
 			</CMText>
 			<Spacer height={12} />
 			<p class={"body-text"}>This walkthrough will cover:</p>
@@ -74,6 +76,8 @@ export const OnboardingIntro = () => {
 					<Bullet>{bullet}</Bullet>
 				))}
 			</div>
+			<Spacer height={12} />
+			<p class="body-text">It should only take a few minutes to complete.</p>
 		</SidebarTemplate>
 	);
 };
@@ -93,7 +97,7 @@ export const SetRatingOnboarding = () => {
 						s.userState.user?.eloRange ?? DEFAULT_ELO_RANGE.join("-"),
 					);
 					s.userState.setTargetDepth(recommendedThreshold);
-					s.repertoireState.ui.pushView(ChooseColorOnboarding);
+					s.repertoireState.ui.pushView(AskAboutExistingRepertoireOnboarding);
 				});
 			});
 		});
@@ -254,13 +258,15 @@ const ChooseColorOnboarding = () => {
 	return (
 		<SidebarTemplate
 			bodyPadding={true}
-			header="Which color would you like to start with?"
+			header="Which color would you like to import?"
 			actions={SIDES.map((side) => ({
 				onPress: () => {
 					quick((s) => {
 						trackEvent("onboarding.choose_color", { color: side });
 						s.repertoireState.onboarding.side = side;
-						s.repertoireState.ui.pushView(AskAboutExistingRepertoireOnboarding);
+						s.repertoireState.ui.pushView(ImportOnboarding, {
+							props: { side },
+						});
 					});
 				},
 				text: capitalize(side),
@@ -329,6 +335,17 @@ export const ImportSuccessOnboarding = () => {
 	onMount(() => {
 		trackEvent("onboarding.import_success.shown");
 	});
+	const missName = () => {
+		const biggestMiss =
+			getAppState().repertoireState.repertoireGrades[onboarding().side!]
+				?.biggestMiss;
+		if (!biggestMiss) {
+			return null;
+		}
+		const { name } =
+			useLineEcoCode(pgnToLine(first(biggestMiss?.lines)!))() ?? {};
+		return name;
+	};
 	return (
 		<SidebarTemplate
 			bodyPadding={true}
@@ -343,6 +360,7 @@ export const ImportSuccessOnboarding = () => {
 						});
 					},
 					text: "Go to the biggest gap in your repertoire",
+					right: missName(),
 					style: "primary",
 				},
 			]}
@@ -504,6 +522,64 @@ export const ChooseImportSourceOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.choose_import_source.pgn");
+							s.repertoireState.ui.pushView(ChooseColorOnboarding, {});
+						});
+					},
+					text: "From a PGN file",
+					style: "primary",
+				},
+				{
+					onPress: () => {
+						trackEvent("onboarding.choose_import_source.lichess");
+						quick((s) => {
+							s.userState.authWithLichess({ source: "onboarding" });
+						});
+					},
+					text: "From my Lichess games",
+					style: "primary",
+				},
+				// {
+				// 	onPress: () => {
+				// 		trackEvent("onboarding.choose_import_source.chesscom");
+				// 		quick((s) => {
+				// 			s.repertoireState.ui.pushView(ImportOnboarding, {
+				// 				props: {
+				// 					importType: SidebarOnboardingImportType.ChesscomUsername,
+				// 				},
+				// 			});
+				// 		});
+				// 	},
+				// 	text: "From my chess.com games",
+				// 	style: "primary",
+				// },
+				{
+					onPress: () => {
+						trackEvent("onboarding.choose_import_source.nevermind");
+						quick((s) => {
+							animateSidebar("right");
+							s.repertoireState.browsingState.goToBuildOnboarding();
+						});
+					},
+					text: "Nevermind, skip this for now",
+					style: "primary",
+				},
+			]}
+		/>
+	);
+};
+
+export const ChooseGameImportSourceOnboarding = () => {
+	onMount(() => {
+		trackEvent("onboarding.choose_game_import_source.shown");
+	});
+	return (
+		<SidebarTemplate
+			header="How do you want to import your repertoire? "
+			actions={[
+				{
+					onPress: () => {
+						quick((s) => {
+							trackEvent("onboarding.choose_import_source.pgn");
 							s.repertoireState.ui.pushView(ImportOnboarding, {
 								props: { importType: SidebarOnboardingImportType.PGN },
 							});
@@ -542,25 +618,39 @@ export const ChooseImportSourceOnboarding = () => {
 	);
 };
 
-type LichessUsernameForm = {
+type UsernameForm = {
 	username: string;
 };
 
 export const ImportOnboarding = (props: {
 	importType: SidebarOnboardingImportType;
+	side: Side;
+	comingFromOauth?: boolean;
 }) => {
-	const onSubmit = async (values: LichessUsernameForm) => {
+	const onSubmit = async (values: UsernameForm) => {
 		trackEvent(`onboarding.import_${importType()}.submit`);
 		setLoading("Importing your games");
 		quick((s) => {
 			trackEvent("import.from_lichess_username");
 			s.repertoireState.initializeRepertoire({
-				lichessUsername: values.username,
+				chesscomUsername: values.username,
 			});
 		});
 	};
+	const user = () => getAppState().userState?.user;
+	createEffect(() => {
+		console.log("checking this effect", user(), props);
+		if (props.comingFromOauth && user()?.lichessUsername) {
+			setLoading("Fetching your games...");
+			quick((s) => {
+				s.repertoireState.initializeRepertoire({
+					lichessUsername: user()!.lichessUsername,
+				});
+			});
+		}
+	});
 	const { form, setFields, isSubmitting, errors, createSubmitHandler } =
-		createForm<LichessUsernameForm>({
+		createForm<UsernameForm>({
 			initialValues: { username: "" },
 			onSubmit,
 			extend: [
@@ -580,7 +670,7 @@ export const ImportOnboarding = (props: {
 	const side = () => activeSide() || onboarding().side;
 
 	const importType = () => props.importType;
-	const [loading, setLoading] = createSignal(null as string | null);
+	const [loading, setLoading] = createSignal(null as string | boolean | null);
 	const [pgn, setPgn] = createSignal("");
 
 	onMount(() => {
@@ -604,8 +694,8 @@ export const ImportOnboarding = (props: {
 				});
 			}
 		}
-		if (importType() === SidebarOnboardingImportType.LichessUsername) {
-			header = "What's your Lichess username?";
+		if (importType() === SidebarOnboardingImportType.ChesscomUsername) {
+			header = "What's your chess.com username?";
 			actions.push({
 				text: "Submit",
 				onPress: () => {
@@ -639,16 +729,16 @@ export const ImportOnboarding = (props: {
 			bodyPadding={true}
 			header={header()}
 			actions={actions()}
-			loading={!!loading()}
+			loading={loading()}
 		>
 			<Switch>
 				<Match when={importType() === SidebarOnboardingImportType.PGN}>
 					<div class={"flex flex-col space-y-8"}>
-						<PGNUpload onChange={setPgn} side={"white"} />
+						<PGNUpload onChange={setPgn} side={props.side} />
 					</div>
 				</Match>
 				<Match
-					when={importType() === SidebarOnboardingImportType.LichessUsername}
+					when={importType() === SidebarOnboardingImportType.ChesscomUsername}
 				>
 					<div style={stylex(c.pt(20))}>
 						<form ref={form} class={"col gap-8"}>
@@ -657,7 +747,7 @@ export const ImportOnboarding = (props: {
 								placeholder="yourusername"
 								type="text"
 								name="username"
-								label="Lichess username"
+								label="chess.com username"
 								errors={errors()}
 							/>
 						</form>
@@ -725,7 +815,7 @@ export const TrimRepertoireOnboarding = () => {
 						s.repertoireState.ui.pushView(ImportSuccessOnboarding);
 					} else {
 						s.repertoireState.ui.clearViews();
-						s.repertoireState.startBrowsing(side()!, "home");
+						s.repertoireState.startBrowsing(side()!, "overview");
 					}
 				});
 			},

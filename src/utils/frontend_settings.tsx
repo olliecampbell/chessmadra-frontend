@@ -9,6 +9,11 @@ export enum PieceAnimation {
 	None = "none",
 }
 
+export enum SoundSetting {
+	Enabled = "enabled",
+	Muted = "muted",
+}
+
 export type FrontendSetting<T> = {
 	key: string;
 	title: string;
@@ -36,6 +41,15 @@ export const SETTINGS = {
 			{ value: PieceAnimation.Fast, label: "Fast" },
 		],
 	} as FrontendSetting<PieceAnimation>,
+	sound: {
+		default: "enabled",
+		key: "sound",
+		title: "Sound effects",
+		options: [
+			{ value: SoundSetting.Muted, label: "Muted" },
+			{ value: SoundSetting.Enabled, label: "Enabled" },
+		],
+	} as FrontendSetting<SoundSetting>,
 };
 
 export type FrontendSettings = Record<keyof typeof SETTINGS, string>;

@@ -110,12 +110,17 @@ export const RepertoireMovesTable = (props: {
 				isMobile: isMobile(),
 			});
 			const MIN_TRUNCATED = 1;
-			const MAX_ONBOARDING = 3;
+			const MAX_ONBOARDING_OTHER_SIDE = 3;
+			const MAX_ONBOARDING_MY_SIDE = 6;
 			const trimmedResponses = filter(props.responses(), (r, i) => {
 				if (mode() === "browse") {
 					return r.repertoireMove;
 				}
-				if (onboarding().isOnboarding && !myTurn && i >= MAX_ONBOARDING) {
+				if (
+					onboarding().isOnboarding &&
+					((myTurn && i >= MAX_ONBOARDING_MY_SIDE) ||
+						(!myTurn && i >= MAX_ONBOARDING_OTHER_SIDE))
+				) {
 					return false;
 				}
 				if (i < expandedLength()) {

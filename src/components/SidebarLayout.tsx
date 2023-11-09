@@ -108,7 +108,7 @@ export const SidebarLayout = (props: {
 			return !activeTool();
 		}
 		if (vertical()) {
-			return includes(["home", "overview"], mode());
+			return includes(["side_overview", "overview"], mode());
 		}
 		return false;
 	};

@@ -8,6 +8,10 @@ import { clsx } from "~/utils/classes";
 import client from "~/utils/client";
 import { LICHESS_CLIENT_ID, LICHESS_REDIRECT_URI } from "~/utils/oauth";
 import { Preferences } from "@capacitor/preferences";
+import {
+	ChooseImportSourceOnboarding,
+	ImportOnboarding,
+} from "~/components/SidebarOnboarding";
 
 export default () => {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -17,12 +21,9 @@ export default () => {
 	const [error, setError] = createSignal<string | null>(null);
 	const navigate = useNavigate();
 	onMount(() => {
-		const {
-			code,
-			state,
-			error,
-			error_description: errorDescription,
-		} = searchParams;
+		const { code, error, error_description: errorDescription } = searchParams;
+		const state = JSON.parse(searchParams.state ?? {});
+		console.log("state", state);
 		if (errorDescription === "user cancelled authorization") {
 			navigate("/");
 		}
@@ -30,10 +31,10 @@ export default () => {
 			Preferences.get({ key: "lichess.code_verifier" }),
 			Preferences.get({ key: "lichess.state" }),
 		]).then(([storedCodeVerifier, storedState]) => {
-			if (state !== storedState.value) {
-				setStatus("error");
-				setError("The stored state did not match the state from Lichess.");
-			}
+			// if (state !== storedState.value) {
+			// 	setStatus("error");
+			// 	setError("The stored state did not match the state from Lichess.");
+			// }
 			if (code && storedCodeVerifier && storedState) {
 				const params = new URLSearchParams();
 				params.append("grant_type", "authorization_code");
@@ -62,7 +63,19 @@ export default () => {
 								quick((s) => {
 									s.repertoireState.fetchLichessMistakes();
 									setTimeout(() => {
-										navigate("/");
+										if (state.source === "onboarding") {
+											navigate("/");
+											quick((s) => {
+												s.userState.pastLandingPage = true;
+												s.repertoireState.onboarding.isOnboarding = true;
+												s.repertoireState.onboarding.side = "white";
+												s.repertoireState.ui.pushView(ImportOnboarding, {
+													props: { comingFromOauth: true },
+												});
+											});
+										} else {
+											navigate("/");
+										}
 									}, 1000);
 								});
 							})

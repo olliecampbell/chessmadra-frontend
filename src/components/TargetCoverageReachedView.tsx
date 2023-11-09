@@ -1,7 +1,12 @@
 import { cloneDeep, isEmpty } from "lodash-es";
 import { Accessor, For, Show } from "solid-js";
 import { Spacer } from "~/components/Space";
-import { quick, useMode, useRepertoireState, useSidebarState } from "~/utils/app_state";
+import {
+	quick,
+	useMode,
+	useRepertoireState,
+	useSidebarState,
+} from "~/utils/app_state";
 import { c, stylex } from "~/utils/styles";
 import { trackEvent } from "~/utils/trackEvent";
 import { CMText } from "./CMText";
@@ -30,6 +35,20 @@ export const TargetCoverageReachedView = () => {
 					text: "Save these moves to my repertoire",
 				},
 			];
+			if (onboarding().isOnboarding) {
+				acts.push({
+					onPress: () => {
+						quick((s) => {
+							trackEvent(`${mode()}.onboarding.start_over`);
+							animateSidebar("left");
+							s.repertoireState.browsingState.dismissTransientSidebarState();
+							s.repertoireState.browsingState.chessboard.resetPosition();
+						});
+					},
+					style: "primary",
+					text: "I've changed my mind, start over",
+				});
+			}
 			if (!onboarding().isOnboarding) {
 				acts.push({
 					onPress: () => {
@@ -46,12 +65,14 @@ export const TargetCoverageReachedView = () => {
 		}
 		return acts;
 	};
-	const mode = useMode()
+	const mode = useMode();
 
 	return (
 		<SidebarTemplate
 			header={
-				showPlansState().coverageReached
+				onboarding().isOnboarding
+					? "That's enough for now, let's save your progress"
+					: showPlansState().coverageReached
 					? "You've reached your coverage goal!"
 					: "How to play from here"
 			}
@@ -59,13 +80,15 @@ export const TargetCoverageReachedView = () => {
 			bodyPadding={true}
 		>
 			<Show when={onboarding().isOnboarding}>
-				<p class="body-text pb-6">
+				<p class="body-text">
 					Let's add these moves to your repertoire! You'll be able to come back
 					to change these at any time.
 				</p>
 			</Show>
-			<Show when={!isEmpty(planSections())}>
-				<PlayFromHere />
+			<Show when={!isEmpty(planSections() && !onboarding().isOnboarding)}>
+				<div class="pt-6">
+					<PlayFromHere />
+				</div>
 			</Show>
 			<Show when={isEmpty(planSections()) && !onboarding().isOnboarding}>
 				<CMText
@@ -91,7 +114,11 @@ export const PlayFromHere = (props: { isolated?: boolean }) => {
 		<>
 			<Show when={showPlansState().coverageReached || props.isolated}>
 				<CMText
-					style={stylex(c.weightBold, c.fontSize(14), c.fg(c.colors.text.primary))}
+					style={stylex(
+						c.weightBold,
+						c.fontSize(14),
+						c.fg(c.colors.text.primary),
+					)}
 				>
 					How to play from here
 				</CMText>

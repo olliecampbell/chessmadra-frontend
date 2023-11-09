@@ -89,6 +89,7 @@
 		"@solidjs/meta": "^0.28.6",
 		"@solidjs/router": "^0.8.3",
 		"@types/chroma-js": "^2.4.1",
+		"@types/howler": "^2.2.11",
 		"@types/lodash-es": "^4.17.9",
 		"@unocss/preset-attributify": "^0.55.7",
 		"@unocss/preset-mini": "^0.55.7",
@@ -104,6 +105,7 @@
 		"dayjs": "^1.11.9",
 		"dedent-js": "^1.0.1",
 		"globals": "^13.21.0",
+		"howler": "^2.2.4",
 		"js-cookie": "^3.0.5",
 		"lodash-es": "^4.17.21",
 		"posthog-js": "^1.78.2",
@@ -129,6 +131,8 @@
 	},
 	"patches": {},
 	"eslintConfig": {
-		"extends": ["plugin:storybook/recommended"]
+		"extends": [
+			"plugin:storybook/recommended"
+		]
 	}
 }

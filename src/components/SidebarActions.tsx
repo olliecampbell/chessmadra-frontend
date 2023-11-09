@@ -17,6 +17,7 @@ import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
 import { Intersperse } from "./Intersperse";
 import { animateSidebar } from "./SidebarContainer";
+import { useLineEcoCode } from "~/utils/eco_codes";
 
 export interface SidebarAction {
 	rightText?: string;
@@ -87,10 +88,10 @@ export const SidebarActionsLegacy = () => {
 		if (mode() === "review") {
 			return [];
 		}
-		if (mode() === "overview") {
+		if (mode() === "side_overview") {
 			return [];
 		}
-		if (mode() === "home") {
+		if (mode() === "overview") {
 			return [];
 		}
 
@@ -471,6 +472,7 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
 
 		const isAtBiggestMiss = currentEpd() === miss.epd;
 		if (miss && !isAtBiggestMiss) {
+			const { name: ecoCodeName } = useLineEcoCode(line)() || {};
 			return {
 				onPress: () => {
 					quick((s) => {
@@ -483,7 +485,8 @@ export const useBiggestGapAction = (): SidebarAction | undefined => {
 					});
 				},
 				text: text,
-				style: "focus",
+				right: ecoCodeName,
+				style: "secondary",
 			};
 		}
 	};

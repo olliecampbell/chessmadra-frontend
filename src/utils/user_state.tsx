@@ -67,7 +67,7 @@ export interface UserState {
 	flagEnabled: (flag: UserFlag) => boolean;
 	getEnabledFlags: () => UserFlag[];
 	setFlag(flag: UserFlag, enabled: boolean): void;
-	authWithLichess: () => void;
+	authWithLichess: (_: { source: "onboarding" } | null) => void;
 	setChesscomUsername: (username: string | null) => void;
 	isConnectedToExternal: () => boolean;
 	setLichessToken: (
@@ -344,10 +344,11 @@ export const getInitialUserState = (
 				})
 				.finally(noop);
 		},
-		authWithLichess: () => {
+		authWithLichess: (props) => {
 			set(([s]) => {
+				const source = props?.source ?? null;
 				const codeVerifier = cryptoRandomString({ length: 64, type: "base64" });
-				const state = cryptoRandomString({ length: 64, type: "base64" });
+				const state = JSON.stringify({ source });
 				Promise.all([
 					Preferences.set({
 						key: "lichess.code_verifier",
@@ -355,7 +356,6 @@ export const getInitialUserState = (
 					}),
 					Preferences.set({ key: "lichess.state", value: state }),
 				]).then(() => {
-					console.log("Code verifier is:", codeVerifier);
 					const params = new URLSearchParams({
 						client_id: LICHESS_CLIENT_ID,
 						redirect_uri: LICHESS_REDIRECT_URI,

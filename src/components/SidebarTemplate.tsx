@@ -10,7 +10,7 @@ import { SidebarAction, SidebarActions } from "./SidebarActions";
 export const SidebarTemplate: Component<{
 	header: string | null;
 	children?: any;
-	loading?: boolean;
+	loading?: string | boolean | null;
 	bodyPadding?: boolean;
 	actionsPadding?: boolean;
 	actions: SidebarAction[];
@@ -39,6 +39,11 @@ export const SidebarTemplate: Component<{
 							style={stylex(c.fontSize(14), c.weightSemiBold, c.fg(c.gray[75]))}
 						>
 							<Puff color={c.primaries[65]} />
+							{/*
+							<Show when={typeof props.loading === "string"}>
+								<p class="text-tertiary pt-4">{props.loading}</p>
+							</Show>
+              */}
 						</CMText>
 					</div>
 				}

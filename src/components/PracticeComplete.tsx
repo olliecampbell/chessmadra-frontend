@@ -101,6 +101,23 @@ export const PracticeComplete = () => {
 
 	const actions = () => {
 		const actions: SidebarAction[] = [];
+		if (onboarding().isOnboarding) {
+			return [
+				{
+					onPress: () => {
+						quick((s) => {
+							if (s.repertoireState.onboarding.isOnboarding) {
+								trackEvent("onboarding.practice_complete.continue");
+								s.repertoireState.ui.pushView(ChooseToCreateAccountOnboarding);
+								s.repertoireState.updateRepertoireStructures();
+							}
+						});
+					},
+					text: "Continue",
+					style: actions.length > 0 ? "secondary" : "primary",
+				},
+			];
+		}
 		if (due() > 0 && activeOptions()?.filter === "common") {
 			actions.push({
 				onPress: () => {
@@ -140,14 +157,8 @@ export const PracticeComplete = () => {
 			onPress: () => {
 				quick((s) => {
 					trackEvent("practice_complete.continue");
-					if (s.repertoireState.onboarding.isOnboarding) {
-						trackEvent("onboarding.practice_complete.continue");
-						s.repertoireState.ui.pushView(ChooseToCreateAccountOnboarding);
-						s.repertoireState.updateRepertoireStructures();
-					} else {
-						animateSidebar("left");
-						s.repertoireState.backToOverview();
-					}
+					animateSidebar("left");
+					s.repertoireState.backToOverview();
 				});
 			},
 			text: "Continue",

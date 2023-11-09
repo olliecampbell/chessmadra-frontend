@@ -52,10 +52,10 @@ export const RepertoireBuilder = () => {
 					<Match when={view()}>
 						<Dynamic component={view()?.component} {...view()?.props} />
 					</Match>
-					<Match when={mode() === "home"}>
+					<Match when={mode() === "overview"}>
 						<RepertoireHome />
 					</Match>
-					<Match when={mode() === "overview"}>
+					<Match when={mode() === "side_overview"}>
 						<RepertoireOverview />
 					</Match>
 					<Match when={mode() === "review"}>

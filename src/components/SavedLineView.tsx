@@ -23,7 +23,7 @@ export const SavedLineView = function SavedLineView() {
 			});
 		},
 		text: "Practice these moves",
-		style: "primary",
+		style: "secondary",
 	};
 	return (
 		<Show

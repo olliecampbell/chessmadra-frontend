@@ -1,10 +1,11 @@
-import { cloneDeep, find, last } from "lodash-es";
+import { cloneDeep, find, last, upperFirst } from "lodash-es";
 import { Spacer } from "~/components/Space";
 import { getAppState, quick, useUserState } from "~/utils/app_state";
 import {
 	FrontendSetting,
 	FrontendSettingOption,
 	FrontendSettings,
+	SETTINGS,
 } from "~/utils/frontend_settings";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { UserFlag } from "~/utils/models";
@@ -12,6 +13,7 @@ import { getExpectedNumMovesBetween } from "~/utils/repertoire_state";
 import { c, stylex } from "~/utils/styles";
 import {
 	BoardThemeId,
+	COMBINED_THEMES_BY_ID,
 	combinedThemes,
 } from "~/utils/theming";
 import { renderThreshold } from "~/utils/threshold";
@@ -19,7 +21,7 @@ import { trackEvent } from "~/utils/trackEvent";
 import { compareFloats } from "~/utils/utils";
 import { CMText } from "./CMText";
 import { RatingSelection } from "./RatingSelection";
-import { SidebarActions } from "./SidebarActions";
+import { SidebarAction, SidebarActions } from "./SidebarActions";
 import { SidebarSelectOneOf } from "./SidebarSelectOneOf";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { initTooltip } from "./Tooltip";
@@ -194,6 +196,59 @@ export const ThemeSettings = () => {
 				}}
 			/>
 		</SidebarTemplate>
+	);
+};
+
+export const BoardSettings = () => {
+	const userState = () => getAppState().userState;
+	const themeId = () => userState().user?.theme;
+	const theme = () =>
+		find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
+		COMBINED_THEMES_BY_ID.default;
+	return (
+		<SidebarTemplate
+			header={"Board settings"}
+			actions={[
+				{
+					onPress: () => {
+						quick((s) => {
+							trackEvent("home.settings.theme");
+							s.repertoireState.ui.pushView(ThemeSettings);
+						});
+					},
+					text: "Board appearance",
+					right: `${upperFirst(theme().name)}`,
+					style: "secondary",
+				} as SidebarAction,
+
+				{
+					onPress: () => {
+						quick((s) => {
+							trackEvent("home.settings.pieceAnimationSpeed");
+							s.repertoireState.ui.pushView(FrontendSettingView, {
+								props: { setting: SETTINGS.pieceAnimation },
+							});
+						});
+					},
+					text: SETTINGS.pieceAnimation.title,
+					right: userState().getFrontendSetting("pieceAnimation").label,
+					style: "secondary",
+				} as SidebarAction,
+				{
+					onPress: () => {
+						quick((s) => {
+							trackEvent("home.settings.sounds");
+							s.repertoireState.ui.pushView(FrontendSettingView, {
+								props: { setting: SETTINGS.sound },
+							});
+						});
+					},
+					text: SETTINGS.sound.title,
+					right: userState().getFrontendSetting("sound").label,
+					style: "secondary",
+				} as SidebarAction,
+			]}
+		></SidebarTemplate>
 	);
 };
 

@@ -73,7 +73,12 @@ export const BackSection = () => {
 				};
 			} else if (isEmpty(moveLog())) {
 				backButtonAction = () => {
-					backToOverview();
+					quick((s) => {
+						s.repertoireState.startBrowsing(
+							s.repertoireState.browsingState.activeSide!,
+							"side_overview",
+						);
+					});
 				};
 			}
 		}
@@ -91,7 +96,7 @@ export const BackSection = () => {
 				};
 			}
 		}
-		if (mode() === "overview") {
+		if (mode() === "side_overview") {
 			backButtonAction = () => {
 				quick((s) => {
 					s.repertoireState.backToOverview();

@@ -26,7 +26,6 @@ import { SIDES } from "~/utils/repertoire";
 import { bySide } from "~/utils/repertoire";
 import { LOTS_DUE_MINIMUM } from "~/utils/review";
 import { c, stylex } from "~/utils/styles";
-import { COMBINED_THEMES_BY_ID, combinedThemes } from "~/utils/theming";
 import { trackEvent } from "~/utils/trackEvent";
 import { useResponsiveV2 } from "~/utils/useResponsive";
 import { CMText } from "./CMText";
@@ -46,6 +45,7 @@ import {
 } from "./SidebarActions";
 import {
 	BetaFeaturesSettings,
+	BoardSettings,
 	CoverageSettings,
 	FrontendSettingView,
 	RatingSettings,
@@ -69,10 +69,6 @@ export const RepertoireHome = () => {
 		return getAppState().repertoireState.lichessMistakes;
 	};
 	const loadingMistakes = () => isNil(lichessMistakes());
-	const themeId = () => userState().user?.theme;
-	const theme = () =>
-		find(combinedThemes, (theme) => theme.boardTheme === themeId()) ||
-		COMBINED_THEMES_BY_ID.default;
 	const [numMovesDueBySide, numMyMoves, earliestDueDate] = useRepertoireState(
 		(s) => [
 			bySide((side) => s.numMovesDueFromEpd[side]?.[START_EPD]),
@@ -166,10 +162,16 @@ export const RepertoireHome = () => {
 												trackEvent("home.select_side", { side });
 												if (numMyMoves()[side] > 0) {
 													animateSidebar("right");
-													s.repertoireState.startBrowsing(side, "overview");
+													s.repertoireState.startBrowsing(
+														side,
+														"side_overview",
+													);
 												} else {
 													animateSidebar("right");
-													s.repertoireState.startBrowsing(side, "overview");
+													s.repertoireState.startBrowsing(
+														side,
+														"side_overview",
+													);
 												}
 											});
 										},
@@ -311,30 +313,13 @@ export const RepertoireHome = () => {
 									{
 										onPress: () => {
 											quick((s) => {
-												trackEvent("home.settings.theme");
-												s.repertoireState.ui.pushView(ThemeSettings);
+												s.repertoireState.ui.pushView(BoardSettings);
 											});
 										},
-										text: "Board appearance",
-										right: `${upperFirst(theme().name)}`,
+										text: "Board settings",
 										style: "secondary",
 									} as SidebarAction,
 
-									{
-										onPress: () => {
-											quick((s) => {
-												trackEvent("home.settings.pieceAnimationSpeed");
-												s.repertoireState.ui.pushView(FrontendSettingView, {
-													props: { setting: SETTINGS.pieceAnimation },
-												});
-											});
-										},
-										hidden: !settingsExpanded(),
-										text: SETTINGS.pieceAnimation.title,
-										right:
-											userState().getFrontendSetting("pieceAnimation").label,
-										style: "secondary",
-									} as SidebarAction,
 									{
 										onPress: () => {
 											quick((s) => {

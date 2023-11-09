@@ -106,6 +106,7 @@ export interface RepertoireState {
 	fetchSupplementary: () => Promise<void>;
 	initializeRepertoire: (_: {
 		lichessUsername?: string;
+		chesscomUsername?: string;
 		whitePgn?: string;
 		blackPgn?: string;
 		state?: RepertoireState;
@@ -119,7 +120,7 @@ export interface RepertoireState {
 		text: string;
 	}) => Promise<void>;
 	startBrowsing: (
-		side: Side,
+		side: Side | null,
 		mode: BrowsingMode,
 		options?: {
 			animated?: boolean;
@@ -216,7 +217,7 @@ export const getInitialRepertoireState = (
 		...createQuick<RepertoireState>(setOnly),
 		ui: {
 			viewStack: [],
-			mode: "home",
+			mode: "overview",
 			clearViews: () =>
 				set(([s, gs]) => {
 					s.ui.viewStack = [];
@@ -279,7 +280,12 @@ export const getInitialRepertoireState = (
 				s.fetchSupplementary();
 				s.fetchLichessMistakes();
 			}, "initState"),
-		initializeRepertoire: ({ lichessUsername, blackPgn, whitePgn }) =>
+		initializeRepertoire: ({
+			lichessUsername,
+			chesscomUsername,
+			blackPgn,
+			whitePgn,
+		}) =>
 			set(async ([s]) => {
 				let lichessGames = [];
 				// const chessComGames = [];
@@ -318,7 +324,12 @@ export const getInitialRepertoireState = (
 						gs.userState.getCurrentThreshold(),
 						null,
 					);
-					if (side && numBelowThreshold > minimumToTrim) {
+					if (
+						side &&
+						numBelowThreshold > minimumToTrim &&
+						!lichessUsername &&
+						!chesscomUsername
+					) {
 						s.ui.pushView(TrimRepertoireOnboarding);
 					} else {
 						s.ui.pushView(ImportSuccessOnboarding);
@@ -355,13 +366,13 @@ export const getInitialRepertoireState = (
 						text: capitalize(side),
 						onPress: () => {
 							quick((s) => {
-								s.repertoireState.startBrowsing(side, "overview");
+								s.repertoireState.startBrowsing(side, "side_overview");
 							});
 						},
 					});
 				}
 				const unclickableModes: BrowsingMode[] = ["review"];
-				if (mode && mode !== "overview" && mode !== "home") {
+				if (mode && mode !== "side_overview" && mode !== "overview") {
 					const unclickable = unclickableModes.includes(mode);
 					breadcrumbs.push({
 						text: capitalize(modeToUI(mode)),
@@ -772,8 +783,7 @@ export const getInitialRepertoireState = (
 				if (s.ui.mode === "review") {
 					s.reviewState.stopReviewing();
 				}
-				// @ts-ignore
-				s.startBrowsing(null, "home");
+				s.startBrowsing(null, "overview");
 				gs.navigationState.push("/");
 				s.showImportView = false;
 				s.ui.clearViews();
@@ -794,7 +804,7 @@ export const getInitialRepertoireState = (
 		startBrowsing: (side: Side, mode: BrowsingMode, options) =>
 			set(([s, gs]) => {
 				if (
-					(mode === "overview" || mode === "home") &&
+					(mode === "side_overview" || mode === "overview") &&
 					!options?.keepPosition
 				) {
 					s.browsingState.chessboard.resetPosition();

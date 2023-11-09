@@ -28,7 +28,7 @@ export const SettingsButtons = () => {
 	const responsive = useResponsiveV2();
 	return (
 		<div style={stylex(c.row, c.gap(responsive().switch(12, [BP.md, 16])))}>
-			<Show when={mode() === "home" && false}>
+			<Show when={mode() === "overview" && false}>
 				<SettingButton
 					title={"Other tools"}
 					icon={"fa-sharp fa-bars"}

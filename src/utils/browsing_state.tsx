@@ -71,10 +71,16 @@ import { SpacedRepetition } from "~/SpacedRepetition";
 
 export enum SidebarOnboardingImportType {
 	LichessUsername = "lichess_username",
+	ChesscomUsername = "chesscom_username",
 	PGN = "pgn",
 	PlayerTemplates = "player_templates",
 }
-export type BrowsingMode = "browse" | "build" | "review" | "overview" | "home";
+export type BrowsingMode =
+	| "browse"
+	| "build"
+	| "review"
+	| "side_overview"
+	| "overview";
 
 export const modeToUI = (mode: BrowsingMode) => {
 	switch (mode) {
@@ -84,9 +90,9 @@ export const modeToUI = (mode: BrowsingMode) => {
 			return "Browse / add new";
 		case "review":
 			return "Practice";
-		case "overview":
+		case "side_overview":
 			return "Overview";
-		case "home":
+		case "overview":
 			return "Home";
 	}
 };
@@ -239,13 +245,12 @@ export const getInitialBrowsingState = (
 		goToBuildOnboarding: () =>
 			set(([s, rs]) => {
 				rs.ui.clearViews();
-				const side = rs.onboarding.side;
-				if (!side) {
-					return;
+				if (!rs.onboarding.side) {
+					rs.onboarding.side = "white";
 				}
+				const side = rs.onboarding.side;
 				const biggestMiss = rs.repertoireGrades[side]?.biggestMiss;
 				if (!biggestMiss) {
-					console.log("No biggest miss");
 					return;
 				}
 				const line = pgnToLine(biggestMiss.lines[0]);
@@ -302,9 +307,11 @@ export const getInitialBrowsingState = (
 					s.showPlansState.visible = true;
 					s.showPlansState.hasShown = true;
 					s.showPlansState.coverageReached = true;
-					s.chessboard.set((c) => {
-						c.showPlans = true;
-					});
+					if (!rs.onboarding.isOnboarding) {
+						s.chessboard.set((c) => {
+							c.showPlans = true;
+						});
+					}
 				}
 				if (!s.isPastCoverageGoal) {
 					s.showPlansState.hasShown = false;
@@ -919,7 +926,7 @@ export const getInitialBrowsingState = (
 			onMovePlayed: () => {
 				set(([s, rs]) => {
 					s.hideContinuePracticing = true;
-					if (includes(["home", "overview"], rs.ui.mode)) {
+					if (includes(["side_overview", "overview"], rs.ui.mode)) {
 						rs.ui.clearViews();
 						rs.startBrowsing(s.activeSide ?? "white", "build", {
 							keepPosition: true,

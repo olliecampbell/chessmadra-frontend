@@ -5,6 +5,7 @@ import {
 	For,
 	JSXElement,
 	Show,
+	createEffect,
 	createMemo,
 	createRenderEffect,
 	createSignal,
@@ -20,6 +21,11 @@ import {
 	combinedThemes,
 } from "~/utils/theming";
 import { AnalyzeOnLichessButton } from "./AnalyzeOnLichessButton";
+import {
+	FrontendSetting,
+	FrontendSettingOption,
+	SoundSetting,
+} from "~/utils/frontend_settings";
 
 export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 	const mode = useMode();
@@ -39,6 +45,10 @@ export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 	};
 	const userState = getAppState().userState;
 	const user = () => userState.user;
+	const soundSetting = () =>
+		userState.getFrontendSetting(
+			"sound",
+		) as FrontendSettingOption<SoundSetting>;
 	const combinedTheme: Accessor<CombinedTheme> = createMemo(
 		() =>
 			find(combinedThemes, (theme) => theme.boardTheme === user()?.theme) ||
@@ -46,6 +56,9 @@ export const MoveLog = (props: { hideLeftDivider?: boolean }) => {
 	);
 	const theme: Accessor<BoardTheme> = () =>
 		BOARD_THEMES_BY_ID[combinedTheme().boardTheme];
+	createEffect(() => {
+		Howler.mute(soundSetting().value === SoundSetting.Muted);
+	});
 	const currentLineElements = () => {
 		const elems: JSXElement[] = [];
 		const moves: string[] = [];

@@ -10,7 +10,7 @@ import {
 import { BrowsingMode } from "~/utils/browsing_state";
 import { START_EPD, lineToPositions } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
-import { getAppropriateEcoName } from "~/utils/eco_codes";
+import { getAppropriateEcoName, useLineEcoCode } from "~/utils/eco_codes";
 import { isDevelopment } from "~/utils/env";
 import { useIsMobileV2 } from "~/utils/isMobile";
 import { InstructiveGame } from "~/utils/models";
@@ -54,20 +54,13 @@ export const RepertoireOverview = () => {
 		return repertoireState.positionReports[side() as Side][START_EPD]
 			?.instructiveGames;
 	};
-	const [ecoCodeLookup] = useRepertoireState((s) => [s.ecoCodeLookup]);
 	const miss = createMemo(() => {
 		const miss = biggestMiss();
 		if (miss) {
-			const positions = lineToPositions(pgnToLine(first(miss.lines) as string));
-			const ecoCodePosition = findLast(positions, (p) => !!ecoCodeLookup()[p]);
-			if (ecoCodePosition) {
-				const ecoCode = ecoCodeLookup()[ecoCodePosition];
-				const [ecoName] = getAppropriateEcoName(ecoCode.fullName);
-				return {
-					name: ecoName,
-					incidence: miss.incidence,
-				};
-			}
+			const { name } = useLineEcoCode(pgnToLine(first(miss.lines)!))() ?? {};
+			return {
+				name,
+			};
 		}
 		return null;
 	});

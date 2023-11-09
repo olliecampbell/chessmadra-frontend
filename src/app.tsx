@@ -74,6 +74,7 @@ export const App = () => {
 			// that it will also get attached to your source maps
 		});
 	});
+
 	return (
 		<AuthHandler>
 			<Router>

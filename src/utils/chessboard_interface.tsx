@@ -27,6 +27,7 @@ import { MetaPlan } from "./plans";
 import { Side, lineToPgn, pgnToLine } from "./repertoire";
 import { logProxy } from "./state";
 import { c } from "./styles";
+import { Howl } from "howler";
 
 interface PlayLineOptions {
 	animated?: boolean;
@@ -41,6 +42,29 @@ type MakeMoveOptions = {
 
 type MoveFeedbackType = "correct" | "incorrect";
 type ChessboardMode = "tap" | "normal";
+
+const SOUNDS = {
+	move: new Howl({
+		src: ["/sounds/move.wav"],
+	}),
+	capture: new Howl({
+		src: ["/sounds/capture.wav"],
+	}),
+	success: new Howl({
+		src: ["/sounds/success.wav"],
+	}),
+	failure: new Howl({
+		src: ["/sounds/failure.wav"],
+	}),
+};
+
+const playMoveSound = (isCapture: boolean) => {
+	if (isCapture) {
+		SOUNDS.capture.play();
+	} else {
+		SOUNDS.move.play();
+	}
+};
 
 export interface ChessboardInterface {
 	set: <T>(s: (s: ChessboardViewState) => T) => T | null;
@@ -437,6 +461,8 @@ export const createChessboardInterface = (): [
 					getAppState().userState.getFrontendSetting("pieceAnimation")
 						.value as PieceAnimation,
 				);
+				playMoveSound(!!nextMove.captured);
+
 				chessboardInterface.animatePieceMove(
 					nextMove,
 					(completed) => {
@@ -485,6 +511,7 @@ export const createChessboardInterface = (): [
 					return;
 				}
 				const move = s.nextPreviewMove;
+				playMoveSound(!!move.captured);
 				s.previewPosition = s.position.clone();
 				s.previewPosition.move(s.nextPreviewMove);
 				// s.nextPreviewMove = null;
@@ -712,6 +739,7 @@ export const createChessboardInterface = (): [
 					if (chessboardInterface.getDelegate()?.shouldMakeMove?.(move)) {
 						chessboardInterface.getDelegate()?.madeManualMove?.();
 						makeMove();
+						playMoveSound(!!move.captured);
 					}
 				}
 			});
@@ -971,6 +999,11 @@ export const createChessboardInterface = (): [
 				let ref = state.refs.feedbackRefs[square];
 				if (size === "large") {
 					ref = state.refs.largeFeedbackRefs[square];
+				}
+				if (result === "correct") {
+					SOUNDS.success.play();
+				} else {
+					SOUNDS.failure.play();
 				}
 				// const whiteOverlay = ref?.querySelector(
 				//   "#white-overlay"
