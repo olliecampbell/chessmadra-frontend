@@ -265,7 +265,7 @@ const ChooseColorOnboarding = () => {
 						trackEvent("onboarding.choose_color", { color: side });
 						s.repertoireState.onboarding.side = side;
 						s.repertoireState.ui.pushView(ImportOnboarding, {
-							props: { side },
+							props: { side, importType: SidebarOnboardingImportType.PGN },
 						});
 					});
 				},
