@@ -6,8 +6,8 @@ import { getAppState, quick } from "~/utils/app_state";
 import { clsx } from "~/utils/classes";
 import { isNative } from "~/utils/env";
 import {
-	PRODUCT_CHESSBOOK_PRO_ANNUAL,
-	PRODUCT_CHESSBOOK_PRO_MONTHLY,
+	PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS,
+	PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS,
 } from "~/utils/in_app_purchases";
 import { MAX_MOVES_FREE_TIER } from "~/utils/payment";
 import { trackEvent } from "~/utils/trackEvent";
@@ -27,8 +27,8 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 				const product =
 					products()[
 						annual
-							? PRODUCT_CHESSBOOK_PRO_ANNUAL
-							: PRODUCT_CHESSBOOK_PRO_MONTHLY
+							? PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS
+							: PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS
 					];
 				product
 					.getOffer()!
@@ -70,7 +70,8 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 								text: "Upgrade to Chessbook Pro - Monthly",
 								subtext: isNative
 									? `${
-											products()[PRODUCT_CHESSBOOK_PRO_MONTHLY].pricing!.price
+											products()[PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS].pricing!
+												.price
 									  }/month`
 									: "$5/month",
 								style: "primary",
@@ -82,13 +83,14 @@ export const UpgradeSubscriptionView = (props: { pastLimit: boolean }) => {
 								text: "Upgrade to Chessbook Pro - Annual",
 								subtext: isNative
 									? `${
-											products()[PRODUCT_CHESSBOOK_PRO_ANNUAL].pricing!.price
+											products()[PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS].pricing!
+												.price
 									  }/year (save ${Math.round(
 											(1 -
-												products()[PRODUCT_CHESSBOOK_PRO_ANNUAL].pricing!
+												products()[PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS].pricing!
 													.priceMicros /
-													(products()[PRODUCT_CHESSBOOK_PRO_MONTHLY].pricing!
-														.priceMicros *
+													(products()[PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS]
+														.pricing!.priceMicros *
 														12)) *
 												100,
 									  )}%)`

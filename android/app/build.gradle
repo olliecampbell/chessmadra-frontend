@@ -4,7 +4,7 @@ android {
     namespace "com.chessbook"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.chessbook"
+        applicationId "com.chessbook.android"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

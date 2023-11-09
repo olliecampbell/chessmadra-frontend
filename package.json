@@ -4,8 +4,9 @@
 		"dev": "HOST=0.0.0.0 solid-start dev",
 		"build": "solid-start build",
 		"build:capacitor": "vite build --config vite.capacitor.ts",
-		"dev:capacitor": "NODE_ENV=development vite build --watch --emptyOutDir --mode=development --config vite.capacitor.ts",
-		"dev:capacitor-sync": "watchexec -r -w dist  --no-vcs-ignore -- bunx cap sync",
+		"dev-native": "run-p capacitor:vite-watch capacitor:sync-watch",
+		"capacitor:vite-watch": "NODE_ENV=development vite build --watch --emptyOutDir --mode=development --config vite.capacitor.ts",
+		"capacitor:sync-watch": "watchexec -r -w dist  --no-vcs-ignore -- bunx cap sync",
 		"preview": "vite preview --port 8080",
 		"start": "solid-start start",
 		"storybook": "storybook dev -p 6006",
@@ -131,8 +132,6 @@
 	},
 	"patches": {},
 	"eslintConfig": {
-		"extends": [
-			"plugin:storybook/recommended"
-		]
+		"extends": ["plugin:storybook/recommended"]
 	}
 }

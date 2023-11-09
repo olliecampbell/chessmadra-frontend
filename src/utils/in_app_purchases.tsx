@@ -1,17 +1,22 @@
 import { quick } from "~/utils/app_state";
-export const PRODUCT_CHESSBOOK_PRO_MONTHLY = "chessbook_pro.monthly";
-export const PRODUCT_CHESSBOOK_PRO_ANNUAL = "chessbook_pro.annual";
+export const PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS = "chessbook_pro.monthly";
+export const PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS = "chessbook_pro.annual";
+export const PRODUCT_CHESSBOOK_PRO_MONTHLY_ANDROID = "chessbook-pro-monthly";
+export const PRODUCT_CHESSBOOK_PRO_ANNUAL_ANDROID = "chessbook-pro-annual";
 import client from "./client";
 
 export type InAppProductId =
-	| typeof PRODUCT_CHESSBOOK_PRO_MONTHLY
-	| typeof PRODUCT_CHESSBOOK_PRO_ANNUAL;
+	| typeof PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS
+	| typeof PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS;
 
-const PRODUCTS = [PRODUCT_CHESSBOOK_PRO_MONTHLY, PRODUCT_CHESSBOOK_PRO_ANNUAL];
+const PRODUCTS = [
+	PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS,
+	PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS,
+];
 
 export namespace InAppPurchases {
 	export async function loadProducts() {
-    // @ts-ignore
+		// @ts-ignore
 		await import("cordova-plugin-purchase");
 		console.log({ CdvPurchase });
 
@@ -20,12 +25,12 @@ export namespace InAppPurchases {
 		store.register([
 			{
 				type: CdvPurchase.ProductType.PAID_SUBSCRIPTION,
-				id: PRODUCT_CHESSBOOK_PRO_MONTHLY,
+				id: PRODUCT_CHESSBOOK_PRO_MONTHLY_IOS,
 				platform: CdvPurchase.Platform.APPLE_APPSTORE,
 			},
 			{
 				type: CdvPurchase.ProductType.PAID_SUBSCRIPTION,
-				id: PRODUCT_CHESSBOOK_PRO_ANNUAL,
+				id: PRODUCT_CHESSBOOK_PRO_ANNUAL_IOS,
 				platform: CdvPurchase.Platform.APPLE_APPSTORE,
 			},
 		]);
