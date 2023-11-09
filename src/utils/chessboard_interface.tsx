@@ -28,6 +28,7 @@ import { Side, lineToPgn, pgnToLine } from "./repertoire";
 import { logProxy } from "./state";
 import { c } from "./styles";
 import { Howl } from "howler";
+import { getStatic } from "./assets";
 
 interface PlayLineOptions {
 	animated?: boolean;
@@ -45,16 +46,16 @@ type ChessboardMode = "tap" | "normal";
 
 const SOUNDS = {
 	move: new Howl({
-		src: ["/sounds/move.wav"],
+		src: [getStatic("/sounds/move.wav")],
 	}),
 	capture: new Howl({
-		src: ["/sounds/capture.wav"],
+		src: [getStatic("/sounds/capture.wav")],
 	}),
 	success: new Howl({
-		src: ["/sounds/success.wav"],
+		src: [getStatic("/sounds/success.wav")],
 	}),
 	failure: new Howl({
-		src: ["/sounds/failure.wav"],
+		src: [getStatic("/sounds/failure.wav")],
 	}),
 };
 

@@ -672,20 +672,18 @@ export const PGNImportOnboarding = (props: {
 	const { header, actions } = destructure(() => {
 		let header = null;
 		let actions: SidebarAction[] = [];
-		if (importType() === SidebarOnboardingImportType.PGN) {
-			header = `Please upload your ${side()} repertoire`;
-			if (pgn()) {
-				actions.push({
-					text: "Submit",
-					onPress: () => {
-						importFromPgn();
-						onMount(() => {
-							trackEvent(`onboarding.import_${importType()}.submit`);
-						});
-					},
-					style: "primary",
-				});
-			}
+		header = `Please upload your ${side()} repertoire`;
+		if (pgn()) {
+			actions.push({
+				text: "Submit",
+				onPress: () => {
+					importFromPgn();
+					onMount(() => {
+						trackEvent(`onboarding.import_${importType()}.submit`);
+					});
+				},
+				style: "primary",
+			});
 		}
 		if (loading()) {
 			actions = [];
