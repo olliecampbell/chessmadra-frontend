@@ -680,18 +680,16 @@ export const getInitialReviewState = (
 							},
 							() => {
 								set(([s]) => {
-									if (willUndoBecauseMultiple) {
-										s.chessboard.backOne({ clear: true });
-										console.log("undo because multiple");
-									}
-
 									Quiz.getMoves(s.currentQuizGroup!)?.forEach((move) => {
 										s.allReviewPositionMoves[move.epd][
 											move.sanPlus
 										].reviewed = true;
 									});
-
-									s.setupNextMove();
+									if (willUndoBecauseMultiple) {
+										s.chessboard.backOne({ clear: true });
+									} else {
+										s.setupNextMove();
+									}
 								});
 							},
 						);

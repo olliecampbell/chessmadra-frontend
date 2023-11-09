@@ -78,8 +78,10 @@ export const SidebarActionsLegacy = () => {
 	};
 	const biggestGapAction = createMemo(() => useBiggestGapAction());
 	const addBiggestMissAction = (buttons: SidebarAction[]) => {
-		if (biggestGapAction()) {
-			buttons.push(biggestGapAction()!);
+		const action = biggestGapAction();
+		if (action) {
+			action.style = "primary";
+			buttons.push(action);
 			return;
 		}
 	};

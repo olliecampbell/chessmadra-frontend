@@ -510,10 +510,12 @@ const AskAboutExistingRepertoireOnboarding = () => {
 	);
 };
 
-export const ChooseImportSourceOnboarding = () => {
+export const ChooseImportSourceOnboarding = (props: { side?: Side }) => {
 	onMount(() => {
 		trackEvent("onboarding.choose_import_source.shown");
 	});
+
+	const [onboarding] = useRepertoireState((s) => [s.onboarding]);
 	return (
 		<SidebarTemplate
 			header="How do you want to import your repertoire? "
@@ -522,7 +524,15 @@ export const ChooseImportSourceOnboarding = () => {
 					onPress: () => {
 						quick((s) => {
 							trackEvent("onboarding.choose_import_source.pgn");
-							s.repertoireState.ui.pushView(ChooseColorOnboarding, {});
+							if (props.side) {
+								s.repertoireState.ui.pushView(ImportOnboarding, {
+									props: {
+										importType: SidebarOnboardingImportType.PGN,
+									},
+								});
+							} else {
+								s.repertoireState.ui.pushView(ChooseColorOnboarding, {});
+							}
 						});
 					},
 					text: "From a PGN file",
@@ -552,17 +562,21 @@ export const ChooseImportSourceOnboarding = () => {
 				// 	text: "From my chess.com games",
 				// 	style: "primary",
 				// },
-				{
-					onPress: () => {
-						trackEvent("onboarding.choose_import_source.nevermind");
-						quick((s) => {
-							animateSidebar("right");
-							s.repertoireState.browsingState.goToBuildOnboarding();
-						});
-					},
-					text: "Nevermind, skip this for now",
-					style: "primary",
-				},
+				...(onboarding().isOnboarding
+					? [
+							{
+								onPress: () => {
+									trackEvent("onboarding.choose_import_source.nevermind");
+									quick((s) => {
+										animateSidebar("right");
+										s.repertoireState.browsingState.goToBuildOnboarding();
+									});
+								},
+								text: "Nevermind, skip this for now",
+								style: "primary",
+							} as SidebarAction,
+					  ]
+					: []),
 			]}
 		/>
 	);

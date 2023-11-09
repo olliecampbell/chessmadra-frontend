@@ -192,7 +192,9 @@ export const RepertoireOverview = () => {
 				onPress: () => {
 					trackEvent("side_overview.import");
 					quick((s) => {
-						s.repertoireState.ui.pushView(ChooseImportSourceOnboarding);
+						s.repertoireState.ui.pushView(ChooseImportSourceOnboarding, {
+							props: { side: side() },
+						});
 					});
 				},
 				text: <CMText class={clsx(textClasses)}>Import</CMText>,
