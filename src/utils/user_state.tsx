@@ -350,7 +350,7 @@ export const getInitialUserState = (
 		authWithLichess: (_state) => {
 			set(([s]) => {
 				const codeVerifier = cryptoRandomString({ length: 64, type: "base64" });
-				const state = JSON.stringify(_state);
+				const state = JSON.stringify(_state ?? {});
 				Promise.all([
 					Preferences.set({
 						key: "lichess.code_verifier",
