@@ -204,6 +204,7 @@ export function ChessboardView(props: {
 	// only for debugging purposes
 	const frozen = () => chessboardStore().frozen;
 	const onMouseDown = (evt: MouseEvent | TouchEvent) => {
+		if (evt.button === 2) return;
 		if (frozen()) return;
 		if (!!("ontouchstart" in window) && evt.type === "mousedown") return;
 
@@ -320,6 +321,7 @@ export function ChessboardView(props: {
 		});
 	};
 	const onMouseUp = (evt: MouseEvent | TouchEvent) => {
+		if (evt.button === 2) return;
 		if (frozen()) return;
 
 		evt.preventDefault();
