@@ -1,4 +1,5 @@
 import { Chess } from "@lubert/chess.ts";
+import { addDays } from "date-fns";
 import { Move, Square } from "@lubert/chess.ts/dist/types";
 import {
 	cloneDeep,
@@ -175,7 +176,7 @@ export const getInitialReviewState = (
 						(m: RepertoireMove) => {
 							if (m.sanPlus === r.sanPlus && m.srs) {
 								if (r.correct) {
-									m.srs.dueAt = null;
+									m.srs.dueAt = addDays(new Date(), 1).toISOString();
 								}
 							}
 						},

@@ -406,9 +406,6 @@ export const getInitialBrowsingState = (
 				const now = new Date().toISOString();
 				tableResponses.forEach((tr) => {
 					if (rs.ui.mode === "browse" && tr.repertoireMove) {
-						const DEBUG = {
-							epd: "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -",
-						};
 						const epd =
 							tr.suggestedMove?.epdAfter || tr.repertoireMove.epdAfter;
 						let dueBelow =
@@ -418,9 +415,6 @@ export const getInitialBrowsingState = (
 							// @ts-ignore
 							rs.earliestReviewDueFromEpd[s.activeSide][epd];
 						const dueAt = tr.repertoireMove.srs?.dueAt;
-						if (epd === DEBUG.epd) {
-							console.log("epd", { epd, dueBelow, dueAt, earliestBelow });
-						}
 						if (dueAt && (dueAt < earliestBelow || !earliestBelow)) {
 							earliestBelow = dueAt;
 						}

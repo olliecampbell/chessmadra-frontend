@@ -106,7 +106,6 @@ export const RepertoireHome = () => {
 		const totalDue =
 			(numMovesDueBySide()?.white ?? 0) + (numMovesDueBySide()?.black ?? 0);
 		const actions = [];
-		console.log({ earliest: overallEarliest(), numDue: totalDue });
 
 		actions.push({
 			text: "Practice your repertoire",

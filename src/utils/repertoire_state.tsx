@@ -423,7 +423,9 @@ export const getInitialRepertoireState = (
 		onMove: () => set(([s]) => {}, "onMove"),
 		updateRepertoireStructures: () =>
 			set(([s, gs]) => {
+				console.log("should update structures!");
 				if (!s.repertoire) {
+					console.log("not updating structures!");
 					return;
 				}
 				const threshold = gs.userState.getCurrentThreshold();
@@ -514,12 +516,6 @@ export const getInitialRepertoireState = (
 						seenEpds: Set<string>,
 						lastMove?: RepertoireMove,
 					) => {
-						if (shouldDebugEpd(epd)) {
-							console.log(
-								"[updateRepertoireStructures], this is bting debugged",
-								epd,
-							);
-						}
 						if (seenEpds.has(epd)) {
 							return { dueMoves: new Set<string>(), earliestDueDate: null };
 						}
@@ -529,9 +525,6 @@ export const getInitialRepertoireState = (
 						const allMoves = repertoireSide.positionResponses[epd] ?? [];
 						let dueMovesFromHere = new Set<string>();
 						allMoves.forEach((m) => {
-							if (shouldDebugEpd(epd)) {
-								console.log("MOVES", m);
-							}
 							const { dueMoves, earliestDueDate: recursedEarliestDueDate } =
 								recurse(m.epdAfter, newSeenEpds, m);
 							if (
@@ -547,13 +540,12 @@ export const getInitialRepertoireState = (
 						s.numMovesDueFromEpd[side][epd] = dueMovesFromHere.size;
 						// @ts-ignore
 						s.earliestReviewDueFromEpd[side][epd] = earliestDueDate;
-						if (shouldDebugEpd(epd)) {
-							console.log("earliestDueDate", earliestDueDate);
-						}
+						console.log("Move", lastMove?.srs, "due at", earliestDueDate);
 						if (
 							lastMove?.srs &&
 							SpacedRepetition.isReviewDue(lastMove.srs, now)
 						) {
+							console.log("Yup this one is due! needed?", lastMove?.needed);
 							dueMovesFromHere.add(`${lastMove.epd}-${lastMove.sanPlus}`);
 						}
 						return {
@@ -839,6 +831,7 @@ export const getInitialRepertoireState = (
 			}, "startBrowsing"),
 		onRepertoireUpdate: () =>
 			set(([s]) => {
+				console.log("Repertoire updated!", s.repertoire);
 				s.updateRepertoireStructures();
 				s.browsingState.fetchNeededPositionReports();
 				s.browsingState.updateRepertoireProgress();
