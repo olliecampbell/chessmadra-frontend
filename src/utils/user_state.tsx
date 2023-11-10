@@ -69,7 +69,7 @@ export interface UserState {
 	getEnabledFlags: () => UserFlag[];
 	setFlag(flag: UserFlag, enabled: boolean): void;
 	authWithLichess: (
-		_: { source: "onboarding" | "import"; side?: Side } | null,
+		_: { source: "onboarding" | "import" | "setting"; side?: Side } | null,
 	) => void;
 	setChesscomUsername: (username: string | null) => void;
 	isConnectedToExternal: () => boolean;

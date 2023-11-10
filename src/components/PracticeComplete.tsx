@@ -121,7 +121,7 @@ export const PracticeComplete = () => {
 					},
 					text: "Continue",
 					style: actions.length > 0 ? "secondary" : "primary",
-				},
+				} as SidebarAction,
 			];
 		}
 		if (due() > 0 && activeOptions()?.filter === "common") {

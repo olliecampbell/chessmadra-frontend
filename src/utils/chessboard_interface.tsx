@@ -102,7 +102,11 @@ export interface ChessboardInterface {
 	stepAnimationQueue: (options?: { firstMove?: boolean }) => void;
 	requestToMakeMove: (move: Move, options?: MakeMoveOptions) => void;
 	highlightSquare: (square: Square | null) => void;
-	colorSquare: (square: Square | null, color: string, opacity: number) => void;
+	colorSquare: (
+		square: Square | null,
+		color?: string,
+		opacity?: number,
+	) => void;
 	setTapOptions: (squares: Square[]) => void;
 	availableMovesFrom: (square: Square) => Move[];
 	getLastMove: () => Move | undefined;
@@ -158,7 +162,7 @@ export type ChessboardRefs = {
 
 export interface ChessboardViewState {
 	highlightedSquares: Set<Square>;
-	coloredSquares: Record<Square, { color: string; opacity: number }>;
+	coloredSquares: Partial<Record<Square, { color: string; opacity: number }>>;
 	tapOptions: Set<Square>;
 	hideLastMoveHighlight: boolean;
 	animating: boolean;

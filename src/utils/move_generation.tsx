@@ -167,12 +167,11 @@ export function getSquareLookers(_square: Square, position: Chess) {
 			continue;
 		}
 
-		// if empty square or wrong color
-		if (board[i] === undefined) {
+		const piece = board[i] as Piece;
+		if (piece === undefined) {
 			continue;
 		}
 
-		const piece = board[i];
 		const difference = i - square;
 
 		// skip - to/from square are the same

@@ -343,10 +343,12 @@ export const getInitialVisualizationState = (
 			}),
 		updatePly: (increment: number) =>
 			set(([s]) => {
-				s.plyUserSetting.value = Math.max(
-					s.plyUserSetting.value + increment,
-					1,
-				);
+				if (s.plyUserSetting.value) {
+					s.plyUserSetting.value = Math.max(
+						s.plyUserSetting.value + increment,
+						1,
+					);
+				}
 				s.setupForPuzzle();
 			}),
 		onPuzzleMoveSuccess: () => {

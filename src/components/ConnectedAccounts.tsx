@@ -27,7 +27,7 @@ export const ConnectAccountsSetting = () => {
 				platform="Lichess"
 				onClick={() => {
 					quick((s) => {
-						s.userState.authWithLichess();
+						s.userState.authWithLichess({ source: "setting" });
 					});
 				}}
 				onDisconnect={() => {

@@ -424,10 +424,9 @@ export const getInitialBrowsingState = (
 						if (dueAt && (dueAt < earliestBelow || !earliestBelow)) {
 							earliestBelow = dueAt;
 						}
-						const isDue = SpacedRepetition.isReviewDue(
-							tr.repertoireMove.srs,
-							now,
-						);
+						const isDue =
+							tr.repertoireMove.srs &&
+							SpacedRepetition.isReviewDue(tr.repertoireMove.srs, now);
 						dueBelow = dueBelow + (isDue ? 1 : 0);
 						tr.reviewInfo = {
 							earliestDue: earliestBelow,

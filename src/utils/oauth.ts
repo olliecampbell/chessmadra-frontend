@@ -6,5 +6,5 @@ export const LICHESS_REDIRECT_URI =
 	isDevelopment && isIos
 		? "com.chessbook.app:/oauth/lichess"
 		: isAndroid
-		? "TODO"
+		? "https://chessbook.com/oauth/lichess"
 		: `${BASE_FRONTEND_URL}/oauth/lichess`;

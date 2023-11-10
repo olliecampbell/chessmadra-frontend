@@ -43,10 +43,10 @@ const isMobile = useIsMobileV2();
 
 type Stack = [VisionState, AppState];
 
-let MOCK_POSITION =
-	true &&
-	isDevelopment &&
-	"rnb1k2r/3pqpbp/1p4p1/8/pPBN4/1N2P3/P1P2PPP/R2QK2R w KQkq - 0 14";
+let MOCK_POSITION: string | null =
+	true && isDevelopment
+		? "rnb1k2r/3pqpbp/1p4p1/8/pPBN4/1N2P3/P1P2PPP/R2QK2R w KQkq - 0 14"
+		: null;
 
 export type VisionState = {
 	puzzle: LichessPuzzle | null;
@@ -117,11 +117,11 @@ export const getInitialVisionState = (
 				if (!puzzle) {
 					return;
 				}
-				let puzzlePosition = createChessProxy(new Chess(puzzle!.fen));
+				const puzzlePosition = createChessProxy(new Chess(puzzle!.fen));
 				puzzlePosition.move(puzzle?.moves[0]);
 				s.chessboard.setPosition(puzzlePosition);
 				if (MOCK_POSITION) {
-					let mockPosition = createChessProxy(new Chess(MOCK_POSITION));
+					const mockPosition = createChessProxy(new Chess(MOCK_POSITION));
 					s.chessboard.setPosition(mockPosition);
 				}
 				s.quiz = VisionQuiz.createVisionQuiz(
@@ -184,10 +184,6 @@ export const getInitialVisionState = (
 					);
 				});
 			},
-			onMovePlayed: () => {
-				set(([s, rs]) => {});
-			},
-			shouldMakeMove: (move: Move) => set(([s]) => {}),
 		};
 	});
 
@@ -236,15 +232,15 @@ export type VisionQuizStep = {
 	active: boolean;
 	parts: VisionQuizPart[];
 };
-export type VisionQuizPart =
-	| {
-			square: Square;
-			complete: boolean;
-	  }
-	| {
-			moves: Move;
-			complete: boolean;
-	  };
+export type VisionQuizPart = {
+	square: Square;
+	complete: boolean;
+};
+// TODO: support moves later, for like checks and captures
+// | {
+// 		moves: Move;
+// 		complete: boolean;
+//   };
 
 export type VisionQuizColors = string;
 

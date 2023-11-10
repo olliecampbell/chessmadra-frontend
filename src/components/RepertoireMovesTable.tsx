@@ -409,16 +409,16 @@ const Response = (props: {
 		}
 	});
 
-	const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(
-		([s, rs]) => [
-			rs.numMovesDueFromEpd[activeSide()!][
-				props.tableResponse.repertoireMove?.epdAfter
-			],
-			rs.earliestReviewDueFromEpd[activeSide()!][
-				props.tableResponse.repertoireMove?.epdAfter
-			],
-		],
-	);
+	const [numMovesDueFromHere, earliestDueDate] = useBrowsingState(([s, rs]) => {
+		const epdAfter = props.tableResponse.repertoireMove?.epdAfter;
+		if (!epdAfter) {
+			return [0, 0];
+		}
+		return [
+			rs.numMovesDueFromEpd[activeSide()!][epdAfter],
+			rs.earliestReviewDueFromEpd[activeSide()!][epdAfter],
+		];
+	});
 	const [currentLine, currentSide] = useSidebarState(([s, rs]) => [
 		s.chessboard.get((s) => s.moveLog),
 		s.currentSide,
