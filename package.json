@@ -3,15 +3,17 @@
 	"scripts": {
 		"dev": "HOST=0.0.0.0 solid-start dev",
 		"build": "solid-start build",
-		"build:capacitor": "vite build --config vite.capacitor.ts",
+		"build:capacitor": "NODE_ENV=production vite build --config vite.capacitor.ts && cap sync",
 		"dev-native": "run-p capacitor:vite-watch capacitor:sync-watch ngrok-proxy",
 		"capacitor:vite-watch": "NODE_ENV=development vite build --watch --emptyOutDir --mode=development --config vite.capacitor.ts",
-		"capacitor:sync-watch": "watchexec -r -w dist  --no-vcs-ignore -- bunx cap sync",
+		"capacitor:sync-watch": "NODE_ENV=development watchexec -r -w dist  --no-vcs-ignore -- bunx cap sync",
 		"ngrok-proxy": "ngrok http --domain=chessbook.ngrok.io 8040",
 		"preview": "vite preview --port 8080",
 		"start": "solid-start start",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"prepare": "husky install",
+		"check-types": "tsc --noEmit"
 	},
 	"type": "module",
 	"devDependencies": {
@@ -55,7 +57,8 @@
 		"typescript": "^5.2.2",
 		"unocss": "^0.55.7",
 		"vite": "^4.4.9",
-		"vitest": "^0.34.6"
+		"vitest": "^0.34.6",
+		"husky": "^8.0.0"
 	},
 	"dependencies": {
 		"@amplitude/analytics-browser": "^2.2.3",
@@ -134,8 +137,6 @@
 	},
 	"patches": {},
 	"eslintConfig": {
-		"extends": [
-			"plugin:storybook/recommended"
-		]
+		"extends": ["plugin:storybook/recommended"]
 	}
 }

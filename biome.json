@@ -20,7 +20,8 @@
 			},
 			"style": {
 				"noNonNullAssertion": "off",
-				"useSelfClosingElements": "off"
+				"useSelfClosingElements": "off",
+				"noParameterAssign": "off"
 			}
 		}
 	}

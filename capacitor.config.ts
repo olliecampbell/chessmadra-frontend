@@ -1,18 +1,20 @@
 import { CapacitorConfig } from "@capacitor/cli";
-import { networkInterfaces } from "os";
 
-let server: CapacitorConfig["server"] = {
+const server: CapacitorConfig["server"] = {
 	androidScheme: "https",
 } as object;
-if (process.env.DEV) {
-	const interfaces = networkInterfaces();
-	const ip = interfaces.eth0[0].address;
-
-	console.log("IP: ", ip);
-	server = {
-		url: `http://${ip}:3000`,
-		cleartext: true,
-	};
+console.log("Env?: ", process.env.NODE_ENV);
+if (process.env.NODE_ENV === "development") {
+	// const interfaces = networkInterfaces();
+	// const ip = interfaces.eth0[0].address;
+	//
+	// console.log("IP: ", ip);
+	// server = {
+	// 	url: `http://${ip}:3000`,
+	// 	cleartext: true,
+	// };
+} else {
+	// server.url = "https://chessbook.com";
 }
 
 const config: CapacitorConfig = {
