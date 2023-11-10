@@ -32,10 +32,52 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: chess-frontend
+  name: chess-frontend-staging
 spec:
   ports:
     - port: 80
       targetPort: 80
   selector:
-    app: chess-frontend
+    app: chess-frontend-staging
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chess-frontend-staging
+spec:
+  selector:
+    matchLabels:
+      app: chess-frontend-staging
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: chess-frontend-staging
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/chessbook-404210/chessbook/frontend-staging:latest
+          imagePullPolicy: Always
+          name: chess-frontend-staging
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 0
+            periodSeconds: 2
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chess-frontend-staging
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: chess-frontend-staging
