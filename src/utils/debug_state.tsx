@@ -12,7 +12,6 @@ type Stack = [DebugState, AppState];
 
 export const getInitialDebugState = (
 	_set: StateSetter<AppState, any>,
-	// biome-ignore lint: ignore
 	_get: StateGetter<AppState, any>,
 ) => {
 	const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {
