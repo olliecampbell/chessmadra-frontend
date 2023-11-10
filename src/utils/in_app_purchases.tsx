@@ -97,6 +97,10 @@ export namespace InAppPurchases {
 					});
 			});
 
-		store.initialize([CdvPurchase.Platform.APPLE_APPSTORE]);
+		store.initialize([
+			isIos
+				? CdvPurchase.Platform.APPLE_APPSTORE
+				: CdvPurchase.Platform.GOOGLE_PLAY,
+		]);
 	}
 }

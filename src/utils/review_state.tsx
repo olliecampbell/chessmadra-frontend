@@ -99,6 +99,7 @@ export interface ReviewState {
 	getNextReviewPositionMove(): RepertoireMove;
 	updateQueue: (options: ReviewOptions) => void;
 	invalidateSession: () => void;
+	onSessionEnd: MultiCallback;
 	onPositionUpdate: () => void;
 }
 
@@ -161,6 +162,7 @@ export const getInitialReviewState = (
 		activeQueue: [] as QuizGroup[],
 		activeOptions: null,
 		planIndex: 0,
+		onSessionEnd: new MultiCallback(),
 		markMovesReviewed: (results: ReviewPositionResults[]) => {
 			set(([s, rs]) => {
 				trackEvent("reviewing.reviewed_move", {
@@ -394,6 +396,7 @@ export const getInitialReviewState = (
 			set(([s, rs]) => {
 				rs.updateRepertoireStructures();
 				s.chessboard.setTapOptions([]);
+				s.onSessionEnd.callAndClear();
 			}),
 		buildQueue: (options: ReviewOptions) =>
 			get(([_s, rs, gs]) => {
@@ -547,7 +550,11 @@ export const getInitialReviewState = (
 			}),
 		invalidateSession: () =>
 			set(([s]) => {
-				s.activeQueue = [];
+				s.onSessionEnd.add(() => {
+					set(([s]) => {
+						s.activeQueue = [];
+					});
+				});
 			}),
 		updateQueue: (options: ReviewOptions) =>
 			set(([s]) => {
