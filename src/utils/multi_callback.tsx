@@ -1,5 +1,5 @@
 // biome-ignore lint: ignore Function type
-class MultiCallback<T extends Function = () => void> {
+export class MultiCallback<T extends Function = () => void> {
 	private callbacks: T[] = [];
 
 	add(callback: T) {

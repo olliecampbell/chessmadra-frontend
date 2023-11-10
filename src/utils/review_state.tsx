@@ -48,6 +48,7 @@ import { logProxy } from "./state";
 import { StateGetter, StateSetter } from "./state_setters_getters";
 import { animateSidebar } from "~/components/SidebarContainer";
 import { SpacedRepetition } from "~/SpacedRepetition";
+import { MultiCallback } from "./multi_callback";
 
 export interface ReviewPositionResults {
 	side: Side;

@@ -4,6 +4,7 @@ import { getAppState, quick, useRepertoireState } from "~/utils/app_state";
 import { START_EPD } from "~/utils/chess";
 import { clsx } from "~/utils/classes";
 import { useIsMobileV2 } from "~/utils/isMobile";
+import { pluralize } from "~/utils/pluralize";
 import { Quiz, countQueue } from "~/utils/queues";
 import { SIDES, Side, getAllRepertoireMoves } from "~/utils/repertoire";
 import { bySide } from "~/utils/repertoire";
@@ -13,9 +14,8 @@ import { trackEvent } from "~/utils/trackEvent";
 import { Label } from "./Label";
 import { ReviewText } from "./ReviewText";
 import { SidebarAction } from "./SidebarActions";
-import { SidebarTemplate } from "./SidebarTemplate";
 import { animateSidebar } from "./SidebarContainer";
-import { pluralize } from "~/utils/pluralize";
+import { SidebarTemplate } from "./SidebarTemplate";
 
 export const PreReview = (props: { side: Side | null }) => {
 	const [numMovesDueBySide] = useRepertoireState((s) => [
@@ -198,6 +198,7 @@ export const PreReview = (props: { side: Side | null }) => {
 					if (side) {
 						animateSidebar("right");
 						s.repertoireState.ui.popView();
+						animateSidebar("right");
 						s.repertoireState.startBrowsing(side as Side, "browse");
 					} else {
 						s.repertoireState.ui.pushView(ChooseSideForSpecificPractice);
