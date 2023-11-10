@@ -158,7 +158,7 @@ export const getInitialVisionState = (
 					const correct = some(activeStep?.parts, (p) => {
 						if (p.square === square) {
 							p.complete = true;
-							let color = VisionQuiz.getColorsForStep(activeStep.type);
+							const color = VisionQuiz.getColorsForStep(activeStep.type);
 							s.chessboard.colorSquare(square, color, 80);
 							return true;
 						}
@@ -331,7 +331,7 @@ export namespace VisionQuiz {
 		const squareAttackers: Record<Square, Piece[]> = {};
 		// @ts-ignore
 		Object.keys(SQUARES).forEach((square: Square) => {
-			if (square == "b5") {
+			if (square === "b5") {
 				// debugger;
 			}
 			squareAttackers[square] = getSquareLookers(square, position);

@@ -27,9 +27,7 @@ export interface PuzzleStateDelegate {
 }
 
 export const getInitialPuzzleState = (
-	// biome-ignore lint: ignore
 	_set: StateSetter<PuzzleState, any>,
-	// biome-ignore lint: ignore
 	_get: StateGetter<PuzzleState, any>,
 ) => {
 	const set = <T,>(fn: (s: PuzzleState) => T, id?: string): T => {

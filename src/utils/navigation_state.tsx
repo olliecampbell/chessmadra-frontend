@@ -15,9 +15,7 @@ export interface NavigationState {
 type Stack = [NavigationState, AppState];
 
 export const getInitialNavigationState = (
-	// biome-ignore lint: ignore
 	_set: StateSetter<AppState, any>,
-	// biome-ignore lint: ignore
 	_get: StateGetter<AppState, any>,
 ) => {
 	const set = <T,>(fn: (stack: Stack) => T, id?: string): T => {

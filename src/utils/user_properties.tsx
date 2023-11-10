@@ -4,6 +4,7 @@ import {
 } from "@amplitude/analytics-browser";
 import { posthog } from "posthog-js";
 
+// biome-ignore lint: ignore Object type
 export const identify = (props: Object) => {
 	console.log("Identify: ", props);
 	const identifyObj = new AmplitudeIdentify();
@@ -15,6 +16,7 @@ export const identify = (props: Object) => {
 	posthog.setPersonProperties(props);
 };
 
+// biome-ignore lint: ignore Object type
 export const identifyOnce = (props: Object) => {
 	console.log("Identify once: ", props);
 	const identifyObj = new AmplitudeIdentify();

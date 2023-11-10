@@ -11,7 +11,6 @@ export interface DebugState {
 type Stack = [DebugState, AppState];
 
 export const getInitialDebugState = (
-	// biome-ignore lint: ignore
 	_set: StateSetter<AppState, any>,
 	// biome-ignore lint: ignore
 	_get: StateGetter<AppState, any>,
