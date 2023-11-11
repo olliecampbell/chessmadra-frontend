@@ -8,6 +8,7 @@ import {
 	isEqual,
 	isNil,
 	last,
+	minBy,
 	times,
 } from "lodash-es";
 import { Accessor, JSXElement, createSignal } from "solid-js";
@@ -44,27 +45,121 @@ type MakeMoveOptions = {
 type MoveFeedbackType = "correct" | "incorrect";
 type ChessboardMode = "tap" | "normal";
 
-const SOUNDS = {
-	move: new Howl({
-		src: [getStatic("/sounds/move.wav")],
-	}),
-	capture: new Howl({
-		src: [getStatic("/sounds/capture.wav")],
-	}),
-	success: new Howl({
-		src: [getStatic("/sounds/success.wav")],
-	}),
-	failure: new Howl({
-		src: [getStatic("/sounds/failure.wav")],
-	}),
+type SoundFiles =
+	| {
+			sound: Howl;
+	  }
+	| {
+			sounds: {
+				sound: Howl;
+				duration: number;
+			}[];
+	  };
+
+const SOUNDS: Record<"move" | "capture" | "success" | "failure", SoundFiles> = {
+	move: {
+		sounds: [
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/move_normal.mp3")],
+				}),
+				duration: 200, // moveDuration for Normal
+			},
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/move_fast.mp3")],
+				}),
+				duration: 180, // moveDuration for Fast
+			},
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/move_slow.mp3")],
+				}),
+				duration: 250, // moveDuration for Slow
+			},
+		],
+	},
+	capture: {
+		sounds: [
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/capture_normal.mp3")],
+				}),
+				duration: 200,
+			},
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/capture_fast.mp3")],
+				}),
+				duration: 180,
+			},
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/capture_slow.mp3")],
+				}),
+				duration: 250,
+			},
+		],
+	},
+	success: {
+		sound: new Howl({
+			src: [getStatic("/sounds/success.mp3")],
+		}),
+	},
+	failure: {
+		sounds: [
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/failure_normal.mp3")],
+				}),
+				duration: 200,
+			},
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/failure_fast.mp3")],
+				}),
+				duration: 180,
+			},
+			{
+				sound: new Howl({
+					src: [getStatic("/sounds/failure_slow.mp3")],
+				}),
+				duration: 250,
+			},
+		],
+	},
 };
 
-const playMoveSound = (isCapture: boolean) => {
-	if (isCapture) {
-		SOUNDS.capture.play();
+const playSound = (sounds: SoundFiles, duration?: number) => {
+	let sound = null;
+	if ("sound" in sounds) {
+		sound = sounds.sound;
 	} else {
-		SOUNDS.move.play();
+		if (duration === undefined) {
+			duration = sounds.sounds[0].duration;
+		}
+		sound = minBy(sounds.sounds, (s) =>
+			Math.abs(duration! - s.duration),
+		)!.sound;
 	}
+	if (duration) {
+		const soundDuration = sound.duration();
+		console.log("sound duration?", soundDuration, sound);
+		if (soundDuration) {
+			sound.rate((soundDuration * 1000) / duration);
+			sound.play();
+		}
+	} else {
+		sound.rate(1);
+		sound.play();
+	}
+};
+
+const playMoveSound = (isCapture: boolean, duration: number) => {
+	if (isCapture) {
+		playSound(SOUNDS.capture, duration);
+	}
+	playSound(SOUNDS.move, duration);
 };
 
 export interface ChessboardInterface {
@@ -90,7 +185,6 @@ export interface ChessboardInterface {
 		callback: (completed: boolean) => void,
 		options?: {
 			firstMove?: boolean;
-			speed?: PlaybackSpeed;
 		},
 	) => void;
 	// @deprecated
@@ -462,11 +556,6 @@ export const createChessboardInterface = (): [
 				}
 				const nextMove = s.animationQueue?.shift() as AnimationMove;
 				s.animating = true;
-				const animationSpeed = pieceAnimationToPlaybackSpeed(
-					getAppState().userState.getFrontendSetting("pieceAnimation")
-						.value as PieceAnimation,
-				);
-				playMoveSound(!!nextMove.captured);
 
 				chessboardInterface.animatePieceMove(
 					nextMove,
@@ -516,7 +605,6 @@ export const createChessboardInterface = (): [
 					return;
 				}
 				const move = s.nextPreviewMove;
-				playMoveSound(!!move.captured);
 				s.previewPosition = s.position.clone();
 				s.previewPosition.move(s.nextPreviewMove);
 				// s.nextPreviewMove = null;
@@ -563,6 +651,7 @@ export const createChessboardInterface = (): [
 						0,
 					);
 				}
+				playMoveSound(!!move.captured, duration);
 				timeline.play();
 				timeline.finished.then(() => {
 					set((s) => {
@@ -614,18 +703,15 @@ export const createChessboardInterface = (): [
 			options,
 		) => {
 			set((s: ChessboardViewState) => {
-				const animationSpeed =
-					options?.speed ??
-					pieceAnimationToPlaybackSpeed(
-						getAppState().userState.getFrontendSetting("pieceAnimation")
-							.value as PieceAnimation,
-					);
-				const { fadeDuration, moveDuration, stayDuration } =
+				const animationSpeed = pieceAnimationToPlaybackSpeed(
+					getAppState().userState.getFrontendSetting("pieceAnimation")
+						.value as PieceAnimation,
+				);
+				const { moveDuration, stayDuration } =
 					getAnimationDurations(animationSpeed);
-				// @ts-ignore
-				const [start, end]: Square[] = move.reverse
-					? [move.to, move.from]
-					: [move.from, move.to];
+				const [start, end] = move.reverse
+					? ([move.to, move.from] as Square[])
+					: ([move.from, move.to] as Square[]);
 				const { x, y } = getSquareOffset(end, s.flipped);
 				const { x: startX, y: startY } = getSquareOffset(start, s.flipped);
 				s.animatingMoveSquare = start;
@@ -644,6 +730,9 @@ export const createChessboardInterface = (): [
 					easing: "easeInOutSine",
 					autoplay: true,
 					delay: options?.firstMove ? 0 : stayDuration,
+					changeBegin: () => {
+						playMoveSound(!!move.captured, moveDuration);
+					},
 				}).finished.then(() => {
 					s.animatedMove = undefined;
 					s.animatingMoveSquare = undefined;
@@ -744,7 +833,7 @@ export const createChessboardInterface = (): [
 					if (chessboardInterface.getDelegate()?.shouldMakeMove?.(move)) {
 						chessboardInterface.getDelegate()?.madeManualMove?.();
 						makeMove();
-						playMoveSound(!!move.captured);
+						// todo: drop sound here
 					}
 				}
 			});
@@ -1006,9 +1095,9 @@ export const createChessboardInterface = (): [
 					ref = state.refs.largeFeedbackRefs[square];
 				}
 				if (result === "correct") {
-					SOUNDS.success.play();
+					playSound(SOUNDS.success);
 				} else {
-					SOUNDS.failure.play();
+					playSound(SOUNDS.failure);
 				}
 				// const whiteOverlay = ref?.querySelector(
 				//   "#white-overlay"
