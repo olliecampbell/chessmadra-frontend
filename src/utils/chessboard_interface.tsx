@@ -56,50 +56,33 @@ type SoundFiles =
 			}[];
 	  };
 
-const SOUNDS: Record<"move" | "capture" | "success" | "failure", SoundFiles> = {
+const SOUNDS: Record<"move" | "capture" | "success" | "failure" | "drop", SoundFiles> = {
 	move: {
 		sounds: [
 			{
 				sound: new Howl({
-					src: [getStatic("/sounds/move_normal.mp3")],
+					src: [getStatic("/sounds/move.mp3")],
 				}),
 				duration: 200, // moveDuration for Normal
 			},
 			{
 				sound: new Howl({
-					src: [getStatic("/sounds/move_fast.mp3")],
+					src: [getStatic("/sounds/move.mp3")],
 				}),
 				duration: 180, // moveDuration for Fast
 			},
 			{
 				sound: new Howl({
-					src: [getStatic("/sounds/move_slow.mp3")],
+					src: [getStatic("/sounds/move.mp3")],
 				}),
 				duration: 250, // moveDuration for Slow
 			},
 		],
 	},
 	capture: {
-		sounds: [
-			{
-				sound: new Howl({
-					src: [getStatic("/sounds/capture_normal.mp3")],
-				}),
-				duration: 200,
-			},
-			{
-				sound: new Howl({
-					src: [getStatic("/sounds/capture_fast.mp3")],
-				}),
-				duration: 180,
-			},
-			{
-				sound: new Howl({
-					src: [getStatic("/sounds/capture_slow.mp3")],
-				}),
-				duration: 250,
-			},
-		],
+		sound: new Howl({
+			src: [getStatic("/sounds/capture.mp3")],
+		}),
 	},
 	success: {
 		sound: new Howl({
@@ -107,26 +90,14 @@ const SOUNDS: Record<"move" | "capture" | "success" | "failure", SoundFiles> = {
 		}),
 	},
 	failure: {
-		sounds: [
-			{
-				sound: new Howl({
-					src: [getStatic("/sounds/failure_normal.mp3")],
-				}),
-				duration: 200,
-			},
-			{
-				sound: new Howl({
-					src: [getStatic("/sounds/failure_fast.mp3")],
-				}),
-				duration: 180,
-			},
-			{
-				sound: new Howl({
-					src: [getStatic("/sounds/failure_slow.mp3")],
-				}),
-				duration: 250,
-			},
-		],
+		sound: new Howl({
+			src: [getStatic("/sounds/failure.mp3")],
+		}),
+	},
+	drop: {
+		sound: new Howl({
+			src: [getStatic("/sounds/drop.mp3")],
+		}),
 	},
 };
 
@@ -157,9 +128,12 @@ const playSound = (sounds: SoundFiles, duration?: number) => {
 
 const playMoveSound = (isCapture: boolean, duration: number) => {
 	if (isCapture) {
-		playSound(SOUNDS.capture, duration);
+		playSound(SOUNDS.capture);
+		playSound(SOUNDS.drop);
 	}
-	playSound(SOUNDS.move, duration);
+	else {
+		playSound(SOUNDS.move, duration);
+	}
 };
 
 export interface ChessboardInterface {
@@ -833,7 +807,10 @@ export const createChessboardInterface = (): [
 					if (chessboardInterface.getDelegate()?.shouldMakeMove?.(move)) {
 						chessboardInterface.getDelegate()?.madeManualMove?.();
 						makeMove();
-						// todo: drop sound here
+						playSound(SOUNDS.drop);
+						if (move.captured) {
+							playSound(SOUNDS.capture);							
+						}
 					}
 				}
 			});
@@ -1104,9 +1081,9 @@ export const createChessboardInterface = (): [
 				// ) as HTMLDivElement;
 				anime
 					.timeline({
-						duration: 250,
+						duration: 200,
 						autoplay: true,
-						easing: "easeInOutSine",
+						easing: "easeOutQuad",
 					})
 					.add({
 						targets: ref,
@@ -1121,8 +1098,8 @@ export const createChessboardInterface = (): [
 					.finished.then(() => {
 						anime({
 							targets: ref,
-							easing: "easeInOutSine",
-							duration: 300,
+							easing: "easeInQuad",
+							duration: 200,
 							opacity: [1.0, 0],
 							scale: [1.0, 0.8],
 							delay: 200,

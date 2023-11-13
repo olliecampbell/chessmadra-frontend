@@ -94,7 +94,7 @@
 		"@solid-primitives/page-visibility": "^2.0.14",
 		"@solid-primitives/resize-observer": "^2.0.22",
 		"@solid-primitives/scroll": "^2.0.20",
-		"@solidjs/meta": "^0.28.6",
+		"@solidjs/meta": "^0.29.1",
 		"@solidjs/router": "^0.8.3",
 		"@types/chroma-js": "^2.4.1",
 		"@types/howler": "^2.2.11",
